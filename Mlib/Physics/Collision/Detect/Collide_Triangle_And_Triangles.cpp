@@ -1,4 +1,5 @@
 #include "Collide_Triangle_And_Triangles.hpp"
+#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -26,62 +27,26 @@ void Mlib::collide_triangle_and_triangles(
     if (!msh1.mesh->intersects(t0.plane)) {
         return;
     }
-    for (const auto& t1 : msh1.mesh->get_triangles_sphere()) {
-        if (!t1.bounding_sphere.intersects(t0.bounding_sphere)) {
+    for (const auto& e1 : msh1.mesh->get_edges_sphere()) {
+        if (!e1.bounding_sphere.intersects(t0.bounding_sphere)) {
             continue;
         }
-        if (!t1.bounding_sphere.intersects(t0.plane)) {
+        if (!e1.bounding_sphere.intersects(t0.plane)) {
             continue;
         }
-        // Closed, triangulated surfaces contain every edge twice.
-        // => Remove duplicates by checking the order.
-        if (OrderableFixedArray{t1.triangle(1)} < OrderableFixedArray{t1.triangle(2)}) {
-            handle_line_triangle_intersection(IntersectionScene{
-                .o0 = o0,
-                .o1 = o1,
-                .mesh0 = msh0,
-                .mesh1 = msh1.mesh.get(),
-                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(1), t1.triangle(2)},
-                .t0 = t0.triangle,
-                .p0 = t0.plane,
-                .tire_id1 = SIZE_MAX,
-                .mesh0_material = t0.physics_material,
-                .mesh1_material = msh1.physics_material,
-                .l1_is_normal = false,
-                .default_collision_type = CollisionType::REFLECT,
-                .history = history});
-        }
-        if (OrderableFixedArray{t1.triangle(2)} < OrderableFixedArray{t1.triangle(0)}) {
-            handle_line_triangle_intersection(IntersectionScene{
-                .o0 = o0,
-                .o1 = o1,
-                .mesh0 = msh0,
-                .mesh1 = msh1.mesh.get(),
-                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(2), t1.triangle(0)},
-                .t0 = t0.triangle,
-                .p0 = t0.plane,
-                .tire_id1 = SIZE_MAX,
-                .mesh0_material = t0.physics_material,
-                .mesh1_material = msh1.physics_material,
-                .l1_is_normal = false,
-                .default_collision_type = CollisionType::REFLECT,
-                .history = history});
-        }
-        if (OrderableFixedArray{t1.triangle(0)} < OrderableFixedArray{t1.triangle(1)}) {
-            handle_line_triangle_intersection(IntersectionScene{
-                .o0 = o0,
-                .o1 = o1,
-                .mesh0 = msh0,
-                .mesh1 = msh1.mesh.get(),
-                .l1 = FixedArray<FixedArray<double, 3>, 2>{t1.triangle(0), t1.triangle(1)},
-                .t0 = t0.triangle,
-                .p0 = t0.plane,
-                .tire_id1 = SIZE_MAX,
-                .mesh0_material = t0.physics_material,
-                .mesh1_material = msh1.physics_material,
-                .l1_is_normal = false,
-                .default_collision_type = CollisionType::REFLECT,
-                .history = history});
-        }
+        handle_line_triangle_intersection(IntersectionScene{
+            .o0 = o0,
+            .o1 = o1,
+            .mesh0 = msh0,
+            .mesh1 = msh1.mesh.get(),
+            .l1 = &e1,
+            .r1 = nullptr,
+            .t0 = t0,
+            .tire_id1 = SIZE_MAX,
+            .mesh0_material = t0.physics_material,
+            .mesh1_material = msh1.physics_material,
+            .l1_is_normal = false,
+            .default_collision_type = CollisionType::REFLECT,
+            .history = history});
     }
 }

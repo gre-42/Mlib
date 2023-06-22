@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
@@ -47,6 +48,11 @@ struct RigidBodyAndCollisionLineSphere {
     CollisionLineSphere clp;
 };
 
+struct RigidBodyAndCollisionRidgeSphere {
+    RigidBodyVehicle& rb;
+    CollisionRidgeSphere crp;
+};
+
 class RigidBodies {
     friend class PhysicsEngine;
     friend class CollisionQuery;
@@ -69,6 +75,7 @@ public:
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
     const Bvh<double, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
     const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
+    const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& edge_bvh() const;
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
@@ -79,6 +86,7 @@ private:
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     Bvh<double, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
+    Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
 };
 

@@ -2,6 +2,9 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
+#include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
+#include <Mlib/Geometry/Mesh/Sat_Overlap2.hpp>
+#include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -56,7 +59,7 @@ static void handle_extended_reflection(
     const IntersectionScene& c,
     const FixedArray<double, 3>& normal,
     const FixedArray<double, 3>& intersection_point,
-    const FixedArray<double, 3>& penetrating_point,
+    const FixedArray<double, 3>* penetrating_point,
     float overlap,
     float surface_stiction_factor)
 {
@@ -110,7 +113,10 @@ static void handle_extended_reflection(
             normal_impulse = &ci->normal_impulse();
             c.history.contact_infos.push_back(std::move(ci));
         } else {
-            float penetration_depth = (float)dot0d(penetrating_point - intersection_point, normal);
+            if (penetrating_point == nullptr) {
+                THROW_OR_ABORT("Penetrating point not set");
+            }
+            float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
             if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
@@ -226,7 +232,7 @@ void Mlib::handle_reflection(
             c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
             return;
         }
-        if ((dot0d(c.p0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
+        if ((dot0d(c.t0.plane.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
             !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
         {
             return;
@@ -236,22 +242,22 @@ void Mlib::handle_reflection(
         if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
             if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                 if (!c.o1.align_to_surface_state_.touches_alignment_plane_ ||
-                    (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
+                    (c.t0.plane.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                 {
                     c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
-                    c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal.casted<float>();
+                    c.o1.align_to_surface_state_.surface_normal_ = c.t0.plane.normal.casted<float>();
                 }
             } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
-                (std::abs(c.p0.normal(1)) > c.history.cfg.alignment_surface_cos) &&
+                (std::abs(c.t0.plane.normal(1)) > c.history.cfg.alignment_surface_cos) &&
                 (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
-                    (c.p0.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
+                    (c.t0.plane.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
                 (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                 (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
-                (c.p0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
+                (c.t0.plane.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                 // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                 // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
             {
-                c.o1.align_to_surface_state_.surface_normal_ = c.p0.normal.casted<float>();
+                c.o1.align_to_surface_state_.surface_normal_ = c.t0.plane.normal.casted<float>();
             }
         }
         // if (c.beacons != nullptr) {
@@ -266,22 +272,9 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    if (!c.l1_is_normal) {
-        bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);
-        bool second_convex = any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX);
-        if (!first_convex || !second_convex) {
-            THROW_OR_ABORT(
-                "Physics material of some objects is not convex (object \"" +
-                c.o0.name() + "\", mesh \"" +
-                (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) +
-                "\", object \"" +
-                c.o1.name() + "\", mesh \"" +
-                (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\"), convexity: " +
-                std::to_string(int(first_convex)) + ", " + std::to_string(int(second_convex)));
-        }
-    }
     FixedArray<double, 3> normal;
     double overlap = INFINITY;
+    const FixedArray<double, 3>* penetrating_point = nullptr;
     if (!c.l1_is_normal &&
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
@@ -295,10 +288,65 @@ void Mlib::handle_reflection(
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
         }
+    } else if (!c.l1_is_normal &&
+               any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
+               any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
+    {
+        sat_used = true;
+        // assert_true(c.mesh1 != nullptr);
+        // overlap = get_overlap(c.t0, *c.mesh1);
+        // if (overlap > 0.5) {
+        //     return;
+        // }
+        // normal = c.t0.plane.normal;
+        // auto a = dot0d(c.t0.plane.normal, c.l1->line(1) - c.l1->line(0));
+        // if (std::abs(a) < 0.3) {
+        //     return;
+        // }
+        assert_true(c.l1 != nullptr);
+        overlap = -std::min(
+            dot0d(c.t0.plane.normal, c.l1->line(1)) + c.t0.plane.intercept,
+            dot0d(c.t0.plane.normal, c.l1->line(0)) + c.t0.plane.intercept);
+        if (overlap > (double)c.history.cfg.overlap_ignored) {
+            return;
+        }
+        normal = c.t0.plane.normal;
+        overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+    } else if (!c.l1_is_normal &&
+               any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
+               any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
+    {
+        sat_used = true;
+        assert_true(c.mesh0 != nullptr);
+        assert_true(c.r1 != nullptr);
+        try {
+            get_overlap2(*c.mesh0, *c.r1, overlap, normal);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error(
+                "Could not compute collision plane of mesh \"" + c.mesh0->name() + "\" and edge: " + e.what());
+        }
+        if (overlap > (double)c.history.cfg.overlap_ignored) {
+            return;
+        }
+        overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+    } else if (!c.l1_is_normal) {
+        bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);
+        bool second_convex = any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX);
+        THROW_OR_ABORT(
+            "Physics material of all objects is not convex (object \"" +
+            c.o0.name() + "\", mesh \"" +
+            (c.mesh0 == nullptr ? "<null>" : c.mesh0->name()) +
+            "\", object \"" +
+            c.o1.name() + "\", mesh \"" +
+            (c.mesh1 == nullptr ? "<null>" : c.mesh1->name()) + "\"), convexity: " +
+            std::to_string(int(first_convex)) + ", " + std::to_string(int(second_convex)));
     } else {
         assert_true(c.l1_is_normal);
-        normal = c.p0.normal;
-        overlap = -(dot0d(c.l1(1), normal) + c.p0.intercept);
+        if (c.l1 == nullptr) {
+            THROW_OR_ABORT("handle_reflection: l1 not set");
+        }
+        normal = c.t0.plane.normal;
+        overlap = -(dot0d(c.l1->line(1), normal) + c.t0.plane.intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal *= -1;
@@ -309,6 +357,7 @@ void Mlib::handle_reflection(
             // opposing normals.
             return;
         }
+        penetrating_point = &c.l1->line(1);
     }
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
@@ -330,8 +379,7 @@ void Mlib::handle_reflection(
         assert_true(sat_used);
         assert_true(!c.l1_is_normal);
         assert_true(c.tire_id1 == SIZE_MAX);
-        assert_true(any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
-                    any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX));
+        assert_true(any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX));
         handle_standard_reflection(
             c,
             normal,
@@ -342,7 +390,7 @@ void Mlib::handle_reflection(
             c,
             normal,
             intersection_point,
-            c.l1(1),
+            penetrating_point,
             (float)overlap,
             surface_stiction_factor);
     }

@@ -9,24 +9,32 @@ struct PhysicsEngineConfig {
     float max_residual_time = 0.5f * s;
     bool control_fps = true;
     bool print_residual_time = false;
-    float overlap_tolerance = 0.01f;
-    float hand_brake_velocity = 2.f * kph;
-    // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
-    float stiction_coefficient = 2;
-    float friction_coefficient = 1.6f;
-    bool avoid_burnout = true;
-    bool no_slip = false;
-    float lateral_stability = 1;
-    float max_extra_friction = 0;
-    float max_extra_w = 0;
-    float longitudinal_friction_steepness = 5;
-    float lateral_friction_steepness = 7;  // 1 / sin(4 / 180 * pi) = 14.336
-    float wheel_penetration_depth = 0.25f * meters;  // (penetration depth) + (shock absorber) = 0.2
+
+    // BVH
     float static_radius = 200.f * meters;
     float bvh_max_size = 50.f * meters;
     size_t bvh_levels = 10;
     float supply_depot_attraction_radius = 10.0 * meters;
+
+    // Collision/Friction misc.
+    float max_extra_friction = 0;
+    float max_extra_w = 0;
     float velocity_lambda_min = -1000.f * kph;
+    bool avoid_burnout = true;
+    bool no_slip = false;
+    float hand_brake_velocity = 2.f * kph;
+
+    // Friction
+    // From: http://ffden-2.phys.uaf.edu/211_fall2002.web.dir/ben_townsend/staticandkineticfriction.htm
+    float stiction_coefficient = 2;
+    float friction_coefficient = 1.6f;
+    float longitudinal_friction_steepness = 5;
+    float lateral_friction_steepness = 7;  // 1 / sin(4 / 180 * pi) = 14.336
+
+    // Collision
+    float wheel_penetration_depth = 0.25f * meters;  // (penetration depth) + (shock absorber) = 0.2
+    float overlap_ignored = 0.1f;
+    float overlap_clipped = 0.01f;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;
     float plane_inequality_beta = 0.02f;

@@ -288,7 +288,6 @@ void android_main(android_app* app) {
         "    [--devel_mode]\n"
         "    [--stiction_coefficient <x>]\n"
         "    [--friction_coefficient <x>]\n"
-        "    [--lateral_stability <x>]\n"
         "    [--max_extra_friction <x>]\n"
         "    [--max_extra_w <x>]\n"
         "    [--longitudinal_friction_steepness <x>]\n"
@@ -370,7 +369,6 @@ void android_main(android_app* app) {
          "--render_dt",
          "--stiction_coefficient",
          "--friction_coefficient",
-         "--lateral_stability",
          "--max_extra_w",
          "--max_extra_friction",
          "--longitudinal_friction_steepness",
@@ -468,18 +466,21 @@ void android_main(android_app* app) {
                 .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
-                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
-                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
-                .avoid_burnout = !args.has_named("--no_avoid_burnout"),
-                .no_slip = args.has_named("--no_slip"),
-                .lateral_stability = safe_stof(args.named_value("--lateral_stability", "1")),
-                .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
-                .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
-                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
-                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
-                .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
+                // BVH
                 .static_radius = safe_stof(args.named_value("--static_radius", "200")),
                 .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "50")),
+                // Collision/Friction misc.
+                .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
+                .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),
+                .avoid_burnout = !args.has_named("--no_avoid_burnout"),
+                .no_slip = args.has_named("--no_slip"),
+                // Friction
+                .stiction_coefficient = safe_stof(args.named_value("--stiction_coefficient", "0.5")),
+                .friction_coefficient = safe_stof(args.named_value("--friction_coefficient", "0.5")),
+                .longitudinal_friction_steepness = safe_stof(args.named_value("--longitudinal_friction_steepness", "5")),
+                .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
+                // Collision
+                .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
                 .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
 
             SceneConfig scene_config{

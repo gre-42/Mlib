@@ -37,6 +37,8 @@ public:
     virtual bool intersects(const PlaneNd<double, 3>& plane) const override;
     virtual const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const override;
     virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const override;
+    virtual const std::vector<CollisionLineSphere>& get_edges_sphere() const override;
+    virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const override;
     virtual BoundingSphere<double, 3> bounding_sphere() const override;
     virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
     void print_info() const;
@@ -47,9 +49,13 @@ private:
     std::shared_ptr<ColoredVertexArray<double>> dmesh_;
     mutable std::vector<CollisionTriangleSphere> transformed_triangles_;
     mutable std::vector<CollisionLineSphere> transformed_lines_;
+    mutable std::vector<CollisionLineSphere> transformed_edges_;
+    mutable std::vector<CollisionRidgeSphere> transformed_ridges_;
     mutable std::mutex mutex_;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;
+    mutable std::atomic_bool edges_calculated_ = false;
+    mutable std::atomic_bool ridges_calculated_ = false;
 };
 
 }

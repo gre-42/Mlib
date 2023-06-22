@@ -2,6 +2,8 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
@@ -18,6 +20,7 @@ using namespace Mlib;
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
 : convex_mesh_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
+  ridge_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels}
 {}
 
@@ -78,11 +81,22 @@ void RigidBodies::add_rigid_body(
                             AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
                             BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
                             std::vector<CollisionTriangleSphere> triangles;
+                            std::vector<CollisionLineSphere> edges;
                             std::vector<CollisionLineSphere> lines;
                             triangles.reserve(transformed.size());
                             for (const CollisionTriangleAabb& t : transformed) {
                                 triangles.push_back(t.base);
                             }
+
+                            CollisionEdges collision_edges;
+                            for (const auto& t : triangles) {
+                                collision_edges.insert(t.triangle, t.physics_material);
+                            }
+                            edges.reserve(collision_edges.size());
+                            for (const auto& e : collision_edges) {
+                                edges.push_back(e.collision_line_sphere);
+                            }
+
                             convex_mesh_bvh_.insert(
                                 aabb,
                                 RigidBodyAndIntersectableMesh{
@@ -94,10 +108,25 @@ void RigidBodies::add_rigid_body(
                                             aabb,
                                             bounding_sphere,
                                             std::move(triangles),
-                                            std::move(lines))}});
+                                            std::move(lines),
+                                            std::move(edges),
+                                            std::vector<CollisionRidgeSphere>{})}});
                         } else {
-                            for (const auto& t : m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix())) {
+                            auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
+                            for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, {rb, t.base});
+                            }
+                            std::vector<CollisionRidgeSphere> edges;
+                            CollisionRidges collision_ridges;
+                            for (const auto& t : transformed) {
+                                collision_ridges.insert(t.base.triangle, t.base.plane.normal, t.base.physics_material);
+                            }
+                            for (const auto& e : collision_ridges) {
+                                ridge_bvh_.insert(
+                                    AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
+                                    RigidBodyAndCollisionRidgeSphere{
+                                        .rb = rb,
+                                        .crp = e.collision_ridge_sphere});
                             }
                         }
                     }
@@ -261,4 +290,8 @@ const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle
 
 const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() const {
     return line_bvh_;
+}
+
+const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::edge_bvh() const {
+    return ridge_bvh_;
 }

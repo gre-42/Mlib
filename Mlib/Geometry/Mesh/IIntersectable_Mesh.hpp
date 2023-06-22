@@ -10,6 +10,7 @@ class BoundingSphere;
 template <class TData, size_t tndim>
 class PlaneNd;
 struct CollisionTriangleSphere;
+struct CollisionRidgeSphere;
 struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
@@ -23,6 +24,8 @@ public:
     virtual bool intersects(const PlaneNd<double, 3>& plane) const = 0;
     virtual const std::vector<CollisionTriangleSphere>& get_triangles_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const = 0;
+    virtual const std::vector<CollisionLineSphere>& get_edges_sphere() const = 0;
+    virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const = 0;
     virtual BoundingSphere<double, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<double, 3> aabb() const = 0;
 };

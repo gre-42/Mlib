@@ -24,12 +24,18 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (&c.o0 == &c.o1) {
         THROW_OR_ABORT("Collision of identical objects");
     }
+    if ((c.l1 == nullptr) == (c.r1 == nullptr)) {
+        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1 are set");
+    }
+    const auto& L1 = (c.l1 != nullptr) ? *c.l1->line : *c.r1->edge;
+#define l1 DO_NOT_USE_ME
+#define r1 DO_NOT_USE_ME
     FixedArray<double, 3> intersection_point;
     double t;
     if (!line_intersects_triangle(
-        c.l1(0),
-        c.l1(1),
-        c.t0,
+        L1(0),
+        L1(1),
+        c.t0.triangle,
         t,
         &intersection_point))
     {
@@ -45,11 +51,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             .scene = c,
             .ray_t = t,
             .intersection_point = intersection_point};
-        auto res = c.history.raycast_intersections.insert({ &c.l1, cc });
+        auto res = c.history.raycast_intersections.insert({ &L1, cc });
         if (!res.second) {
             if (cc.ray_t < res.first->second.ray_t) {
                 c.history.raycast_intersections.erase(res.first);
-                c.history.raycast_intersections.insert({ &c.l1, cc });
+                c.history.raycast_intersections.insert({ &L1, cc });
             }
         }
     } else {
@@ -61,6 +67,14 @@ void Mlib::handle_line_triangle_intersection(
     const IntersectionScene& c,
     const FixedArray<double, 3>& intersection_point)
 {
+#undef l1
+#undef r1
+    if ((c.l1 == nullptr) == (c.r1 == nullptr)) {
+        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/e1 are set");
+    }
+    const auto& L1 = (c.l1 != nullptr) ? *c.l1->line : *c.r1->edge;
+#define l1 DO_NOT_USE_ME
+#define r1 DO_NOT_USE_ME
     CollisionType collision_type = c.default_collision_type;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {
@@ -102,13 +116,13 @@ void Mlib::handle_line_triangle_intersection(
             return;
         }
         FixedArray<float, 3> d3 = (intersection_point - c.o0.abs_grind_point()).casted<float>();
-        FixedArray<double, 3> rail_direction = c.l1(1) - c.l1(0);
+        FixedArray<double, 3> rail_direction = L1(1) - L1(0);
         double rail_len2 = sum(squared(rail_direction));
         if (rail_len2 < 1e-12) {
             THROW_OR_ABORT("Grind rail too short");
         }
         rail_direction /= std::sqrt(rail_len2);
-        if (std::abs(dot0d(rail_direction, c.p0.normal)) < c.history.cfg.max_grind_cos) {
+        if (std::abs(dot0d(rail_direction, c.t0.plane.normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;

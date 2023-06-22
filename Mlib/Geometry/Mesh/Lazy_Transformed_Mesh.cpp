@@ -4,8 +4,11 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Triangle3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
@@ -73,6 +76,66 @@ const std::vector<CollisionTriangleSphere>& LazyTransformedMesh::get_triangles_s
         }
     }
     return transformed_triangles_;
+}
+
+const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() const {
+    //if (msh.vertices->size() == 0) {
+    //    std::cerr << "Skipping mesh without triangles" << std::endl;
+    //}
+    if (!edges_calculated_) {
+        std::scoped_lock lock{mutex_};
+        if (!edges_calculated_) {
+            CollisionEdges edges;
+            if (smesh_ != nullptr) {
+                for (const auto& t : smesh_->triangles) {
+                    Triangle3D t3{t, transformation_matrix_};
+                    edges.insert(t3.vertices(), smesh_->physics_material);
+                }
+            }
+            if (dmesh_ != nullptr) {
+                for (const auto& t : dmesh_->triangles) {
+                    Triangle3D t3{t, transformation_matrix_};
+                    edges.insert(t3.vertices(), smesh_->physics_material);
+                }
+            }
+            transformed_edges_.reserve(edges.size());
+            for (const auto& e : edges) {
+                transformed_edges_.push_back(e.collision_line_sphere);
+            }
+            edges_calculated_ = true;
+        }
+    }
+    return transformed_edges_;
+}
+
+const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere() const {
+    //if (msh.vertices->size() == 0) {
+    //    std::cerr << "Skipping mesh without triangles" << std::endl;
+    //}
+    if (!ridges_calculated_) {
+        std::scoped_lock lock{mutex_};
+        if (!ridges_calculated_) {
+            CollisionRidges ridges;
+            if (smesh_ != nullptr) {
+                for (const auto& t : smesh_->triangles) {
+                    Triangle3D t3{t, transformation_matrix_};
+                    ridges.insert(t3.vertices(), t3.plane().normal, smesh_->physics_material);
+                }
+            }
+            if (dmesh_ != nullptr) {
+                for (const auto& t : dmesh_->triangles) {
+                    Triangle3D t3{t, transformation_matrix_};
+                    ridges.insert(t3.vertices(), t3.plane().normal, smesh_->physics_material);
+                }
+            }
+            transformed_ridges_.reserve(ridges.size());
+            for (const auto& e : ridges) {
+                transformed_ridges_.push_back(e.collision_ridge_sphere);
+            }
+            ridges_calculated_ = true;
+        }
+    }
+    return transformed_ridges_;
 }
 
 const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_lines_sphere() const {

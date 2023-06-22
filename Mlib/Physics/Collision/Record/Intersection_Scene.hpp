@@ -13,15 +13,18 @@ enum class CollisionType;
 enum class PhysicsMaterial;
 struct IntersectionSceneAndContact;
 struct CollisionHistory;
+struct CollisionTriangleSphere;
+struct CollisionRidgeSphere;
+struct CollisionLineSphere;
 
 struct IntersectionScene {
     RigidBodyVehicle& o0;
     RigidBodyVehicle& o1;
     const IIntersectableMesh* mesh0;
     const IIntersectableMesh* mesh1;
-    const FixedArray<FixedArray<double, 3>, 2>& l1;
-    const FixedArray<FixedArray<double, 3>, 3>& t0;
-    const PlaneNd<double, 3>& p0;
+    const CollisionLineSphere* l1;
+    const CollisionRidgeSphere* r1;
+    const CollisionTriangleSphere& t0;
     size_t tire_id1;
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;

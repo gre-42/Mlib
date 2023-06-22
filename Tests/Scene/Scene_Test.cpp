@@ -95,18 +95,18 @@ void test_physics_engine() {
         FixedArray<ColoredVertex<float>, 3>{
             ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
             ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {-10.f, -2.f, -10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}},
+            ColoredVertex<float>{.position = {-10.f, -5.f, -10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}},
         FixedArray<ColoredVertex<float>, 3>{
             ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
             ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {+10.f, -2.f, +10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}}
+            ColoredVertex<float>{.position = {+10.f, -5.f, +10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
         "triangles0",
         Material{
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONCAVE,
         std::move(triangles0_raw),
         std::vector<FixedArray<ColoredVertex<float>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
@@ -131,11 +131,8 @@ void test_physics_engine() {
             .transformation_mode = TransformationMode::ALL,
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
-            .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+            .physics_material = PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
             .werror = true});
-    for (auto& o : triangles1) {
-        o->physics_material |= (PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX);
-    }
 
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
@@ -175,7 +172,7 @@ void test_physics_engine() {
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
             .werror = true},
         scene_node_resources));
-    scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
+    // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
     auto scene_node0 = std::make_unique<SceneNode>();
     auto scene_node1_0 = std::make_unique<SceneNode>();
     auto scene_node1_1 = std::make_unique<SceneNode>();

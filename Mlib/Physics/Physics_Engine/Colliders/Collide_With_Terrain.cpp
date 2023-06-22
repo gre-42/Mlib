@@ -3,8 +3,10 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Line_And_Triangles.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Edges.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
+#include <Mlib/Physics/Collision/Detect/Collide_Triangles_And_Ridge.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
@@ -63,11 +65,28 @@ void Mlib::collide_with_terrain(
                                 t0.ctp,
                                 history);
                         }
+                        collide_triangle_and_edges(
+                            t0.rb,
+                            o1.rigid_body,
+                            msh1,
+                            t0.ctp,
+                            history);
                         collide_triangle_and_lines(
                             t0.rb,
                             o1.rigid_body,
                             msh1,
                             t0.ctp,
+                            history);
+                        return true;
+                    });
+                rigid_bodies.edge_bvh().visit(
+                    msh1.mesh->aabb(),
+                    [&](const RigidBodyAndCollisionRidgeSphere& e0){
+                        collide_triangles_and_ridge(
+                            o1.rigid_body,
+                            e0.rb,
+                            msh1,
+                            e0.crp,
                             history);
                         return true;
                     });

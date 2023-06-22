@@ -1,109 +1,12 @@
 #include "Sat_Normals.hpp"
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <set>
 
 using namespace Mlib;
-
-class CollisionVertices {
-public:
-    void insert(const FixedArray<FixedArray<double, 3>, 3>& tri) {
-        insert(tri(0));
-        insert(tri(1));
-        insert(tri(2));
-    }
-    void insert(const FixedArray<double, 3>& a) {
-        vertices_.insert(OrderableFixedArray{a});
-    }
-    auto begin() const {
-        return vertices_.begin();
-    }
-    auto end() const {
-        return vertices_.end();
-    }
-private:
-    std::set<OrderableFixedArray<double, 3>> vertices_;
-};
-
-class CollisionEdges {
-public:
-    void insert(const FixedArray<FixedArray<double, 3>, 3>& tri) {
-        insert(tri(0), tri(1));
-        insert(tri(1), tri(2));
-        insert(tri(2), tri(0));
-    }
-    void insert(const FixedArray<double, 3>& a, const FixedArray<double, 3>& b) {
-        if (OrderableFixedArray{a} < OrderableFixedArray{b}) {
-            edges_.insert({OrderableFixedArray{a - b}});
-        } else {
-            edges_.insert({OrderableFixedArray{b - a}});
-        }
-    }
-    auto begin() const {
-        return edges_.begin();
-    }
-    auto end() const {
-        return edges_.end();
-    }
-private:
-    std::set<OrderableFixedArray<double, 3>> edges_;
-};
-
-static double sat_overlap_signed(
-    const FixedArray<double, 3>& n,
-    const CollisionVertices& vertices0,
-    const CollisionVertices& vertices1)
-{
-    double max0 = -INFINITY;
-    double min1 = INFINITY;
-    for (const auto& v : vertices0) {
-        double s = dot0d(v, n);
-        max0 = std::max(max0, s);
-    }
-    for (const auto& v : vertices1) {
-        double s = dot0d(v, n);
-        min1 = std::min(min1, s);
-    }
-    // o0 -> normal | o1
-    // o0_min .. o1_min .. o0_max .. o1_max
-    // => o0_max - o1_min > 0 => intersection
-
-
-    // normal <- o0 | o1
-    // o0_max .. o1_max ... o0_min .. o1_min
-    return max0 - min1;
-}
-
-/*  From: https://docs.godotengine.org/en/stable/tutorials/math/vectors_advanced.html#collision-detection-in-3d
- */
-static void sat_overlap_unsigned(
-    const FixedArray<double, 3>& l,
-    const CollisionVertices& vertices0,
-    const CollisionVertices& vertices1,
-    double& overlap0,
-    double& overlap1)
-{
-    double max0 = -INFINITY;
-    double max1 = -INFINITY;
-    double min0 = INFINITY;
-    double min1 = INFINITY;
-    for (const auto& v : vertices0) {
-        double s = dot0d(v, l);
-        max0 = std::max(max0, s);
-        min0 = std::min(min0, s);
-    }
-    for (const auto& v : vertices1) {
-        double s = dot0d(v, l);
-        max1 = std::max(max1, s);
-        min1 = std::min(min1, s);
-    }
-
-    overlap0 = max1 - min0;
-    overlap1 = max0 - min1;
-}
 
 void SatTracker::get_collision_plane(
     const IIntersectableMesh& mesh0,
@@ -136,8 +39,8 @@ void SatTracker::get_collision_plane(
         #pragma GCC diagnostic pop
         CollisionVertices vertices0;
         CollisionVertices vertices1;
-        CollisionEdges edges0;
-        CollisionEdges edges1;
+        std::vector<const CollisionLineSphere*> relevant_edges0;
+        std::vector<const CollisionLineSphere*> relevant_edges1;
         std::vector<const CollisionTriangleSphere*> relevant_triangles0;
         std::vector<const CollisionTriangleSphere*> relevant_triangles1;
         {
@@ -158,12 +61,21 @@ void SatTracker::get_collision_plane(
                 vertices1.insert(t1.triangle);
             }
         }
-
-        for (const auto& t0 : relevant_triangles0) {
-            edges0.insert(t0->triangle);
-        }
-        for (const auto& t1 : relevant_triangles1) {
-            edges1.insert(t1->triangle);
+        {
+            const std::vector<CollisionLineSphere>& edges0 = mesh0.get_edges_sphere();
+            const std::vector<CollisionLineSphere>& edges1 = mesh1.get_edges_sphere();
+            relevant_edges0.reserve(edges0.size());
+            relevant_edges1.reserve(edges1.size());
+            for (const auto& e0 : edges0) {
+                if (mesh1.intersects(e0.bounding_sphere)) {
+                    relevant_edges0.push_back(&e0);
+                }
+            }
+            for (const auto& e1 : edges1) {
+                if (mesh0.intersects(e1.bounding_sphere)) {
+                    relevant_edges1.push_back(&e1);
+                }
+            }
         }
         for (const auto& t0 : relevant_triangles0) {
             double sat_overl = sat_overlap_signed(
@@ -185,9 +97,9 @@ void SatTracker::get_collision_plane(
                 best_normal = -t1->plane.normal;
             }
         }
-        for (const auto& e0 : edges0) {
-            for (const auto& e1 : edges1) {
-                auto n = cross(e0, e1);
+        for (const auto& e0 : relevant_edges0) {
+            for (const auto& e1 : relevant_edges1) {
+                auto n = cross(e0->line(1) - e0->line(0), e1->line(1) - e1->line(0));
                 double l2 = sum(squared(n));
                 if (l2 < 1e-6) {
                     continue;

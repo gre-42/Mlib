@@ -1,5 +1,6 @@
 #include "Static_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 
@@ -15,12 +16,16 @@ StaticTransformedMesh::StaticTransformedMesh(
     const AxisAlignedBoundingBox<double, 3>& aabb,
     const BoundingSphere<double, 3>& bounding_sphere,
     std::vector<CollisionTriangleSphere>&& triangles,
-    std::vector<CollisionLineSphere>&& lines)
+    std::vector<CollisionLineSphere>&& lines,
+    std::vector<CollisionLineSphere>&& edges,
+    std::vector<CollisionRidgeSphere>&& ridges)
 : name_{ name },
   aabb_{ aabb },
   bounding_sphere_{ bounding_sphere },
   triangles_{ std::move(triangles) },
-  lines_{ std::move(lines) }
+  lines_{ std::move(lines) },
+  edges_{ std::move(edges) },
+  ridges_{ std::move(ridges) }
 {}
 
 StaticTransformedMesh::~StaticTransformedMesh()
@@ -42,14 +47,20 @@ const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_lines_sphere(
     return lines_;
 }
 
+const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_edges_sphere() const {
+    return edges_;
+}
+
+const std::vector<CollisionRidgeSphere>& StaticTransformedMesh::get_ridges_sphere() const {
+    return ridges_;
+}
+
 BoundingSphere<double, 3> StaticTransformedMesh::bounding_sphere() const {
     return bounding_sphere_;
 }
 
 AxisAlignedBoundingBox<double, 3> StaticTransformedMesh::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{
-        bounding_sphere_.center(),
-        bounding_sphere_.radius()};
+    return aabb_;
 }
 
 std::string StaticTransformedMesh::name() const {

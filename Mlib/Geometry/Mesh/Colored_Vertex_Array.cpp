@@ -4,8 +4,10 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
+#include <Mlib/Geometry/Line3D.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Triangle3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
@@ -178,15 +180,12 @@ void ColoredVertexArray<TPos>::transformed_triangles_sphere(
     }
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<double, 3>, 3> pos{
-            tm.transform(t(0).position TEMPLATEV casted<double>()),
-            tm.transform(t(1).position TEMPLATEV casted<double>()),
-            tm.transform(t(2).position TEMPLATEV casted<double>())};
+        Triangle3D tri{t, tm};
         transformed.push_back(CollisionTriangleSphere{
-            .bounding_sphere = welzl_from_fixed<double, 3>(pos, rng),
-            .plane = PlaneNd<double, 3>{pos},
+            .bounding_sphere = tri.bounding_sphere(rng),
+            .plane = tri.plane(),
             .physics_material = physics_material,
-            .triangle = pos});
+            .triangle = tri.vertices()});
     }
 }
 
@@ -198,18 +197,15 @@ std::vector<CollisionTriangleAabb> ColoredVertexArray<TPos>::transformed_triangl
     res.reserve(triangles.size());
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<double, 3>, 3> pos{
-            tm.transform(t(0).position TEMPLATEV casted<double>()),
-            tm.transform(t(1).position TEMPLATEV casted<double>()),
-            tm.transform(t(2).position TEMPLATEV casted<double>())};
+        Triangle3D tri{t, tm};
         res.push_back(CollisionTriangleAabb{
             .base = CollisionTriangleSphere{
-                .bounding_sphere = welzl_from_fixed<double, 3>(pos, rng),
-                .plane = PlaneNd<double, 3>{pos},
+                .bounding_sphere = tri.bounding_sphere(rng),
+                .plane = tri.plane(),
                 .physics_material = physics_material,
-                .triangle = pos
+                .triangle = tri.vertices()
             },
-            .aabb = AxisAlignedBoundingBox<double, 3>{pos}});
+            .aabb = tri.aabb()});
     }
     return res;
 }
@@ -221,15 +217,13 @@ std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
     std::vector<CollisionLineAabb> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        FixedArray<FixedArray<double, 3>, 2> pos{
-            tm.transform(l(0).position TEMPLATEV casted<double>()),
-            tm.transform(l(1).position TEMPLATEV casted<double>())};
+        Line3D line{l, tm};
         res.push_back(CollisionLineAabb{
             .base = CollisionLineSphere{
-                .bounding_sphere = BoundingSphere<double, 3>{pos},
-                .line = pos
+                .bounding_sphere = line.bounding_sphere(),
+                .line = line.vertices()
             },
-            .aabb = AxisAlignedBoundingBox<double, 3>{pos}});
+            .aabb = line.aabb()});
     }
     return res;
 }
@@ -241,12 +235,10 @@ std::vector<CollisionLineSphere> ColoredVertexArray<TPos>::transformed_lines_sph
     std::vector<CollisionLineSphere> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        FixedArray<FixedArray<double, 3>, 2> pos{
-            tm.transform(l(0).position TEMPLATEV casted<double>()),
-            tm.transform(l(1).position TEMPLATEV casted<double>())};
+        Line3D line{l, tm};
         res.push_back(CollisionLineSphere{
-            .bounding_sphere = BoundingSphere<double, 3>{pos},
-            .line = pos});
+            .bounding_sphere = line.bounding_sphere(),
+            .line = line.vertices()});
     }
     return res;
 }
