@@ -22,7 +22,8 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
   convex_mesh_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   ridge_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels}
+  line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
+  collision_ridges_dirty_{false}
 {}
 
 RigidBodies::~RigidBodies() = default;
@@ -117,18 +118,10 @@ void RigidBodies::add_rigid_body(
                             for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, {rb, t.base});
                             }
-                            std::vector<CollisionRidgeSphere> edges;
-                            CollisionRidges collision_ridges;
                             for (const auto& t : transformed) {
-                                collision_ridges.insert(t.base.triangle, t.base.plane.normal, cfg_.max_min_cos_ridge, t.base.physics_material);
+                                collision_ridges_.insert(t.base.triangle, t.base.plane.normal, cfg_.max_min_cos_ridge, t.base.physics_material, rb);
                             }
-                            for (const auto& e : collision_ridges) {
-                                ridge_bvh_.insert(
-                                    AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
-                                    RigidBodyAndCollisionRidgeSphere{
-                                        .rb = rb,
-                                        .crp = e.collision_ridge_sphere});
-                            }
+                            collision_ridges_dirty_ = true;
                         }
                     }
                 }
@@ -294,6 +287,19 @@ const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() c
     return line_bvh_;
 }
 
-const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::edge_bvh() const {
+const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
+    if (collision_ridges_dirty_) {
+        if (!ridge_bvh_.empty()) {
+            THROW_OR_ABORT("Collision ridges are dirty");
+        }
+        for (const auto& e : collision_ridges_) {
+            ridge_bvh_.insert(
+                AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
+                RigidBodyAndCollisionRidgeSphere{
+                    .rb = e.rb,
+                    .crp = e.collision_ridge_sphere});
+        }
+        collision_ridges_dirty_ = false;
+    }
     return ridge_bvh_;
 }

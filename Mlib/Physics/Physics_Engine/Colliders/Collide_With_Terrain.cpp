@@ -79,7 +79,7 @@ void Mlib::collide_with_terrain(
                             history);
                         return true;
                     });
-                rigid_bodies.edge_bvh().visit(
+                rigid_bodies.ridge_bvh().visit(
                     msh1.mesh->aabb(),
                     [&](const RigidBodyAndCollisionRidgeSphere& e0){
                         collide_triangles_and_ridge(
