@@ -313,7 +313,7 @@ void Mlib::handle_reflection(
             return;
         }
         normal = c.t0.plane.normal;
-        overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+        // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
     } else if (!c.l1_is_normal &&
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
                any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
