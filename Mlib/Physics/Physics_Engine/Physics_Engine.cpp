@@ -3,13 +3,14 @@
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
-#include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Controllable.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Physics/Physics_Engine/Colliders/Collide_Concave_Triangles.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Grind_Infos.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Raycast_Intersections.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Movables.hpp>
@@ -123,7 +124,9 @@ void PhysicsEngine::collide(
         o.rigid_body.collide_with_air(cfg_, contact_infos);
     }
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
+    std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
+    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>> ridge_intersection_points;
     SatTracker st;
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
@@ -136,7 +139,9 @@ void PhysicsEngine::collide(
         .beacons = beacons,
         .contact_infos = contact_infos,
         .raycast_intersections = raycast_intersections,
+        .concave_t0_intersections = concave_t0_intersections,
         .grind_infos = grind_infos,
+        .ridge_intersection_points = ridge_intersection_points,
         .base_log = base_log
     };
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
@@ -153,6 +158,7 @@ void PhysicsEngine::collide(
     // by rays also.
     collide_raycast_intersections(raycast_intersections);
     collide_grind_infos(cfg_, contact_infos, grind_infos);
+    collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
     solve_contacts(contact_infos, cfg_.dt / (float)cfg_.oversampling);
 }
 

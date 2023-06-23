@@ -1,5 +1,5 @@
 #include "Collide_Triangle_And_Edges.hpp"
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -22,11 +22,11 @@ void Mlib::collide_triangle_and_edges(
         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
         PhysicsMaterial::OBJ_DISTANCEBOX;
     if (any(msh1.physics_material & non_tire_line_mask)) {
-        for (const auto& e1 : msh1.mesh->get_edges_sphere()) {
-            if (!e1.bounding_sphere.intersects(t0.bounding_sphere)) {
+        for (const auto& r1 : msh1.mesh->get_ridges_sphere()) {
+            if (!r1.bounding_sphere.intersects(t0.bounding_sphere)) {
                 continue;
             }
-            if (!e1.bounding_sphere.intersects(t0.plane)) {
+            if (!r1.bounding_sphere.intersects(t0.plane)) {
                 continue;
             }
             handle_line_triangle_intersection(IntersectionScene{
@@ -34,8 +34,8 @@ void Mlib::collide_triangle_and_edges(
                 .o1 = o1,
                 .mesh0 = nullptr,
                 .mesh1 = msh1.mesh.get(),
-                .l1 = &e1,
-                .r1 = nullptr,
+                .l1 = nullptr,
+                .r1 = &r1,
                 .t0 = t0,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,

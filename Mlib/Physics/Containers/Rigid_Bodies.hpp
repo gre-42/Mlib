@@ -79,6 +79,7 @@ public:
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
+    const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyVehicle*> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;

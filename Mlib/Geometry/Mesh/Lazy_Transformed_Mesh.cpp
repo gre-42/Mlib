@@ -21,8 +21,10 @@ using namespace Mlib;
 LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<float, double, 3>& transformation_matrix,
     const BoundingSphere<double, 3>& bounding_sphere,
-    const std::shared_ptr<ColoredVertexArray<double>>& dmesh)
-: transformation_matrix_{ transformation_matrix },
+    const std::shared_ptr<ColoredVertexArray<double>>& dmesh,
+    double max_min_cos_ridge)
+: max_min_cos_{max_min_cos_ridge},
+  transformation_matrix_{ transformation_matrix },
   transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   dmesh_{ dmesh }
 {}
@@ -30,16 +32,20 @@ LazyTransformedMesh::LazyTransformedMesh(
 LazyTransformedMesh::LazyTransformedMesh(
     const TransformationMatrix<float, double, 3>& transformation_matrix,
     const BoundingSphere<float, 3>& bounding_sphere,
-    const std::shared_ptr<ColoredVertexArray<float>>& smesh)
-: transformation_matrix_{ transformation_matrix },
+    const std::shared_ptr<ColoredVertexArray<float>>& smesh,
+    double max_min_cos_ridge)
+: max_min_cos_{max_min_cos_ridge},
+  transformation_matrix_{ transformation_matrix },
   transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   smesh_{ smesh }
 {}
 
 LazyTransformedMesh::LazyTransformedMesh(
     const BoundingSphere<double, 3>& transformed_bounding_sphere,
-    const std::vector<CollisionTriangleSphere>& transformed_triangles)
-: transformation_matrix_{ fixed_nans<double, 4, 4>() },
+    const std::vector<CollisionTriangleSphere>& transformed_triangles,
+    double max_min_cos_ridge)
+: max_min_cos_{max_min_cos_ridge},
+  transformation_matrix_{ fixed_nans<double, 4, 4>() },
   transformed_bounding_sphere_{ transformed_bounding_sphere },
   transformed_triangles_{ transformed_triangles },
   triangles_calculated_{ true }
@@ -119,13 +125,13 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
             if (smesh_ != nullptr) {
                 for (const auto& t : smesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material);
                 }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material);
                 }
             }
             transformed_ridges_.reserve(ridges.size());

@@ -4,8 +4,8 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Increment_In_Destructor.hpp>
-#include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>

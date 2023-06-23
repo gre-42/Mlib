@@ -1,9 +1,8 @@
 #include "Collide_Triangle_And_Triangles.hpp"
-#include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -27,11 +26,11 @@ void Mlib::collide_triangle_and_triangles(
     if (!msh1.mesh->intersects(t0.plane)) {
         return;
     }
-    for (const auto& e1 : msh1.mesh->get_edges_sphere()) {
-        if (!e1.bounding_sphere.intersects(t0.bounding_sphere)) {
+    for (const auto& r1 : msh1.mesh->get_ridges_sphere()) {
+        if (!r1.bounding_sphere.intersects(t0.bounding_sphere)) {
             continue;
         }
-        if (!e1.bounding_sphere.intersects(t0.plane)) {
+        if (!r1.bounding_sphere.intersects(t0.plane)) {
             continue;
         }
         handle_line_triangle_intersection(IntersectionScene{
@@ -39,8 +38,8 @@ void Mlib::collide_triangle_and_triangles(
             .o1 = o1,
             .mesh0 = msh0,
             .mesh1 = msh1.mesh.get(),
-            .l1 = &e1,
-            .r1 = nullptr,
+            .l1 = nullptr,
+            .r1 = &r1,
             .t0 = t0,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = t0.physics_material,

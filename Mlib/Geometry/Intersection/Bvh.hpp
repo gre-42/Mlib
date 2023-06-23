@@ -250,9 +250,25 @@ public:
         const TData& max_distance,
         const TComputeDistance& compute_distance) const
     {
-        return !visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance), [&max_distance, &compute_distance](const TPayload& playload) {
-            return compute_distance(playload) > max_distance;
-        });
+        return !visit(
+            AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+            [&max_distance, &compute_distance](const TPayload& playload) {
+                return compute_distance(playload) > max_distance;
+            });
+    }
+
+    template <class TComputeDistance>
+    bool has_neighbor2(
+        const FixedArray<TData, tndim>& p,
+        const TData& max_distance,
+        const TComputeDistance& compute_distance_squared) const
+    {
+        return !visit(
+            AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+            [max_distance2=squared(max_distance), &compute_distance_squared]
+            (const TPayload& playload) {
+                return compute_distance_squared(playload) > max_distance2;
+            });
     }
 
     Bvh repackaged(const FixedArray<TData, tndim>& max_size, size_t level) const

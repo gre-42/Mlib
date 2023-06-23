@@ -18,7 +18,8 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: convex_mesh_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
+: cfg_{cfg},
+  convex_mesh_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   ridge_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels}
@@ -119,7 +120,7 @@ void RigidBodies::add_rigid_body(
                             std::vector<CollisionRidgeSphere> edges;
                             CollisionRidges collision_ridges;
                             for (const auto& t : transformed) {
-                                collision_ridges.insert(t.base.triangle, t.base.plane.normal, t.base.physics_material);
+                                collision_ridges.insert(t.base.triangle, t.base.plane.normal, cfg_.max_min_cos_ridge, t.base.physics_material);
                             }
                             for (const auto& e : collision_ridges) {
                                 ridge_bvh_.insert(
@@ -236,7 +237,8 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
                 .mesh = std::make_shared<LazyTransformedMesh>(
                     m,
                     msh.mesh.first,
-                    msh.mesh.second)});
+                    msh.mesh.second,
+                    cfg_.max_min_cos_ridge)});
         }
     };
     add_meshes(o.smeshes);

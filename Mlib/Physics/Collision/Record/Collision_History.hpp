@@ -26,7 +26,9 @@ struct CollisionHistory {
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<ContactInfo>>& contact_infos;
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections;
+    std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
+    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>>& ridge_intersection_points;
     BaseLog* base_log;
 };
 

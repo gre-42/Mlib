@@ -6,7 +6,7 @@
 #include <Mlib/Geometry/Mesh/Sat_Overlap2.hpp>
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Physics/Collision/Collision_History.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
@@ -298,18 +298,20 @@ void Mlib::handle_reflection(
         // if (overlap > 0.5) {
         //     return;
         // }
-        // normal = c.t0.plane.normal;
-        // auto a = dot0d(c.t0.plane.normal, c.l1->line(1) - c.l1->line(0));
-        // if (std::abs(a) < 0.3) {
+        // auto dir = c.r1->edge(1) - c.r1->edge(0);
+        // dir /= std::sqrt(sum(squared(dir)));
+        // if (std::abs(dot0d(dir, c.t0.plane.normal)) < 0.5) {
         //     return;
         // }
-        assert_true(c.l1 != nullptr);
-        overlap = -std::min(
-            dot0d(c.t0.plane.normal, c.l1->line(1)) + c.t0.plane.intercept,
-            dot0d(c.t0.plane.normal, c.l1->line(0)) + c.t0.plane.intercept);
-        if (overlap > (double)c.history.cfg.overlap_ignored) {
-            return;
-        }
+        assert_true(c.r1 != nullptr);
+        overlap = -(
+            std::min(
+                dot0d(c.t0.plane.normal, c.r1->edge(1)),
+                dot0d(c.t0.plane.normal, c.r1->edge(0))) +
+            c.t0.plane.intercept);
+        // if (overlap > (double)c.history.cfg.overlap_ignored) {
+        //     return;
+        // }
         normal = c.t0.plane.normal;
         overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
     } else if (!c.l1_is_normal &&
@@ -325,10 +327,14 @@ void Mlib::handle_reflection(
             throw std::runtime_error(
                 "Could not compute collision plane of mesh \"" + c.mesh0->name() + "\" and edge: " + e.what());
         }
-        if (overlap > (double)c.history.cfg.overlap_ignored) {
+        if (overlap == INFINITY) {
             return;
         }
-        overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+        // if (overlap > (double)c.history.cfg.overlap_ignored) {
+        //     return;
+        // }
+        // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+        c.history.ridge_intersection_points[&c.o0].push_back(intersection_point);
     } else if (!c.l1_is_normal) {
         bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);
         bool second_convex = any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX);
@@ -359,8 +365,8 @@ void Mlib::handle_reflection(
         }
         penetrating_point = &c.l1->line(1);
     }
-    // if (c.beacons != nullptr) {
-    //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
+    // if (c.history.beacons != nullptr) {
+    //     c.history.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
     if (overlap < -1e-3) {
         if (sat_used) {

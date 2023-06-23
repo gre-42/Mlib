@@ -28,17 +28,19 @@ CollisionRidges::~CollisionRidges() = default;
 void CollisionRidges::insert(
     const FixedArray<FixedArray<double, 3>, 3>& tri,
     const FixedArray<double, 3>& normal,
+    double max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
-    insert(tri(0), tri(1), normal, physics_material);
-    insert(tri(1), tri(2), normal, physics_material);
-    insert(tri(2), tri(0), normal, physics_material);
+    insert(tri(0), tri(1), normal, max_min_cos_ridge, physics_material);
+    insert(tri(1), tri(2), normal, max_min_cos_ridge, physics_material);
+    insert(tri(2), tri(0), normal, max_min_cos_ridge, physics_material);
 }
 
 void CollisionRidges::insert(
     const FixedArray<double, 3>& a,
     const FixedArray<double, 3>& b,
     const FixedArray<double, 3>& normal,
+    double max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
     OrderableRidgeSphere edge{
@@ -69,6 +71,9 @@ void CollisionRidges::insert(
         }
         old_edge.normal = average_normal / std::sqrt(len2);
         old_edge.min_cos = dot0d(old_edge.normal, normal);
+        if (old_edge.min_cos > max_min_cos_ridge) {
+            edges_.erase(previous_edge);
+        }
     }
 }
 

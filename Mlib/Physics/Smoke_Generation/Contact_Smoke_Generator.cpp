@@ -1,5 +1,5 @@
 #include "Contact_Smoke_Generator.hpp"
-#include <Mlib/Physics/Collision/Collision_History.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>

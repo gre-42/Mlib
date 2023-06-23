@@ -1,8 +1,8 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
 #include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Physics/Collision/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Reflection.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
@@ -58,6 +58,14 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
                 c.history.raycast_intersections.insert({ &L1, cc });
             }
         }
+    } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
+               any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
+    {
+        c.history.concave_t0_intersections[&c.o1].push_back(
+            IntersectionSceneAndContact{
+                .scene = c,
+                .ray_t = t,
+                .intersection_point = intersection_point});
     } else {
         handle_line_triangle_intersection(c, intersection_point);
     }

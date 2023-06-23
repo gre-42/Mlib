@@ -24,6 +24,7 @@ public:
     void insert(
         const FixedArray<FixedArray<double, 3>, 3>& tri,
         const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
         PhysicsMaterial physics_material);
     const_iterator begin() const;
     const_iterator end() const;
@@ -33,6 +34,7 @@ private:
         const FixedArray<double, 3>& a,
         const FixedArray<double, 3>& b,
         const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
         PhysicsMaterial physics_material);
     Edges edges_;
 };

@@ -23,14 +23,17 @@ public:
     LazyTransformedMesh(
         const TransformationMatrix<float, double, 3>& transformation_matrix,
         const BoundingSphere<float, 3>& bounding_sphere,
-        const std::shared_ptr<ColoredVertexArray<float>>& smesh);
+        const std::shared_ptr<ColoredVertexArray<float>>& smesh,
+        double max_min_cos_ridge);
     LazyTransformedMesh(
         const TransformationMatrix<float, double, 3>& transformation_matrix,
         const BoundingSphere<double, 3>& bounding_sphere,
-        const std::shared_ptr<ColoredVertexArray<double>>& dmesh);
+        const std::shared_ptr<ColoredVertexArray<double>>& dmesh,
+        double max_min_cos_ridge);
     LazyTransformedMesh(
         const BoundingSphere<double, 3>& transformed_bounding_sphere,
-        const std::vector<CollisionTriangleSphere>& transformed_triangles);
+        const std::vector<CollisionTriangleSphere>& transformed_triangles,
+        double max_min_cos_ridge);
     ~LazyTransformedMesh();
     virtual std::string name() const override;
     virtual bool intersects(const BoundingSphere<double, 3>& sphere) const override;
@@ -43,6 +46,7 @@ public:
     virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
     void print_info() const;
 private:
+    double max_min_cos_;
     const TransformationMatrix<float, double, 3> transformation_matrix_;
     BoundingSphere<double, 3> transformed_bounding_sphere_;
     std::shared_ptr<ColoredVertexArray<float>> smesh_;
