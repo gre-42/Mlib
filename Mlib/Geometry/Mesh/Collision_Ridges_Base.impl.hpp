@@ -56,3 +56,8 @@ template <class TOrderableRidgeSphere>
 size_t CollisionRidgesBase<TOrderableRidgeSphere>::size() const {
     return ridges_.size();
 }
+
+template <class TOrderableRidgeSphere>
+void CollisionRidgesBase<TOrderableRidgeSphere>::clear() {
+    return ridges_.clear();
+}

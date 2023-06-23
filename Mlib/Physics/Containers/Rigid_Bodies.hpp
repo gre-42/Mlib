@@ -86,6 +86,7 @@ private:
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
+    // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
     Bvh<double, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;

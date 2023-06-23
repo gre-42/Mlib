@@ -198,7 +198,10 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             static_rigid_bodies_.erase(it);
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
+            ridge_bvh_.clear();
             line_bvh_.clear();
+            collision_ridges_.clear();
+            collision_ridges_dirty_ = false;
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
         }

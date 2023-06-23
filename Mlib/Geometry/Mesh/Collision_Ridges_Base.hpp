@@ -24,6 +24,7 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
     size_t size() const;
+    void clear();
 protected:
     void insert(
         const TOrderableRidgeSphere& ridge,
