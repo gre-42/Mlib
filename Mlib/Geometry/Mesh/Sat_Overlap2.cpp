@@ -25,12 +25,10 @@ void Mlib::get_overlap2(
     CollisionVertices vertices0;
     CollisionVertices vertices1;
     const std::vector<CollisionRidgeSphere>& edges0 = mesh0.get_ridges_sphere();
-    {
-        for (const auto& e0 : edges0) {
-            vertices0.insert(e0.edge);
-        }
-        vertices1.insert(e1.edge);
+    for (const auto& e0 : edges0) {
+        vertices0.insert(e0.edge);
     }
+    vertices1.insert(e1.edge);
 
     for (const auto& e0 : edges0) {
         auto n = cross(e0.edge(1) - e0.edge(0), e1.edge(1) - e1.edge(0));
@@ -39,9 +37,6 @@ void Mlib::get_overlap2(
             continue;
         }
         n /= std::sqrt(l2);
-        if (!std::isnan(e1.min_cos) && (dot0d(n, e1.normal) < e1.min_cos - 1e-6)) {
-            continue;
-        }
         double overlap0;
         double overlap1;
         sat_overlap_unsigned(
@@ -51,11 +46,17 @@ void Mlib::get_overlap2(
             overlap0,
             overlap1);
         if (overlap0 < overlap1) {
+            if (!std::isnan(e1.min_cos) && (dot0d(n, e1.normal) < e1.min_cos - 1e-6)) {
+                continue;
+            }
             if (overlap0 < best_min_overlap) {
                 best_min_overlap = overlap0;
                 best_normal = -n;
             }
         } else {
+            if (!std::isnan(e1.min_cos) && (-dot0d(n, e1.normal) < e1.min_cos - 1e-6)) {
+                continue;
+            }
             if (overlap1 < best_min_overlap) {
                 best_min_overlap = overlap1;
                 best_normal = n;
