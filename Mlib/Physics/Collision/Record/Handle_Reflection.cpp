@@ -309,9 +309,9 @@ void Mlib::handle_reflection(
                 dot0d(c.t0.plane.normal, c.r1->edge(1)),
                 dot0d(c.t0.plane.normal, c.r1->edge(0))) +
             c.t0.plane.intercept);
-        // if (overlap > (double)c.history.cfg.overlap_ignored) {
-        //     return;
-        // }
+        if (overlap > (double)c.history.cfg.overlap_ignored) {
+            return;
+        }
         normal = c.t0.plane.normal;
         overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
     } else if (!c.l1_is_normal &&
