@@ -2,15 +2,15 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geography/Geographic_Coordinates.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
-#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
-#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
@@ -1585,10 +1585,7 @@ void OsmMapResource::handle_point_exception3(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    std::stringstream sstr;
-    sstr.precision(15);
-    sstr << message << " at position " << e.point << " | " << m.transform(e.point.casted<double>()) << ": " << e.what() << std::endl;
-    throw std::runtime_error(sstr.str());
+    throw std::runtime_error(e.str(message, m));
 }
 
 void OsmMapResource::handle_point_exception2(
@@ -1615,18 +1612,7 @@ void OsmMapResource::handle_edge_exception(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    std::stringstream sstr;
-    sstr.precision(15);
-    sstr << message << " at edge " <<
-        e.a <<
-        " -> " <<
-        e.b <<
-        " | " <<
-        m.transform(e.a.casted<double>()) <<
-        " -> " <<
-        m.transform(e.b.casted<double>()) <<
-        ": " << e.what() << std::endl;
-    throw std::runtime_error(sstr.str());
+    throw std::runtime_error(e.str(message, m));
 }
 
 void OsmMapResource::handle_triangle_exception(
@@ -1634,20 +1620,5 @@ void OsmMapResource::handle_triangle_exception(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    std::stringstream sstr;
-    sstr.precision(15);
-    sstr << message << " at triangle " <<
-        e.a <<
-        " <-> " <<
-        e.b <<
-        " <-> " <<
-        e.c <<
-        " | " <<
-        m.transform(e.a.casted<double>()) <<
-        " <-> " <<
-        m.transform(e.b.casted<double>()) <<
-        " <-> " <<
-        m.transform(e.c.casted<double>()) <<
-        ": " << e.what() << std::endl;
-    throw std::runtime_error(sstr.str());
+    throw std::runtime_error(e.str(message, m));
 }

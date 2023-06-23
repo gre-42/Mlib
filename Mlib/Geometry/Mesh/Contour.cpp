@@ -1,6 +1,6 @@
 #include "Contour.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 

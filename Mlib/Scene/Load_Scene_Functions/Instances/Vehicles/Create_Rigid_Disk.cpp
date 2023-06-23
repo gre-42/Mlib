@@ -1,5 +1,6 @@
 #include "Create_Rigid_Disk.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -72,13 +73,21 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
     // 1. Set movable, which updates the transformation-matrix.
     AbsoluteMovableSetter ams{scene.get_node(args.arguments.at<std::string>(KnownArgs::node)), std::move(rb)};
     // 2. Add to physics engine.
-    physics_engine.rigid_bodies_.add_rigid_body(
-        std::move(ams.absolute_movable),
-        s_hitboxes,
-        d_hitboxes,
-        collidable_mode,
-        PhysicsResourceFilter{
-            .cva_filter = {
-                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
+    try {
+        physics_engine.rigid_bodies_.add_rigid_body(
+            std::move(ams.absolute_movable),
+            s_hitboxes,
+            d_hitboxes,
+            collidable_mode,
+            PhysicsResourceFilter{
+                .cva_filter = {
+                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
+    } catch (const EdgeException<double>& e) {
+        const auto* m = scene_node_resources.get_geographic_mapping("world");
+        if (m == nullptr) {
+            throw;
+        }
+        throw std::runtime_error(e.str("Error", *m));
+    }
 }

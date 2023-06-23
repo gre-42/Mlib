@@ -1,5 +1,5 @@
 #include "Shortest_Path_Intermediate_Points_Creator.hpp"
-#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>

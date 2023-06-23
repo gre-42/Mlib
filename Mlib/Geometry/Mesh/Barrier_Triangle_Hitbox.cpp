@@ -1,7 +1,7 @@
 #include "Barrier_Triangle_Hitbox.hpp"
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
-#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>

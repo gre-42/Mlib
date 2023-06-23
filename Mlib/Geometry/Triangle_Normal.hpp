@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
-#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>

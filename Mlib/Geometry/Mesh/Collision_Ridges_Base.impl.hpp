@@ -1,4 +1,5 @@
 #include "Collision_Ridges_Base.hpp"
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 
 using namespace Mlib;
@@ -23,7 +24,11 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
     } else {
         auto& old_ridge = const_cast<CollisionRidgeSphere&>(previous_ridge->collision_ridge_sphere);
         if (!std::isnan(old_ridge.min_cos)) {
-            THROW_OR_ABORT("Detected duplicate triangles touching the same ridge");
+            EdgeException<double> exc{
+                ridge.collision_ridge_sphere.edge(0),
+                ridge.collision_ridge_sphere.edge(1),
+                "Detected duplicate triangles touching the same ridge"};
+            THROW_OR_ABORT2(exc);
         }
         if (dot0d(cross(old_ridge.edge(1) - old_ridge.edge(0), old_ridge.normal), ridge_normal) < 0) {
             ridges_.erase(previous_ridge);

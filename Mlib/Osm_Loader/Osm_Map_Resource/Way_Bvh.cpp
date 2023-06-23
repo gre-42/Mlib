@@ -1,6 +1,6 @@
 #include "Way_Bvh.hpp"
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Distance_Point_Line.hpp>
-#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

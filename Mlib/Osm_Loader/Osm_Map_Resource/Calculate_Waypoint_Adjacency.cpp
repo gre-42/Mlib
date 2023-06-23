@@ -1,7 +1,7 @@
 #include "Calculate_Waypoint_Adjacency.hpp"
-#include <Mlib/Geometry/Mesh/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
-#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>

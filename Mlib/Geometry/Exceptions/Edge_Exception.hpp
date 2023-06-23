@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <sstream>
 #include <stdexcept>
 
 namespace p2t {
@@ -28,6 +30,20 @@ public:
       a{(TPos)((double*)a)[0], (TPos)((double*)a)[1], 0.f},
       b{(TPos)((double*)b)[0], (TPos)((double*)b)[1], 0.f}
     {}
+    std::string str(const std::string& message, const TransformationMatrix<double, double, 3>& m) const {
+        std::stringstream sstr;
+        sstr.precision(15);
+        sstr << message << " at edge " <<
+            a <<
+            " -> " <<
+            b <<
+            " | " <<
+            m.transform(a TEMPLATEV casted<double>()) <<
+            " -> " <<
+            m.transform(b TEMPLATEV casted<double>()) <<
+            ": " << what();
+        return sstr.str();
+    }
     FixedArray<TPos, 3> a;
     FixedArray<TPos, 3> b;
 };

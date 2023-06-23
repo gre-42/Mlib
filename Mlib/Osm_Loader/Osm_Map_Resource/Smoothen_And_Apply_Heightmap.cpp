@@ -1,7 +1,7 @@
 #include "Smoothen_And_Apply_Heightmap.hpp"
 #include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
-#include <Mlib/Geometry/Mesh/Point_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Images/PgmImage.hpp>
 #include <Mlib/Images/StbImage3.hpp>

@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Geometry/Mesh/Triangle_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
