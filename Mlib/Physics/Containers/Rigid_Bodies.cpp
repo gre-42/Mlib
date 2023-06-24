@@ -23,7 +23,7 @@ RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
   triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   ridge_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
   line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  collision_ridges_dirty_{false}
+  collision_ridges_baking_status_{CollisionRidgeBakingStatus::NOT_BAKED}
 {}
 
 RigidBodies::~RigidBodies() = default;
@@ -114,14 +114,35 @@ void RigidBodies::add_rigid_body(
                                             std::move(edges),
                                             std::vector<CollisionRidgeSphere>{})}});
                         } else {
+                            if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
+                                THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
+                            }
                             auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
                             for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, {rb, t.base});
                             }
-                            for (const auto& t : transformed) {
-                                collision_ridges_.insert(t.base.triangle, t.base.plane.normal, cfg_.max_min_cos_ridge, t.base.physics_material, rb);
+                            auto insert_triangle = [this, &rb](
+                                CollisionRidgesRigidBody& collision_ridges,
+                                const CollisionTriangleAabb& t)
+                            {
+                                collision_ridges.insert(
+                                    t.base.triangle,
+                                    t.base.plane.normal,
+                                    cfg_.max_min_cos_ridge,
+                                    t.base.physics_material,
+                                    rb);
+                            };
+                            if (any(m->physics_material & PhysicsMaterial::ATTR_SELF_CONTAINED)) {
+                                CollisionRidgesRigidBody collision_ridges;
+                                for (const auto& t : transformed) {
+                                    insert_triangle(collision_ridges, t);
+                                }
+                                bake_collision_ridges(collision_ridges);
+                            } else {
+                                for (const auto& t : transformed) {
+                                    insert_triangle(global_collision_ridges_, t);
+                                }
                             }
-                            collision_ridges_dirty_ = true;
                         }
                     }
                 }
@@ -200,8 +221,8 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             triangle_bvh_.clear();
             ridge_bvh_.clear();
             line_bvh_.clear();
-            collision_ridges_.clear();
-            collision_ridges_dirty_ = false;
+            global_collision_ridges_.clear();
+            collision_ridges_baking_status_ = CollisionRidgeBakingStatus::NOT_BAKED;
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
         }
@@ -291,18 +312,25 @@ const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() c
 }
 
 const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
-    if (collision_ridges_dirty_) {
-        if (!ridge_bvh_.empty()) {
-            THROW_OR_ABORT("Collision ridges are dirty");
-        }
-        for (const auto& e : collision_ridges_) {
-            ridge_bvh_.insert(
-                AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
-                RigidBodyAndCollisionRidgeSphere{
-                    .rb = e.rb,
-                    .crp = e.collision_ridge_sphere});
-        }
-        collision_ridges_dirty_ = false;
+    if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKING) {
+        THROW_OR_ABORT("Previous collision ridges baking failed");
+    }
+    if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::NOT_BAKED) {
+        collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKING;
+        bake_collision_ridges(global_collision_ridges_);
+        collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKED;
     }
     return ridge_bvh_;
+}
+
+void RigidBodies::bake_collision_ridges(
+    const CollisionRidgesRigidBody& collision_ridges) const
+{
+    for (const auto& e : collision_ridges) {
+        ridge_bvh_.insert(
+            AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
+            RigidBodyAndCollisionRidgeSphere{
+                .rb = e.rb,
+                .crp = e.collision_ridge_sphere});
+    }
 }

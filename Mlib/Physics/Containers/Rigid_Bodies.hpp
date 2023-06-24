@@ -54,6 +54,12 @@ struct RigidBodyAndCollisionRidgeSphere {
     CollisionRidgeSphere crp;
 };
 
+enum class CollisionRidgeBakingStatus {
+    NOT_BAKED,
+    BAKED,
+    BAKING
+};
+
 class RigidBodies {
     friend class PhysicsEngine;
     friend class CollisionQuery;
@@ -80,6 +86,7 @@ public:
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
+    void bake_collision_ridges(const CollisionRidgesRigidBody& collision_ridges) const;
     const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyVehicle*> static_rigid_bodies_;
@@ -91,8 +98,8 @@ private:
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
-    CollisionRidgesRigidBody collision_ridges_;
-    mutable bool collision_ridges_dirty_;
+    CollisionRidgesRigidBody global_collision_ridges_;
+    mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };
 
 }

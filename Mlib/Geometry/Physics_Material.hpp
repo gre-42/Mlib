@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-static const size_t SURFACE_BASE_OFFSET = 16;
+static const size_t SURFACE_BASE_OFFSET = 17;
 static const size_t SURFACE_BASE_NBITS = 4;
 
 enum class PhysicsMaterial {
@@ -14,16 +14,17 @@ enum class PhysicsMaterial {
     ATTR_ALIGN_STRICT = (1 << 3),
     ATTR_CONVEX = (1 << 4),
     ATTR_CONCAVE = (1 << 5),
-    OBJ_ALIGNMENT_PLANE = (1 << 6),
-    OBJ_CHASSIS = (1 << 7),
-    OBJ_TIRE_LINE = (1 << 8),
-    OBJ_GRIND_CONTACT = (1 << 9),
-    OBJ_GRIND_LINE = (1 << 10),
-    OBJ_ALIGNMENT_CONTACT = (1 << 11),
-    OBJ_BULLET_LINE_SEGMENT = (1 << 12),
-    OBJ_BULLET_MESH = (1 << 13),
-    OBJ_HITBOX = (1 << 14),
-    OBJ_DISTANCEBOX = (1 << 15),
+    ATTR_SELF_CONTAINED = (1 << 6),
+    OBJ_ALIGNMENT_PLANE = (1 << 7),
+    OBJ_CHASSIS = (1 << 8),
+    OBJ_TIRE_LINE = (1 << 9),
+    OBJ_GRIND_CONTACT = (1 << 10),
+    OBJ_GRIND_LINE = (1 << 11),
+    OBJ_ALIGNMENT_CONTACT = (1 << 12),
+    OBJ_BULLET_LINE_SEGMENT = (1 << 13),
+    OBJ_BULLET_MESH = (1 << 14),
+    OBJ_HITBOX = (1 << 15),
+    OBJ_DISTANCEBOX = (1 << 16),
     SURFACE_BASE_TARMAC = (1 << SURFACE_BASE_OFFSET),  //    1
     SURFACE_BASE_GRAVEL = (2 << SURFACE_BASE_OFFSET),  //   10
     SURFACE_BASE_SNOW = (3 << SURFACE_BASE_OFFSET),    //   11
