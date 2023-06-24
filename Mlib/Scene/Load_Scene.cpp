@@ -79,6 +79,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Remove_Node_Not_Allowed_To_Be_Unregistered.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Bone.hpp>
@@ -86,6 +88,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Root_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/With_Delete_Node_Mutex.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
@@ -105,13 +108,12 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Remove_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Reset_Supply_Depot_Cooldowns.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Root_Node_Instance.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Save_To_Obj_File.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Externals_Creator.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Set_Objective.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Create_Spawner.hpp>
@@ -157,7 +159,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Ypln_Update_Bullet_Properties.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/With_Delete_Node_Mutex.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
@@ -318,6 +319,7 @@ LoadScene::LoadScene() {
     register_json_user_function(RenderableInstance::key, RenderableInstance::json_user_function);
     register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
     register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
+    register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);
     register_json_user_function(SceneToPercentageRegion::key, SceneToPercentageRegion::json_user_function);
     register_json_user_function(SceneToPixelRegion::key, SceneToPixelRegion::json_user_function);
     register_json_user_function(SceneToTexture::key, SceneToTexture::json_user_function);

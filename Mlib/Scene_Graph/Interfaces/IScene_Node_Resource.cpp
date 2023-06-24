@@ -80,6 +80,13 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> ISceneNodeResource::wa
     THROW_OR_ABORT("way_points not implemented");
 }
 
+void ISceneNodeResource::save_to_obj_file(
+    const std::string& prefix,
+    const TransformationMatrix<float, double, 3>& model_matrix) const
+{
+    THROW_OR_ABORT("\"save_to_obj_file\" not implemented");
+}
+    
 void ISceneNodeResource::print(std::ostream& ostr) const {
     THROW_OR_ABORT("\"print\" not implemented");
 }

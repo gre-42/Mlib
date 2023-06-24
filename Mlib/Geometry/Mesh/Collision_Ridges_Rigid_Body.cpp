@@ -1,5 +1,7 @@
 #include "Collision_Ridges_Rigid_Body.hpp"
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.impl.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 
 using namespace Mlib;
 
@@ -14,9 +16,15 @@ void CollisionRidgesRigidBody::insert(
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
 {
-    insert(tri(0), tri(1), normal, max_min_cos_ridge, physics_material, rb);
-    insert(tri(1), tri(2), normal, max_min_cos_ridge, physics_material, rb);
-    insert(tri(2), tri(0), normal, max_min_cos_ridge, physics_material, rb);
+    for (size_t i = 0; i < 3; ++i) {
+        size_t j = (i + 1) % 3;
+        try {
+            insert(tri(i), tri(j), normal, max_min_cos_ridge, physics_material, rb);
+        } catch (const EdgeException<double>& e) {
+            throw TriangleEdgeException<double>{
+                tri(0), tri(1), tri(2), i, j, e.what()};
+        }
+    }
 }
 
 void CollisionRidgesRigidBody::insert(

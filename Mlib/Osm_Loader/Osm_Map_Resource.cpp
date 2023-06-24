@@ -1366,7 +1366,11 @@ void OsmMapResource::save_to_file(const std::string& filename) const {
     }
 }
 
-void OsmMapResource::save_to_obj_file(const std::string& filename) const {
+void OsmMapResource::save_to_obj_file(
+    const std::string& prefix,
+    const TransformationMatrix<float, double, 3>& tm) const
+{
+    auto filename = prefix + "_osm_map.obj";
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<TextureDescriptor, std::string> autogen_textures;
     auto get_filename = [&](const TextureDescriptor& desc){
@@ -1381,9 +1385,13 @@ void OsmMapResource::save_to_obj_file(const std::string& filename) const {
             return it->second;
         }
     };
+    std::list<std::shared_ptr<ColoredVertexArray<double>>> mdcvas;
+    for (const auto& l : hri_.acvas->dcvas) {
+        mdcvas.push_back(l->transformed<double>(tm, ""));
+    }
     save_obj(
         filename,
-        hri_.acvas->dcvas,  // get_animated_arrays()->cvas
+        mdcvas,  // get_animated_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
                 .ambience = m.ambience,
@@ -1568,9 +1576,10 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
     }
 }
 
-void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const {
+void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const
+{
     if (const char* wp = getenv("OSM_OBJ_PREFIX"); (wp != nullptr)) {
-        save_to_obj_file(wp + debug_prefix + ".obj");
+        save_to_obj_file(wp + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
     }
 }
 

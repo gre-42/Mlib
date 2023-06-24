@@ -77,13 +77,14 @@ static nlohmann::json eval_recursion(
     auto subst = [&subst_](const std::string& s){return Mlib::substitute_dollar(s, subst_);};
     if (recursion == 0) {
         if (std::isalpha(expression[0]) ||
-            (expression[0] == '.') ||
-            (expression[0] == '#') ||
-            (expression[0] == '-') ||
-            (expression[0] == '$') ||
-            (expression[0] == '_') ||
-            (expression[0] == '^') ||
-            (expression[0] == '\\'))
+            (expression[0] == '.')  ||
+            (expression[0] == '#')  ||
+            (expression[0] == '-')  ||
+            (expression[0] == '$')  ||
+            (expression[0] == '_')  ||
+            (expression[0] == '^')  ||
+            (expression[0] == '\\') ||
+            (expression[0] == '/'))
         {
             return subst(expression);
         }

@@ -72,6 +72,12 @@ public:
         const std::string& resource_name,
         const std::string& companion_resource_name,
         const RenderableResourceFilter& renderable_resource_filter);
+
+    // Output
+    void save_to_obj_file(
+        const std::string& resource_name,
+        const std::string& prefix,
+        const TransformationMatrix<float, double, 3>& model_matrix) const;
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation

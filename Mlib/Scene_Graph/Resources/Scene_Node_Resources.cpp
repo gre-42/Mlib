@@ -246,6 +246,19 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> SceneNodeResources::wa
     }
 }
 
+void SceneNodeResources::save_to_obj_file(
+    const std::string& resource_name,
+    const std::string& prefix,
+    const TransformationMatrix<float, double, 3>& model_matrix) const
+{
+    auto resource = get_resource(resource_name);
+    try {
+        return resource->save_to_obj_file(prefix, model_matrix);
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("save_to_obj_file for resource \"" + resource_name + "\" failed: " + e.what());
+    }
+}
+
 void SceneNodeResources::print(const std::string& name, std::ostream& ostr) const {
     ostr << "Resource name: " << name << '\n';
     get_resource(name)->print(ostr);

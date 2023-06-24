@@ -41,6 +41,11 @@ public:
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const;
+
+    // Output
+    virtual void save_to_obj_file(
+        const std::string& prefix,
+        const TransformationMatrix<float, double, 3>& model_matrix) const;
     virtual void print(std::ostream& ostr) const;
 
     // Animation

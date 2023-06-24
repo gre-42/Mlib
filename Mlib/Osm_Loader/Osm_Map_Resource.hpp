@@ -23,6 +23,8 @@ template <class TPos>
 class TriangleException;
 template <class TPos>
 class TriangleList;
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
 class Renderable;
 class RenderingResources;
 class SceneNodeResources;
@@ -57,6 +59,11 @@ public:
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
     virtual void print(std::ostream& ostr) const override;
 
+    // ISceneNodeResource, Output
+    void save_to_obj_file(
+        const std::string& prefix,
+        const TransformationMatrix<float, double, 3>& tm) const override;
+
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
@@ -88,7 +95,6 @@ public:
         archive(terrain_styles_);
     }
     void save_to_file(const std::string& filename) const;
-    void save_to_obj_file(const std::string& filename) const;
     void save_bad_triangles_to_obj_file(const std::string& filename) const;
 private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;

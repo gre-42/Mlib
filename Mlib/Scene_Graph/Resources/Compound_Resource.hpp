@@ -22,6 +22,11 @@ public:
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
 
+    // Output
+    virtual void save_to_obj_file(
+        const std::string& prefix,
+        const TransformationMatrix<float, double, 3>& model_matrix) const override;
+
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
 
