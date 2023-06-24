@@ -298,12 +298,12 @@ void Mlib::handle_reflection(
         // if (overlap > 0.5) {
         //     return;
         // }
-        // auto dir = c.r1->edge(1) - c.r1->edge(0);
-        // dir /= std::sqrt(sum(squared(dir)));
-        // if (std::abs(dot0d(dir, c.t0.plane.normal)) < 0.5) {
-        //     return;
-        // }
         assert_true(c.r1 != nullptr);
+        auto dir = c.r1->edge(1) - c.r1->edge(0);
+        dir /= std::sqrt(sum(squared(dir)));
+        if (std::abs(dot0d(dir, c.t0.plane.normal)) < (double)c.history.cfg.min_cos_triangle_ridge) {
+            return;
+        }
         overlap = -(
             std::min(
                 dot0d(c.t0.plane.normal, c.r1->edge(1)),
