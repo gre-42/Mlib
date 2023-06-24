@@ -305,9 +305,9 @@ void DrawStreets::draw_streets() {
                 get_neighbors(na.first, node_neighbors.at(it.second.neighbor_id), node_angles.at(it.second.neighbor_id), &dL, &dR);
                 if (sum(squared(nodes.at(na.first).position - nodes.at(it.second.neighbor_id).position)) < squared(0.1 * scale))
                 {
-                    std::cerr << "Skipping street because it is too short. " <<
+                    lwarn() << "Skipping street because it is too short. " <<
                         it.second.neighbor_id << " <-> " << na.first << ", (" <<
-                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")";
                     continue;
                 }
                 OsmRectangle2D rect;
@@ -326,9 +326,9 @@ void DrawStreets::draw_streets() {
                     *dL == na.first ? it.second.width : node_neighbors.at(*dL).at(it.second.neighbor_id).width,
                     *dR == na.first ? it.second.width : node_neighbors.at(*dR).at(it.second.neighbor_id).width))
                 {
-                    std::cerr << "Error triangulating street nodes " <<
+                    lwarn() << "Error triangulating street nodes " <<
                         it.second.neighbor_id << " <-> " << na.first << ", (" <<
-                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")" << std::endl;
+                        nodes.at(it.second.neighbor_id).position << ") <-> (" << nodes.at(na.first).position << ")";
                     continue;
                 }
                 draw_streets_draw_ways(
@@ -561,7 +561,7 @@ void DrawStreets::draw_holes() {
                         }
                         // float len = std::sqrt(sum(squared((p00 + p10) / 2.f - (p01 + p11) / 2.f)));
                         float len = (float)std::sqrt(sum(squared(p00.position - p01.position)));
-                        // std::cerr << std::sqrt(sum(squared(p00 - p01))) << " " << std::sqrt(sum(squared(p10 - p11))) << std::endl;
+                        // linfo() << std::sqrt(sum(squared(p00 - p01))) << " " << std::sqrt(sum(squared(p10 - p11)));
                         float f = uv(0);
                         float g = uv(1) * len / scale * uv_scale;
                         tl.draw_rectangle_wo_normals(
@@ -906,7 +906,7 @@ void DrawStreets::draw_streets_draw_ways(
         }
     }
     if ((b_entrance_type != EntranceType::NONE) && (c_entrance_type != EntranceType::NONE)) {
-        std::cerr << "WARNING: Detected two entrances at way " + node_id + " - " + angle_way.neighbor_id << std::endl;
+        lwarn() << "Detected two entrances at way " + node_id + " - " + angle_way.neighbor_id;
         b_entrance_type = EntranceType::NONE;
         c_entrance_type = EntranceType::NONE;
     }
@@ -945,7 +945,7 @@ void DrawStreets::draw_streets_draw_ways(
         } else if ((dot0d(v0, vs) < 0) && (dot0d(v1, vs) < 0)) {
             flip_racing_line = true;
         } else {
-            std::cerr << "WARNING: detected inconsistent racing line direction" << std::endl;
+            lwarn() << "Detected inconsistent racing line direction";
             racing_line_beta0 = NAN;
             racing_line_beta1 = NAN;
         }

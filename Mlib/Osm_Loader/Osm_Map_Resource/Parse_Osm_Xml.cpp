@@ -85,11 +85,11 @@ void Mlib::parse_osm_xml(
             normalized_points.set_max(max);
             normalization_matrix = normalized_points.normalization_matrix() * m;
             if (normalization_matrix_defined) {
-                std::cerr << "merged bounds" << std::endl;
-                std::cerr << "min lat " << std::setprecision(18) << bounds_min_merged(0) << std::endl;
-                std::cerr << "min lon " << std::setprecision(18) << bounds_min_merged(1) << std::endl;
-                std::cerr << "max lat " << std::setprecision(18) << bounds_max_merged(0) << std::endl;
-                std::cerr << "max lon " << std::setprecision(18) << bounds_max_merged(1) << std::endl;
+                linfo() << "merged bounds";
+                linfo() << "min lat " << std::setprecision(18) << bounds_min_merged(0);
+                linfo() << "min lon " << std::setprecision(18) << bounds_min_merged(1);
+                linfo() << "max lat " << std::setprecision(18) << bounds_max_merged(0);
+                linfo() << "max lon " << std::setprecision(18) << bounds_max_merged(1);
             }
             normalization_matrix_defined = true;
         } else if (Mlib::re::regex_match(line, match, node_reg)) {
@@ -111,26 +111,26 @@ void Mlib::parse_osm_xml(
                     safe_stod(lon)};
                 if (any(rpos < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of minimum bounds " << bounds_min_merged << std::endl;
+                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of minimum bounds " << bounds_min_merged;
                     THROW_OR_ABORT(sstr.str());
                 }
                 if (any(rpos > bounds_max_merged + FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged << std::endl;
+                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged;
                     THROW_OR_ABORT(sstr.str());
                 }
                 auto pos = normalization_matrix.transform(rpos);
                 auto opos = OrderableFixedArray<double, 2>{pos};
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
-                    std::cerr << "Detected duplicate points: " + current_node + ", " + it->second << std::endl;
+                    lwarn() << "Detected duplicate points: " + current_node + ", " + it->second;
                 } else {
                     ordered_node_positions.insert(std::make_pair(opos, current_node));
                 }
                 nodes.insert(std::make_pair(current_node, Node{.position = pos}));
                 // float dist = sum(squared(pos - FixedArray<float, 2>{-0.801262, 0.0782831}));
                 // if (dist < 1e-3) {
-                //     std::cerr << "err: " << dist << " " << match[1].str() << std::endl;
+                //     lerr() << "err: " << dist << " " << match[1].str();
                 // }
             } else {
                 current_node = "<none>";
