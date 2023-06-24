@@ -84,7 +84,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         pos,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f));
-    std::string type = args.arguments.at<std::string>(KnownArgs::type);
+    auto type = args.arguments.at<std::string>(KnownArgs::type);
     if (type == "aggregate") {
         scene.add_root_aggregate_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
     } else if (type == "instances") {
