@@ -1369,7 +1369,7 @@ void OsmMapResource::save_to_file(const std::string& filename) const {
 void OsmMapResource::save_to_obj_file(const std::string& filename) const {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<TextureDescriptor, std::string> autogen_textures;
-    auto get_filename = [&](const auto& desc){
+    auto get_filename = [&](const TextureDescriptor& desc){
         auto it = autogen_textures.find(desc);
         if (it == autogen_textures.end()) {
             std::string result = primary_rendering_resources->get_texture_filename(
