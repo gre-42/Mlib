@@ -8,7 +8,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <iostream>
+#include <Mlib/Os/Os.hpp>
 
 using namespace Mlib;
 
@@ -21,11 +21,11 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
         if (window_position.windowed_height == 0) {
             THROW_OR_ABORT("window height is zero");
         }
-        std::cerr <<
+        linfo() <<
             "Going to window mode (x: " << window_position.windowed_x <<
             ", y: " << window_position.windowed_y << 
             ", width: " << window_position.windowed_width << 
-            ", height: " << window_position.windowed_height << ')' << std::endl;
+            ", height: " << window_position.windowed_height << ')';
         GLFW_CHK(glfwSetWindowMonitor(
             &window,
             nullptr,
@@ -50,9 +50,9 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
         }
         int width = window_position.fullscreen_width == 0 ? mode->width : window_position.fullscreen_width;
         int height = window_position.fullscreen_height == 0 ? mode->height : window_position.fullscreen_height;
-        std::cerr <<
+        linfo() <<
             "Going to full screen (width: " << width <<
-            ", height: " << height << ')' << std::endl;
+            ", height: " << height << ')';
         GLFW_CHK(glfwSetWindowMonitor(
             &window,
             monitor,
