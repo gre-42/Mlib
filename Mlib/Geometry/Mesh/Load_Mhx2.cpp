@@ -44,7 +44,7 @@ struct ScaleAndOffset {
 
 std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     const std::string& filename,
-    const LoadMeshConfig& cfg)
+    const LoadMeshConfig<float>& cfg)
 {
     if (cfg.apply_static_lighting) {
         THROW_OR_ABORT("Static lighting not supported for mhx2 files");

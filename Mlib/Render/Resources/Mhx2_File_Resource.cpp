@@ -9,7 +9,7 @@ using namespace Mlib;
 
 Mhx2FileResource::Mhx2FileResource(
     const std::string& filename,
-    const LoadMeshConfig& cfg)
+    const LoadMeshConfig<float>& cfg)
 {
     acvas_ = load_mhx2(filename, cfg);
     rva_ = std::make_shared<ColoredVertexArrayResource>(acvas_);

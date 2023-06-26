@@ -120,6 +120,28 @@ struct LightAndNode {
     SceneNode& node;
 };
 
+template <class TPos>
+LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
+    return LoadMeshConfig<TPos>{
+        .position = fixed_zeros<TPos, 3>(),
+        .rotation = fixed_zeros<float, 3>(),
+        .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
+        .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
+        .cull_faces_default = !args.has_named("--no_cull_faces_default"),
+        .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
+        .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
+            ? ExternalRenderPassType::NONE
+            : ExternalRenderPassType::LIGHTMAP_DEPTH,
+        .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+        .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
+        .transformation_mode = TransformationMode::ALL,
+        .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
+        .apply_static_lighting = args.has_named("--apply_static_lighting"),
+        .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
+        .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+        .werror = !args.has_named("--no_werror")};
+}
+
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
@@ -179,6 +201,7 @@ int main(int argc, char** argv) {
         "    [--output_height <height>]\n"
         "    [--no_normalmaps]\n"
         "    [--double_buffer]\n"
+        "    [--large_object_mode]\n"
         "    [--output <file.png>]\n"
         "    [--output_pass <pass>]\n"
         "    [--output_light_node <node>]\n"
@@ -229,6 +252,7 @@ int main(int argc, char** argv) {
          "--cull_faces_alpha",
          "--wire_frame",
          "--double_buffer",
+         "--large_object_mode",
          "--no_normalmaps",
          "--no_werror",
          "--apply_static_lighting",
@@ -406,33 +430,22 @@ int main(int argc, char** argv) {
             size_t i = 0;
             for (const std::string& filename : args.unnamed_values()) {
                 std::string name = "obj-" + std::to_string(i++);
-                LoadMeshConfig cfg{
-                    .position = fixed_zeros<float, 3>(),
-                    .rotation = fixed_zeros<float, 3>(),
-                    .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
-                    .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
-                    .cull_faces_default = !args.has_named("--no_cull_faces_default"),
-                    .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
-                    .occluded_pass = args.has_named("--no_shadows") || (light_configuration == "none") || (light_configuration == "emissive")
-                        ? ExternalRenderPassType::NONE
-                        : ExternalRenderPassType::LIGHTMAP_DEPTH,
-                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-                    .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
-                    .transformation_mode = TransformationMode::ALL,
-                    .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
-                    .apply_static_lighting = args.has_named("--apply_static_lighting"),
-                    .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
-                    .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-                    .werror = !args.has_named("--no_werror")};
                 if (filename.ends_with(".obj")) {
-                    scene_node_resources.add_resource(name, load_renderable_obj(
-                        filename,
-                        cfg,
-                        scene_node_resources));
+                    if (!args.has_named("--large_object_mode")) {
+                        scene_node_resources.add_resource(name, load_renderable_obj(
+                            filename,
+                            cfg<float>(args, light_configuration),
+                            scene_node_resources));
+                    } else {
+                        scene_node_resources.add_resource(name, load_renderable_obj(
+                            filename,
+                            cfg<double>(args, light_configuration),
+                            scene_node_resources));
+                    }
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,
-                        cfg);
+                        cfg<float>(args, light_configuration));
                     scene_node_resources.add_resource(name, rmhx2);
                     scene_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
                         .periodic_skelletal_animation_name = "anim",
@@ -441,7 +454,7 @@ int main(int argc, char** argv) {
                                 .begin = safe_stof(args.named_value("--loop_begin", "0")),
                                 .end = safe_stof(args.named_value("--loop_end", "2")),
                                 .time = safe_stof(args.named_value("--loop_time", "1"))}}}));
-                    LoadMeshConfig bone_cfg{
+                    LoadMeshConfig<float> bone_cfg{
                         .position = fixed_zeros<float, 3>(),
                         .rotation = fixed_zeros<float, 3>(),
                         .scale = fixed_full<float, 3>(safe_stof(args.named_value("--bone_scale", "1"))),
@@ -605,7 +618,11 @@ int main(int argc, char** argv) {
                 apply_constant_color(scene_node_resources.get_animated_arrays(name)->dcvas);
             }
         }
-        scene.add_root_node("obj", std::move(scene_node));
+        if (args.has_named("--large_object_mode")) {
+            scene.add_root_aggregate_node("obj", std::move(scene_node));
+        } else {
+            scene.add_root_node("obj", std::move(scene_node));
+        }
 
         size_t light_beacon_index = 0;
         auto add_light_beacon_if_set = [&args, &light_beacon_index, &scene_node_resources](SceneNode& scene_node){
@@ -613,7 +630,7 @@ int main(int argc, char** argv) {
                 return;
             }
             std::string name = "light_beacon-" + std::to_string(light_beacon_index++);
-            LoadMeshConfig cfg{
+            LoadMeshConfig<float> cfg{
                 .position = fixed_zeros<float, 3>(),
                 .rotation = fixed_zeros<float, 3>(),
                 .scale = fixed_full<float, 3>(safe_stof(args.named_value("--light_beacon_scale", "1"))),
@@ -807,8 +824,8 @@ int main(int argc, char** argv) {
             button_states,
             scene,
             user_object,
-            true,               // fly
-            true);              // rotate
+            true,                                       // fly
+            !args.has_named("--large_object_mode"));    // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
         std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
         for (const auto& l : lights) {

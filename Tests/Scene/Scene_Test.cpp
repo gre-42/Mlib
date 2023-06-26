@@ -121,7 +121,7 @@ void test_physics_engine() {
     };*/
     std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_obj(
         "Data/box.obj",
-        LoadMeshConfig{
+        LoadMeshConfig<float>{
             .blend_mode = BlendMode::OFF,
             .cull_faces_default = true,
             .cull_faces_alpha = false,
@@ -156,7 +156,7 @@ void test_physics_engine() {
     scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
     scene_node_resources.add_resource("beacon", load_renderable_obj(
         "Data/box.obj",
-        LoadMeshConfig{
+        LoadMeshConfig<float>{
             .position = FixedArray<float, 3>{0.f, 0.f, 0.f},
             .rotation = FixedArray<float, 3>{0.f, 0.f, 0.f},
             .scale = FixedArray<float, 3>{0.5f, 0.5f, 0.5f},

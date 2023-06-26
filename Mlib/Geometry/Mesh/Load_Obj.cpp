@@ -22,8 +22,9 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+template <class TPos>
 struct ColoredVertexX {
-    FixedArray<float, 3> position;
+    FixedArray<TPos, 3> position;
     FixedArray<float, 3> color;
 };
 
@@ -35,16 +36,17 @@ bool contains_tag(const std::string& name, const std::string& tag) {
     return Mlib::re::regex_search(name, regexes.at(tag));
 }
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
+template <class TPos>
+std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     const std::string& filename,
-    const LoadMeshConfig& cfg)
+    const LoadMeshConfig<TPos>& cfg)
 {
     std::map<std::string, ObjMaterial> mtllib;
-    std::vector<ColoredVertexX> obj_vertices;
+    std::vector<ColoredVertexX<TPos>> obj_vertices;
     std::vector<FixedArray<float, 2>> obj_uvs;
     std::vector<FixedArray<float, 3>> obj_normals;
-    std::list<std::shared_ptr<ColoredVertexArray<float>>> result;
-    TriangleList<float> tl{
+    std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
+    TriangleList<TPos> tl{
         filename,
         Material{
             .reflection_map = cfg.reflection_map,
@@ -150,11 +152,11 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 FixedArray<float, 3> n1;
                 FixedArray<float, 3> n2;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
-                    auto n = triangle_normal<float>({
+                    auto n = triangle_normal<TPos>({
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN);
+                        TriangleNormalErrorBehavior::WARN) TEMPLATEV casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -168,9 +170,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                     n1 = obj_normals.at(normal_ids(1) - 1);
                     n2 = obj_normals.at(normal_ids(2) - 1);
                 }
-                const ColoredVertexX& v0 = obj_vertices.at(vertex_ids(0) - 1);
-                const ColoredVertexX& v1 = obj_vertices.at(vertex_ids(1) - 1);
-                const ColoredVertexX& v2 = obj_vertices.at(vertex_ids(2) - 1);
+                const ColoredVertexX<TPos>& v0 = obj_vertices.at(vertex_ids(0) - 1);
+                const ColoredVertexX<TPos>& v1 = obj_vertices.at(vertex_ids(1) - 1);
+                const ColoredVertexX<TPos>& v2 = obj_vertices.at(vertex_ids(2) - 1);
                 tl.draw_triangle_with_normals(
                     v0.position,
                     v1.position,
@@ -206,11 +208,11 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                 FixedArray<float, 3> n2;
                 FixedArray<float, 3> n3;
                 if (match[3].str() + match[6].str() + match[9].str() == "") {
-                    auto n = triangle_normal<float>({
+                    auto n = triangle_normal<TPos>({
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN);
+                        TriangleNormalErrorBehavior::WARN) TEMPLATEV casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -227,10 +229,10 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
                     n2 = obj_normals.at(normal_ids(2) - 1);
                     n3 = obj_normals.at(normal_ids(3) - 1);
                 }
-                const ColoredVertexX& v0 = obj_vertices.at(vertex_ids(0) - 1);
-                const ColoredVertexX& v1 = obj_vertices.at(vertex_ids(1) - 1);
-                const ColoredVertexX& v2 = obj_vertices.at(vertex_ids(2) - 1);
-                const ColoredVertexX& v3 = obj_vertices.at(vertex_ids(3) - 1);
+                const ColoredVertexX<TPos>& v0 = obj_vertices.at(vertex_ids(0) - 1);
+                const ColoredVertexX<TPos>& v1 = obj_vertices.at(vertex_ids(1) - 1);
+                const ColoredVertexX<TPos>& v2 = obj_vertices.at(vertex_ids(2) - 1);
+                const ColoredVertexX<TPos>& v3 = obj_vertices.at(vertex_ids(3) - 1);
                 tl.draw_rectangle_with_normals(
                     v0.position,
                     v1.position,
@@ -337,8 +339,8 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                v.position *= cfg.scale;
-                v.position = dot1d(rotation_matrix_p, v.position);
+                v.position *= cfg.scale TEMPLATEV casted<TPos>();
+                v.position = dot1d(rotation_matrix_p TEMPLATEV casted<TPos>(), v.position);
                 v.position += cfg.position;
                 v.normal = dot1d(rotation_matrix_n, v.normal);
                 v.tangent = dot1d(rotation_matrix_p, v.tangent);
@@ -347,4 +349,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_obj(
     }
     ambient_occlusion_by_curvature(result, cfg.laplace_ao_strength);
     return result;
+}
+
+namespace Mlib {
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_obj<float>(const std::string& filename, const LoadMeshConfig<float>& cfg);
+template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_obj<double>(const std::string& filename, const LoadMeshConfig<double>& cfg);
 }

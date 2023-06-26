@@ -10,6 +10,8 @@ public:
     static const std::string key;
 private:
     static void execute(const LoadSceneJsonUserFunctionArgs& args);
+    template <class TPos>
+    static void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
 }

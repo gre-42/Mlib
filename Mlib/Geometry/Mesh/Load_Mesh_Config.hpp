@@ -11,8 +11,9 @@ enum class TransformationMode;
 enum class ExternalRenderPassType;
 enum class PhysicsMaterial;
 
+template <class TPos>
 struct LoadMeshConfig {
-    FixedArray<float, 3> position = FixedArray<float, 3>(0.f);
+    FixedArray<TPos, 3> position = FixedArray<TPos, 3>(0.f);
     FixedArray<float, 3> rotation = FixedArray<float, 3>(0.f);
     FixedArray<float, 3> scale = FixedArray<float, 3>(1.f);
     OrderableFixedArray<float, 2> center_distances = default_step_distances;

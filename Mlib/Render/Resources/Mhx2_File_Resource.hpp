@@ -4,6 +4,7 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct LoadMeshConfig;
 struct Bone;
 struct AnimatedColoredVertexArrays;
@@ -19,7 +20,7 @@ class Mhx2FileResource: public ISceneNodeResource {
 public:
     Mhx2FileResource(
         const std::string& filename,
-        const LoadMeshConfig& cfg);
+        const LoadMeshConfig<float>& cfg);
     ~Mhx2FileResource();
 
     // Misc

@@ -5,10 +5,12 @@
 
 namespace Mlib {
 
+template <class TPos>
 struct LoadMeshConfig;
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> load_obj(
+template <class TPos>
+std::list<std::shared_ptr<ColoredVertexArray<TPos>>> load_obj(
     const std::string& filename,
-    const LoadMeshConfig& cfg);
+    const LoadMeshConfig<TPos>& cfg);
 
 }

@@ -40,6 +40,7 @@ DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
 DECLARE_ARGUMENT(physics_material);
+DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(werror);
 }
 
@@ -53,8 +54,18 @@ LoadSceneJsonUserFunction ObjResource::json_user_function = [](const LoadSceneJs
 
 void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    LoadMeshConfig load_mesh_config{
-        .position = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position) * meters,
+    if (!args.arguments.at<bool>(KnownArgs::double_precision, false)) {
+        execute<float>(args);
+    } else {
+        execute<double>(args);
+    }
+}
+
+template <class TPos>
+void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
+{
+    LoadMeshConfig<TPos> load_mesh_config{
+        .position = args.arguments.at<FixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
         .rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         .scale = args.arguments.at<FixedArray<float, 3>>(KnownArgs::scale),
         .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
@@ -90,13 +101,17 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     scene_node_resources);
             });
     } else if (filename.ends_with(".mhx2")) {
-        scene_node_resources.add_resource_loader(
-            args.arguments.at<std::string>(KnownArgs::name),
-            [filename, load_mesh_config](){
-                return std::make_shared<Mhx2FileResource>(
-                    filename,
-                    load_mesh_config);
-            });
+        if constexpr (std::is_same_v<TPos, float>) {
+            scene_node_resources.add_resource_loader(
+                args.arguments.at<std::string>(KnownArgs::name),
+                [filename, load_mesh_config](){
+                    return std::make_shared<Mhx2FileResource>(
+                        filename,
+                        load_mesh_config);
+                });
+        } else {
+            THROW_OR_ABORT("MHX2 does not support double precision");
+        }
     } else {
         THROW_OR_ABORT("Unknown file type: " + filename);
     }
