@@ -32,7 +32,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(map_Kd_reg, "^\\s*map_Kd +(.+)$");
     static const DECLARE_REGEX(map_Ks_reg, "^\\s*map_Ks +(.+)$");
     static const DECLARE_REGEX(map_d_reg, "^\\s*map_d +(.+)$");
-    static const DECLARE_REGEX(map_bump_reg, "^\\s*map_Bump +(?:-bm \\S+ +)?(.+)$");
+    static const DECLARE_REGEX(map_bump_reg, "^\\s*(?:map_Bump|bump) +(?:-bm \\S+ +)?(.+)$");
     static const DECLARE_REGEX(map_Ns_reg, "^\\s*map_Ns +(.+)$");
     static const DECLARE_REGEX(refl_reg, "^\\s*refl +(.+)$");
     static const DECLARE_REGEX(comment_reg, "^\\s*#.*$");
