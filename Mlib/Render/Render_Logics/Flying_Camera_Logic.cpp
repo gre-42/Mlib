@@ -9,6 +9,7 @@
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -81,16 +82,18 @@ static void flying_key_callback(
         }
     } else {
         if (button_press.key_down({.key = "UP"})) {
-            user_object.position(2) -= 0.04f;
+            user_object.position -= (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<double>();
+            // user_object.position(2) -= 0.04f;
         }
         if (button_press.key_down({.key = "DOWN"})) {
-            user_object.position(2) += 0.04f;
+            user_object.position += (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<double>();
+            // user_object.position(2) += 0.04f;
         }
         if (button_press.key_down({.key = "LEFT"})) {
-            user_object.angles(1) += 0.01f;
+            user_object.angles(1) -= 0.01f;
         }
         if (button_press.key_down({.key = "RIGHT"})) {
-            user_object.angles(1) -= 0.01f;
+            user_object.angles(1) += 0.01f;
         }
         if (button_press.key_down({.key = "PAGE_UP"})) {
             user_object.angles(0) += 0.01f;
@@ -99,10 +102,10 @@ static void flying_key_callback(
             user_object.angles(0) -= 0.01f;
         }
         if (button_press.key_down({.key = "KP_ADD"})) {
-            user_object.position(1) += 0.04f;
+            user_object.position(1) += 0.2f;
         }
         if (button_press.key_down({.key = "KP_SUBTRACT"})) {
-            user_object.position(1) -= 0.04f;
+            user_object.position(1) -= 0.2f;
         }
     }
 }
