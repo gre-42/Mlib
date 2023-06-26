@@ -158,6 +158,12 @@ int main(int argc, char** argv) {
         "    [--light_angle_x <angle_x>]\n"
         "    [--light_angle_y <angle_y>]\n"
         "    [--light_angle_z <angle_z>]\n"
+        "    [--camera_x <x>]\n"
+        "    [--camera_y <y>]\n"
+        "    [--camera_z <z>]\n"
+        "    [--camera_angle_x <angle_x>]\n"
+        "    [--camera_angle_y <angle_y>]\n"
+        "    [--camera_angle_z <angle_z>]\n"
         "    [--nsamples_msaa <nsamples>]\n"
         "    [--lightmap_nsamples_msaa <nsamples>]\n"
         "    [--blend_mode {off,continuous,binary,binary_add}]\n"
@@ -259,6 +265,12 @@ int main(int argc, char** argv) {
          "--light_angle_x",
          "--light_angle_y",
          "--light_angle_z",
+         "--camera_x",
+         "--camera_y",
+         "--camera_z",
+         "--camera_angle_x",
+         "--camera_angle_y",
+         "--camera_angle_z",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
          "--blend_mode",
@@ -748,6 +760,14 @@ int main(int argc, char** argv) {
                 FrustumCamera::Postprocessing::ENABLED));
             scene.get_node("follower_camera").set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
         } else {
+            scene.get_node("follower_camera").set_position({
+                safe_stof(args.named_value("--camera_x", "0")),
+                safe_stof(args.named_value("--camera_y", "0")),
+                safe_stof(args.named_value("--camera_z", "0"))});
+            scene.get_node("follower_camera").set_rotation({
+                safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
+                safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
+                safe_stof(args.named_value("--camera_angle_z", "0")) * degrees});
             scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
