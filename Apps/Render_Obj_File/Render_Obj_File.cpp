@@ -195,6 +195,7 @@ int main(int argc, char** argv) {
         "    [--cull_faces_alpha]\n"
         "    [--wire_frame]\n"
         "    [--render_dt <dt>]\n"
+        "    [--print_render_fps]\n"
         "    [--width <width>]\n"
         "    [--height <height>]\n"
         "    [--output_width <width>]\n"
@@ -254,6 +255,7 @@ int main(int argc, char** argv) {
          "--double_buffer",
          "--large_object_mode",
          "--no_normalmaps",
+         "--print_render_fps",
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows",
@@ -378,7 +380,8 @@ int main(int argc, char** argv) {
             .double_buffer = args.has_named("--double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true,
-            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")) };
+            .print_fps = args.has_named("--print_render_fps"),
+            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667"))};
         Render2 render2{
             render_config,
             num_renderings,
