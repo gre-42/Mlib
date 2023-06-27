@@ -63,9 +63,17 @@ std::shared_ptr<ISceneNodeResource> ISceneNodeResource::generate_contour_edges()
 void ISceneNodeResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
-    const ColoredVertexArrayFilter& filter) const
+    const ColoredVertexArrayFilter& filter)
 {
     THROW_OR_ABORT("create_barrier_triangle_hitboxes not implemented");
+}
+
+void ISceneNodeResource::merge_materials(
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    THROW_OR_ABORT("merge_transparent_materials not implemented");
 }
 
 AggregateMode ISceneNodeResource::aggregate_mode() const {

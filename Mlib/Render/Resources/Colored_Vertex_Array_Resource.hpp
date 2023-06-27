@@ -83,7 +83,11 @@ public:
     virtual void create_barrier_triangle_hitboxes(
         float depth,
         PhysicsMaterial destination_physics_material,
-        const ColoredVertexArrayFilter& filter) const override;
+        const ColoredVertexArrayFilter& filter) override;
+    virtual void merge_materials(
+        const std::string& merged_array_name,
+        const Material& merged_material,
+        const std::map<std::string, UvTile>& uv_tiles) override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

@@ -22,6 +22,7 @@
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Merge_Blended_Materials.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -444,6 +445,12 @@ int main(int argc, char** argv) {
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources));
+                        merge_blended_materials(
+                            name,
+                            name + "_texture",
+                            name + "_merged",
+                            scene_node_resources,
+                            *RenderingContextStack::primary_rendering_resources());
                     }
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(

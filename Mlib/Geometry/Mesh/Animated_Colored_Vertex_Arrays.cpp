@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 
@@ -88,6 +89,39 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
         }
     }
     dcvas = std::move(new_dvcas);
+}
+
+void AnimatedColoredVertexArrays::merge_materials(
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    std::list<FixedArray<ColoredVertex<double>, 3>> merged_tris;
+    dcvas.remove_if([&uv_tiles, &merged_tris](const std::shared_ptr<ColoredVertexArray<double>>& cva){
+        if (cva->material.textures.empty()) {
+            return false;
+        }
+        auto tile = uv_tiles.find(cva->material.textures[0].texture_descriptor.color);
+        if (tile == uv_tiles.end()) {
+            return false;
+        }
+        for (const auto& tri : cva->triangles) {
+            auto& mtri = merged_tris.emplace_back(tri);
+            for (auto& v : mtri.flat_iterable()) {
+                v.uv = tile->second.position + v.uv * tile->second.size;
+            }
+        }
+        return true;
+    });
+    auto merged = std::make_shared<ColoredVertexArray<double>>(
+        merged_array_name,
+        merged_material,
+        PhysicsMaterial::ATTR_VISIBLE,
+        std::vector<FixedArray<ColoredVertex<double>, 3>>{merged_tris.begin(), merged_tris.end()},
+        std::vector<FixedArray<ColoredVertex<double>, 2>>{},
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>{});
+    dcvas.push_back(merged);
 }
 
 void AnimatedColoredVertexArrays::check_consistency() const {

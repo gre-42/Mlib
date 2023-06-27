@@ -1068,9 +1068,20 @@ std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour
 void ColoredVertexArrayResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
-    const ColoredVertexArrayFilter& filter) const
+    const ColoredVertexArrayFilter& filter)
 {
     triangles_res_->create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
+}
+
+void ColoredVertexArrayResource::merge_materials(
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    triangles_res_->merge_materials(
+        merged_array_name,
+        merged_material,
+        uv_tiles);
 }
 
 // std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(

@@ -1485,13 +1485,24 @@ void OsmMapResource::modify_physics_material_tags(
 void OsmMapResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
-    const ColoredVertexArrayFilter& filter) const
+    const ColoredVertexArrayFilter& filter)
 {
     try {
         hri_.create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
     } catch (const TriangleException<double>& e) {
         handle_triangle_exception(e, "Could not decompose terrain into convex regions");
     }
+}
+
+void OsmMapResource::merge_materials(
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    hri_.merge_materials(
+        merged_array_name,
+        merged_material,
+        uv_tiles);
 }
 
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(

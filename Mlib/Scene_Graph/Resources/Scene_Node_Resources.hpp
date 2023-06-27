@@ -30,6 +30,8 @@ struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
 struct RenderableResourceFilter;
 struct InstantiationOptions;
+struct UvTile;
+struct Material;
 
 enum class AggregateMode;
 enum class WayPointLocation;
@@ -108,6 +110,11 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
+    void merge_materials(
+        const std::string& resource_name,
+        const std::string& merged_array_name,
+        const Material& merged_material,
+        const std::map<std::string, UvTile>& uv_tiles);
 
     // Transformations
     void generate_grind_lines(

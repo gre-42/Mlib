@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
@@ -394,6 +395,25 @@ void SceneNodeResources::create_barrier_triangle_hitboxes(
                 dest.create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("create_barrier_triangle_hitboxes for resource \"" + resource_name + "\" failed: " + e.what());
+            }
+        }
+    );
+}
+
+void SceneNodeResources::merge_materials(
+    const std::string& resource_name,
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    add_modifier(
+        resource_name,
+        [resource_name, merged_array_name, merged_material, uv_tiles]
+        (ISceneNodeResource& dest){
+            try {
+                dest.merge_materials(merged_array_name, merged_material, uv_tiles);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("merge_materials for resource \"" + resource_name + "\" failed: " + e.what());
             }
         }
     );

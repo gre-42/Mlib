@@ -3,6 +3,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Images/StbImage4.hpp>
@@ -618,6 +619,59 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(const TextureDescriptor& d
         return si;
     }
     return stb_load_and_transform_texture(descriptor);
+}
+
+std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
+    const std::string& name,
+    const std::set<std::string>& filenames)
+{
+    std::map<std::string, FixedArray<int, 2>> texture_sizes;
+    for (const auto& filename : filenames) {
+        int x;
+        int y;
+        int comp;
+        if (stbi_info(filename.c_str(), &x, &y, &comp) == 0) {
+            THROW_OR_ABORT("Could not read size information from file \"" + filename + '"');
+        }
+        texture_sizes[filename] = {x, y};
+    }
+    TextureAtlasDescriptor tad{
+        .width = 0,
+        .height = 0,
+        .color_mode = ColorMode::RGBA,
+        .tiles = {}
+    };
+    tad.tiles.reserve(filenames.size());
+    for (const auto& [_, texture_size] : texture_sizes) {
+        tad.width += texture_size(0);
+        tad.height = std::max(tad.height, texture_size(1));
+    }
+    if (tad.width * tad.height > 4096 * 4096 * 20) {
+        THROW_OR_ABORT("Atlas too large");
+    }
+    std::map<std::string, UvTile> result;
+    {
+        int sum_width = 0;
+        for (const auto& [filename, texture_size] : texture_sizes) {
+            result[filename] = {
+                .position = {
+                    (float)sum_width / (float)tad.width,
+                    (float)texture_size(1) / (float)tad.height},
+                .size = texture_size.casted<float>()
+                        / FixedArray<float, 2>{(float)tad.width, (float)tad.height}};
+            tad.tiles.push_back(AtlasTileDescriptor{
+                .left = sum_width,
+                .bottom = 0,
+                .filename = filename});
+            sum_width += texture_size(0);
+        }
+    }
+    linfo() << "Adding texture atlas of size " << tad.width << " x " << tad.height;
+    GLint max_texture_size;
+    CHK(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size));
+    linfo() << "Max texture size: " << max_texture_size;
+    add_texture_atlas(name, tad);
+    return result;
 }
 
 BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {

@@ -101,18 +101,7 @@ void CompoundResource::save_to_obj_file(
     }
 }
 
-// Animation
-std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
-    {
-        std::shared_lock lock{acva_mutex_};
-        if (acvas_ != nullptr) {
-            return acvas_;
-        }
-    }
-    std::scoped_lock lock{acva_mutex_};
-    if (acvas_ != nullptr) {
-        return acvas_;
-    }
+void CompoundResource::compute_animated_arrays_unsafe() {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
@@ -127,6 +116,21 @@ std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arra
         acvas_->scvas.insert(acvas_->scvas.end(), ar->scvas.begin(), ar->scvas.end());
         acvas_->dcvas.insert(acvas_->dcvas.end(), ar->dcvas.begin(), ar->dcvas.end());
     }
+}
+
+// Animation
+std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
+    {
+        std::shared_lock lock{acva_mutex_};
+        if (acvas_ != nullptr) {
+            return acvas_;
+        }
+    }
+    std::scoped_lock lock{acva_mutex_};
+    if (acvas_ != nullptr) {
+        return acvas_;
+    }
+    const_cast<CompoundResource*>(this)->compute_animated_arrays_unsafe();
     return acvas_;
 }
     
@@ -153,7 +157,7 @@ void CompoundResource::generate_instances() {
 void CompoundResource::create_barrier_triangle_hitboxes(
     float depth,
     PhysicsMaterial destination_physics_material,
-    const ColoredVertexArrayFilter& filter) const
+    const ColoredVertexArrayFilter& filter)
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
@@ -164,6 +168,16 @@ void CompoundResource::create_barrier_triangle_hitboxes(
             destination_physics_material,
             filter);
     }
+}
+
+void CompoundResource::merge_materials(
+    const std::string& merged_array_name,
+    const Material& merged_material,
+    const std::map<std::string, UvTile>& uv_tiles)
+{
+    std::scoped_lock lock{acva_mutex_};
+    compute_animated_arrays_unsafe();
+    acvas_->merge_materials(merged_array_name, merged_material, uv_tiles);
 }
 
 // Transformations
