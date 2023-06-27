@@ -104,6 +104,8 @@ public:
 
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 
+    void save_to_file(const std::string& filename, const TextureDescriptor& desc) const;
+
 private:
     void deallocate();
     mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;

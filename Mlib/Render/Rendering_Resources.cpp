@@ -866,3 +866,20 @@ const LoadedFont& RenderingResources::get_font_texture(
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     return result;
 }
+
+void RenderingResources::save_to_file(const std::string& filename, const TextureDescriptor& desc) const {
+    if (!filename.ends_with(".png")) {
+        THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
+    }
+    StbInfo img = get_texture_data(desc);
+    if (!stbi_write_png(
+        filename.c_str(),
+        img.width,
+        img.height,
+        img.nrChannels,
+        img.data.get(),
+        0))
+    {
+        THROW_OR_ABORT("Could not write \"" + filename + '"');
+    }
+}

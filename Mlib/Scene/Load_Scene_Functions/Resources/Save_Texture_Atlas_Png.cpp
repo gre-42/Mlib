@@ -28,21 +28,9 @@ LoadSceneJsonUserFunction SaveTextureAtlasPng::json_user_function = [](const Loa
 
 void SaveTextureAtlasPng::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string filename = args.arguments.at<std::string>(KnownArgs::filename);
-    if (!filename.ends_with(".png")) {
-        THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
-    }
-    StbInfo img = RenderingContextStack::primary_rendering_resources()->get_texture_data(TextureDescriptor{
-        .color = args.arguments.at<std::string>(KnownArgs::name),
-        .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))});
-    if (!stbi_write_png(
-        filename.c_str(),
-        img.width,
-        img.height,
-        img.nrChannels,
-        img.data.get(),
-        0))
-    {
-        THROW_OR_ABORT("Could not write \"" + filename + '"');
-    }
+    RenderingContextStack::primary_rendering_resources()->save_to_file(
+        args.arguments.at<std::string>(KnownArgs::filename),
+        TextureDescriptor{
+            .color = args.arguments.at<std::string>(KnownArgs::name),
+            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))});
 }
