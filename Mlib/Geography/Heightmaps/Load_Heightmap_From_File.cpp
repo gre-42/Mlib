@@ -12,7 +12,7 @@ Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
     if (filename.ends_with(".pgm")) {
         return PgmImage::load_from_file(filename).to01<TData>() / TData(64.f) * TData(UINT16_MAX);
     }
-    auto imX = stb_load(filename, false, false);
+    auto imX = stb_load(filename, FlipMode::NONE);
     if (auto* im8 = std::get_if<StbInfo<uint8_t>>(&imX); im8 != nullptr) {
         auto ar = stb_image_2_array(*im8);
         if (ar.shape(0) == 3) {

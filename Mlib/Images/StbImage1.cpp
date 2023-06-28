@@ -114,7 +114,7 @@ void StbImage1::draw_streamline(
 }
 
 StbImage1 StbImage1::load_from_file(const std::string& filename) {
-    auto image = stb_load8(filename, false, false);
+    auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 1) {
         THROW_OR_ABORT("Image does not have 1 channel: \"" + filename + '"');
     }

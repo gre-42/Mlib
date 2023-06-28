@@ -30,12 +30,16 @@ void Mlib::merge_blended_materials(
         }
     }
     auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, filenames);
+    // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
     scene_node_resources.merge_materials(
         mesh_resource_name,
         merged_array_name,
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
-            .textures = {{.texture_descriptor = {.color = merged_texture_name, .color_mode = ColorMode::RGBA}}},
+            .textures = {{.texture_descriptor = {
+                .color = merged_texture_name,
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
             .aggregate_mode = AggregateMode::ONCE,
             .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
             .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},

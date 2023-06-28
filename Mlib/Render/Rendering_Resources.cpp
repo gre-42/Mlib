@@ -52,9 +52,8 @@ int log2(int n) {
 
 static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
                                 int nchannels,
-                                bool flip_vertically,
-                                bool flip_horizontally) {
-    auto result = stb_load8(filename, flip_vertically, flip_horizontally);
+                                FlipMode flip_mode) {
+    auto result = stb_load8(filename, flip_mode);
     if (result.nrChannels < std::abs(nchannels)) {
         THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
@@ -67,7 +66,7 @@ static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
     return result;
 }
 
-static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc) {
+static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc, FlipMode flip_mode) {
     std::string touch_file = desc.color + ".xpltd";
     if ((desc.color_mode == ColorMode::RGBA) &&
         desc.alpha.empty() &&
@@ -93,12 +92,12 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color + '"');
         }
         si0 = stb_load_texture(
-            desc.color, (int)ColorMode::RGB, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.color, (int)ColorMode::RGB, flip_mode);
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("#channels not 3: \"" + desc.color + '"');
         }
         auto si_alpha = stb_load_texture(
-            desc.alpha, (int)ColorMode::GRAYSCALE, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
         if (si_alpha.nrChannels != 1) {
             THROW_OR_ABORT("#channels not 1: \"" + desc.alpha + '"');
         }
@@ -117,11 +116,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.height);
     } else {
         si0 = stb_load_texture(
-            desc.color, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.color, (int)desc.color_mode, flip_mode);
     }
     if (!desc.mixed.empty()) {
         auto si1_raw = stb_load_texture(
-            desc.mixed, (int)desc.color_mode, true, false); // true=flip_vertically, false=flip_horizontally
+            desc.mixed, (int)desc.color_mode, flip_mode);
         std::unique_ptr<unsigned char[]> si1_resized{
             new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
         stbir_resize_uint8(si1_raw.data.get(),
@@ -170,7 +169,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
     }
     if (!desc.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, -3, false, false));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.histogram, -3, FlipMode::NONE));
         Array<unsigned char> m = match_rgba_histograms(image, ref);
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
@@ -315,7 +314,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         }
     } else {
         if (!desc.color.empty() && !textures_.contains(descriptor.color) && !preloaded_texture_data_.contains(descriptor.color)) {
-            if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc)}).second) {
+            if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc, FlipMode::VERTICAL)}).second) {
                 THROW_OR_ABORT("Could not preload color");
             } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded color texture: " << descriptor.color;
@@ -324,9 +323,11 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         if (!desc.normal.empty() && !textures_.contains(desc.normal) && !preloaded_texture_data_.contains(desc.normal)) {
             if (!preloaded_texture_data_.insert({
                 desc.normal,
-                get_texture_data(TextureDescriptor{
-                    .color = desc.normal,
-                    .color_mode = ColorMode::RGB})}).second)
+                get_texture_data(
+                    TextureDescriptor{
+                        .color = desc.normal,
+                        .color_mode = ColorMode::RGB},
+                    FlipMode::VERTICAL)}).second)
             {
                 THROW_OR_ABORT("Could not preload normal");
             } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
@@ -358,7 +359,7 @@ std::string RenderingResources::get_texture_filename(
         !desc.mean_color.all_equal(-1.f) ||
         !desc.lighten.all_equal(0.f))
     {
-        StbInfo si = get_texture_data(desc);
+        StbInfo si = get_texture_data(desc, FlipMode::VERTICAL);
         if (!default_filename.ends_with(".png")) {
             THROW_OR_ABORT("Filename \"" + default_filename + "\" does not end with .png");
         }
@@ -463,7 +464,7 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Could not find preloaded texture: " << name;
         }
-        si = get_texture_data(desc);
+        si = get_texture_data(desc, FlipMode::VERTICAL);
     }
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
@@ -509,8 +510,7 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
         StbInfo info =
             stb_load_texture(it->second.filenames[i],
                              3,       // nchannels
-                             false,   // false=flip_vertically
-                             false);  // false=flip_horizontally
+                             FlipMode::NONE);
         if (it->second.desaturate) {
             stb_desaturate(
                 info.data.get(),
@@ -598,7 +598,10 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
     }
 }
 
-StbInfo<uint8_t> RenderingResources::get_texture_data(const TextureDescriptor& descriptor) const {
+StbInfo<uint8_t> RenderingResources::get_texture_data(
+    const TextureDescriptor& descriptor,
+    FlipMode flip_mode) const
+{
     if (auto it = atlas_tile_descriptors_.find(descriptor.color); it != atlas_tile_descriptors_.end()) {
         auto si = stb_create<uint8_t>(it->second.width, it->second.height, (int)it->second.color_mode);
         std::vector<AtlasTile> atlas_tiles;
@@ -613,12 +616,12 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(const TextureDescriptor& d
             atlas_tiles.push_back(AtlasTile{
                 .left = atd.left,
                 .bottom = atd.bottom,
-                .image = get_texture_data(desc)});
+                .image = get_texture_data(desc, flip_mode)});
         }
         build_image_atlas(si, atlas_tiles);
         return si;
     }
-    return stb_load_and_transform_texture(descriptor);
+    return stb_load_and_transform_texture(descriptor, flip_mode);
 }
 
 std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
@@ -656,7 +659,7 @@ std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
             result[filename] = {
                 .position = {
                     (float)sum_width / (float)tad.width,
-                    (float)texture_size(1) / (float)tad.height},
+                    0.f},
                 .size = texture_size.casted<float>()
                         / FixedArray<float, 2>{(float)tad.width, (float)tad.height}};
             tad.tiles.push_back(AtlasTileDescriptor{
@@ -871,7 +874,7 @@ void RenderingResources::save_to_file(const std::string& filename, const Texture
     if (!filename.ends_with(".png")) {
         THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
     }
-    StbInfo img = get_texture_data(desc);
+    StbInfo img = get_texture_data(desc, FlipMode::NONE);
     if (!stbi_write_png(
         filename.c_str(),
         img.width,

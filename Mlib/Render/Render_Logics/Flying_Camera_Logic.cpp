@@ -90,10 +90,10 @@ static void flying_key_callback(
             // user_object.position(2) += 0.04f;
         }
         if (button_press.key_down({.key = "LEFT"})) {
-            user_object.angles(1) -= 0.01f;
+            user_object.angles(1) += 0.01f;
         }
         if (button_press.key_down({.key = "RIGHT"})) {
-            user_object.angles(1) += 0.01f;
+            user_object.angles(1) -= 0.01f;
         }
         if (button_press.key_down({.key = "PAGE_UP"})) {
             user_object.angles(0) += 0.01f;

@@ -108,6 +108,8 @@ void AnimatedColoredVertexArrays::merge_materials(
         for (const auto& tri : cva->triangles) {
             auto& mtri = merged_tris.emplace_back(tri);
             for (auto& v : mtri.flat_iterable()) {
+                assert_true(all(v.uv >= 0.f));
+                assert_true(all(v.uv <= 1.f));
                 v.uv = tile->second.position + v.uv * tile->second.size;
             }
         }

@@ -14,6 +14,7 @@
 
 template <class TData>
 struct StbInfo;
+enum class FlipMode;
 
 namespace Mlib {
 
@@ -100,7 +101,7 @@ public:
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
-    StbInfo<uint8_t> get_texture_data(const TextureDescriptor& descriptor) const;
+    StbInfo<uint8_t> get_texture_data(const TextureDescriptor& descriptor, FlipMode flip_mode) const;
 
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 

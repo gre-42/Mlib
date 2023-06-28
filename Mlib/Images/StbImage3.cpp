@@ -114,7 +114,7 @@ void StbImage3::draw_streamline(
 }
 
 StbImage3 StbImage3::load_from_file(const std::string& filename) {
-    auto image = stb_load8(filename, false, false);
+    auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 3) {
         THROW_OR_ABORT("Image does not have 3 channels: \"" + filename + '"');
     }

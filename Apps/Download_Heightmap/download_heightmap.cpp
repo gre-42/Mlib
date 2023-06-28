@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
                     y,
                     args.named_value("--api_key", "LmmWmJx5QWGLTYXKJtAogg"),
                     tmp_png);
-                auto image = stb_load8(tmp_png, false, false);
+                auto image = stb_load8(tmp_png, FlipMode::NONE);
                 if (image.nrChannels != 3 && image.nrChannels != 4) {
                     throw std::runtime_error("Only 3 or 4 channels are supported");
                 }

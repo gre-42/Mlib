@@ -38,7 +38,7 @@ static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int heigh
     return result;
 }
 
-std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
+std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& filename, FlipMode flip_mode) {
     void* image;
     int width;
     int height;
@@ -48,9 +48,9 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
 #ifdef WITHOUT_THREAD_LOCAL
     static std::mutex mutex;
     std::scoped_lock lock{mutex};
-    stbi_set_flip_vertically_on_load(flip_vertically);
+    stbi_set_flip_vertically_on_load(any(flip_mode & FlipMode::VERTICAL));
 #else
-    stbi_set_flip_vertically_on_load_thread(flip_vertically);
+    stbi_set_flip_vertically_on_load_thread(any(flip_mode & FlipMode::VERTICAL));
 #endif
 #ifdef __ANDROID__
     {
@@ -80,16 +80,16 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
         THROW_OR_ABORT("Could not load \"" + filename + '"');
     }
     if (bytes_per_pixel == 8) {
-        return stb_wrap_and_postprocess((uint8_t*)image, width, height, nrChannels, flip_horizontally);
+        return stb_wrap_and_postprocess((uint8_t*)image, width, height, nrChannels, any(flip_mode & FlipMode::HORIZONTAL));
     } else if (bytes_per_pixel == 16) {
-        return stb_wrap_and_postprocess((uint16_t*)image, width, height, nrChannels, flip_horizontally);
+        return stb_wrap_and_postprocess((uint16_t*)image, width, height, nrChannels, any(flip_mode & FlipMode::HORIZONTAL));
     } else {
         THROW_OR_ABORT("Unsupported image data size");
     }
 }
 
-StbInfo<uint8_t> stb_load8(const std::string& filename, bool flip_vertically, bool flip_horizontally) {
-    auto res = stb_load(filename, flip_vertically, flip_horizontally);
+StbInfo<uint8_t> stb_load8(const std::string& filename, FlipMode flip_mode) {
+    auto res = stb_load(filename, flip_mode);
     auto* res8 = std::get_if<StbInfo<uint8_t>>(&res);
     if (res8 == nullptr) {
         THROW_OR_ABORT("Image \"" + filename + "\" does not have 8 bits");

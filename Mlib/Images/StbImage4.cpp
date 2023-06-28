@@ -115,7 +115,7 @@ void StbImage4::draw_streamline(
 }
 
 StbImage4 StbImage4::load_from_file(const std::string& filename) {
-    auto image = stb_load8(filename, false, false);
+    auto image = stb_load8(filename, FlipMode::NONE);
     if (image.nrChannels != 4) {
         THROW_OR_ABORT("Image does not have 4 channels: \"" + filename + '"');
     }
