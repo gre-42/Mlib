@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -16,7 +17,8 @@ void Mlib::merge_blended_materials(
     const std::string& merged_texture_name,
     const std::string& merged_array_name,
     SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources)
+    RenderingResources& rendering_resources,
+    const ColoredVertexArrayFilter& filter)
 {
     auto mesh = scene_node_resources.get_animated_arrays(mesh_resource_name);
     std::set<std::string> filenames;
@@ -26,10 +28,10 @@ void Mlib::merge_blended_materials(
             if (cva->material.textures.size() != 1) {
                 THROW_OR_ABORT("Material \"" + cva->material.identifier() + "\" does not have exactly one texture");
             }
+            if (!filter.matches(*cva)) {
+                continue;
+            }
             auto filename = cva->material.textures[0].texture_descriptor.color;
-            // if (filename.find("tree") == std::string::npos) {
-            //     continue;
-            // }
             if (excluded_filenames.contains(filename)) {
                 continue;
             }

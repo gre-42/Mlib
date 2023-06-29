@@ -246,6 +246,7 @@ int main(int argc, char** argv) {
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
+        "    [--merged_filter <filter>]\n"
         "    [--look_at_aabb]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
@@ -345,7 +346,8 @@ int main(int argc, char** argv) {
          "--triangle_tangent_error_behavior",
          "--light_beacon",
          "--light_beacon_scale",
-         "--laplace_ao_strength"});
+         "--laplace_ao_strength",
+         "--merged_filter"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -445,12 +447,17 @@ int main(int argc, char** argv) {
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources));
-                        merge_blended_materials(
-                            name,
-                            name + "_texture",
-                            name + "_merged",
-                            scene_node_resources,
-                            *RenderingContextStack::primary_rendering_resources());
+                        if (args.has_named_value("--merged_filter")) {
+                            merge_blended_materials(
+                                name,
+                                name + "_texture",
+                                name + "_merged",
+                                scene_node_resources,
+                                *RenderingContextStack::primary_rendering_resources(),
+                                ColoredVertexArrayFilter{
+                                    .included_names = Mlib::compile_regex(args.named_value("--merged_filter"))
+                                });
+                        }
                     }
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
