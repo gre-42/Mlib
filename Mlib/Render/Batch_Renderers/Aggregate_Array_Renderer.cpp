@@ -48,13 +48,15 @@ void AggregateArrayRenderer::update_aggregates(
         for (const auto& c : a->triangles) {
             l.push_back(c);
         }
-        l.sort([](
-            const FixedArray<ColoredVertex<float>, 3>& a,
-            const FixedArray<ColoredVertex<float>, 3>& b)
-            {
-                return sum(squared(a(0).position + a(1).position + a(2).position)) >
-                       sum(squared(b(0).position + b(1).position + b(2).position));
-            });
+        if (any(a->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
+            l.sort([](
+                const FixedArray<ColoredVertex<float>, 3>& a,
+                const FixedArray<ColoredVertex<float>, 3>& b)
+                {
+                    return sum(squared(a(0).position + a(1).position + a(2).position)) >
+                        sum(squared(b(0).position + b(1).position + b(2).position));
+                });
+        }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     for (const auto& [mat, list] : mat_lists) {
