@@ -79,6 +79,7 @@ public:
     virtual void merge_materials(
         const std::string& merged_array_name,
         const Material& merged_material,
+        PhysicsMaterial merged_physics_material,
         const std::map<std::string, UvTile>& uv_tiles) override;
 
     // ISceneNodeResource, Transformations

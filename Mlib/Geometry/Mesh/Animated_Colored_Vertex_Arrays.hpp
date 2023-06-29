@@ -41,6 +41,7 @@ struct AnimatedColoredVertexArrays {
     void merge_materials(
         const std::string& merged_array_name,
         const Material& merged_material,
+        PhysicsMaterial physics_material,
         const std::map<std::string, UvTile>& uv_tiles);
     void check_consistency() const;
     void print(std::ostream& ostr) const;

@@ -404,14 +404,19 @@ void SceneNodeResources::merge_materials(
     const std::string& resource_name,
     const std::string& merged_array_name,
     const Material& merged_material,
+    PhysicsMaterial merged_physics_material,
     const std::map<std::string, UvTile>& uv_tiles)
 {
     add_modifier(
         resource_name,
-        [resource_name, merged_array_name, merged_material, uv_tiles]
+        [resource_name, merged_array_name, merged_material, merged_physics_material, uv_tiles]
         (ISceneNodeResource& dest){
             try {
-                dest.merge_materials(merged_array_name, merged_material, uv_tiles);
+                dest.merge_materials(
+                    merged_array_name,
+                    merged_material,
+                    merged_physics_material,
+                    uv_tiles);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("merge_materials for resource \"" + resource_name + "\" failed: " + e.what());
             }

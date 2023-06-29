@@ -94,6 +94,7 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
 void AnimatedColoredVertexArrays::merge_materials(
     const std::string& merged_array_name,
     const Material& merged_material,
+    PhysicsMaterial merged_physics_material,
     const std::map<std::string, UvTile>& uv_tiles)
 {
     std::list<FixedArray<ColoredVertex<double>, 3>> merged_tris;
@@ -118,7 +119,7 @@ void AnimatedColoredVertexArrays::merge_materials(
     auto merged = std::make_shared<ColoredVertexArray<double>>(
         merged_array_name,
         merged_material,
-        PhysicsMaterial::ATTR_VISIBLE,
+        merged_physics_material,
         std::vector<FixedArray<ColoredVertex<double>, 3>>{merged_tris.begin(), merged_tris.end()},
         std::vector<FixedArray<ColoredVertex<double>, 2>>{},
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
