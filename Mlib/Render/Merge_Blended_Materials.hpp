@@ -5,7 +5,7 @@ namespace Mlib {
 
 class SceneNodeResources;
 class RenderingResources;
-struct ColoredVertexArrayFilter;
+struct MergedTextureFilter;
 
 void merge_blended_materials(
     const std::string& mesh_resource_name,
@@ -13,6 +13,6 @@ void merge_blended_materials(
     const std::string& merged_array_name,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const ColoredVertexArrayFilter& filter);
+    const MergedTextureFilter& filter);
 
 }

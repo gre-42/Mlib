@@ -1,9 +1,10 @@
 #include "Merge_Blended_Materials.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>
+#include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -18,7 +19,7 @@ void Mlib::merge_blended_materials(
     const std::string& merged_array_name,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const ColoredVertexArrayFilter& filter)
+    const MergedTextureFilter& filter)
 {
     auto mesh = scene_node_resources.get_animated_arrays(mesh_resource_name);
     std::set<std::string> filenames;
@@ -28,11 +29,11 @@ void Mlib::merge_blended_materials(
             if (cva->material.textures.size() != 1) {
                 THROW_OR_ABORT("Material \"" + cva->material.identifier() + "\" does not have exactly one texture");
             }
-            if (!filter.matches(*cva)) {
+            MergedTextureName merged_texture_name{cva->material};
+            if (!filter.matches(merged_texture_name)) {
                 continue;
             }
-            auto filename = cva->material.textures[0].texture_descriptor.color;
-            if (excluded_filenames.contains(filename)) {
+            if (excluded_filenames.contains(merged_texture_name.name)) {
                 continue;
             }
             for (auto& t : cva->triangles) {
@@ -47,20 +48,20 @@ void Mlib::merge_blended_materials(
                         // if (filenames.contains(filename)) {
                         //     THROW_OR_ABORT("Filename \"" + filename + "\" already added");
                         // }
-                        filenames.erase(filename);
-                        excluded_filenames.insert(filename);
+                        filenames.erase(merged_texture_name.name);
+                        excluded_filenames.insert(merged_texture_name.name);
                         goto skip;
                     }
                 }
             }
-            filenames.insert(filename);
+            filenames.insert(merged_texture_name.name);
         }
         skip:;
     }
     for (const auto& cva : mesh->dcvas) {
         if (cva->material.blend_mode == BlendMode::CONTINUOUS) {
-            auto filename = cva->material.textures[0].texture_descriptor.color;
-            if (!filenames.contains(filename)) {
+            MergedTextureName merged_texture_name{cva->material};
+            if (!filenames.contains(merged_texture_name.name)) {
                 cva->material.blend_mode = BlendMode::BINARY_05;
             }
         }

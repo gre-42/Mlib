@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
+#include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
@@ -454,7 +455,7 @@ int main(int argc, char** argv) {
                                 name + "_merged",
                                 scene_node_resources,
                                 *RenderingContextStack::primary_rendering_resources(),
-                                ColoredVertexArrayFilter{
+                                MergedTextureFilter{
                                     .included_names = Mlib::compile_regex(args.named_value("--merged_filter"))
                                 });
                         }
