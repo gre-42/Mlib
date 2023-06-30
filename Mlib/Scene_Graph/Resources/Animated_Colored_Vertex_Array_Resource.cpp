@@ -9,6 +9,6 @@ AnimatedColoredVertexArrayResource::AnimatedColoredVertexArrayResource(const std
 AnimatedColoredVertexArrayResource::~AnimatedColoredVertexArrayResource()
 {}
 
-std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrayResource::get_animated_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrayResource::get_physics_arrays() const {
     return acvas_;
 }

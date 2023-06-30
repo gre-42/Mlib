@@ -33,7 +33,7 @@ public:
     virtual AggregateMode aggregate_mode() const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
     virtual void set_relative_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) override;
 
     // ISceneNodeResource, Modifiers

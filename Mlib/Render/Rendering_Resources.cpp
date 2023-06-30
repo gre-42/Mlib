@@ -626,7 +626,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
 
 std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
     const std::string& name,
-    const std::set<std::string>& filenames)
+    const std::vector<std::string>& filenames)
 {
     std::map<std::string, FixedArray<int, 2>> texture_sizes;
     for (const auto& filename : filenames) {

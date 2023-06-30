@@ -17,9 +17,7 @@ struct Bone;
 template <class TPos>
 class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
-struct Material;
 enum class PhysicsMaterial;
-struct UvTile;
 
 struct AnimatedColoredVertexArrays {
     AnimatedColoredVertexArrays();
@@ -38,11 +36,6 @@ struct AnimatedColoredVertexArrays {
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
-    void merge_materials(
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial physics_material,
-        const std::map<std::string, UvTile>& uv_tiles);
     void check_consistency() const;
     void print(std::ostream& ostr) const;
 

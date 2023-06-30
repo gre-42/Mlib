@@ -451,8 +451,9 @@ int main(int argc, char** argv) {
                         if (args.has_named_value("--merged_filter")) {
                             merge_blended_materials(
                                 name,
-                                name + "_texture",
-                                name + "_merged",
+                                name + "_merged_resource",
+                                name + "_merged_texture",
+                                name + "_merged_array",
                                 scene_node_resources,
                                 *RenderingContextStack::primary_rendering_resources(),
                                 MergedTextureFilter{
@@ -565,8 +566,8 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_color_gradient(scene_node_resources.get_animated_arrays(name)->scvas);
-                    apply_color_gradient(scene_node_resources.get_animated_arrays(name)->dcvas);
+                    apply_color_gradient(scene_node_resources.get_physics_arrays(name)->scvas);
+                    apply_color_gradient(scene_node_resources.get_physics_arrays(name)->dcvas);
                 }
                 if (args.has_named_value("--color_radial_min_r") || args.has_named_value("--color_radial_max_r")) {
                     auto apply_radial_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
@@ -589,8 +590,8 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_radial_colors(scene_node_resources.get_animated_arrays(name)->scvas);
-                    apply_radial_colors(scene_node_resources.get_animated_arrays(name)->dcvas);
+                    apply_radial_colors(scene_node_resources.get_physics_arrays(name)->scvas);
+                    apply_radial_colors(scene_node_resources.get_physics_arrays(name)->dcvas);
                 }
                 if (args.has_named_value("--color_cone_min_r") || args.has_named_value("--color_cone_max_r")) {
                     auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
@@ -614,8 +615,8 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_cone_colors(scene_node_resources.get_animated_arrays(name)->scvas);
-                    apply_cone_colors(scene_node_resources.get_animated_arrays(name)->dcvas);
+                    apply_cone_colors(scene_node_resources.get_physics_arrays(name)->scvas);
+                    apply_cone_colors(scene_node_resources.get_physics_arrays(name)->dcvas);
                 }
                 auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                     FixedArray<TPos, 3> color{
@@ -632,8 +633,8 @@ int main(int argc, char** argv) {
                         }
                     }
                 };
-                apply_constant_color(scene_node_resources.get_animated_arrays(name)->scvas);
-                apply_constant_color(scene_node_resources.get_animated_arrays(name)->dcvas);
+                apply_constant_color(scene_node_resources.get_physics_arrays(name)->scvas);
+                apply_constant_color(scene_node_resources.get_physics_arrays(name)->dcvas);
             }
         }
         if (args.has_named("--large_object_mode")) {

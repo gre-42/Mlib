@@ -66,7 +66,7 @@ public:
     // ISceneNodeResource, Misc
     virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void print(std::ostream& ostr) const override;
 
@@ -84,11 +84,6 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) override;
-    virtual void merge_materials(
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial merged_physics_material,
-        const std::map<std::string, UvTile>& uv_tiles) override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

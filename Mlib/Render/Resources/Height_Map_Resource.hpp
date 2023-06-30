@@ -21,7 +21,7 @@ public:
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
 
     // Modifiers
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

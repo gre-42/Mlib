@@ -30,7 +30,8 @@ public:
     virtual void print(std::ostream& ostr) const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
+    virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const override;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;
@@ -55,11 +56,6 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) override;
-    virtual void merge_materials(
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial merged_physics_material,
-        const std::map<std::string, UvTile>& uv_tiles) override;
 
     // Cereal
     template <class Archive>
@@ -73,9 +69,9 @@ public:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas;
 private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
-    mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
+    mutable std::shared_ptr<AnimatedColoredVertexArrays> physics_arrays_;
     mutable std::shared_mutex rcva_mutex_;
-    mutable std::shared_mutex acvas_mutex_;
+    mutable std::shared_mutex physics_arrays_mutex_;
     const SceneNodeResources& scene_node_resources_;
 };
 

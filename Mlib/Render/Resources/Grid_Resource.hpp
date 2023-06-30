@@ -26,7 +26,7 @@ public:
     virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
 
     // ISceneNodeResource, Modifiers
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;

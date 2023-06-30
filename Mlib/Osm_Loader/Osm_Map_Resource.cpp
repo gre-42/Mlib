@@ -151,8 +151,8 @@ OsmMapResource::OsmMapResource(
     std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     {
         auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
-            auto& scvas = scene_node_resources.get_animated_arrays(resource_name)->scvas;
-            auto& dcvas = scene_node_resources.get_animated_arrays(resource_name)->dcvas;
+            auto& scvas = scene_node_resources.get_physics_arrays(resource_name)->scvas;
+            auto& dcvas = scene_node_resources.get_physics_arrays(resource_name)->dcvas;
             if (scvas.size() != 1) {
                 THROW_OR_ABORT('"' + resource_name + "\" does not have exactly one single-precision mesh");
             }
@@ -861,7 +861,7 @@ OsmMapResource::OsmMapResource(
             if (config.base_osm_map_resource.empty()) {
                 THROW_OR_ABORT("Base OSM map resource not set");
             }
-            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_animated_arrays(config.base_osm_map_resource)->dcvas);
+            ground_bvh = std::make_unique<GroundBvh>(scene_node_resources.get_physics_arrays(config.base_osm_map_resource)->dcvas);
         }
         if (!config.racing_line_playback.empty()) {
             generate_racing_line_playback(
@@ -1251,8 +1251,8 @@ OsmMapResource::OsmMapResource(
                 !way_point_edge_descriptors[WayPointLocation::EXPLICIT].empty())
             {
                 const auto& navigation_dcvas = config.navmesh_resource.empty()
-                    ? get_animated_arrays()->dcvas
-                    : scene_node_resources.get_animated_arrays(config.navmesh_resource)->dcvas;
+                    ? get_physics_arrays()->dcvas
+                    : scene_node_resources.get_physics_arrays(config.navmesh_resource)->dcvas;
                 if (!config.refine_explicit_waypoints) {
                     calculate_waypoint_adjacency(
                         way_points_[WayPointLocation::EXPLICIT],
@@ -1391,7 +1391,7 @@ void OsmMapResource::save_to_obj_file(
     }
     save_obj(
         filename,
-        mdcvas,  // get_animated_arrays()->cvas
+        mdcvas,  // get_physics_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
                 .ambience = m.ambience,
@@ -1459,8 +1459,8 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
     // rbvh_->instantiate_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_animated_arrays() const {
-    return hri_.get_animated_arrays();
+std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_physics_arrays() const {
+    return hri_.get_physics_arrays();
 }
 
 std::shared_ptr<ISceneNodeResource> OsmMapResource::generate_grind_lines(
@@ -1468,7 +1468,7 @@ std::shared_ptr<ISceneNodeResource> OsmMapResource::generate_grind_lines(
     float averaged_normal_angle,
     const ColoredVertexArrayFilter& filter) const
 {
-    return std::make_shared<ColoredVertexArrayResource>(get_animated_arrays())->generate_grind_lines(
+    return std::make_shared<ColoredVertexArrayResource>(get_physics_arrays())->generate_grind_lines(
         edge_angle,
         averaged_normal_angle,
         filter);
@@ -1492,19 +1492,6 @@ void OsmMapResource::create_barrier_triangle_hitboxes(
     } catch (const TriangleException<double>& e) {
         handle_triangle_exception(e, "Could not decompose terrain into convex regions");
     }
-}
-
-void OsmMapResource::merge_materials(
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    hri_.merge_materials(
-        merged_array_name,
-        merged_material,
-        merged_physics_material,
-        uv_tiles);
 }
 
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(

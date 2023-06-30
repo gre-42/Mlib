@@ -106,7 +106,7 @@ void CompoundResource::compute_animated_arrays_unsafe() {
     acvas_ = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
-        auto ar = scene_node_resources_.get_animated_arrays(resource_name);
+        auto ar = scene_node_resources_.get_physics_arrays(resource_name);
         if (!ar->bone_indices.empty()) {
             THROW_OR_ABORT("Compound resource does not support bone indices");
         }
@@ -119,7 +119,7 @@ void CompoundResource::compute_animated_arrays_unsafe() {
 }
 
 // Animation
-std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_animated_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_physics_arrays() const {
     {
         std::shared_lock lock{acva_mutex_};
         if (acvas_ != nullptr) {
@@ -170,21 +170,6 @@ void CompoundResource::create_barrier_triangle_hitboxes(
     }
 }
 
-void CompoundResource::merge_materials(
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    std::scoped_lock lock{acva_mutex_};
-    compute_animated_arrays_unsafe();
-    acvas_->merge_materials(
-        merged_array_name,
-        merged_material,
-        merged_physics_material,
-        uv_tiles);
-}
-
 // Transformations
 std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     float edge_angle,
@@ -195,7 +180,7 @@ std::shared_ptr<ISceneNodeResource> CompoundResource::generate_grind_lines(
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
-        auto gl = scene_node_resources_.get_animated_arrays(resource_name)->generate_grind_lines(
+        auto gl = scene_node_resources_.get_physics_arrays(resource_name)->generate_grind_lines(
             edge_angle,
             averaged_normal_angle,
             filter);

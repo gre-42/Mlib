@@ -72,9 +72,9 @@ void SquareResource::instantiate_renderable(const InstantiationOptions& options)
     rva_->instantiate_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_animated_arrays() const
+std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_physics_arrays() const
 {
-    return rva_->get_animated_arrays();
+    return rva_->get_physics_arrays();
 }
 
 void SquareResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {

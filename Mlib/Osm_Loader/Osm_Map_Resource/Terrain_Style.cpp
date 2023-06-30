@@ -52,8 +52,8 @@ double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resou
         };
         auto add_recources = [&scene_node_resources, &add_cvas](const auto& resource_names){
             for (const auto& l : resource_names) {
-                add_cvas(scene_node_resources.get_animated_arrays(l.name)->dcvas, l.name, l.billboard_id);
-                add_cvas(scene_node_resources.get_animated_arrays(l.name)->scvas, l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_physics_arrays(l.name)->dcvas, l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_physics_arrays(l.name)->scvas, l.name, l.billboard_id);
             }
         };
         add_recources(config.near_resource_names_valley_regular);

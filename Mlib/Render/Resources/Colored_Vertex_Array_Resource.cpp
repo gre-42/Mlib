@@ -982,7 +982,7 @@ void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptio
         options.renderable_resource_filter));
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_animated_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> ColoredVertexArrayResource::get_physics_arrays() const {
     return triangles_res_;
 }
 
@@ -1071,19 +1071,6 @@ void ColoredVertexArrayResource::create_barrier_triangle_hitboxes(
     const ColoredVertexArrayFilter& filter)
 {
     triangles_res_->create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
-}
-
-void ColoredVertexArrayResource::merge_materials(
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    triangles_res_->merge_materials(
-        merged_array_name,
-        merged_material,
-        merged_physics_material,
-        uv_tiles);
 }
 
 // std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::extract_by_predicate(

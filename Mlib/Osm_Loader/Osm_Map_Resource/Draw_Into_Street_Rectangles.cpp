@@ -41,7 +41,7 @@ void Mlib::draw_into_street_rectangles(
             .p01_ = r.rectangle(0u, 1u),
             .p10_ = r.rectangle(1u, 0u),
             .p11_ = r.rectangle(1u, 1u)};
-        const auto& cvas = scene_node_resources.get_animated_arrays(r.bumps_model)->scvas;
+        const auto& cvas = scene_node_resources.get_physics_arrays(r.bumps_model)->scvas;
         for (const auto& cva : cvas) {
             if (cva->name != "street") {
                 THROW_OR_ABORT("Material name is not \"street\" in resource \"" + r.bumps_model + '"');

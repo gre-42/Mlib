@@ -9,6 +9,7 @@ struct MergedTextureFilter;
 
 void merge_blended_materials(
     const std::string& mesh_resource_name,
+    const std::string& merged_resource_name,
     const std::string& merged_texture_name,
     const std::string& merged_array_name,
     SceneNodeResources& scene_node_resources,

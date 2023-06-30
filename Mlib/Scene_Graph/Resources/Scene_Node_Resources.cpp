@@ -170,12 +170,12 @@ const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographi
     return &it->second;
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_animated_arrays(const std::string& name) const {
+std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_physics_arrays(const std::string& name) const {
     auto resource = get_resource(name);
     try {
-        return resource->get_animated_arrays();
+        return resource->get_physics_arrays();
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("get_animated_arrays for resource \"" + name + "\" failed: " + e.what());
+        throw std::runtime_error("get_physics_arrays for resource \"" + name + "\" failed: " + e.what());
     }
 }
 
@@ -188,7 +188,7 @@ std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precis
 }
 
 std::list<std::shared_ptr<ColoredVertexArray<float>>> SceneNodeResources::get_single_precision_arrays(const std::string& name) const {
-    auto avcas = get_animated_arrays(name);
+    auto avcas = get_physics_arrays(name);
     if (!avcas->dcvas.empty()) {
         THROW_OR_ABORT("Resource \"" + name + "\" contains double precision arrays");
     }
@@ -400,30 +400,6 @@ void SceneNodeResources::create_barrier_triangle_hitboxes(
     );
 }
 
-void SceneNodeResources::merge_materials(
-    const std::string& resource_name,
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    add_modifier(
-        resource_name,
-        [resource_name, merged_array_name, merged_material, merged_physics_material, uv_tiles]
-        (ISceneNodeResource& dest){
-            try {
-                dest.merge_materials(
-                    merged_array_name,
-                    merged_material,
-                    merged_physics_material,
-                    uv_tiles);
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("merge_materials for resource \"" + resource_name + "\" failed: " + e.what());
-            }
-        }
-    );
-}
-
 void SceneNodeResources::import_bone_weights(
     const std::string& destination,
     const std::string& source,
@@ -434,7 +410,7 @@ void SceneNodeResources::import_bone_weights(
         [this, source, max_distance, destination](ISceneNodeResource& dest){
             try {
                 auto src = get_resource(source);
-                dest.import_bone_weights(*src->get_animated_arrays(), max_distance);
+                dest.import_bone_weights(*src->get_physics_arrays(), max_distance);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("import_bone_weights for resource \"" + destination + "\" failed: " + e.what());
             }

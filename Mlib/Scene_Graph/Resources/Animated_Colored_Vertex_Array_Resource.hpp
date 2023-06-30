@@ -9,7 +9,7 @@ public:
     ~AnimatedColoredVertexArrayResource();
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const;
 
 private:
     std::shared_ptr<AnimatedColoredVertexArrays> acvas_;

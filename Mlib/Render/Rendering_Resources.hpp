@@ -8,7 +8,6 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -57,6 +56,8 @@ enum class DeletionFailureMode {
 struct UvTile;
 
 class RenderingResources {
+    RenderingResources(const RenderingResources&) = delete;
+    RenderingResources& operator = (const RenderingResources&) = delete;
 public:
     explicit RenderingResources(
         std::string name,
@@ -72,7 +73,7 @@ public:
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_texture_atlas(const std::string& name, const TextureAtlasDescriptor& texture_atlas_descriptor);
-    std::map<std::string, UvTile> generate_texture_atlas(const std::string& name, const std::set<std::string>& filenames);
+    std::map<std::string, UvTile> generate_texture_atlas(const std::string& name, const std::vector<std::string>& filenames);
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate);
 
     std::string get_texture_filename(

@@ -65,7 +65,7 @@ public:
         const TransformationMatrix<float, double, 3>& tm) const override;
 
     // ISceneNodeResource, Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const override;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
 
     // ISceneNodeResource, Modifiers
     virtual void modify_physics_material_tags(
@@ -76,11 +76,6 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) override;
-    virtual void merge_materials(
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial merged_physics_material,
-        const std::map<std::string, UvTile>& uv_tiles) override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

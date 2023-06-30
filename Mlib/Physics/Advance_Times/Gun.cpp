@@ -152,8 +152,8 @@ void Gun::generate_bullet() {
         }
         rigid_bodies_.add_rigid_body(
             std::move(ams.absolute_movable),
-            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->scvas,
-            scene_node_resources_.get_animated_arrays(bullet_hitbox_resource_name_)->dcvas,
+            scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->scvas,
+            scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->dcvas,
             CollidableMode::MOVING,
             PhysicsResourceFilter{});
     }

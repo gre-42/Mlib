@@ -30,8 +30,6 @@ struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
 struct RenderableResourceFilter;
 struct InstantiationOptions;
-struct UvTile;
-struct Material;
 
 enum class AggregateMode;
 enum class WayPointLocation;
@@ -83,7 +81,7 @@ public:
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation
-    std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays(const std::string& name) const;
+    std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays(const std::string& name) const;
     std::shared_ptr<ColoredVertexArray<float>> get_single_precision_array(const std::string& name) const;
     std::list<std::shared_ptr<ColoredVertexArray<float>>> get_single_precision_arrays(const std::string& name) const;
     void set_relative_joint_poses(const std::string& name, const std::map<std::string, OffsetAndQuaternion<float, float>>& poses);
@@ -92,6 +90,9 @@ public:
     float get_animation_duration(const std::string& name) const;
 
     // Modifiers
+    void add_modifier(
+        const std::string& resource_name,
+        const std::function<void(ISceneNodeResource&)>& modifier);
     void generate_triangle_rays(const std::string& name, size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false);
     void generate_ray(const std::string& name, const FixedArray<float, 3>& from, const FixedArray<float, 3>& to);
     void downsample(const std::string& name, size_t factor);
@@ -110,12 +111,6 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
-    void merge_materials(
-        const std::string& resource_name,
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial merged_physics_material,
-        const std::map<std::string, UvTile>& uv_tiles);
 
     // Transformations
     void generate_grind_lines(
@@ -129,9 +124,6 @@ public:
         const std::string& dest_name);
 private:
     std::shared_ptr<ISceneNodeResource> get_resource(const std::string& name) const;
-    void add_modifier(
-        const std::string& resource_name,
-        const std::function<void(ISceneNodeResource&)>& modifier);
     mutable std::map<std::string, std::shared_ptr<ISceneNodeResource>> resources_;
     std::map<std::string, TransformationMatrix<double, double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;

@@ -1067,14 +1067,14 @@ void DrawStreets::draw_streets_draw_ways(
             street_surface_endpoint0_resource_names,
             street_surface_endpoint1_resource_names);
         if (!model_name.empty()) {
-            draw_street_with_ditch(scene_node_resources.get_animated_arrays(model_name)->scvas, model_name);
+            draw_street_with_ditch(scene_node_resources.get_physics_arrays(model_name)->scvas, model_name);
         } else {
             draw_procedural_street();
         }
     } else if (wi.model == "endpoint") {
         draw_procedural_street();
     } else {
-        draw_street_with_ditch(scene_node_resources.get_animated_arrays(wi.model)->scvas, wi.model);
+        draw_street_with_ditch(scene_node_resources.get_physics_arrays(wi.model)->scvas, wi.model);
     }
     if (angle_way.layer > 0) {
         double uv_len_central = std::round((uv_len0 + uv_len1) / 2.);

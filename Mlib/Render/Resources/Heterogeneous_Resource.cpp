@@ -59,24 +59,28 @@ void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& o
     rcva_->instantiate_renderable(options);
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_animated_arrays() const {
+std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_physics_arrays() const {
     do {
         {
-            std::shared_lock lock{ acvas_mutex_ };
-            if (acvas_ != nullptr) {
+            std::shared_lock lock{ physics_arrays_mutex_ };
+            if (physics_arrays_ != nullptr) {
                 break;
             }
         }
-        std::scoped_lock lock{ acvas_mutex_ };
-        if (acvas_ == nullptr) {
+        std::scoped_lock lock{ physics_arrays_mutex_ };
+        if (physics_arrays_ == nullptr) {
             // Start with "normal" arrays.
             auto res = std::make_shared<AnimatedColoredVertexArrays>(*acvas);
             // Append hitboxes.
             bri->instantiate_hitboxes(res->dcvas, scene_node_resources_);
-            acvas_ = res;
+            physics_arrays_ = res;
         }
     } while (false);
-    return acvas_;
+    return physics_arrays_;
+}
+
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> HeterogeneousResource::get_rendering_arrays() const {
+    return {acvas};
 }
 
 void HeterogeneousResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -107,19 +111,6 @@ void HeterogeneousResource::create_barrier_triangle_hitboxes(
     ColoredVertexArrayResource(acvas).create_barrier_triangle_hitboxes(depth, destination_physics_material, filter);
 }
 
-void HeterogeneousResource::merge_materials(
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    ColoredVertexArrayResource(acvas).merge_materials(
-        merged_array_name,
-        merged_material,
-        merged_physics_material,
-        uv_tiles);
-}
-    
 void HeterogeneousResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,

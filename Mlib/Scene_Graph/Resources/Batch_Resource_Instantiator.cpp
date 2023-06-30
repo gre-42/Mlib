@@ -191,7 +191,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
                 }
             }
         };
-        auto acva = scene_node_resources.get_animated_arrays(name);
+        auto acva = scene_node_resources.get_physics_arrays(name);
         add_hitbox(acva->scvas);
         add_hitbox(acva->dcvas);
     }

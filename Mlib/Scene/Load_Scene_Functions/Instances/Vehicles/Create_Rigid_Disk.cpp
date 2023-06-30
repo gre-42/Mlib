@@ -66,7 +66,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
     if (args.arguments.contains(KnownArgs::hitboxes)) {
         auto hitboxes = args.arguments.at<std::string>(KnownArgs::hitboxes);
-        auto cvas = scene_node_resources.get_animated_arrays(hitboxes);
+        auto cvas = scene_node_resources.get_physics_arrays(hitboxes);
         s_hitboxes.insert(s_hitboxes.end(), cvas->scvas.begin(), cvas->scvas.end());
         d_hitboxes.insert(d_hitboxes.end(), cvas->dcvas.begin(), cvas->dcvas.end());
     }

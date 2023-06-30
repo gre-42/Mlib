@@ -29,8 +29,6 @@ struct RenderableResourceFilter;
 enum class PhysicsMaterial;
 class ISupplyDepots;
 struct InstantiationOptions;
-struct UvTile;
-struct Material;
 
 class ISceneNodeResource {
 public:
@@ -51,7 +49,8 @@ public:
     virtual void print(std::ostream& ostr) const;
 
     // Animation
-    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_animated_arrays() const;
+    virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const;
+    virtual std::list<std::shared_ptr<AnimatedColoredVertexArrays>> get_rendering_arrays() const;
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance);
@@ -73,11 +72,6 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
-    virtual void merge_materials(
-        const std::string& merged_array_name,
-        const Material& merged_material,
-        PhysicsMaterial merged_physics_material,
-        const std::map<std::string, UvTile>& uv_tiles);
 
     // Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

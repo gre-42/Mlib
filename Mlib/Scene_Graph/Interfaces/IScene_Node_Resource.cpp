@@ -23,8 +23,12 @@ TransformationMatrix<double, double, 3> ISceneNodeResource::get_geographic_mappi
     THROW_OR_ABORT("get_geographic_coordinates not implemented");
 }
 
-std::shared_ptr<AnimatedColoredVertexArrays> ISceneNodeResource::get_animated_arrays() const {
-    THROW_OR_ABORT("get_animated_arrays not implemented");
+std::shared_ptr<AnimatedColoredVertexArrays> ISceneNodeResource::get_physics_arrays() const {
+    THROW_OR_ABORT("get_physics_arrays not implemented");
+}
+
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> ISceneNodeResource::get_rendering_arrays() const {
+    THROW_OR_ABORT("get_rendering_arrays not implemented");
 }
 
 void ISceneNodeResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -66,15 +70,6 @@ void ISceneNodeResource::create_barrier_triangle_hitboxes(
     const ColoredVertexArrayFilter& filter)
 {
     THROW_OR_ABORT("create_barrier_triangle_hitboxes not implemented");
-}
-
-void ISceneNodeResource::merge_materials(
-    const std::string& merged_array_name,
-    const Material& merged_material,
-    PhysicsMaterial merged_physics_material,
-    const std::map<std::string, UvTile>& uv_tiles)
-{
-    THROW_OR_ABORT("merge_transparent_materials not implemented");
 }
 
 AggregateMode ISceneNodeResource::aggregate_mode() const {
