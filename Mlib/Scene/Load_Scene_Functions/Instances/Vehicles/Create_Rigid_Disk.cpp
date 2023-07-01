@@ -85,13 +85,9 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
                     .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
     } catch (const TriangleEdgeException<double>& e) {
-        const auto* m = scene_node_resources.get_geographic_mapping("world");
-        if (m == nullptr) {
-            throw;
-        }
         if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
             save_triangle_to_obj(filename, {e.a, e.b, e.c});
         }
-        throw std::runtime_error(e.str("Error", *m));
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }
 }

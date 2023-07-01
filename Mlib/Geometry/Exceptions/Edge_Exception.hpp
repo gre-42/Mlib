@@ -16,32 +16,35 @@ template <class TPos>
 class EdgeException: public std::runtime_error {
 public:
     EdgeException(const FixedArray<TPos, 3>& a, const FixedArray<TPos, 3>& b, const std::string& what)
-    : std::runtime_error{what},
-      a{a},
-      b{b}
+        : std::runtime_error{what},
+        a{a},
+        b{b}
     {}
     EdgeException(const FixedArray<TPos, 2>& a, const FixedArray<TPos, 2>& b, const std::string& what)
-    : std::runtime_error{what},
-      a{a(0), a(1), 0.f},
-      b{b(0), b(1), 0.f}
+        : std::runtime_error{what},
+        a{a(0), a(1), 0.f},
+        b{b(0), b(1), 0.f}
     {}
     EdgeException(const p2t::Point* a, const p2t::Point* b, const std::string& what)
-    : std::runtime_error{what},
-      a{(TPos)((double*)a)[0], (TPos)((double*)a)[1], 0.f},
-      b{(TPos)((double*)b)[0], (TPos)((double*)b)[1], 0.f}
+        : std::runtime_error{what},
+        a{(TPos)((double*)a)[0], (TPos)((double*)a)[1], 0.f},
+        b{(TPos)((double*)b)[0], (TPos)((double*)b)[1], 0.f}
     {}
-    std::string str(const std::string& message, const TransformationMatrix<double, double, 3>& m) const {
+    std::string str(const std::string& message, const TransformationMatrix<double, double, 3>* m) const {
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at edge " <<
             a <<
             " -> " <<
-            b <<
-            " | " <<
-            m.transform(a TEMPLATEV casted<double>()) <<
-            " -> " <<
-            m.transform(b TEMPLATEV casted<double>()) <<
-            ": " << what();
+            b;
+        if (m != nullptr) {
+            sstr <<
+                " | " <<
+                m->transform(a TEMPLATEV casted<double>()) <<
+                " -> " <<
+                m->transform(b TEMPLATEV casted<double>());
+        }
+        sstr << ": " << what();
         return sstr.str();
     }
     FixedArray<TPos, 3> a;

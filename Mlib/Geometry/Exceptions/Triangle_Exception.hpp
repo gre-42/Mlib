@@ -21,7 +21,7 @@ public:
         b{ b },
         c{ c }
     {}
-    std::string str(const std::string& message, const TransformationMatrix<double, double, 3>& m) const {
+    std::string str(const std::string& message, const TransformationMatrix<double, double, 3>* m) const {
         std::stringstream sstr;
         sstr.precision(15);
         sstr << message << " at triangle " <<
@@ -29,14 +29,17 @@ public:
             " <-> " <<
             b <<
             " <-> " <<
-            c <<
-            " | " <<
-            m.transform(a TEMPLATEV casted<double>()) <<
-            " <-> " <<
-            m.transform(b TEMPLATEV casted<double>()) <<
-            " <-> " <<
-            m.transform(c TEMPLATEV casted<double>()) <<
-            ": " << what();
+            c;
+        if (m != nullptr) {
+            sstr <<
+                " | " <<
+                m->transform(a TEMPLATEV casted<double>()) <<
+                " <-> " <<
+                m->transform(b TEMPLATEV casted<double>()) <<
+                " <-> " <<
+                m->transform(c TEMPLATEV casted<double>());
+        }
+        sstr << ": " << what();
         return sstr.str();
     }
     FixedArray<TData, 3> a;

@@ -1594,7 +1594,7 @@ void OsmMapResource::handle_point_exception3(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    throw std::runtime_error(e.str(message, m));
+    throw std::runtime_error(e.str(message, &m));
 }
 
 void OsmMapResource::handle_point_exception2(
@@ -1621,7 +1621,7 @@ void OsmMapResource::handle_edge_exception(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    throw std::runtime_error(e.str(message, m));
+    throw std::runtime_error(e.str(message, &m));
 }
 
 void OsmMapResource::handle_triangle_exception(
@@ -1629,5 +1629,5 @@ void OsmMapResource::handle_triangle_exception(
     const std::string& message) const
 {
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-    throw std::runtime_error(e.str(message, m));
+    throw std::runtime_error(e.str(message, &m));
 }
