@@ -52,6 +52,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Transformation_Mode.hpp>
@@ -434,9 +435,12 @@ int main(int argc, char** argv) {
             }
         };
         {
+            auto filenames = args.unnamed_values();
+            std::vector<std::string> resource_names;
+            resource_names.reserve(filenames.size());
             size_t i = 0;
-            for (const std::string& filename : args.unnamed_values()) {
-                std::string name = "obj-" + std::to_string(i++);
+            for (const std::string& filename : filenames) {
+                const auto& name = resource_names.emplace_back("obj-" + std::to_string(i++));
                 if (filename.ends_with(".obj")) {
                     if (!args.has_named("--large_object_mode")) {
                         scene_node_resources.add_resource(name, load_renderable_obj(
@@ -448,18 +452,6 @@ int main(int argc, char** argv) {
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources));
-                        if (args.has_named_value("--merged_filter")) {
-                            merge_blended_materials(
-                                name,
-                                name + "_merged_resource",
-                                name + "_merged_texture",
-                                name + "_merged_array",
-                                scene_node_resources,
-                                *RenderingContextStack::primary_rendering_resources(),
-                                MergedTextureFilter{
-                                    .included_names = Mlib::compile_regex(args.named_value("--merged_filter"))
-                                });
-                        }
                     }
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
@@ -529,6 +521,21 @@ int main(int argc, char** argv) {
                 } else {
                     throw std::runtime_error("File has unknown extension: " + filename);
                 }
+            }
+            scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(scene_node_resources, resource_names));
+            if (args.has_named_value("--merged_filter")) {
+                merge_blended_materials(
+                    "objs",
+                    "merged_resource",
+                    "merged_texture",
+                    "merged_array",
+                    scene_node_resources,
+                    *RenderingContextStack::primary_rendering_resources(),
+                    MergedTextureFilter{
+                        .included_names = Mlib::compile_regex(args.named_value("--merged_filter"))
+                    });
+            }
+            {
                 scene_node->set_position({
                     safe_stof(args.named_value("--x", "0")),
                     safe_stof(args.named_value("--y", "0")),
@@ -540,9 +547,9 @@ int main(int argc, char** argv) {
                 scene_node->set_scale(safe_stof(args.named_value("--node_scale", "1")));
                 if (!args.has_named("--hide_object")) {
                     scene_node_resources.instantiate_renderable(
-                        name,
+                        "objs",
                         InstantiationOptions{
-                            .instance_name = name,
+                            .instance_name = "objs",
                             .scene_node = *scene_node,
                             .renderable_resource_filter = RenderableResourceFilter{
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
@@ -566,8 +573,10 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_color_gradient(scene_node_resources.get_physics_arrays(name)->scvas);
-                    apply_color_gradient(scene_node_resources.get_physics_arrays(name)->dcvas);
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                        apply_color_gradient(acva->scvas);
+                        apply_color_gradient(acva->dcvas);
+                    }
                 }
                 if (args.has_named_value("--color_radial_min_r") || args.has_named_value("--color_radial_max_r")) {
                     auto apply_radial_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
@@ -590,8 +599,10 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_radial_colors(scene_node_resources.get_physics_arrays(name)->scvas);
-                    apply_radial_colors(scene_node_resources.get_physics_arrays(name)->dcvas);
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                        apply_radial_colors(acva->scvas);
+                        apply_radial_colors(acva->dcvas);
+                    }
                 }
                 if (args.has_named_value("--color_cone_min_r") || args.has_named_value("--color_cone_max_r")) {
                     auto apply_cone_colors = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
@@ -615,8 +626,10 @@ int main(int argc, char** argv) {
                             }
                         }
                     };
-                    apply_cone_colors(scene_node_resources.get_physics_arrays(name)->scvas);
-                    apply_cone_colors(scene_node_resources.get_physics_arrays(name)->dcvas);
+                    for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                        apply_cone_colors(acva->scvas);
+                        apply_cone_colors(acva->dcvas);
+                    }
                 }
                 auto apply_constant_color = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas) {
                     FixedArray<TPos, 3> color{
@@ -633,8 +646,10 @@ int main(int argc, char** argv) {
                         }
                     }
                 };
-                apply_constant_color(scene_node_resources.get_physics_arrays(name)->scvas);
-                apply_constant_color(scene_node_resources.get_physics_arrays(name)->dcvas);
+                for (const auto& acva : scene_node_resources.get_rendering_arrays("objs")) {
+                    apply_constant_color(acva->scvas);
+                    apply_constant_color(acva->dcvas);
+                }
             }
         }
         if (args.has_named("--large_object_mode")) {

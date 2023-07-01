@@ -179,6 +179,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_physics_arr
     }
 }
 
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> SceneNodeResources::get_rendering_arrays(const std::string& name) const {
+    auto resource = get_resource(name);
+    try {
+        return resource->get_rendering_arrays();
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("get_rendering_arrays for resource \"" + name + "\" failed: " + e.what());
+    }
+}
+
 std::shared_ptr<ColoredVertexArray<float>> SceneNodeResources::get_single_precision_array(const std::string& name) const {
     auto res = get_single_precision_arrays(name);
     if (res.size() != 1) {

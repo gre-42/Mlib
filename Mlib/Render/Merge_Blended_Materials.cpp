@@ -120,7 +120,7 @@ void Mlib::merge_blended_materials(
                             .color = merged_texture_name,
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
-                        .aggregate_mode = AggregateMode::ONCE,
+                        .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                         .cull_faces = false,
                         .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},

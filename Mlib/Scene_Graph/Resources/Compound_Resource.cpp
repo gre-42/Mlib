@@ -133,7 +133,18 @@ std::shared_ptr<AnimatedColoredVertexArrays> CompoundResource::get_physics_array
     const_cast<CompoundResource*>(this)->compute_animated_arrays_unsafe();
     return acvas_;
 }
-    
+
+std::list<std::shared_ptr<AnimatedColoredVertexArrays>> CompoundResource::get_rendering_arrays() const {
+    std::list<std::shared_ptr<AnimatedColoredVertexArrays>> result;
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+    for (const auto& resource_name : resource_names_) {
+        RecursionGuard rg{recursion_counter};
+        auto c = scene_node_resources_.get_rendering_arrays(resource_name);
+        result.insert(result.end(), c.begin(), c.end());
+    }
+    return result;
+}
+
 void CompoundResource::modify_physics_material_tags(
     PhysicsMaterial add,
     PhysicsMaterial remove,
