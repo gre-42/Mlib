@@ -4,7 +4,6 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Remove_Degenerate_Triangles.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Remove_Triangles_With_Opposing_Normals.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -32,12 +31,12 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
             for (auto acva : resource.get_rendering_arrays()) {
                 acva->scvas.remove_if([](auto& cva){
                     remove_degenerate_triangles(*cva);
-                    remove_triangles_with_opposing_normals(*cva);
+                    // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
                 });
                 acva->dcvas.remove_if([](auto& cva){
                     remove_degenerate_triangles(*cva);
-                    remove_triangles_with_opposing_normals(*cva);
+                    // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
                 });
             }
