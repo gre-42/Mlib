@@ -74,8 +74,8 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
     args.arguments.validate(KnownArgs::options);
 
     auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
-    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
-    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
+    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min) * meters;
+    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max) * meters;
     FixedArray<float, 2, 2> square{
         min(0), min(1),
         max(0), max(1)};
@@ -100,9 +100,10 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = billboard_atlas_instances,
         .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
-        .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
-            KnownArgs::center_distances,
-            OrderableFixedArray<float, 2>{0.f, INFINITY }),
+        .center_distances = OrderableFixedArray<float, 2>{
+            args.arguments.at<FixedArray<float, 2>>(
+                KnownArgs::center_distances,
+                FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
         .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),

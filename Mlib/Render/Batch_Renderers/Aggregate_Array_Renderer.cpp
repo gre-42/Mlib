@@ -45,7 +45,13 @@ void AggregateArrayRenderer::update_aggregates(
         mat.aggregate_mode = AggregateMode::NONE;
         mat.center_distances = default_step_distances;
         auto& l = mat_lists[mat];
+        auto max_distance2 = squared(mat.center_distances(1));
         for (const auto& c : a->triangles) {
+            if ((max_distance2 != INFINITY) &&
+                (sum(squared(c(0).position + c(1).position + c(2).position)) > max_distance2))
+            {
+                continue;
+            }
             l.push_back(c);
         }
         if (any(a->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
@@ -60,6 +66,9 @@ void AggregateArrayRenderer::update_aggregates(
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     for (const auto& [mat, list] : mat_lists) {
+        if (list.empty()) {
+            continue;
+        }
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
             mat,

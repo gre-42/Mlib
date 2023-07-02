@@ -536,6 +536,7 @@ int main(int argc, char** argv) {
                     "merged_texture",
                     "merged_array",
                     BlendMode::CONTINUOUS,
+                    AggregateMode::SORTED_CONTINUOUSLY,
                     scene_node_resources,
                     *RenderingContextStack::primary_rendering_resources(),
                     MergedTextureFilter{

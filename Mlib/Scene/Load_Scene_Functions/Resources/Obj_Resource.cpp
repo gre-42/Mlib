@@ -68,9 +68,10 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .position = args.arguments.at<FixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
         .rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         .scale = args.arguments.at<FixedArray<float, 3>>(KnownArgs::scale),
-        .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
-            KnownArgs::center_distances,
-            OrderableFixedArray<float, 2>{0.f, INFINITY}),
+        .center_distances = OrderableFixedArray<float, 2>{
+            args.arguments.at<FixedArray<float, 2>>(
+                KnownArgs::center_distances,
+                FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .cull_faces_default = args.arguments.at<bool>(KnownArgs::cull_faces_default, true),

@@ -3,6 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Binary_X_Resource.hpp>
@@ -35,8 +36,8 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
 {
     args.arguments.validate(KnownArgs::options);
 
-    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
-    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
+    auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min) * meters;
+    auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max) * meters;
     FixedArray<float, 2, 2> square{
         min(0), min(1),
         max(0), max(1)};
@@ -50,9 +51,10 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
         .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-        .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
-            KnownArgs::center_distances,
-            OrderableFixedArray<float, 2>{0.f, INFINITY}),
+        .center_distances = OrderableFixedArray<float, 2>{
+            args.arguments.at<FixedArray<float, 2>>(
+                KnownArgs::center_distances,
+                FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = {0.f, 0.f, 0.f},

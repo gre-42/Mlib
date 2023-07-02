@@ -24,6 +24,7 @@ void Mlib::merge_blended_materials(
     const std::string& merged_texture_name,
     const std::string& merged_array_name,
     BlendMode merged_blend_mode,
+    AggregateMode merged_aggregate_mode,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const MergedTextureFilter& filter)
@@ -37,7 +38,8 @@ void Mlib::merge_blended_materials(
          merged_resource_name,
          merged_texture_name,
          merged_array_name,
-         merged_blend_mode]
+         merged_blend_mode,
+         merged_aggregate_mode]
         (ISceneNodeResource& scene_node_resource){
             std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
             std::map<std::string, std::list<ColoredVertexArray<double>*>> excluded_filenames;
@@ -122,7 +124,7 @@ void Mlib::merge_blended_materials(
                             .color = merged_texture_name,
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
-                        .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+                        .aggregate_mode = merged_aggregate_mode,
                         .cull_faces = false,
                         .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},

@@ -21,6 +21,7 @@ DECLARE_ARGUMENT(merged_resource_name);
 DECLARE_ARGUMENT(merged_texture_name);
 DECLARE_ARGUMENT(merged_array_name);
 DECLARE_ARGUMENT(merged_blend_mode);
+DECLARE_ARGUMENT(merged_aggregate_mode);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 }
@@ -40,6 +41,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
          merged_texture_name = args.arguments.at<std::string>(KnownArgs::merged_texture_name),
          merged_array_name = args.arguments.at<std::string>(KnownArgs::merged_array_name),
          merged_blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_blend_mode)),
+         merged_aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_aggregate_mode)),
          &scene_node_resources = scene_node_resources,
          rendering_resources = rendering_resources,
          filter = MergedTextureFilter{
@@ -53,6 +55,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
                 merged_texture_name,
                 merged_array_name,
                 merged_blend_mode,
+                merged_aggregate_mode,
                 scene_node_resources,
                 *rendering_resources,
                 filter);

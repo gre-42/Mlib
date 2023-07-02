@@ -73,9 +73,10 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             .wrap_mode_t = WrapMode::REPEAT,
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
             .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-            .center_distances = args.arguments.at<OrderableFixedArray<float, 2>>(
-                KnownArgs::center_distances,
-                OrderableFixedArray<float, 2>{0.f, INFINITY }),
+            .center_distances = OrderableFixedArray<float, 2>{
+                args.arguments.at<FixedArray<float, 2>>(
+                    KnownArgs::center_distances,
+                    FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
             .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
             .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
