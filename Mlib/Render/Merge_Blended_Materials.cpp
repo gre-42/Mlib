@@ -58,11 +58,11 @@ void Mlib::merge_blended_materials(
                             goto skip;
                         }
                         for (auto& t : cva->triangles) {
-                            auto min_uv = minimum(minimum(t(0).uv, t(1).uv), t(2).uv);
+                            auto min_uv_floor =
+                                minimum(minimum(t(0).uv, t(1).uv), t(2).uv)
+                                .applied([](float v){return std::floor(v);});
                             for (auto& v : t.flat_iterable()) {
-                                for (size_t i = 0; i < 3; ++i) {
-                                    v.uv(i) -= std::floor(min_uv(i));
-                                }
+                                v.uv -= min_uv_floor;
                             }
                             for (const auto& v : t.flat_iterable()) {
                                 if (any(v.uv < 0.f) || any(v.uv > 1.f)) {
