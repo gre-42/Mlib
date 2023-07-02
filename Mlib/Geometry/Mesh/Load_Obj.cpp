@@ -56,6 +56,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .center_distances = cfg.center_distances,
+            .max_triangle_distance = cfg.max_triangle_distance,
             .cull_faces = cfg.cull_faces_default},
         cfg.physics_material};
     StaticFaceLighting sfl;

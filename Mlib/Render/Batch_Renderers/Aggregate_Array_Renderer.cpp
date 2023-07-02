@@ -45,7 +45,7 @@ void AggregateArrayRenderer::update_aggregates(
         mat.aggregate_mode = AggregateMode::NONE;
         mat.center_distances = default_step_distances;
         auto& l = mat_lists[mat];
-        auto max_distance2 = squared(mat.center_distances(1));
+        auto max_distance2 = squared(mat.max_triangle_distance);
         for (const auto& c : a->triangles) {
             if ((max_distance2 != INFINITY) &&
                 (sum(squared(c(0).position + c(1).position + c(2).position)) > max_distance2))

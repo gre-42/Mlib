@@ -27,6 +27,7 @@ DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(center_distances);
+DECLARE_ARGUMENT(max_triangle_distance);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces_default);
@@ -72,6 +73,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<FixedArray<float, 2>>(
                 KnownArgs::center_distances,
                 FixedArray<float, 2>{0.f, INFINITY }) * meters},
+        .max_triangle_distance = args.arguments.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .cull_faces_default = args.arguments.at<bool>(KnownArgs::cull_faces_default, true),

@@ -54,6 +54,7 @@ struct Material {
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
     OrderableFixedArray<float, 2> center_distances{ default_step_distances };
+    float max_triangle_distance = INFINITY;
     bool cull_faces = true;
     bool reorient_uv0 = false;
     OrderableFixedArray<float, 3> emissivity{0.f, 0.f, 0.f};
