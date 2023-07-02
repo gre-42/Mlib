@@ -1420,10 +1420,11 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
         PhysicsMaterial::NONE};
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
-            if (triangle_largest_cosine<double, 3>({
+            auto tlc = triangle_largest_cosine<double, 3>({
                 t(0).position,
                 t(1).position,
-                t(2).position}) > 0.999)
+                t(2).position});
+            if (std::isnan(tlc) || (tlc > 0.999))
             {
                 bad_triangles.triangles_.push_back(t);
             }

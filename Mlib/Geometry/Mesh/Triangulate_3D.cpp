@@ -375,8 +375,11 @@ bool triangulate_point(
             Point2{ (float)out.pointlist[2 * i(0)], (float)out.pointlist[2 * i(0) + 1] },
             Point2{ (float)out.pointlist[2 * i(1)], (float)out.pointlist[2 * i(1) + 1] },
             Point2{ (float)out.pointlist[2 * i(2)], (float)out.pointlist[2 * i(2) + 1] }};
-        if (triangle_largest_cosine(tri2) > largest_cos_in_triangle) {
-            continue;
+        {
+            auto tlc = triangle_largest_cosine(tri2);
+            if (std::isnan(tlc) || (tlc > largest_cos_in_triangle)) {
+                continue;
+            }
         }
         OrderableFixedArray<OrderableFixedArray<float, 3>, 3> otri3{
             OrderableFixedArray<float, 3>{ indexed_points.p3(i(0)) },

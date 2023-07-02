@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
@@ -125,13 +126,13 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
             if (smesh_ != nullptr) {
                 for (const auto& t : smesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
                 }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
                 }
             }
             transformed_ridges_.reserve(ridges.size());

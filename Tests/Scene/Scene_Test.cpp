@@ -2,6 +2,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -240,10 +241,10 @@ void test_physics_engine() {
         AbsoluteMovableSetter ams1_1{scene.get_node("obj").get_child("n1_1"), std::move(rb1_1)};
         AbsoluteMovableSetter ams1_2{scene.get_node("obj").get_child("n1_2"), std::move(rb1_2)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::STATIC, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::STATIC, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
     }
 
     // Check if the initialization does not change the node positions.

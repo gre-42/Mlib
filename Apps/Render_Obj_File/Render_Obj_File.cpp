@@ -212,7 +212,8 @@ int main(int argc, char** argv) {
         "    [--apply_static_lighting]\n"
         "    [--laplace_ao_strength <value>]\n"
         "    [--min_num] <min_num>\n"
-        "    [--regex] <regex>\n"
+        "    [--include] <regex>\n"
+        "    [--exclude] <regex>\n"
         "    [--no_werror]\n"
         "    [--color_gradient_min_x] <value>\n"
         "    [--color_gradient_max_x] <value>\n"
@@ -248,7 +249,8 @@ int main(int argc, char** argv) {
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
-        "    [--merged_filter <filter>]\n"
+        "    [--merged_include <filter>]\n"
+        "    [--merged_exclude <filter>]\n"
         "    [--look_at_aabb]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
@@ -314,7 +316,8 @@ int main(int argc, char** argv) {
          "--output_pass",
          "--output_light_node",
          "--min_num",
-         "--regex",
+         "--include",
+         "--exclude",
          "--background_light_ambience",
          "--light_configuration",
          "--color_gradient_min_x",
@@ -349,7 +352,8 @@ int main(int argc, char** argv) {
          "--light_beacon",
          "--light_beacon_scale",
          "--laplace_ao_strength",
-         "--merged_filter"});
+         "--merged_include"
+         "--merged_exclude"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -529,10 +533,12 @@ int main(int argc, char** argv) {
                     "merged_resource",
                     "merged_texture",
                     "merged_array",
+                    BlendMode::CONTINUOUS,
                     scene_node_resources,
                     *RenderingContextStack::primary_rendering_resources(),
                     MergedTextureFilter{
-                        .included_names = Mlib::compile_regex(args.named_value("--merged_filter"))
+                        .included_names = Mlib::compile_regex(args.named_value("--merged_include")),
+                        .excluded_names = Mlib::compile_regex(args.named_value("--merged_exclude"))
                     });
             }
             {
@@ -554,7 +560,8 @@ int main(int argc, char** argv) {
                             .renderable_resource_filter = RenderableResourceFilter{
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
                                 .cva_filter = {
-                                    .included_names = Mlib::compile_regex(args.named_value("--regex", ""))}}});
+                                    .included_names = Mlib::compile_regex(args.named_value("--include", "")),
+                                    .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))}}});
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     auto apply_color_gradient = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)

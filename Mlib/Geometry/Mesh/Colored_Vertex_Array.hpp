@@ -29,10 +29,10 @@ enum class PhysicsMaterial;
 
 template <class TPos>
 class ColoredVertexArray {
-public:
     ColoredVertexArray() = delete;
     ColoredVertexArray(const ColoredVertexArray&) = delete;
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
+public:
     ColoredVertexArray(ColoredVertexArray&&) = default;
     ColoredVertexArray& operator = (ColoredVertexArray&&) = default;
     ColoredVertexArray(

@@ -670,9 +670,10 @@ std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
         }
     }
     linfo() << "Adding texture atlas of size " << tad.width << " x " << tad.height;
-    GLint max_texture_size;
-    CHK(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size));
-    linfo() << "Max texture size: " << max_texture_size;
+    // This call only works when a valid OpenGL context is acquired.
+    // GLint max_texture_size;
+    // CHK(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size));
+    // linfo() << "Max texture size: " << max_texture_size;
     add_texture_atlas(name, tad);
     return result;
 }

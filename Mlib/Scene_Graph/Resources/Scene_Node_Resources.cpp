@@ -112,14 +112,14 @@ void SceneNodeResources::instantiate_renderable(
         resource->instantiate_renderable(options);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
-            for (const auto& c : cit->second) {
+            for (const auto& [resource_name, filter] : cit->second) {
                 instantiate_renderable(
-                    c.first,
+                    resource_name,
                     InstantiationOptions{
                         .supply_depots = options.supply_depots,
-                        .instance_name = options.instance_name + "/" + c.first,
+                        .instance_name = options.instance_name + "/" + resource_name,
                         .scene_node = options.scene_node,
-                        .renderable_resource_filter = c.second},
+                        .renderable_resource_filter = filter},
                     preload_behavior,
                     recursion_depth + 1);
             }

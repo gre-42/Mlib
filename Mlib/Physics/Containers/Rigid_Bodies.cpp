@@ -33,7 +33,8 @@ void RigidBodies::add_rigid_body(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
     CollidableMode collidable_mode,
-    const PhysicsResourceFilter& physics_resource_filter)
+    const PhysicsResourceFilter& physics_resource_filter,
+    CollisionRidgeErrorBehavior collision_ridge_error_behavior)
 {
     auto& rb = *rigid_body;
     if (!rigid_bodies_.try_emplace(rigid_body.get(), std::move(rigid_body)).second) {
@@ -121,7 +122,7 @@ void RigidBodies::add_rigid_body(
                             for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, {rb, t.base});
                             }
-                            auto insert_triangle = [this, &rb](
+                            auto insert_triangle = [this, &rb, collision_ridge_error_behavior](
                                 CollisionRidgesRigidBody& collision_ridges,
                                 const CollisionTriangleAabb& t)
                             {
@@ -130,7 +131,8 @@ void RigidBodies::add_rigid_body(
                                     t.base.plane.normal,
                                     cfg_.max_min_cos_ridge,
                                     t.base.physics_material,
-                                    rb);
+                                    rb,
+                                    collision_ridge_error_behavior);
                             };
                             if (any(m->physics_material & PhysicsMaterial::ATTR_SELF_CONTAINED)) {
                                 CollisionRidgesRigidBody collision_ridges;

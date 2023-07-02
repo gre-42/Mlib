@@ -23,6 +23,7 @@ void Mlib::merge_blended_materials(
     const std::string& merged_resource_name,
     const std::string& merged_texture_name,
     const std::string& merged_array_name,
+    BlendMode merged_blend_mode,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const MergedTextureFilter& filter)
@@ -35,7 +36,8 @@ void Mlib::merge_blended_materials(
          mesh_resource_name,
          merged_resource_name,
          merged_texture_name,
-         merged_array_name]
+         merged_array_name,
+         merged_blend_mode]
         (ISceneNodeResource& scene_node_resource){
             std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
             std::map<std::string, std::list<ColoredVertexArray<double>*>> excluded_filenames;
@@ -43,7 +45,7 @@ void Mlib::merge_blended_materials(
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
                     MergedTextureName merged_texture_name{cva->material};
-                    if (cva->material.blend_mode == BlendMode::CONTINUOUS) {
+                    if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         if (cva->material.textures.size() != 1) {
                             THROW_OR_ABORT("Material \"" + cva->material.identifier() + "\" does not have exactly one texture");
                         }
@@ -76,7 +78,7 @@ void Mlib::merge_blended_materials(
             }
             for (const auto& [_, cvas] : excluded_filenames) {
                 for (const auto& cva : cvas) {
-                    if (cva->material.blend_mode == BlendMode::CONTINUOUS) {
+                    if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }
                 }
@@ -115,7 +117,7 @@ void Mlib::merge_blended_materials(
                     std::make_shared<ColoredVertexArray<double>>(
                     merged_array_name,
                     Material{
-                        .blend_mode = BlendMode::CONTINUOUS,
+                        .blend_mode = merged_blend_mode,
                         .textures = {{.texture_descriptor = {
                             .color = merged_texture_name,
                             .color_mode = ColorMode::RGBA,

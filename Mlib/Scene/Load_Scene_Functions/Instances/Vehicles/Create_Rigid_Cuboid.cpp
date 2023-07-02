@@ -1,7 +1,9 @@
 #include "Create_Rigid_Cuboid.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Save_Triangle_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -34,6 +36,7 @@ DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
+DECLARE_ARGUMENT(collision_ridge_error_behavior);
 }
 
 const std::string CreateRigidCuboid::key = "rigid_cuboid";
@@ -83,7 +86,13 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             PhysicsResourceFilter{
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}},
+            collision_ridge_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::collision_ridge_error_behavior, "throw")));
+    } catch (const TriangleException<double>& e) {
+        if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
+            save_triangle_to_obj(filename, {e.a, e.b, e.c});
+        }
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     } catch (const TriangleEdgeException<double>& e) {
         if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
             save_triangle_to_obj(filename, {e.a, e.b, e.c});

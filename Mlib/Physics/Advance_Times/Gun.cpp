@@ -1,6 +1,7 @@
 #include "Gun.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
@@ -155,7 +156,8 @@ void Gun::generate_bullet() {
             scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->scvas,
             scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->dcvas,
             CollidableMode::MOVING,
-            PhysicsResourceFilter{});
+            PhysicsResourceFilter{},
+            CollisionRidgeErrorBehavior::THROW);
     }
     std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();
     auto bullet = std::make_unique<Bullet>(

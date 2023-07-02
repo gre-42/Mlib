@@ -21,7 +21,8 @@ public:
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
         PhysicsMaterial physics_material,
-        RigidBodyVehicle& rb);
+        RigidBodyVehicle& rb,
+        CollisionRidgeErrorBehavior error_behavior);
 protected:
     void insert(
         const FixedArray<double, 3>& a,
@@ -29,7 +30,8 @@ protected:
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
         PhysicsMaterial physics_material,
-        RigidBodyVehicle& rb);
+        RigidBodyVehicle& rb,
+        CollisionRidgeErrorBehavior error_behavior);
 private:
     Ridges ridges_;
 };

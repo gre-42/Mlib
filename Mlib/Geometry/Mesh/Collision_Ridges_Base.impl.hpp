@@ -1,6 +1,7 @@
 #include "Collision_Ridges_Base.hpp"
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 
 using namespace Mlib;
 
@@ -13,22 +14,31 @@ CollisionRidgesBase<TOrderableRidgeSphere>::~CollisionRidgesBase() = default;
 template <class TOrderableRidgeSphere>
 void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
     const TOrderableRidgeSphere& ridge,
-    double max_min_cos_ridge)
+    double max_min_cos_ridge,
+    CollisionRidgeErrorBehavior error_behavior)
 {
+    const auto& ridge_normal = ridge.collision_ridge_sphere.normal;
+    if (all(abs(ridge_normal) < 1e-12)) {
+        THROW_OR_ABORT("Ridge has triangle-normal close to or equal 0");
+    }
     auto previous_ridge = ridges_.find(ridge);
     if (previous_ridge == ridges_.end()) {
         if (!ridges_.insert(ridge).second) {
             THROW_OR_ABORT("CollisionRidges::insert internal error");
         }
     } else {
-        const auto& ridge_normal = ridge.collision_ridge_sphere.normal;
         auto& old_ridge = const_cast<CollisionRidgeSphere&>(previous_ridge->collision_ridge_sphere);
         if (!std::isnan(old_ridge.min_cos)) {
             EdgeException<double> exc{
                 ridge.collision_ridge_sphere.edge(0),
                 ridge.collision_ridge_sphere.edge(1),
                 "Detected duplicate triangles touching the same ridge"};
-            THROW_OR_ABORT2(exc);
+            if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
+                lwarn() << exc.str("Could not calculate ridge", nullptr);
+            } else {
+                THROW_OR_ABORT2(exc);
+            }
+            return;
         }
         if (dot0d(cross(old_ridge.edge(1) - old_ridge.edge(0), old_ridge.normal), ridge_normal) < 0) {
             ridges_.erase(previous_ridge);
@@ -41,7 +51,12 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
                 ridge.collision_ridge_sphere.edge(0),
                 ridge.collision_ridge_sphere.edge(1),
                 "Detected parallel triangles with opposing faces"};
-            THROW_OR_ABORT2(exc);
+            if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
+                lwarn() << exc.str("Could not calculate ridge", nullptr);
+            } else {
+                THROW_OR_ABORT2(exc);
+            }
+            return;
         }
         old_ridge.normal = average_normal / std::sqrt(len2);
         old_ridge.min_cos = dot0d(old_ridge.normal, ridge_normal);
