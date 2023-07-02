@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
          "--light_beacon",
          "--light_beacon_scale",
          "--laplace_ao_strength",
-         "--merged_include"
+         "--merged_include",
          "--merged_exclude"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -527,7 +527,9 @@ int main(int argc, char** argv) {
                 }
             }
             scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(scene_node_resources, resource_names));
-            if (args.has_named_value("--merged_filter")) {
+            if (args.has_named_value("--merged_include") ||
+                args.has_named_value("--merged_exclude"))
+            {
                 merge_blended_materials(
                     "objs",
                     "merged_resource",
@@ -537,8 +539,8 @@ int main(int argc, char** argv) {
                     scene_node_resources,
                     *RenderingContextStack::primary_rendering_resources(),
                     MergedTextureFilter{
-                        .included_names = Mlib::compile_regex(args.named_value("--merged_include")),
-                        .excluded_names = Mlib::compile_regex(args.named_value("--merged_exclude"))
+                        .included_names = Mlib::compile_regex(args.named_value("--merged_include", "")),
+                        .excluded_names = Mlib::compile_regex(args.named_value("--merged_exclude", "$ ^"))
                     });
             }
             {
