@@ -1,13 +1,10 @@
 #pragma once
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 
 namespace Mlib {
 
-enum class TerrainType;
-template <class EntityType>
-class EntityTypeTriangleList;
-typedef EntityTypeTriangleList<TerrainType> TerrainTypeTriangleList;
-struct OsmResourceConfig;
+struct TerrainTriangles;
+struct TriangleSamplerResourceConfig;
 class HeterogeneousResource;
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
@@ -15,14 +12,14 @@ class Bvh;
 class TerrainStyles {
 public:
     TerrainStyles();
-    explicit TerrainStyles(const OsmResourceConfig& config);
+    explicit TerrainStyles(const TriangleSamplerResourceConfig& config);
 
     void add_near_hitboxes(
-        const TerrainTypeTriangleList& tl_terrain,
+        const TerrainTriangles& tl_terrain,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
         HeterogeneousResource& hri);
     void add_far_hitboxes(
-        const TerrainTypeTriangleList& tl_terrain,
+        const TerrainTriangles& tl_terrain,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
         HeterogeneousResource& hri);
     bool requires_renderer() const;

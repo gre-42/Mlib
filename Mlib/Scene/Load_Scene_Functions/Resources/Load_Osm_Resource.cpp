@@ -10,9 +10,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -257,6 +257,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
     };
 
     OsmResourceConfig config;
+    auto& tconfig = config.triangle_sampler_resource_config;
     std::string cache_filename;
     std::string resource_name;
     std::vector<double> layer_heights_layer;
@@ -311,12 +312,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.heightmap_extension = args.arguments.at<size_t>(KnownArgs::heightmap_extension);
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap)) {
-            config.near_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
-            config.far_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
+            tconfig.near_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
+            tconfig.far_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap_period)) {
-            config.near_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
-            config.far_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
+            tconfig.near_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
+            tconfig.far_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
         }
         if (args.arguments.contains(KnownArgs::terrain_undefined_materials)) {
             config.terrain_undefined_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::terrain_undefined_materials));
@@ -521,46 +522,46 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.grass_resource_names = args.arguments.children(KnownArgs::grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_grass_resource_names)) {
-            config.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_grass_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_dirty_grass_resource_names)) {
-            config.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::near_dirty_grass_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::near_dirty_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_grass_resource_names)) {
-            config.far_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_grass_resource_names, parse_resource_name_func);
+            tconfig.far_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_dirty_grass_resource_names)) {
-            config.far_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::far_dirty_grass_resource_names, parse_resource_name_func);
+            tconfig.far_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::far_dirty_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside1_grass_resource_names)) {
-            config.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside1_grass_resource_names, parse_resource_name_func);
+            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside1_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside2_grass_resource_names)) {
-            config.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside2_grass_resource_names, parse_resource_name_func);
+            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside2_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_rocks_resource_names)) {
-            config.near_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside1_rocks_resource_names)) {
-            config.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside1_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside1_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside2_rocks_resource_names)) {
-            config.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside2_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside2_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_flowers_resource_names)) {
-            config.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_flowers_resource_names, parse_resource_name_func);
+            tconfig.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_flowers_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_flowers_resource_names)) {
-            config.far_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_flowers_resource_names, parse_resource_name_func);
+            tconfig.far_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_flowers_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_trees_resource_names)) {
-            config.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_trees_resource_names, parse_resource_name_func);
+            tconfig.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_trees_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_trees_resource_names)) {
-            config.far_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_trees_resource_names, parse_resource_name_func);
+            tconfig.far_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_trees_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::dirt_decals_resource_names)) {
-            config.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
+            tconfig.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::wayside_resource_names)) {
             config.waysides = args.arguments.children(KnownArgs::wayside_resource_names, [&parse_resource_name_func](const JsonMacroArguments& a){
@@ -669,31 +670,31 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.much_grass_distance = args.arguments.at<float>(KnownArgs::much_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_grass_distance)) {
-            config.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance);
+            tconfig.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_far_grass_distance)) {
-            config.far_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_grass_distance);
+            tconfig.far_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_wayside1_grass_distance)) {
-            config.near_wayside1_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside1_grass_distance);
+            tconfig.near_wayside1_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside1_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_wayside2_grass_distance)) {
-            config.near_wayside2_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside2_grass_distance);
+            tconfig.near_wayside2_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_wayside2_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_flowers_distance)) {
-            config.near_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_flowers_distance);
+            tconfig.near_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_flowers_distance);
         }
         if (args.arguments.contains(KnownArgs::much_far_flowers_distance)) {
-            config.far_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_flowers_distance);
+            tconfig.far_flowers_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_flowers_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_trees_distance)) {
-            config.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance);
+            tconfig.near_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_trees_distance);
         }
         if (args.arguments.contains(KnownArgs::much_far_trees_distance)) {
-            config.far_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_trees_distance);
+            tconfig.far_trees_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_far_trees_distance);
         }
         if (args.arguments.contains(KnownArgs::dirt_decals_distance)) {
-            config.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance);
+            tconfig.no_grass_decals_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::dirt_decals_distance);
         }
         if (args.arguments.contains(KnownArgs::raceway_beacon_distance)) {
             config.raceway_beacon_distance = args.arguments.at<float>(KnownArgs::raceway_beacon_distance);

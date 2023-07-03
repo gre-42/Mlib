@@ -58,9 +58,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Project_Nodes_Onto_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Racing_Line_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Report_Osm_Problems.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_And_Apply_Heightmap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Smoothen_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
@@ -74,8 +72,11 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
-#include <Mlib/Osm_Loader/Renderable_Osm_Map.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -114,7 +115,7 @@ OsmMapResource::OsmMapResource(
 : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
   scene_node_resources_{ scene_node_resources },
   scale_{ config.scale },
-  terrain_styles_{ config }
+  terrain_styles_{ config.triangle_sampler_resource_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws_or;
@@ -1215,9 +1216,9 @@ OsmMapResource::OsmMapResource(
     // Extract wayside1_grass triangles from wayside2_grass triangles
     split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style_.distances_to_bdry());
     LOG_INFO("add near hitboxes");
-    terrain_styles_.add_near_hitboxes(*tl_terrain_, street_bvh(), hri_);
+    terrain_styles_.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
     LOG_INFO("add far instances");
-    terrain_styles_.add_far_hitboxes(*tl_terrain_, street_bvh(), hri_);
+    terrain_styles_.add_far_hitboxes(terrain_triangles(), street_bvh(), hri_);
     LOG_INFO("save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);
@@ -1448,11 +1449,36 @@ void OsmMapResource::preload() const {
     hri_.preload();
 }
 
+TerrainTriangles OsmMapResource::terrain_triangles() const {
+    return TerrainTriangles{
+        .grass = tl_terrain_->contains(TerrainType::GRASS) ? &(*tl_terrain_)[TerrainType::GRASS]->triangles_ : nullptr,
+        .elevated_grass = tl_terrain_->contains(TerrainType::ELEVATED_GRASS) ? &(*tl_terrain_)[TerrainType::ELEVATED_GRASS]->triangles_ : nullptr,
+        .wayside1_grass = tl_terrain_->contains(TerrainType::WAYSIDE1_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE1_GRASS]->triangles_ : nullptr,
+        .wayside2_grass = tl_terrain_->contains(TerrainType::WAYSIDE2_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE2_GRASS]->triangles_ : nullptr,
+        .flowers = tl_terrain_->contains(TerrainType::FLOWERS) ? &(*tl_terrain_)[TerrainType::FLOWERS]->triangles_ : nullptr,
+        .trees = tl_terrain_->contains(TerrainType::TREES) ? &(*tl_terrain_)[TerrainType::TREES]->triangles_ : nullptr
+    };
+}
+
+std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::no_grass() const {
+    std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> result;
+    for (const auto& lst : tls_no_grass_) {
+        result.push_back(&lst->triangles_);
+    }
+    return result;
+}
+
 void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     hri_.instantiate_renderable(options);
     if (terrain_styles_.requires_renderer()) {
-        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableOsmMap>(*this));
+        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
+            scene_node_resources_,
+            terrain_styles_,
+            terrain_triangles(),
+            no_grass(),
+            &street_bvh(),
+            scale_));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);

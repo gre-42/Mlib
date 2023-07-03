@@ -7,8 +7,9 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <cmath>
@@ -88,15 +89,7 @@ struct OsmResourceConfig {
     std::string roof_texture;
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
-    TerrainStyleConfig near_grass_terrain_style_config{ .much_near_distance = 2 };
-    TerrainStyleConfig far_grass_terrain_style_config{ .much_near_distance = 20 };
-    TerrainStyleConfig near_wayside1_grass_terrain_style_config{ .much_near_distance = 1 };
-    TerrainStyleConfig near_wayside2_grass_terrain_style_config{ .much_near_distance = 1 };
-    TerrainStyleConfig near_flowers_terrain_style_config{ .much_near_distance = 2 };
-    TerrainStyleConfig far_flowers_terrain_style_config{ .much_near_distance = 5 };
-    TerrainStyleConfig near_trees_terrain_style_config{ .much_near_distance = 5 };
-    TerrainStyleConfig far_trees_terrain_style_config{ .much_near_distance = 20 };
-    TerrainStyleConfig no_grass_decals_terrain_style_config{ .much_near_distance = 10 };
+    TriangleSamplerResourceConfig triangle_sampler_resource_config;
     std::vector<WaysideResourceNames> waysides;
     TerrainType bounding_terrain_type = TerrainType::UNDEFINED;
     TerrainType default_terrain_type = TerrainType::UNDEFINED;

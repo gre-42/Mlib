@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <list>
 #include <memory>
 

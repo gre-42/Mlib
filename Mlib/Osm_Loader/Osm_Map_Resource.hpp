@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Styles.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
@@ -22,6 +22,8 @@ class EdgeException;
 template <class TPos>
 class TriangleException;
 template <class TPos>
+struct ColoredVertex;
+template <class TPos>
 class TriangleList;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
@@ -39,7 +41,6 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh;
 
 class OsmMapResource: public ISceneNodeResource {
-    friend class RenderableOsmMap;
 public:
     OsmMapResource(
         SceneNodeResources& scene_node_resources,
@@ -107,6 +108,9 @@ private:
     void handle_point_exception(const p2t::PointException& e, const std::string& message) const;
     void handle_edge_exception(const EdgeException<double>& e, const std::string& message) const;
     void handle_triangle_exception(const TriangleException<double>& e, const std::string& message) const;
+
+    TerrainTriangles terrain_triangles() const;
+    std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass() const;
 
     HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;

@@ -1,4 +1,4 @@
-#include "Renderable_Osm_Map.hpp"
+#include "Renderable_Triangle_Sampler.hpp"
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
@@ -6,13 +6,11 @@
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Resource_Name_Cycle.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Sample_Triangle_Interior_Instances.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Style.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Terrain_Type.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -22,24 +20,35 @@
 
 using namespace Mlib;
 
-RenderableOsmMap::RenderableOsmMap(const OsmMapResource& omr)
-: omr_{omr}
+RenderableTriangleSampler::RenderableTriangleSampler(
+    const SceneNodeResources& scene_node_resources,
+    const TerrainStyles& terrain_styles,
+    const TerrainTriangles& terrain_triangles,
+    const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
+    const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
+    double scale)
+: scene_node_resources_{scene_node_resources},
+  terrain_styles_{terrain_styles},
+  terrain_triangles_{terrain_triangles},
+  no_grass_{no_grass},
+  street_bvh_{street_bvh},
+  scale_{scale}
 {}
 
-RenderableOsmMap::~RenderableOsmMap()
+RenderableTriangleSampler::~RenderableTriangleSampler()
 {}
 
-bool RenderableOsmMap::requires_render_pass(ExternalRenderPassType render_pass) const
+bool RenderableTriangleSampler::requires_render_pass(ExternalRenderPassType render_pass) const
 {
     return false;
 }
 
-bool RenderableOsmMap::requires_blending_pass(ExternalRenderPassType render_pass) const
+bool RenderableTriangleSampler::requires_blending_pass(ExternalRenderPassType render_pass) const
 {
     return false;
 }
 
-void RenderableOsmMap::append_sorted_instances_to_queue(
+void RenderableTriangleSampler::append_sorted_instances_to_queue(
     const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
@@ -51,7 +60,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto sample_triangles = [&](
         const Bvh<double, TriangleAndSeed, 3>& triangle_bvh,
-        SceneNodeResources& scene_node_resources,
+        const SceneNodeResources& scene_node_resources,
         const TerrainStyle& terrain_style,
         double scale,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
@@ -82,7 +91,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
                     const FixedArray<double, 3>& p,
                     const ParsedResourceName& prn)
                 {
-                    auto scvas = omr_.scene_node_resources_.get_single_precision_arrays(prn.name);
+                    auto scvas = scene_node_resources_.get_single_precision_arrays(prn.name);
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
                     auto mvp_instance = dot2d(mvp, mi_rel.affine());
                     auto m_instance_d = m * mi_rel;
@@ -113,7 +122,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     auto add_triangles = [](
         std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>& bvhs,
         const TerrainStyle& terrain_style,
-        const TriangleList<double>& gtl)
+        const std::list<FixedArray<ColoredVertex<double>, 3>>& gtl)
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {
@@ -124,7 +133,7 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
             it = ins.first;
         }
         unsigned int seed = 0;
-        for (const auto& t : gtl.triangles_) {
+        for (const auto& t : gtl) {
             ++seed;
             AxisAlignedBoundingBox<double, 3> aabb{FixedArray<FixedArray<double, 3>, 3>{
                 t(0).position,
@@ -135,63 +144,63 @@ void RenderableOsmMap::append_sorted_instances_to_queue(
     };
     if (!grass_bvhs_.has_value()) {
         grass_bvhs_.emplace();
-        if (omr_.terrain_styles_.near_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::GRASS); tit != omr_.tl_terrain_->map().end())
+        if (terrain_styles_.near_grass_terrain_style_.is_visible()) {
+            if (auto tris = terrain_triangles_.grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_grass_terrain_style_, *tit->second);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style_, *tris);
             }
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::ELEVATED_GRASS); tit != omr_.tl_terrain_->map().end())
+            if (auto tris = terrain_triangles_.elevated_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_grass_terrain_style_, *tit->second);
-            }
-        }
-        if (omr_.terrain_styles_.near_wayside1_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::WAYSIDE1_GRASS); tit != omr_.tl_terrain_->map().end())
-            {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_wayside1_grass_terrain_style_, *tit->second);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style_, *tris);
             }
         }
-        if (omr_.terrain_styles_.near_wayside2_grass_terrain_style_.is_visible()) {
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::WAYSIDE2_GRASS); tit != omr_.tl_terrain_->map().end())
+        if (terrain_styles_.near_wayside1_grass_terrain_style_.is_visible()) {
+            if (auto tris = terrain_triangles_.wayside1_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_wayside2_grass_terrain_style_, *tit->second);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside1_grass_terrain_style_, *tris);
             }
         }
-        if (omr_.terrain_styles_.near_flowers_terrain_style_.is_visible()) {
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::FLOWERS); tit != omr_.tl_terrain_->map().end())
+        if (terrain_styles_.near_wayside2_grass_terrain_style_.is_visible()) {
+            if (auto tris = terrain_triangles_.wayside2_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_flowers_terrain_style_, *tit->second);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside2_grass_terrain_style_, *tris);
             }
         }
-        if (omr_.terrain_styles_.near_trees_terrain_style_.is_visible()) {
-            if (auto tit = omr_.tl_terrain_->map().find(TerrainType::TREES); tit != omr_.tl_terrain_->map().end())
+        if (terrain_styles_.near_flowers_terrain_style_.is_visible()) {
+            if (auto tris = terrain_triangles_.flowers; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), omr_.terrain_styles_.near_trees_terrain_style_, *tit->second);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_flowers_terrain_style_, *tris);
+            }
+        }
+        if (terrain_styles_.near_trees_terrain_style_.is_visible()) {
+            if (auto tris = terrain_triangles_.trees; tris != nullptr)
+            {
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_trees_terrain_style_, *tris);
             }
         }
     }
     for (const auto& [style, bvh] : grass_bvhs_.value()) {
         sample_triangles(
             bvh,
-            omr_.scene_node_resources_,
+            scene_node_resources_,
             *style,
-            omr_.scale_,
-            &omr_.street_bvh());
+            scale_,
+            street_bvh_);
     }
     if (!no_grass_bvhs_.has_value()) {
         no_grass_bvhs_.emplace();
-        if (omr_.terrain_styles_.no_grass_decals_terrain_style_.is_visible()) {
-            for (const auto& lst : omr_.tls_no_grass_) {
-                add_triangles(no_grass_bvhs_.value(), omr_.terrain_styles_.no_grass_decals_terrain_style_, *lst);
+        if (terrain_styles_.no_grass_decals_terrain_style_.is_visible()) {
+            for (const auto& lst : no_grass_) {
+                add_triangles(no_grass_bvhs_.value(), terrain_styles_.no_grass_decals_terrain_style_, *lst);
             }
         }
     }
     for (const auto& [style, bvh] : no_grass_bvhs_.value()) {
         sample_triangles(
             bvh,
-            omr_.scene_node_resources_,
+            scene_node_resources_,
             *style,
-            omr_.scale_,
+            scale_,
             nullptr);
     }
 }

@@ -25,7 +25,7 @@ bool TerrainStyle::is_visible() const {
     return config.is_visible();
 }
 
-double TerrainStyle::max_distance_to_camera(SceneNodeResources& scene_node_resources) const {
+double TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_node_resources) const {
     {
         std::shared_lock lock{max_distance_to_camera_mutex_};
         if (!std::isnan(max_distance_to_camera_)) {

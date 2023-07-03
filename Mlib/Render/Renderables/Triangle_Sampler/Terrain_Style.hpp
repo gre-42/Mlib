@@ -41,7 +41,7 @@ public:
     TerrainStyleConfig config;
     const Array<float>& foliagemap() const;
     bool is_visible() const;
-    double max_distance_to_camera(SceneNodeResources& scene_node_resources) const;
+    double max_distance_to_camera(const SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
     template <class Archive>
     void serialize(Archive& archive) {
