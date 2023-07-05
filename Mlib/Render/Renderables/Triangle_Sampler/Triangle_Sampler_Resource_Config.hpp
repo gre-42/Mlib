@@ -14,8 +14,6 @@ struct TriangleSamplerResourceConfig {
     TerrainStyleConfig near_trees_terrain_style_config{ .much_near_distance = 5 };
     TerrainStyleConfig far_trees_terrain_style_config{ .much_near_distance = 20 };
     TerrainStyleConfig no_grass_decals_terrain_style_config{ .much_near_distance = 10 };
-    float scale;
-    FixedArray<float, 3> up;
 };
 
 }

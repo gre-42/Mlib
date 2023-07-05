@@ -77,6 +77,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -1212,13 +1213,16 @@ OsmMapResource::OsmMapResource(
         }
     };
     // Extract wayside2_grass triangles from grass triangles
-    split_grass(TerrainType::GRASS, TerrainType::WAYSIDE2_GRASS, terrain_styles_.near_wayside2_grass_terrain_style_.distances_to_bdry());
+    split_grass(TerrainType::GRASS, TerrainType::WAYSIDE2_GRASS, terrain_styles_.near_wayside2_grass_terrain_style.distances_to_bdry());
     // Extract wayside1_grass triangles from wayside2_grass triangles
-    split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style_.distances_to_bdry());
-    LOG_INFO("add near hitboxes");
-    terrain_styles_.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
-    LOG_INFO("add far instances");
-    terrain_styles_.add_far_hitboxes(terrain_triangles(), street_bvh(), hri_);
+    split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style.distances_to_bdry());
+    {
+        CollidableTriangleSampler cts{terrain_styles_, scale_, {0.f, 0.f, 1.f}};
+        LOG_INFO("add near hitboxes");
+        cts.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
+        LOG_INFO("add far instances");
+        cts.add_far_hitboxes(terrain_triangles(), street_bvh(), hri_);
+    }
     LOG_INFO("save obj files if requested");
     save_to_obj_file_if_requested(debug_prefix);
     save_bad_triangles_to_obj_file_if_requested(debug_prefix);

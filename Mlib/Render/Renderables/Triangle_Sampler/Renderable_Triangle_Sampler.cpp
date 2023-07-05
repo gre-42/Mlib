@@ -145,38 +145,38 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     };
     if (!grass_bvhs_.has_value()) {
         grass_bvhs_.emplace();
-        if (terrain_styles_.near_grass_terrain_style_.is_visible()) {
+        if (terrain_styles_.near_grass_terrain_style.is_visible()) {
             if (auto tris = terrain_triangles_.grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style, *tris);
             }
             if (auto tris = terrain_triangles_.elevated_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style, *tris);
             }
         }
-        if (terrain_styles_.near_wayside1_grass_terrain_style_.is_visible()) {
+        if (terrain_styles_.near_wayside1_grass_terrain_style.is_visible()) {
             if (auto tris = terrain_triangles_.wayside1_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside1_grass_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside1_grass_terrain_style, *tris);
             }
         }
-        if (terrain_styles_.near_wayside2_grass_terrain_style_.is_visible()) {
+        if (terrain_styles_.near_wayside2_grass_terrain_style.is_visible()) {
             if (auto tris = terrain_triangles_.wayside2_grass; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside2_grass_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside2_grass_terrain_style, *tris);
             }
         }
-        if (terrain_styles_.near_flowers_terrain_style_.is_visible()) {
+        if (terrain_styles_.near_flowers_terrain_style.is_visible()) {
             if (auto tris = terrain_triangles_.flowers; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_flowers_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_flowers_terrain_style, *tris);
             }
         }
-        if (terrain_styles_.near_trees_terrain_style_.is_visible()) {
+        if (terrain_styles_.near_trees_terrain_style.is_visible()) {
             if (auto tris = terrain_triangles_.trees; tris != nullptr)
             {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_trees_terrain_style_, *tris);
+                add_triangles(grass_bvhs_.value(), terrain_styles_.near_trees_terrain_style, *tris);
             }
         }
     }
@@ -188,9 +188,9 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     }
     if (!no_grass_bvhs_.has_value()) {
         no_grass_bvhs_.emplace();
-        if (terrain_styles_.no_grass_decals_terrain_style_.is_visible()) {
+        if (terrain_styles_.no_grass_decals_terrain_style.is_visible()) {
             for (const auto& lst : no_grass_) {
-                add_triangles(no_grass_bvhs_.value(), terrain_styles_.no_grass_decals_terrain_style_, *lst);
+                add_triangles(no_grass_bvhs_.value(), terrain_styles_.no_grass_decals_terrain_style, *lst);
             }
         }
     }

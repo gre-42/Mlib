@@ -36,9 +36,7 @@ FoliageResource::FoliageResource(
         .far_flowers_terrain_style_config = { .much_near_distance = 5 },
         .near_trees_terrain_style_config = { .much_near_distance = 5 },
         .far_trees_terrain_style_config = { .much_near_distance = 20 },
-        .no_grass_decals_terrain_style_config = { .much_near_distance = 10 },
-        .scale = scale,
-        .up = up
+        .no_grass_decals_terrain_style_config = { .much_near_distance = 10 }
     }},
   scale_{scale},
   up_{up}
