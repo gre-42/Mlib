@@ -16,6 +16,8 @@ void merge_blended_materials(
     const std::string& merged_array_name,
     BlendMode merged_blend_mode,
     AggregateMode merged_aggregate_mode,
+    float merged_max_triangle_distance,
+    bool merged_cull_faces,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const MergedTextureFilter& filter);

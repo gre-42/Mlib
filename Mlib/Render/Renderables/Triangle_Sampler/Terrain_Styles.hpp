@@ -27,6 +27,7 @@ public:
     template <class Archive>
     void serialize(Archive& archive) {
         archive(scale_);
+        archive(up_);
         archive(near_grass_terrain_style_);
         archive(far_grass_terrain_style_);
         archive(near_wayside1_grass_terrain_style_);
@@ -49,6 +50,7 @@ public:
     TerrainStyle no_grass_decals_terrain_style_{ TerrainStyleConfig{ .much_near_distance = 10 } };
 private:
     float scale_;
+    FixedArray<float, 3> up_;
 };
 
 }

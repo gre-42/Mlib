@@ -1478,7 +1478,8 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
             terrain_triangles(),
             no_grass(),
             &street_bvh(),
-            scale_));
+            scale_,
+            FixedArray<float, 3>{0.f, 0.f, 1.f}));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);

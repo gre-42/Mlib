@@ -13,7 +13,8 @@
 using namespace Mlib;
 
 TerrainStyles::TerrainStyles()
-: scale_{NAN}
+: scale_{NAN},
+  up_(NAN)
 {}
 
 TerrainStyles::TerrainStyles(const TriangleSamplerResourceConfig& config)
@@ -26,7 +27,8 @@ TerrainStyles::TerrainStyles(const TriangleSamplerResourceConfig& config)
   near_trees_terrain_style_{ config.near_trees_terrain_style_config },
   far_trees_terrain_style_{ config.far_trees_terrain_style_config },
   no_grass_decals_terrain_style_{ config.no_grass_decals_terrain_style_config },
-  scale_{config.scale}
+  scale_{config.scale},
+  up_{config.up}
 {}
 
 void TerrainStyles::add_near_hitboxes(
@@ -56,6 +58,7 @@ void TerrainStyles::add_near_hitboxes(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale_,
+            up_,
             &street_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};
@@ -129,6 +132,7 @@ void TerrainStyles::add_far_hitboxes(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale_,
+            up_,
             &street_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};

@@ -23,7 +23,7 @@
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
-#include <Mlib/Render/Merge_Blended_Materials.hpp>
+#include <Mlib/Render/Modifiers/Merge_Blended_Materials.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -537,6 +537,8 @@ int main(int argc, char** argv) {
                     "merged_array",
                     BlendMode::SEMI_CONTINUOUS_02,
                     AggregateMode::SORTED_CONTINUOUSLY,
+                    INFINITY,   // merged_max_triangle_distance,
+                    false,      // merged_cull_faces
                     scene_node_resources,
                     *RenderingContextStack::primary_rendering_resources(),
                     MergedTextureFilter{

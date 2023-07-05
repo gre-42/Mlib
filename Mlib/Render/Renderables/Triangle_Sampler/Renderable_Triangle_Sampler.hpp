@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <list>
@@ -9,8 +10,6 @@ namespace Mlib {
 
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
-template <typename TData, size_t... tshape>
-class FixedArray;
 template <class TPos>
 struct ColoredVertex;
 class TerrainStyle;
@@ -30,7 +29,8 @@ public:
         const TerrainTriangles& terrain_triangles,
         const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
-        double scale);
+        double scale,
+        const FixedArray<float, 3>& up);
     virtual ~RenderableTriangleSampler();
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
@@ -49,6 +49,7 @@ private:
     const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass_;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh_;
     double scale_;
+    FixedArray<float, 3> up_;
     mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> grass_bvhs_;
     mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> no_grass_bvhs_;
 };

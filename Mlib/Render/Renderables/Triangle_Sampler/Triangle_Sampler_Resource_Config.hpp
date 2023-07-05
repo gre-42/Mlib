@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 
 namespace Mlib {
@@ -14,6 +15,7 @@ struct TriangleSamplerResourceConfig {
     TerrainStyleConfig far_trees_terrain_style_config{ .much_near_distance = 20 };
     TerrainStyleConfig no_grass_decals_terrain_style_config{ .much_near_distance = 10 };
     float scale;
+    FixedArray<float, 3> up;
 };
 
 }

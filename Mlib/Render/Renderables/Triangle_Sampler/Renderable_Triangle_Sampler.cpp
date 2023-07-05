@@ -26,13 +26,15 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const TerrainTriangles& terrain_triangles,
     const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
-    double scale)
+    double scale,
+    const FixedArray<float, 3>& up)
 : scene_node_resources_{scene_node_resources},
   terrain_styles_{terrain_styles},
   terrain_triangles_{terrain_triangles},
   no_grass_{no_grass},
   street_bvh_{street_bvh},
-  scale_{scale}
+  scale_{scale},
+  up_{up}
 {}
 
 RenderableTriangleSampler::~RenderableTriangleSampler()
@@ -60,16 +62,15 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto sample_triangles = [&](
         const Bvh<double, TriangleAndSeed, 3>& triangle_bvh,
-        const SceneNodeResources& scene_node_resources,
         const TerrainStyle& terrain_style,
-        double scale,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
     {
-        double max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources);
+        double max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources_);
 
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
-            scale,
+            scale_,
+            up_,
             boundary_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};
@@ -80,7 +81,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                     t.triangle(1).position,
                     t.triangle(2).position}};
                 auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
-                if (!VisibilityCheck{ mvp_center }.is_visible(2. * bs.radius() / scale + max_distance_to_camera)) {
+                if (!VisibilityCheck{ mvp_center }.is_visible(2. * bs.radius() / scale_ + max_distance_to_camera)) {
                     return;
                 }
             }
@@ -112,7 +113,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         } else {
             auto rel_camera_position = m.inverted_scaled().transform(iv.t());
             triangle_bvh.visit(
-                AxisAlignedBoundingBox<double, 3>{rel_camera_position, max_distance_to_camera * scale},
+                AxisAlignedBoundingBox<double, 3>{rel_camera_position, max_distance_to_camera * scale_},
                 [&traverse_triangle](const TriangleAndSeed& t){
                     traverse_triangle(t);
                     return true;
@@ -182,9 +183,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     for (const auto& [style, bvh] : grass_bvhs_.value()) {
         sample_triangles(
             bvh,
-            scene_node_resources_,
             *style,
-            scale_,
             street_bvh_);
     }
     if (!no_grass_bvhs_.has_value()) {
@@ -198,9 +197,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     for (const auto& [style, bvh] : no_grass_bvhs_.value()) {
         sample_triangles(
             bvh,
-            scene_node_resources_,
             *style,
-            scale_,
             nullptr);
     }
 }

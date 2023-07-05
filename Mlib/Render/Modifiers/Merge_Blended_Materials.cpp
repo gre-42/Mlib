@@ -25,6 +25,8 @@ void Mlib::merge_blended_materials(
     const std::string& merged_array_name,
     BlendMode merged_blend_mode,
     AggregateMode merged_aggregate_mode,
+    float merged_max_triangle_distance,
+    bool merged_cull_faces,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     const MergedTextureFilter& filter)
@@ -39,7 +41,9 @@ void Mlib::merge_blended_materials(
          merged_texture_name,
          merged_array_name,
          merged_blend_mode,
-         merged_aggregate_mode]
+         merged_aggregate_mode,
+         merged_max_triangle_distance,
+         merged_cull_faces]
         (ISceneNodeResource& scene_node_resource){
             std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
             std::map<std::string, std::list<ColoredVertexArray<double>*>> excluded_filenames;
@@ -125,7 +129,8 @@ void Mlib::merge_blended_materials(
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
                         .aggregate_mode = merged_aggregate_mode,
-                        .cull_faces = false,
+                        .max_triangle_distance = merged_max_triangle_distance,
+                        .cull_faces = merged_cull_faces,
                         .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
                         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
