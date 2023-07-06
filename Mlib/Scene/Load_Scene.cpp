@@ -192,6 +192,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Blended_Materials.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Meshes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Physics_Material_Tags.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Texture_Interpolation_Mode.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Obj_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
@@ -401,6 +402,7 @@ LoadScene::LoadScene() {
     register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
     register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
     register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);
+    register_json_user_function(ModifyTextureInterpolationMode::key, ModifyTextureInterpolationMode::json_user_function);
     register_json_user_function(PrintResource::key, PrintResource::json_user_function);
     register_json_user_function(Echo::key, Echo::json_user_function);
     register_json_user_function(CreateTapButton::key, CreateTapButton::json_user_function);

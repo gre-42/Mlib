@@ -647,7 +647,13 @@ void RenderableColoredVertexArray::render_cva(
         if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+            if (cva->material.magnifying_interpolation_mode == InterpolationMode::NEAREST) {
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+            } else if (cva->material.magnifying_interpolation_mode == InterpolationMode::LINEAR) {
+                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+            } else {
+                THROW_OR_ABORT("Unknown interpolation mode");
+            }
         }
     };
     if (tic.ntextures_color != 0) {

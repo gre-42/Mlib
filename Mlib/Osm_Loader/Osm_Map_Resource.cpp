@@ -73,11 +73,11 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Resource_Names.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Renderable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
-#include <Mlib/Render/Renderables/Triangle_Sampler/Collidable_Triangle_Sampler.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>

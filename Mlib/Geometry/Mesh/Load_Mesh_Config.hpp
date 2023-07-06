@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 
 namespace Mlib {
@@ -24,6 +25,7 @@ struct LoadMeshConfig {
     bool cull_faces_alpha;
     ExternalRenderPassType occluded_pass;
     ExternalRenderPassType occluder_pass;
+    InterpolationMode magnifying_interpolation_mode;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::string reflection_map;
