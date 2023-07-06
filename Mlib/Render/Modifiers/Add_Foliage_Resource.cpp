@@ -4,7 +4,6 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Render/Resources/Foliage_Resource.hpp>
-#include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <memory>
 
@@ -15,6 +14,11 @@ void Mlib::add_foliage_resource(
     const std::string& foliage_resource_name,
     SceneNodeResources& scene_node_resources,
     const ColoredVertexArrayFilter& grass_filter,
+    const std::vector<ParsedResourceName>& near_grass_resources,
+    const std::vector<ParsedResourceName>& dirty_near_grass_resources,
+    double near_grass_distance,
+    const std::string& near_grass_foliagemap,
+    float near_grass_foliagemap_scale,
     float scale,
     const FixedArray<float, 3>& up)
 {
@@ -31,7 +35,11 @@ void Mlib::add_foliage_resource(
     auto res = std::make_shared<FoliageResource>(
         scene_node_resources,
         grass_triangles,
-        std::vector<ParsedResourceName>{parse_resource_name(scene_node_resources, "vegetation8.1")},
+        near_grass_resources,
+        dirty_near_grass_resources,
+        near_grass_distance,
+        near_grass_foliagemap,
+        near_grass_foliagemap_scale,
         scale,
         up);
     scene_node_resources.add_resource(
