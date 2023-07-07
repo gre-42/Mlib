@@ -12,6 +12,7 @@ template <class TPos>
 struct ColoredVertex;
 class SceneNodeResources;
 struct ParsedResourceName;
+enum class UpAxis;
 
 class FoliageResource: public ISceneNodeResource {
 public:
@@ -24,7 +25,7 @@ public:
         const std::string& near_grass_foliagemap,
         float near_grass_foliagemap_scale,
         float scale,
-        const FixedArray<float, 3>& up);
+        UpAxis up_axis);
     ~FoliageResource();
 
     // Misc
@@ -58,7 +59,7 @@ private:
     std::list<FixedArray<ColoredVertex<double>, 3>> grass_triangles_;
     TerrainStyles terrain_styles_;
     float scale_;
-    FixedArray<float, 3> up_;
+    UpAxis up_axis_;
 };
 
 }

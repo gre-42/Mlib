@@ -15,6 +15,8 @@ struct ColoredVertex;
 class TerrainStyle;
 class TerrainStyles;
 class SceneNodeResources;
+enum class UpAxis;
+
 struct TriangleAndSeed {
     const FixedArray<ColoredVertex<double>, 3>& triangle;
     unsigned int seed;
@@ -30,7 +32,7 @@ public:
         const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
         double scale,
-        const FixedArray<float, 3>& up);
+        UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
@@ -49,7 +51,7 @@ private:
     const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass_;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh_;
     double scale_;
-    FixedArray<float, 3> up_;
+    UpAxis up_axis_;
     mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> grass_bvhs_;
     mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> no_grass_bvhs_;
 };

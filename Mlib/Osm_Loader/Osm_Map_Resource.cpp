@@ -82,6 +82,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Terrain_Uv.hpp>
+#include <Mlib/Render/Up_Axis.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -381,7 +382,8 @@ OsmMapResource::OsmMapResource(
                 t(2).position,
                 config.scale,
                 config.uv_scale_terrain,
-                config.uv_period_terrain);
+                config.uv_period_terrain,
+                UpAxis::Z);
             dest.draw_triangle_wo_normals(
                 t(0).position,
                 t(1).position,
@@ -1217,7 +1219,7 @@ OsmMapResource::OsmMapResource(
     // Extract wayside1_grass triangles from wayside2_grass triangles
     split_grass(TerrainType::WAYSIDE2_GRASS, TerrainType::WAYSIDE1_GRASS, terrain_styles_.near_wayside1_grass_terrain_style.distances_to_bdry());
     {
-        CollidableTriangleSampler cts{terrain_styles_, scale_, {0.f, 0.f, 1.f}};
+        CollidableTriangleSampler cts{terrain_styles_, scale_, UpAxis::Z};
         LOG_INFO("add near hitboxes");
         cts.add_near_hitboxes(terrain_triangles(), street_bvh(), hri_);
         LOG_INFO("add far instances");
@@ -1483,7 +1485,7 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
             no_grass(),
             &street_bvh(),
             scale_,
-            FixedArray<float, 3>{0.f, 0.f, 1.f}));
+            UpAxis::Z));
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);

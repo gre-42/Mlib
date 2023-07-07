@@ -196,6 +196,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Obj_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Replace_Terrain_Material.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
@@ -395,6 +396,7 @@ LoadScene::LoadScene() {
     register_json_user_function(ImportBoneWeights::key, ImportBoneWeights::json_user_function);
     register_json_user_function(ObjResource::key, ObjResource::json_user_function);
     register_json_user_function(Repeat::key, Repeat::json_user_function);
+    register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
     register_json_user_function(SaveTextureAtlasPng::key, SaveTextureAtlasPng::json_user_function);
     register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
     register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);

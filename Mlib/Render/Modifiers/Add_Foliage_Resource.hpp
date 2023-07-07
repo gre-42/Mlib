@@ -9,6 +9,7 @@ struct ColoredVertexArrayFilter;
 template <typename TData, size_t... tshape>
 class FixedArray;
 struct ParsedResourceName;
+enum class UpAxis;
 
 void add_foliage_resource(
     const std::string& mesh_resource_name,
@@ -21,6 +22,6 @@ void add_foliage_resource(
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,
-    const FixedArray<float, 3>& up);
+    UpAxis up_axis);
 
 }

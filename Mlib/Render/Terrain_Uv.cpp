@@ -29,12 +29,13 @@ FixedArray<FixedArray<float, 2>, 3> Mlib::terrain_uv(
     const FixedArray<double, 3>& c,
     double scale,
     double uv_scale,
-    double period)
+    double period,
+    UpAxis up_axis)
 {
     return terrain_uv(
-        FixedArray<double, 2>{a(0), a(1)},
-        FixedArray<double, 2>{b(0), b(1)},
-        FixedArray<double, 2>{c(0), c(1)},
+        non_up_axis(a, up_axis),
+        non_up_axis(b, up_axis),
+        non_up_axis(c, up_axis),
         scale,
         uv_scale,
         period);

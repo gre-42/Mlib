@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/StbImage1.hpp>
+#include <Mlib/Render/Up_Axis.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
@@ -13,7 +14,7 @@ using namespace Mlib;
 TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     const TerrainStyle& terrain_style,
     double scale,
-    const FixedArray<float, 3>& up,
+    UpAxis up_axis,
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh,
     const Array<float>& dirtmap,
     float dirtmap_scale)
@@ -27,7 +28,7 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
   min_dboundary2_{squared(distances_to_bdry_.min_distance_to_bdry * scale)},
   ts_{ 392743 },
   scale_{scale},
-  up_{up},
+  up_axis_{up_axis},
   boundary_bvh_{boundary_bvh},
   dirtmap_{dirtmap},
   dirtmap_scale_{dirtmap_scale}
@@ -59,7 +60,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
         [&](const double& a, const double& b, const double& c)
         {
             FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
-            bool is_in_valley = (squared(dot0d(n, up_)) > squared(0.85) * sum(squared(n)));
+            bool is_in_valley = (squared(n((size_t)up_axis_)) > squared(0.85) * sum(squared(n)));
             bool is_regular;
             if (dirtmap_.initialized()) {
                 if ((dirtmap_.shape(0) == 0) ||

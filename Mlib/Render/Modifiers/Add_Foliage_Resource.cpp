@@ -20,7 +20,7 @@ void Mlib::add_foliage_resource(
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,
-    const FixedArray<float, 3>& up)
+    UpAxis up_axis)
 {
     std::list<FixedArray<ColoredVertex<double>, 3>> grass_triangles;
     auto meshes = scene_node_resources.get_rendering_arrays(mesh_resource_name);
@@ -41,7 +41,7 @@ void Mlib::add_foliage_resource(
         near_grass_foliagemap,
         near_grass_foliagemap_scale,
         scale,
-        up);
+        up_axis);
     scene_node_resources.add_resource(
         foliage_resource_name,
         res);

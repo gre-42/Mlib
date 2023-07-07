@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Modifiers/Add_Foliage_Resource.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Up_Axis.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -21,7 +22,7 @@ DECLARE_ARGUMENT(near_grass_foliagemap);
 DECLARE_ARGUMENT(near_grass_foliagemap_period);
 DECLARE_ARGUMENT(near_grass_distance);
 DECLARE_ARGUMENT(scale);
-DECLARE_ARGUMENT(up);
+DECLARE_ARGUMENT(up_axis);
 }
 
 const std::string AddFoliageResource::key = "add_foliage";
@@ -49,5 +50,5 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
         args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).path,
         1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),
         args.arguments.at<float>(KnownArgs::scale, 1.f),
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::up));
+        up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")));
 };

@@ -15,10 +15,10 @@ using namespace Mlib;
 CollidableTriangleSampler::CollidableTriangleSampler(
     const TerrainStyles& terrain_styles,
     double scale,
-    const FixedArray<float, 3>& up)
+    UpAxis up_axis)
 : terrain_styles_{terrain_styles},
   scale_{scale},
-  up_{up}
+  up_axis_{up_axis}
 {}
 
 void CollidableTriangleSampler::add_near_hitboxes(
@@ -48,7 +48,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale_,
-            up_,
+            up_axis_,
             &street_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};
@@ -122,7 +122,7 @@ void CollidableTriangleSampler::add_far_hitboxes(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale_,
-            up_,
+            up_axis_,
             &street_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};

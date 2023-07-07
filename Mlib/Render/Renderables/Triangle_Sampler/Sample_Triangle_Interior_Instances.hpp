@@ -22,13 +22,14 @@ class TransformationMatrix;
 struct SceneGraphConfig;
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
+enum class UpAxis;
 
 class TriangleInteriorInstancesSampler {
 public:
     TriangleInteriorInstancesSampler(
         const TerrainStyle& terrain_style,
         double scale,
-        const FixedArray<float, 3>& up,
+        UpAxis up_axis,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh,
         const Array<float>& dirtmap,
         float dirtmap_scale);
@@ -49,7 +50,7 @@ private:
     double min_dboundary2_;
     TriangleSampler2<double> ts_;
     double scale_;
-    FixedArray<float, 3> up_;
+    UpAxis up_axis_;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh_;
     const Array<float>& dirtmap_;
     float dirtmap_scale_;

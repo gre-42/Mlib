@@ -27,14 +27,14 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
     double scale,
-    const FixedArray<float, 3>& up)
+    UpAxis up_axis)
 : scene_node_resources_{scene_node_resources},
   terrain_styles_{terrain_styles},
   terrain_triangles_{terrain_triangles},
   no_grass_{no_grass},
   street_bvh_{street_bvh},
   scale_{scale},
-  up_{up}
+  up_axis_{up_axis}
 {}
 
 RenderableTriangleSampler::~RenderableTriangleSampler()
@@ -70,7 +70,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
             scale_,
-            up_,
+            up_axis_,
             boundary_bvh,
             terrain_style.foliagemap(),
             terrain_style.config.foliagemap_scale};

@@ -23,7 +23,7 @@ FoliageResource::FoliageResource(
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,
-    const FixedArray<float, 3>& up)
+    UpAxis up_axis)
 : scene_node_resources_{scene_node_resources},
   grass_triangles_{grass_triangles},
   terrain_styles_{
@@ -45,7 +45,7 @@ FoliageResource::FoliageResource(
         .no_grass_decals_terrain_style_config = { .much_near_distance = 10 }
     }},
   scale_{scale},
-  up_{up}
+  up_axis_{up_axis}
 {}
 
 FoliageResource::~FoliageResource() = default;
@@ -63,7 +63,7 @@ void FoliageResource::instantiate_renderable(const InstantiationOptions& options
         no_grass,               // no_grass
         nullptr,                // street_bvh
         scale_,                 // scale
-        up_);                   // up
+        up_axis_);              // up
     options.scene_node.add_renderable(options.instance_name, res);
 }
 
