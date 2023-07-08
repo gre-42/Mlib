@@ -34,37 +34,6 @@ void Mlib::create_scene_rod(
 {
     auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
     auto rb1_0 = rigid_cuboid("rb0", "rb0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_2 = rigid_cuboid("rb2", "rb2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
-        FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {-10.f, -5.f, -10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}},
-        FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {+10.f, -5.f, +10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}}
-    };
-    auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
-        "triangles0",
-        Material{
-            .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-            .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONCAVE,
-        std::move(triangles0_raw),
-        std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>());
-
-    /*std::vector<FixedArray<ColoredVertex, 3>> triangles1{
-        FixedArray<ColoredVertex, 3>{
-            ColoredVertex{position: FixedArray<float, 3>{4, 0, 10}, color: FixedArray<float, 3>{0, 1, 1}},
-            ColoredVertex{position: FixedArray<float, 3>{0, 4, 10}, color: FixedArray<float, 3>{0, 1, 1}},
-            ColoredVertex{position: FixedArray<float, 3>{1, 1, -5}, color: FixedArray<float, 3>{1, 1, 0}}
-        }
-    };*/
 
     auto load_box = [](
         const FixedArray<float, 3>& scale,
@@ -116,8 +85,6 @@ void Mlib::create_scene_rod(
     // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
     auto scene_node0 = std::make_unique<SceneNode>();
     auto scene_node1_0 = std::make_unique<SceneNode>();
-    auto scene_node1_1 = std::make_unique<SceneNode>();
-    auto scene_node1_2 = std::make_unique<SceneNode>();
     auto scene_nodeR = std::make_unique<SceneNode>();
     auto scene_nodeL = std::make_unique<SceneNode>();
 
@@ -129,31 +96,12 @@ void Mlib::create_scene_rod(
         .instance_name = "obj1_0",
         .scene_node = *scene_node1_0,
         .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
-        .instance_name = "obj1_1",
-        .scene_node = *scene_node1_1,
-        .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
-        .instance_name = "obj1_2",
-        .scene_node = *scene_node1_2,
-        .renderable_resource_filter = RenderableResourceFilter{}});
-    if (getenv_default_bool("STACK", false)) {
-        scene_node1_1->set_position({0., 4., 0.});
-        scene_node1_2->set_position({0., 8., 0.});
-    } else {
-        scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)});
-        scene_node0->set_position({0., -4., 0.});
-        scene_node1_1->set_position({0.1, 4., 0.5});
-        scene_node1_2->set_position({0.1, 8., 0.5});
-        scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)});
-        scene_node1_1->set_rotation({0.f, 0.f, 0.05f * float(M_PI)});
-        scene_node1_2->set_rotation({0.f, 0.f, 0.05f * float(M_PI)});
-    }
+    scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)});
+    scene_node0->set_position({0., -4., 0.});
+    scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)});
 
     scene_nodeR->add_child("n0", std::move(scene_node0));
     scene_nodeR->add_child("n1_0", std::move(scene_node1_0));
-    scene_nodeR->add_child("n1_1", std::move(scene_node1_1));
-    scene_nodeR->add_child("n1_2", std::move(scene_node1_2));
     scene_nodeR->set_position({0.f, -1.f, -40.f});
     scene_nodeL->set_position({0.f, 50.f, -40.f});
     scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f});
@@ -177,12 +125,8 @@ void Mlib::create_scene_rod(
     {
         AbsoluteMovableSetter ams0{scene.get_node("obj").get_child("n0"), std::move(rb0)};
         AbsoluteMovableSetter ams1_0{scene.get_node("obj").get_child("n1_0"), std::move(rb1_0)};
-        AbsoluteMovableSetter ams1_1{scene.get_node("obj").get_child("n1_1"), std::move(rb1_1)};
-        AbsoluteMovableSetter ams1_2{scene.get_node("obj").get_child("n1_2"), std::move(rb1_2)};
 
         pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles01}, {}, CollidableMode::STATIC, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
     }
 }
