@@ -84,20 +84,25 @@ void RigidBodies::add_rigid_body(
                             AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
                             BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
                             std::vector<CollisionTriangleSphere> triangles;
-                            std::vector<CollisionLineSphere> edges;
+                            std::vector<CollisionRidgeSphere> ridges;
                             std::vector<CollisionLineSphere> lines;
                             triangles.reserve(transformed.size());
                             for (const CollisionTriangleAabb& t : transformed) {
                                 triangles.push_back(t.base);
                             }
 
-                            CollisionEdges collision_edges;
+                            CollisionRidges collision_ridges;
                             for (const auto& t : triangles) {
-                                collision_edges.insert(t.triangle, t.physics_material);
+                                collision_ridges.insert(
+                                    t.triangle,
+                                    t.plane.normal,
+                                    cfg_.max_min_cos_ridge,
+                                    t.physics_material,
+                                    collision_ridge_error_behavior);
                             }
-                            edges.reserve(collision_edges.size());
-                            for (const auto& e : collision_edges) {
-                                edges.push_back(e.collision_line_sphere);
+                            ridges.reserve(collision_ridges.size());
+                            for (const auto& e : collision_ridges) {
+                                ridges.push_back(e.collision_ridge_sphere);
                             }
 
                             convex_mesh_bvh_.insert(
@@ -112,8 +117,8 @@ void RigidBodies::add_rigid_body(
                                             bounding_sphere,
                                             std::move(triangles),
                                             std::move(lines),
-                                            std::move(edges),
-                                            std::vector<CollisionRidgeSphere>{})}});
+                                            std::vector<CollisionLineSphere>{},
+                                            std::move(ridges))}});
                         } else {
                             if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
                                 THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
@@ -150,7 +155,6 @@ void RigidBodies::add_rigid_body(
                 }
             }
         };
-        static_rigid_bodies_.push_back(&rb);
         add_hitboxes(s_hitboxes);
         add_hitboxes(d_hitboxes);
     } else if (collidable_mode == CollidableMode::MOVING) {
@@ -214,11 +218,6 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
     }
     if (rigid_body->mass() == INFINITY) {
         if (it->second == CollidableMode::STATIC) {
-            auto it = std::find_if(static_rigid_bodies_.begin(), static_rigid_bodies_.end(), [rigid_body](const auto& e){ return e == rigid_body; });
-            if (it == static_rigid_bodies_.end()) {
-                THROW_OR_ABORT("Could not delete static rigid body (0)");
-            }
-            static_rigid_bodies_.erase(it);
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
             ridge_bvh_.clear();

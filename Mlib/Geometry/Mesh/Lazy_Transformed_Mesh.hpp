@@ -46,7 +46,7 @@ public:
     virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
     void print_info() const;
 private:
-    double max_min_cos_;
+    double max_min_cos_ridge_;
     const TransformationMatrix<float, double, 3> transformation_matrix_;
     BoundingSphere<double, 3> transformed_bounding_sphere_;
     std::shared_ptr<ColoredVertexArray<float>> smesh_;

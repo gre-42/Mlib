@@ -91,7 +91,6 @@ private:
     void bake_collision_ridges(const CollisionRidgesRigidBody& collision_ridges) const;
     const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
-    std::list<RigidBodyVehicle*> static_rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;

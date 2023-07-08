@@ -24,7 +24,7 @@ LazyTransformedMesh::LazyTransformedMesh(
     const BoundingSphere<double, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray<double>>& dmesh,
     double max_min_cos_ridge)
-: max_min_cos_{max_min_cos_ridge},
+: max_min_cos_ridge_{max_min_cos_ridge},
   transformation_matrix_{ transformation_matrix },
   transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   dmesh_{ dmesh }
@@ -35,7 +35,7 @@ LazyTransformedMesh::LazyTransformedMesh(
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray<float>>& smesh,
     double max_min_cos_ridge)
-: max_min_cos_{max_min_cos_ridge},
+: max_min_cos_ridge_{max_min_cos_ridge},
   transformation_matrix_{ transformation_matrix },
   transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
   smesh_{ smesh }
@@ -45,7 +45,7 @@ LazyTransformedMesh::LazyTransformedMesh(
     const BoundingSphere<double, 3>& transformed_bounding_sphere,
     const std::vector<CollisionTriangleSphere>& transformed_triangles,
     double max_min_cos_ridge)
-: max_min_cos_{max_min_cos_ridge},
+: max_min_cos_ridge_{max_min_cos_ridge},
   transformation_matrix_{ fixed_nans<double, 4, 4>() },
   transformed_bounding_sphere_{ transformed_bounding_sphere },
   transformed_triangles_{ transformed_triangles },
@@ -89,7 +89,7 @@ const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() 
     //if (msh.vertices->size() == 0) {
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
-    if (!edges_calculated_) {
+    if (std::isnan(max_min_cos_ridge_) && !edges_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!edges_calculated_) {
             CollisionEdges edges;
@@ -119,20 +119,20 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
     //if (msh.vertices->size() == 0) {
     //    std::cerr << "Skipping mesh without triangles" << std::endl;
     //}
-    if (!ridges_calculated_) {
+    if (!std::isnan(max_min_cos_ridge_) && !ridges_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!ridges_calculated_) {
             CollisionRidges ridges;
             if (smesh_ != nullptr) {
                 for (const auto& t : smesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_ridge_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
                 }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
+                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_ridge_, smesh_->physics_material, CollisionRidgeErrorBehavior::THROW);
                 }
             }
             transformed_ridges_.reserve(ridges.size());
