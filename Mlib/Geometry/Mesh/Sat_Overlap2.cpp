@@ -12,6 +12,7 @@ using namespace Mlib;
 void Mlib::get_overlap2(
     const IIntersectableMesh& mesh0,
     const CollisionRidgeSphere& e1,
+    double max_keep_normal,
     double& min_overlap__,
     FixedArray<double, 3>& normal__)
 {
@@ -24,14 +25,56 @@ void Mlib::get_overlap2(
     #pragma GCC diagnostic pop
     CollisionVertices vertices0;
     CollisionVertices vertices1;
-    const std::vector<CollisionRidgeSphere>& edges0 = mesh0.get_ridges_sphere();
-    for (const auto& e0 : edges0) {
-        vertices0.insert(e0.edge);
+    std::vector<const CollisionRidgeSphere*> relevant_edges0;
+    std::vector<const CollisionTriangleSphere*> relevant_triangles0;
+    {
+        const std::vector<CollisionTriangleSphere>& triangles0 = mesh0.get_triangles_sphere();
+        relevant_triangles0.reserve(triangles0.size());
+        for (const auto& t0 : triangles0) {
+            if (e1.bounding_sphere.intersects(t0.bounding_sphere) && e1.bounding_sphere.intersects(t0.plane)) {
+                relevant_triangles0.push_back(&t0);
+            }
+            vertices0.insert(t0.triangle);
+        }
+    }
+    {
+        const std::vector<CollisionRidgeSphere>& edges0 = mesh0.get_ridges_sphere();
+        relevant_edges0.reserve(edges0.size());
+        for (const auto& e0 : edges0) {
+            if (e1.bounding_sphere.intersects(e0.bounding_sphere)) {
+                relevant_edges0.push_back(&e0);
+            }
+            vertices0.insert(e0.edge);
+        }
     }
     vertices1.insert(e1.edge);
 
-    for (const auto& e0 : edges0) {
-        auto n = cross(e0.edge(1) - e0.edge(0), e1.edge(1) - e1.edge(0));
+    bool keep_normal = false;
+    {
+        double sat_overl = sat_overlap_signed(
+            -e1.normal,
+            vertices0,
+            vertices1);
+        if (sat_overl < best_min_overlap) {
+            best_min_overlap = sat_overl;
+            best_normal = -e1.normal;
+        }
+        keep_normal = (sat_overl < max_keep_normal);
+    }
+    for (const auto& t0 : relevant_triangles0) {
+        double sat_overl = sat_overlap_signed(
+            t0->plane.normal,
+            vertices0,
+            vertices1);
+        if (sat_overl < best_min_overlap) {
+            best_min_overlap = sat_overl;
+            if (!keep_normal) {
+                best_normal = t0->plane.normal;
+            }
+        }
+    }
+    for (const auto& e0 : relevant_edges0) {
+        auto n = cross(e0->edge(1) - e0->edge(0), e1.edge(1) - e1.edge(0));
         double l2 = sum(squared(n));
         if (l2 < 1e-6) {
             continue;
@@ -51,7 +94,9 @@ void Mlib::get_overlap2(
             }
             if (overlap0 < best_min_overlap) {
                 best_min_overlap = overlap0;
-                best_normal = -n;
+                if (!keep_normal) {
+                    best_normal = -n;
+                }
             }
         } else {
             if (!std::isnan(e1.min_cos) && (-dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
@@ -59,7 +104,9 @@ void Mlib::get_overlap2(
             }
             if (overlap1 < best_min_overlap) {
                 best_min_overlap = overlap1;
-                best_normal = n;
+                if (!keep_normal) {
+                    best_normal = n;
+                }
             }
         }
     }

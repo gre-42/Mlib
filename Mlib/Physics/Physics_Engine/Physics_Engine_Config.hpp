@@ -34,6 +34,7 @@ struct PhysicsEngineConfig {
     // Collision
     float wheel_penetration_depth = 0.25f * meters;  // (penetration depth) + (shock absorber) = 0.2
     float overlap_ignored = 1.f * meters;
+    float max_keep_normal = 1.f * meters;
     // float overlap_clipped = 0.01f * meters;
     float min_cos_triangle_ridge = 0.2f;
     float max_min_cos_ridge = 1 - 1e-4f;

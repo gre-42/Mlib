@@ -11,6 +11,7 @@ class IIntersectableMesh;
 void get_overlap2(
     const IIntersectableMesh& mesh0,
     const CollisionRidgeSphere& e1,
+    double max_keep_normal,
     double& min_overlap,
     FixedArray<double, 3>& normal);
 

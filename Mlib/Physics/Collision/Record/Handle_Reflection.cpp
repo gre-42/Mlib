@@ -322,7 +322,7 @@ void Mlib::handle_reflection(
         assert_true(c.mesh0 != nullptr);
         assert_true(c.r1 != nullptr);
         try {
-            get_overlap2(*c.mesh0, *c.r1, overlap, normal);
+            get_overlap2(*c.mesh0, *c.r1, c.history.cfg.max_keep_normal, overlap, normal);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(
                 "Could not compute collision plane of mesh \"" + c.mesh0->name() + "\" and edge: " + e.what());
