@@ -25,6 +25,7 @@ struct LoadMeshConfig {
     bool cull_faces_alpha;
     ExternalRenderPassType occluded_pass;
     ExternalRenderPassType occluder_pass;
+    unsigned int anisotropic_filtering_level = 0;
     InterpolationMode magnifying_interpolation_mode;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;

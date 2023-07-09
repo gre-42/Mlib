@@ -195,7 +195,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     .color = gen_filename(filename, material.at("diffuse_texture")),
                     .desaturate = cfg.desaturate,
                     .histogram = cfg.histogram,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}}
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}
             },
             .ambience = OrderableFixedArray{material.at("ambient_color").get<FixedArray<float, 3>>()},
             .diffusivity = OrderableFixedArray{material.at("diffuse_color").get<FixedArray<float, 3>>()},

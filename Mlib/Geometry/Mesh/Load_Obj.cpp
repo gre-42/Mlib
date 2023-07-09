@@ -276,7 +276,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 TextureDescriptor td{
                     .desaturate = cfg.desaturate,
                     .histogram = cfg.histogram,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                 };
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();

@@ -34,6 +34,7 @@ DECLARE_ARGUMENT(cull_faces_default);
 DECLARE_ARGUMENT(cull_faces_alpha);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
+DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
@@ -81,6 +82,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .cull_faces_alpha = args.arguments.at<bool>(KnownArgs::cull_faces_alpha, true),
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
+        .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level, 0),
         .magnifying_interpolation_mode = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode, "nearest")),
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
