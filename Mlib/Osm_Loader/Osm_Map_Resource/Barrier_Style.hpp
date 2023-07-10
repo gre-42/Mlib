@@ -1,10 +1,9 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <string>
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
 enum class BlendMode;
 enum class WrapMode;
 
