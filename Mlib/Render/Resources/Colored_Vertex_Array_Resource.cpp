@@ -1227,18 +1227,16 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             ? id.alpha
             : 1.f,
         (id.blend_mode == BlendMode::OFF) ||
-        (id.blend_mode == BlendMode::CONTINUOUS) ||
+        any(id.blend_mode & BlendMode::CONTINUOUS_MASK) ||
         (id.ntextures_color == 0)
             ? 0.f
-            : (id.blend_mode == BlendMode::SEMI_CONTINUOUS_02)
+            : any(id.blend_mode & BlendMode::THRESHOLD_02_MASK)
                 ? 0.2f
-                : (id.blend_mode == BlendMode::SEMI_CONTINUOUS_08)
-                    ? 0.8f
-                    : any(id.blend_mode & BlendMode::BINARY_05_MASK)
-                        ? 0.5f
-                        : any(id.blend_mode & BlendMode::BINARY_08_MASK)
-                            ? 0.8f
-                            : NAN,
+                : any(id.blend_mode & BlendMode::THRESHOLD_05_MASK)
+                    ? 0.5f
+                    : any(id.blend_mode & BlendMode::THRESHOLD_08_MASK)
+                        ? 0.8f
+                        : NAN,
         id.alpha_distances,
         id.render_pass,
         id.reorient_normals,
