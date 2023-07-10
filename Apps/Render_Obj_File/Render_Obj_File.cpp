@@ -429,7 +429,7 @@ int main(int argc, char** argv) {
         auto create_light = [&args](const std::string& resource_suffix) {
             if (args.has_named("--no_shadows")) {
                 return std::unique_ptr<Light>(new Light{
-                    .ambience = fixed_full<float, 3>(safe_stof(args.named_value("--ambience", "0.5"))),
+                    .ambience = fixed_full<float, 3>(safe_stof(args.named_value("--ambience", "1"))),
                     .diffusivity = fixed_full<float, 3>(safe_stof(args.named_value("--diffusivity", "1"))),
                     .specularity = fixed_full<float, 3>(safe_stof(args.named_value("--specularity", "1")))});
             } else {
