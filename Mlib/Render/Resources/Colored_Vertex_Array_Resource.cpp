@@ -1234,9 +1234,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 ? 0.2f
                 : (id.blend_mode == BlendMode::SEMI_CONTINUOUS_08)
                     ? 0.8f
-                    : (id.blend_mode == BlendMode::BINARY_05)
+                    : any(id.blend_mode & BlendMode::BINARY_05_MASK)
                         ? 0.5f
-                        : (id.blend_mode == BlendMode::BINARY_08)
+                        : any(id.blend_mode & BlendMode::BINARY_08_MASK)
                             ? 0.8f
                             : NAN,
         id.alpha_distances,
