@@ -24,7 +24,7 @@ void Mlib::replace_terrain_material(
     UpAxis up_axis,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const MergedTextureFilter& filter)
+    const ColoredVertexArrayFilter& filter)
 {
     scene_node_resources.add_modifier(
         resource_name,
@@ -39,8 +39,7 @@ void Mlib::replace_terrain_material(
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
-                    MergedTextureName merged_texture_name{cva->material};
-                    if (!filter.matches(merged_texture_name)) {
+                    if (!filter.matches(*cva)) {
                         continue;
                     }
                     cva->material.textures.clear();
