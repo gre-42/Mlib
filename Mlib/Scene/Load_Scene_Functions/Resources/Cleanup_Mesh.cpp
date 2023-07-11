@@ -18,6 +18,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource_name);
+DECLARE_ARGUMENT(min_vertex_distance);
 }
 
 const std::string CleanupMesh::key = "cleanup_mesh";
@@ -28,19 +29,24 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
 
     RenderingContextStack::primary_scene_node_resources().add_modifier(
         args.arguments.at<std::string>(KnownArgs::resource_name),
-        [](ISceneNodeResource& resource)
+        [min_vertex_distance = args.arguments.at<float>(KnownArgs::min_vertex_distance, 0.f)]
+        (ISceneNodeResource& resource)
         {
             Bvh<float, const FixedArray<float, 3>*, 3> fbvh{FixedArray<float, 3>{10.f, 10.f, 10.f}, 10};
             Bvh<double, const FixedArray<double, 3>*, 3> dbvh{FixedArray<double, 3>{10., 10., 10.}, 10};
             for (auto acva : resource.get_rendering_arrays()) {
-                acva->scvas.remove_if([&fbvh](auto& cva){
-                    // merge_neighboring_points(*cva, fbvh, float(1e-3));
+                acva->scvas.remove_if([&fbvh, min_vertex_distance](auto& cva){
+                    if (min_vertex_distance != 0) {
+                        merge_neighboring_points<float>(*cva, fbvh, min_vertex_distance);
+                    }
                     remove_degenerate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
                 });
-                acva->dcvas.remove_if([&dbvh](auto& cva){
-                    // merge_neighboring_points(*cva, dbvh, 1e-3);
+                acva->dcvas.remove_if([&dbvh, min_vertex_distance](auto& cva){
+                    if (min_vertex_distance != 0) {
+                        merge_neighboring_points<double>(*cva, dbvh, min_vertex_distance);
+                    }
                     remove_degenerate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
