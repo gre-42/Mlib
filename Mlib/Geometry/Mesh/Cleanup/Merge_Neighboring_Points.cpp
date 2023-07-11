@@ -11,19 +11,18 @@ template <class TPos>
 void Mlib::merge_neighboring_points(
     ColoredVertexArray<TPos>& cva,
     Bvh<TPos, const FixedArray<TPos, 3>*, 3>& bvh,
-    const TPos& min_distance)
+    const TPos& max_distance)
 {
     // linfo() << "Merging: " << cva.name;
     for (auto& tri : cva.triangles) {
         for (auto& v : tri.flat_iterable()) {
-            TPos max_dist = TPos(1e-6);
             const FixedArray<TPos, 3>*const* neighbor = nullptr;
             auto min_dist2 = bvh.min_distance(
                 v.position,
-                max_dist,
+                max_distance,
                 [&v](const auto* a){return sum(squared(*a - v.position));},
                 &neighbor);
-            if (min_dist2 <= squared(max_dist))
+            if (min_dist2 <= squared(max_distance))
             {
                 if (*neighbor == nullptr) {
                     THROW_OR_ABORT("merge_neighboring_points received invalid maximum distance");
