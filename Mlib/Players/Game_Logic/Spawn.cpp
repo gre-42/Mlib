@@ -45,9 +45,9 @@ void Spawn::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>&
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {
-        spawn_points_bvh_split_[i].reset(new Bvh<double, const SpawnPoint*, 3>(FixedArray<double, 3>{100., 100., 100.}, 10));
+        spawn_points_bvh_split_[i].reset(new Bvh<double, const SpawnPoint*, 3>(FixedArray<double, 3>{10., 10., 10.}, 10));
     }
-    spawn_points_bvh_singular_.reset(new Bvh<double, const SpawnPoint*, 3>(FixedArray<double, 3>{100., 100., 100.}, 10));
+    spawn_points_bvh_singular_.reset(new Bvh<double, const SpawnPoint*, 3>(FixedArray<double, 3>{10., 10., 10.}, 10));
     {
         size_t i = 0;
         for (const auto& sp : spawn_points) {

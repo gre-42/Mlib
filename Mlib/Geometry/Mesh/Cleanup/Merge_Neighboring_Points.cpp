@@ -13,6 +13,7 @@ void Mlib::merge_neighboring_points(
     Bvh<TPos, const FixedArray<TPos, 3>*, 3>& bvh,
     const TPos& min_distance)
 {
+    // linfo() << "Merging: " << cva.name;
     for (auto& tri : cva.triangles) {
         for (auto& v : tri.flat_iterable()) {
             TPos max_dist = TPos(1e-6);
@@ -38,6 +39,7 @@ void Mlib::merge_neighboring_points(
             }
         }
     }
+    // linfo() << "Merging done: " << cva.name;
 }
 
 namespace Mlib {

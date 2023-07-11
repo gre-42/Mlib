@@ -30,8 +30,8 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
         args.arguments.at<std::string>(KnownArgs::resource_name),
         [](ISceneNodeResource& resource)
         {
-            Bvh<float, const FixedArray<float, 3>*, 3> fbvh{FixedArray<float, 3>{100.f, 100.f, 100.f}, 10};
-            Bvh<double, const FixedArray<double, 3>*, 3> dbvh{FixedArray<double, 3>{100., 100., 100.}, 10};
+            Bvh<float, const FixedArray<float, 3>*, 3> fbvh{FixedArray<float, 3>{10.f, 10.f, 10.f}, 10};
+            Bvh<double, const FixedArray<double, 3>*, 3> dbvh{FixedArray<double, 3>{10., 10., 10.}, 10};
             for (auto acva : resource.get_rendering_arrays()) {
                 acva->scvas.remove_if([&fbvh](auto& cva){
                     merge_neighboring_points(*cva, fbvh, float(1e-6));
