@@ -13,7 +13,7 @@ class Bvh;
 template <class TPos>
 void merge_neighboring_points(
     ColoredVertexArray<TPos>& cva,
-    Bvh<TPos, const FixedArray<TPos, 3>*, 3>& bvh,
+    Bvh<TPos, FixedArray<TPos, 3>, 3>& bvh,
     const TPos& max_distance);
 
 }

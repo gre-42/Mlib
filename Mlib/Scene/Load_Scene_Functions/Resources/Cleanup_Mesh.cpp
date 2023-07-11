@@ -32,8 +32,8 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
         [min_vertex_distance = args.arguments.at<float>(KnownArgs::min_vertex_distance, 0.f)]
         (ISceneNodeResource& resource)
         {
-            Bvh<float, const FixedArray<float, 3>*, 3> fbvh{FixedArray<float, 3>{10.f, 10.f, 10.f}, 10};
-            Bvh<double, const FixedArray<double, 3>*, 3> dbvh{FixedArray<double, 3>{10., 10., 10.}, 10};
+            Bvh<float, FixedArray<float, 3>, 3> fbvh{FixedArray<float, 3>{10.f, 10.f, 10.f}, 10};
+            Bvh<double, FixedArray<double, 3>, 3> dbvh{FixedArray<double, 3>{10., 10., 10.}, 10};
             for (auto acva : resource.get_rendering_arrays()) {
                 acva->scvas.remove_if([&fbvh, min_vertex_distance](auto& cva){
                     if (min_vertex_distance != 0) {
