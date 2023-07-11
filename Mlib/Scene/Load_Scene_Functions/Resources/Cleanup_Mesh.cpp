@@ -34,13 +34,13 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
             Bvh<double, const FixedArray<double, 3>*, 3> dbvh{FixedArray<double, 3>{10., 10., 10.}, 10};
             for (auto acva : resource.get_rendering_arrays()) {
                 acva->scvas.remove_if([&fbvh](auto& cva){
-                    merge_neighboring_points(*cva, fbvh, float(1e-6));
+                    // merge_neighboring_points(*cva, fbvh, float(1e-6));
                     remove_degenerate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
                 });
                 acva->dcvas.remove_if([&dbvh](auto& cva){
-                    merge_neighboring_points(*cva, dbvh, 1e-6);
+                    // merge_neighboring_points(*cva, dbvh, 1e-6);
                     remove_degenerate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
                     return cva->triangles.empty();
