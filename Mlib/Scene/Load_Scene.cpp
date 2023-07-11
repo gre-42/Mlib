@@ -107,7 +107,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Vip.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Preload_Many.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Preload_Single.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Dirtmap.hpp>
@@ -317,7 +318,8 @@ LoadScene::LoadScene() {
     register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
     register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
     register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
-    register_json_user_function(Preload::key, Preload::json_user_function);
+    register_json_user_function(PreloadMany::key, PreloadMany::json_user_function);
+    register_json_user_function(PreloadSingle::key, PreloadSingle::json_user_function);
     register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
     register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
     register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);

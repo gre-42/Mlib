@@ -230,6 +230,19 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
     return si0;
 }
 
+static double mean_opacity(const StbInfo<uint8_t>& si) {
+    if (si.nrChannels != 4) {
+        THROW_OR_ABORT("warn_if_invisible received image that does not have 4 channels");
+    }
+    double opacity = 0.f;
+    for (int r = 0; r < si.height; ++r) {
+        for (int c = 0; c < si.width; ++c) {
+            opacity += double(si.data.get()[(r * si.width + c) * si.nrChannels + 3]) / 255.;
+        }
+    }
+    return opacity / double(si.width * si.height);
+}
+
 // static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
 //     if (!is_power_of_two(si.width) || !is_power_of_two(si.height)) {
 //         THROW_OR_ABORT("Image size is not a power of 2");
@@ -621,7 +634,17 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         build_image_atlas(si, atlas_tiles);
         return si;
     }
-    return stb_load_and_transform_texture(descriptor, flip_mode);
+    auto si = stb_load_and_transform_texture(descriptor, flip_mode);
+    if ((descriptor.color_mode == ColorMode::RGB) &&
+        (si.nrChannels == 4) &&
+        getenv_default_bool("CHECK_OPACITY", false))
+    {
+        double opacity = mean_opacity(si);
+        if (opacity < 0.8) {
+            lwarn() << descriptor.color << ": Opacity is only " << opacity;
+        }
+    }
+    return si;
 }
 
 std::map<std::string, UvTile> RenderingResources::generate_texture_atlas(
