@@ -36,9 +36,8 @@ void Mlib::replace_terrain_material(
          textures,
          &rendering_resources]
         (ISceneNodeResource& scene_node_resource){
-            auto meshes = scene_node_resource.get_rendering_arrays();
-            for (const auto& mesh : meshes) {
-                for (const auto& cva : mesh->dcvas) {
+            auto replace = [&]<typename T>(const std::list<std::shared_ptr<ColoredVertexArray<T>>>& cvas){
+                for (const auto& cva : cvas) {
                     if (!filter.matches(*cva)) {
                         continue;
                     }
@@ -52,15 +51,20 @@ void Mlib::replace_terrain_material(
                             t(0).position,
                             t(1).position,
                             t(2).position,
-                            scale,
-                            uv_scale,
-                            uv_period,
+                            (T)scale,
+                            (T)uv_scale,
+                            (T)uv_period,
                             up_axis);
                         t(0).uv = uv(0);
                         t(1).uv = uv(1);
                         t(2).uv = uv(2);
                     }
                 }
+            };
+            auto meshes = scene_node_resource.get_rendering_arrays();
+            for (const auto& mesh : meshes) {
+                replace(mesh->scvas);
+                replace(mesh->dcvas);
             }
         });
 }

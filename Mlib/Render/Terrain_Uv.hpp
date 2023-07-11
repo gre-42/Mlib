@@ -25,30 +25,33 @@ inline FixedArray<float, 2> terrain_uv(
     return terrain_uv(non_up_axis(vertex, up_axis), scale, uv_scale);
 }
 
+template <class TPos>
 FixedArray<FixedArray<float, 2>, 3> terrain_uv(
-    const FixedArray<double, 2>& a,
-    const FixedArray<double, 2>& b,
-    const FixedArray<double, 2>& c,
-    double scale,
-    double uv_scale,
-    double period);
+    const FixedArray<TPos, 2>& a,
+    const FixedArray<TPos, 2>& b,
+    const FixedArray<TPos, 2>& c,
+    TPos scale,
+    TPos uv_scale,
+    TPos period);
 
+template <class TPos>
 FixedArray<FixedArray<float, 2>, 3> terrain_uv(
-    const FixedArray<double, 3>& a,
-    const FixedArray<double, 3>& b,
-    const FixedArray<double, 3>& c,
-    double scale,
-    double uv_scale,
-    double period,
+    const FixedArray<TPos, 3>& a,
+    const FixedArray<TPos, 3>& b,
+    const FixedArray<TPos, 3>& c,
+    TPos scale,
+    TPos uv_scale,
+    TPos period,
     UpAxis up_axis);
 
+template <class TPos>
 FixedArray<FixedArray<float, 2>, 4> terrain_uv(
-    const FixedArray<double, 2>& a,
-    const FixedArray<double, 2>& b,
-    const FixedArray<double, 2>& c,
-    const FixedArray<double, 2>& d,
-    double scale,
-    double uv_scale,
-    double period);
+    const FixedArray<TPos, 2>& a,
+    const FixedArray<TPos, 2>& b,
+    const FixedArray<TPos, 2>& c,
+    const FixedArray<TPos, 2>& d,
+    TPos scale,
+    TPos uv_scale,
+    TPos period);
 
 }

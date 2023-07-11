@@ -328,7 +328,7 @@ void triangulate_entity_list(
     }
     auto draw_tris = [z, scale, color, uv_scale, uv_period](auto& tl, const auto& tris){
         for (const auto& t : tris) {
-            auto uv = terrain_uv(
+            auto uv = terrain_uv<double>(
                 FixedArray<double, 2>{t->GetPoint(0)->x, t->GetPoint(0)->y},
                 FixedArray<double, 2>{t->GetPoint(1)->x, t->GetPoint(1)->y},
                 FixedArray<double, 2>{t->GetPoint(2)->x, t->GetPoint(2)->y},
