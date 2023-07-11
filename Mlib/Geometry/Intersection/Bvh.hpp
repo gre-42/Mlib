@@ -198,13 +198,13 @@ public:
     {
         TData min_distance = INFINITY;
         visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
-            [&min_distance, &compute_distance, nearest_payload](const TPayload& playload)
+            [&min_distance, &compute_distance, nearest_payload](const TPayload& payload)
         {
-            TData dist = compute_distance(playload);
+            TData dist = compute_distance(payload);
             if (dist < min_distance) {
                 min_distance = dist;
                 if (nearest_payload != nullptr) {
-                    *nearest_payload = &playload;
+                    *nearest_payload = &payload;
                 }
             }
             return true;
@@ -223,9 +223,9 @@ public:
         std::fill(result.begin(), result.end(), std::make_pair(INFINITY, nullptr));
         auto predicate = [](const auto& a, const auto& b){return a.first < b.first;};
         visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
-            [&result, &compute_distance, &predicate](const TPayload& playload)
+            [&result, &compute_distance, &predicate](const TPayload& payload)
         {
-            TData dist = compute_distance(playload);
+            TData dist = compute_distance(payload);
             if (dist < result.back().first) {
                 result.resize(result.size() - 1);
                 // From: https://stackoverflow.com/questions/15843525/how-do-you-insert-the-value-in-a-sorted-vector
@@ -233,9 +233,9 @@ public:
                     std::upper_bound(
                         result.begin(),
                         result.end(),
-                        std::make_pair(dist, &playload),
+                        std::make_pair(dist, &payload),
                         predicate),
-                    std::make_pair(dist, &playload));
+                    std::make_pair(dist, &payload));
             }
             return true;
         });
@@ -252,8 +252,8 @@ public:
     {
         return !visit(
             AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
-            [&max_distance, &compute_distance](const TPayload& playload) {
-                return compute_distance(playload) > max_distance;
+            [&max_distance, &compute_distance](const TPayload& payload) {
+                return compute_distance(payload) > max_distance;
             });
     }
 
@@ -266,8 +266,8 @@ public:
         return !visit(
             AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
             [max_distance2=squared(max_distance), &compute_distance_squared]
-            (const TPayload& playload) {
-                return compute_distance_squared(playload) > max_distance2;
+            (const TPayload& payload) {
+                return compute_distance_squared(payload) > max_distance2;
             });
     }
 
