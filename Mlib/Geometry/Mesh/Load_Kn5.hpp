@@ -45,7 +45,11 @@ struct kn5Node
     TransformationMatrix<float, float, 3> tmatrix;
     TransformationMatrix<float, float, 3> hmatrix;
 
-    size_t vertexCount;
+    bool isActive = false;
+    bool isRenderable = false;
+    bool isTransparent = false;
+
+    size_t vertexCount = 0;
     std::vector<float> position;
     std::vector<float> normal;
     std::vector<float> texture0;
@@ -63,7 +67,7 @@ struct kn5Model
     int version;
     std::map<std::string, std::vector<uint8_t>> textures;
     std::list<kn5Texture> usedTex;
-    std::list<kn5Material> materials;
+    std::map<size_t, kn5Material> materials;
     std::map<size_t, kn5Node> nodes;
 };
 

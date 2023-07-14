@@ -73,7 +73,12 @@ static uint16_t ReadUInt16(std::istream& str) {
     return result;
 }
 
-static void readNodes(std::istream& modelStream, std::map<size_t, kn5Node>& nodeList, std::optional<size_t> parentID) {
+static void readNodes(
+    std::istream& modelStream,
+    std::map<size_t, kn5Node>& nodeList,
+    std::optional<size_t> parentID,
+    const std::map<size_t, kn5Material>& materials)
+{
     kn5Node newNode;
     newNode.parentID = parentID;
 
@@ -112,9 +117,9 @@ static void readNodes(std::istream& modelStream, std::map<size_t, kn5Node>& node
         // mesh node
         case 2: //mesh
             {
-                ReadByte(modelStream); // bbyte
-                ReadByte(modelStream); // cbyte
-                ReadByte(modelStream); // dbyte
+                newNode.isActive = (bool)ReadByte(modelStream);
+                newNode.isRenderable = (bool)ReadByte(modelStream);
+                newNode.isTransparent = (bool)ReadByte(modelStream);
 
                 newNode.vertexCount = ReadUInt32(modelStream);
                 newNode.position.resize(newNode.vertexCount * 3);
@@ -151,9 +156,9 @@ static void readNodes(std::istream& modelStream, std::map<size_t, kn5Node>& node
         // animated mesh
         case 3: //animated mesh
             {
-                ReadByte(modelStream); // bbyte
-                ReadByte(modelStream); // cbyte
-                ReadByte(modelStream); // dbyte
+                newNode.isActive = (bool)ReadByte(modelStream);
+                newNode.isRenderable = (bool)ReadByte(modelStream);
+                newNode.isTransparent = (bool)ReadByte(modelStream);
 
                 int boneCount = ReadInt32(modelStream);
                 for (int b = 0; b < boneCount; b++)
@@ -196,6 +201,11 @@ static void readNodes(std::istream& modelStream, std::map<size_t, kn5Node>& node
             }
     }
 
+    linfo() <<
+        "Node: " << newNode.name <<
+        " type: " << newNode.type <<
+        " transparent: " << (int)newNode.isTransparent <<
+        (newNode.materialID.has_value() ? " shader: " + materials.at(newNode.materialID.value()).shader : "");
     if (!parentID.has_value()) { newNode.hmatrix = newNode.tmatrix; }
     else { newNode.hmatrix = newNode.tmatrix * nodeList.at(parentID.value()).hmatrix; }
 
@@ -204,7 +214,7 @@ static void readNodes(std::istream& modelStream, std::map<size_t, kn5Node>& node
 
     for (size_t c = 0; c < childrenCount; c++)
     {
-        readNodes(modelStream, nodeList, currentID);
+        readNodes(modelStream, nodeList, currentID, materials);
     }
 }
 
@@ -301,10 +311,10 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
             linfo() << "sampleSlot: " << sampleSlot;
         }
 
-        newModel.materials.push_back(newMaterial);
+        newModel.materials[newModel.materials.size()] = std::move(newMaterial);
     }
 
-    readNodes(*binStream, newModel.nodes, std::nullopt); //recursive
+    readNodes(*binStream, newModel.nodes, std::nullopt, newModel.materials); //recursive
 
     return newModel;
 }
