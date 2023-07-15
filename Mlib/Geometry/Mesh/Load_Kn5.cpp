@@ -1,9 +1,9 @@
 #include "Load_Kn5.hpp"
-#include <Mlib/Images/Dds_Image.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
+#include <nv_dds/nv_dds.h>
 #include <sstream>
 
 using namespace Mlib;
@@ -213,8 +213,9 @@ static void readNodes(
                 for (uint8_t c : model.textures.at(material.txDiffuse)) {
                     sstr << c;
                 }
-                auto shape = DdsImage::load_from_stream(sstr).shape();
-                matInfo << ' ' << shape(0) << 'x' << shape(1);
+                nv_dds::CDDSImage image;
+                image.load(sstr);
+                matInfo << ' ' << image.get_width() << 'x' << image.get_height();
             }
         }
         linfo() <<

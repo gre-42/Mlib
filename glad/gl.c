@@ -1,3 +1,6 @@
+/**
+ * SPDX-License-Identifier: (WTFPL OR CC0-1.0) AND Apache-2.0
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +42,7 @@ int GLAD_GL_VERSION_4_3 = 0;
 int GLAD_GL_VERSION_4_4 = 0;
 int GLAD_GL_VERSION_4_5 = 0;
 int GLAD_GL_VERSION_4_6 = 0;
+int GLAD_GL_EXT_bgra = 0;
 
 
 
@@ -1432,9 +1436,9 @@ static int glad_gl_get_extensions( int version, const char **out_exts, unsigned 
 #if GLAD_GL_IS_SOME_NEW_VERSION
     if(GLAD_VERSION_MAJOR(version) < 3) {
 #else
-    (void) version;
-    (void) out_num_exts_i;
-    (void) out_exts_i;
+    GLAD_UNUSED(version);
+    GLAD_UNUSED(out_num_exts_i);
+    GLAD_UNUSED(out_exts_i);
 #endif
         if (glad_glGetString == NULL) {
             return 0;
@@ -1526,7 +1530,7 @@ static int glad_gl_find_extensions_gl( int version) {
     char **exts_i = NULL;
     if (!glad_gl_get_extensions(version, &exts, &num_exts_i, &exts_i)) return 0;
 
-    (void) glad_gl_has_extension;
+    GLAD_GL_EXT_bgra = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_bgra");
 
     glad_gl_free_extensions(exts_i, num_exts_i);
 
