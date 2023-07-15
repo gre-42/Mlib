@@ -15,6 +15,7 @@ struct kn5Material
 {
     std::string name = "Default";
     std::string shader = "";
+    float ksEmissive = 0.f;
     float ksAmbient = 0.6f;
     float ksDiffuse = 0.6f;
     float ksSpecular = 0.9f;
@@ -45,8 +46,8 @@ struct kn5Node
     TransformationMatrix<float, float, 3> tmatrix;
     TransformationMatrix<float, float, 3> hmatrix;
 
-    bool isActive = false;
-    bool isRenderable = false;
+    bool isActive = true;
+    bool isRenderable = true;
     bool isTransparent = false;
 
     size_t vertexCount = 0;

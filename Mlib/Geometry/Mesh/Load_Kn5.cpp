@@ -267,7 +267,9 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
             float propValue = ReadSingle(*binStream);
             newMaterial.shaderProps += propName + " = " + std::to_string(propValue) + "&cr;&lf;";
 
-            if (propName == "ksAmbient") {
+            if (propName == "ksEmissive") {
+                newMaterial.ksEmissive = propValue;
+            } else if (propName == "ksAmbient") {
                 newMaterial.ksAmbient = propValue;
             } else if (propName == "ksDiffuse") {
                 newMaterial.ksDiffuse = propValue;
