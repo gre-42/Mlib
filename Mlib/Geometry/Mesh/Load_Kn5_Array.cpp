@@ -66,9 +66,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
             for (const auto& tri : node.triangles) {
                 tl.draw_triangle_with_normals(
-                    node.position.at(tri(0)).casted<TPos>(),
-                    node.position.at(tri(1)).casted<TPos>(),
-                    node.position.at(tri(2)).casted<TPos>(),
+                    node.position.at(tri(0)) TEMPLATEV casted<TPos>(),
+                    node.position.at(tri(1)) TEMPLATEV casted<TPos>(),
+                    node.position.at(tri(2)) TEMPLATEV casted<TPos>(),
                     node.normal.at(tri(0)),
                     node.normal.at(tri(1)),
                     node.normal.at(tri(2)),
