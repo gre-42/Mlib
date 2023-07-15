@@ -1,8 +1,10 @@
 #include "Load_Kn5.hpp"
+#include <Mlib/Images/Dds_Image.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
+#include <sstream>
 
 using namespace Mlib;
 
@@ -77,7 +79,7 @@ static void readNodes(
     std::istream& modelStream,
     std::map<size_t, kn5Node>& nodeList,
     std::optional<size_t> parentID,
-    const std::map<size_t, kn5Material>& materials)
+    const kn5Model& model)
 {
     kn5Node newNode;
     newNode.parentID = parentID;
@@ -201,11 +203,26 @@ static void readNodes(
             }
     }
 
-    linfo() <<
-        "Node: " << newNode.name <<
-        " type: " << newNode.type <<
-        " transparent: " << (int)newNode.isTransparent <<
-        (newNode.materialID.has_value() ? " shader: " + materials.at(newNode.materialID.value()).shader : "");
+    {
+        std::stringstream matInfo;
+        if (newNode.materialID.has_value()) {
+            const auto& material = model.materials.at(newNode.materialID.value());
+            matInfo << " shader: " << material.shader << " diffuse: " << material.txDiffuse;
+            if (!material.txDiffuse.empty()) {
+                std::stringstream sstr;
+                for (uint8_t c : model.textures.at(material.txDiffuse)) {
+                    sstr << c;
+                }
+                auto shape = DdsImage::load_from_stream(sstr).shape();
+                matInfo << ' ' << shape(0) << 'x' << shape(1);
+            }
+        }
+        linfo() <<
+            "Node: " << newNode.name <<
+            " type: " << newNode.type <<
+            " transparent: " << (int)newNode.isTransparent <<
+            matInfo.str();
+    }
     if (!parentID.has_value()) { newNode.hmatrix = newNode.tmatrix; }
     else { newNode.hmatrix = newNode.tmatrix * nodeList.at(parentID.value()).hmatrix; }
 
@@ -214,7 +231,7 @@ static void readNodes(
 
     for (size_t c = 0; c < childrenCount; c++)
     {
-        readNodes(modelStream, nodeList, currentID, materials);
+        readNodes(modelStream, nodeList, currentID, model);
     }
 }
 
@@ -316,7 +333,7 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
         newModel.materials[newModel.materials.size()] = std::move(newMaterial);
     }
 
-    readNodes(*binStream, newModel.nodes, std::nullopt, newModel.materials); //recursive
+    readNodes(*binStream, newModel.nodes, std::nullopt, newModel); //recursive
 
     return newModel;
 }

@@ -32,12 +32,6 @@ struct kn5Material
     std::string shaderProps = "";
 };
 
-struct kn5Texture
-{
-    std::string filename;
-    float UVScaling = 1.0f;
-};
-
 struct kn5Node
 {
     int type = 1;
@@ -67,7 +61,6 @@ struct kn5Model
 {
     int version;
     std::map<std::string, std::vector<uint8_t>> textures;
-    std::list<kn5Texture> usedTex;
     std::map<size_t, kn5Material> materials;
     std::map<size_t, kn5Node> nodes;
 };
