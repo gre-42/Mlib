@@ -124,30 +124,39 @@ static void readNodes(
                 newNode.isTransparent = (bool)ReadByte(modelStream);
 
                 newNode.vertexCount = ReadUInt32(modelStream);
-                newNode.position.resize(newNode.vertexCount * 3);
-                newNode.normal.resize(newNode.vertexCount * 3);
-                newNode.texture0.resize(newNode.vertexCount * 2);
+                newNode.position.resize(newNode.vertexCount);
+                newNode.normal.resize(newNode.vertexCount);
+                newNode.uv.resize(newNode.vertexCount);
 
                 for (size_t v = 0; v < newNode.vertexCount; v++)
                 {
-                    newNode.position[v * 3] = ReadSingle(modelStream);
-                    newNode.position[v * 3 + 1] = ReadSingle(modelStream);
-                    newNode.position[v * 3 + 2] = ReadSingle(modelStream);
+                    newNode.position[v] = {
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream)};
 
-                    newNode.normal[v * 3] = ReadSingle(modelStream);
-                    newNode.normal[v * 3 + 1] = ReadSingle(modelStream);
-                    newNode.normal[v * 3 + 2] = ReadSingle(modelStream);
+                    newNode.normal[v] = {
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream)};
 
-                    newNode.texture0[v * 2] = ReadSingle(modelStream);
-                    newNode.texture0[v * 2 + 1] = 1 - ReadSingle(modelStream);
+                    newNode.uv[v] = {
+                        ReadSingle(modelStream),
+                        1 - ReadSingle(modelStream)};
 
                     modelStream.seekg(12, std::ios::cur); //tangents
                 }
 
                 size_t indexCount = ReadUInt32(modelStream);
-                newNode.indices.resize(indexCount);
-                for (size_t i = 0; i < indexCount; i++) {
-                    newNode.indices[i] = ReadUInt16(modelStream);
+                if (indexCount % 3 != 0) {
+                    THROW_OR_ABORT("Index-count not divisible by 3");
+                }
+                newNode.triangles.resize(indexCount / 3);
+                for (size_t i = 0; i < indexCount / 3; i++) {
+                    newNode.triangles[i] = {
+                        ReadUInt16(modelStream),
+                        ReadUInt16(modelStream),
+                        ReadUInt16(modelStream)};
                 }
 
                 newNode.materialID = ReadInt32(modelStream);
@@ -170,30 +179,39 @@ static void readNodes(
                 }
 
                 newNode.vertexCount = ReadUInt32(modelStream);
-                newNode.position.resize(newNode.vertexCount * 3);
-                newNode.normal.resize(newNode.vertexCount * 3);
-                newNode.texture0.resize(newNode.vertexCount * 2);
+                newNode.position.resize(newNode.vertexCount);
+                newNode.normal.resize(newNode.vertexCount);
+                newNode.uv.resize(newNode.vertexCount);
 
                 for (size_t v = 0; v < newNode.vertexCount; v++)
                 {
-                    newNode.position[v * 3] = ReadSingle(modelStream);
-                    newNode.position[v * 3 + 1] = ReadSingle(modelStream);
-                    newNode.position[v * 3 + 2] = ReadSingle(modelStream);
+                    newNode.position[v] = {
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream)};
 
-                    newNode.normal[v * 3] = ReadSingle(modelStream);
-                    newNode.normal[v * 3 + 1] = ReadSingle(modelStream);
-                    newNode.normal[v * 3 + 2] = ReadSingle(modelStream);
+                    newNode.normal[v] = {
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream),
+                        ReadSingle(modelStream)};
 
-                    newNode.texture0[v * 2] = ReadSingle(modelStream);
-                    newNode.texture0[v * 2 + 1] = 1 - ReadSingle(modelStream);
+                    newNode.uv[v] = {
+                        ReadSingle(modelStream),
+                        1 - ReadSingle(modelStream)};
 
                     modelStream.seekg(44, std::ios::cur); //tangents & weights
                 }
 
                 size_t indexCount = ReadUInt32(modelStream);
-                newNode.indices.resize(indexCount);
-                for (size_t i = 0; i < indexCount; i++) {
-                    newNode.indices[i] = ReadUInt16(modelStream);
+                if (indexCount % 3 != 0) {
+                    THROW_OR_ABORT("Index-count not divisible by 3");
+                }
+                newNode.triangles.resize(indexCount / 3);
+                for (size_t i = 0; i < indexCount / 3; i++) {
+                    newNode.triangles[i] = {
+                        ReadUInt16(modelStream),
+                        ReadUInt16(modelStream),
+                        ReadUInt16(modelStream)};
                 }
 
                 newNode.materialID = ReadInt32(modelStream);

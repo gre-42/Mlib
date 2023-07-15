@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

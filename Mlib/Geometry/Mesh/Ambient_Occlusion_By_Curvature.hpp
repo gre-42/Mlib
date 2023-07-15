@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <cstddef>
 #include <list>

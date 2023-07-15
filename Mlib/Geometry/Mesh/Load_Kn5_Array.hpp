@@ -10,8 +10,8 @@ template <class TPos>
 struct LoadMeshConfig;
 
 template <class TPos>
-std::list<std::shared_ptr<ColoredVertexArray<TPos>>> load_obj(
-    const std::string& filename,
+std::list<std::shared_ptr<ColoredVertexArray<TPos>>> load_kn5_array(
+    const std::string& file_or_directory,
     const LoadMeshConfig<TPos>& cfg);
 
 }

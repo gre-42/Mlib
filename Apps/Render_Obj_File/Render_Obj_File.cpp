@@ -39,6 +39,7 @@
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
+#include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras.hpp>
@@ -453,6 +454,18 @@ int main(int argc, char** argv) {
                             scene_node_resources));
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_obj(
+                            filename,
+                            cfg<double>(args, light_configuration),
+                            scene_node_resources));
+                    }
+                } else if (filename.ends_with(".kn5") || std::filesystem::is_directory(filename)) {
+                    if (!args.has_named("--large_object_mode")) {
+                        scene_node_resources.add_resource(name, load_renderable_kn5(
+                            filename,
+                            cfg<float>(args, light_configuration),
+                            scene_node_resources));
+                    } else {
+                        scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources));

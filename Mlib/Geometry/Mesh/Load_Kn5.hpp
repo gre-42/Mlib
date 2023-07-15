@@ -45,11 +45,11 @@ struct kn5Node
     bool isTransparent = false;
 
     size_t vertexCount = 0;
-    std::vector<float> position;
-    std::vector<float> normal;
-    std::vector<float> texture0;
+    std::vector<FixedArray<float, 3>> position;
+    std::vector<FixedArray<float, 3>> normal;
+    std::vector<FixedArray<float, 2>> uv;
 
-    std::vector<ushort> indices;
+    std::vector<FixedArray<ushort, 3>> triangles;
 
     std::optional<size_t> materialID;
 
