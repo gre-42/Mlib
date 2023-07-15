@@ -23,6 +23,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <nv_dds/nv_dds.hpp>
 #include <stb/stb_image_resize.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_alpha_fac.hpp>
@@ -908,5 +909,72 @@ void RenderingResources::save_to_file(const std::string& filename, const Texture
         0))
     {
         THROW_OR_ABORT("Could not write \"" + filename + '"');
+    }
+}
+
+void RenderingResources::insert_dds_texture(const std::string& name, std::istream& istr) {
+    LOG_FUNCTION("RenderingResources::set_texture " + name);
+    std::scoped_lock lock{mutex_};
+
+    nv_dds::CDDSImage image;
+    GLuint id;
+    image.load(istr);
+
+    CHK(glGenTextures(1, &id));
+    CHK(glEnable(GL_TEXTURE_2D));
+    CHK(glBindTexture(GL_TEXTURE_2D, id));
+
+    if (image.is_compressed()) {
+        CHK(glCompressedTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            image.get_format(),
+            integral_cast<GLsizei>(image.get_width()),
+            integral_cast<GLsizei>(image.get_height()),
+            0,
+            integral_cast<GLsizei>(image.get_size()),
+            image));
+
+        for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
+            nv_dds::CSurface mipmap = image.get_mipmap(i);
+            CHK(glCompressedTexImage2D(
+                GL_TEXTURE_2D,
+                integral_cast<GLint>(i + 1),
+                image.get_format(),
+                integral_cast<GLsizei>(mipmap.get_width()),
+                integral_cast<GLsizei>(mipmap.get_height()),
+                0,
+                integral_cast<GLsizei>(mipmap.get_size()),
+                mipmap));
+        }
+    } else {
+        CHK(glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            integral_cast<GLint>(image.get_components()),
+            integral_cast<GLsizei>(image.get_width()),
+            integral_cast<GLsizei>(image.get_height()),
+            0,
+            image.get_format(),
+            GL_UNSIGNED_BYTE,
+            image));
+        
+        for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
+            nv_dds::CSurface mipmap = image.get_mipmap(i);
+            CHK(glTexImage2D(
+                GL_TEXTURE_2D,
+                integral_cast<GLint>(i + 1),
+                integral_cast<GLint>(image.get_components()),
+                integral_cast<GLsizei>(mipmap.get_width()),
+                integral_cast<GLsizei>(mipmap.get_height()),
+                0,
+                image.get_format(),
+                GL_UNSIGNED_BYTE,
+                mipmap));
+        }
+    }
+    
+    if (!textures_.insert({name, TextureHandleAndNeedsGc{id, true}}).second) {
+        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -55,7 +56,7 @@ enum class DeletionFailureMode {
 
 struct UvTile;
 
-class RenderingResources {
+class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
 public:
@@ -107,6 +108,8 @@ public:
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 
     void save_to_file(const std::string& filename, const TextureDescriptor& desc) const;
+
+    virtual void insert_dds_texture(const std::string& name, std::istream& istr) override;
 
 private:
     void deallocate();

@@ -157,7 +157,7 @@
 //         GL_UNSIGNED_BYTE, image[0].get_mipmap(i));
 // }
 
-#include "nv_dds.h"
+#include "nv_dds.hpp"
 
 #include <cstring>
 #include <cassert>

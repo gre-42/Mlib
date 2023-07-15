@@ -3,7 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
-#include <nv_dds/nv_dds.h>
+#include <nv_dds/nv_dds.hpp>
 #include <sstream>
 
 using namespace Mlib;

@@ -1,11 +1,9 @@
 #pragma once
-
-#include <string>
+#include <cassert>
+#include <cstdint>
 #include <deque>
 #include <istream>
-
-#include <assert.h>
-#include <stdint.h>
+#include <string>
 
 #ifndef NV_DDS_NO_GL_SUPPORT
     #include <Mlib/Render/Any_Gl.hpp>

@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -20,12 +21,22 @@ using namespace Mlib;
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     const std::string& file_or_directory,
-    const LoadMeshConfig<TPos>& cfg)
+    const LoadMeshConfig<TPos>& cfg,
+    IDdsResources* dds_resources)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
 
     auto append_kn5 = [&](const std::string& filename) {
         auto kn5 = load_kn5(filename);
+        if (dds_resources != nullptr) {
+            for (const auto& [name, content] : kn5.textures) {
+                std::stringstream sstr;
+                for (uint8_t c : content) {
+                    sstr << c;
+                }
+                dds_resources->insert_dds_texture(name, sstr);
+            }
+        }
         for (const auto& [_, node] : kn5.nodes) {
             TriangleList<TPos> tl{
                 filename,
@@ -41,6 +52,18 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
+            if (dds_resources != nullptr) {
+                if (node.materialID.has_value()) {
+                    const auto& material = kn5.materials.at(node.materialID.value());
+                    if (!material.txDiffuse.empty()) {
+                        tl.material_.textures = {BlendMapTexture{
+                            .texture_descriptor = {
+                                .color = material.txDiffuse,
+                                .normal = material.txNormal}}};
+                        tl.material_.compute_color_mode();
+                    }
+                }
+            }
             for (const auto& tri : node.triangles) {
                 tl.draw_triangle_with_normals(
                     node.position.at(tri(0)).casted<TPos>(),
@@ -91,6 +114,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 }
 
 namespace Mlib {
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(const std::string& file_or_directory, const LoadMeshConfig<float>& cfg);
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(const std::string& file_or_directory, const LoadMeshConfig<double>& cfg);
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(const std::string& file_or_directory, const LoadMeshConfig<float>&, IDdsResources*);
+template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(const std::string& file_or_directory, const LoadMeshConfig<double>&, IDdsResources*);
 }
