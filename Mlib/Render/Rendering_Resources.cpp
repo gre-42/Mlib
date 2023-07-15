@@ -916,6 +916,10 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     std::scoped_lock lock{mutex_};
 
+    if (textures_.contains(name)) {
+        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
+    }
+
     nv_dds::CDDSImage image;
     GLuint id;
     image.load(istr);
@@ -936,7 +940,7 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
             image));
 
         for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
-            nv_dds::CSurface mipmap = image.get_mipmap(i);
+            const nv_dds::CSurface& mipmap = image.get_mipmap(i);
             CHK(glCompressedTexImage2D(
                 GL_TEXTURE_2D,
                 integral_cast<GLint>(i + 1),
@@ -960,7 +964,7 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
             image));
         
         for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
-            nv_dds::CSurface mipmap = image.get_mipmap(i);
+            const nv_dds::CSurface& mipmap = image.get_mipmap(i);
             CHK(glTexImage2D(
                 GL_TEXTURE_2D,
                 integral_cast<GLint>(i + 1),
@@ -973,8 +977,9 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
                 mipmap));
         }
     }
-    
+    CHK(glBindTexture(GL_TEXTURE_2D, 0));
+
     if (!textures_.insert({name, TextureHandleAndNeedsGc{id, true}}).second) {
-        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Internal error: Texture with name \"" + name + "\" already exists");
     }
 }
