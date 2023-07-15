@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>

@@ -1,8 +1,8 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Images/Bgr24Raw.hpp>
 #include <Mlib/Images/Bgr565Bitmap.hpp>
-#include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
 #include <iostream>

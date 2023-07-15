@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
 #include <Mlib/Images/Optical_Flow.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Images/Registration.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 

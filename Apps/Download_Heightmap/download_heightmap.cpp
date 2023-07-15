@@ -3,7 +3,7 @@
 #include <Mlib/Geography/Heightmaps/Terrarium.hpp>
 #include <Mlib/Images/Bilinear_Interpolation.hpp>
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/To_Number.hpp>

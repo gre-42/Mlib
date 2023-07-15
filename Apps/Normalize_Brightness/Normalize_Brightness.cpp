@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;

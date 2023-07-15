@@ -1,6 +1,6 @@
 #include "Save_Movie.hpp"
 #include <Mlib/Images/Draw_Bmp.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Render/Any_Gl.hpp>

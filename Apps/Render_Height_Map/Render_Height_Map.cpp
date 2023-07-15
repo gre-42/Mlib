@@ -2,7 +2,7 @@
 #include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>

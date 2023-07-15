@@ -1,7 +1,7 @@
 #include "Load_Heightmap_From_File.hpp"
 #include <Mlib/Geography/Heightmaps/Cities_Skylines.hpp>
 #include <Mlib/Geography/Heightmaps/Terrarium.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 

@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Heightmap.hpp>

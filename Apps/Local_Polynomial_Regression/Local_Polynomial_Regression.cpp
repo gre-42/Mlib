@@ -3,7 +3,7 @@
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Filters/Local_Polynomial_Regression.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <iostream>
 

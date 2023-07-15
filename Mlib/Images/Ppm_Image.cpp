@@ -1,4 +1,4 @@
-#include "PpmImage.hpp"
+#include "Ppm_Image.hpp"
 #include <Mlib/Images/Draw_Generic.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>

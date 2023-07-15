@@ -3,8 +3,8 @@
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Images/Coordinates.hpp>
-#include <Mlib/Images/PgmImage.hpp>
-#include <Mlib/Images/PpmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
+#include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>

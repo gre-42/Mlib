@@ -1,7 +1,7 @@
 #include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Geography/Heightmaps/Terrarium.hpp>
 #include <Mlib/Images/Normalize.hpp>
-#include <Mlib/Images/PgmImage.hpp>
+#include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Signal/Fft.hpp>
