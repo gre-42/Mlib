@@ -36,7 +36,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
         for (const auto& [_, node] : kn5.nodes) {
             TriangleList<TPos> tl{
-                filename,
+                node.name,
                 Material{
                     .reflection_map = cfg.reflection_map,
                     .occluded_pass = cfg.occluded_pass,
