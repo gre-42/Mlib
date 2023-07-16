@@ -80,7 +80,8 @@ static void readNodes(
     std::istream& modelStream,
     std::map<size_t, kn5Node>& nodeList,
     std::optional<size_t> parentID,
-    const kn5Model& model)
+    const kn5Model& model,
+    bool verbose)
 {
     kn5Node newNode;
     newNode.parentID = parentID;
@@ -222,7 +223,7 @@ static void readNodes(
             }
     }
 
-    {
+    if (verbose) {
         std::stringstream matInfo;
         if (newNode.materialID.has_value()) {
             const auto& material = model.materials.at(newNode.materialID.value());
@@ -263,11 +264,11 @@ static void readNodes(
 
     for (size_t c = 0; c < childrenCount; c++)
     {
-        readNodes(modelStream, nodeList, currentID, model);
+        readNodes(modelStream, nodeList, currentID, model, verbose);
     }
 }
 
-kn5Model Mlib::load_kn5(const std::string& filename) {
+kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
     auto binStream = create_ifstream(filename);
     if (binStream->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
@@ -292,7 +293,9 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
             THROW_OR_ABORT("Found multiple textures with name \"" + texName + '"');
         }
 
-        linfo() << "Texture: " << texName << " type: " << texType;
+        if (verbose) {
+            linfo() << "Texture: " << texName << " type: " << texType;
+        }
 
         binStream->read((char*)tex.first->second.data(), texSize);
     }
@@ -305,7 +308,9 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
 
         newMaterial.name = ReadStr(*binStream, ReadUInt32(*binStream));
         newMaterial.shader = ReadStr(*binStream, ReadUInt32(*binStream));
-        linfo() << "Material " << newMaterial.name << ", shader " << newMaterial.shader;
+        if (verbose) {
+            linfo() << "Material " << newMaterial.name << ", shader " << newMaterial.shader;
+        }
         ReadInt16(*binStream); // ashort
         if (newModel.version > 4) { ReadInt32(*binStream); /* azero */ }
 
@@ -335,7 +340,7 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
             } else if (propName == "detailUVMultiplier") {
                 newMaterial.detailUVMultiplier = propValue;
             } else {
-                linfo() << "Unknown material property: " << propName << " = " << propValue;
+                lwarn() << "Unknown material property: " << propName << " = " << propValue;
             }
 
             binStream->seekg(36, std::ios::cur);
@@ -357,15 +362,15 @@ kn5Model Mlib::load_kn5(const std::string& filename) {
             } else if (sampleName == "txDetail") {
                 newMaterial.txDetail = texName;
             } else {
-                linfo() << "Unknown sample name: " << sampleName;
+                lwarn() << "Unknown sample name: " << sampleName;
             }
-            linfo() << "sampleSlot: " << sampleSlot;
+            lwarn() << "sampleSlot: " << sampleSlot;
         }
 
         newModel.materials[newModel.materials.size()] = std::move(newMaterial);
     }
 
-    readNodes(*binStream, newModel.nodes, std::nullopt, newModel); //recursive
+    readNodes(*binStream, newModel.nodes, std::nullopt, newModel, verbose); //recursive
 
     return newModel;
 }

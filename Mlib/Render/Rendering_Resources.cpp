@@ -413,7 +413,7 @@ GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descri
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
-static GLenum nchannels2internal_format(size_t nchannels) {
+static GLint nchannels2internal_format(size_t nchannels) {
     switch (nchannels) {
         case 1:
             return GL_R8;
@@ -961,7 +961,7 @@ void RenderingResources::initialize_non_dds_texture(
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     (GLint)nchannels2internal_format((GLenum)descriptor.color_mode),
+                     nchannels2internal_format((GLenum)descriptor.color_mode),
                      si.width,
                      si.height,
                      0,
@@ -1024,7 +1024,7 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
         CHK(glTexImage2D(
             GL_TEXTURE_2D,
             0,
-            integral_cast<GLint>(image.get_components()),
+            nchannels2internal_format(image.get_components()),
             integral_cast<GLsizei>(image.get_width()),
             integral_cast<GLsizei>(image.get_height()),
             0,
@@ -1037,7 +1037,7 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
             CHK(glTexImage2D(
                 GL_TEXTURE_2D,
                 integral_cast<GLint>(i + 1),
-                integral_cast<GLint>(image.get_components()),
+                nchannels2internal_format(image.get_components()),
                 integral_cast<GLsizei>(mipmap.get_width()),
                 integral_cast<GLsizei>(mipmap.get_height()),
                 0,

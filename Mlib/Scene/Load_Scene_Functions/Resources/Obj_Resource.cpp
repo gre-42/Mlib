@@ -8,6 +8,8 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -98,6 +100,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
+    auto rendering_resources = RenderingContextStack::primary_rendering_resources();
     if (filename.ends_with(".obj")) {
         scene_node_resources.add_resource_loader(
             args.arguments.at<std::string>(KnownArgs::name),
@@ -106,6 +109,16 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     filename,
                     load_mesh_config,
                     scene_node_resources);
+            });
+    } else if (filename.ends_with(".kn5") || std::filesystem::is_directory(filename)) {
+        scene_node_resources.add_resource_loader(
+            args.arguments.at<std::string>(KnownArgs::name),
+            [filename, load_mesh_config, &scene_node_resources, rendering_resources](){
+                return load_renderable_kn5(
+                    filename,
+                    load_mesh_config,
+                    scene_node_resources,
+                    rendering_resources.get());
             });
     } else if (filename.ends_with(".mhx2")) {
         if constexpr (std::is_same_v<TPos, float>) {

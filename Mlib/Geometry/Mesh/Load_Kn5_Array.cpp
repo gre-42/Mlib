@@ -49,11 +49,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
-            static const DECLARE_REGEX(collide_reg, "^(\\d*)");
+            static const DECLARE_REGEX(collide_reg, "^(\\d+)");
             static const DECLARE_REGEX(group_reg, "^[^_]+_GROUP_([^_]+)_[^_]+$");
             std::smatch match;
-            if (Mlib::re::regex_match(node.name, match, collide_reg)) {
+            if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
+                tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
             }
             if (!node.isRenderable) {
                 tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
@@ -69,13 +70,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         (material.shader == "ksPerPixelAT_NM") ||
                         (material.shader == "ksPerPixelAlpha"))
                     {
-                        tl.material_.blend_mode = BlendMode::SEMI_CONTINUOUS_02;
+                        tl.material_.blend_mode = cfg.blend_mode;
                     } else if ((material.shader == "ksPerPixel") ||
                                (material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
                                (material.shader == "ksMultilayer_fresnel_nm"))
                     {
-                        // Do nothing
+                        tl.material_.blend_mode = BlendMode::OFF;
                     } else {
                         THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
                     }

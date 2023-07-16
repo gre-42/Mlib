@@ -65,6 +65,6 @@ struct kn5Model
     std::map<size_t, kn5Node> nodes;
 };
 
-kn5Model load_kn5(const std::string& filename);
+kn5Model load_kn5(const std::string& filename, bool verbose = false);
 
 }
