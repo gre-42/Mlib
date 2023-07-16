@@ -38,7 +38,11 @@ static StbInfo<TData> stb_wrap_and_postprocess(TData* data, int width, int heigh
     return result;
 }
 
-std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& filename, FlipMode flip_mode) {
+std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
+    const std::string& filename,
+    FlipMode flip_mode,
+    const std::vector<uint8_t>* data)
+{
     void* image;
     int width;
     int height;
@@ -52,8 +56,20 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
 #else
     stbi_set_flip_vertically_on_load_thread(any(flip_mode & FlipMode::VERTICAL));
 #endif
+    if (data != nullptr) {
+        if (data->size() > INT_MAX) {
+            THROW_OR_ABORT("File too large");
+        }
+        image = stbi_load_from_memory_bpc(
+            data->data(),
+            (int)data->size(),
+            &width,
+            &height,
+            &nrChannels,
+            0,
+            &bytes_per_pixel);
+    } else {
 #ifdef __ANDROID__
-    {
         std::vector<uint8_t> buffer = Mlib::read_file_bytes(filename);
         if (buffer.size() > INT_MAX) {
             THROW_OR_ABORT("File too large");
@@ -66,16 +82,16 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
             &nrChannels,
             0,
             &bytes_per_pixel);
-    }
 #else
-    image = stbi_load_bpc(
-            filename.c_str(),
-            &width,
-            &height,
-            &nrChannels,
-            0,
-            &bytes_per_pixel);
+        image = stbi_load_bpc(
+                filename.c_str(),
+                &width,
+                &height,
+                &nrChannels,
+                0,
+                &bytes_per_pixel);
 #endif
+    }
     if (image == nullptr) {
         THROW_OR_ABORT("Could not load \"" + filename + '"');
     }
@@ -88,8 +104,12 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& fi
     }
 }
 
-StbInfo<uint8_t> stb_load8(const std::string& filename, FlipMode flip_mode) {
-    auto res = stb_load(filename, flip_mode);
+StbInfo<uint8_t> stb_load8(
+    const std::string& filename,
+    FlipMode flip_mode,
+    const std::vector<uint8_t>* data)
+{
+    auto res = stb_load(filename, flip_mode, data);
     auto* res8 = std::get_if<StbInfo<uint8_t>>(&res);
     if (res8 == nullptr) {
         THROW_OR_ABORT("Image \"" + filename + "\" does not have 8 bits");

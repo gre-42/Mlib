@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <nv_dds/nv_dds.hpp>
 #include <sstream>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 
@@ -227,13 +228,25 @@ static void readNodes(
             const auto& material = model.materials.at(newNode.materialID.value());
             matInfo << " shader: " << material.shader << " diffuse: " << material.txDiffuse;
             if (!material.txDiffuse.empty()) {
-                std::stringstream sstr;
-                for (uint8_t c : model.textures.at(material.txDiffuse)) {
-                    sstr << c;
+                auto extension = std::filesystem::path{material.txDiffuse}.extension().string();
+                std::transform(extension.begin(), extension.end(), extension.begin(),
+                    [](unsigned char c){ return std::tolower(c); });
+                if ((extension == ".jpg") ||
+                    (extension == ".png"))
+                {
+                    auto image = stb_load8(material.txDiffuse, FlipMode::NONE, &model.textures.at(material.txDiffuse));
+                    matInfo << ' ' << image.width << 'x' << image.height;
+                } else if (extension == ".dds") {
+                    std::stringstream sstr;
+                    for (uint8_t c : model.textures.at(material.txDiffuse)) {
+                        sstr << c;
+                    }
+                    nv_dds::CDDSImage image;
+                    image.load(sstr);
+                    matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
+                } else {
+                    THROW_OR_ABORT("Unknown texture file extension: \"" + material.txDiffuse + '"');
                 }
-                nv_dds::CDDSImage image;
-                image.load(sstr);
-                matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
             }
         }
         linfo() <<

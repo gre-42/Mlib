@@ -895,21 +895,49 @@ void RenderingResources::save_to_file(const std::string& filename, const Texture
     }
 }
 
-void RenderingResources::insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) {
+void RenderingResources::insert_texture(
+    const std::string& name,
+    std::vector<uint8_t>&& data,
+    TextureAlreadyExistsBehavior already_exists_behavior)
+{
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     std::scoped_lock lock{mutex_};
 
     if (preloaded_texture_dds_data_.contains(name)) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+            return;
+        }
         THROW_OR_ABORT("DDS-texture with name \"" + name + "\" already exists");
     }
     if (preloaded_texture_data_.contains(name)) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+            return;
+        }
         THROW_OR_ABORT("Preloaded non-DDS-texture with name \"" + name + "\" already exists");
     }
     if (textures_.contains(name)) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+            return;
+        }
         THROW_OR_ABORT("Non-DDS-texture with name \"" + name + "\" already exists");
     }
-    if (!preloaded_texture_dds_data_.try_emplace(name, std::move(data)).second) {
-        THROW_OR_ABORT("Internal error: Preloaded DDS-texture with name \"" + name + "\" already exists");
+    auto extension = std::filesystem::path{name}.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+    if ((extension == ".jpg") ||
+        (extension == ".png"))
+    {
+        auto d = std::move(data);
+        auto image = stb_load8(name, FlipMode::NONE, &d);
+        if (!preloaded_texture_data_.try_emplace(name, std::move(image)).second) {
+            THROW_OR_ABORT("Internal error: Preloaded STB-texture with name \"" + name + "\" already exists");
+        }
+    } else if (extension == ".dds") {
+        if (!preloaded_texture_dds_data_.try_emplace(name, std::move(data)).second) {
+            THROW_OR_ABORT("Internal error: Preloaded DDS-texture with name \"" + name + "\" already exists");
+        }
+    } else {
+        THROW_OR_ABORT("Unknown file extension: \"" + name + '"');
     }
 }
 

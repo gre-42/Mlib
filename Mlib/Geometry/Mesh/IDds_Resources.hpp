@@ -4,9 +4,17 @@
 
 namespace Mlib {
 
+enum class TextureAlreadyExistsBehavior {
+    IGNORE,
+    RAISE
+};
+
 class IDdsResources {
 public:
-    virtual void insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) = 0;
+    virtual void insert_texture(
+        const std::string& name,
+        std::vector<uint8_t>&& data,
+        TextureAlreadyExistsBehavior already_exists_behavior) = 0;
 };
 
 }

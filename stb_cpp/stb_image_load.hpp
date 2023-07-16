@@ -4,6 +4,7 @@
 #include <stb/stb_image.h>
 #include <string>
 #include <variant>
+#include <vector>
 
 #if defined(STBI_MALLOC) || defined(STBI_FREE) || defined(STBI_REALLOC) || defined(STBI_REALLOC_SIZED)
 #error Do not define STBI_MALLOC etc.
@@ -38,7 +39,13 @@ inline FlipMode operator | (FlipMode a, FlipMode b) {
 template <class TData>
 void stb_image_flip_horizontally(const StbInfo<TData>& image);
 
-std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(const std::string& filename, FlipMode flip_mode);
-StbInfo<uint8_t> stb_load8(const std::string& filename, FlipMode flip_mode);
+std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
+    const std::string& filename,
+    FlipMode flip_mode,
+    const std::vector<uint8_t>* data = nullptr);
+StbInfo<uint8_t> stb_load8(
+    const std::string& filename,
+    FlipMode flip_mode,
+    const std::vector<uint8_t>* data = nullptr);
 template <class TData>
 StbInfo<TData> stb_create(int width, int height, int nrChannels);

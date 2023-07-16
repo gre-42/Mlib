@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -30,7 +31,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         auto kn5 = load_kn5(filename);
         if (dds_resources != nullptr) {
             for (auto& [name, content] : kn5.textures) {
-                dds_resources->insert_dds_texture(name, std::move(content));
+                dds_resources->insert_texture(name, std::move(content), TextureAlreadyExistsBehavior::IGNORE);
             }
         }
         for (const auto& [_, node] : kn5.nodes) {
@@ -48,9 +49,40 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
+            static const DECLARE_REGEX(collide_reg, "^(\\d*)");
+            static const DECLARE_REGEX(group_reg, "^[^_]+_GROUP_([^_]+)_[^_]+$");
+            std::smatch match;
+            if (Mlib::re::regex_match(node.name, match, collide_reg)) {
+                tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
+            }
+            if (!node.isRenderable) {
+                tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
+            }
             if (dds_resources != nullptr) {
                 if (node.materialID.has_value()) {
                     const auto& material = kn5.materials.at(node.materialID.value());
+                    // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
+                    //       https://assettocorsamods.net/threads/setting-up-trees.162/
+                    if ((material.shader == "ksPerPixelAT") ||
+                        (material.shader == "ksTree") ||
+                        (material.shader == "ksPerPixelAT") ||
+                        (material.shader == "ksPerPixelAT_NM") ||
+                        (material.shader == "ksPerPixelAlpha"))
+                    {
+                        tl.material_.blend_mode = BlendMode::SEMI_CONTINUOUS_02;
+                    } else if ((material.shader == "ksPerPixel") ||
+                               (material.shader == "ksPerPixelNM") ||
+                               (material.shader == "ksPerPixelMultiMap") ||
+                               (material.shader == "ksMultilayer_fresnel_nm"))
+                    {
+                        // Do nothing
+                    } else {
+                        THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
+                    }
+                    tl.material_.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
+                    tl.material_.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
+                    tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
+                    tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                     if (!material.txDiffuse.empty()) {
                         tl.material_.textures = {BlendMapTexture{
                             .texture_descriptor = {

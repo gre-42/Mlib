@@ -109,7 +109,10 @@ public:
 
     void save_to_file(const std::string& filename, const TextureDescriptor& desc) const;
 
-    virtual void insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) override;
+    virtual void insert_texture(
+        const std::string& name,
+        std::vector<uint8_t>&& data,
+        TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
     void deallocate();
