@@ -920,12 +920,14 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
         THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
     }
 
-    nv_dds::CDDSImage image;
     GLuint id;
+    nv_dds::CDDSImage image;
     image.load(istr);
 
     CHK(glGenTextures(1, &id));
     CHK(glBindTexture(GL_TEXTURE_2D, id));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(image.get_num_mipmaps())));
 
     if (image.is_compressed()) {
         CHK(glCompressedTexImage2D(
