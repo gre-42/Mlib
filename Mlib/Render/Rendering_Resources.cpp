@@ -925,7 +925,6 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
     image.load(istr);
 
     CHK(glGenTextures(1, &id));
-    CHK(glEnable(GL_TEXTURE_2D));
     CHK(glBindTexture(GL_TEXTURE_2D, id));
 
     if (image.is_compressed()) {

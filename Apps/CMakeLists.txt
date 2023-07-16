@@ -50,6 +50,7 @@ if (glfw3_FOUND)
     endif()
     add_subdirectory(Render_Height_Map)
     add_subdirectory(Render_Text)
+    add_subdirectory(Render_Texture)
     add_subdirectory(Print_Gamepad_Buttons)
     # MlibRender contains glad_gl.cpp and glad_vulkan.cpp
     if (SDL2_FOUND)

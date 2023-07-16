@@ -233,7 +233,7 @@ static void readNodes(
                 }
                 nv_dds::CDDSImage image;
                 image.load(sstr);
-                matInfo << ' ' << image.get_width() << 'x' << image.get_height();
+                matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
             }
         }
         linfo() <<
