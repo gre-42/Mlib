@@ -29,12 +29,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     auto append_kn5 = [&](const std::string& filename) {
         auto kn5 = load_kn5(filename);
         if (dds_resources != nullptr) {
-            for (const auto& [name, content] : kn5.textures) {
-                std::stringstream sstr;
-                for (uint8_t c : content) {
-                    sstr << c;
-                }
-                dds_resources->insert_dds_texture(name, sstr);
+            for (auto& [name, content] : kn5.textures) {
+                dds_resources->insert_dds_texture(name, std::move(content));
             }
         }
         for (const auto& [_, node] : kn5.nodes) {

@@ -66,11 +66,9 @@ int main(int argc, char** argv)
         // ------------
         if (argc == 3) {
             auto kn5 = load_kn5(argv[2]);
-            std::stringstream sstr;
-            for (uint8_t c : kn5.textures.at(argv[1])) {
-                sstr << c;
-            }
-            RenderingContextStack::primary_rendering_resources()->insert_dds_texture(argv[1], sstr);
+            RenderingContextStack::primary_rendering_resources()->insert_dds_texture(
+                argv[1],
+                std::move(kn5.textures.at(argv[1])));
         }
         FillWithTextureLogic ftl{argv[1], ResourceUpdateCycle::ONCE, ColorMode::RGB};
 

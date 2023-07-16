@@ -1,12 +1,12 @@
 #pragma once
-#include <iosfwd>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
 class IDdsResources {
 public:
-    virtual void insert_dds_texture(const std::string& name, std::istream& istr) = 0;
+    virtual void insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) = 0;
 };
 
 }

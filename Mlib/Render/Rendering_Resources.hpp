@@ -109,11 +109,14 @@ public:
 
     void save_to_file(const std::string& filename, const TextureDescriptor& desc) const;
 
-    virtual void insert_dds_texture(const std::string& name, std::istream& istr) override;
+    virtual void insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) override;
 
 private:
     void deallocate();
+    void initialize_non_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;
+    mutable std::map<std::string, std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;

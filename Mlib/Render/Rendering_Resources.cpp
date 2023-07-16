@@ -327,14 +327,22 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             get_normalmap_texture(desc);
         }
     } else {
-        if (!desc.color.empty() && !textures_.contains(descriptor.color) && !preloaded_texture_data_.contains(descriptor.color)) {
+        if (!desc.color.empty() &&
+            !textures_.contains(descriptor.color) &&
+            !preloaded_texture_data_.contains(descriptor.color) &&
+            !preloaded_texture_dds_data_.contains(descriptor.color))
+        {
             if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc, FlipMode::VERTICAL)}).second) {
                 THROW_OR_ABORT("Could not preload color");
             } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded color texture: " << descriptor.color;
             }
         }
-        if (!desc.normal.empty() && !textures_.contains(desc.normal) && !preloaded_texture_data_.contains(desc.normal)) {
+        if (!desc.normal.empty() &&
+            !textures_.contains(desc.normal) &&
+            !preloaded_texture_data_.contains(desc.normal) &&
+            !preloaded_texture_dds_data_.contains(desc.normal))
+        {
             if (!preloaded_texture_data_.insert({
                 desc.normal,
                 get_texture_data(
@@ -467,37 +475,12 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
     }
-    StbInfo<uint8_t> si;
-    if (preloaded_texture_data_.contains(name)) {
-        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            linfo() << this << " Using preloaded texture: " << name;
-        }
-        si = std::move(preloaded_texture_data_.at(name));
-        preloaded_texture_data_.erase(name);
+    if (preloaded_texture_dds_data_.contains(name)) {
+        initialize_dds_texture(name, desc);
     } else {
-        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            linfo() << this << " Could not find preloaded texture: " << name;
-        }
-        si = get_texture_data(desc, FlipMode::VERTICAL);
+        initialize_non_dds_texture(name, desc);
     }
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
-    CHK(glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     (GLint)nchannels2internal_format((GLenum)desc.color_mode),
-                     si.width,
-                     si.height,
-                     0,
-                     nchannels2format((size_t)si.nrChannels),
-                     GL_UNSIGNED_BYTE,
-                     si.data.get()));
-    // if (si.nrChannels == 4) {
-    //     generate_rgba_mipmaps_inplace(si);
-    // } else {
-    //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
-    // }
-    if (desc.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
-    }
+    CHK(glBindTexture(GL_TEXTURE_2D, 0));
 
     textures_.insert({name, TextureHandleAndNeedsGc{texture, true}});
     return texture;
@@ -912,20 +895,77 @@ void RenderingResources::save_to_file(const std::string& filename, const Texture
     }
 }
 
-void RenderingResources::insert_dds_texture(const std::string& name, std::istream& istr) {
+void RenderingResources::insert_dds_texture(const std::string& name, std::vector<uint8_t>&& data) {
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     std::scoped_lock lock{mutex_};
 
+    if (preloaded_texture_dds_data_.contains(name)) {
+        THROW_OR_ABORT("DDS-texture with name \"" + name + "\" already exists");
+    }
+    if (preloaded_texture_data_.contains(name)) {
+        THROW_OR_ABORT("Preloaded non-DDS-texture with name \"" + name + "\" already exists");
+    }
     if (textures_.contains(name)) {
-        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Non-DDS-texture with name \"" + name + "\" already exists");
+    }
+    if (!preloaded_texture_dds_data_.try_emplace(name, std::move(data)).second) {
+        THROW_OR_ABORT("Internal error: Preloaded DDS-texture with name \"" + name + "\" already exists");
+    }
+}
+
+void RenderingResources::initialize_non_dds_texture(
+    const std::string& name,
+    const TextureDescriptor& descriptor) const
+{
+    StbInfo<uint8_t> si;
+    if (preloaded_texture_data_.contains(name)) {
+        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            linfo() << this << " Using preloaded texture: " << name;
+        }
+        si = std::move(preloaded_texture_data_.at(name));
+        preloaded_texture_data_.erase(name);
+    } else {
+        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            linfo() << this << " Could not find preloaded texture: " << name;
+        }
+        si = get_texture_data(descriptor, FlipMode::VERTICAL);
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
+    CHK(glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     (GLint)nchannels2internal_format((GLenum)descriptor.color_mode),
+                     si.width,
+                     si.height,
+                     0,
+                     nchannels2format((size_t)si.nrChannels),
+                     GL_UNSIGNED_BYTE,
+                     si.data.get()));
+    // if (si.nrChannels == 4) {
+    //     generate_rgba_mipmaps_inplace(si);
+    // } else {
+    //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    // }
+    if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+    }
+}
+
+void RenderingResources::initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const
+{
+    auto it = preloaded_texture_dds_data_.find(name);
+    if (it == preloaded_texture_dds_data_.end()) {
+        THROW_OR_ABORT("Could not find preloaded DDS-texture with name \"" + name + '"');
     }
 
-    GLuint id;
     nv_dds::CDDSImage image;
-    image.load(istr);
+    {
+        std::stringstream sstr;
+        for (uint8_t c : it->second) {
+            sstr << c;
+        }
+        image.load(sstr);
+    }
 
-    CHK(glGenTextures(1, &id));
-    CHK(glBindTexture(GL_TEXTURE_2D, id));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(image.get_num_mipmaps())));
 
@@ -977,10 +1017,5 @@ void RenderingResources::insert_dds_texture(const std::string& name, std::istrea
                 GL_UNSIGNED_BYTE,
                 mipmap));
         }
-    }
-    CHK(glBindTexture(GL_TEXTURE_2D, 0));
-
-    if (!textures_.insert({name, TextureHandleAndNeedsGc{id, true}}).second) {
-        THROW_OR_ABORT("Internal error: Texture with name \"" + name + "\" already exists");
     }
 }
