@@ -55,7 +55,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material_.textures = {BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txDiffuse,
-                                .normal = material.txNormal}}};
+                                .normal = material.txNormal,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
                         tl.material_.compute_color_mode();
                     }
                 }
