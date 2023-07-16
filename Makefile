@@ -38,6 +38,7 @@ build_tsan:
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_tsan_clang:
+	CC=/usr/bin/clang CXX=/usr/bin/clang++ \
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
