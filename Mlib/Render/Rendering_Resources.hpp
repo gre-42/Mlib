@@ -2,11 +2,13 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -31,18 +33,38 @@ struct TextureHandleAndNeedsGc {
     bool needs_gc;
 };
 
-struct AtlasTileDescriptor {
+struct ManualAtlasTileDescriptor {
     int left;
     int bottom;
     std::string filename;
 };
 
-struct TextureAtlasDescriptor {
+struct AutoAtlasTileDescriptor {
+    int left;
+    int bottom;
+    int width;
+    int height;
+    std::string filename;
+};
+
+std::ostream& operator << (std::ostream& ostr, const AutoAtlasTileDescriptor& aatd);
+
+struct ManualTextureAtlasDescriptor {
     int width;
     int height;
     ColorMode color_mode;
-    std::vector<AtlasTileDescriptor> tiles;
+    std::vector<ManualAtlasTileDescriptor> tiles;
 };
+
+struct AutoTextureAtlasDescriptor {
+    int width;
+    int height;
+    int mip_level_count;
+    ColorMode color_mode;
+    std::list<std::vector<AutoAtlasTileDescriptor>> tiles;
+};
+
+std::ostream& operator << (std::ostream& ostr, const AutoTextureAtlasDescriptor& atad);
 
 struct CubemapDescriptor {
     std::vector<std::string> filenames;
@@ -53,8 +75,6 @@ enum class DeletionFailureMode {
     WARN,
     ERROR
 };
-
-struct UvTile;
 
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
@@ -73,8 +93,14 @@ public:
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
-    void add_texture_atlas(const std::string& name, const TextureAtlasDescriptor& texture_atlas_descriptor);
-    std::map<std::string, UvTile> generate_texture_atlas(const std::string& name, const std::vector<std::string>& filenames);
+    void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
+    std::map<std::string, ManualUvTile> generate_manual_texture_atlas(
+        const std::string& name,
+        const std::vector<std::string>& filenames);
+    std::map<std::string, AutoUvTile> generate_auto_texture_atlas(
+        const std::string& name,
+        const std::vector<std::string>& filenames,
+        AutoTextureAtlasDescriptor* atlas = nullptr);
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate);
 
     std::string get_texture_filename(
@@ -118,11 +144,14 @@ private:
     void deallocate();
     void initialize_non_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;
     mutable std::map<std::string, std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable std::map<std::string, FixedArray<int, 2>> auto_texture_sizes_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
-    mutable std::map<std::string, TextureAtlasDescriptor> atlas_tile_descriptors_;
+    mutable std::map<std::string, ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
+    mutable std::map<std::string, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
     mutable std::map<std::pair<std::string, float>, LoadedFont> font_textures_;
     mutable SafeRecursiveSharedMutex mutex_;

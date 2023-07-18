@@ -39,14 +39,14 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto tiles = args.arguments.children(KnownArgs::images, [](const JsonMacroArguments& a){
         a.validate(AtlasTileArgs::options);
         auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::texture_pos);
-        return AtlasTileDescriptor{
+        return ManualAtlasTileDescriptor{
             .left = texture_pos(0),
             .bottom = texture_pos(1),
             .filename = a.path_or_variable(AtlasTileArgs::texture).path};
     });
-    RenderingContextStack::primary_rendering_resources()->add_texture_atlas(
+    RenderingContextStack::primary_rendering_resources()->add_manual_texture_atlas(
         args.arguments.at(KnownArgs::name),
-        TextureAtlasDescriptor{
+        ManualTextureAtlasDescriptor{
             .width = args.arguments.at<int>(KnownArgs::width),
             .height = args.arguments.at<int>(KnownArgs::height),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),

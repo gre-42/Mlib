@@ -3,9 +3,15 @@
 
 namespace Mlib {
 
-struct UvTile {
+struct ManualUvTile {
     FixedArray<float, 2> position;
     FixedArray<float, 2> size;
+};
+
+struct AutoUvTile {
+    FixedArray<float, 2> position;
+    FixedArray<float, 2> size;
+    int layer;
 };
 
 }

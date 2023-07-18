@@ -1,13 +1,18 @@
+#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Texture_Atlas.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -19,10 +24,16 @@ using namespace Mlib;
 
 int main(int argc, char** argv)
 {
+    ArgParser parser(
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>}",
+        {},
+        {"--kn5"});
+
     try {
-        if ((argc != 2) && (argc != 3)) {
-            throw std::runtime_error("Usage: render_text <texture> [container.kn5]");
-        }
+        auto parsed = parser.parsed(argc, argv);
+
+        parsed.assert_num_unnamed(1);
+
         // glfw: initialize and configure
         // ------------------------------
         GLFW_CHK(glfwInit());
@@ -64,14 +75,33 @@ int main(int argc, char** argv)
 
         // OpenGL state
         // ------------
-        if (argc == 3) {
-            auto kn5 = load_kn5(argv[2]);
-            RenderingContextStack::primary_rendering_resources()->insert_texture(
-                argv[1],
-                std::move(kn5.textures.at(argv[1])),
-                TextureAlreadyExistsBehavior::RAISE);
+        AutoTextureAtlasDescriptor atlas;
+        std::optional<FillWithTextureLogic> ftl;
+        if (parsed.has_named_value("--kn5")) {
+            auto kn5 = load_kn5(parsed.named_value("--kn5"));
+            std::list<std::string> names;
+            static const DECLARE_REGEX(re, parsed.unnamed_value(0));
+            for (auto& [name, data] : kn5.textures) {
+                if (!Mlib::re::regex_search(name, re)) {
+                    continue;
+                }
+                names.push_back(name);
+                RenderingContextStack::primary_rendering_resources()->insert_texture(
+                    name,
+                    std::move(data),
+                    TextureAlreadyExistsBehavior::RAISE);
+            }
+            if (names.empty()) {
+                THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.unnamed_value(0) + '"');
+            }
+            RenderingContextStack::primary_rendering_resources()->generate_auto_texture_atlas("__texture__", std::vector(names.begin(), names.end()), &atlas);
+        } else {
+            RenderingContextStack::primary_rendering_resources()->add_texture_descriptor("__texture__", TextureDescriptor{
+                .color = parsed.unnamed_value(0),
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS});
+            ftl.emplace("__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
         }
-        FillWithTextureLogic ftl{argv[1], ResourceUpdateCycle::ONCE, ColorMode::RGB};
 
         // render loop
         // -----------
@@ -84,10 +114,16 @@ int main(int argc, char** argv)
 
             // render
             // ------
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(1.f, 0.f, 1.f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            ftl.render();
+            if (ftl.has_value()) {
+                ftl.value().render();
+            } else if (!atlas.tiles.empty()) {
+                render_texture_atlas(
+                    atlas.tiles.front(),
+                    *RenderingContextStack::primary_rendering_resources());
+            }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
             // -------------------------------------------------------------------------------

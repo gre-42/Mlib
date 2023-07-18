@@ -99,7 +99,7 @@ void Mlib::merge_blended_materials(
             };
             // auto keys = std::views::keys(merged_filenames);
             // auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, std::set(keys.begin(), keys.end()));
-            auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, keys(merged_filenames));
+            auto uv_tiles = rendering_resources.generate_auto_texture_atlas(merged_texture_name, keys(merged_filenames));
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_tris;
