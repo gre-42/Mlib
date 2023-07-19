@@ -2,10 +2,10 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
-#include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -29,7 +29,7 @@ void Mlib::merge_blended_materials(
     bool merged_cull_faces,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const MergedTextureFilter& filter)
+    const ColoredVertexArrayFilter& filter)
 {
     scene_node_resources.add_modifier(
         mesh_resource_name,
@@ -46,44 +46,33 @@ void Mlib::merge_blended_materials(
          merged_cull_faces]
         (ISceneNodeResource& scene_node_resource){
             std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
-            std::map<std::string, std::list<ColoredVertexArray<double>*>> excluded_filenames;
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
-                    MergedTextureName merged_texture_name{cva->material};
-                    if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-                        if (cva->material.textures.size() != 1) {
-                            THROW_OR_ABORT("Material \"" + cva->material.identifier() + "\" does not have exactly one texture");
-                        }
-                        if (!filter.matches(merged_texture_name)) {
-                            goto skip;
-                        }
-                        if (excluded_filenames.contains(merged_texture_name.name)) {
-                            goto skip;
-                        }
-                        for (auto& t : cva->triangles) {
-                            auto min_uv_floor =
-                                minimum(minimum(t(0).uv, t(1).uv), t(2).uv)
-                                .applied([](float v){return std::floor(v);});
-                            for (auto& v : t.flat_iterable()) {
-                                v.uv -= min_uv_floor;
-                            }
-                            for (const auto& v : t.flat_iterable()) {
-                                if (any(v.uv < 0.f) || any(v.uv > 1.f)) {
-                                    goto skip;
-                                }
-                            }
-                        }
-                        merged_filenames[merged_texture_name.name].push_back(cva.get());
-                        continue;
+                    if (!filter.matches(*cva)) {
+                        goto skip;
                     }
+                    if (!any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
+                        lwarn() << "Attempt to merge object \"" << cva->name << "\", which has a non-continuous material";
+                        goto skip;
+                    }
+                    for (auto& t : cva->triangles) {
+                        auto min_uv_floor =
+                            minimum(minimum(t(0).uv, t(1).uv), t(2).uv)
+                            .applied([](float v){return std::floor(v);});
+                        for (auto& v : t.flat_iterable()) {
+                            v.uv -= min_uv_floor;
+                        }
+                        for (const auto& v : t.flat_iterable()) {
+                            if (any(v.uv < 0.f) || any(v.uv > 1.f)) {
+                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do no permit texture atlas";
+                                goto skip;
+                            }
+                        }
+                    }
+                    merged_filenames[MergedTextureName{cva->material}.name].push_back(cva.get());
+                    continue;
                     skip:
-                    excluded_filenames.insert(merged_filenames.extract(merged_texture_name.name));
-                    excluded_filenames[merged_texture_name.name].push_back(cva.get());
-                }
-            }
-            for (const auto& [_, cvas] : excluded_filenames) {
-                for (const auto& cva : cvas) {
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }

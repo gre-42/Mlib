@@ -2,9 +2,9 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Modifiers/Merge_Blended_Materials.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -48,7 +48,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
          merged_cull_faces = args.arguments.at<bool>(KnownArgs::merged_cull_faces),
          &scene_node_resources = scene_node_resources,
          rendering_resources = rendering_resources,
-         filter = MergedTextureFilter{
+         filter = ColoredVertexArrayFilter{
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
             .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}]
         (ISceneNodeResource& resource)

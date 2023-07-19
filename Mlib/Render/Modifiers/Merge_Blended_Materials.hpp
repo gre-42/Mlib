@@ -5,7 +5,7 @@ namespace Mlib {
 
 class SceneNodeResources;
 class RenderingResources;
-struct MergedTextureFilter;
+struct ColoredVertexArrayFilter;
 enum class BlendMode;
 enum class AggregateMode;
 
@@ -20,6 +20,6 @@ void merge_blended_materials(
     bool merged_cull_faces,
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
-    const MergedTextureFilter& filter);
+    const ColoredVertexArrayFilter& filter);
 
 }
