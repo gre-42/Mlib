@@ -5,10 +5,10 @@
 
 using namespace Mlib;
 
-ArrayFrameBufferStorage::ArrayFrameBufferStorage(GLuint texture_color, GLint layer)
+ArrayFrameBufferStorage::ArrayFrameBufferStorage(GLuint texture_color, GLint level, GLint layer)
 : deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
-    allocate(texture_color, layer);
+    allocate(texture_color, level, layer);
     bind();
 }
 
@@ -17,14 +17,14 @@ ArrayFrameBufferStorage::~ArrayFrameBufferStorage() {
     deallocate();
 }
 
-void ArrayFrameBufferStorage::allocate(GLuint texture_color, GLint layer)
+void ArrayFrameBufferStorage::allocate(GLuint texture_color, GLint level, GLint layer)
 {
     CHK(glGenFramebuffers(1, &frame_buffer_));
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_));
 
     CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture_color));
 
-    CHK(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_color, 0, layer));
+    CHK(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_color, level, layer));
 
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

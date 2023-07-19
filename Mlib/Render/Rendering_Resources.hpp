@@ -76,6 +76,11 @@ enum class DeletionFailureMode {
     ERROR
 };
 
+enum class CallerType {
+    PRELOAD,
+    RENDER
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -85,8 +90,13 @@ public:
         unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
     void preload(const TextureDescriptor& descriptor) const;
-    GLuint get_texture(const TextureDescriptor& descriptor) const;
-    GLuint get_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    GLuint get_texture(
+        const TextureDescriptor& descriptor,
+        CallerType caller_type = CallerType::RENDER) const;
+    GLuint get_texture(
+        const std::string& name,
+        const TextureDescriptor& descriptor,
+        CallerType caller_type = CallerType::RENDER) const;
     GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name) const;
     bool contains_texture(const std::string& name) const;
@@ -147,7 +157,6 @@ private:
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable std::map<std::string, StbInfo<uint8_t>> preloaded_texture_data_;
     mutable std::map<std::string, std::vector<uint8_t>> preloaded_texture_dds_data_;
-    mutable std::map<std::string, FixedArray<int, 2>> auto_texture_sizes_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
     mutable std::map<std::string, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;

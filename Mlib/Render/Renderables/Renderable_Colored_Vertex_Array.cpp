@@ -466,6 +466,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
+            .has_texture_layer = !cva->triangle_texture_layers.empty(),
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
@@ -636,21 +637,21 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
-    auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor) {
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
+    auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor, GLenum target = GL_TEXTURE_2D) {
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
         if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         }
         if (any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
-            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+            CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         } else {
             if (cva->material.magnifying_interpolation_mode == InterpolationMode::NEAREST) {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+                CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
             } else if (cva->material.magnifying_interpolation_mode == InterpolationMode::LINEAR) {
-                CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+                CHK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             } else {
                 THROW_OR_ABORT("Unknown interpolation mode");
             }
@@ -665,9 +666,12 @@ void RenderableColoredVertexArray::render_cva(
                 : rcva_->rendering_resources_->get_texture(t.texture_descriptor);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, texture));
+            GLenum target = cva->triangle_texture_layers.empty()
+                ? GL_TEXTURE_2D
+                : GL_TEXTURE_2D_ARRAY;
+            CHK(glBindTexture(target, texture));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color + '"');
-            setup_texture(t.texture_descriptor);
+            setup_texture(t.texture_descriptor, target);
             CHK(glActiveTexture(GL_TEXTURE0));
             ++i;
         }

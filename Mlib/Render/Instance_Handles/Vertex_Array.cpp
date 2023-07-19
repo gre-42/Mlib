@@ -31,6 +31,10 @@ void VertexArray::deallocate() {
         ABORT(glDeleteBuffers(1, &bone_weight_buffer));
         bone_weight_buffer = (GLuint)-1;
     }
+    if (texture_layer_buffer != (GLuint)-1) {
+        ABORT(glDeleteBuffers(1, &texture_layer_buffer));
+        texture_layer_buffer = (GLuint)-1;
+    }
     if (interior_mapping_buffer != (GLuint)-1) {
         ABORT(glDeleteBuffers(1, &interior_mapping_buffer));
         interior_mapping_buffer = (GLuint)-1;
@@ -46,6 +50,9 @@ void VertexArray::gc_deallocate() {
     }
     if (bone_weight_buffer != (GLuint)-1) {
         render_gc_append_to_buffers(bone_weight_buffer);
+    }
+    if (texture_layer_buffer != (GLuint)-1) {
+        render_gc_append_to_buffers(texture_layer_buffer);
     }
     if (interior_mapping_buffer != (GLuint)-1) {
         render_gc_append_to_buffers(interior_mapping_buffer);

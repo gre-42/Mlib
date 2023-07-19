@@ -8,6 +8,7 @@ struct AutoAtlasTileDescriptor;
 
 void render_texture_atlas(
     const std::vector<AutoAtlasTileDescriptor>& tiles,
-    const RenderingResources& rendering_resources);
+    const RenderingResources& rendering_resources,
+    int level);
 
 }

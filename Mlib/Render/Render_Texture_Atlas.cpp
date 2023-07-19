@@ -9,14 +9,15 @@ using namespace Mlib;
 
 void Mlib::render_texture_atlas(
     const std::vector<AutoAtlasTileDescriptor>& tiles,
-    const RenderingResources& rendering_resources)
+    const RenderingResources& rendering_resources,
+    int level)
 {
     for (const auto& tile : tiles) {
         ViewportGuard vg{
-            (float)tile.left,
-            (float)tile.bottom,
-            (float)tile.width,
-            (float)tile.height};
+            (float)tile.left / (float)(1 << level),
+            (float)tile.bottom / (float)(1 << level),
+            (float)tile.width / (float)(1 << level),
+            (float)tile.height / (float)(1 << level)};
         FillWithTextureLogic logic{tile.filename, ResourceUpdateCycle::ONCE, ColorMode::RGBA};
         logic.render();
     }

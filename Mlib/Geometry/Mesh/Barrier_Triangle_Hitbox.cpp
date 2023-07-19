@@ -94,7 +94,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             std::vector{cva.triangles},
             std::vector{cva.lines},
             std::vector{cva.triangle_bone_weights},
-            std::vector{cva.line_bone_weights}));
+            std::vector{cva.line_bone_weights},
+            std::vector{cva.triangle_texture_layers},
+            std::vector{cva.line_texture_layers}));
     std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
     decomposition.reserve(2 * cva.triangles.size() + 2 * contour_edges.size());
     for (const auto& tri : cva.triangles) {
@@ -141,7 +143,9 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             std::move(decomposition),
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
+            std::vector<FixedArray<uint8_t, 3>>{},
+            std::vector<FixedArray<uint8_t, 2>>{}));
     return result;
 }
 

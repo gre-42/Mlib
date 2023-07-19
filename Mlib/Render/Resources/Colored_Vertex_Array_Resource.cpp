@@ -56,8 +56,9 @@ static const size_t IDX_INSTANCE_ATTRS = 5;
 static const size_t IDX_BILLBOARD_IDS = 6;
 static const size_t IDX_BONE_INDICES = 7;
 static const size_t IDX_BONE_WEIGHTS = 8;
-static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 9;
-static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 10;
+static const size_t IDX_TEXTURE_LAYER = 9;
+static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
+static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
 
 static GenShaderText vertex_shader_text_gen{[](
     const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
@@ -78,6 +79,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_yangle,
     bool has_uv_offset_u,
     size_t nbones,
+    bool has_texture_layer,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -123,6 +125,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
+    if (has_texture_layer) {
+        sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in lowp uint texture_layer;" << std::endl;
+    }
     if (has_uv_offset_u) {
         sstr << "uniform float uv_offset_u;" << std::endl;
     }
@@ -143,6 +148,9 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_dirtmap) {
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
+    }
+    if (has_texture_layer) {
+        sstr << "flat out lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
         sstr << "layout (location=" << IDX_INTERIOR_MAPPING_BOTTOM_LEFT << ") in vec3 interior_bottom_left;" << std::endl;
@@ -165,6 +173,9 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
+    if (has_texture_layer) {
+        sstr << "    texture_layer_fs = texture_layer;" << std::endl;
+    }
     if (has_interiormap) {
         sstr << "    interior_bottom_left_fs = interior_bottom_left;" << std::endl;
         sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
@@ -309,6 +320,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float reflection_strength,
     bool reflect_only_y,
     bool has_dirtmap,
+    bool has_texture_layer,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
     const OrderableFixedArray<float, 2>& facade_inner_size,
@@ -335,6 +347,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
+    const char* sampler_type = has_texture_layer
+        ? "sampler2DArray"
+        : "sampler2D";
+    auto sample = [has_texture_layer](const std::string& sampler, const std::string& coordinates) {
+        return has_texture_layer
+            ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs))"
+            : "texture(" + sampler + ", " + coordinates + ')';
+    };
     std::stringstream sstr;
     sstr << std::scientific;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
@@ -350,7 +370,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "uniform sampler2D textures_color[" << ntextures_color << "];" << std::endl;
+        sstr << "uniform " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -379,6 +399,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "in vec2 tex_coord_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
+    }
+    if (has_texture_layer) {
+        sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
         sstr << "in vec3 interior_bottom_left_fs;" << std::endl;
@@ -575,7 +598,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (reorient_uv0) {
             compute_normal();
         }
-        sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], tex_coord_flipped);" << std::endl;
+        sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", "tex_coord_flipped") << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
         if (alpha_threshold != 0) {
@@ -1192,6 +1215,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_yangle,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
+        id.has_texture_layer,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,
@@ -1214,6 +1238,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.reflection_strength,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
+        id.has_texture_layer,
         id.ntextures_interior != 0,
         id.facade_edge_size,
         id.facade_inner_size,
@@ -1508,6 +1533,17 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glVertexAttribIPointer(IDX_BONE_INDICES, ANIMATION_NINTERPOLATED, GL_UNSIGNED_BYTE, sizeof(ShaderBoneWeight), &bw->indices));
         CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
         CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
+    }
+    if (!cva->triangle_texture_layers.empty()) {
+        if (cva->triangle_texture_layers.size() != cva->triangles.size()) {
+            THROW_OR_ABORT("#triangle_texture_layers != #triangles");
+        }
+        CHK(glGenBuffers(1, &va.texture_layer_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.texture_layer_buffer));
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(cva->triangle_texture_layers[0]) * cva->triangle_texture_layers.size()), cva->triangle_texture_layers.data(), GL_STATIC_DRAW));
+
+        CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
+        CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
     }
     if (!cva->material.interior_textures.empty()) {
         std::vector<ShaderInteriorMappedFacade> shader_interior_mapped_facade;

@@ -102,16 +102,25 @@ void Mlib::merge_blended_materials(
             auto uv_tiles = rendering_resources.generate_auto_texture_atlas(merged_texture_name, keys(merged_filenames));
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
-            std::list<FixedArray<ColoredVertex<double>, 3>> merged_tris;
+            std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;
+            std::list<FixedArray<uint8_t, 3>> merged_triangle_texture_layers;
             for (const auto& [filename, cvas] : merged_filenames) {
                 const auto& tile = uv_tiles.at(filename);
                 for (const auto& cva : cvas) {
                     for (const auto& tri : cva->triangles) {
-                        auto& mtri = merged_tris.emplace_back(tri);
-                        for (auto& v : mtri.flat_iterable()) {
-                            assert_true(all(v.uv >= 0.f));
-                            assert_true(all(v.uv <= 1.f));
-                            v.uv = tile.position + v.uv * tile.size;
+                        {
+                            auto& mtri = merged_triangles.emplace_back(tri);
+                            for (auto& v : mtri.flat_iterable()) {
+                                assert_true(all(v.uv >= 0.f));
+                                assert_true(all(v.uv <= 1.f));
+                                v.uv = tile.position + v.uv * tile.size;
+                            }
+                        }
+                        {
+                            auto& mlay = merged_triangle_texture_layers.emplace_back();
+                            for (auto& v : mlay.flat_iterable()) {
+                                v = tile.layer;
+                            }
                         }
                     }
                     cva->physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
@@ -136,10 +145,12 @@ void Mlib::merge_blended_materials(
                         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}},
                     PhysicsMaterial::ATTR_VISIBLE,
-                    std::vector<FixedArray<ColoredVertex<double>, 3>>{merged_tris.begin(), merged_tris.end()},
+                    std::vector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
                     std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                     std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                    std::vector<FixedArray<std::vector<BoneWeight>, 2>>{})));
+                    std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
+                    std::vector<FixedArray<uint8_t, 3>>(merged_triangle_texture_layers.begin(), merged_triangle_texture_layers.end()),
+                    std::vector<FixedArray<uint8_t, 2>>{})));
             scene_node_resources.add_companion(
                 mesh_resource_name,
                 merged_resource_name,

@@ -529,10 +529,12 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         name_,
         material_,
         physics_material_,
-        std::move(std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles_.begin(), triangles_.end()}),
-        std::move(std::vector<FixedArray<ColoredVertex<TPos>, 2>>()),
-        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights_.begin(), triangle_bone_weights_.end()}),
-        std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles_.begin(), triangles_.end()},
+        std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),
+        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights_.begin(), triangle_bone_weights_.end()},
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
+        std::vector<FixedArray<uint8_t, 3>>{triangle_texture_layers_.begin(), triangle_texture_layers_.end()},
+        std::vector<FixedArray<uint8_t, 2>>());
 }
 
 namespace Mlib {

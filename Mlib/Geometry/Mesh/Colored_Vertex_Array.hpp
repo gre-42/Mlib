@@ -42,7 +42,9 @@ public:
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights);
+        std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights,
+        std::vector<FixedArray<uint8_t, 3>>&& triangle_texture_layers,
+        std::vector<FixedArray<uint8_t, 2>>&& line_texture_layers);
     ~ColoredVertexArray();
     std::string name;
     Material material;
@@ -51,6 +53,8 @@ public:
     std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
     std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
+    std::vector<FixedArray<uint8_t, 3>> triangle_texture_layers;
+    std::vector<FixedArray<uint8_t, 2>> line_texture_layers;
     
     std::vector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
@@ -89,6 +93,8 @@ public:
         archive(lines);
         archive(triangle_bone_weights);
         archive(line_bone_weights);
+        archive(triangle_texture_layers);
+        archive(line_texture_layers);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -103,6 +109,8 @@ public:
         std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
         std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
         std::vector<FixedArray<std::vector<BoneWeight>, 2>> line_bone_weights;
+        std::vector<FixedArray<uint8_t, 3>> triangle_texture_layers;
+        std::vector<FixedArray<uint8_t, 2>> line_texture_layers;
 
         archive(name);
         archive(material);
@@ -111,6 +119,8 @@ public:
         archive(lines);
         archive(triangle_bone_weights);
         archive(line_bone_weights);
+        archive(triangle_texture_layers);
+        archive(line_texture_layers);
 
         construct(
             name,
@@ -119,7 +129,9 @@ public:
             std::move(triangles),
             std::move(lines),
             std::move(triangle_bone_weights),
-            std::move(line_bone_weights));
+            std::move(line_bone_weights),
+            std::move(triangle_texture_layers),
+            std::move(line_texture_layers));
     }
 private:
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;

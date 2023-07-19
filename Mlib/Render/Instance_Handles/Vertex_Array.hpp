@@ -13,6 +13,7 @@ public:
     GLuint vertex_array = (GLuint)-1;
     GLuint vertex_buffer = (GLuint)-1;
     GLuint bone_weight_buffer = (GLuint)-1;
+    GLuint texture_layer_buffer = (GLuint)-1;
     GLuint interior_mapping_buffer = (GLuint)-1;
     void deallocate();
     void gc_deallocate();

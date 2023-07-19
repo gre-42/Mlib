@@ -122,7 +122,8 @@ int main(int argc, char** argv)
             } else if (!atlas.tiles.empty()) {
                 render_texture_atlas(
                     atlas.tiles.front(),
-                    *RenderingContextStack::primary_rendering_resources());
+                    *RenderingContextStack::primary_rendering_resources(),
+                    0);
             }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

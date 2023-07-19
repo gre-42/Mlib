@@ -15,6 +15,22 @@ using namespace Mlib;
 
 static const std::string AAR_NAME = "AggregateArrayRenderer";
 
+struct AggregateTriangle {
+    FixedArray<ColoredVertex<float>, 3> triangle;
+    FixedArray<uint8_t, 3> layer;
+    inline operator const FixedArray<ColoredVertex<float>, 3>&() const {
+        return triangle;
+    }
+    inline operator const FixedArray<uint8_t, 3>&() const {
+        return layer;
+    }
+};
+
+struct AggregateTriangles {
+    std::list<AggregateTriangle> atriangles;
+    bool has_texture_layers;
+};
+
 AggregateArrayRenderer::AggregateArrayRenderer()
 : is_initialized_{false}
 {}
@@ -39,44 +55,69 @@ void AggregateArrayRenderer::update_aggregates(
     //    }
     //    ntriangles += a.second.triangles->size();
     //}
-    std::map<Material, std::list<FixedArray<ColoredVertex<float>, 3>>> mat_lists;
+    std::map<Material, AggregateTriangles> mat_lists;
     for (const auto& a : aggregate_queue) {
+        if (a->triangles.empty()) {
+            THROW_OR_ABORT("Aggregate triangle list is empty");
+        }
         auto mat = a->material;
         mat.aggregate_mode = AggregateMode::NONE;
         mat.center_distances = default_step_distances;
-        auto& l = mat_lists[mat];
+        auto it = mat_lists.find(mat);
+        if (it == mat_lists.end()) {
+            it = mat_lists.insert({mat, {}}).first;
+            it->second.has_texture_layers = !a->triangle_texture_layers.empty();
+        }
+        auto& l = it->second;
+        if (a->triangle_texture_layers.empty() == l.has_texture_layers) {
+            THROW_OR_ABORT("Inconsistent aggregate triangle_texture_layers between lists");
+        }
+        if (l.has_texture_layers &&
+            (a->triangle_texture_layers.size() != a->triangles.size()))
+        {
+            THROW_OR_ABORT("Layer information differs from triangle list length");
+        }
         auto max_distance2 = squared(mat.max_triangle_distance);
-        for (const auto& c : a->triangles) {
+        for (size_t i = 0; i < a->triangles.size(); ++i) {
+            const auto& c = a->triangles[i];
             if ((max_distance2 != INFINITY) &&
                 (sum(squared(c(0).position + c(1).position + c(2).position)) > max_distance2))
             {
                 continue;
             }
-            l.push_back(c);
+            if (l.has_texture_layers) {
+                l.atriangles.push_back({c, a->triangle_texture_layers[i]});
+            } else {
+                l.atriangles.push_back({c, {UINT8_MAX, UINT8_MAX, UINT8_MAX}});
+            }
         }
         if (any(a->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-            l.sort([](
-                const FixedArray<ColoredVertex<float>, 3>& a,
-                const FixedArray<ColoredVertex<float>, 3>& b)
+            l.atriangles.sort([](
+                const AggregateTriangle& a,
+                const AggregateTriangle& b)
                 {
-                    return sum(squared(a(0).position + a(1).position + a(2).position)) >
-                        sum(squared(b(0).position + b(1).position + b(2).position));
+                    return sum(squared(a.triangle(0).position + a.triangle(1).position + a.triangle(2).position)) >
+                        sum(squared(b.triangle(0).position + b.triangle(1).position + b.triangle(2).position));
                 });
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     for (const auto& [mat, list] : mat_lists) {
-        if (list.empty()) {
+        if (list.atriangles.empty()) {
             continue;
         }
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
             mat,
             PhysicsMaterial::ATTR_VISIBLE,
-            std::vector<FixedArray<ColoredVertex<float>, 3>>{list.begin(), list.end()},
-            std::vector<FixedArray<ColoredVertex<float>, 2>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{}));
+            std::vector<FixedArray<ColoredVertex<float>, 3>>(list.atriangles.begin(), list.atriangles.end()),
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
+            list.has_texture_layers
+                ? std::vector<FixedArray<uint8_t, 3>>(list.atriangles.begin(), list.atriangles.end())
+                : std::vector<FixedArray<uint8_t, 3>>(),
+            std::vector<FixedArray<uint8_t, 2>>()));
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

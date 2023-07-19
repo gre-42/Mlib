@@ -54,13 +54,15 @@ static void instantiate_bvh(
                 vcva.push_back(t);
             }
             lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
-                name,                                                    // name
-                *material,                                               // material
-                PhysicsMaterial::ATTR_VISIBLE,                           // physics_material
-                std::move(vcva),                                         // triangles
-                std::vector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
-                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},   // triangle_bone_weights
-                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{})); // line_bone_weights
+                name,                                                        // name
+                *material,                                                   // material
+                PhysicsMaterial::ATTR_VISIBLE,                               // physics_material
+                std::move(vcva),                                             // triangles
+                std::vector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
+                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights
+                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},       // line_bone_weights
+                std::vector<FixedArray<uint8_t, 3>>{},                       // triangle_texture_layers
+                std::vector<FixedArray<uint8_t, 2>>{}));                     // line_texture_layers
             // lcvas.back()->material.is_small = true;
             // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }

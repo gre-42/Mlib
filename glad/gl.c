@@ -42,6 +42,7 @@ int GLAD_GL_VERSION_4_3 = 0;
 int GLAD_GL_VERSION_4_4 = 0;
 int GLAD_GL_VERSION_4_5 = 0;
 int GLAD_GL_VERSION_4_6 = 0;
+int GLAD_GL_ARB_texture_storage = 0;
 int GLAD_GL_EXT_bgra = 0;
 
 
@@ -1423,6 +1424,12 @@ static void glad_gl_load_GL_VERSION_4_6( GLADuserptrloadfunc load, void* userptr
     glad_glPolygonOffsetClamp = (PFNGLPOLYGONOFFSETCLAMPPROC) load(userptr, "glPolygonOffsetClamp");
     glad_glSpecializeShader = (PFNGLSPECIALIZESHADERPROC) load(userptr, "glSpecializeShader");
 }
+static void glad_gl_load_GL_ARB_texture_storage( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_GL_ARB_texture_storage) return;
+    glad_glTexStorage1D = (PFNGLTEXSTORAGE1DPROC) load(userptr, "glTexStorage1D");
+    glad_glTexStorage2D = (PFNGLTEXSTORAGE2DPROC) load(userptr, "glTexStorage2D");
+    glad_glTexStorage3D = (PFNGLTEXSTORAGE3DPROC) load(userptr, "glTexStorage3D");
+}
 
 
 
@@ -1530,6 +1537,7 @@ static int glad_gl_find_extensions_gl( int version) {
     char **exts_i = NULL;
     if (!glad_gl_get_extensions(version, &exts, &num_exts_i, &exts_i)) return 0;
 
+    GLAD_GL_ARB_texture_storage = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_ARB_texture_storage");
     GLAD_GL_EXT_bgra = glad_gl_has_extension(version, exts, num_exts_i, exts_i, "GL_EXT_bgra");
 
     glad_gl_free_extensions(exts_i, num_exts_i);
@@ -1613,6 +1621,7 @@ int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_VERSION_4_6(load, userptr);
 
     if (!glad_gl_find_extensions_gl(version)) return 0;
+    glad_gl_load_GL_ARB_texture_storage(load, userptr);
 
 
 

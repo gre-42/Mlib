@@ -60,7 +60,9 @@ BlendingXResource::BlendingXResource(
                 std::move(triangles),
                 std::vector<FixedArray<ColoredVertex<float>, 2>>(),
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-                std::vector<FixedArray<std::vector<BoneWeight>, 2>>()));
+                std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
+                std::vector<FixedArray<uint8_t, 3>>(),
+                std::vector<FixedArray<uint8_t, 2>>()));
     }
 }
 

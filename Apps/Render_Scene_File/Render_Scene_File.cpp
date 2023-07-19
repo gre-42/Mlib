@@ -9,6 +9,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Renderer.hpp>
@@ -57,6 +58,7 @@ std::future<void> render_thread(
                     const RenderedSceneDescriptor& frame_id)
                 {
                     if (load_scene_finished) {
+                        execute_render_allocators();
                         renderable_scenes["primary_scene"].render(
                             lx,
                             ly,

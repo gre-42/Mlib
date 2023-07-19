@@ -199,6 +199,7 @@ public:
     PhysicsMaterial physics_material_;
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles_;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights_;
+    std::list<uint8_t> triangle_texture_layers_;
 };
 
 }

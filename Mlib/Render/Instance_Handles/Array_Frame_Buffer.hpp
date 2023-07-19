@@ -8,10 +8,10 @@ class ArrayFrameBufferStorage {
     ArrayFrameBufferStorage(const ArrayFrameBufferStorage&) = delete;
     ArrayFrameBufferStorage& operator = (const ArrayFrameBufferStorage&) = delete;
 public:
-    explicit ArrayFrameBufferStorage(GLuint texture_color, GLint layer);
+    explicit ArrayFrameBufferStorage(GLuint texture_color, GLint level, GLint layer);
     ~ArrayFrameBufferStorage();
 private:
-    void allocate(GLuint texture_color, GLint layer);
+    void allocate(GLuint texture_color, GLint level, GLint layer);
     void deallocate();
     void bind() const;
     void unbind() const;

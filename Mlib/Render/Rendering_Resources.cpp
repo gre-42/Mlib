@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Pack_Boxes.hpp>
+#include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Images/StbImage4.hpp>
@@ -14,7 +15,9 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
@@ -350,7 +353,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         : descriptor;
     if (ContextQuery::is_initialized()) {
         if (!desc.color.empty()) {
-            get_texture(desc);
+            get_texture(desc, CallerType::PRELOAD);
         }
         if (!desc.normal.empty()) {
             get_normalmap_texture(desc);
@@ -359,7 +362,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         if (!desc.color.empty() &&
             !textures_.contains(descriptor.color) &&
             !preloaded_texture_data_.contains(descriptor.color) &&
-            !preloaded_texture_dds_data_.contains(descriptor.color))
+            !preloaded_texture_dds_data_.contains(descriptor.color) &&
+            !auto_atlas_tile_descriptors_.contains(descriptor.color))
         {
             if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc, FlipMode::VERTICAL)}).second) {
                 THROW_OR_ABORT("Could not preload color");
@@ -370,7 +374,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         if (!desc.normal.empty() &&
             !textures_.contains(desc.normal) &&
             !preloaded_texture_data_.contains(desc.normal) &&
-            !preloaded_texture_dds_data_.contains(desc.normal))
+            !preloaded_texture_dds_data_.contains(desc.normal) &&
+            !auto_atlas_tile_descriptors_.contains(descriptor.normal))
         {
             if (!preloaded_texture_data_.insert({
                 desc.normal,
@@ -390,7 +395,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
 
 bool RenderingResources::contains_texture(const std::string& name) const {
     std::shared_lock lock{mutex_};
-    return textures_.contains(name);
+    return textures_.contains(name) || auto_atlas_tile_descriptors_.contains(name);
 }
 
 std::string RenderingResources::get_texture_filename(
@@ -430,8 +435,11 @@ std::string RenderingResources::get_texture_filename(
     }
 }
 
-GLuint RenderingResources::get_texture(const TextureDescriptor& descriptor) const {
-    return get_texture(descriptor.color, descriptor);
+GLuint RenderingResources::get_texture(
+    const TextureDescriptor& descriptor,
+    CallerType caller_type) const
+{
+    return get_texture(descriptor.color, descriptor, caller_type);
 }
 
 GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descriptor) const {
@@ -440,6 +448,19 @@ GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descri
         .color_mode = ColorMode::RGB,
         .mipmap_mode = descriptor.mipmap_mode,
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
+}
+
+static GLenum nchannels2sized_internal_format(size_t nchannels) {
+    switch (nchannels) {
+        case 1:
+            return GL_R8;
+        case 3:
+            return GL_RGB8;
+        case 4:
+            return GL_RGBA8;
+        default:
+            THROW_OR_ABORT("Unsupported number of channels: " + std::to_string(nchannels));
+    };
 }
 
 static GLint nchannels2internal_format(size_t nchannels) {
@@ -472,7 +493,10 @@ static GLenum nchannels2format(size_t nchannels) {
 #define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
-GLuint RenderingResources::get_texture(const std::string& name, const TextureDescriptor& descriptor) const {
+GLuint RenderingResources::get_texture(
+    const std::string& name,
+    const TextureDescriptor& descriptor,
+    CallerType caller_type) const {
     LOG_FUNCTION("RenderingResources::get_texture " + name);
     std::scoped_lock lock{mutex_};
     if (auto it = textures_.find(name); it != textures_.end())
@@ -499,15 +523,13 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
     GLuint texture;
 
     if (auto_atlas_tile_descriptors_.contains(descriptor.color)) {
-        const auto& adesc = auto_atlas_tile_descriptors_.at(descriptor.color);
-        for (const auto& tiles : adesc.tiles) {
-            for (const auto& tile : tiles) {
-                get_texture({.color = tile.filename});
-            }
+        if (caller_type != CallerType::PRELOAD) {
+            THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color + '"');
         }
+        const auto& adesc = auto_atlas_tile_descriptors_.at(descriptor.color);
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
-        CHK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, adesc.mip_level_count, (GLenum)nchannels2internal_format((GLenum)adesc.color_mode), adesc.width, adesc.height, integral_cast<GLsizei>(adesc.tiles.size())));
+        CHK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, adesc.mip_level_count, nchannels2sized_internal_format((GLenum)adesc.color_mode), adesc.width, adesc.height, integral_cast<GLsizei>(adesc.tiles.size())));
         if ((desc.anisotropic_filtering_level != 0) &&
             (max_anisotropic_filtering_level_ != 0) &&
             (aniso != 0))
@@ -516,8 +538,12 @@ GLuint RenderingResources::get_texture(const std::string& name, const TextureDes
         }
         CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
         for (const auto& [layer, tiles] : enumerate(adesc.tiles)) {
-            ArrayFrameBufferStorage afbs{texture, integral_cast<int>(layer)};
-            render_texture_atlas(tiles, *this);
+            for (int level = 0; level < adesc.mip_level_count; ++level) {
+                ArrayFrameBufferStorage afbs{texture, level, integral_cast<int>(layer)};
+                clear_color({0.f, 0.f, 0.f, 0.f});
+                CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+                render_texture_atlas(tiles, *this, level);
+            }
         }
     } else {
         CHK(glGenTextures(1, &texture));
@@ -638,6 +664,9 @@ void RenderingResources::add_auto_texture_atlas(
 {
     LOG_FUNCTION("RenderingResources::add_auto_texture_atlas " + name);
     std::scoped_lock lock{mutex_};
+    append_render_allocator(
+        [this, name, texture_atlas_descriptor]()
+        {preload({.color = name, .color_mode = texture_atlas_descriptor.color_mode});});
     if (auto it = auto_atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
         THROW_OR_ABORT("Auto atlas descriptor with name \"" + name + "\" already exists");
     } 
@@ -761,12 +790,28 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
 {
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
     for (const auto& filename : filenames) {
-        get_texture({.color = filename});
-        auto it = auto_texture_sizes_.find(filename);
-        if (it == auto_texture_sizes_.end()) {
-            verbose_abort("Could not determine size of texture \"" + filename + '"');
+        FixedArray<int, 2> image_size;
+        auto extension = std::filesystem::path{filename}.extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+            [](unsigned char c){ return std::tolower(c); });
+        if ((extension == ".jpg") ||
+            (extension == ".png"))
+        {
+            int comp;
+            if (stbi_info(filename.c_str(), &image_size(0), &image_size(1), &comp) == 0) {
+                THROW_OR_ABORT("Could not read size information from file \"" + filename + '"');
+            }
+        } else if (extension == ".dds") {
+            const auto& d = preloaded_texture_dds_data_.find(filename);
+            if (d == preloaded_texture_dds_data_.end()) {
+                THROW_OR_ABORT("Could not find DDS texture with name \"" + filename + '"');
+            }
+            auto info = DdsInfo::load_from_buffer(d->second);
+            image_size = {info.width, info.height};
+        } else {
+            THROW_OR_ABORT("Unknown file extension: \"" + filename + '"');
         }
-        if (!packed_sizes.insert({filename, it->second}).second) {
+        if (!packed_sizes.insert({filename, image_size}).second) {
             THROW_OR_ABORT("Found duplicate name \"" + filename + '"');
         }
     }
@@ -775,6 +820,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     AutoTextureAtlasDescriptor tad{
         .width = atlas_size_2d(0),
         .height = atlas_size_2d(1),
+        .mip_level_count = 3,
         .color_mode = ColorMode::RGBA,
         .tiles = {}
     };
@@ -796,7 +842,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
                 .position = nb.bottom_left.casted<float>() / (atlas_size_2d.casted<float>() - 1.f),
                 .size = size.casted<float>()
                         / FixedArray<float, 2>{(float)tad.width, (float)tad.height},
-                .layer = integral_cast<int>(layer)}}).second)
+                .layer = integral_cast<uint8_t>(layer)}}).second)
             {
                 THROW_OR_ABORT("Detected duplicate atlas filename: \"" + nb.name + '"');
             }
@@ -1093,9 +1139,6 @@ void RenderingResources::initialize_non_dds_texture(
         }
         si = get_texture_data(descriptor, FlipMode::VERTICAL);
     }
-    if (!auto_texture_sizes_.insert({name, {si.width, si.height}}).second) {
-        verbose_abort("Could not insert auto STBI texture size");
-    }
     CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
@@ -1130,10 +1173,6 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
             sstr << c;
         }
         image.load(sstr);
-    }
-
-    if (!auto_texture_sizes_.insert({name, {(int)image.get_width(), (int)image.get_height()}}).second) {
-        verbose_abort("Could not insert auto DDS texture size");
     }
 
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
