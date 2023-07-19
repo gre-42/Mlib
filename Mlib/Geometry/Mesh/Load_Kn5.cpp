@@ -1,9 +1,9 @@
 #include "Load_Kn5.hpp"
+#include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstdint>
-#include <nv_dds/nv_dds.hpp>
 #include <sstream>
 #include <stb_cpp/stb_image_load.hpp>
 
@@ -98,20 +98,20 @@ static void readNodes(
             {
                 FixedArray<float, 4, 4> tmatrix;
                 tmatrix(0u, 0u) = ReadSingle(modelStream);
-                tmatrix(0u, 1u) = ReadSingle(modelStream);
-                tmatrix(0u, 2u) = ReadSingle(modelStream);
-                tmatrix(0u, 3u) = ReadSingle(modelStream);
                 tmatrix(1u, 0u) = ReadSingle(modelStream);
-                tmatrix(1u, 1u) = ReadSingle(modelStream);
-                tmatrix(1u, 2u) = ReadSingle(modelStream);
-                tmatrix(1u, 3u) = ReadSingle(modelStream);
                 tmatrix(2u, 0u) = ReadSingle(modelStream);
-                tmatrix(2u, 1u) = ReadSingle(modelStream);
-                tmatrix(2u, 2u) = ReadSingle(modelStream);
-                tmatrix(2u, 3u) = ReadSingle(modelStream);
                 tmatrix(3u, 0u) = ReadSingle(modelStream);
+                tmatrix(0u, 1u) = ReadSingle(modelStream);
+                tmatrix(1u, 1u) = ReadSingle(modelStream);
+                tmatrix(2u, 1u) = ReadSingle(modelStream);
                 tmatrix(3u, 1u) = ReadSingle(modelStream);
+                tmatrix(0u, 2u) = ReadSingle(modelStream);
+                tmatrix(1u, 2u) = ReadSingle(modelStream);
+                tmatrix(2u, 2u) = ReadSingle(modelStream);
                 tmatrix(3u, 2u) = ReadSingle(modelStream);
+                tmatrix(0u, 3u) = ReadSingle(modelStream);
+                tmatrix(1u, 3u) = ReadSingle(modelStream);
+                tmatrix(2u, 3u) = ReadSingle(modelStream);
                 tmatrix(3u, 3u) = ReadSingle(modelStream);
 
                 newNode.tmatrix = TransformationMatrix<float, float, 3>{tmatrix};
@@ -121,6 +121,8 @@ static void readNodes(
         // mesh node
         case 2: //mesh
             {
+                newNode.tmatrix = TransformationMatrix<float, float, 3>::identity();
+
                 newNode.isActive = (bool)ReadByte(modelStream);
                 newNode.isRenderable = (bool)ReadByte(modelStream);
                 newNode.isTransparent = (bool)ReadByte(modelStream);
@@ -169,6 +171,8 @@ static void readNodes(
         // animated mesh
         case 3: //animated mesh
             {
+                newNode.tmatrix = TransformationMatrix<float, float, 3>::identity();
+                
                 newNode.isActive = (bool)ReadByte(modelStream);
                 newNode.isRenderable = (bool)ReadByte(modelStream);
                 newNode.isTransparent = (bool)ReadByte(modelStream);
@@ -223,6 +227,9 @@ static void readNodes(
             }
     }
 
+    if (!parentID.has_value()) { newNode.hmatrix = newNode.tmatrix; }
+    else { newNode.hmatrix = nodeList.at(parentID.value()).hmatrix * newNode.tmatrix; }
+
     if (verbose) {
         std::stringstream matInfo;
         if (newNode.materialID.has_value()) {
@@ -242,9 +249,11 @@ static void readNodes(
                     for (uint8_t c : model.textures.at(material.txDiffuse)) {
                         sstr << c;
                     }
-                    nv_dds::CDDSImage image;
-                    image.load(sstr);
-                    matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
+                    // nv_dds::CDDSImage image;
+                    // image.load(sstr);
+                    // matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
+                    auto image = DdsInfo::load_from_stream(sstr);
+                    matInfo << ' ' << image.width << 'x' << image.height;
                 } else {
                     THROW_OR_ABORT("Unknown texture file extension: \"" + material.txDiffuse + '"');
                 }
@@ -253,11 +262,10 @@ static void readNodes(
         linfo() <<
             "Node: " << newNode.name <<
             " type: " << newNode.type <<
+            " position: " << newNode.hmatrix.t() <<
             " transparent: " << (int)newNode.isTransparent <<
             matInfo.str();
     }
-    if (!parentID.has_value()) { newNode.hmatrix = newNode.tmatrix; }
-    else { newNode.hmatrix = newNode.tmatrix * nodeList.at(parentID.value()).hmatrix; }
 
     size_t currentID = nodeList.size();
     nodeList[currentID] = std::move(newNode);
