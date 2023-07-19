@@ -107,12 +107,29 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
 StbInfo<uint8_t> stb_load8(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data)
+    const std::vector<uint8_t>* data,
+    IncorrectDatasizeBehavior datasize_behavior)
 {
     auto res = stb_load(filename, flip_mode, data);
     auto* res8 = std::get_if<StbInfo<uint8_t>>(&res);
     if (res8 == nullptr) {
-        THROW_OR_ABORT("Image \"" + filename + "\" does not have 8 bits");
+        if (datasize_behavior == IncorrectDatasizeBehavior::THROW) {
+            THROW_OR_ABORT("Image \"" + filename + "\" does not have 8 bits");
+        } else if (datasize_behavior == IncorrectDatasizeBehavior::CONVERT) {
+            auto* res16 = std::get_if<StbInfo<uint16_t>>(&res);
+            if (res16 == nullptr) {
+                THROW_OR_ABORT("Image has neither 8 nor 16 bits");
+            }
+            auto conv8 = stb_create<uint8_t>(res16->width, res16->height, res16->nrChannels);
+            auto* d16 = res16->data.get();
+            auto* d8 = conv8.data.get();
+            for (; d8 != conv8.data.get() + conv8.width * conv8.height * conv8.nrChannels; ++d8, ++d16) {
+                *d8 = (*d16 >> 8);
+            }
+            return conv8;
+        } else {
+            THROW_OR_ABORT("Unknown data-size behavior");
+        }
     }
     return std::move(*res8);
 }
@@ -124,7 +141,7 @@ StbInfo<TData> stb_create(int width, int height, int nrChannels) {
         .height = height,
         .nrChannels = nrChannels
     };
-    result.data.reset((TData*)malloc(size_t(width * height * nrChannels)));
+    result.data.reset((TData*)malloc(size_t(width * height * nrChannels) * sizeof(TData)));
     return result;
 }
 

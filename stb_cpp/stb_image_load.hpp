@@ -24,6 +24,11 @@ enum class FlipMode {
     VERTICAL = 1 << 1
 };
 
+enum class IncorrectDatasizeBehavior {
+    THROW,
+    CONVERT
+};
+
 inline bool any(FlipMode m) {
     return m != FlipMode::NONE;
 }
@@ -46,6 +51,7 @@ std::variant<StbInfo<uint8_t>, StbInfo<uint16_t>> stb_load(
 StbInfo<uint8_t> stb_load8(
     const std::string& filename,
     FlipMode flip_mode,
-    const std::vector<uint8_t>* data = nullptr);
+    const std::vector<uint8_t>* data = nullptr,
+    IncorrectDatasizeBehavior datasize_behavior = IncorrectDatasizeBehavior::THROW);
 template <class TData>
 StbInfo<TData> stb_create(int width, int height, int nrChannels);

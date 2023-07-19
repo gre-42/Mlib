@@ -86,7 +86,7 @@ int log2(int n) {
 static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
                                 int nchannels,
                                 FlipMode flip_mode) {
-    auto result = stb_load8(filename, flip_mode);
+    auto result = stb_load8(filename, flip_mode, nullptr, IncorrectDatasizeBehavior::CONVERT);
     if (result.nrChannels < std::abs(nchannels)) {
         THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
     }
@@ -1109,7 +1109,7 @@ void RenderingResources::insert_texture(
         (extension == ".png"))
     {
         auto d = std::move(data);
-        auto image = stb_load8(name, FlipMode::NONE, &d);
+        auto image = stb_load8(name, FlipMode::NONE, &d, IncorrectDatasizeBehavior::CONVERT);
         if (!preloaded_texture_data_.try_emplace(name, std::move(image)).second) {
             THROW_OR_ABORT("Internal error: Preloaded STB-texture with name \"" + name + "\" already exists");
         }

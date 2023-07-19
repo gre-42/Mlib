@@ -46,6 +46,7 @@ void Mlib::replace_terrain_material(
                         BlendMapTexture bt = rendering_resources.get_blend_map_texture(t);
                         cva->material.textures.push_back(bt);
                     }
+                    cva->material.blend_mode = BlendMode::OFF;
                     for (auto& t : cva->triangles) {
                         auto uv = terrain_uv(
                             t(0).position,

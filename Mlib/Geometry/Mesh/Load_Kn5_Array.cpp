@@ -67,7 +67,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         (material.shader == "ksTree") ||
                         (material.shader == "ksPerPixelAT") ||
                         (material.shader == "ksPerPixelAT_NM") ||
-                        (material.shader == "ksPerPixelAlpha"))
+                        (material.shader == "ksPerPixelAlpha") ||
+                        (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
                         tl.material_.blend_mode = cfg.blend_mode;
                     } else if ((material.shader == "ksPerPixel") ||
