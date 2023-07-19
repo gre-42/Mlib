@@ -298,7 +298,9 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
         int texSize = ReadInt32(*binStream);
         auto tex = newModel.textures.try_emplace(texName, texSize);
         if (!tex.second) {
-            THROW_OR_ABORT("Found multiple textures with name \"" + texName + '"');
+            lwarn() << "Found multiple textures with name \"" << texName << "\", keeping the first one";
+            binStream->ignore(texSize);
+            continue;
         }
 
         if (verbose) {

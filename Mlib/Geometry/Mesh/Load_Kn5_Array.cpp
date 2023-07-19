@@ -63,8 +63,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     const auto& material = kn5.materials.at(node.materialID.value());
                     // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                     //       https://assettocorsamods.net/threads/setting-up-trees.162/
-                    if ((material.shader == "ksPerPixelAT") ||
+                    if ((material.shader == "ksGrass") ||
                         (material.shader == "ksTree") ||
+                        (material.shader == "ksPerPixelAT") ||
                         (material.shader == "ksPerPixelAT") ||
                         (material.shader == "ksPerPixelAT_NM") ||
                         (material.shader == "ksPerPixelAlpha") ||
