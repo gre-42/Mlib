@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <optional>
@@ -49,7 +50,7 @@ struct kn5Node
     std::vector<FixedArray<float, 3>> normal;
     std::vector<FixedArray<float, 2>> uv;
 
-    std::vector<FixedArray<ushort, 3>> triangles;
+    std::vector<FixedArray<uint16_t, 3>> triangles;
 
     std::optional<size_t> materialID;
 
