@@ -14,5 +14,6 @@ namespace Mlib {
 
 MLIB_RENDER_API extern const float* standard_quad_vertices;
 MLIB_RENDER_API extern const float* horizontally_flipped_quad_vertices;
+MLIB_RENDER_API extern const float* vertically_flipped_quad_vertices;
 
 }
