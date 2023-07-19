@@ -20,10 +20,13 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
     result.emplace_back();
     int left = 0;
     int bottom = 0;
-    int height = 0;
+    int height = -1;
     while (!sorted.empty()) {
         const auto& [name, size] = sorted.front();
         sorted.pop_front();
+        if (height == -1) {
+            height = size(1);
+        }
         if (size(0) > container_size(0)) {
             THROW_OR_ABORT("Width of box is too large");
         }
@@ -33,7 +36,7 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
         if (left + size(0) >= container_size(0)) {
             left = 0;
             bottom += height;
-            height = size(1);
+            height = -1;
             if (bottom + size(1) > container_size(1)) {
                 bottom = 0;
                 result.emplace_back();
