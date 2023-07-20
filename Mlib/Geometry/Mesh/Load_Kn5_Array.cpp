@@ -50,7 +50,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
             static const DECLARE_REGEX(collide_reg, "^(\\d+)");
-            std::smatch match;
+            Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
                 tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
