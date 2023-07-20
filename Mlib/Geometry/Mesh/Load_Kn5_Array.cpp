@@ -122,7 +122,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (!f.path().string().ends_with(".kn5")) {
                 continue;
             }
-            append_kn5(f.path());
+            append_kn5(f.path().string());
         }
     } else {
         append_kn5(file_or_directory);
