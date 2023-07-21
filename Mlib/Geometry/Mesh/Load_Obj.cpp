@@ -316,6 +316,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 tl.material_.ambience = current_mtl.ambience;
                 tl.material_.diffusivity = current_mtl.diffusivity;
                 tl.material_.specularity = current_mtl.specularity;
+                tl.material_.specular_exponent = current_mtl.specular_exponent;
                 tl.material_.alpha = current_mtl.alpha;
                 tl.material_.compute_color_mode();
             } else if (Mlib::re::regex_match(line, match, smooth_shading_reg)) {

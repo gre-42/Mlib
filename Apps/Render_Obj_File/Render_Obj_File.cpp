@@ -774,9 +774,9 @@ int main(int argc, char** argv) {
                     scene.get_node(name).set_camera(std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                    lights.back().light.ambience = 0;
+                    lights.back().light.ambience = 0.f;
                     lights.back().light.diffusivity /= (float)(2 * n);
-                    lights.back().light.specularity = 0;
+                    lights.back().light.specularity = 0.f;
                 }
             }
         } else if ((light_configuration != "none") && (light_configuration != "emissive")) {

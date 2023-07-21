@@ -73,7 +73,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_dirtmap,
     bool has_interiormap,
     bool has_diffusivity,
-    bool has_specularity,
+    bool has_nontrivial_specularity,
     bool has_instances,
     bool has_lookat,
     bool has_yangle,
@@ -94,7 +94,7 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "layout (location=" << IDX_POSITION << ") in vec3 vPos;" << std::endl;
     sstr << "layout (location=" << IDX_COLOR << ") in vec3 vCol;" << std::endl;
     sstr << "layout (location=" << IDX_UV << ") in vec2 vTexCoord;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_specularity || has_normalmap || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_normalmap || fragments_depend_on_normal) {
         sstr << "layout (location=" << IDX_NORMAL << ") in vec3 vNormal;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
@@ -158,10 +158,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
+    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
         sstr << "out vec3 Normal;" << std::endl;
     }
     if (has_lookat) {
@@ -181,12 +181,12 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    interior_multiplier_fs = interior_multiplier;" << std::endl;
     }
     sstr << "    vec3 vPosInstance;" << std::endl;
-    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
         sstr << "    vec3 vNormalInstance;" << std::endl;
     }
     if (nbones != 0) {
         sstr << "    vPosInstance = vec3(0.0, 0.0, 0.0);" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
         for (size_t k = 0; k < ANIMATION_NINTERPOLATED; ++k) {
@@ -206,7 +206,7 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     } else {
         sstr << "    vPosInstance = vPos;" << std::endl;
-        if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
             sstr << "    vNormalInstance = vNormal;" << std::endl;
         }
     }
@@ -241,7 +241,7 @@ static GenShaderText vertex_shader_text_gen{[](
         if (has_instances) {
             sstr << "    vPosInstance += instancePosition.xyz;" << std::endl;
         }
-        if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+        if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
             sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
         }
     } else if (has_instances && !has_lookat) {
@@ -276,10 +276,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
+    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
     }
-    if (reorient_uv0 || has_diffusivity || has_specularity || fragments_depend_on_normal) {
+    if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
         sstr << "    Normal = vNormalInstance;" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
@@ -428,7 +428,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
     {
-        bool pred0 = reorient_uv0 || !specularity.all_equal(0) || (fragments_depend_on_distance && !orthographic);
+        bool pred0 = reorient_uv0 || (!specularity.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         if (pred0 || has_interiormap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
             if ((pred0 || reorient_normals) && orthographic) {
@@ -453,7 +453,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    return fragDiffusivity * diff * lightDiffusivity[i];" << std::endl;
             sstr << "}" << std::endl;
         }
-        if (!specularity.all_equal(0)) {
+        if (!specularity.all_equal(0) && (specular_exponent != 0.f)) {
             sstr << "vec3 phong_specular(in int i, in vec3 norm) {" << std::endl;
             if (!orthographic) {
                 sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
@@ -769,7 +769,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
                 if (!specularity.all_equal(0)) {
-                    sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                    if (specular_exponent == 0.f) {
+                        sstr << "            frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
+                    } else {
+                        sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                    }
                 }
                 sstr << "        }" << std::endl;
                 sstr << "    }" << std::endl;
@@ -792,7 +796,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_diffuse(" << i << ", norm);" << std::endl;
                 }
                 if (!specularity.all_equal(0)) {
-                    sstr << "        frag_brightness_specular += light_fac * phong_specular(" << i << ", norm);" << std::endl;
+                    if (specular_exponent == 0.f) {
+                        sstr << "        frag_brightness_specular += light_fac * lightSpecularity[" << i << "];" << std::endl;
+                    } else {
+                        sstr << "        frag_brightness_specular += light_fac * phong_specular(" << i << ", norm);" << std::endl;
+                    }
                 }
                 sstr << "    }" << std::endl;
             }
@@ -807,7 +815,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
                 if (!specularity.all_equal(0)) {
-                    sstr << "        frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                    if (specular_exponent == 0.f) {
+                        sstr << "        frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
+                    } else {
+                        sstr << "        frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
+                    }
                 }
                 sstr << "    }" << std::endl;
             }
@@ -1210,7 +1222,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         !id.diffusivity.all_equal(0),
-        !id.specularity.all_equal(0),
+        !id.specularity.all_equal(0) && (id.specular_exponent != 0.f),
         id.has_instances,
         id.has_lookat,
         id.has_yangle,
@@ -1394,7 +1406,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || !id.specularity.all_equal(0) || id.reorient_uv0 || (id.fragments_depend_on_distance && !id.orthographic);
+            bool pred0 = id.has_lookat || (!id.specularity.all_equal(0) && id.specular_exponent != 0.f) || id.reorient_uv0 || (id.fragments_depend_on_distance && !id.orthographic);
             if (pred0 || id.reorient_normals || (id.ntextures_interior != 0)) {
                 if (((pred0 || id.reorient_normals) && id.orthographic)) {
                     rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");

@@ -612,7 +612,7 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || any(specularity != 0.f) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        bool pred0 = has_lookat || (any(specularity != 0.f) && (cva->material.specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
         if (pred0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;

@@ -23,7 +23,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(Ke_reg, "^\\s*Ke .+$");
     static const DECLARE_REGEX(Km_reg, "^\\s*Km .+$");
     static const DECLARE_REGEX(Ni_reg, "^\\s*Ni .+$");
-    static const DECLARE_REGEX(Ns_reg, "^\\s*Ns .+$");
+    static const DECLARE_REGEX(Ns_reg, "^\\s*Ns (.+)$");
     static const DECLARE_REGEX(Tr_reg, "^\\s*Tr .+$");
     static const DECLARE_REGEX(Tf_reg, "^\\s*Tf .+$");
     static const DECLARE_REGEX(illum_reg, "^\\s*illum .+$");
@@ -76,7 +76,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, Ni_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Ns_reg)) {
-            // do nothing
+            mtllib.at(mtl).specular_exponent = safe_stof(match[1].str());
         } else if (Mlib::re::regex_match(line, match, Tr_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Tf_reg)) {
