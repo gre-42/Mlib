@@ -71,13 +71,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                     if ((material.shader == "ksGrass") ||
                         (material.shader == "ksTree") ||
-                        (material.shader == "ksPerPixelAT") ||
-                        (material.shader == "ksPerPixelAT") ||
-                        (material.shader == "ksPerPixelAT_NM") ||
-                        (material.shader == "ksPerPixelAlpha") ||
-                        (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                        (material.shader == "ksPerPixelAlpha"))
                     {
                         tl.material_.blend_mode = cfg.blend_mode;
+                    } else if ((material.shader == "ksPerPixelAT") ||
+                               (material.shader == "ksPerPixelAT") ||
+                               (material.shader == "ksPerPixelAT_NM") ||
+                               (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                    {
+                        tl.material_.blend_mode = BlendMode::BINARY_05;
                     } else if ((material.shader == "ksPerPixel") ||
                                (material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
