@@ -1,4 +1,4 @@
-#include "Merge_Blended_Materials.hpp"
+#include "Merge_Textures.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -18,38 +19,24 @@
 
 using namespace Mlib;
 
-void Mlib::merge_blended_materials(
+void Mlib::merge_textures(
     const std::string& mesh_resource_name,
-    const std::string& merged_resource_name,
-    const std::string& merged_texture_name,
-    const std::string& merged_array_name,
-    BlendMode merged_blend_mode,
-    AggregateMode merged_aggregate_mode,
-    float merged_max_triangle_distance,
-    bool merged_cull_faces,
+    const MergedTexturesConfig& merged_materials_config,
     SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources,
-    const ColoredVertexArrayFilter& filter)
+    RenderingResources& rendering_resources)
 {
     scene_node_resources.add_modifier(
         mesh_resource_name,
-        [filter,
-         &scene_node_resources,
+        [&scene_node_resources,
          &rendering_resources,
          mesh_resource_name,
-         merged_resource_name,
-         merged_texture_name,
-         merged_array_name,
-         merged_blend_mode,
-         merged_aggregate_mode,
-         merged_max_triangle_distance,
-         merged_cull_faces]
+         merged_materials_config]
         (ISceneNodeResource& scene_node_resource){
             std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
-                    if (!filter.matches(*cva)) {
+                    if (!cva->material.merge_textures) {
                         goto skip;
                     }
                     if (!any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
@@ -88,7 +75,7 @@ void Mlib::merge_blended_materials(
             };
             // auto keys = std::views::keys(merged_filenames);
             // auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, std::set(keys.begin(), keys.end()));
-            auto uv_tiles = rendering_resources.generate_auto_texture_atlas(merged_texture_name, keys(merged_filenames));
+            auto uv_tiles = rendering_resources.generate_auto_texture_atlas(merged_materials_config.texture_name, keys(merged_filenames));
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;
@@ -116,19 +103,19 @@ void Mlib::merge_blended_materials(
                 }
             }
             scene_node_resources.add_resource(
-                merged_resource_name,
+                merged_materials_config.resource_name,
                 std::make_shared<ColoredVertexArrayResource>(
                     std::make_shared<ColoredVertexArray<double>>(
-                    merged_array_name,
+                    merged_materials_config.array_name,
                     Material{
-                        .blend_mode = merged_blend_mode,
+                        .blend_mode = merged_materials_config.blend_mode,
                         .textures = {{.texture_descriptor = {
-                            .color = merged_texture_name,
+                            .color = merged_materials_config.texture_name,
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
-                        .aggregate_mode = merged_aggregate_mode,
-                        .max_triangle_distance = merged_max_triangle_distance,
-                        .cull_faces = merged_cull_faces,
+                        .aggregate_mode = merged_materials_config.aggregate_mode,
+                        .max_triangle_distance = merged_materials_config.max_triangle_distance,
+                        .cull_faces = merged_materials_config.cull_faces,
                         .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
                         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -142,7 +129,7 @@ void Mlib::merge_blended_materials(
                     std::vector<FixedArray<uint8_t, 2>>{})));
             scene_node_resources.add_companion(
                 mesh_resource_name,
-                merged_resource_name,
+                merged_materials_config.resource_name,
                 RenderableResourceFilter{});
         });
 }

@@ -23,7 +23,8 @@
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
-#include <Mlib/Render/Modifiers/Merge_Blended_Materials.hpp>
+#include <Mlib/Render/Modifiers/Merge_Textures.hpp>
+#include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render2.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -250,8 +251,6 @@ int main(int argc, char** argv) {
         "    [--triangle_tangent_error_behavior {zero, warn, raise}]\n"
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
-        "    [--merged_include <filter>]\n"
-        "    [--merged_exclude <filter>]\n"
         "    [--look_at_aabb]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
@@ -352,9 +351,7 @@ int main(int argc, char** argv) {
          "--triangle_tangent_error_behavior",
          "--light_beacon",
          "--light_beacon_scale",
-         "--laplace_ao_strength",
-         "--merged_include",
-         "--merged_exclude"});
+         "--laplace_ao_strength"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -542,25 +539,19 @@ int main(int argc, char** argv) {
                 }
             }
             scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(scene_node_resources, resource_names));
-            if (args.has_named_value("--merged_include") ||
-                args.has_named_value("--merged_exclude"))
-            {
-                merge_blended_materials(
-                    "objs",
-                    "merged_resource",
-                    "merged_texture",
-                    "merged_array",
-                    BlendMode::SEMI_CONTINUOUS_02,
-                    AggregateMode::SORTED_CONTINUOUSLY,
-                    INFINITY,   // merged_max_triangle_distance,
-                    false,      // merged_cull_faces
-                    scene_node_resources,
-                    *RenderingContextStack::primary_rendering_resources(),
-                    ColoredVertexArrayFilter{
-                        .included_names = Mlib::compile_regex(args.named_value("--merged_include", "")),
-                        .excluded_names = Mlib::compile_regex(args.named_value("--merged_exclude", "$ ^"))
-                    });
-            }
+            merge_textures(
+                "objs",
+                MergedTexturesConfig{
+                    .resource_name = "merged_resource",
+                    .array_name = "merged_array",
+                    .texture_name = "merged_texture",
+                    .blend_mode = BlendMode::SEMI_CONTINUOUS_02,
+                    .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
+                    .max_triangle_distance = INFINITY,
+                    .cull_faces = false,
+                },
+                scene_node_resources,
+                *RenderingContextStack::primary_rendering_resources());
             {
                 scene_node->set_position({
                     safe_stof(args.named_value("--x", "0")),

@@ -2,35 +2,31 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Load_Kn5_Array.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
 template <class TPos>
 std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5(
-    const std::string& filename,
+    const std::string& file_or_directory,
     const LoadMeshConfig<TPos>& cfg,
     const SceneNodeResources& scene_node_resources,
     IDdsResources* dds_resources)
 {
     auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
-    if constexpr (std::is_same_v<TPos, float>) {
-        hr->acvas->scvas = load_kn5_array<float>(filename, cfg, dds_resources);
-    } else if constexpr (std::is_same_v<TPos, double>) {
-        hr->acvas->dcvas = load_kn5_array<double>(filename, cfg, dds_resources);
-    } else {
-        THROW_OR_ABORT("Unknown mesh precision");
-    }
+    hr->acvas TEMPLATE cvas<TPos>() = load_kn5_array<TPos>(file_or_directory, cfg, dds_resources);
     return hr;
 }
 
 namespace Mlib {
-template std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5<float>(
-    const std::string& filename,
+template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
+    const std::string& file_or_directory,
     const LoadMeshConfig<float>& cfg,
     const SceneNodeResources& scene_node_resources,
     IDdsResources* dds_resources);
-template std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5<double>(
-    const std::string& filename,
+
+template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
+    const std::string& file_or_directory,
     const LoadMeshConfig<double>& cfg,
     const SceneNodeResources& scene_node_resources,
     IDdsResources* dds_resources);

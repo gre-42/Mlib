@@ -190,8 +190,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Import_Bone_Weights.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Blended_Materials.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Meshes.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Textures.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Physics_Material_Tags.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Texture_Interpolation_Mode.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Obj_Resource.hpp>
