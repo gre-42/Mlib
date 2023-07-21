@@ -37,11 +37,11 @@ void Mlib::merge_textures(
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
                     if (!cva->material.merge_textures) {
-                        goto skip;
+                        continue;
                     }
                     if (!any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         lwarn() << "Attempt to merge object \"" << cva->name << "\", which has a non-continuous material";
-                        goto skip;
+                        continue;
                     }
                     for (auto& t : cva->triangles) {
                         auto min_uv_floor =
@@ -53,13 +53,13 @@ void Mlib::merge_textures(
                         for (const auto& v : t.flat_iterable()) {
                             if (any(v.uv < 0.f) || any(v.uv > 1.f)) {
                                 lwarn() << "UV-coordinates of object \"" << cva->name << "\" do no permit texture atlas";
-                                goto skip;
+                                goto fallback;
                             }
                         }
                     }
                     merged_filenames[MergedTextureName{cva->material}.name].push_back(cva.get());
                     continue;
-                    skip:
+                    fallback:;
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }

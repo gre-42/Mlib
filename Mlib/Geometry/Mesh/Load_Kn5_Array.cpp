@@ -67,6 +67,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         (material.shader == "ksTree"))
                     {
                         tl.material_.merge_textures = true;
+                        tl.material_.continuous_blending_z_order = 2;
                     }
                     if ((material.shader == "ksGrass") ||
                         (material.shader == "ksTree") ||
