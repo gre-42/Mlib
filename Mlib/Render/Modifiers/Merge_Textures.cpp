@@ -102,6 +102,9 @@ void Mlib::merge_textures(
                     cva->physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
                 }
             }
+            if (merged_triangles.empty()) {
+                return;
+            }
             scene_node_resources.add_resource(
                 merged_materials_config.resource_name,
                 std::make_shared<ColoredVertexArrayResource>(
