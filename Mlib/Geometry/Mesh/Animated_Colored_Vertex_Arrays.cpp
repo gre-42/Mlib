@@ -109,6 +109,17 @@ void AnimatedColoredVertexArrays::check_consistency() const {
     validate_cva(dcvas);
 }
 
+template <class TPos>
+std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& AnimatedColoredVertexArrays::cvas() {
+    if constexpr (std::is_same_v<TPos, float>) {
+        return scvas;
+    } else if constexpr (std::is_same_v<TPos, double>) {
+        return dcvas;
+    } else {
+        THROW_OR_ABORT("Unknown mesh precision");
+    }
+}
+
 void AnimatedColoredVertexArrays::print(std::ostream& ostr) const {
     ostr << "AnimatedColoredVertexArrays\n";
     for (const auto& cva : scvas) {
@@ -118,3 +129,6 @@ void AnimatedColoredVertexArrays::print(std::ostream& ostr) const {
         cva->print(ostr);
     }
 }
+
+template std::list<std::shared_ptr<ColoredVertexArray<float>>>& AnimatedColoredVertexArrays::cvas();
+template std::list<std::shared_ptr<ColoredVertexArray<double>>>& AnimatedColoredVertexArrays::cvas();
