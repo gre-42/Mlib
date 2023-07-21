@@ -91,6 +91,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material_.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
                     tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                     tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
+                    tl.material_.specular_exponent = material.ksSpecularEXP;
                     if (!material.txDiffuse.empty()) {
                         tl.material_.textures = {BlendMapTexture{
                             .texture_descriptor = {

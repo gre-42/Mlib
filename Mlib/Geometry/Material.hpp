@@ -64,6 +64,7 @@ struct Material {
     OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
     OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
     OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
+    float specular_exponent = 4.f;
     float alpha = 1.f;
     bool reflect_only_y = false;
     float draw_distance_add = 500;
@@ -97,6 +98,7 @@ struct Material {
         archive(wrap_mode_s);
         archive(wrap_mode_t);
         archive(aggregate_mode);
+        archive(merge_textures);
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);
@@ -107,6 +109,7 @@ struct Material {
         archive(ambience);
         archive(diffusivity);
         archive(specularity);
+        archive(specular_exponent);
         archive(reflect_only_y);
         archive(draw_distance_add);
         archive(draw_distance_slop);

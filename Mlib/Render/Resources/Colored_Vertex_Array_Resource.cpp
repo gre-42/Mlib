@@ -330,6 +330,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& ambience,
     const OrderableFixedArray<float, 3>& diffusivity,
     const OrderableFixedArray<float, 3>& specularity,
+    float specular_exponent,
     float alpha,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
@@ -458,7 +459,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
             }
             sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
-            sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 4.0);" << std::endl;
+            sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), " << specular_exponent << ");" << std::endl;
             sstr << "    return spec * lightSpecularity[i];" << std::endl;
             sstr << "}" << std::endl;
         }
@@ -1248,6 +1249,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ambience,
         id.diffusivity,
         id.specularity,
+        id.specular_exponent,
         any(id.blend_mode & BlendMode::ANY_CONTINUOUS)
             ? id.alpha
             : 1.f,
