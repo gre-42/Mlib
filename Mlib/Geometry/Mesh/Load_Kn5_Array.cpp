@@ -75,6 +75,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     } else if ((material.shader == "ksPerPixel") ||
                                (material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
+                               (material.shader == "ksMultilayer") ||
                                (material.shader == "ksMultilayer_fresnel_nm"))
                     {
                         tl.material_.blend_mode = BlendMode::OFF;
