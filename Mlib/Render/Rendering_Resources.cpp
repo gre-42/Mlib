@@ -543,6 +543,13 @@ GLuint RenderingResources::get_texture(
                 clear_color({0.f, 0.f, 0.f, 0.f});
                 CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
                 render_texture_atlas(tiles, *this, level);
+                // // Disable the ArrayFrameBufferStorage above for the following code to work.
+                // static SaveMovie save_movie;
+                // save_movie.save(
+                //     "/tmp/atlas_",
+                //     "_layer",
+                //     integral_cast<size_t>(adesc.width / (1 << level)),
+                //     integral_cast<size_t>(adesc.height / (1 << level)));
             }
         }
     } else {
