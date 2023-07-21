@@ -839,10 +839,10 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
             if (!result.insert({
                 nb.name,
                 AutoUvTile{
-                .position = nb.bottom_left.casted<float>() / (atlas_size_2d.casted<float>() - 1.f),
-                .size = size.casted<float>()
-                        / FixedArray<float, 2>{(float)tad.width, (float)tad.height},
-                .layer = integral_cast<uint8_t>(layer)}}).second)
+                    .position = nb.bottom_left.casted<float>() / (atlas_size_2d.casted<float>() - 1.f),
+                    .size = size.casted<float>()
+                            / FixedArray<float, 2>{(float)tad.width, (float)tad.height},
+                    .layer = integral_cast<uint8_t>(layer)}}).second)
             {
                 THROW_OR_ABORT("Detected duplicate atlas filename: \"" + nb.name + '"');
             }
