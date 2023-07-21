@@ -2,7 +2,7 @@
 
 using namespace Mlib;
 
-using NamedSize = std::pair<const std::string*, const FixedArray<int, 2>&>;
+using NamedSize = std::pair<const std::string*, const FixedArray<int, 2>*>;
 
 std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
     const std::map<std::string, FixedArray<int, 2>>& box_sizes,
@@ -13,17 +13,18 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
     }
     std::list<NamedSize> sorted;
     for (const auto& [n, b] : box_sizes) {
-        sorted.push_back({&n, b});
+        sorted.push_back({&n, &b});
     }
-    sorted.sort([](const NamedSize& a, const NamedSize& b){return a.second(1) > b.second(1);});
+    sorted.sort([](const NamedSize& a, const NamedSize& b){return (*a.second)(1) > (*b.second)(1);});
     std::list<std::list<NameAndBoxPosition>> result;
     result.emplace_back();
     int left = 0;
     int bottom = 0;
     int height = -1;
     while (!sorted.empty()) {
-        const auto& [name, size] = sorted.front();
-        sorted.pop_front();
+        const auto& [name_ptr, size_ptr] = sorted.front();
+        const auto& name = *name_ptr;
+        const auto& size = *size_ptr;
         if (height == -1) {
             height = size(1);
         }
@@ -43,9 +44,10 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
             }
         }
         result.back().emplace_back(NameAndBoxPosition{
-            .name = *name,
+            .name = name,
             .bottom_left = {left, bottom}});
         left += size(0);
+        sorted.pop_front();
     }
     return result;
 }
