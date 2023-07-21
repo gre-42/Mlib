@@ -52,7 +52,7 @@ void Mlib::merge_textures(
                         }
                         for (const auto& v : t.flat_iterable()) {
                             if (any(v.uv < 0.f) || any(v.uv > 1.f)) {
-                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do no permit texture atlas";
+                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do not permit texture atlas";
                                 goto fallback;
                             }
                         }
