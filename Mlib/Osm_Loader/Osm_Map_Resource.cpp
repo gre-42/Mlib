@@ -11,9 +11,11 @@
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
+#include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
@@ -81,8 +83,6 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Terrain_Uv.hpp>
-#include <Mlib/Render/Up_Axis.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>

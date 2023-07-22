@@ -1,10 +1,10 @@
 #include "Add_Foliage_Resource.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Modifiers/Add_Foliage_Resource.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Up_Axis.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

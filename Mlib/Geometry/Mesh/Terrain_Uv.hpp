@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/Up_Axis.hpp>
+#include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 
 namespace Mlib {
 

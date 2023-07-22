@@ -1,9 +1,9 @@
 #include "Grid_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
-#include <Mlib/Render/Terrain_Uv.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
 using namespace Mlib;

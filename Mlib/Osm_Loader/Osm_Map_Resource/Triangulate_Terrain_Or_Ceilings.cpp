@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/P2t_Point_Set.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -14,7 +15,6 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Water_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
-#include <Mlib/Render/Terrain_Uv.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <poly2tri/point_exception.hpp>
 

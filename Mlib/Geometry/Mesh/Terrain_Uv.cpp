@@ -1,5 +1,6 @@
 #include "Terrain_Uv.hpp"
-#include <Mlib/Render/Uv_Shifter.hpp>
+#include <Mlib/Geometry/Mesh/Up_Axis.hpp>
+#include <Mlib/Geometry/Mesh/Uv_Shifter.hpp>
 
 using namespace Mlib;
 
