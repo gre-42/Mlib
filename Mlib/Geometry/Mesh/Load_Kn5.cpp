@@ -245,19 +245,20 @@ static void readNodes(
                     auto image = stb_load8(material.txDiffuse, FlipMode::NONE, &model.textures.at(material.txDiffuse));
                     matInfo << ' ' << image.width << 'x' << image.height;
                 } else if (extension == ".dds") {
-                    std::stringstream sstr;
-                    for (uint8_t c : model.textures.at(material.txDiffuse)) {
-                        sstr << c;
-                    }
+                    // std::stringstream sstr;
+                    // for (uint8_t c : model.textures.at(material.txDiffuse)) {
+                    //     sstr << c;
+                    // }
                     // nv_dds::CDDSImage image;
                     // image.load(sstr);
                     // matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
-                    auto image = DdsInfo::load_from_stream(sstr);
+                    auto image = DdsInfo::load_from_buffer(model.textures.at(material.txDiffuse));
                     matInfo << ' ' << image.width << 'x' << image.height;
                 } else {
                     THROW_OR_ABORT("Unknown texture file extension: \"" + material.txDiffuse + '"');
                 }
             }
+            matInfo << " phong: " << material.ksEmissive << ' ' << material.ksAmbient << ' ' << material.ksDiffuse << ' ' << material.ksSpecular;
         }
         linfo() <<
             "Node: " << newNode.name <<
