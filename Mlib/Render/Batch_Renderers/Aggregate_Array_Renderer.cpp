@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Render/Batch_Renderers/Optional_Material_Hider.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -102,8 +103,12 @@ void AggregateArrayRenderer::update_aggregates(
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
+    OptionalMaterialHider mhd;
     for (const auto& [mat, list] : mat_lists) {
         if (list.atriangles.empty()) {
+            continue;
+        }
+        if (mhd.is_hidden(mat)) {
             continue;
         }
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
