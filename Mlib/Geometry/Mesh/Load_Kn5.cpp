@@ -234,7 +234,7 @@ static void readNodes(
         std::stringstream matInfo;
         if (newNode.materialID.has_value()) {
             const auto& material = model.materials.at(newNode.materialID.value());
-            matInfo << " shader: " << material.shader << " diffuse: " << material.txDiffuse;
+            matInfo << " shader: " << material.shader << " diffuse: " << material.txDiffuse << " normal: " << material.txNormal;
             if (!material.txDiffuse.empty()) {
                 auto extension = std::filesystem::path{material.txDiffuse}.extension().string();
                 std::transform(extension.begin(), extension.end(), extension.begin(),
