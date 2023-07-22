@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
+#include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>

@@ -2,7 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
+#include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>

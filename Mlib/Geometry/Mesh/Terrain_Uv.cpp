@@ -1,7 +1,7 @@
 #include "Terrain_Uv.hpp"
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Shifter.hpp>
+#include <Mlib/Geometry/Texture/Uv_Shifter.hpp>
 
 using namespace Mlib;
 

@@ -1,5 +1,6 @@
 #include "Uv_Shifter.hpp"
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
+#include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>
 
 using namespace Mlib;
 
@@ -27,7 +28,7 @@ UvShifter3<TPos>::UvShifter3(
     for (size_t i = 0; i < 2; ++i) {
         auto offset = (wrap_mode(i) == WrapMode::REPEAT)
             ? std::round((u0(i) + u1(i) + u2(i)) / TPos(3) / period) * period
-            : std::floor(std::min({u0(i), u1(i), u2(i)}) / period) * period;
+            : std::floor((std::min({u0(i), u1(i), u2(i)}) - UV_ATLAS_MIN) / period) * period;
         this->u0(i) = float(u0(i) - offset);
         this->u1(i) = float(u1(i) - offset);
         this->u2(i) = float(u2(i) - offset);
@@ -61,7 +62,7 @@ UvShifter4<TPos>::UvShifter4(
     for (size_t i = 0; i < 2; ++i) {
         auto offset = (wrap_mode(i) == WrapMode::REPEAT)
             ? std::round((u0(i) + u1(i) + u2(i) + u3(i)) / TPos(4) / period) * period
-            : std::floor(std::min({u0(i), u1(i), u2(i), u3(i)}) / period) * period;
+            : std::floor((std::min({u0(i), u1(i), u2(i), u3(i)}) - UV_ATLAS_MIN) / period) * period;
         this->u0(i) = float(u0(i) - offset);
         this->u1(i) = float(u1(i) - offset);
         this->u2(i) = float(u2(i) - offset);

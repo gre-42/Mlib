@@ -3,8 +3,8 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
-#include <Mlib/Geometry/Pack_Boxes.hpp>
+#include <Mlib/Geometry/Texture/Pack_Boxes.hpp>
+#include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>

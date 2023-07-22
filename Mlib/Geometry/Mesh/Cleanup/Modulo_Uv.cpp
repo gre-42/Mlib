@@ -1,7 +1,7 @@
 #include "Modulo_Uv.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Shifter.hpp>
+#include <Mlib/Geometry/Texture/Uv_Shifter.hpp>
 #include <list>
 
 using namespace Mlib;

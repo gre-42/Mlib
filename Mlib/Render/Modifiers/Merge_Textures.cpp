@@ -6,8 +6,9 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Uv_Tile.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>
+#include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -51,12 +52,12 @@ void Mlib::merge_textures(
                     }
                     for (auto& t : cva->triangles) {
                         for (const auto& v : t.flat_iterable()) {
-                            if (any(v.uv < 0.f)) {
-                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this.";
+                            if (any(v.uv < UV_ATLAS_MIN)) {
+                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this.";
                                 goto fallback;
                             }
-                            if (any(v.uv > 1.f)) {
-                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?";
+                            if (any(v.uv > UV_ATLAS_MAX)) {
+                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?";
                                 goto fallback;
                             }
                         }
@@ -91,8 +92,8 @@ void Mlib::merge_textures(
                         {
                             auto& mtri = merged_triangles.emplace_back(tri);
                             for (auto& v : mtri.flat_iterable()) {
-                                assert_true(all(v.uv >= 0.f));
-                                assert_true(all(v.uv <= 1.f));
+                                assert_true(all(v.uv >= UV_ATLAS_MIN));
+                                assert_true(all(v.uv <= UV_ATLAS_MAX));
                                 v.uv = tile.position + v.uv * tile.size;
                             }
                         }
