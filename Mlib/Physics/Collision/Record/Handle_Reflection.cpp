@@ -292,6 +292,9 @@ void Mlib::handle_reflection(
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
                any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
+        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_com_, c.t0.plane.normal) > 0.) {
+            return;
+        }
         sat_used = true;
         // assert_true(c.mesh1 != nullptr);
         // overlap = get_overlap(c.t0, *c.mesh1);
@@ -328,6 +331,9 @@ void Mlib::handle_reflection(
                 "Could not compute collision plane of mesh \"" + c.mesh0->name() + "\" and edge: " + e.what());
         }
         if (overlap == INFINITY) {
+            return;
+        }
+        if (dot0d(intersection_point - c.o0.rbi_.rbp_.abs_com_, normal) < 0.) {
             return;
         }
         // if (overlap > (double)c.history.cfg.overlap_ignored) {
