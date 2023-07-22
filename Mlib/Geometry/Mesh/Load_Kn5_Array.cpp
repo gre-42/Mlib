@@ -49,12 +49,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
-            static const DECLARE_REGEX(collide_reg, "^(?:\\d+)(\\w+)");
+            static const DECLARE_REGEX(collide_reg, "^(\\d+)(\\w+)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
-                tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
-                tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
-                if (match[1].str().starts_with("WALL_col")) {
+                size_t id = safe_stoz(match[1].str());
+                if (id > 0) {
+                    tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
+                    tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
+                }
+                if (match[2].str().starts_with("WALL_col")) {
                     tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
                 }
             }
