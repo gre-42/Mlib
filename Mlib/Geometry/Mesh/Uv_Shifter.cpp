@@ -3,22 +3,17 @@
 
 using namespace Mlib;
 
-template <class TPos>
-void UvShifter3<TPos>::shift(
-    TPos period,
-    FixedArray<TPos, 2>& u0,
-    FixedArray<TPos, 2>& u1,
-    FixedArray<TPos, 2>& u2,
-    FixedArray<WrapMode, 2> wrap_mode)
+void Mlib::shift_uv3(
+    float period,
+    FixedArray<float, 2>& u0,
+    FixedArray<float, 2>& u1,
+    FixedArray<float, 2>& u2,
+    const FixedArray<WrapMode, 2>& wrap_mode)
 {
-    UvShifter3<TPos> uv_shifter3{period, u0, u1, u2};
-    for (size_t i = 0; i < 2; ++i) {
-        if (wrap_mode(i) == WrapMode::REPEAT) {
-            u0(i) = uv_shifter3.u0(i);
-            u1(i) = uv_shifter3.u1(i);
-            u2(i) = uv_shifter3.u2(i);
-        }
-    }
+    UvShifter3<float> uv_shifter3{period, u0, u1, u2, wrap_mode};
+    u0 = uv_shifter3.u0;
+    u1 = uv_shifter3.u1;
+    u2 = uv_shifter3.u2;
 }
 
 template <class TPos>
@@ -26,33 +21,32 @@ UvShifter3<TPos>::UvShifter3(
     TPos period,
     const FixedArray<TPos, 2>& u0,
     const FixedArray<TPos, 2>& u1,
-    const FixedArray<TPos, 2>& u2)
+    const FixedArray<TPos, 2>& u2,
+    const FixedArray<WrapMode, 2>& wrap_mode)
 {
-    auto center = (u0 + u1 + u2) / TPos(3);
-    center = center TEMPLATEV applied<TPos>([&period](TPos v){ return std::round(v / period) * period; });
-    this->u0 = (u0 - center) TEMPLATEV casted<float>();
-    this->u1 = (u1 - center) TEMPLATEV casted<float>();
-    this->u2 = (u2 - center) TEMPLATEV casted<float>();
+    for (size_t i = 0; i < 2; ++i) {
+        auto offset = (wrap_mode(i) == WrapMode::REPEAT)
+            ? std::round((u0(i) + u1(i) + u2(i)) / TPos(3) / period) * period
+            : std::floor(std::min({u0(i), u1(i), u2(i)}) / period) * period;
+        this->u0(i) = float(u0(i) - offset);
+        this->u1(i) = float(u1(i) - offset);
+        this->u2(i) = float(u2(i) - offset);
+    }
 }
 
-template <class TPos>
-void UvShifter4<TPos>::shift(
-    TPos period,
-    FixedArray<TPos, 2>& u0,
-    FixedArray<TPos, 2>& u1,
-    FixedArray<TPos, 2>& u2,
-    FixedArray<TPos, 2>& u3,
-    FixedArray<WrapMode, 2> wrap_mode)
+void Mlib::shift_uv4(
+    float period,
+    FixedArray<float, 2>& u0,
+    FixedArray<float, 2>& u1,
+    FixedArray<float, 2>& u2,
+    FixedArray<float, 2>& u3,
+    const FixedArray<WrapMode, 2>& wrap_mode)
 {
-    UvShifter4<TPos> uv_shifter4{period, u0, u1, u2, u3};
-    for (size_t i = 0; i < 2; ++i) {
-        if (wrap_mode(i) == WrapMode::REPEAT) {
-            u0(i) = uv_shifter4.u0(i);
-            u1(i) = uv_shifter4.u1(i);
-            u2(i) = uv_shifter4.u2(i);
-            u3(i) = uv_shifter4.u3(i);
-        }
-    }
+    UvShifter4<float> uv_shifter4{period, u0, u1, u2, u3, wrap_mode};
+    u0 = uv_shifter4.u0;
+    u1 = uv_shifter4.u1;
+    u2 = uv_shifter4.u2;
+    u3 = uv_shifter4.u3;
 }
 
 template <class TPos>
@@ -61,14 +55,18 @@ UvShifter4<TPos>::UvShifter4(
     const FixedArray<TPos, 2>& u0,
     const FixedArray<TPos, 2>& u1,
     const FixedArray<TPos, 2>& u2,
-    const FixedArray<TPos, 2>& u3)
+    const FixedArray<TPos, 2>& u3,
+    const FixedArray<WrapMode, 2>& wrap_mode)
 {
-    auto center = (u0 + u1 + u2 + u3) / TPos(4);
-    center = center TEMPLATEV applied<TPos>([&period](TPos v){ return std::round(v / period) * period; });
-    this->u0 = (u0 - center) TEMPLATEV casted<float>();
-    this->u1 = (u1 - center) TEMPLATEV casted<float>();
-    this->u2 = (u2 - center) TEMPLATEV casted<float>();
-    this->u3 = (u3 - center) TEMPLATEV casted<float>();
+    for (size_t i = 0; i < 2; ++i) {
+        auto offset = (wrap_mode(i) == WrapMode::REPEAT)
+            ? std::round((u0(i) + u1(i) + u2(i) + u3(i)) / TPos(4) / period) * period
+            : std::floor(std::min({u0(i), u1(i), u2(i), u3(i)}) / period) * period;
+        this->u0(i) = float(u0(i) - offset);
+        this->u1(i) = float(u1(i) - offset);
+        this->u2(i) = float(u2(i) - offset);
+        this->u3(i) = float(u3(i) - offset);
+    }
 }
 
 namespace Mlib {

@@ -9,7 +9,7 @@ using namespace Mlib;
 template <class TPos>
 void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     for (auto& tri : cva.triangles) {
-        UvShifter3<float>::shift(
+        shift_uv3(
             1.f,
             tri(0).uv,
             tri(1).uv,

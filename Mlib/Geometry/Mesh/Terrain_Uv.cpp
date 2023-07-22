@@ -1,4 +1,5 @@
 #include "Terrain_Uv.hpp"
+#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Geometry/Mesh/Uv_Shifter.hpp>
 
@@ -18,7 +19,8 @@ FixedArray<FixedArray<float, 2>, 3> Mlib::terrain_uv(
         period,
         {a(0) * scale_total, a(1) * scale_total},
         {b(0) * scale_total, b(1) * scale_total},
-        {c(0) * scale_total, c(1) * scale_total}};
+        {c(0) * scale_total, c(1) * scale_total},
+        {WrapMode::REPEAT, WrapMode::REPEAT}};
     return {
         uv_shifter.u0,
         uv_shifter.u1,
@@ -60,7 +62,8 @@ FixedArray<FixedArray<float, 2>, 4> Mlib::terrain_uv(
         {a(0) * scale_total, a(1) * scale_total},
         {b(0) * scale_total, b(1) * scale_total},
         {c(0) * scale_total, c(1) * scale_total},
-        {d(0) * scale_total, d(1) * scale_total}};
+        {d(0) * scale_total, d(1) * scale_total},
+        {WrapMode::REPEAT, WrapMode::REPEAT}};
     return {
         uv_shifter.u0,
         uv_shifter.u1,

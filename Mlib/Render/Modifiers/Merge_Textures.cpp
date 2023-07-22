@@ -43,17 +43,20 @@ void Mlib::merge_textures(
                         lwarn() << "Attempt to merge object \"" << cva->name << "\", which has a non-continuous material";
                         continue;
                     }
+                    if ((cva->material.wrap_mode_s == WrapMode::REPEAT) ||
+                        (cva->material.wrap_mode_t == WrapMode::REPEAT))
+                    {
+                        lwarn() << "Attempt to merge object \"" << cva->name << "\", which has repeating textures";
+                        continue;
+                    }
                     for (auto& t : cva->triangles) {
-                        auto min_uv_floor =
-                            minimum(minimum(t(0).uv, t(1).uv), t(2).uv)
-                            .applied([](float v){return std::floor(v);});
-                        for (auto& v : t.flat_iterable()) {
-                            v.uv -= min_uv_floor;
-                        }
                         for (const auto& v : t.flat_iterable()) {
-                            assert_true(all(v.uv >= 0.f));
+                            if (any(v.uv < 0.f)) {
+                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this.";
+                                goto fallback;
+                            }
                             if (any(v.uv > 1.f)) {
-                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do not permit texture atlas";
+                                lwarn() << "UV-coordinates of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?";
                                 goto fallback;
                             }
                         }
