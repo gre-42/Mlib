@@ -58,51 +58,49 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (!node.isRenderable) {
                 tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
-            if (dds_resources != nullptr) {
-                if (node.materialID.has_value()) {
-                    const auto& material = kn5.materials.at(node.materialID.value());
-                    // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
-                    //       https://assettocorsamods.net/threads/setting-up-trees.162/
-                    if ((material.shader == "ksGrass") ||
-                        (material.shader == "ksTree"))
-                    {
-                        tl.material_.merge_textures = true;
-                        tl.material_.continuous_blending_z_order = 2;
-                    }
-                    if ((material.shader == "ksGrass") ||
-                        (material.shader == "ksTree") ||
-                        (material.shader == "ksPerPixelAlpha"))
-                    {
-                        tl.material_.blend_mode = cfg.blend_mode;
-                    } else if ((material.shader == "ksPerPixelAT") ||
-                               (material.shader == "ksPerPixelAT") ||
-                               (material.shader == "ksPerPixelAT_NM") ||
-                               (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
-                    {
-                        tl.material_.blend_mode = BlendMode::BINARY_05;
-                    } else if ((material.shader == "ksPerPixel") ||
-                               (material.shader == "ksPerPixelNM") ||
-                               (material.shader == "ksPerPixelMultiMap") ||
-                               (material.shader == "ksMultilayer") ||
-                               (material.shader == "ksMultilayer_fresnel_nm"))
-                    {
-                        tl.material_.blend_mode = BlendMode::OFF;
-                    } else {
-                        THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
-                    }
-                    tl.material_.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
-                    tl.material_.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
-                    tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
-                    tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
-                    tl.material_.specular_exponent = material.ksSpecularEXP;
-                    if (!material.txDiffuse.empty()) {
-                        tl.material_.textures = {BlendMapTexture{
-                            .texture_descriptor = {
-                                .color = material.txDiffuse,
-                                .normal = material.txNormal,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
-                        tl.material_.compute_color_mode();
-                    }
+            if (node.materialID.has_value()) {
+                const auto& material = kn5.materials.at(node.materialID.value());
+                // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
+                //       https://assettocorsamods.net/threads/setting-up-trees.162/
+                if ((material.shader == "ksGrass") ||
+                    (material.shader == "ksTree"))
+                {
+                    tl.material_.merge_textures = true;
+                    tl.material_.continuous_blending_z_order = 2;
+                }
+                if ((material.shader == "ksGrass") ||
+                    (material.shader == "ksTree") ||
+                    (material.shader == "ksPerPixelAlpha"))
+                {
+                    tl.material_.blend_mode = cfg.blend_mode;
+                } else if ((material.shader == "ksPerPixelAT") ||
+                            (material.shader == "ksPerPixelAT") ||
+                            (material.shader == "ksPerPixelAT_NM") ||
+                            (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                {
+                    tl.material_.blend_mode = BlendMode::BINARY_05;
+                } else if ((material.shader == "ksPerPixel") ||
+                            (material.shader == "ksPerPixelNM") ||
+                            (material.shader == "ksPerPixelMultiMap") ||
+                            (material.shader == "ksMultilayer") ||
+                            (material.shader == "ksMultilayer_fresnel_nm"))
+                {
+                    tl.material_.blend_mode = BlendMode::OFF;
+                } else {
+                    THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
+                }
+                tl.material_.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
+                tl.material_.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
+                tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
+                tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
+                tl.material_.specular_exponent = material.ksSpecularEXP;
+                if (!material.txDiffuse.empty()) {
+                    tl.material_.textures = {BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = material.txDiffuse,
+                            .normal = material.txNormal,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
+                    tl.material_.compute_color_mode();
                 }
             }
             for (const auto& tri : node.triangles) {
