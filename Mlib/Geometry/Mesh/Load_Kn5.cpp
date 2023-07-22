@@ -264,6 +264,8 @@ static void readNodes(
             "Node: " << newNode.name <<
             " type: " << newNode.type <<
             " position: " << newNode.hmatrix.t() <<
+            " active: " << (int)newNode.isActive <<
+            " renderable: " << (int)newNode.isRenderable <<
             " transparent: " << (int)newNode.isTransparent <<
             matInfo.str();
     }
