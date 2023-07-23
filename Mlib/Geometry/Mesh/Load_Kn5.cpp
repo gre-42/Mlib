@@ -1,5 +1,5 @@
 #include "Load_Kn5.hpp"
-#include <Mlib/Images/Dds_Info.hpp>
+#include <Mlib/Images/Image_Info.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -234,31 +234,20 @@ static void readNodes(
         std::stringstream matInfo;
         if (newNode.materialID.has_value()) {
             const auto& material = model.materials.at(newNode.materialID.value());
-            matInfo << " shader: " << material.shader << " diffuse: " << material.txDiffuse << " normal: " << material.txNormal;
+            matInfo <<
+                " material: " << material.name <<
+                " shader: " << material.shader <<
+                " diffuse: " << material.txDiffuse;
             if (!material.txDiffuse.empty()) {
-                auto extension = std::filesystem::path{material.txDiffuse}.extension().string();
-                std::transform(extension.begin(), extension.end(), extension.begin(),
-                    [](unsigned char c){ return std::tolower(c); });
-                if ((extension == ".jpg") ||
-                    (extension == ".png"))
-                {
-                    auto image = stb_load8(material.txDiffuse, FlipMode::NONE, &model.textures.at(material.txDiffuse));
-                    matInfo << ' ' << image.width << 'x' << image.height;
-                } else if (extension == ".dds") {
-                    // std::stringstream sstr;
-                    // for (uint8_t c : model.textures.at(material.txDiffuse)) {
-                    //     sstr << c;
-                    // }
-                    // nv_dds::CDDSImage image;
-                    // image.load(sstr);
-                    // matInfo << ' ' << image.get_width() << 'x' << image.get_height() << " compressed: " << (int)image.is_compressed() << " format: " << image.get_format();
-                    auto image = DdsInfo::load_from_buffer(model.textures.at(material.txDiffuse));
-                    matInfo << ' ' << image.width << 'x' << image.height;
-                } else {
-                    THROW_OR_ABORT("Unknown texture file extension: \"" + material.txDiffuse + '"');
-                }
+                auto info = ImageInfo::load(material.txDiffuse, &model.textures.at(material.txDiffuse));
+                matInfo << ' ' << info.size(0) << 'x' << info.size(1);
             }
-            matInfo << " phong: " << material.ksEmissive << ' ' << material.ksAmbient << ' ' << material.ksDiffuse << ' ' << material.ksSpecular;
+            matInfo <<
+                " normal: " << material.txNormal <<
+                " phong: " << material.ksEmissive <<
+                ' ' << material.ksAmbient <<
+                ' ' << material.ksDiffuse <<
+                ' ' << material.ksSpecular;
         }
         linfo() <<
             "Node: " << newNode.name <<
