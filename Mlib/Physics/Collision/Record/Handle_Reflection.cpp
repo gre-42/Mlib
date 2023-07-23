@@ -292,7 +292,7 @@ void Mlib::handle_reflection(
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
                any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_com_, c.t0.plane.normal) > 0.) {
+        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), c.t0.plane.normal) > 0.) {
             return;
         }
         sat_used = true;
@@ -333,7 +333,7 @@ void Mlib::handle_reflection(
         if (overlap == INFINITY) {
             return;
         }
-        if (dot0d(intersection_point - c.o0.rbi_.rbp_.abs_com_, normal) < 0.) {
+        if (dot0d(intersection_point - c.o0.rbi_.rbp_.abs_position(), normal) < 0.) {
             return;
         }
         // if (overlap > (double)c.history.cfg.overlap_ignored) {
