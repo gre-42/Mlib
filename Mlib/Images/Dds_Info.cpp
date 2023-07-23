@@ -10,9 +10,35 @@ using namespace Mlib;
 // From: https://learn.microsoft.com/en-us/windows/uwp/gaming/complete-code-for-ddstextureloader
 static const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
 
+enum class DdsPixelFormatFlags: uint32_t {
+    ALPHAPIXELS = 0x1,
+    ALPHA = 0x2,
+    FOURCC = 0x4,
+    RGB = 0x40,
+    YUV = 0x200,
+    LUMINANCE = 0x20000
+};
+
+std::string dds_pixel_format_flags_to_string(DdsPixelFormatFlags size) {
+    if (size == DdsPixelFormatFlags::ALPHAPIXELS) {
+        return "alpha_pixels";
+    } else if (size == DdsPixelFormatFlags::ALPHA) {
+        return "alpha";
+    } else if (size == DdsPixelFormatFlags::FOURCC) {
+        return "fourcc";
+    } else if (size == DdsPixelFormatFlags::RGB) {
+        return "rgb";
+    } else if (size == DdsPixelFormatFlags::YUV) {
+        return "yuv";
+    } else if (size == DdsPixelFormatFlags::LUMINANCE) {
+        return "luminance";
+    }
+    THROW_OR_ABORT("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
+}
+
 struct DdsPixelFormat {
-    uint32_t  size;
-    uint32_t  flags;
+    uint32_t size;
+    DdsPixelFormatFlags  flags;
     uint32_t  fourCC;
     uint32_t  RGBBitCount;
     uint32_t  RBitMask;

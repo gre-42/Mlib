@@ -13,6 +13,7 @@ public:
     bool is_hidden(const Material& material) const;
 private:
     std::optional<std::set<std::string>> hidden_names_;
+    bool print_materials_;
 };
 
 }
