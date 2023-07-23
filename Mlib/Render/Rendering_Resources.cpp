@@ -5,8 +5,8 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Texture/Pack_Boxes.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
-#include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
+#include <Mlib/Images/Image_Info.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -798,25 +798,15 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
     for (const auto& filename : filenames) {
         FixedArray<int, 2> image_size;
-        auto extension = std::filesystem::path{filename}.extension().string();
-        std::transform(extension.begin(), extension.end(), extension.begin(),
-            [](unsigned char c){ return std::tolower(c); });
-        if ((extension == ".jpg") ||
-            (extension == ".png"))
-        {
-            int comp;
-            if (stbi_info(filename.c_str(), &image_size(0), &image_size(1), &comp) == 0) {
-                THROW_OR_ABORT("Could not read size information from file \"" + filename + '"');
-            }
-        } else if (extension == ".dds") {
-            const auto& d = preloaded_texture_dds_data_.find(filename);
-            if (d == preloaded_texture_dds_data_.end()) {
-                THROW_OR_ABORT("Could not find DDS texture with name \"" + filename + '"');
-            }
-            auto info = DdsInfo::load_from_buffer(d->second);
-            image_size = {info.width, info.height};
+        if (preloaded_texture_data_.contains(filename)) {
+            const auto& img = preloaded_texture_data_.at(filename);
+            image_size = {img.width, img.height};
+        } else if (preloaded_texture_dds_data_.contains(filename)) {
+            auto info = ImageInfo::load(filename, &preloaded_texture_dds_data_.at(filename));
+            image_size = {integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1))};
         } else {
-            THROW_OR_ABORT("Unknown file extension: \"" + filename + '"');
+            auto info = ImageInfo::load(filename, nullptr);
+            image_size = {integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1))};
         }
         if (!packed_sizes.insert({filename, image_size}).second) {
             THROW_OR_ABORT("Found duplicate name \"" + filename + '"');
