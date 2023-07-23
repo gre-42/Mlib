@@ -236,14 +236,34 @@ static void readNodes(
             const auto& material = model.materials.at(newNode.materialID.value());
             matInfo <<
                 " material: " << material.name <<
-                " shader: " << material.shader <<
-                " diffuse: " << material.txDiffuse;
+                " shader: " << material.shader;
             if (!material.txDiffuse.empty()) {
+                matInfo << " diffuse: " << material.txDiffuse;
                 auto info = ImageInfo::load(material.txDiffuse, &model.textures.at(material.txDiffuse));
                 matInfo << ' ' << info.size(0) << 'x' << info.size(1);
             }
+            if (!material.txNormal.empty()) {
+                matInfo << " normal: " << material.txNormal;
+            }
+            if (!material.txMask.empty()) {
+                matInfo << " mask: " << material.txMask;
+            }
+            if (!material.txDetailR.empty()) {
+                matInfo << " detailR: " << material.txDetailR;
+            }
+            if (!material.txDetailG.empty()) {
+                matInfo << " detailG: " << material.txDetailG;
+            }
+            if (!material.txDetailB.empty()) {
+                matInfo << " detailB: " << material.txDetailB;
+            }
+            if (!material.txDetailA.empty()) {
+                matInfo << " detailA: " << material.txDetailA;
+            }
+            if (!material.txDetailNM.empty()) {
+                matInfo << " detailNM: " << material.txDetailNM;
+            }
             matInfo <<
-                " normal: " << material.txNormal <<
                 " phong: " << material.ksEmissive <<
                 ' ' << material.ksAmbient <<
                 ' ' << material.ksDiffuse <<
@@ -351,22 +371,32 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
         size_t textures = ReadUInt32(*binStream);
         for (size_t t = 0; t < textures; t++)
         {
-            std::string sampleName = ReadStr(*binStream, ReadUInt32(*binStream));
-            int sampleSlot = ReadInt32(*binStream);
+            std::string samplerName = ReadStr(*binStream, ReadUInt32(*binStream));
+            int samplerSlot = ReadInt32(*binStream);
             std::string texName = ReadStr(*binStream, ReadUInt32(*binStream));
 
-            newMaterial.shaderProps += sampleName + " = " + texName + "&cr;&lf;";
+            newMaterial.shaderProps += samplerName + " = " + texName + "&cr;&lf;";
 
-            if (sampleName == "txDiffuse") {
+            if (samplerName == "txDiffuse") {
                 newMaterial.txDiffuse = texName;
-            } else if (sampleName == "txNormal") {
+            } else if (samplerName == "txNormal") {
                 newMaterial.txNormal = texName;
-            } else if (sampleName == "txDetail") {
-                newMaterial.txDetail = texName;
+            } else if (samplerName == "txMask") {
+                newMaterial.txMask = texName;
+            } else if (samplerName == "txDetailR") {
+                newMaterial.txDetailR = texName;
+            } else if (samplerName == "txDetailG") {
+                newMaterial.txDetailG = texName;
+            } else if (samplerName == "txDetailB") {
+                newMaterial.txDetailB = texName;
+            } else if (samplerName == "txDetailA") {
+                newMaterial.txDetailA = texName;
+            } else if (samplerName == "txDetailNM") {
+                newMaterial.txDetailNM = texName;
             } else {
-                lwarn() << "Unknown sample name: " << sampleName;
+                lwarn() << "Unknown sampler name: " << samplerName;
             }
-            lwarn() << "sampleSlot: " << sampleSlot;
+            lwarn() << "samplerSlot: " << samplerSlot;
         }
 
         newModel.materials[newModel.materials.size()] = std::move(newMaterial);

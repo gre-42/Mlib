@@ -28,7 +28,13 @@ struct kn5Material
 
     std::string txDiffuse;
     std::string txNormal;
-    std::string txDetail;
+    std::string txMask;
+    std::string txDetailR;
+    std::string txDetailG;
+    std::string txDetailB;
+    std::string txDetailA;
+    std::string txDetailNM;
+
 
     std::string shaderProps = "";
 };
