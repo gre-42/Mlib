@@ -121,16 +121,16 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material_.blend_mode = cfg.blend_mode;
                 } else if ((material.shader == "ksPerPixelAT") ||
-                            (material.shader == "ksPerPixelAT") ||
-                            (material.shader == "ksPerPixelAT_NM") ||
-                            (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                           (material.shader == "ksPerPixelAT") ||
+                           (material.shader == "ksPerPixelAT_NM") ||
+                           (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                 {
                     tl.material_.blend_mode = BlendMode::BINARY_05;
                 } else if ((material.shader == "ksPerPixel") ||
-                            (material.shader == "ksPerPixelNM") ||
-                            (material.shader == "ksPerPixelMultiMap") ||
-                            (material.shader == "ksMultilayer") ||
-                            (material.shader == "ksMultilayer_fresnel_nm"))
+                           (material.shader == "ksPerPixelNM") ||
+                           (material.shader == "ksPerPixelMultiMap") ||
+                           (material.shader == "ksMultilayer") ||
+                           (material.shader == "ksMultilayer_fresnel_nm"))
                 {
                     tl.material_.blend_mode = BlendMode::OFF;
                 } else {
