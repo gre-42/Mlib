@@ -19,6 +19,35 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+enum class MetaAttributes {
+    NONE = 0,
+    GRASS = (1 << 0),
+    VISIBLE = (1 << 1),
+    COLLIDABLE = (1 << 2)
+};
+
+MetaAttributes operator ~ (MetaAttributes a) {
+    return (MetaAttributes)(~int(a));
+}
+
+MetaAttributes operator & (MetaAttributes a, MetaAttributes b) {
+    return (MetaAttributes)(int(a) & int(b));
+}
+
+MetaAttributes& operator &= (MetaAttributes& a, MetaAttributes b) {
+    (int&)a &= (int)b;
+    return a;
+}
+
+MetaAttributes& operator |= (MetaAttributes& a, MetaAttributes b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
+bool any(MetaAttributes attr) {
+    return attr != MetaAttributes::NONE;
+}
+
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     const std::string& file_or_directory,
@@ -49,19 +78,29 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
-            static const DECLARE_REGEX(collide_reg, "^(\\d+)(\\w+)");
+            auto attrs = MetaAttributes::VISIBLE;
+            static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
+            static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
-                size_t id = safe_stoz(match[1].str());
-                if (id > 0) {
-                    tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
-                    tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
+                if (match[1].matched) {
+                    size_t id = safe_stoz(match[1].str());
+                    if (id > 0) {
+                        attrs |= MetaAttributes::COLLIDABLE;
+                    }
                 }
                 if (match[2].str().starts_with("WALL_col")) {
-                    tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
+                    attrs &= ~MetaAttributes::VISIBLE;
+                }
+                if (Mlib::re::regex_search(match[2].str(), grass_reg)) {
+                    attrs |= MetaAttributes::GRASS;
                 }
             }
-            if (!node.isRenderable) {
+            if (any(attrs & MetaAttributes::COLLIDABLE)) {
+                tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
+                tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
+            }
+            if (!node.isRenderable || !any(attrs & MetaAttributes::VISIBLE)) {
                 tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
             if (node.materialID.has_value()) {
@@ -102,7 +141,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                 tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                 tl.material_.specular_exponent = material.ksSpecularEXP;
-                if (!material.txDiffuse.empty()) {
+                if (!material.txDetail(0).empty() &&
+                    any(attrs & MetaAttributes::GRASS))
+                {
+                    tl.material_.textures = {BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = material.txDetail(0),
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
+                    tl.material_.compute_color_mode();
+                } else if (!material.txDiffuse.empty()) {
                     tl.material_.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,

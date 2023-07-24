@@ -248,17 +248,23 @@ static void readNodes(
             if (!material.txMask.empty()) {
                 matInfo << " mask: " << material.txMask;
             }
-            if (!material.txDetailR.empty()) {
-                matInfo << " detailR: " << material.txDetailR;
+            if (any(material.mult != 0.f)) {
+                matInfo << " mult: " << material.mult;
             }
-            if (!material.txDetailG.empty()) {
-                matInfo << " detailG: " << material.txDetailG;
+            if (material.detailNMMult != 0.f) {
+                matInfo << " detailNMMult: " << material.detailNMMult;
             }
-            if (!material.txDetailB.empty()) {
-                matInfo << " detailB: " << material.txDetailB;
+            if (!material.txDetail(0).empty()) {
+                matInfo << " detailR: " << material.txDetail(0);
             }
-            if (!material.txDetailA.empty()) {
-                matInfo << " detailA: " << material.txDetailA;
+            if (!material.txDetail(1).empty()) {
+                matInfo << " detailG: " << material.txDetail(1);
+            }
+            if (!material.txDetail(2).empty()) {
+                matInfo << " detailB: " << material.txDetail(2);
+            }
+            if (!material.txDetail(3).empty()) {
+                matInfo << " detailA: " << material.txDetail(3);
             }
             if (!material.txDetailNM.empty()) {
                 matInfo << " detailNM: " << material.txDetailNM;
@@ -361,6 +367,16 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 newMaterial.useDetail = propValue;
             } else if (propName == "detailUVMultiplier") {
                 newMaterial.detailUVMultiplier = propValue;
+            } else if (propName == "multR") {
+                newMaterial.mult(0) = propValue;
+            } else if (propName == "multG") {
+                newMaterial.mult(1) = propValue;
+            } else if (propName == "multB") {
+                newMaterial.mult(2) = propValue;
+            } else if (propName == "multA") {
+                newMaterial.mult(3) = propValue;
+            } else if (propName == "detailNMMult") {
+                newMaterial.detailNMMult = propValue;
             } else {
                 lwarn() << "Unknown material property: " << propName << " = " << propValue;
             }
@@ -384,13 +400,13 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
             } else if (samplerName == "txMask") {
                 newMaterial.txMask = texName;
             } else if (samplerName == "txDetailR") {
-                newMaterial.txDetailR = texName;
+                newMaterial.txDetail(0) = texName;
             } else if (samplerName == "txDetailG") {
-                newMaterial.txDetailG = texName;
+                newMaterial.txDetail(1) = texName;
             } else if (samplerName == "txDetailB") {
-                newMaterial.txDetailB = texName;
+                newMaterial.txDetail(2) = texName;
             } else if (samplerName == "txDetailA") {
-                newMaterial.txDetailA = texName;
+                newMaterial.txDetail(3) = texName;
             } else if (samplerName == "txDetailNM") {
                 newMaterial.txDetailNM = texName;
             } else {
