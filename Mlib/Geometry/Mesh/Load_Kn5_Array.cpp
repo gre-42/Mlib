@@ -21,9 +21,10 @@ using namespace Mlib;
 
 enum class MetaAttributes {
     NONE = 0,
-    GRASS = (1 << 0),
-    VISIBLE = (1 << 1),
-    COLLIDABLE = (1 << 2)
+    VISIBLE = (1 << 0),
+    COLLIDABLE = (1 << 1),
+    GRASS = (1 << 2),
+    ROAD = (1 << 3)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -60,7 +61,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         auto kn5 = load_kn5(filename);
         if (dds_resources != nullptr) {
             for (auto& [name, content] : kn5.textures) {
-                dds_resources->insert_texture(name, std::move(content), TextureAlreadyExistsBehavior::IGNORE);
+                dds_resources->insert_texture(name, std::move(content), TextureAlreadyExistsBehavior::WARN);
             }
         }
         for (const auto& [_, node] : kn5.nodes) {
@@ -81,6 +82,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             auto attrs = MetaAttributes::VISIBLE;
             static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
             static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
+            static const DECLARE_REGEX(road_reg, "^ROAD");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 if (match[1].matched) {
@@ -94,6 +96,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), grass_reg)) {
                     attrs |= MetaAttributes::GRASS;
+                }
+                if (Mlib::re::regex_search(match[2].str(), road_reg)) {
+                    attrs |= MetaAttributes::ROAD;
                 }
             }
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
@@ -141,21 +146,44 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                 tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                 tl.material_.specular_exponent = material.ksSpecularEXP;
-                if (!material.txDetail(0).empty() &&
-                    any(attrs & MetaAttributes::GRASS))
+                if (!material.txDiffuse.empty() &&
+                    !material.txMask.empty() &&
+                    ((material.shader == "ksMultilayer") ||
+                     (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material_.textures = {BlendMapTexture{
-                        .texture_descriptor = {
-                            .color = material.txDetail(0),
-                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
-                    tl.material_.compute_color_mode();
-                } else if (!material.txDiffuse.empty()) {
                     tl.material_.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
                             .normal = material.txNormal,
-                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .role = BlendMapRole::DETAIL_BASE}};
+                    for (uint32_t i = 0; i < 3; ++i) {
+                        if (material.txDetail(i).empty()) {
+                            continue;
+                        }
+                        tl.material_.textures.push_back(BlendMapTexture{
+                            .texture_descriptor = {
+                                .color = material.txMask,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                            .scale = material.mult(i),
+                            .role = BlendMapRole::DETAIL_MASK_R + i});
+                        tl.material_.textures.push_back(BlendMapTexture{
+                            .texture_descriptor = {
+                                .color = material.txDetail(i),
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                            .scale = material.detailUVMultiplier,
+                            .role = BlendMapRole::DETAIL_COLOR});
+                    }
                     tl.material_.compute_color_mode();
+                } else {
+                    if (!material.txDiffuse.empty()) {
+                        tl.material_.textures = {BlendMapTexture{
+                            .texture_descriptor = {
+                                .color = material.txDiffuse,
+                                .normal = material.txNormal,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
+                        tl.material_.compute_color_mode();
+                    }
                 }
             }
             for (const auto& tri : node.triangles) {

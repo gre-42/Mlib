@@ -1082,19 +1082,22 @@ void RenderingResources::insert_texture(
     std::scoped_lock lock{mutex_};
 
     if (preloaded_texture_dds_data_.contains(name)) {
-        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
+            lwarn() << "DDS-texture with name \"" + name + "\" already exists";
             return;
         }
         THROW_OR_ABORT("DDS-texture with name \"" + name + "\" already exists");
     }
     if (preloaded_texture_data_.contains(name)) {
-        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
+            lwarn() << "Preloaded non-DDS-texture with name \"" + name + "\" already exists";
             return;
         }
         THROW_OR_ABORT("Preloaded non-DDS-texture with name \"" + name + "\" already exists");
     }
     if (textures_.contains(name)) {
-        if (already_exists_behavior == TextureAlreadyExistsBehavior::IGNORE) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
+            lwarn() << "Non-DDS-texture with name \"" + name + "\" already exists";
             return;
         }
         THROW_OR_ABORT("Non-DDS-texture with name \"" + name + "\" already exists");

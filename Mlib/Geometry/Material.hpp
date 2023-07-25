@@ -97,12 +97,14 @@ struct Material {
         archive(alpha_distances);
         archive(wrap_mode_s);
         archive(wrap_mode_t);
+        archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
         archive(merge_textures);
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);
         archive(center_distances);
+        archive(max_triangle_distance);
         archive(cull_faces);
         archive(reorient_uv0);
         archive(emissivity);
@@ -110,6 +112,7 @@ struct Material {
         archive(diffusivity);
         archive(specularity);
         archive(specular_exponent);
+        archive(alpha);
         archive(reflect_only_y);
         archive(draw_distance_add);
         archive(draw_distance_slop);

@@ -24,9 +24,9 @@ struct kn5Material
     float diffuseMult = 1.0f;
     float normalMult = 1.0f;
     float useDetail = 0.0f;
-    float detailUVMultiplier = 1.0f;
-    FixedArray<float, 4> mult = {0.f, 0.f, 0.f, 0.f};
-    float detailNMMult = 0.f;
+    float detailUVMultiplier = 10.f;
+    FixedArray<float, 4> mult = {1.f, 1.f, 1.f, 1.f};
+    float detailNMMult = 1.f;
 
     std::string txDiffuse;
     std::string txNormal;

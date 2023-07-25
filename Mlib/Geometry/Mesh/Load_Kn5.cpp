@@ -251,6 +251,7 @@ static void readNodes(
             if (any(material.mult != 0.f)) {
                 matInfo << " mult: " << material.mult;
             }
+            matInfo << " detailUVMultiplier: " << material.detailUVMultiplier;
             if (material.detailNMMult != 0.f) {
                 matInfo << " detailNMMult: " << material.detailNMMult;
             }
@@ -268,6 +269,9 @@ static void readNodes(
             }
             if (!material.txDetailNM.empty()) {
                 matInfo << " detailNM: " << material.txDetailNM;
+            }
+            if (material.useDetail == 1.f) {
+                matInfo << " useDetail";
             }
             matInfo <<
                 " phong: " << material.ksEmissive <<

@@ -13,6 +13,7 @@
 #include <Mlib/Images/Coordinates_Fixed.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -628,7 +629,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
     }
     if (ntextures_color > 1) {
-        sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
+        if (textures[0]->role == BlendMapRole::SUMMAND) {
+            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
+        } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
+            sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ");" << std::endl;
+            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
+            sstr << "    float mask = 1.0;" << std::endl;
+        } else {
+            THROW_OR_ABORT("Unsupported base blend map role");
+        }
         if (has_normalmap) {
             sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
         }
@@ -647,8 +656,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
         {
-            size_t i = 0;
-            for (const BlendMapTexture* t : textures) {
+            for (const auto& [i, t] : enumerate(textures)) {
+                if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
+                    continue;
+                }
                 sstr << "    {" << std::endl;
                 if (t->cosines != default_linear_cosines) {
                     sstr << "        float cosine = dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << "));" << std::endl;
@@ -676,6 +687,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
                 }
                 sstr << "            float weight = " << t->weight << ';' << std::endl;
+                if (t->role == BlendMapRole::DETAIL_COLOR) {
+                    sstr << "            weight *= mask;" << std::endl;
+                }
                 sstr << "            float scale = " << t->scale << ';' << std::endl;
                 if (t->distances(0) != t->distances(1)) {
                     sstr << "            if (dist <= " << t->distances(1) << ") {" << std::endl;
@@ -697,7 +711,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
                     sstr << "            }" << std::endl;
                 }
-                if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
+                if (t->role == BlendMapRole::DETAIL_MASK_R) {
+                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).r;" << std::endl;
+                } else if (t->role == BlendMapRole::DETAIL_MASK_G) {
+                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).g;" << std::endl;
+                } else if (t->role == BlendMapRole::DETAIL_MASK_B) {
+                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).b;" << std::endl;
+                } else if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
                     sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
                     sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
                     // sstr << "            weight *= bcolor.a;" << std::endl;
@@ -709,26 +729,39 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 } else {
                     THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
                 }
-                sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
-                if (has_normalmap) {
-                    if (t->texture_descriptor.normal.empty()) {
-                        sstr << "            tnorm.z += weight;" << std::endl;
-                    } else {
-                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
+                if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                    sstr << "            mask = weight;" << std::endl;
+                } else {
+                    if (t->role == BlendMapRole::DETAIL_COLOR) {
+                        sstr << "            sum_of_details += weight * bcolor.rgb;" << std::endl;
+                    } else if (t->role == BlendMapRole::SUMMAND) {
+                        sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
+                    } else if (!any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                        THROW_OR_ABORT("Unknown blend map role");
                     }
+                    if (has_normalmap) {
+                        if (t->texture_descriptor.normal.empty()) {
+                            sstr << "            tnorm.z += weight;" << std::endl;
+                        } else {
+                            sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
+                        }
+                    }
+                    sstr << "            sum_weights += weight;" << std::endl;
                 }
-                sstr << "            sum_weights += weight;" << std::endl;
                 if (!checks.empty()) {
                     sstr << "        }" << std::endl;
                 }
                 sstr << "    }" << std::endl;
-                ++i;
             }
         }
         sstr << "    if (sum_weights < 1e-3) {" << std::endl;
         sstr << "        texture_color_ambient_diffuse.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
         sstr << "    } else {" << std::endl;
-        sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
+        if (textures[0]->role == BlendMapRole::SUMMAND) {
+            sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
+        } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
+            sstr << "        texture_color_ambient_diffuse.rgb *= sum_of_details / sum_weights;" << std::endl;
+        }
         sstr << "    }" << std::endl;
         // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
     }

@@ -6,7 +6,7 @@
 namespace Mlib {
 
 enum class TextureAlreadyExistsBehavior {
-    IGNORE,
+    WARN,
     RAISE
 };
 
