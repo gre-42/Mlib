@@ -278,7 +278,7 @@ static void readNodes(
                 ' ' << material.ksAmbient <<
                 ' ' << material.ksDiffuse <<
                 ' ' << material.ksSpecular;
-            // matInfo << material.shaderProps;
+            matInfo << '\n' << material.shaderProps;
         }
         linfo() <<
             "Node: " << newNode.name <<
