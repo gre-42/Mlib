@@ -34,7 +34,6 @@ struct kn5Material
     FixedArray<std::string, 4> txDetail;
     std::string txDetailNM;
 
-
     std::string shaderProps = "";
 };
 
