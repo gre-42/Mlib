@@ -38,9 +38,9 @@ struct BlendMapTexture {
     OrderableFixedArray<float, 4> distances{ default_linear_distances };
     OrderableFixedArray<float, 3> normal = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 4> cosines{ default_linear_cosines };
-    float discreteness = 2;
-    float scale = 1;
-    float weight = 1;
+    float discreteness = 2.f;
+    float scale = 1.f;
+    float weight = 1.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
