@@ -20,6 +20,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource_name);
 DECLARE_ARGUMENT(min_vertex_distance);
+DECLARE_ARGUMENT(modulo_uv);
 }
 
 const std::string CleanupMesh::key = "cleanup_mesh";
@@ -30,20 +31,23 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
 
     RenderingContextStack::primary_scene_node_resources().add_modifier(
         args.arguments.at<std::string>(KnownArgs::resource_name),
-        [min_vertex_distance = args.arguments.at<float>(KnownArgs::min_vertex_distance, 0.f)]
+        [min_vertex_distance = args.arguments.at<float>(KnownArgs::min_vertex_distance, 0.f),
+         modulo_uv = args.arguments.at<bool>(KnownArgs::modulo_uv, true)]
         (ISceneNodeResource& resource)
         {
-            auto cleanup = [min_vertex_distance]<class TPos>(
+            auto cleanup = [min_vertex_distance, modulo_uv]<class TPos>(
                 Bvh<TPos, FixedArray<TPos, 3>, 3>& bvh,
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
-                cvas.remove_if([&bvh, min_vertex_distance](auto& cva){
+                cvas.remove_if([&bvh, min_vertex_distance, modulo_uv](auto& cva){
                     if (min_vertex_distance != 0) {
                         merge_neighboring_points<TPos>(*cva, bvh, min_vertex_distance);
                     }
                     remove_degenerate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
-                    modulo_uv(*cva);
+                    if (modulo_uv) {
+                        Mlib::modulo_uv(*cva);
+                    }
                     return cva->triangles.empty();
                 });
             };
