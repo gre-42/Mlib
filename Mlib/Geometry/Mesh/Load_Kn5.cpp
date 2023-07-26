@@ -278,6 +278,7 @@ static void readNodes(
                 ' ' << material.ksAmbient <<
                 ' ' << material.ksDiffuse <<
                 ' ' << material.ksSpecular;
+            // matInfo << material.shaderProps;
         }
         linfo() <<
             "Node: " << newNode.name <<
@@ -351,7 +352,7 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
         {
             std::string propName = ReadStr(*binStream, ReadUInt32(*binStream));
             float propValue = ReadSingle(*binStream);
-            newMaterial.shaderProps += propName + " = " + std::to_string(propValue) + "&cr;&lf;";
+            newMaterial.shaderProps += propName + " = " + std::to_string(propValue) + '\n';
 
             if (propName == "ksEmissive") {
                 newMaterial.ksEmissive = propValue;
@@ -395,7 +396,7 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
             int samplerSlot = ReadInt32(*binStream);
             std::string texName = ReadStr(*binStream, ReadUInt32(*binStream));
 
-            newMaterial.shaderProps += samplerName + " = " + texName + "&cr;&lf;";
+            newMaterial.shaderProps += samplerName + " = " + texName + '\n';
 
             if (samplerName == "txDiffuse") {
                 newMaterial.txDiffuse = texName;

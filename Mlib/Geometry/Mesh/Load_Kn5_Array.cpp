@@ -148,6 +148,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material_.specular_exponent = material.ksSpecularEXP;
                 if (!material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
+                    (material.detailUVMultiplier != 0.f) &&
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
@@ -158,7 +159,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .role = BlendMapRole::DETAIL_BASE}};
                     for (uint32_t i = 0; i < 3; ++i) {
-                        if (material.txDetail(i).empty()) {
+                        if (material.txDetail(i).empty() ||
+                            (material.mult(i) == 0.f) ||
+                            (material.detailUVMultiplier == 0.f))
+                        {
                             continue;
                         }
                         tl.material_.textures.push_back(BlendMapTexture{

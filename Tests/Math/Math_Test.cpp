@@ -7,6 +7,7 @@
 #include <Mlib/Math/Huber_Norm.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Interpolate.hpp>
+#include <Mlib/Math/Least_Common_Multiple.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Math/Non_Zero_Ids.hpp>
 #include <Mlib/Math/Optimize/Cg.hpp>
@@ -440,6 +441,11 @@ void test_eigen_jacobi() {
     assert_allclose(m - reconstruct_svd(evecs.T(), evals, evecs), zeros<double>(ArrayShape{ 4, 4 }));
 }
 
+void test_least_common_multiple() {
+    std::vector<float> data({1.3f, 2.6f, 0.65f});
+    assert_isclose(least_common_multiple(data.begin(), data.end(), 1e-6f, 1000), 2.6f);
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -478,6 +484,7 @@ int main(int argc, const char** argv) {
         test_interp();
         test_projection();
         test_eigen_jacobi();
+        test_least_common_multiple();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return 1;

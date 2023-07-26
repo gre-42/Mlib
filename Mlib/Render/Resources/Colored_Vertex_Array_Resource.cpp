@@ -37,6 +37,8 @@
 
 using namespace Mlib;
 
+static const float REFERENCE_DETAIL_INTENSITY = 0.7f;
+static const float MIN_DETAIL_WEIGHT = 0.01f;
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
     unsigned char indices[ANIMATION_NINTERPOLATED];
@@ -655,104 +657,105 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
             }
         }
-        {
-            for (const auto& [i, t] : enumerate(textures)) {
-                if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
-                    continue;
-                }
-                sstr << "    {" << std::endl;
-                if (t->cosines != default_linear_cosines) {
-                    sstr << "        float cosine = dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << "));" << std::endl;
-                }
-                std::list<std::string> checks;
-                if (t->min_height != -INFINITY) {
-                    checks.push_back("(FragPos.y >= " + std::to_string(t->min_height) + ')');
-                }
-                if (t->max_height != INFINITY) {
-                    checks.push_back("(FragPos.y <= " + std::to_string(t->max_height) + ')');
-                }
-                if (t->distances(0) != 0) {
-                    checks.push_back("(dist >= " + std::to_string(t->distances(0)) + ')');
-                }
-                if (t->distances(3) != INFINITY) {
-                    checks.push_back("(dist <= " + std::to_string(t->distances(3)) + ')');
-                }
-                if (t->cosines(0) != -1) {
-                    checks.push_back("(cosine >= " + std::to_string(t->cosines(0)) + ')');
-                }
-                if (t->cosines(3) != 1) {
-                    checks.push_back("(cosine <= " + std::to_string(t->cosines(3)) + ')');
-                }
-                if (!checks.empty()) {
-                    sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
-                }
-                sstr << "            float weight = " << t->weight << ';' << std::endl;
-                if (t->role == BlendMapRole::DETAIL_COLOR) {
-                    sstr << "            weight *= mask;" << std::endl;
-                }
-                sstr << "            float scale = " << t->scale << ';' << std::endl;
-                if (t->distances(0) != t->distances(1)) {
-                    sstr << "            if (dist <= " << t->distances(1) << ") {" << std::endl;
-                    sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ';' << std::endl;
-                    sstr << "            }" << std::endl;
-                }
-                if (t->distances(3) != t->distances(2)) {
-                    sstr << "            if (dist >= " << t->distances(2) << ") {" << std::endl;
-                    sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ';' << std::endl;
-                    sstr << "            }" << std::endl;
-                }
-                if (t->cosines(0) != t->cosines(1)) {
-                    sstr << "            if (cosine <= " << t->cosines(1) << ") {" << std::endl;
-                    sstr << "                weight *= (cosine - " << t->cosines(0) << ") / " << (t->cosines(1) - t->cosines(0)) << ';' << std::endl;
-                    sstr << "            }" << std::endl;
-                }
-                if (t->cosines(3) != t->cosines(2)) {
-                    sstr << "            if (cosine >= " << t->cosines(2) << ") {" << std::endl;
-                    sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
-                    sstr << "            }" << std::endl;
-                }
-                if (t->role == BlendMapRole::DETAIL_MASK_R) {
-                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).r;" << std::endl;
-                } else if (t->role == BlendMapRole::DETAIL_MASK_G) {
-                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).g;" << std::endl;
-                } else if (t->role == BlendMapRole::DETAIL_MASK_B) {
-                    sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).b;" << std::endl;
-                } else if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
-                    sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
-                    sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
-                    // sstr << "            weight *= bcolor.a;" << std::endl;
-                } else if (
-                    (t->texture_descriptor.color_mode == ColorMode::RGB) ||
-                    ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
-                {
-                    sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
-                } else {
-                    THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
-                }
-                if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
-                    sstr << "            mask = weight;" << std::endl;
-                } else {
-                    if (t->role == BlendMapRole::DETAIL_COLOR) {
-                        sstr << "            sum_of_details += weight * bcolor.rgb;" << std::endl;
-                    } else if (t->role == BlendMapRole::SUMMAND) {
-                        sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
-                    } else if (!any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
-                        THROW_OR_ABORT("Unknown blend map role");
-                    }
-                    if (has_normalmap) {
-                        if (t->texture_descriptor.normal.empty()) {
-                            sstr << "            tnorm.z += weight;" << std::endl;
-                        } else {
-                            sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
-                        }
-                    }
-                    sstr << "            sum_weights += weight;" << std::endl;
-                }
-                if (!checks.empty()) {
-                    sstr << "        }" << std::endl;
-                }
-                sstr << "    }" << std::endl;
+        float detail_intensity_correction = 1.f;
+        for (const auto& [i, t] : enumerate(textures)) {
+            if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
+                continue;
             }
+            sstr << "    {" << std::endl;
+            if (t->cosines != default_linear_cosines) {
+                sstr << "        float cosine = dot(norm, vec3(" << t->normal(0) << ", " << t->normal(1) << ", " << t->normal(2) << "));" << std::endl;
+            }
+            std::list<std::string> checks;
+            if (t->min_height != -INFINITY) {
+                checks.push_back("(FragPos.y >= " + std::to_string(t->min_height) + ')');
+            }
+            if (t->max_height != INFINITY) {
+                checks.push_back("(FragPos.y <= " + std::to_string(t->max_height) + ')');
+            }
+            if (t->distances(0) != 0) {
+                checks.push_back("(dist >= " + std::to_string(t->distances(0)) + ')');
+            }
+            if (t->distances(3) != INFINITY) {
+                checks.push_back("(dist <= " + std::to_string(t->distances(3)) + ')');
+            }
+            if (t->cosines(0) != -1) {
+                checks.push_back("(cosine >= " + std::to_string(t->cosines(0)) + ')');
+            }
+            if (t->cosines(3) != 1) {
+                checks.push_back("(cosine <= " + std::to_string(t->cosines(3)) + ')');
+            }
+            if (!checks.empty()) {
+                sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
+            }
+            sstr << "            float weight = " << t->weight << ';' << std::endl;
+            if (t->role == BlendMapRole::DETAIL_COLOR) {
+                sstr << "            weight *= mask;" << std::endl;
+                sstr << "            weight = max(weight, " << MIN_DETAIL_WEIGHT << ");" << std::endl;
+            }
+            sstr << "            float scale = " << t->scale << ';' << std::endl;
+            if (t->distances(0) != t->distances(1)) {
+                sstr << "            if (dist <= " << t->distances(1) << ") {" << std::endl;
+                sstr << "                weight *= (dist - " << t->distances(0) << ") / " << (t->distances(1) - t->distances(0)) << ';' << std::endl;
+                sstr << "            }" << std::endl;
+            }
+            if (t->distances(3) != t->distances(2)) {
+                sstr << "            if (dist >= " << t->distances(2) << ") {" << std::endl;
+                sstr << "                weight *= (" << t->distances(3) << " - dist) / " << (t->distances(3) - t->distances(2)) << ';' << std::endl;
+                sstr << "            }" << std::endl;
+            }
+            if (t->cosines(0) != t->cosines(1)) {
+                sstr << "            if (cosine <= " << t->cosines(1) << ") {" << std::endl;
+                sstr << "                weight *= (cosine - " << t->cosines(0) << ") / " << (t->cosines(1) - t->cosines(0)) << ';' << std::endl;
+                sstr << "            }" << std::endl;
+            }
+            if (t->cosines(3) != t->cosines(2)) {
+                sstr << "            if (cosine >= " << t->cosines(2) << ") {" << std::endl;
+                sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
+                sstr << "            }" << std::endl;
+            }
+            if (t->role == BlendMapRole::DETAIL_MASK_R) {
+                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).r;" << std::endl;
+            } else if (t->role == BlendMapRole::DETAIL_MASK_G) {
+                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).g;" << std::endl;
+            } else if (t->role == BlendMapRole::DETAIL_MASK_B) {
+                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).b;" << std::endl;
+            } else if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
+                sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
+                sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
+                // sstr << "            weight *= bcolor.a;" << std::endl;
+            } else if (
+                (t->texture_descriptor.color_mode == ColorMode::RGB) ||
+                ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
+            {
+                sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
+            } else {
+                THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
+            }
+            if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                sstr << "            mask = weight;" << std::endl;
+            } else {
+                if (t->role == BlendMapRole::DETAIL_COLOR) {
+                    detail_intensity_correction *= REFERENCE_DETAIL_INTENSITY;
+                    sstr << "            sum_of_details += weight * bcolor.rgb;" << std::endl;
+                } else if (t->role == BlendMapRole::SUMMAND) {
+                    sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
+                } else if (!any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                    THROW_OR_ABORT("Unknown blend map role");
+                }
+                if (has_normalmap) {
+                    if (t->texture_descriptor.normal.empty()) {
+                        sstr << "            tnorm.z += weight;" << std::endl;
+                    } else {
+                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
+                    }
+                }
+                sstr << "            sum_weights += weight;" << std::endl;
+            }
+            if (!checks.empty()) {
+                sstr << "        }" << std::endl;
+            }
+            sstr << "    }" << std::endl;
         }
         sstr << "    if (sum_weights < 1e-3) {" << std::endl;
         sstr << "        texture_color_ambient_diffuse.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
@@ -760,7 +763,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (textures[0]->role == BlendMapRole::SUMMAND) {
             sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "        texture_color_ambient_diffuse.rgb *= sum_of_details / sum_weights;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse.rgb *= " << (1.f / detail_intensity_correction) << " * sum_of_details / sum_weights;" << std::endl;
         }
         sstr << "    }" << std::endl;
         // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
