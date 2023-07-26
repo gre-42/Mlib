@@ -70,6 +70,9 @@ void Mlib::merge_textures(
                     }
                 }
             }
+            if (merged_filenames.empty()) {
+                return;
+            }
             auto keys = [](const auto& container){
                 std::vector<std::string> result;
                 result.reserve(container.size());
