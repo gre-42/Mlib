@@ -37,7 +37,7 @@
 
 using namespace Mlib;
 
-static const float REFERENCE_DETAIL_INTENSITY = 0.7f;
+static const float REFERENCE_DETAIL_INTENSITY = 0.5f;
 static const float MIN_DETAIL_WEIGHT = 0.01f;
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
@@ -657,7 +657,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
             }
         }
-        float detail_intensity_correction = 1.f;
         for (const auto& [i, t] : enumerate(textures)) {
             if ((i == 0) && (t->role == BlendMapRole::DETAIL_BASE)) {
                 continue;
@@ -736,7 +735,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "            mask = weight;" << std::endl;
             } else {
                 if (t->role == BlendMapRole::DETAIL_COLOR) {
-                    detail_intensity_correction *= REFERENCE_DETAIL_INTENSITY;
                     sstr << "            sum_of_details += weight * bcolor.rgb;" << std::endl;
                 } else if (t->role == BlendMapRole::SUMMAND) {
                     sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
@@ -763,7 +761,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (textures[0]->role == BlendMapRole::SUMMAND) {
             sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "        texture_color_ambient_diffuse.rgb *= " << (1.f / detail_intensity_correction) << " * sum_of_details / sum_weights;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse.rgb *= " << (1.f / REFERENCE_DETAIL_INTENSITY) << " * sum_of_details / sum_weights;" << std::endl;
         }
         sstr << "    }" << std::endl;
         // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
