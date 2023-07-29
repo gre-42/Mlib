@@ -2,10 +2,11 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Macro_Executor/Macro_Manifest.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -50,15 +51,16 @@ CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_s
 void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::list<SceneEntry> scene_entries;
-    for (const auto& mm : args.asset_references.get_macro_manifests(args.arguments.at<std::string>(KnownArgs::assets))) {
+    for (const auto& [_, rpe] : args.asset_references.get_replacement_parameters(args.arguments.at<std::string>(KnownArgs::assets))) {
         try {
-            scene_entries.push_back(SceneEntry{
-                .name = mm.manifest.name,
-                .filename = mm.filename,
-                .requires_ = mm.manifest.required});
-            scene_entries.back().globals.merge(mm.manifest.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
+            auto& entry = scene_entries.emplace_back(SceneEntry{
+                .name = rpe.title,
+                .filename = rpe.filename,
+                .requires_ = rpe.required});
+            entry.globals.merge(rpe.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
+            entry.globals.set("LEVEL_ID", rpe.id);
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error processing manifest file \"" + mm.filename + "\": " + e.what());
+            throw std::runtime_error("Error processing manifest file \"" + rpe.filename + "\": " + e.what());
         }
     }
     if (scene_entries.empty()) {

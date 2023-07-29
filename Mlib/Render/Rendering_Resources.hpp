@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
-#include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>

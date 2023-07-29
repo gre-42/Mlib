@@ -1,8 +1,9 @@
 #include "Load_Kn5_Array.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
+#include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/IDds_Resources.hpp>
 #include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -26,6 +27,11 @@ enum class MetaAttributes {
     GRASS = (1 << 2),
     ROAD = (1 << 3)
 };
+
+static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
+{
+    return TransformationMatrix<float, double, 3>{dot2d(tm.R(), tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})), tm.t()};
+}
 
 MetaAttributes operator ~ (MetaAttributes a) {
     return (MetaAttributes)(~int(a));
@@ -53,7 +59,8 @@ template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     const std::string& file_or_directory,
     const LoadMeshConfig<TPos>& cfg,
-    IDdsResources* dds_resources)
+    IDdsResources* dds_resources,
+    IRaceLogic* race_logic)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
 
@@ -83,6 +90,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
             static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
             static const DECLARE_REGEX(road_reg, "^ROAD");
+            static const DECLARE_REGEX(ac_start_reg, "^AC_START_(\\d+)$");
+            static const DECLARE_REGEX(ac_ab_start_l_reg, "^AC_AB_START_L$");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 if (match[1].matched) {
@@ -99,6 +108,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
+                }
+            }
+            if (race_logic != nullptr) {
+                if (Mlib::re::regex_search(node.name, match, ac_start_reg)) {
+                    race_logic->set_start_pose(ac_start_to_car(node.hmatrix.casted<float, double>()), safe_stou(match[1].str()));
+                }
+                if (Mlib::re::regex_search(node.name, ac_ab_start_l_reg)) {
+                    race_logic->set_start_pose(ac_start_to_car(node.hmatrix.casted<float, double>()), 0);
                 }
             }
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
@@ -240,6 +257,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 }
 
 namespace Mlib {
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(const std::string& file_or_directory, const LoadMeshConfig<float>&, IDdsResources*);
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(const std::string& file_or_directory, const LoadMeshConfig<double>&, IDdsResources*);
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(const std::string& file_or_directory, const LoadMeshConfig<float>&, IDdsResources*, IRaceLogic*);
+template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(const std::string& file_or_directory, const LoadMeshConfig<double>&, IDdsResources*, IRaceLogic*);
 }

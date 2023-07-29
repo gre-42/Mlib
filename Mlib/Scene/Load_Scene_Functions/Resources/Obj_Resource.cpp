@@ -1,10 +1,16 @@
 #include "Obj_Resource.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
+#include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
+#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -66,9 +72,37 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
 }
 
+class RaceLogic: public IRaceLogic {
+public:
+    explicit RaceLogic(
+        AssetReferences& asset_references,
+        std::string asset_id)
+    : asset_references_{asset_references},
+      asset_id_{std::move(asset_id)}
+    {}
+    virtual void set_start_pose(
+        const TransformationMatrix<float, double, 3>& pose,
+        unsigned int rank) override
+    {
+        if (rank == 0) {
+            asset_references_.get_replacement_parameters("levels").merge(
+                asset_id_,
+                JsonMacroArguments{{
+                    {"CAR_NODE_POSITION", pose.t()},
+                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R()) / degrees}
+                }});
+        }
+    }
+private:
+    AssetReferences& asset_references_;
+    std::string asset_id_;
+};
+
 template <class TPos>
 void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto name = args.arguments.at<std::string>(KnownArgs::name);
+    RaceLogic race_logic{args.asset_references, name};
     LoadMeshConfig<TPos> load_mesh_config{
         .position = args.arguments.at<FixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
         .rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
@@ -103,7 +137,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto rendering_resources = RenderingContextStack::primary_rendering_resources();
     if (filename.ends_with(".obj")) {
         scene_node_resources.add_resource_loader(
-            args.arguments.at<std::string>(KnownArgs::name),
+            name,
             [filename, load_mesh_config, &scene_node_resources](){
                 return load_renderable_obj(
                     filename,
@@ -112,18 +146,19 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             });
     } else if (filename.ends_with(".kn5") || std::filesystem::is_directory(filename)) {
         scene_node_resources.add_resource_loader(
-            args.arguments.at<std::string>(KnownArgs::name),
-            [filename, load_mesh_config, &scene_node_resources, rendering_resources](){
+            name,
+            [filename, load_mesh_config, &scene_node_resources, rendering_resources, race_logic]() mutable {
                 return load_renderable_kn5(
                     filename,
                     load_mesh_config,
                     scene_node_resources,
-                    rendering_resources.get());
+                    rendering_resources.get(),
+                    &race_logic);
             });
     } else if (filename.ends_with(".mhx2")) {
         if constexpr (std::is_same_v<TPos, float>) {
             scene_node_resources.add_resource_loader(
-                args.arguments.at<std::string>(KnownArgs::name),
+                name,
                 [filename, load_mesh_config](){
                     return std::make_shared<Mhx2FileResource>(
                         filename,

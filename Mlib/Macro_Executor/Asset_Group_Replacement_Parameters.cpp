@@ -1,6 +1,6 @@
 #include "Asset_Group_Replacement_Parameters.hpp"
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
-#include <Mlib/Macro_Executor/Replacement_Parameter_Entry.hpp>
+#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -14,15 +14,24 @@ void AssetGroupReplacementParameters::insert(
     const std::string& filename,
     const MacroLineExecutor& mle)
 {
-    auto rpe = ReplacementParameterEntry::from_json(filename);
+    auto rp = ReplacementParameter::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
-    if (rpe.on_init != nlohmann::detail::value_t::null) {
-        mlecd(JsonView{rpe.on_init}, nullptr, nullptr);
+    if (rp.on_init != nlohmann::detail::value_t::null) {
+        mlecd(JsonView{rp.on_init}, nullptr, nullptr);
     }
     std::unique_lock lock{mutex_};
-    if (!replacement_parameters_.insert({rpe.id, rpe.params}).second) {
-        THROW_OR_ABORT("Asset with id \"" + rpe.id + "\" already exists");
+    if (!replacement_parameters_.insert({rp.id, rp}).second) {
+        THROW_OR_ABORT("Asset with id \"" + rp.id + "\" already exists");
     }
+}
+
+void AssetGroupReplacementParameters::merge(const std::string& id, const JsonMacroArguments& params) {
+    std::unique_lock lock{mutex_};
+    auto it = replacement_parameters_.find(id);
+    if (it == replacement_parameters_.end()) {
+        THROW_OR_ABORT("Asset with id \"" + id + "\" does not exist");
+    }
+    it->second.globals.merge(params);
 }
 
 const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& id) const {

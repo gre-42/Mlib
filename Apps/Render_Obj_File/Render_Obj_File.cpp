@@ -461,13 +461,15 @@ int main(int argc, char** argv) {
                             filename,
                             cfg<float>(args, light_configuration),
                             scene_node_resources,
-                            RenderingContextStack::primary_rendering_resources().get()));
+                            RenderingContextStack::primary_rendering_resources().get(),
+                            nullptr)); // race_logic
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources,
-                            RenderingContextStack::primary_rendering_resources().get()));
+                            RenderingContextStack::primary_rendering_resources().get(),
+                            nullptr)); // race_logic
                     }
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(

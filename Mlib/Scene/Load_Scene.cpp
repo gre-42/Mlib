@@ -6,7 +6,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Macro_Manifests.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
@@ -220,7 +219,6 @@ LoadScene::LoadScene() {
     register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
     register_json_user_function(CreateScene::key, CreateScene::json_user_function);
     register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
-    register_json_user_function(LoadMacroManifests::key, LoadMacroManifests::json_user_function);
     register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
 
     // Instances
