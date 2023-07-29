@@ -20,7 +20,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
     static const DECLARE_REGEX(Ka_reg, "^\\s*Ka +(\\S+) (\\S+) (\\S+)$");
     static const DECLARE_REGEX(Kd_reg, "^\\s*Kd +(\\S+) (\\S+) (\\S+)$");
     static const DECLARE_REGEX(Ks_reg, "^\\s*Ks +(\\S+) (\\S+) (\\S+)$");
-    static const DECLARE_REGEX(Ke_reg, "^\\s*Ke .+$");
+    static const DECLARE_REGEX(Ke_reg, "^\\s*Ke +(\\S+) (\\S+) (\\S+)$");
     static const DECLARE_REGEX(Km_reg, "^\\s*Km .+$");
     static const DECLARE_REGEX(Ni_reg, "^\\s*Ni .+$");
     static const DECLARE_REGEX(Ns_reg, "^\\s*Ns (.+)$");
@@ -58,6 +58,11 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
             }
         } else if (Mlib::re::regex_match(line, match, comment_reg)) {
             // do nothing
+        } else if (Mlib::re::regex_match(line, match, Ke_reg)) {
+            mtllib.at(mtl).emissivity = FixedArray<float, 3>{
+                safe_stof(match[1].str()),
+                safe_stof(match[2].str()),
+                safe_stof(match[3].str())};
         } else if (Mlib::re::regex_match(line, match, Ka_reg)) {
             mtllib.at(mtl).ambience = FixedArray<float, 3>{
                 safe_stof(match[1].str()),
@@ -84,8 +89,6 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, d_reg)) {
             mtllib.at(mtl).alpha = safe_stof(match[1].str());
         } else if (Mlib::re::regex_match(line, match, illum_reg)) {
-            // do nothing
-        } else if (Mlib::re::regex_match(line, match, Ke_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Km_reg)) {
             // do nothing
