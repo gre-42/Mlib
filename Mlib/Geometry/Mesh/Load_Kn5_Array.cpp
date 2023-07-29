@@ -194,14 +194,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     (material.shader == "ksPerPixelAlpha"))
                 {
                     tl.material_.blend_mode = cfg.blend_mode;
-                } else if ((material.shader == "ksPerPixelAT") ||
+                } else if ((material.shader == "ksPerPixel") ||  // required for Akina track
+                           (material.shader == "ksPerPixelAT") ||
                            (material.shader == "ksPerPixelAT") ||
                            (material.shader == "ksPerPixelAT_NM") ||
                            (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                 {
                     tl.material_.blend_mode = BlendMode::BINARY_05;
-                } else if ((material.shader == "ksPerPixel") ||
-                           (material.shader == "ksPerPixelNM") ||
+                } else if ((material.shader == "ksPerPixelNM") ||
                            (material.shader == "ksPerPixelMultiMap") ||
                            (material.shader == "ksPerPixelMultiMap_NMDetail") ||
                            (material.shader == "ksPerPixelReflection") ||
