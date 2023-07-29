@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -30,7 +31,11 @@ enum class MetaAttributes {
 
 static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
 {
-    return TransformationMatrix<float, double, 3>{dot2d(tm.R(), tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})), tm.t()};
+    if (tm.R(1u, 1u) > 0.f) {
+        return tm;
+    } else {
+        return TransformationMatrix<float, double, 3>{dot2d(tm.R(), tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})), tm.t()};
+    }
 }
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -57,7 +62,7 @@ bool any(MetaAttributes attr) {
 
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
-    const std::string& file_or_directory,
+    const std::string& filename,
     const LoadMeshConfig<TPos>& cfg,
     IDdsResources* dds_resources,
     IRaceLogic* race_logic)
@@ -229,15 +234,18 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             result.push_back(tl.triangle_array());
         }
     };
-    if (std::filesystem::is_directory(file_or_directory)) {
-        for (const auto& f : list_dir(file_or_directory)) {
-            if (!f.path().string().ends_with(".kn5")) {
-                continue;
+    if (filename.ends_with(".ini")) {
+        for (const auto& [name, section] : IniParser{filename}) {
+            if (name.starts_with("MODEL_")) {
+                auto it = section.find("FILE");
+                if (it == section.end()) {
+                    THROW_OR_ABORT("Could not find FILE variable in section of ini file: \"" + filename + '"');
+                }
+                append_kn5((std::filesystem::path{filename}.parent_path() / it->second).string());
             }
-            append_kn5(f.path().string());
         }
     } else {
-        append_kn5(file_or_directory);
+        append_kn5(filename);
     }
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();

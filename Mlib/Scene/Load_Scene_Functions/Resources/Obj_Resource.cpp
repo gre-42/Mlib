@@ -144,7 +144,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     load_mesh_config,
                     scene_node_resources);
             });
-    } else if (filename.ends_with(".kn5") || std::filesystem::is_directory(filename)) {
+    } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
         scene_node_resources.add_resource_loader(
             name,
             [filename, load_mesh_config, &scene_node_resources, rendering_resources, race_logic]() mutable {

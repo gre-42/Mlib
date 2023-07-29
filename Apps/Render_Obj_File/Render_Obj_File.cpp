@@ -455,7 +455,7 @@ int main(int argc, char** argv) {
                             cfg<double>(args, light_configuration),
                             scene_node_resources));
                     }
-                } else if (filename.ends_with(".kn5") || std::filesystem::is_directory(filename)) {
+                } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
                     if (!args.has_named("--large_object_mode")) {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
