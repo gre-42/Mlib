@@ -32,6 +32,9 @@ IniParser::IniParser(const std::string& filename) {
             THROW_OR_ABORT("Found duplicate key in ini file: \"" + line + '"');
         }
     }
+    if (!f->eof()) {
+        THROW_OR_ABORT("Could not read from file \"" + filename + '"');
+    }
 }
 
 std::map<std::string, std::map<std::string, std::string>>::iterator IniParser::begin() {
