@@ -11,6 +11,7 @@
 #include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -29,13 +30,38 @@ enum class MetaAttributes {
     ROAD = (1 << 3)
 };
 
+static const FixedArray<float, 3, 3> M = {
+    -1.f, 0.f, 0.f,
+    0.f, 1.f, 0.f,
+    0.f, 0.f, -1.f};
+
+FixedArray<float, 3, 3> trafo(const FixedArray<float, 3, 3>& R) {
+    return dot2d(dot2d(M.T(), R), M);
+}
+
+static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
+{
+    if (R(1u, 1u) > 0.f) {
+        // Akagi
+        return dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, float(M_PI), 0.f}));
+    } else {
+        // Hondarribia, Irohazaka
+        return trafo(dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})));
+    }
+}
+
 static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
 {
-    if (tm.R(1u, 1u) > 0.f) {
-        return tm;
-    } else {
-        return TransformationMatrix<float, double, 3>{dot2d(tm.R(), tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})), tm.t()};
-    }
+    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t()};
+}
+
+static TransformationMatrix<float, double, 3> ac_center(
+    const TransformationMatrix<float, double, 3>& left,
+    const TransformationMatrix<float, double, 3>& right)
+{
+    return TransformationMatrix<float, double, 3>{
+        left.R(),
+        (left.t() + right.t()) / 2.};
 }
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -76,6 +102,31 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 dds_resources->insert_texture(name, std::move(content), TextureAlreadyExistsBehavior::WARN);
             }
         }
+        if (race_logic != nullptr) {
+            std::map<std::string, const kn5Node*> nodes;
+            for (const auto& [_, node] : kn5.nodes) {
+                nodes[node.name] = &node;
+            }
+            {
+                auto it_l = nodes.find("AC_AB_START_L");
+                auto it_r = nodes.find("AC_AB_START_R");
+                if ((it_l != nodes.end()) && (it_r != nodes.end())) {
+                    race_logic->set_start_pose(
+                        ac_center(
+                            it_l->second->hmatrix.casted<float, double>(),
+                            it_r->second->hmatrix.casted<float, double>()),
+                        0);
+                }
+            }
+            {
+                auto it = nodes.find("AC_START_0");
+                if (it != nodes.end()) {
+                    race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
+                }
+            }
+            // AC_AB_START_L/R
+            // AC_PIT_(\\d+)
+        }
         for (const auto& [_, node] : kn5.nodes) {
             TriangleList<TPos> tl{
                 node.name,
@@ -95,8 +146,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
             static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
             static const DECLARE_REGEX(road_reg, "^ROAD");
-            static const DECLARE_REGEX(ac_start_reg, "^AC_START_(\\d+)$");
-            static const DECLARE_REGEX(ac_ab_start_l_reg, "^AC_AB_START_L$");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 if (match[1].matched) {
@@ -113,14 +162,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
-                }
-            }
-            if (race_logic != nullptr) {
-                if (Mlib::re::regex_search(node.name, match, ac_start_reg)) {
-                    race_logic->set_start_pose(ac_start_to_car(node.hmatrix.casted<float, double>()), safe_stou(match[1].str()));
-                }
-                if (Mlib::re::regex_search(node.name, ac_ab_start_l_reg)) {
-                    race_logic->set_start_pose(ac_start_to_car(node.hmatrix.casted<float, double>()), 0);
                 }
             }
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
