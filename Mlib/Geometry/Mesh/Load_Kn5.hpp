@@ -10,12 +10,29 @@
 
 namespace Mlib {
 
+// From: https://github.com/gro-ove/actools/tree/master
+
+enum class kn5BlendMode: uint8_t {
+    OPAQUE = 0,
+    ALPHA_BLEND = 1,
+    ALPHA_TO_COVERAGE = 2
+};
+
+enum class kn5MaterialDepthMode: uint8_t {
+    DEPTH_NORMAL = 0,
+    DEPTH_NO_WRITE = 1,
+    DEPTH_OFF = 2
+};
+
 // From: https://github.com/RaduMC/kn5-converter/blob/master/kn5%20converter/Program.cs
 
 struct kn5Material
 {
     std::string name = "Default";
     std::string shader = "";
+    kn5BlendMode blendMode;
+    bool alphaTested;
+    kn5MaterialDepthMode depthMode;
     float ksEmissive = 0.f;
     float ksAmbient = 0.6f;
     float ksDiffuse = 0.6f;

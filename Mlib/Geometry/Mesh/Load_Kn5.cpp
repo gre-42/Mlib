@@ -36,14 +36,6 @@ static int32_t ReadInt32(std::istream& str) {
     return result;
 }
 
-static int16_t ReadInt16(std::istream& str) {
-    auto result = ReadBinary<int16_t>(str);;
-    if (str.fail()) {
-        THROW_OR_ABORT("Could not read int16 from stream");
-    }
-    return result;
-}
-
 static float ReadSingle(std::istream& str) {
     auto result = ReadBinary<float>(str);;
     if (str.fail()) {
@@ -341,11 +333,22 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
 
         newMaterial.name = ReadStr(*binStream, ReadUInt32(*binStream));
         newMaterial.shader = ReadStr(*binStream, ReadUInt32(*binStream));
-        if (verbose) {
-            linfo() << "Material " << newMaterial.name << ", shader " << newMaterial.shader;
+        newMaterial.blendMode = (kn5BlendMode)ReadByte(*binStream);
+        newMaterial.alphaTested = (bool)ReadByte(*binStream);
+        if (newModel.version > 4) {
+            newMaterial.depthMode = (kn5MaterialDepthMode)ReadByte(*binStream);
+            binStream->seekg(3, std::ios::cur);
+        } else {
+            newMaterial.depthMode = kn5MaterialDepthMode::DEPTH_NORMAL;
         }
-        ReadInt16(*binStream); // ashort
-        if (newModel.version > 4) { ReadInt32(*binStream); /* azero */ }
+        if (verbose) {
+            linfo() <<
+                "Material " << newMaterial.name <<
+                ", shader " << newMaterial.shader <<
+                ", blend-mode " << (uint32_t)newMaterial.blendMode <<
+                ", alpha-tested " << (uint32_t)newMaterial.alphaTested <<
+                ", depth-mode " << (uint32_t)newMaterial.depthMode;
+        }
 
         size_t propCount = ReadUInt32(*binStream);
         for (size_t p = 0; p < propCount; p++)

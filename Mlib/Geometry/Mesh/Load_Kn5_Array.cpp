@@ -108,6 +108,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 nodes[node.name] = &node;
             }
             {
+                auto it = nodes.find("AC_PIT_0");
+                if (it != nodes.end()) {
+                    race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
+                }
+            }
+            {
                 auto it_l = nodes.find("AC_AB_START_L");
                 auto it_r = nodes.find("AC_AB_START_R");
                 if ((it_l != nodes.end()) && (it_r != nodes.end())) {
@@ -197,6 +203,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 } else if ((material.shader == "ksPerPixel") ||
                            (material.shader == "ksPerPixelNM") ||
                            (material.shader == "ksPerPixelMultiMap") ||
+                           (material.shader == "ksPerPixelMultiMap_NMDetail") ||
+                           (material.shader == "ksPerPixelReflection") ||
                            (material.shader == "ksMultilayer") ||
                            (material.shader == "ksMultilayer_fresnel_nm"))
                 {
