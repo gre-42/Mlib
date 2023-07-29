@@ -6,6 +6,7 @@ namespace Mlib {
 struct ReplacementParameter {
     std::string title;
     JsonMacroArguments globals;
+    JsonMacroArguments database;
     std::vector<std::string> required;
     std::string id;
     nlohmann::json on_init;

@@ -17,6 +17,7 @@ DECLARE_ARGUMENT(on_init);
 DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(title);
 DECLARE_ARGUMENT(globals);
+DECLARE_ARGUMENT(database);
 DECLARE_ARGUMENT(required);
 }
 
@@ -45,6 +46,9 @@ void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
     j.at(KnownArgs::title).get_to(rp.title);
     if (j.contains(KnownArgs::globals)) {
         rp.globals.merge(JsonMacroArguments{j.at(KnownArgs::globals)});
+    }
+    if (j.contains(KnownArgs::database)) {
+        rp.database.merge(JsonMacroArguments{j.at(KnownArgs::database)});
     }
     if (j.contains(KnownArgs::required)) {
         j.at(KnownArgs::required).get_to(rp.required);

@@ -85,7 +85,7 @@ public:
         unsigned int rank) override
     {
         if (rank == 0) {
-            asset_references_.get_replacement_parameters("levels").merge(
+            asset_references_.get_replacement_parameters("levels").merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{
                     {"CAR_NODE_POSITION", pose.t()},

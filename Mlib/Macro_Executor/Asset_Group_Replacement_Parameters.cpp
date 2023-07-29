@@ -25,13 +25,13 @@ void AssetGroupReplacementParameters::insert(
     }
 }
 
-void AssetGroupReplacementParameters::merge(const std::string& id, const JsonMacroArguments& params) {
+void AssetGroupReplacementParameters::merge_into_database(const std::string& id, const JsonMacroArguments& params) {
     std::unique_lock lock{mutex_};
     auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {
         THROW_OR_ABORT("Asset with id \"" + id + "\" does not exist");
     }
-    it->second.rp.globals.merge(params);
+    it->second.rp.database.merge(params);
 }
 
 const ReplacementParameterAndFilename& AssetGroupReplacementParameters::at(const std::string& id) const {

@@ -42,7 +42,7 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
         .get_replacement_parameters("vehicles")
         .at(asset_id)
         .rp;
-    auto prefixes = vars.globals.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     std::list<std::unique_ptr<SceneVehicle>> vehicles;
     for (const auto& prefix : prefixes) {

@@ -42,10 +42,10 @@ void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args
         .get_replacement_parameters("vehicles")
         .at(trailer_asset_id)
         .rp;
-    if (auto pos = vars.globals.at("TRAILER_HITCH_POSITION_FEMALE"); pos.type() != nlohmann::detail::value_t::null) {
+    if (auto pos = vars.database.at("TRAILER_HITCH_POSITION_FEMALE"); pos.type() != nlohmann::detail::value_t::null) {
         rb->trailer_hitches_.set_position_female(pos.get<FixedArray<float, 3>>());
     }
-    if (auto pos = vars.globals.at("TRAILER_HITCH_POSITION_MALE"); pos.type() != nlohmann::detail::value_t::null) {
+    if (auto pos = vars.database.at("TRAILER_HITCH_POSITION_MALE"); pos.type() != nlohmann::detail::value_t::null) {
         rb->trailer_hitches_.set_position_male(pos.get<FixedArray<float, 3>>());
     }
 }

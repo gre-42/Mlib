@@ -61,6 +61,6 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         front_tire_ids,
         front_tire_ids.empty()
             ? NAN
-            : vars.globals.at<float>("MAX_TIRE_ANGLE") * degrees,
+            : vars.database.at<float>("MAX_TIRE_ANGLE") * degrees,
         physics_engine);
 }

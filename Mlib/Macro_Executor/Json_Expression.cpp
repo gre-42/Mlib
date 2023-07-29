@@ -65,7 +65,24 @@ static nlohmann::json eval_recursion(
     if (expression.empty()) {
         return "";
     }
-    auto subst_ = [&globals, locals](const std::string& s) {
+    std::function<std::string(const std::string&)> subst;
+    auto subst_ = [&globals, &locals, &asset_references, &subst](const std::string& s) {
+        if (s.empty()) {
+            THROW_OR_ABORT("Received empty substitution variable");
+        }
+        if (s[0] == '$') {
+            static const DECLARE_REGEX(query_re, "^.([^/]+)/([^/]+)/(\\w+)$");
+            Mlib::re::smatch match;
+            if (!Mlib::re::regex_match(s, match, query_re)) {
+                THROW_OR_ABORT("Could not parse asset path: \"" + s + '"');
+            }
+            return asset_references
+                .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
+                .at(subst(match[DbQueryGroups::asset_id].str()))
+                .rp
+                .database
+                .at<std::string>(match[DbQueryGroups::value].str());
+        }
         auto v = at(s, globals.json(), locals.json());
         if (v.type() != nlohmann::detail::value_t::string) {
             std::stringstream sstr;
@@ -74,7 +91,7 @@ static nlohmann::json eval_recursion(
         }
         return v.get<std::string>();
     };
-    auto subst = [&subst_](const std::string& s){return Mlib::substitute_dollar(s, subst_);};
+    subst = [&subst_](const std::string& s){return Mlib::substitute_dollar(s, subst_);};
     if (recursion == 0) {
         if (std::isalpha(expression[0]) ||
             (expression[0] == '.')  ||
@@ -163,7 +180,7 @@ static nlohmann::json eval_recursion(
         }
         nlohmann::json var;
         if ((expression.length() > 1) && (expression[1] == '%')) {
-            static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/([^/]+)$");
+            static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)/(\\w+)$");
             Mlib::re::smatch match;
             if (!Mlib::re::regex_match(expression, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + expression + '"');
@@ -172,7 +189,7 @@ static nlohmann::json eval_recursion(
                 .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
-                .globals
+                .database
                 .at(match[DbQueryGroups::value].str());
         } else {
             var = at(expression.substr(1), globals.json(), locals.json());

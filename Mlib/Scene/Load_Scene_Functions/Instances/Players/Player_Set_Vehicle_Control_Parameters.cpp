@@ -53,7 +53,7 @@ void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionA
     player.vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
         args.arguments.at<float>(KnownArgs::surface_power_backward) * W);
-    auto max_tire_angle = vars.globals.at("MAX_TIRE_ANGLE");
+    auto max_tire_angle = vars.database.at("MAX_TIRE_ANGLE");
     if (max_tire_angle.type() != nlohmann::detail::value_t::null) {
         player.car_movement.set_max_tire_angle(
             max_tire_angle.get<float>() * degrees);

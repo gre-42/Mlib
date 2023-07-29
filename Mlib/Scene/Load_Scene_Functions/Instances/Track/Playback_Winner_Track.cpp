@@ -53,7 +53,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         .get_replacement_parameters("vehicles")
         .at(asset_id)
         .rp;
-    auto node_prefixes = vars.globals.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto node_prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
     auto playback = std::make_shared<RigidBodyPlayback>(
         wt.value().m_filename,
         physics_engine.advance_times_,
