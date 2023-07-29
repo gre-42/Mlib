@@ -57,8 +57,9 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
                 .name = rpe.title,
                 .filename = rpe.filename,
                 .requires_ = rpe.required});
-            entry.globals.merge(rpe.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
-            entry.globals.set("LEVEL_ID", rpe.id);
+            auto prefix = args.arguments.at<std::string>(KnownArgs::asset_prefix, "");
+            entry.globals.merge(rpe.globals, prefix);
+            entry.globals.set(prefix + "LEVEL_ID", rpe.id);
         } catch (const std::runtime_error& e) {
             throw std::runtime_error("Error processing manifest file \"" + rpe.filename + "\": " + e.what());
         }
