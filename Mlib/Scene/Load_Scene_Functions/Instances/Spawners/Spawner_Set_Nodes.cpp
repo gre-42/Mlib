@@ -40,7 +40,8 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& vars = args
         .asset_references
         .get_replacement_parameters("vehicles")
-        .at(asset_id);
+        .at(asset_id)
+        .rp;
     auto prefixes = vars.globals.at<std::vector<std::string>>("NODE_PREFIXES");
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     std::list<std::unique_ptr<SceneVehicle>> vehicles;

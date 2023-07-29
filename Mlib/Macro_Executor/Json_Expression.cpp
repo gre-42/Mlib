@@ -171,6 +171,7 @@ static nlohmann::json eval_recursion(
             var = asset_references
                 .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
                 .at(subst(match[DbQueryGroups::asset_id].str()))
+                .rp
                 .globals
                 .at(match[DbQueryGroups::value].str());
         } else {

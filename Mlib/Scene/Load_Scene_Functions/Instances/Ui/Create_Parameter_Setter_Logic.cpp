@@ -61,9 +61,9 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         auto& assets = args.asset_references.get_replacement_parameters(args.arguments.at<std::string>(KnownArgs::assets));
         for (const auto& [_, a] : assets) {
             auto& rp = rps.emplace_back(ReplacementParameter{
-                .title = a.title,
-                .required = a.required});
-            rp.globals.merge(a.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
+                .title = a.rp.title,
+                .required = a.rp.required});
+            rp.globals.merge(a.rp.globals, args.arguments.at<std::string>(KnownArgs::asset_prefix, ""));
         }
     }
     args.ui_focus.insert_submenu(

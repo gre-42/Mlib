@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(globals);
 DECLARE_ARGUMENT(required);
 }
 
-ReplacementParameter ReplacementParameter::from_json(const std::string& filename) {
+ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const std::string& filename) {
     try {
         nlohmann::json j;
         auto ifs_p = create_ifstream(filename);
@@ -32,9 +32,9 @@ ReplacementParameter ReplacementParameter::from_json(const std::string& filename
         if (!ifs.eof() && ifs.fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
         }
-        auto result = j.get<ReplacementParameter>();
-        result.filename = filename;
-        return result;
+        return ReplacementParameterAndFilename{
+            .rp = j.get<ReplacementParameter>(),
+            .filename = filename};
     } catch (const nlohmann::json::exception& e) {
         throw std::runtime_error("Error loading file \"" + filename + "\": " + e.what());
     }
@@ -42,18 +42,18 @@ ReplacementParameter ReplacementParameter::from_json(const std::string& filename
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
     validate(j, KnownArgs::options);
-    j.at(KnownArgs::id).get_to(rp.id);
-    if (j.contains(KnownArgs::on_init)) {
-        j.at(KnownArgs::on_init).get_to(rp.on_init);
-    }
-    if (j.contains(KnownArgs::on_execute)) {
-        j.at(KnownArgs::on_execute).get_to(rp.on_execute);
-    }
     j.at(KnownArgs::title).get_to(rp.title);
     if (j.contains(KnownArgs::globals)) {
         rp.globals.merge(JsonMacroArguments{j.at(KnownArgs::globals)});
     }
     if (j.contains(KnownArgs::required)) {
         j.at(KnownArgs::required).get_to(rp.required);
+    }
+    j.at(KnownArgs::id).get_to(rp.id);
+    if (j.contains(KnownArgs::on_init)) {
+        j.at(KnownArgs::on_init).get_to(rp.on_init);
+    }
+    if (j.contains(KnownArgs::on_execute)) {
+        j.at(KnownArgs::on_execute).get_to(rp.on_execute);
     }
 }

@@ -47,7 +47,8 @@ void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionA
     const auto& vars = args
         .asset_references
         .get_replacement_parameters("vehicles")
-        .at(asset_id);
+        .at(asset_id)
+        .rp;
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     player.vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,

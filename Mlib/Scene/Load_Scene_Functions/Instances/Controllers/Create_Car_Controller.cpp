@@ -51,7 +51,8 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& vars = args
         .asset_references
         .get_replacement_parameters("vehicles")
-        .at(asset_id);
+        .at(asset_id)
+        .rp;
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
     rb->vehicle_controller_ = std::make_unique<CarController>(
         *rb,

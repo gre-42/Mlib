@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-struct ReplacementParameter;
+struct ReplacementParameterAndFilename;
 class MacroLineExecutor;
 class JsonMacroArguments;
 
@@ -15,11 +15,11 @@ public:
     ~AssetGroupReplacementParameters();
     void insert(const std::string& filename, const MacroLineExecutor& mle);
     void merge(const std::string& id, const JsonMacroArguments& params);
-    const ReplacementParameter& at(const std::string& id) const;
-    std::map<std::string, ReplacementParameter>::iterator begin();
-    std::map<std::string, ReplacementParameter>::iterator end();
+    const ReplacementParameterAndFilename& at(const std::string& id) const;
+    std::map<std::string, ReplacementParameterAndFilename>::iterator begin();
+    std::map<std::string, ReplacementParameterAndFilename>::iterator end();
 private:
-    std::map<std::string, ReplacementParameter> replacement_parameters_;
+    std::map<std::string, ReplacementParameterAndFilename> replacement_parameters_;
     mutable std::shared_mutex mutex_;
 };
 

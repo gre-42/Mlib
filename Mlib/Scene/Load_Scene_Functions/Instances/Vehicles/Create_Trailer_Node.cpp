@@ -42,7 +42,8 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& vars = args
         .asset_references
         .get_replacement_parameters("vehicles")
-        .at(trailer_asset_id);
+        .at(trailer_asset_id)
+        .rp;
     auto node = std::make_unique<SceneNode>();
     auto pose0 = TransformationMatrix<float, double, 3>(
         fixed_identity_array<float, 3>(),

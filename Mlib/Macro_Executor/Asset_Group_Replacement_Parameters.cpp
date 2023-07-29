@@ -14,14 +14,14 @@ void AssetGroupReplacementParameters::insert(
     const std::string& filename,
     const MacroLineExecutor& mle)
 {
-    auto rp = ReplacementParameter::from_json(filename);
+    auto rp = ReplacementParameterAndFilename::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
-    if (rp.on_init != nlohmann::detail::value_t::null) {
-        mlecd(JsonView{rp.on_init}, nullptr, nullptr);
+    if (rp.rp.on_init != nlohmann::detail::value_t::null) {
+        mlecd(JsonView{rp.rp.on_init}, nullptr, nullptr);
     }
     std::unique_lock lock{mutex_};
-    if (!replacement_parameters_.insert({rp.id, rp}).second) {
-        THROW_OR_ABORT("Asset with id \"" + rp.id + "\" already exists");
+    if (!replacement_parameters_.insert({rp.rp.id, rp}).second) {
+        THROW_OR_ABORT("Asset with id \"" + rp.rp.id + "\" already exists");
     }
 }
 
@@ -31,10 +31,10 @@ void AssetGroupReplacementParameters::merge(const std::string& id, const JsonMac
     if (it == replacement_parameters_.end()) {
         THROW_OR_ABORT("Asset with id \"" + id + "\" does not exist");
     }
-    it->second.globals.merge(params);
+    it->second.rp.globals.merge(params);
 }
 
-const ReplacementParameter& AssetGroupReplacementParameters::at(const std::string& id) const {
+const ReplacementParameterAndFilename& AssetGroupReplacementParameters::at(const std::string& id) const {
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(id);
     if (it == replacement_parameters_.end()) {
@@ -43,10 +43,10 @@ const ReplacementParameter& AssetGroupReplacementParameters::at(const std::strin
     return it->second;
 }
 
-std::map<std::string, ReplacementParameter>::iterator AssetGroupReplacementParameters::begin() {
+std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupReplacementParameters::begin() {
     return replacement_parameters_.begin();
 }
 
-std::map<std::string, ReplacementParameter>::iterator AssetGroupReplacementParameters::end() {
+std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupReplacementParameters::end() {
     return replacement_parameters_.end();
 }

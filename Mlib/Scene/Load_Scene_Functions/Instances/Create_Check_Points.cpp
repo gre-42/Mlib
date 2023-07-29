@@ -78,7 +78,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     const auto& vars = args
         .asset_references
         .get_replacement_parameters("vehicles")
-        .at(moving_asset_id);
+        .at(moving_asset_id)
+        .rp;
     auto prefixes = vars.globals.at<std::vector<std::string>>("NODE_PREFIXES");
     auto suffix = args.arguments.at<std::string>(KnownArgs::moving_suffix);
 
