@@ -446,6 +446,7 @@ void RenderableColoredVertexArray::render_cva(
                 ? BlendMode::CONTINUOUS
                 : cva->material.blend_mode,
             .alpha_distances = alpha_distances,
+            .detail_multiplier = cva->material.detail_multiplier,
             .ntextures_color = tic.ntextures_color,
             .ntextures_normal = tic.ntextures_normal,
             .lightmap_indices_color = lightmap_indices_color,

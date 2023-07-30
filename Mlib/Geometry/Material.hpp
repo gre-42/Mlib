@@ -53,6 +53,7 @@ struct Material {
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
     bool merge_textures = false;
+    float detail_multiplier = 2.f;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
@@ -100,6 +101,7 @@ struct Material {
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
         archive(merge_textures);
+        archive(detail_multiplier);
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);

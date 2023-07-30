@@ -230,6 +230,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                 tl.material.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                 tl.material.specular_exponent = material.ksSpecularEXP;
+                tl.material.detail_multiplier = material.magicMult;
                 if (!material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
                     (material.detailUVMultiplier != 0.f) &&

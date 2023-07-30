@@ -37,7 +37,6 @@
 
 using namespace Mlib;
 
-static const float REFERENCE_DETAIL_INTENSITY = 0.5f;
 static const float MIN_DETAIL_WEIGHT = 0.01f;
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
@@ -337,6 +336,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float alpha,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
+    float detail_multiplier,
     ExternalRenderPassType render_pass,
     bool reorient_normals,
     bool reorient_uv0,
@@ -761,7 +761,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (textures[0]->role == BlendMapRole::SUMMAND) {
             sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "        texture_color_ambient_diffuse.rgb *= " << (1.f / REFERENCE_DETAIL_INTENSITY) << " * sum_of_details / sum_weights;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse.rgb *= " << detail_multiplier << " * sum_of_details / sum_weights;" << std::endl;
         }
         sstr << "    }" << std::endl;
         // sstr << "    texture_color_ambient_diffuse.rgb /= max(1e-6, sum_weights);" << std::endl;
@@ -1311,6 +1311,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                         ? 0.8f
                         : NAN,
         id.alpha_distances,
+        id.detail_multiplier,
         id.render_pass,
         id.reorient_normals,
         id.reorient_uv0,

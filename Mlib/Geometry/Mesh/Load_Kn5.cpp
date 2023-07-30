@@ -387,6 +387,8 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 newMaterial.mult(3) = propValue;
             } else if (propName == "detailNMMult") {
                 newMaterial.detailNMMult = propValue;
+            } else if (propName == "magicMult") {
+                newMaterial.magicMult = propValue;
             } else {
                 lwarn() << "Unknown material property: " << propName << " = " << propValue;
             }
