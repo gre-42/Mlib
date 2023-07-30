@@ -367,6 +367,8 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 newMaterial.ksSpecular = propValue;
             } else if (propName == "ksSpecularEXP") {
                 newMaterial.ksSpecularEXP = propValue;
+            } else if (propName == "ksAlphaRef") {
+                newMaterial.ksAlphaRef = propValue;
             } else if (propName == "diffuseMult") {
                 newMaterial.diffuseMult = propValue;
             } else if (propName == "normalMult") {

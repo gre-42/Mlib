@@ -192,6 +192,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 } else {
                     tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                 }
+                if (material.ksAlphaRef != 0.f) {
+                    tl.material.occluded_pass = ExternalRenderPassType::NONE;
+                    tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+                }
                 if ((material.shader == "ksGrass") ||
                     (material.shader == "ksTree") ||
                     (material.shader == "ksPerPixelAlpha"))

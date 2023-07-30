@@ -38,6 +38,7 @@ struct kn5Material
     float ksDiffuse = 0.6f;
     float ksSpecular = 0.9f;
     float ksSpecularEXP = 1.0f;
+    float ksAlphaRef = 0.f;
     float diffuseMult = 1.0f;
     float normalMult = 1.0f;
     float useDetail = 0.0f;

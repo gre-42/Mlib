@@ -29,14 +29,16 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
     } else {
         auto& old_ridge = const_cast<CollisionRidgeSphere&>(previous_ridge->collision_ridge_sphere);
         if (!std::isnan(old_ridge.min_cos)) {
-            EdgeException<double> exc{
-                ridge.collision_ridge_sphere.edge(0),
-                ridge.collision_ridge_sphere.edge(1),
-                "Detected duplicate triangles touching the same ridge"};
-            if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
-                lwarn() << exc.str("Could not calculate ridge", nullptr);
-            } else {
-                THROW_OR_ABORT2(exc);
+            if (error_behavior != CollisionRidgeErrorBehavior::IGNORE) {
+                EdgeException<double> exc{
+                    ridge.collision_ridge_sphere.edge(0),
+                    ridge.collision_ridge_sphere.edge(1),
+                    "Detected duplicate triangles touching the same ridge"};
+                if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
+                    lwarn() << exc.str("Could not calculate ridge", nullptr);
+                } else {
+                    THROW_OR_ABORT2(exc);
+                }
             }
             return;
         }
@@ -47,14 +49,16 @@ void CollisionRidgesBase<TOrderableRidgeSphere>::insert(
         auto average_normal = (ridge_normal + old_ridge.normal);
         auto len2 = sum(squared(average_normal));
         if (len2 < 1e-7) {
-            EdgeException<double> exc{
-                ridge.collision_ridge_sphere.edge(0),
-                ridge.collision_ridge_sphere.edge(1),
-                "Detected parallel triangles with opposing faces"};
-            if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
-                lwarn() << exc.str("Could not calculate ridge", nullptr);
-            } else {
-                THROW_OR_ABORT2(exc);
+            if (error_behavior != CollisionRidgeErrorBehavior::IGNORE) {
+                EdgeException<double> exc{
+                    ridge.collision_ridge_sphere.edge(0),
+                    ridge.collision_ridge_sphere.edge(1),
+                    "Detected parallel triangles with opposing faces"};
+                if (error_behavior == CollisionRidgeErrorBehavior::WARN) {
+                    lwarn() << exc.str("Could not calculate ridge", nullptr);
+                } else {
+                    THROW_OR_ABORT2(exc);
+                }
             }
             return;
         }
