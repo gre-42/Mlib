@@ -32,8 +32,6 @@ protected:
         PhysicsMaterial physics_material,
         RigidBodyVehicle& rb,
         CollisionRidgeErrorBehavior error_behavior);
-private:
-    Ridges ridges_;
 };
 
 }

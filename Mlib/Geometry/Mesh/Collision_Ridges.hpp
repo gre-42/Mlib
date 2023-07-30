@@ -25,8 +25,6 @@ protected:
         double max_min_cos_ridge,
         PhysicsMaterial physics_material,
         CollisionRidgeErrorBehavior error_behavior);
-private:
-    Ridges ridges_;
 };
 
 }
