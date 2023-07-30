@@ -60,8 +60,8 @@
 
 using namespace Mlib;
 
-void test_physics_engine() {
-    std::atomic_size_t num_renderings = SIZE_MAX;
+void test_physics_engine(unsigned int seed) {
+    std::atomic_size_t num_renderings = getenv_default_size_t("NUM_RENDERINGS", SIZE_MAX);
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
     bool is_interactive = getenv_default_bool("PHYSICS_INTERACTIVE", false);
@@ -116,7 +116,8 @@ void test_physics_engine() {
             scene,
             pe,
             selected_cameras,
-            physics_cfg);
+            physics_cfg,
+            seed);
     } else if (scene_name == "rod") {
         create_scene_rod(
             scene_node_resources,
@@ -244,7 +245,12 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     try {
-        test_physics_engine();
+        unsigned int seed_min = getenv_default_uint("SEED_MIN", 0);
+        unsigned int seed_count = getenv_default_uint("SEED_COUNT", 1);
+        for (unsigned int seed = seed_min; seed < seed_min + seed_count; ++seed) {
+            linfo() << "seed: " << seed;
+            test_physics_engine(seed);
+        }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;
         return 1;

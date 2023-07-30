@@ -13,6 +13,7 @@ void create_scene_flat(
     Scene& scene,
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras,
-    const PhysicsEngineConfig& physics_cfg);
+    const PhysicsEngineConfig& physics_cfg,
+    unsigned int seed);
 
 }

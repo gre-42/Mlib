@@ -25,6 +25,7 @@
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -33,8 +34,11 @@ void Mlib::create_scene_flat(
     Scene& scene,
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras,
-    const PhysicsEngineConfig& physics_cfg)
+    const PhysicsEngineConfig& physics_cfg,
+    unsigned int seed)
 {
+    UniformRandomNumberGenerator<float> prng{seed, -1.f, 1.f};
+    UniformRandomNumberGenerator<float> rrng{seed + 1, -0.1f * (float)M_PI, 0.1f * (float)M_PI};
     auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
     auto rb1_0 = rigid_cuboid("rb0", "rb0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
     auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
@@ -134,11 +138,11 @@ void Mlib::create_scene_flat(
         scene_node1_2->set_position(FixedArray<double, 3>{0., 8., 0.});
     } else {
         scene_node0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.001f * float(M_PI)});
-        scene_node1_1->set_position(FixedArray<double, 3>{0.1f, 4.f, 0.5f});
-        scene_node1_2->set_position(FixedArray<double, 3>{0.1f, 8.f, 0.5f});
-        scene_node1_0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.1f * float(M_PI)});
-        scene_node1_1->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.05f * float(M_PI)});
-        scene_node1_2->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.05f * float(M_PI)});
+        scene_node1_1->set_position(FixedArray<double, 3>{0.1f + prng(), 4.f + prng(), 0.5f + prng()});
+        scene_node1_2->set_position(FixedArray<double, 3>{0.1f + prng(), 8.f + prng(), 0.5f + prng()});
+        scene_node1_0->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.1f * float(M_PI) + rrng()});
+        scene_node1_1->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()});
+        scene_node1_2->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()});
     }
 
     scene_nodeR->add_child("n0", std::move(scene_node0));
