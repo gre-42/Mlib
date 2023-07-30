@@ -22,14 +22,6 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-enum class MetaAttributes {
-    NONE = 0,
-    VISIBLE = (1 << 0),
-    COLLIDABLE = (1 << 1),
-    GRASS = (1 << 2),
-    ROAD = (1 << 3)
-};
-
 static const FixedArray<float, 3, 3> M = {
     -1.f, 0.f, 0.f,
     0.f, 1.f, 0.f,
@@ -63,6 +55,15 @@ static TransformationMatrix<float, double, 3> ac_center(
         left.R(),
         (left.t() + right.t()) / 2.};
 }
+
+enum class MetaAttributes {
+    NONE = 0,
+    VISIBLE = (1 << 0),
+    COLLIDABLE = (1 << 1),
+    GRASS = (1 << 2),
+    ROAD = (1 << 3),
+    TREE = (1 << 4)
+};
 
 MetaAttributes operator ~ (MetaAttributes a) {
     return (MetaAttributes)(~int(a));
@@ -152,6 +153,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
             static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
             static const DECLARE_REGEX(road_reg, "^ROAD");
+            static const DECLARE_REGEX(tree_reg, "^tree");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 if (match[1].matched) {
@@ -182,42 +184,46 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
                 if ((material.shader == "ksGrass") ||
-                    (material.shader == "ksTree"))
+                    (material.shader == "ksTree") ||
+                    Mlib::re::regex_search(node.name, tree_reg))
                 {
+                    attrs |= MetaAttributes::TREE;
+                }
+                if (any(attrs & MetaAttributes::TREE)) {
                     tl.material.merge_textures = true;
                     tl.material.continuous_blending_z_order = 2;
                     tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
                     tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
-                    tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
-                } else {
-                    tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
-                }
-                if (material.ksAlphaRef != 0.f) {
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
                     tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
-                }
-                if ((material.shader == "ksGrass") ||
-                    (material.shader == "ksTree") ||
-                    (material.shader == "ksPerPixelAlpha"))
-                {
                     tl.material.blend_mode = cfg.blend_mode;
-                } else if ((material.shader == "ksPerPixel") ||  // required for Akina track
-                           (material.shader == "ksPerPixelAT") ||
-                           (material.shader == "ksPerPixelAT") ||
-                           (material.shader == "ksPerPixelAT_NM") ||
-                           (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
-                {
-                    tl.material.blend_mode = BlendMode::BINARY_05;
-                } else if ((material.shader == "ksPerPixelNM") ||
-                           (material.shader == "ksPerPixelMultiMap") ||
-                           (material.shader == "ksPerPixelMultiMap_NMDetail") ||
-                           (material.shader == "ksPerPixelReflection") ||
-                           (material.shader == "ksMultilayer") ||
-                           (material.shader == "ksMultilayer_fresnel_nm"))
-                {
-                    tl.material.blend_mode = BlendMode::OFF;
                 } else {
-                    THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
+                    if (material.ksAlphaRef != 0.f) {
+                        tl.material.occluded_pass = ExternalRenderPassType::NONE;
+                        tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+                    } else {
+                        tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
+                        tl.material.occluder_pass = ExternalRenderPassType::NONE;
+                    }
+                    if (material.shader == "ksPerPixelAlpha") {
+                        tl.material.blend_mode = cfg.blend_mode;
+                    } else if ((material.shader == "ksPerPixel") ||  // required for Akina track
+                               (material.shader == "ksPerPixelAT") ||
+                               (material.shader == "ksPerPixelAT_NM") ||
+                               (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                    {
+                        tl.material.blend_mode = BlendMode::BINARY_05;
+                    } else if ((material.shader == "ksPerPixelNM") ||
+                               (material.shader == "ksPerPixelMultiMap") ||
+                               (material.shader == "ksPerPixelMultiMap_NMDetail") ||
+                               (material.shader == "ksPerPixelReflection") ||
+                               (material.shader == "ksMultilayer") ||
+                               (material.shader == "ksMultilayer_fresnel_nm"))
+                    {
+                        tl.material.blend_mode = BlendMode::OFF;
+                    } else {
+                        THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
+                    }
                 }
                 tl.material.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
                 tl.material.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
