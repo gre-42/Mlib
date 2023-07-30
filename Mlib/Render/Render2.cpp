@@ -92,7 +92,7 @@ Render2::~Render2() {
         // This internally calls "execute_render_gc"
         GlContextGuard gcg{ *window_ };
     }
-    window_.release();
+    window_.reset();
     GLFW_WARN(glfwTerminate());
 }
 
