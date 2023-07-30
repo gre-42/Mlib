@@ -233,14 +233,14 @@ void Mlib::raise_streets(
 {
     std::set<OrderableFixedArray<double, 3>> raised_nodes;
     for (auto& l : tls_street_wo_curb) {
-        for (const auto& n : l->triangles_) {
+        for (const auto& n : l->triangles) {
             raised_nodes.insert(OrderableFixedArray{n(0).position});
             raised_nodes.insert(OrderableFixedArray{n(1).position});
             raised_nodes.insert(OrderableFixedArray{n(2).position});
         }
     }
     for (auto& l : tls_ground) {
-        for (auto& n : l->triangles_) {
+        for (auto& n : l->triangles) {
             for (auto& v : n.flat_iterable()) {
                 if (raised_nodes.find(OrderableFixedArray{v.position}) != raised_nodes.end()) {
                     v.position(2) += scale * amount;

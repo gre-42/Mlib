@@ -602,7 +602,7 @@ OsmMapResource::OsmMapResource(
     //     plot("/tmp/tl_street_air", air_triangle_lists);
     // }
 
-    if (!air_triangle_lists.tl_tunnel_bdry->triangles_.empty()) {
+    if (!air_triangle_lists.tl_tunnel_bdry->triangles.empty()) {
         // mesh_subtract(osm_triangle_lists.tl_terrain->triangles_, air_triangle_lists.tl_tunnel_bdry->triangles_);
         // osm_triangle_lists.tl_terrain->calculate_triangle_normals();
         // save_obj("/tmp/terrain.obj", IndexedFaceSet<float, size_t>{osm_triangle_lists.tl_terrain->triangles_});
@@ -774,14 +774,14 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("compute vertices for street and air support extrusion");
         std::set<OrderableFixedArray<double, 3>> terrain_vertices;
         for (const auto& l : osm_triangle_lists.tl_terrain->map()) {
-            for (const auto& t : l.second->triangles_) {
+            for (const auto& t : l.second->triangles) {
                 for (const auto& v : t.flat_iterable()) {
                     terrain_vertices.insert(OrderableFixedArray{v.position});
                 }
             }
         }
         for (const auto& l : osm_triangle_lists.tls_street()) {
-            for (const auto& t : l->triangles_) {
+            for (const auto& t : l->triangles) {
                 for (const auto& v : t.flat_iterable()) {
                     if (terrain_vertices.contains(OrderableFixedArray{v.position})) {
                         boundary_vertices.insert(OrderableFixedArray{v.position});
@@ -976,7 +976,7 @@ OsmMapResource::OsmMapResource(
         air_or_osm.tl_air_support->flip();
         air_or_osm.tl_tunnel_crossing->flip();
         // Raise tunnel crossings.
-        for (auto& t : air_or_osm.tl_tunnel_crossing->triangles_) {
+        for (auto& t : air_or_osm.tl_tunnel_crossing->triangles) {
             for (auto& v : t.flat_iterable()) {
                 v.position(2) += config.default_tunnel_pipe_height * config.scale;
             }
@@ -984,7 +984,7 @@ OsmMapResource::OsmMapResource(
 
         // save_obj("/tmp/tl_terrain0.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
         std::set<const FixedArray<ColoredVertex<double>, 3>*> triangles_to_delete;
-        for (const auto& t : air_or_osm.tl_air_support->triangles_) {
+        for (const auto& t : air_or_osm.tl_air_support->triangles) {
             if (boundary_vertices.contains(OrderableFixedArray{t(0).position}) ||
                 boundary_vertices.contains(OrderableFixedArray{t(1).position}) ||
                 boundary_vertices.contains(OrderableFixedArray{t(2).position}))
@@ -1006,7 +1006,7 @@ OsmMapResource::OsmMapResource(
                 config.uv_scale_terrain,                            // uv_scale_y
                 false,                                              // uvs_equal_lengths
                 0.f);                                               // ambient_occlusion
-            air_or_osm.tl_air_support->triangles_.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<double>, 3>& t){
+            air_or_osm.tl_air_support->triangles.remove_if([&triangles_to_delete](const FixedArray<ColoredVertex<double>, 3>& t){
                 return triangles_to_delete.contains(&t);
             });
         }
@@ -1084,7 +1084,7 @@ OsmMapResource::OsmMapResource(
         // If "extrude_air_curb_amount" is NOT NAN,
         // insert the air triangle lists here.
         for (auto& l : air_triangle_lists.tl_street_curb.map()) {
-            air_triangle_lists.tl_air_street_curb[l.first]->triangles_ = std::move(l.second->triangles_);
+            air_triangle_lists.tl_air_street_curb[l.first]->triangles = std::move(l.second->triangles);
         }
         osm_triangle_lists.insert(air_triangle_lists);
     }
@@ -1133,7 +1133,7 @@ OsmMapResource::OsmMapResource(
             &tls_wall_barriers})
     {
         for (auto& l2 : *l) {
-            if (!l2->triangles_.empty()) {
+            if (!l2->triangles.empty()) {
                 hri_.acvas->dcvas.push_back(l2->triangle_array());
             }
         }
@@ -1194,10 +1194,10 @@ OsmMapResource::OsmMapResource(
                 double max_dist = target_terrain_distances_to_bdry.max_distance_to_bdry * scale_;
                 tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<double>>(
                     terrain_type_to_string(target_terrain_type) + "_autogen",
-                    tit->second->material_,
-                    tit->second->physics_material_));
+                    tit->second->material,
+                    tit->second->physics_material));
                 auto& wayside_grass = *(*tl_terrain_)[target_terrain_type];
-                tit->second->triangles_.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
+                tit->second->triangles.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
                     for (const auto& v : tri.flat_iterable()) {
                         if (ground_street_bvh.has_neighbor(
                             FixedArray<double, 2>{
@@ -1205,7 +1205,7 @@ OsmMapResource::OsmMapResource(
                                 v.position(1)},
                             max_dist))
                         {
-                            wayside_grass.triangles_.push_back(tri);
+                            wayside_grass.triangles.push_back(tri);
                             return true;
                         }
                     }
@@ -1348,7 +1348,7 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
         std::scoped_lock lock{street_bvh_mutex_};
         street_bvh_.reset(new Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>{{0.1, 0.1, 0.1}, 10});
         for (const auto& lst : tls_no_grass_) {
-            for (const auto& t : lst->triangles_) {
+            for (const auto& t : lst->triangles) {
                 FixedArray<FixedArray<double, 3>, 3> tri{
                     t(0).position,
                     t(1).position,
@@ -1433,7 +1433,7 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
                 t(2).position});
             if (std::isnan(tlc) || (tlc > 0.999))
             {
-                bad_triangles.triangles_.push_back(t);
+                bad_triangles.triangles.push_back(t);
             }
         }
     }
@@ -1457,19 +1457,19 @@ void OsmMapResource::preload() const {
 
 TerrainTriangles OsmMapResource::terrain_triangles() const {
     return TerrainTriangles{
-        .grass = tl_terrain_->contains(TerrainType::GRASS) ? &(*tl_terrain_)[TerrainType::GRASS]->triangles_ : nullptr,
-        .elevated_grass = tl_terrain_->contains(TerrainType::ELEVATED_GRASS) ? &(*tl_terrain_)[TerrainType::ELEVATED_GRASS]->triangles_ : nullptr,
-        .wayside1_grass = tl_terrain_->contains(TerrainType::WAYSIDE1_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE1_GRASS]->triangles_ : nullptr,
-        .wayside2_grass = tl_terrain_->contains(TerrainType::WAYSIDE2_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE2_GRASS]->triangles_ : nullptr,
-        .flowers = tl_terrain_->contains(TerrainType::FLOWERS) ? &(*tl_terrain_)[TerrainType::FLOWERS]->triangles_ : nullptr,
-        .trees = tl_terrain_->contains(TerrainType::TREES) ? &(*tl_terrain_)[TerrainType::TREES]->triangles_ : nullptr
+        .grass = tl_terrain_->contains(TerrainType::GRASS) ? &(*tl_terrain_)[TerrainType::GRASS]->triangles : nullptr,
+        .elevated_grass = tl_terrain_->contains(TerrainType::ELEVATED_GRASS) ? &(*tl_terrain_)[TerrainType::ELEVATED_GRASS]->triangles : nullptr,
+        .wayside1_grass = tl_terrain_->contains(TerrainType::WAYSIDE1_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE1_GRASS]->triangles : nullptr,
+        .wayside2_grass = tl_terrain_->contains(TerrainType::WAYSIDE2_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE2_GRASS]->triangles : nullptr,
+        .flowers = tl_terrain_->contains(TerrainType::FLOWERS) ? &(*tl_terrain_)[TerrainType::FLOWERS]->triangles : nullptr,
+        .trees = tl_terrain_->contains(TerrainType::TREES) ? &(*tl_terrain_)[TerrainType::TREES]->triangles : nullptr
     };
 }
 
 std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::no_grass() const {
     std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> result;
     for (const auto& lst : tls_no_grass_) {
-        result.push_back(&lst->triangles_);
+        result.push_back(&lst->triangles);
     }
     return result;
 }

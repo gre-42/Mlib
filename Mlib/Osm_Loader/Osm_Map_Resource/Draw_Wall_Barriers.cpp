@@ -37,7 +37,7 @@ void Mlib::draw_wall_barriers(
     for (const auto& bu : buildings) {
         ++bid;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList<double>>(
+            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
                 "wall_barriers_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED | PhysicsMaterial::ATTR_CONCAVE));
@@ -55,14 +55,14 @@ void Mlib::draw_wall_barriers(
                 }
             };
             const BarrierStyle& bs = get_style();
-            tls.back()->material_.textures = { primary_rendering_resources->get_blend_map_texture(bs.texture) };
-            tls.back()->material_.blend_mode = bs.blend_mode;
-            tls.back()->material_.wrap_mode_t = bs.wrap_mode_t;
-            tls.back()->material_.reorient_uv0 = bs.reorient_uv0;
-            tls.back()->material_.ambience *= bs.ambience;
-            tls.back()->material_.diffusivity *= bs.diffusivity;
-            tls.back()->material_.specularity *= bs.specularity;
-            tls.back()->material_.compute_color_mode();
+            tl->material.textures = { primary_rendering_resources->get_blend_map_texture(bs.texture) };
+            tl->material.blend_mode = bs.blend_mode;
+            tl->material.wrap_mode_t = bs.wrap_mode_t;
+            tl->material.reorient_uv0 = bs.reorient_uv0;
+            tl->material.ambience *= bs.ambience;
+            tl->material.diffusivity *= bs.diffusivity;
+            tl->material.specularity *= bs.specularity;
+            tl->material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);
             float length_mod1 = 0.f;

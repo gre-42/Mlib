@@ -163,11 +163,11 @@ public:
     std::shared_ptr<ColoredVertexArray<TPos>> triangle_array() const;
     template <class Archive>
     void serialize(Archive& archive) {
-        archive(name_);
-        archive(material_);
-        archive(physics_material_);
-        archive(triangles_);
-        archive(triangle_bone_weights_);
+        archive(name);
+        archive(material);
+        archive(physics_material);
+        archive(triangles);
+        archive(triangle_bone_weights);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -194,12 +194,12 @@ public:
             std::move(triangles),
             std::move(triangle_bone_weights));
     }
-    std::string name_;
-    Material material_;
-    PhysicsMaterial physics_material_;
-    std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles_;
-    std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights_;
-    std::list<uint8_t> triangle_texture_layers_;
+    std::string name;
+    Material material;
+    PhysicsMaterial physics_material;
+    std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+    std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    std::list<uint8_t> triangle_texture_layers;
 };
 
 }

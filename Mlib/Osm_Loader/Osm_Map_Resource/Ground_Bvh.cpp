@@ -15,7 +15,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList<double>>>& tri
 : GroundBvh()
 {
     for (const auto& l : triangles) {
-        for (const auto& t : l->triangles_) {
+        for (const auto& t : l->triangles) {
             Triangle2d tri2{
                 FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
                 FixedArray<double, 2>{t(1).position(0), t(1).position(1)},

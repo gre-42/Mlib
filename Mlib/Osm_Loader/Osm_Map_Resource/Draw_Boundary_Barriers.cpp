@@ -51,7 +51,7 @@ void Mlib::draw_boundary_barriers(
 {
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto contours = find_contours(inner_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
-    tls.push_back(std::make_shared<TriangleList<double>>(
+    const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
         "boundary_barriers",
         material,
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_TWO_SIDED));
@@ -63,14 +63,14 @@ void Mlib::draw_boundary_barriers(
     //     contours,
     //     {});
 
-    tls.back()->material_.textures = { primary_rendering_resources->get_blend_map_texture(barrier_style.texture) };
-    tls.back()->material_.blend_mode = barrier_style.blend_mode;
-    tls.back()->material_.wrap_mode_t = barrier_style.wrap_mode_t;
-    tls.back()->material_.reorient_uv0 = barrier_style.reorient_uv0;
-    tls.back()->material_.ambience *= barrier_style.ambience;
-    tls.back()->material_.diffusivity *= barrier_style.diffusivity;
-    tls.back()->material_.specularity *= barrier_style.specularity;
-    tls.back()->material_.compute_color_mode();
+    tl->material.textures = { primary_rendering_resources->get_blend_map_texture(barrier_style.texture) };
+    tl->material.blend_mode = barrier_style.blend_mode;
+    tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
+    tl->material.reorient_uv0 = barrier_style.reorient_uv0;
+    tl->material.ambience *= barrier_style.ambience;
+    tl->material.diffusivity *= barrier_style.diffusivity;
+    tl->material.specularity *= barrier_style.specularity;
+    tl->material.compute_color_mode();
     for (const auto& contour : contours) {
         if (contour.size() < 4) {
             continue;

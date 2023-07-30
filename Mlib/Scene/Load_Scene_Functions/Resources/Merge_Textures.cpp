@@ -21,6 +21,8 @@ DECLARE_ARGUMENT(merged_resource_name);
 DECLARE_ARGUMENT(merged_texture_name);
 DECLARE_ARGUMENT(merged_array_name);
 DECLARE_ARGUMENT(merged_blend_mode);
+DECLARE_ARGUMENT(merged_occluded_pass);
+DECLARE_ARGUMENT(merged_occluder_pass);
 DECLARE_ARGUMENT(merged_aggregate_mode);
 DECLARE_ARGUMENT(merged_max_triangle_distance);
 DECLARE_ARGUMENT(merged_cull_faces);
@@ -42,6 +44,8 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .array_name = args.arguments.at<std::string>(KnownArgs::merged_array_name),
             .texture_name = args.arguments.at<std::string>(KnownArgs::merged_texture_name),
             .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_blend_mode)),
+            .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::merged_occluded_pass)),
+            .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::merged_occluder_pass)),
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_aggregate_mode)),
             .max_triangle_distance = args.arguments.at<float>(KnownArgs::merged_max_triangle_distance),
             .cull_faces = args.arguments.at<bool>(KnownArgs::merged_cull_faces)

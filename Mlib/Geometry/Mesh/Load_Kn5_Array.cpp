@@ -171,11 +171,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
             }
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
-                tl.physics_material_ |= PhysicsMaterial::ATTR_COLLIDE;
-                tl.physics_material_ |= PhysicsMaterial::ATTR_CONCAVE;
+                tl.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
+                tl.physics_material |= PhysicsMaterial::ATTR_CONCAVE;
             }
             if (!node.isRenderable || !any(attrs & MetaAttributes::VISIBLE)) {
-                tl.physics_material_ &= ~PhysicsMaterial::ATTR_VISIBLE;
+                tl.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
             if (node.materialID.has_value()) {
                 const auto& material = kn5.materials.at(node.materialID.value());
@@ -184,23 +184,26 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if ((material.shader == "ksGrass") ||
                     (material.shader == "ksTree"))
                 {
-                    tl.material_.merge_textures = true;
-                    tl.material_.continuous_blending_z_order = 2;
-                    tl.material_.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
-                    tl.material_.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
+                    tl.material.merge_textures = true;
+                    tl.material.continuous_blending_z_order = 2;
+                    tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
+                    tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
+                    tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+                } else {
+                    tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                 }
                 if ((material.shader == "ksGrass") ||
                     (material.shader == "ksTree") ||
                     (material.shader == "ksPerPixelAlpha"))
                 {
-                    tl.material_.blend_mode = cfg.blend_mode;
+                    tl.material.blend_mode = cfg.blend_mode;
                 } else if ((material.shader == "ksPerPixel") ||  // required for Akina track
                            (material.shader == "ksPerPixelAT") ||
                            (material.shader == "ksPerPixelAT") ||
                            (material.shader == "ksPerPixelAT_NM") ||
                            (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                 {
-                    tl.material_.blend_mode = BlendMode::BINARY_05;
+                    tl.material.blend_mode = BlendMode::BINARY_05;
                 } else if ((material.shader == "ksPerPixelNM") ||
                            (material.shader == "ksPerPixelMultiMap") ||
                            (material.shader == "ksPerPixelMultiMap_NMDetail") ||
@@ -208,22 +211,22 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                            (material.shader == "ksMultilayer") ||
                            (material.shader == "ksMultilayer_fresnel_nm"))
                 {
-                    tl.material_.blend_mode = BlendMode::OFF;
+                    tl.material.blend_mode = BlendMode::OFF;
                 } else {
                     THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
                 }
-                tl.material_.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
-                tl.material_.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
-                tl.material_.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
-                tl.material_.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
-                tl.material_.specular_exponent = material.ksSpecularEXP;
+                tl.material.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
+                tl.material.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
+                tl.material.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
+                tl.material.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
+                tl.material.specular_exponent = material.ksSpecularEXP;
                 if (!material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
                     (material.detailUVMultiplier != 0.f) &&
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material_.textures = {BlendMapTexture{
+                    tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
                             .normal = material.txNormal,
@@ -236,28 +239,28 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         {
                             continue;
                         }
-                        tl.material_.textures.push_back(BlendMapTexture{
+                        tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txMask,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.mult(i),
                             .role = BlendMapRole::DETAIL_MASK_R + i});
-                        tl.material_.textures.push_back(BlendMapTexture{
+                        tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txDetail(i),
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.detailUVMultiplier,
                             .role = BlendMapRole::DETAIL_COLOR});
                     }
-                    tl.material_.compute_color_mode();
+                    tl.material.compute_color_mode();
                 } else {
                     if (!material.txDiffuse.empty()) {
-                        tl.material_.textures = {BlendMapTexture{
+                        tl.material.textures = {BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txDiffuse,
                                 .normal = material.txNormal,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
-                        tl.material_.compute_color_mode();
+                        tl.material.compute_color_mode();
                     }
                 }
             }

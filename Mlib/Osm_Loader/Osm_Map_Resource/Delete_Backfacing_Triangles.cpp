@@ -24,7 +24,7 @@ void Mlib::delete_backfacing_triangles(
         }
         std::list<const FixedArray<ColoredVertex<double>, 3>*> good_triangles;
         for (auto& l : lists) {
-            for (const auto& t : l->triangles_) {
+            for (const auto& t : l->triangles) {
                 good_triangles.push_back(&t);
             }
         }

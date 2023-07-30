@@ -262,11 +262,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             } else if (Mlib::re::regex_match(line, match, object_reg) ||
                        Mlib::re::regex_match(line, match, group_reg))
             {
-                if (!tl.triangles_.empty()) {
+                if (!tl.triangles.empty()) {
                     result.push_back(tl.triangle_array());
-                    tl.triangles_.clear();
+                    tl.triangles.clear();
                 }
-                tl.name_ = match[1].str();
+                tl.name = match[1].str();
             } else if (Mlib::re::regex_match(line, match, mtllib_reg)) {
                 std::string p = fs::path(filename).parent_path().string();
                 mtllib = load_mtllib(p == "" ? match[1].str() : p + "/" + match[1].str(), cfg.werror);
@@ -292,34 +292,34 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
                 }
                 if (!td.color.empty() || !td.specular.empty() || !td.normal.empty()) {
-                    tl.material_.textures = { {.texture_descriptor = td } };
+                    tl.material.textures = { {.texture_descriptor = td } };
                 } else {
-                    tl.material_.textures = {};
+                    tl.material.textures = {};
                 }
                 if (current_mtl.has_alpha_texture || (current_mtl.alpha != 1.f)) {
-                    tl.material_.blend_mode = cfg.blend_mode;
-                    tl.material_.cull_faces = cfg.cull_faces_alpha;
+                    tl.material.blend_mode = cfg.blend_mode;
+                    tl.material.cull_faces = cfg.cull_faces_alpha;
                 } else {
-                    tl.material_.blend_mode = BlendMode::OFF;
-                    tl.material_.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
+                    tl.material.blend_mode = BlendMode::OFF;
+                    tl.material.cull_faces = cfg.cull_faces_default && !contains_tag(material_name, "NoCullFaces");
                 }
                 if (contains_tag(material_name, "OccludedTypeColor")) {
-                    tl.material_.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
+                    tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                 } else {
-                    tl.material_.occluded_pass = cfg.occluded_pass;
+                    tl.material.occluded_pass = cfg.occluded_pass;
                 }
                 if (contains_tag(material_name, "OccluderTypeWhite")) {
-                    tl.material_.occluder_pass = ExternalRenderPassType::NONE;
+                    tl.material.occluder_pass = ExternalRenderPassType::NONE;
                 } else {
-                    tl.material_.occluder_pass = cfg.occluder_pass;
+                    tl.material.occluder_pass = cfg.occluder_pass;
                 }
-                tl.material_.emissivity = current_mtl.emissivity;
-                tl.material_.ambience = current_mtl.ambience;
-                tl.material_.diffusivity = current_mtl.diffusivity;
-                tl.material_.specularity = current_mtl.specularity;
-                tl.material_.specular_exponent = current_mtl.specular_exponent;
-                tl.material_.alpha = current_mtl.alpha;
-                tl.material_.compute_color_mode();
+                tl.material.emissivity = current_mtl.emissivity;
+                tl.material.ambience = current_mtl.ambience;
+                tl.material.diffusivity = current_mtl.diffusivity;
+                tl.material.specularity = current_mtl.specularity;
+                tl.material.specular_exponent = current_mtl.specular_exponent;
+                tl.material.alpha = current_mtl.alpha;
+                tl.material.compute_color_mode();
             } else if (Mlib::re::regex_match(line, match, smooth_shading_reg)) {
                 // do nothing
             } else {

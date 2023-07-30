@@ -4,6 +4,8 @@
 namespace Mlib {
 
 enum class BlendMode;
+enum class ExternalRenderPassType;
+enum class ExternalRenderPassType;
 enum class AggregateMode;
 
 struct MergedTexturesConfig {
@@ -11,6 +13,8 @@ struct MergedTexturesConfig {
     std::string array_name;
     std::string texture_name;
     BlendMode blend_mode;
+    ExternalRenderPassType occluded_pass;
+    ExternalRenderPassType occluder_pass;
     AggregateMode aggregate_mode;
     float max_triangle_distance;
     bool cull_faces;

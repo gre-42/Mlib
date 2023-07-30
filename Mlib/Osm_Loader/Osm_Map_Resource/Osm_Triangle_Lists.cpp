@@ -210,13 +210,13 @@ OsmTriangleLists::OsmTriangleLists(
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
-            (*tl_terrain)[tt]->material_.textures.push_back(bt);
-            tl_terrain_visuals[tt]->material_.textures.push_back(bt);
-            tl_terrain_extrusion[tt]->material_.textures.push_back(bt);
+            (*tl_terrain)[tt]->material.textures.push_back(bt);
+            tl_terrain_visuals[tt]->material.textures.push_back(bt);
+            tl_terrain_extrusion[tt]->material.textures.push_back(bt);
         }
-        (*tl_terrain)[tt]->material_.compute_color_mode();
-        tl_terrain_visuals[tt]->material_.compute_color_mode();
-        tl_terrain_extrusion[tt]->material_.compute_color_mode();
+        (*tl_terrain)[tt]->material.compute_color_mode();
+        tl_terrain_visuals[tt]->material.compute_color_mode();
+        tl_terrain_extrusion[tt]->material.compute_color_mode();
     }
     for (const auto& [tpe, texture] : config.street_crossing_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -413,9 +413,9 @@ OsmTriangleLists::OsmTriangleLists(
 
 OsmTriangleLists::~OsmTriangleLists() = default;
 
-#define INSERT(a) a->triangles_.insert(a->triangles_.end(), other.a->triangles_.begin(), other.a->triangles_.end());
-#define INSERT2(a) for (const auto& [tpe, s] : other.a.map()) a[tpe]->triangles_.insert(a[tpe]->triangles_.end(), s->triangles_.begin(), s->triangles_.end());
-#define INSERT2p(a) for (const auto& [tpe, s] : other.a->map()) (*a)[tpe]->triangles_.insert((*a)[tpe]->triangles_.end(), s->triangles_.begin(), s->triangles_.end());
+#define INSERT(a) a->triangles.insert(a->triangles.end(), other.a->triangles.begin(), other.a->triangles.end());
+#define INSERT2(a) for (const auto& [tpe, s] : other.a.map()) a[tpe]->triangles.insert(a[tpe]->triangles.end(), s->triangles.begin(), s->triangles.end());
+#define INSERT2p(a) for (const auto& [tpe, s] : other.a->map()) (*a)[tpe]->triangles.insert((*a)[tpe]->triangles.end(), s->triangles.begin(), s->triangles.end());
 #define INSERT3(a) for (const auto& s : other.a.list()) a.append(s);
 void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT2p(tl_terrain)
@@ -514,7 +514,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
         tl_tunnel_crossing,
         tl_tunnel_pipe,
         tl_racing_line};
-    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material_ != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
@@ -532,7 +532,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
         tl_tunnel_pipe,
         tl_racing_line};
     for (const auto& [_, e] : tl_water.map()) {res.push_back(e);}
-    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material_ != PhysicsMaterial::NONE) res.push_back(e);}
+    for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
@@ -608,7 +608,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_only
 }
 
 bool OsmTriangleLists::has_curb() const {
-    for (const auto& [_, e] : tl_street_curb.map()) {if (!e->triangles_.empty()) return true;}
+    for (const auto& [_, e] : tl_street_curb.map()) {if (!e->triangles.empty()) return true;}
     return false;
 }
 
@@ -618,24 +618,24 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
     return res;
 }
 
-#define INSERT(a) result.insert(result.end(), a->triangles_.begin(), a->triangles_.end());
+#define INSERT(a) result.insert(result.end(), a->triangles.begin(), a->triangles.end());
 #define INSERT2(a) for (const auto& [_, e] : a.map()) { \
     result.insert( \
         result.end(), \
-        e->triangles_.begin(), \
-        e->triangles_.end()); \
+        e->triangles.begin(), \
+        e->triangles.end()); \
 }
 #define INSERT3(a) for (const auto& e : a.list()) { \
     result.insert( \
         result.end(), \
-        e.styled_road.triangle_list->triangles_.begin(), \
-        e.styled_road.triangle_list->triangles_.end()); \
+        e.styled_road.triangle_list->triangles.begin(), \
+        e.styled_road.triangle_list->triangles.end()); \
 }
 #define INSERT4(a) for (const auto& e : (a)) { \
     result.insert( \
         result.end(), \
-        e->triangles_.begin(), \
-        e->triangles_.end()); \
+        e->triangles.begin(), \
+        e->triangles.end()); \
 }
 
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::all_hole_triangles() const {

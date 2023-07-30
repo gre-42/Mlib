@@ -41,7 +41,7 @@ std::list<const FixedArray<ColoredVertex<double>, 3>*> Mlib::get_triangles_aroun
 {
     std::list<const FixedArray<ColoredVertex<double>, 3>*> tf;
     for (const auto& ts : triangles) {
-        for (const auto& t : ts->triangles_) {
+        for (const auto& t : ts->triangles) {
             tf.push_back(&t);
         }
     }

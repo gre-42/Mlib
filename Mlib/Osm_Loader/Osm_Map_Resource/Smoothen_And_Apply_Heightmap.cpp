@@ -70,7 +70,7 @@ void Mlib::smoothen_and_apply_heightmap(
         tls_smoothed.insert(tls_smoothed.end(), tls_wall_barriers.begin(), tls_wall_barriers.end());
 
         for (auto& l : tls_smoothed) {
-            for (auto& t : l->triangles_) {
+            for (auto& t : l->triangles) {
                 for (auto& v : t.flat_iterable()) {
                     smoothed_vertices.push_back(&v.position);
                 }
@@ -140,7 +140,7 @@ void Mlib::smoothen_and_apply_heightmap(
                 throw PointException<double, 2>(FixedArray<double, 2>{ v0(0), v0(1) }, "One or more vertices out of heightmap range");
             } else if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::DELETE) {
                 for (auto& l : tls_smoothed) {
-                    l->triangles_.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex<double>, 3>& v){
+                    l->triangles.remove_if([&vertices_to_delete](const FixedArray<ColoredVertex<double>, 3>& v){
                         bool del =
                             vertices_to_delete.contains(&v(0).position) ||
                             vertices_to_delete.contains(&v(1).position) ||

@@ -173,8 +173,8 @@ void Mlib::apply_heightmap(
         }
     }
     std::map<EntranceType, std::set<const FixedArray<double, 3>*>> terrain_entrance_vertices;
-    for (const auto& tt : tl_terrain.map()) {
-        for (const auto& t : tt.second->triangles_) {
+    for (const auto& [_, tt] : tl_terrain.map()) {
+        for (const auto& t : tt->triangles) {
             for (const auto& v : t.flat_iterable()) {
                 OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};
                 for (const auto& e : entrances) {
@@ -187,8 +187,8 @@ void Mlib::apply_heightmap(
     }
     if (false) {
         std::list<FixedArray<ColoredVertex<double>, 3>> tcp;
-        for (const auto& tt : tl_terrain.map()) {
-            for (const auto& t : tt.second->triangles_) {
+        for (const auto& [_, tt] : tl_terrain.map()) {
+            for (const auto& t : tt->triangles) {
                 bool found = false;
                 for (const auto& v : t.flat_iterable()) {
                     OrderableFixedArray<double, 2> vc{v.position(0), v.position(1)};

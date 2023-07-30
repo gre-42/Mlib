@@ -620,7 +620,7 @@ void DrawStreets::draw_holes() {
         air_triangles.tls_crossing_only()})
     {
         for (const auto& l2 : l) {
-            for (auto& t : l2->triangles_) {
+            for (auto& t : l2->triangles) {
                 // t(0).color = way_color;
                 // t(1).color = way_color;
                 // t(2).color = way_color;

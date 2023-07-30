@@ -324,12 +324,12 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         if (uv_it != uv_faces.end()) {
             THROW_OR_ABORT("uv_faces too long");
         }
-        if (tl.triangles_.empty()) {
+        if (tl.triangles.empty()) {
             THROW_OR_ABORT("Triangle array is empty in file " + filename);
         }
         tl.convert_triangle_to_vertex_normals();
         result->scvas.push_back(tl.triangle_array());
-        tl.triangles_.clear();
+        tl.triangles.clear();
     }
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
