@@ -27,8 +27,6 @@ void Mlib::merge_neighboring_points(
                 if (any(v.position != *neighbor)) {
                     linfo() << "Merging points at " << v.position;
                     v.position = *neighbor;
-                } else {
-                    bvh.insert(AxisAlignedBoundingBox{v.position}, v.position);
                 }
             } else {
                 bvh.insert(AxisAlignedBoundingBox{v.position}, v.position);
