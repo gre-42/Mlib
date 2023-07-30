@@ -10,8 +10,8 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
-#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
