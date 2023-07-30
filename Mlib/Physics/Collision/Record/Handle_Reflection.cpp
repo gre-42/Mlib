@@ -1,5 +1,7 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
@@ -302,6 +304,18 @@ void Mlib::handle_reflection(
         //     return;
         // }
 
+        std::vector<CollisionRidgeSphere> ridges;
+        CollisionRidges collision_ridges;
+        collision_ridges.insert(
+            c.t0.triangle,
+            c.t0.plane.normal,
+            c.history.cfg.max_min_cos_ridge,
+            c.t0.physics_material,
+            CollisionRidgeErrorBehavior::THROW);
+        ridges.reserve(collision_ridges.size());
+        for (const auto& e : collision_ridges) {
+            ridges.push_back(e.collision_ridge_sphere);
+        }
         StaticTransformedMesh stm(
             "temp",
             AxisAlignedBoundingBox<double, 3>{c.t0.triangle},
@@ -309,7 +323,7 @@ void Mlib::handle_reflection(
             std::vector<CollisionTriangleSphere>{c.t0},
             std::vector<CollisionLineSphere>(),
             std::vector<CollisionLineSphere>(),
-            std::vector<CollisionRidgeSphere>());
+            std::move(ridges));
 
         assert_true(c.r1 != nullptr);
         try {
