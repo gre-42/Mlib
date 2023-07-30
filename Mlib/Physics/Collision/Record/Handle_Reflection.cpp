@@ -1,13 +1,12 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap2.hpp>
 #include <Mlib/Geometry/Mesh/Static_Transformed_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
@@ -305,16 +304,19 @@ void Mlib::handle_reflection(
         // }
 
         std::vector<CollisionRidgeSphere> ridges;
-        CollisionRidges collision_ridges;
-        collision_ridges.insert(
-            c.t0.triangle,
-            c.t0.plane.normal,
-            c.history.cfg.max_min_cos_ridge,
-            c.t0.physics_material,
-            CollisionRidgeErrorBehavior::THROW);
-        ridges.reserve(collision_ridges.size());
-        for (const auto& e : collision_ridges) {
-            ridges.push_back(e.collision_ridge_sphere);
+        ridges.reserve(3);
+        for (size_t i = 0; i < 3; ++i) {
+            auto a = OrderableFixedArray{c.t0.triangle(i)};
+            auto b = OrderableFixedArray{c.t0.triangle((i + 1) % 3)};
+            auto it = (a < b)
+                ? c.history.ridge_map.find({a, b})
+                : c.history.ridge_map.find({b, a});
+            if (it == c.history.ridge_map.end()) {
+                // Ridges that cannot be collided due to their angle are removed,
+                // so failure is expected.
+                continue;
+            }
+            ridges.push_back(*it->second);
         }
         StaticTransformedMesh stm(
             "temp",

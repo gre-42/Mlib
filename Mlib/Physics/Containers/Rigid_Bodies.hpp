@@ -85,10 +85,12 @@ public:
     const Bvh<double, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
     const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
     const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
+    const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& ridge_map();
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     void bake_collision_ridges(const CollisionRidgesRigidBody& collision_ridges) const;
+    void bake_global_collision_ridges_if_necessary() const;
     const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
@@ -98,6 +100,7 @@ private:
     Bvh<double, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
     Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
     mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
+    mutable std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*> ridge_map_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
     CollisionRidgesRigidBody global_collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;

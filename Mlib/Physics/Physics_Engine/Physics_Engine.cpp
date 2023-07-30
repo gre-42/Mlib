@@ -142,6 +142,7 @@ void PhysicsEngine::collide(
         .concave_t0_intersections = concave_t0_intersections,
         .grind_infos = grind_infos,
         .ridge_intersection_points = ridge_intersection_points,
+        .ridge_map = rigid_bodies_.ridge_map(),
         .base_log = base_log
     };
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)

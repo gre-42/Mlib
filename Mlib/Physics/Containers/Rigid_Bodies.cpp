@@ -146,6 +146,9 @@ void RigidBodies::add_rigid_body(
                                 }
                                 bake_collision_ridges(collision_ridges);
                             } else {
+                                if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
+                                    THROW_OR_ABORT("Collision ridges already baked");
+                                }
                                 for (const auto& t : transformed) {
                                     insert_triangle(global_collision_ridges_, t);
                                 }
@@ -168,6 +171,9 @@ void RigidBodies::add_rigid_body(
         {
             for (auto& cva : hitboxes) {
                 if (physics_resource_filter.matches(*cva)) {
+                    if (any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
+                        THROW_OR_ABORT("Moving objects cannot be concave (due to ridge_map_)");
+                    }
                     if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                         THROW_OR_ABORT("Alignment planes only supported for terrain");
                     }
@@ -221,6 +227,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
             ridge_bvh_.clear();
+            ridge_map_.clear();
             line_bvh_.clear();
             global_collision_ridges_.clear();
             collision_ridges_baking_status_ = CollisionRidgeBakingStatus::NOT_BAKED;
@@ -312,7 +319,7 @@ const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() c
     return line_bvh_;
 }
 
-const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
+void RigidBodies::bake_global_collision_ridges_if_necessary() const {
     if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKING) {
         THROW_OR_ABORT("Previous collision ridges baking failed");
     }
@@ -321,17 +328,38 @@ const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh()
         bake_collision_ridges(global_collision_ridges_);
         collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKED;
     }
+}
+
+const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
+    bake_global_collision_ridges_if_necessary();
     return ridge_bvh_;
+}
+
+const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
+{
+    bake_global_collision_ridges_if_necessary();
+    return ridge_map_;
 }
 
 void RigidBodies::bake_collision_ridges(
     const CollisionRidgesRigidBody& collision_ridges) const
 {
     for (const auto& e : collision_ridges) {
-        ridge_bvh_.insert(
+        const auto* r = ridge_bvh_.insert(
             AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
             RigidBodyAndCollisionRidgeSphere{
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});
+        auto a = OrderableFixedArray{r->crp.edge(0)};
+        auto b = OrderableFixedArray{r->crp.edge(1)};
+        if (a < b) {
+            if (!ridge_map_.insert({{a, b}, &r->crp}).second) {
+                lwarn() << "Could not insert into ridge-map";
+            }
+        } else {
+            if (!ridge_map_.insert({{b, a}, &r->crp}).second) {
+                lwarn() << "Could not insert into ridge-map";
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <list>
+#include <map>
 #include <memory>
 #include <unordered_map>
 
@@ -13,10 +14,13 @@ struct Beacon;
 class ContactInfo;
 template <typename TData, size_t... tshape>
 class FixedArray;
+template <class TData, size_t... tshape>
+class OrderableFixedArray;
 struct IntersectionSceneAndContact;
 class RigidBodyVehicle;
 struct GrindInfo;
 class BaseLog;
+struct CollisionRidgeSphere;
 
 struct CollisionHistory {
     bool burn_in;
@@ -29,6 +33,7 @@ struct CollisionHistory {
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos;
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>>& ridge_intersection_points;
+    const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& ridge_map;
     BaseLog* base_log;
 };
 
