@@ -301,22 +301,29 @@ void Mlib::handle_reflection(
         // if (overlap > 0.5) {
         //     return;
         // }
+
+        StaticTransformedMesh stm(
+            "temp",
+            AxisAlignedBoundingBox<double, 3>{c.t0.triangle},
+            BoundingSphere<double, 3>{c.t0.triangle},
+            std::vector<CollisionTriangleSphere>{c.t0},
+            std::vector<CollisionLineSphere>(),
+            std::vector<CollisionLineSphere>(),
+            std::vector<CollisionRidgeSphere>());
+
         assert_true(c.r1 != nullptr);
-        auto dir = c.r1->edge(1) - c.r1->edge(0);
-        dir /= std::sqrt(sum(squared(dir)));
-        if (std::abs(dot0d(dir, c.t0.plane.normal)) < (double)c.history.cfg.min_cos_triangle_ridge) {
+        try {
+            get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error(
+                "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));
+        }
+        if (overlap == INFINITY) {
             return;
         }
-        overlap = -(
-            std::min(
-                dot0d(c.t0.plane.normal, c.r1->edge(1)),
-                dot0d(c.t0.plane.normal, c.r1->edge(0))) +
-            c.t0.plane.intercept);
-        if (overlap > (double)c.history.cfg.overlap_ignored) {
+        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), normal) > 0.) {
             return;
         }
-        normal = c.t0.plane.normal;
-        // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
     } else if (!c.l1_is_normal &&
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
                any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
