@@ -719,6 +719,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).g;" << std::endl;
             } else if (t->role == BlendMapRole::DETAIL_MASK_B) {
                 sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).b;" << std::endl;
+            } else if (t->role == BlendMapRole::DETAIL_MASK_A) {
+                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).a;" << std::endl;
             } else if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
                 sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
                 sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;

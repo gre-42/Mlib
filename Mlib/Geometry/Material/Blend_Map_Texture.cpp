@@ -13,7 +13,9 @@ BlendMapRole Mlib::blend_map_role_from_string(const std::string& s) {
     } else if (s == "detail_mask_g") {
         return BlendMapRole::DETAIL_MASK_G;
     } else if (s == "detail_mask_b") {
-    return BlendMapRole::DETAIL_MASK_B;
+        return BlendMapRole::DETAIL_MASK_B;
+    } else if (s == "detail_mask_a") {
+        return BlendMapRole::DETAIL_MASK_A;
     } else if (s == "detail_color") {
         return BlendMapRole::DETAIL_COLOR;
     }

@@ -45,7 +45,7 @@ struct kn5Material
     float detailUVMultiplier = 4.f;
     FixedArray<float, 4> mult = {1.f, 1.f, 1.f, 1.f};
     float detailNMMult = 1.f;
-    float magicMult = 2.f;
+    float magicMult = 1.f;
 
     std::string txDiffuse;
     std::string txNormal;

@@ -230,20 +230,20 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                 tl.material.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                 tl.material.specular_exponent = material.ksSpecularEXP;
-                tl.material.detail_multiplier = material.magicMult;
                 if (!material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
                     (material.detailUVMultiplier != 0.f) &&
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
+                    tl.material.detail_multiplier = material.magicMult * 2.f;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
                             .normal = material.txNormal,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .role = BlendMapRole::DETAIL_BASE}};
-                    for (uint32_t i = 0; i < 3; ++i) {
+                    for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail(i).empty() ||
                             (material.mult(i) == 0.f) ||
                             (material.detailUVMultiplier == 0.f))

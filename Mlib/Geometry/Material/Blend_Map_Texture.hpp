@@ -13,7 +13,8 @@ enum class BlendMapRole {
     DETAIL_MASK_R = 3 | (1 << 6),
     DETAIL_MASK_G = 4 | (1 << 6),
     DETAIL_MASK_B = 5 | (1 << 6),
-    DETAIL_COLOR = 6,
+    DETAIL_MASK_A = 6 | (1 << 6),
+    DETAIL_COLOR = 7,
     ANY_DETAIL_MASK = (1 << 6)
 };
 
