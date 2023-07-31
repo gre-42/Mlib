@@ -42,7 +42,7 @@ struct kn5Material
     float diffuseMult = 1.0f;
     float normalMult = 1.0f;
     float useDetail = 0.0f;
-    float detailUVMultiplier = 4.f;
+    float detailUVMultiplier = 1.f;
     FixedArray<float, 4> mult = {1.f, 1.f, 1.f, 1.f};
     float detailNMMult = 1.f;
     float magicMult = 1.f;

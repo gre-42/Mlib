@@ -236,7 +236,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material.detail_multiplier = material.magicMult * 2.f;
+                    tl.material.detail_multiplier = material.magicMult;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
