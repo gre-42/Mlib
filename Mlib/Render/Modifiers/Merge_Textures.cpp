@@ -126,6 +126,7 @@ void Mlib::merge_textures(
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
                         .occluded_pass = merged_materials_config.occluded_pass,
                         .occluder_pass = merged_materials_config.occluder_pass,
+                        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                         .aggregate_mode = merged_materials_config.aggregate_mode,
                         .max_triangle_distance = merged_materials_config.max_triangle_distance,
                         .cull_faces = merged_materials_config.cull_faces,
