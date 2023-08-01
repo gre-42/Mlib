@@ -591,17 +591,15 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
 
     for (GLuint i = 0; i < it->second.filenames.size(); i++) {
-        StbInfo info =
-            stb_load_texture(it->second.filenames[i],
-                             3,       // nchannels
-                             FlipMode::NONE);
-        if (it->second.desaturate) {
-            stb_desaturate(
-                info.data.get(),
-                info.width,
-                info.height,
-                info.nrChannels);
-        }
+        auto color = it->second.filenames[i];
+        auto dit = texture_descriptors_.find(color);
+        const TextureDescriptor& desc = dit != texture_descriptors_.end()
+            ? dit->second
+            : TextureDescriptor{
+                .color = color,
+                .color_mode = ColorMode::RGB};
+
+        auto info = get_texture_data(desc, FlipMode::NONE);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
         CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                             0,
@@ -679,7 +677,7 @@ void RenderingResources::add_auto_texture_atlas(
     } 
 }
 
-void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate) {
+void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + name);
     std::scoped_lock lock{mutex_};
     auto it = textures_.find(name);
@@ -688,9 +686,7 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
     }
     if (!cubemap_descriptors_.insert({
         name,
-        CubemapDescriptor{
-            .filenames = filenames,
-            .desaturate = desaturate}}).second)
+        CubemapDescriptor{.filenames = filenames}}).second)
     {
         THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
     }

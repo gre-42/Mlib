@@ -68,7 +68,6 @@ std::ostream& operator << (std::ostream& ostr, const AutoTextureAtlasDescriptor&
 
 struct CubemapDescriptor {
     std::vector<std::string> filenames;
-    bool desaturate;
 };
 
 enum class DeletionFailureMode {
@@ -111,7 +110,7 @@ public:
         const std::string& name,
         const std::vector<std::string>& filenames,
         AutoTextureAtlasDescriptor* atlas = nullptr);
-    void add_cubemap(const std::string& name, const std::vector<std::string>& filenames, bool desaturate);
+    void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);
 
     std::string get_texture_filename(
         const TextureDescriptor& descriptor,

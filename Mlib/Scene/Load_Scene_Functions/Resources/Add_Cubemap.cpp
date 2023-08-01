@@ -11,7 +11,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(alias);
-DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(filenames);
 }
 
@@ -27,6 +26,5 @@ void AddCubemap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_rendering_resources()->add_cubemap(
         args.arguments.at<std::string>(KnownArgs::alias),
-        args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p){return p.path;}),
-        args.arguments.at<bool>(KnownArgs::desaturate, false));
+        args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p){return p.path;}));
 }
