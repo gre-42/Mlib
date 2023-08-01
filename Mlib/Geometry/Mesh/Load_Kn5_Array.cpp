@@ -198,7 +198,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
                     tl.material.blend_mode = cfg.blend_mode;
                 } else {
-                    if (material.ksAlphaRef != 0.f) {
+                    if ((material.ksAlphaRef != 0.f) && (material.ksAlphaRef != 1.f)) {
                         tl.material.occluded_pass = ExternalRenderPassType::NONE;
                         tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
                     } else {
