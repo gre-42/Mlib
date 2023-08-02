@@ -47,6 +47,7 @@ public:
         return Mlib::get_vector<std::string>(el, [this, &op](const std::string& s){return op(fpath_(s));});
     }
     std::list<std::string> path_list(const std::string& name) const;
+    std::string spath(const std::string& name) const;
     std::vector<JsonMacroArguments> children(const std::string& name) const;
     template <class TOperation>
     auto children(const std::string& name, const TOperation& op) const {

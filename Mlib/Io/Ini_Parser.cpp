@@ -26,10 +26,10 @@ IniParser::IniParser(const std::string& filename) {
         }
         auto i = line.find('=');
         if (i == line.npos) {
-            THROW_OR_ABORT("Could not parse line of ini file: \"" + line + '"');
+            THROW_OR_ABORT("Could not parse line of INI file: \"" + line + '"');
         }
         if (!content_[section].insert({line.substr(0, i), line.substr(i + 1)}).second) {
-            THROW_OR_ABORT("Found duplicate key in ini file: \"" + line + '"');
+            THROW_OR_ABORT("Found duplicate key in INI file: \"" + line + '"');
         }
     }
     if (!f->eof()) {

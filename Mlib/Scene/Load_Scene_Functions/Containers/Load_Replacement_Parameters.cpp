@@ -21,8 +21,11 @@ DECLARE_ARGUMENT(directory);
 LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    std::string id_val = args.arguments.at<std::string>(KnownArgs::id);
-    args.asset_references.add_replacement_parameter_group(id_val);
+    auto id_val = args.arguments.at<std::string>(KnownArgs::id);
+    if (!args.asset_references.contains(id_val)) {
+        args.asset_references.add(id_val);
+    }
+    auto& group = args.asset_references.get(id_val);
     static DECLARE_REGEX(manifest_regex, "^.*manifest.*\\.json$");
     for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
         for (auto const& level_dir : list_dir(root)) {
@@ -35,9 +38,7 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
                 }
                 auto path_string = candidate_file.path().string();
                 try {
-                    args.asset_references.get_replacement_parameters(id_val).insert(
-                        path_string,
-                        args.macro_line_executor);
+                    group.insert(path_string, args.macro_line_executor);
                 } catch (const std::runtime_error& e) {
                     throw std::runtime_error("Error processing replacement parameter file \"" + path_string + "\": " + e.what());
                 }

@@ -1,6 +1,6 @@
 #include "Kn5_File_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/Geometry/Mesh/Load_Kn5_Array.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Kn5_Array.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 

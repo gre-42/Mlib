@@ -161,6 +161,10 @@ std::vector<FPath> JsonMacroArguments::pathes_or_variables(const std::string& na
     return at_vector<std::string>(name, fpath_);
 }
 
+std::string JsonMacroArguments::spath(const std::string& name) const {
+    return spath_(at<std::string>(name));
+}
+
 std::vector<JsonMacroArguments> JsonMacroArguments::children(const std::string& name) const {
     auto el = at(name);
     if (el.type() != nlohmann::detail::value_t::array) {

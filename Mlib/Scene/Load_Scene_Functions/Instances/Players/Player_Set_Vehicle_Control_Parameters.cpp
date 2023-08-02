@@ -46,7 +46,7 @@ void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionA
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references
-        .get_replacement_parameters("vehicles")
+        .get("vehicles")
         .at(asset_id)
         .rp;
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));

@@ -1,6 +1,6 @@
 #include "Add_Bvh_Resource.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>

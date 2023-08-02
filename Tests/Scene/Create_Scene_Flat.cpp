@@ -4,8 +4,8 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
-#include <Mlib/Geometry/Mesh/Load_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>

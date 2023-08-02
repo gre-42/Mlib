@@ -1,7 +1,7 @@
 #include "Mhx2_File_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
-#include <Mlib/Geometry/Mesh/Load_Mhx2.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mhx2.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

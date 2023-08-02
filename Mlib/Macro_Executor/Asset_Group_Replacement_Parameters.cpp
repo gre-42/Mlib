@@ -1,4 +1,5 @@
 #include "Asset_Group_Replacement_Parameters.hpp"
+#include <Mlib/Geometry/Interfaces/IAsset_Loader.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -19,6 +20,10 @@ void AssetGroupReplacementParameters::insert(
     if (rp.rp.on_init != nlohmann::detail::value_t::null) {
         mlecd(JsonView{rp.rp.on_init}, nullptr, nullptr);
     }
+    insert(rp);
+}
+
+void AssetGroupReplacementParameters::insert(const ReplacementParameterAndFilename& rp) {
     std::unique_lock lock{mutex_};
     if (!replacement_parameters_.insert({rp.rp.id, rp}).second) {
         THROW_OR_ABORT("Asset with id \"" + rp.rp.id + "\" already exists");
@@ -49,4 +54,14 @@ std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupRepla
 
 std::map<std::string, ReplacementParameterAndFilename>::iterator AssetGroupReplacementParameters::end() {
     return replacement_parameters_.end();
+}
+
+void AssetGroupReplacementParameters::add_asset_loader(std::unique_ptr<IAssetLoader>&& loader) {
+    std::shared_lock lock{mutex_};
+    asset_loaders_.emplace_back(std::move(loader));
+}
+
+const std::list<std::unique_ptr<IAssetLoader>>& AssetGroupReplacementParameters::loaders() const {
+    std::shared_lock lock{mutex_};
+    return asset_loaders_;
 }

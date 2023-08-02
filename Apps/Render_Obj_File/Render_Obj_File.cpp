@@ -11,8 +11,8 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
-#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
-#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>

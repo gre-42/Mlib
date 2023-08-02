@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
-#include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>

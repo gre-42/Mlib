@@ -41,7 +41,7 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
         .asset_references
-        .get_replacement_parameters("vehicles")
+        .get("vehicles")
         .at(asset_id)
         .rp;
     auto node_prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");

@@ -4,11 +4,11 @@
 namespace Mlib {
 
 struct ReplacementParameter {
+    std::string id;
     std::string title;
     JsonMacroArguments globals;
     JsonMacroArguments database;
     std::vector<std::string> required;
-    std::string id;
     nlohmann::json on_init;
     nlohmann::json on_execute;
 };

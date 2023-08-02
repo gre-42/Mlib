@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <map>
+#include <memory>
 #include <shared_mutex>
 #include <string>
 
@@ -15,17 +16,11 @@ public:
     AssetReferences();
     ~AssetReferences();
 
-    void add_macro_manifest_group(const std::string& group);
-    void add_replacement_parameter_group(const std::string& group);
+    bool contains(const std::string& group) const;
+    void add(const std::string& group);
 
-    void add_macro_manifest(
-        const std::string& group,
-        const std::string& filename);
-
-    const AssetGroupReplacementParameters& get_replacement_parameters(
-        const std::string& group) const;
-    AssetGroupReplacementParameters& get_replacement_parameters(
-        const std::string& group);
+    const AssetGroupReplacementParameters& get(const std::string& group) const;
+    AssetGroupReplacementParameters& get(const std::string& group);
 
 private:
     std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;

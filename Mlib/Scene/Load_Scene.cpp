@@ -4,8 +4,10 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Add_Ac_Loader.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Asset_Manifests.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Load_Replacement_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Additive_Screen_Constraint.hpp>
@@ -216,10 +218,12 @@ void LoadScene::register_json_user_function(const std::string& key, LoadSceneJso
 
 LoadScene::LoadScene() {
     // Containers
+    register_json_user_function(AddAcLoader::key, AddAcLoader::json_user_function);
     register_json_user_function(AddToGallery::key, AddToGallery::json_user_function);
     register_json_user_function(CreateScene::key, CreateScene::json_user_function);
-    register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
+    register_json_user_function(LoadAssetManifests::key, LoadAssetManifests::json_user_function);
     register_json_user_function(LoadReplacementParameters::key, LoadReplacementParameters::json_user_function);
+    register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
 
     // Instances
     register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);

@@ -1,5 +1,5 @@
 #include "Bvh_File_Resource.hpp"
-#include <Mlib/Geometry/Mesh/Load_Bvh.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 
 using namespace Mlib;
 

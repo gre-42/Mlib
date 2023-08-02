@@ -77,7 +77,7 @@ static nlohmann::json eval_recursion(
                 THROW_OR_ABORT("Could not parse asset path: \"" + s + '"');
             }
             return asset_references
-                .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
+                .get(subst(match[DbQueryGroups::group].str()))
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
                 .database
@@ -186,7 +186,7 @@ static nlohmann::json eval_recursion(
                 THROW_OR_ABORT("Could not parse asset path: \"" + expression + '"');
             }
             var = asset_references
-                .get_replacement_parameters(subst(match[DbQueryGroups::group].str()))
+                .get(subst(match[DbQueryGroups::group].str()))
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
                 .database

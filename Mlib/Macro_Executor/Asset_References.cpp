@@ -9,15 +9,19 @@ AssetReferences::AssetReferences() = default;
 
 AssetReferences::~AssetReferences() = default;
 
-void AssetReferences::add_replacement_parameter_group(const std::string& group) {
+bool AssetReferences::contains(const std::string& group) const {
+    std::shared_lock lock{mutex_};
+    return replacement_parameters_.contains(group);
+}
+
+void AssetReferences::add(const std::string& group) {
     std::scoped_lock lock{mutex_};
     if (!replacement_parameters_.try_emplace(group).second) {
         THROW_OR_ABORT("Replacement parameter group \"" + group + "\" already exists");
     }
 }
 
-const AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
-    const std::string& group) const
+const AssetGroupReplacementParameters& AssetReferences::get(const std::string& group) const
 {
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
@@ -27,9 +31,8 @@ const AssetGroupReplacementParameters& AssetReferences::get_replacement_paramete
     return it->second;
 }
 
-AssetGroupReplacementParameters& AssetReferences::get_replacement_parameters(
-    const std::string& group)
+AssetGroupReplacementParameters& AssetReferences::get(const std::string& group)
 {
     const AssetReferences& a = *this;
-    return const_cast<AssetGroupReplacementParameters&>(a.get_replacement_parameters(group));
+    return const_cast<AssetGroupReplacementParameters&>(a.get(group));
 }

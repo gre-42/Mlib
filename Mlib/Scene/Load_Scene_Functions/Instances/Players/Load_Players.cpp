@@ -149,7 +149,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto team = player.at<std::string>(PlayerKeys::team);
             auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<FixedArray<float, 3>>();
             auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
-            const auto& vars = args.asset_references.get_replacement_parameters("vehicles").at(vehicle_name).rp;
+            const auto& vars = args.asset_references.get("vehicles").at(vehicle_name).rp;
             if (player.contains(PlayerKeys::controller)) {
                 auto controller = player.at<std::string>(PlayerKeys::controller);
                 nlohmann::json line{

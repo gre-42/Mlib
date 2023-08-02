@@ -4,8 +4,8 @@
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Mesh/Ambient_Occlusion_By_Curvature.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Load_Kn5.hpp>
-#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Io/Ini_Parser.hpp>
@@ -302,7 +302,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (name.starts_with("MODEL_")) {
                 auto it = section.find("FILE");
                 if (it == section.end()) {
-                    THROW_OR_ABORT("Could not find FILE variable in section of ini file: \"" + filename + '"');
+                    THROW_OR_ABORT("Could not find FILE variable in section of INI file: \"" + filename + '"');
                 }
                 append_kn5((std::filesystem::path{filename}.parent_path() / it->second).string());
             }

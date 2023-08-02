@@ -3,7 +3,7 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Interfaces/IRace_Logic.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
-#include <Mlib/Geometry/Mesh/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
@@ -85,7 +85,7 @@ public:
         unsigned int rank) override
     {
         if (rank == 0) {
-            asset_references_.get_replacement_parameters("levels").merge_into_database(
+            asset_references_.get("levels").merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{
                     {"CAR_NODE_POSITION", pose.t()},
