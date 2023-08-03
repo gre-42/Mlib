@@ -54,8 +54,6 @@ public:
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
-        std::string previous_scene_filename,
-        const ThreadSafeString& next_scene_filename,
         std::function<void()> reload_transient_objects,
         const std::function<void()>& on_change = [](){});
     ~TabMenuLogic();
@@ -85,8 +83,7 @@ private:
     const ILayoutPixels& line_distance_;
     const NotifyingJsonMacroArguments& substitutions_;
     ButtonPress& button_press_;
-    std::string previous_scene_filename_;
-    const ThreadSafeString& next_scene_filename_;
+    std::string previous_level_id_;
     std::atomic_size_t& num_renderings_;
     std::function<void()> reload_transient_objects_;
     ListView list_view_;

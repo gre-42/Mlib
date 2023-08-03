@@ -15,7 +15,6 @@
 #include <Mlib/Scene/Render_Logics/List_View_Style.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 
 using namespace Mlib;
 
@@ -59,8 +58,6 @@ TabMenuLogic::TabMenuLogic(
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
-    std::string previous_scene_filename,
-    const ThreadSafeString& next_scene_filename,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
 : key_binding_{ std::move(key_binding) },
@@ -78,8 +75,7 @@ TabMenuLogic::TabMenuLogic(
   line_distance_{line_distance},
   substitutions_{substitutions},
   button_press_{ button_press },
-  previous_scene_filename_{ std::move(previous_scene_filename) },
-  next_scene_filename_{ next_scene_filename },
+  previous_level_id_{ substitutions.at<std::string>("LEVEL_ID", "") },
   num_renderings_{ num_renderings },
   reload_transient_objects_{ std::move(reload_transient_objects) },
   list_view_{
@@ -104,7 +100,7 @@ void TabMenuLogic::render(
     list_view_.handle_input();
     if (button_press_.keys_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();
-        if (previous_scene_filename_ != (std::string)next_scene_filename_) {
+        if (previous_level_id_ != substitutions_.at<std::string>("LEVEL_ID")) {
             num_renderings_ = 0;
         }
         else {

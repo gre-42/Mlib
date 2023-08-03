@@ -17,6 +17,11 @@ public:
         std::shared_lock lock{mutex_};
         return json_macro_arguments_.at<TResult>(key);
     }
+    template <class TResult>
+    TResult at(const std::string& key, const TResult& default_) const {
+        std::shared_lock lock{mutex_};
+        return json_macro_arguments_.at<TResult>(key, default_);
+    }
     JsonMacroArgumentsAndLock json_macro_arguments() const;
     void add_observer(const std::function<void()>& func);
     void clear_observers();
