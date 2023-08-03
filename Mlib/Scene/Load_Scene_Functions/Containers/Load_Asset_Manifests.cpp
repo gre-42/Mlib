@@ -27,11 +27,9 @@ LoadSceneJsonUserFunction LoadAssetManifests::json_user_function = [](const Load
     }
     auto& group = args.asset_references.get(id_val);
     for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
-        for (auto const& level_dir : list_dir(root)) {
-            for (const auto& loader : group.loaders()) {
-                for (const auto& manifest : loader->try_load(level_dir.path().string())) {
-                    group.insert(manifest);
-                }
+        for (const auto& loader : group.loaders()) {
+            for (const auto& manifest : loader->try_load(root)) {
+                group.insert(manifest);
             }
         }
     }
