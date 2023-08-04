@@ -1,4 +1,5 @@
 #include "Sun_Direction.hpp"
+#include <Mlib/Geography/Season.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -42,20 +43,56 @@ FixedArray<TData, 3> Mlib::sun_direction(
 {
     auto R = dot2d(
         rodrigues2(FixedArray<TData, 3>{0., 1., 0.}, longitude),
-        rodrigues2(FixedArray<TData, 3>{1., 0., 0.}, latitude));
+        rodrigues2(FixedArray<TData, 3>{1., 0., 0.}, -latitude));
     TData sun_latitude;
     TData sun_longitude;
     sun_angles(time, sun_latitude, sun_longitude);
-    auto sun_dir = FixedArray<TData, 3>{
+    auto sun_dir = -FixedArray<TData, 3>{
         std::cos(sun_longitude) * std::cos(sun_latitude),
         std::sin(sun_latitude),
         std::sin(sun_longitude) * std::cos(sun_latitude)};
     return dot(sun_dir, R);
 }
 
+template <class TData>
+std::chrono::system_clock::time_point Mlib::time_of_season(
+    Season season,
+    const std::chrono::system_clock::time_point& start_time,
+    TData latitude,
+    TData longitude)
+{
+    if (season == Season::SPRING) {
+        return time_of_season(Season::WINTER, start_time, latitude, longitude) + std::chrono::seconds{3 * 30 * 24 * 60 * 60};
+    }
+    if (season == Season::AUTUMN) {
+        return time_of_season(Season::SUMMER, start_time, latitude, longitude) + std::chrono::seconds{3 * 30 * 24 * 60 * 60};
+    }
+    if ((season == Season::SUMMER) ||
+        (season == Season::WINTER))
+    {
+        TData best_brightness = -INFINITY;
+        auto result = std::chrono::system_clock::time_point();
+        for (size_t i = 0; i < 365; ++i) {
+            auto time = start_time + std::chrono::days{i};
+            auto brightness = -sun_direction(time, latitude, longitude)(2);
+            if (season == Season::WINTER) {
+                brightness = -brightness;
+            }
+            if (brightness > best_brightness) {
+                result = time;
+                best_brightness = brightness;
+            }
+        }
+        return result;
+    }
+    THROW_OR_ABORT("Unknown season");
+}
+
 namespace Mlib {
 
-template void sun_angles<double>(const std::chrono::system_clock::time_point&, double& latitude, double& longitude);
+template void sun_angles(const std::chrono::system_clock::time_point&, double& latitude, double& longitude);
 template FixedArray<double, 3> sun_direction(const std::chrono::system_clock::time_point&, double latitude, double longitude);
+template std::chrono::system_clock::time_point time_of_season<double>(
+    Season, const std::chrono::system_clock::time_point& start_time, double latitude, double longitude);
 
 }
