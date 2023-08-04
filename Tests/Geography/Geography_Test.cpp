@@ -11,8 +11,8 @@ void test_sun_position() {
     StbImage1 im1{ArrayShape{512, 1024}};
     for (size_t ilat = 0; ilat < im1.shape(0); ++ilat) {
         for (size_t ilon = 0; ilon < im1.shape(1); ++ilon) {
-            auto lat = double(ilat) * 2. * M_PI / double(im1.shape(0));
-            auto lon = double(ilon) * M_PI / double(im1.shape(1)) - M_PI / 2.;
+            auto lat = double(ilat) * M_PI / double(im1.shape(0)) - M_PI / 2.;
+            auto lon = double(ilon) * 2. * M_PI / double(im1.shape(1));
             auto n = sun_direction(time, lat, lon);
             im1(ilat, ilon) = (uint8_t)std::clamp(std::round(n(2) * 255.), 0., 255.);
         }
