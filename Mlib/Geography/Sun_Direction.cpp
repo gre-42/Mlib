@@ -27,9 +27,11 @@ void Mlib::sun_angles(
     g = positive_modulo(g, 2. * M_PI);
     auto la = L + 1.915 * degrees * std::sin(g) + 0.020 * degrees * std::sin(2 * g);
     auto e = 23.439 * degrees - 0.0000004 * degrees * n.count();
+    auto a = std::atan2(std::cos(e) * std::sin(la), std::cos(la));
     auto d = std::asin(std::sin(e) * std::sin(la));
     latitude = d;
-    longitude = L;
+    // longitude = L;
+    longitude = a;
 }
 
 template <class TData>
