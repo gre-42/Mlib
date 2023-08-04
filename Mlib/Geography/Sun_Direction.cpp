@@ -46,7 +46,7 @@ FixedArray<TData, 3> Mlib::sun_direction(
     sun_angles(time, sun_latitude, sun_longitude);
     auto sun_dir = FixedArray<TData, 3>{
         std::cos(sun_longitude) * std::cos(sun_latitude),
-        std::cos(sun_longitude) * std::sin(sun_latitude),
+        std::sin(sun_latitude),
         std::sin(sun_longitude) * std::cos(sun_latitude)};
     return dot(sun_dir, R);
 }
