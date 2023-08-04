@@ -7,6 +7,12 @@
 
 using namespace Mlib;
 
+void assert_string_equals(const std::string& a, const std::string& b) {
+    if (a != b) {
+        THROW_OR_ABORT("Assertion failed: " + a + " != " + b);
+    }
+}
+
 void test_sun_position() {
     using namespace std::chrono;
     constexpr system_clock::time_point time = sys_days{February/4/2042};
@@ -34,15 +40,16 @@ static std::string serializeTimePoint( const std::chrono::system_clock::time_poi
 
 void test_season() {
     using namespace std::chrono;
-    constexpr system_clock::time_point start_time = sys_days{January/1/2042};
+    using namespace std::literals;
+    constexpr system_clock::time_point start_time = sys_days{January/1/2042} + 12h;
     auto spring = time_of_season(Season::SPRING, start_time, 52.5200 * degrees, 13.4050 * degrees);
     auto summer = time_of_season(Season::SUMMER, start_time, 52.5200 * degrees, 13.4050 * degrees);
     auto autumn = time_of_season(Season::AUTUMN, start_time, 52.5200 * degrees, 13.4050 * degrees);
     auto winter = time_of_season(Season::WINTER, start_time, 52.5200 * degrees, 13.4050 * degrees);
-    assert_true(serializeTimePoint(spring, "%Y-%m-%d %H:%M:%S") == "2043-03-12 00:00:00");
-    assert_true(serializeTimePoint(summer, "%Y-%m-%d %H:%M:%S") == "2042-06-11 00:00:00");
-    assert_true(serializeTimePoint(autumn, "%Y-%m-%d %H:%M:%S") == "2042-09-09 00:00:00");
-    assert_true(serializeTimePoint(winter, "%Y-%m-%d %H:%M:%S") == "2042-12-12 00:00:00");
+    assert_string_equals(serializeTimePoint(spring, "%Y-%m-%d %H:%M:%S"), "2043-03-12 12:00:00");
+    assert_string_equals(serializeTimePoint(summer, "%Y-%m-%d %H:%M:%S"), "2042-06-10 12:00:00");
+    assert_string_equals(serializeTimePoint(autumn, "%Y-%m-%d %H:%M:%S"), "2042-09-08 12:00:00");
+    assert_string_equals(serializeTimePoint(winter, "%Y-%m-%d %H:%M:%S"), "2042-12-12 12:00:00");
 }
 
 int main(int argc, const char** argv) {
