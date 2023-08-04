@@ -44,11 +44,11 @@ FixedArray<TData, 3> Mlib::sun_direction(
     TData sun_latitude;
     TData sun_longitude;
     sun_angles(time, sun_latitude, sun_longitude);
-    auto dir = FixedArray<TData, 3>{
-        std::cos(longitude) * std::cos(latitude),
-        std::cos(longitude) * std::sin(latitude),
-        std::sin(longitude) * std::cos(latitude)};
-    return dot(dir, R);
+    auto sun_dir = FixedArray<TData, 3>{
+        std::cos(sun_longitude) * std::cos(sun_latitude),
+        std::cos(sun_longitude) * std::sin(sun_latitude),
+        std::sin(sun_longitude) * std::cos(sun_latitude)};
+    return dot(sun_dir, R);
 }
 
 namespace Mlib {
