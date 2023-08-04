@@ -39,8 +39,8 @@ FixedArray<TData, 3> Mlib::sun_direction(
     TData longitude)
 {
     auto R = dot2d(
-        rodrigues2(FixedArray<TData, 3>{1., 0., 0.}, latitude),
-        rodrigues2(FixedArray<TData, 3>{0., 1., 0.}, longitude));
+        rodrigues2(FixedArray<TData, 3>{0., 1., 0.}, longitude),
+        rodrigues2(FixedArray<TData, 3>{1., 0., 0.}, latitude));
     TData sun_latitude;
     TData sun_longitude;
     sun_angles(time, sun_latitude, sun_longitude);
