@@ -230,13 +230,39 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 tl.material.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
                 tl.material.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
                 tl.material.specular_exponent = material.ksSpecularEXP;
-                if (!material.txDiffuse.empty() &&
+                if ((material.useDetail != 0.f) &&
+                    (material.detailUVMultiplier != 0.f) &&
+                    !material.txDiffuse.empty() &&
+                    !material.txDetail1.empty())
+                {
+                    tl.material.detail_multiplier = 2.f;
+                    tl.material.textures = {BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = material.txDiffuse,
+                            .normal = material.txNormal,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .role = BlendMapRole::DETAIL_BASE}};
+                    tl.material.textures.push_back(BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = material.txDetail1,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .scale = material.detailUVMultiplier,
+                        .role = BlendMapRole::DETAIL_COLOR});
+                    tl.material.compute_color_mode();
+                } else if (
+                    !material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
                     (material.detailUVMultiplier != 0.f) &&
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material.detail_multiplier = material.magicMult;
+                    tl.material.detail_multiplier = 2.f * material.magicMult;
+                    if ((material.shader == "ksMultilayer_fresnel_nm") &&
+                        (material.fresnelMaxLevel == 0.f))
+                    {
+                        // Hack to get the "ALPINE /  Hill Climb" level running
+                        tl.material.detail_multiplier *= 0.5f;
+                    }
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
@@ -244,7 +270,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .role = BlendMapRole::DETAIL_BASE}};
                     for (uint32_t i = 0; i < 4; ++i) {
-                        if (material.txDetail(i).empty() ||
+                        if (material.txDetail4(i).empty() ||
                             (material.mult(i) == 0.f) ||
                             (material.detailUVMultiplier == 0.f))
                         {
@@ -258,7 +284,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .role = BlendMapRole::DETAIL_MASK_R + i});
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
-                                .color = material.txDetail(i),
+                                .color = material.txDetail4(i),
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.detailUVMultiplier,
                             .role = BlendMapRole::DETAIL_COLOR});

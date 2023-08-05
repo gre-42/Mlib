@@ -46,11 +46,13 @@ struct kn5Material
     FixedArray<float, 4> mult = {1.f, 1.f, 1.f, 1.f};
     float detailNMMult = 1.f;
     float magicMult = 1.f;
+    float fresnelMaxLevel = 0.f;
 
     std::string txDiffuse;
     std::string txNormal;
     std::string txMask;
-    FixedArray<std::string, 4> txDetail;
+    FixedArray<std::string, 4> txDetail4;
+    std::string txDetail1;
     std::string txDetailNM;
 
     std::string shaderProps = "";

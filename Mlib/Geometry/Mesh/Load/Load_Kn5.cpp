@@ -247,17 +247,20 @@ static void readNodes(
             if (material.detailNMMult != 0.f) {
                 matInfo << " detailNMMult: " << material.detailNMMult;
             }
-            if (!material.txDetail(0).empty()) {
-                matInfo << " detailR: " << material.txDetail(0);
+            if (!material.txDetail4(0).empty()) {
+                matInfo << " detailR: " << material.txDetail4(0);
             }
-            if (!material.txDetail(1).empty()) {
-                matInfo << " detailG: " << material.txDetail(1);
+            if (!material.txDetail4(1).empty()) {
+                matInfo << " detailG: " << material.txDetail4(1);
             }
-            if (!material.txDetail(2).empty()) {
-                matInfo << " detailB: " << material.txDetail(2);
+            if (!material.txDetail4(2).empty()) {
+                matInfo << " detailB: " << material.txDetail4(2);
             }
-            if (!material.txDetail(3).empty()) {
-                matInfo << " detailA: " << material.txDetail(3);
+            if (!material.txDetail4(3).empty()) {
+                matInfo << " detailA: " << material.txDetail4(3);
+            }
+            if (!material.txDetail1.empty()) {
+                matInfo << " detail: " << material.txDetail1;
             }
             if (!material.txDetailNM.empty()) {
                 matInfo << " detailNM: " << material.txDetailNM;
@@ -389,6 +392,8 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 newMaterial.detailNMMult = propValue;
             } else if (propName == "magicMult") {
                 newMaterial.magicMult = propValue;
+            } else if (propName == "fresnelMaxLevel") {
+                newMaterial.fresnelMaxLevel = propValue;
             } else {
                 lwarn() << "Unknown material property: " << propName << " = " << propValue;
             }
@@ -412,15 +417,17 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
             } else if (samplerName == "txMask") {
                 newMaterial.txMask = texName;
             } else if (samplerName == "txDetailR") {
-                newMaterial.txDetail(0) = texName;
+                newMaterial.txDetail4(0) = texName;
             } else if (samplerName == "txDetailG") {
-                newMaterial.txDetail(1) = texName;
+                newMaterial.txDetail4(1) = texName;
             } else if (samplerName == "txDetailB") {
-                newMaterial.txDetail(2) = texName;
+                newMaterial.txDetail4(2) = texName;
             } else if (samplerName == "txDetailA") {
-                newMaterial.txDetail(3) = texName;
+                newMaterial.txDetail4(3) = texName;
             } else if (samplerName == "txDetailNM") {
                 newMaterial.txDetailNM = texName;
+            } else if (samplerName == "txDetail") {
+                newMaterial.txDetail1 = texName;
             } else {
                 lwarn() << "Unknown sampler name: " << samplerName;
             }

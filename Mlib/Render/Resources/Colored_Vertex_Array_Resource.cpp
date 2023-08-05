@@ -605,8 +605,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", "tex_coord_flipped") << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
-        if (alpha_threshold != 0) {
-            THROW_OR_ABORT("Alpha-threshold not supported for multiple textures");
+        if (textures[0]->role == BlendMapRole::SUMMAND) {
+            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
+        } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
+            sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ");" << std::endl;
+            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
+            sstr << "    float mask = 1.0;" << std::endl;
+        } else {
+            THROW_OR_ABORT("Unsupported base blend map role");
         }
     }
     if (alpha_threshold != 0) {
@@ -631,17 +637,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    }" << std::endl;
     }
     if (ntextures_color > 1) {
-        if (textures[0]->role == BlendMapRole::SUMMAND) {
-            sstr << "    vec4 texture_color_ambient_diffuse = vec4(0.0, 0.0, 0.0, texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ").a);" << std::endl;
-        } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], tex_coord_flipped * " << textures[0]->scale << ");" << std::endl;
-            sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
-            sstr << "    float mask = 1.0;" << std::endl;
-        } else {
-            THROW_OR_ABORT("Unsupported base blend map role");
-        }
         if (has_normalmap) {
-            sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
+            if (textures[0]->texture_descriptor.normal.empty()) {
+                sstr << "            vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
+            } else {
+                sstr << "            vec3 tnorm = 2.0 * texture(texture_normalmap[0], tex_coord_flipped * " << textures[0]->scale << ").rgb - 1.0;" << std::endl;
+            }
         }
         sstr << "    float sum_weights = 0.0;" << std::endl;
         if (alpha_distances == default_linear_distances) {
