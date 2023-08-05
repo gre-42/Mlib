@@ -13,25 +13,29 @@ TData positive_modulo(TData i, TData n) {
 }
 
 template <typename TData>
+TData days_since_noon_2000_1_1(const std::chrono::system_clock::time_point& time) {
+    using namespace std::chrono;
+    constexpr system_clock::time_point t0 = sys_days{January/1/2000} + 12h;
+    return (duration<TData>(time - t0) / (24. * 60. * 60.)).count();
+}
+
+template <typename TData>
 void Mlib::sun_angles(
     const std::chrono::system_clock::time_point& time,
     TData& latitude,
     TData& longitude)
 {
     // From: https://en.wikipedia.org/wiki/Position_of_the_Sun
-    using namespace std::chrono;
-    constexpr system_clock::time_point t0 = sys_days{January/1/2000};
-    auto n = std::chrono::duration<double>(time - t0) / (24. * 60. * 60.);
-    auto L = 280.460 * degrees + 0.9856474 * degrees * n.count();
-    auto g = 357.528 * degrees + 0.9856003 * degrees * n.count();
+    auto n = days_since_noon_2000_1_1<TData>(time);
+    auto L = 280.460 * degrees + 0.9856474 * degrees * n;
+    auto g = 357.528 * degrees + 0.9856003 * degrees * n;
     L = positive_modulo(L, 2. * M_PI);
     g = positive_modulo(g, 2. * M_PI);
     auto la = L + 1.915 * degrees * std::sin(g) + 0.020 * degrees * std::sin(2 * g);
-    auto e = 23.439 * degrees - 0.0000004 * degrees * n.count();
+    auto e = 23.439 * degrees - 0.0000004 * degrees * n;
     auto a = std::atan2(std::cos(e) * std::sin(la), std::cos(la));
     auto d = std::asin(std::sin(e) * std::sin(la));
     latitude = d;
-    // longitude = L;
     longitude = a;
 }
 
@@ -41,16 +45,18 @@ FixedArray<TData, 3> Mlib::sun_direction(
     TData latitude,
     TData longitude)
 {
+    auto n = days_since_noon_2000_1_1<TData>(time);
+    auto rday = (double)std::remainderl(2. * M_PI * n, 2. * M_PI);
     auto R = dot2d(
-        rodrigues2(FixedArray<TData, 3>{0., 1., 0.}, longitude),
+        rodrigues2(FixedArray<TData, 3>{0., 1., 0.}, longitude - rday),
         rodrigues2(FixedArray<TData, 3>{1., 0., 0.}, -latitude));
     TData sun_latitude;
     TData sun_longitude;
     sun_angles(time, sun_latitude, sun_longitude);
     auto sun_dir = -FixedArray<TData, 3>{
-        std::cos(sun_longitude) * std::cos(sun_latitude),
+        std::sin(sun_longitude) * std::cos(sun_latitude),
         std::sin(sun_latitude),
-        std::sin(sun_longitude) * std::cos(sun_latitude)};
+        -std::cos(sun_longitude) * std::cos(sun_latitude)};
     return dot(sun_dir, R);
 }
 
