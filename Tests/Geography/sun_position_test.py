@@ -13,7 +13,7 @@ jd = datetime.datetime(2013, 4, 16, hour=12)
 jd = pyasl.jdcnv(jd)
 
 time, sun_ra, sun_dec = pyasl.sunpos(jd)
-print(sun_ra * degrees, sun_dec * degrees)
+
 # x = np.arange(512)
 # y = np.arange(256)
 # xv, yv = np.meshgrid(x, y)
@@ -31,7 +31,6 @@ print(sun_ra * degrees, sun_dec * degrees)
 
 a = np.empty(shape=(256 // 10, 512 // 10))
 for r in range(a.shape[0]):
-    print(r)
     for c in range(a.shape[1]):
         observer_lon = c * 2 * np.pi / a.shape[1] - np.pi
         observer_lat = r * np.pi / a.shape[0] - np.pi / 2

@@ -9,10 +9,13 @@ class FixedArray;
 enum class Season;
 
 template <typename TData>
+TData days_since_noon_2000_1_1(const std::chrono::system_clock::time_point& time);
+
+template <typename TData>
 void sun_angles(
-    const std::chrono::system_clock::time_point& time,
-    TData& latitude,
-    TData& longitude);
+    double jddays,
+    TData& ra,
+    TData& dec);
 
 template <class TData>
 FixedArray<TData, 3> sun_direction(

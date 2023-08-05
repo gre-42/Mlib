@@ -24,11 +24,22 @@ void assert_string_equals(const std::string& a, const std::string& b) {
     }
 }
 
+void test_sun_angles() {
+    using namespace std::chrono;
+    using namespace std::literals;
+    system_clock::time_point time = sys_days{April/16/2013} + 12h;
+    double ra;
+    double dec;
+    sun_angles(days_since_noon_2000_1_1<double>(time), ra, dec);
+    assert_isclose(ra, 0.431679);
+    assert_isclose(dec, 0.179427);
+}
+
 void test_sun_position() {
-    for (uint64_t nh = 8; nh <= 16; ++nh) {
+    for (uint64_t nh = 8; nh <= 16; nh += 2) {
         using namespace std::chrono;
         using namespace std::literals;
-        system_clock::time_point time = sys_days{August/5/2023} + std::chrono::hours{nh};
+        system_clock::time_point time = sys_days{April/16/2016} + std::chrono::hours{nh};
         StbImage1 im1{ArrayShape{256, 512}};
         for (size_t ilat = 0; ilat < im1.shape(0); ++ilat) {
             for (size_t ilon = 0; ilon < im1.shape(1); ++ilon) {
@@ -66,10 +77,10 @@ void test_season_berlin() {
     auto summer = time_of_season(Season::SUMMER, start_time, 52.5200 * degrees, 13.4050 * degrees);
     auto autumn = time_of_season(Season::AUTUMN, start_time, 52.5200 * degrees, 13.4050 * degrees);
     auto winter = time_of_season(Season::WINTER, start_time, 52.5200 * degrees, 13.4050 * degrees);
-    assert_string_equals(serialize_time_point(spring, "%Y-%m-%d %H:%M:%S"), "2042-05-20 10:00:00");
-    assert_string_equals(serialize_time_point(summer, "%Y-%m-%d %H:%M:%S"), "2042-08-24 10:00:00");
-    assert_string_equals(serialize_time_point(autumn, "%Y-%m-%d %H:%M:%S"), "2042-11-22 10:00:00");
-    assert_string_equals(serialize_time_point(winter, "%Y-%m-%d %H:%M:%S"), "2042-02-19 10:00:00");
+    assert_string_equals(serialize_time_point(spring, "%Y-%m-%d %H:%M:%S"), "2043-03-24 10:00:00");
+    assert_string_equals(serialize_time_point(summer, "%Y-%m-%d %H:%M:%S"), "2042-06-18 10:00:00");
+    assert_string_equals(serialize_time_point(autumn, "%Y-%m-%d %H:%M:%S"), "2042-09-16 10:00:00");
+    assert_string_equals(serialize_time_point(winter, "%Y-%m-%d %H:%M:%S"), "2042-12-24 10:00:00");
 }
 
 void test_season_christchurch() {
@@ -80,14 +91,15 @@ void test_season_christchurch() {
     auto summer = time_of_season(Season::SUMMER, start_time, -43.5320 * degrees, 172.6306 * degrees);
     auto autumn = time_of_season(Season::AUTUMN, start_time, -43.5320 * degrees, 172.6306 * degrees);
     auto winter = time_of_season(Season::WINTER, start_time, -43.5320 * degrees, 172.6306 * degrees);
-    assert_string_equals(serialize_time_point(spring, "%Y-%m-%d %H:%M:%S"), "2043-03-08 03:00:00");
-    assert_string_equals(serialize_time_point(summer, "%Y-%m-%d %H:%M:%S"), "2042-06-06 03:00:00");
-    assert_string_equals(serialize_time_point(autumn, "%Y-%m-%d %H:%M:%S"), "2042-09-04 03:00:00");
-    assert_string_equals(serialize_time_point(winter, "%Y-%m-%d %H:%M:%S"), "2042-12-08 03:00:00");
+    assert_string_equals(serialize_time_point(spring, "%Y-%m-%d %H:%M:%S"), "2042-09-20 00:00:00");
+    assert_string_equals(serialize_time_point(summer, "%Y-%m-%d %H:%M:%S"), "2042-12-18 00:00:00");
+    assert_string_equals(serialize_time_point(autumn, "%Y-%m-%d %H:%M:%S"), "2043-03-18 00:00:00");
+    assert_string_equals(serialize_time_point(winter, "%Y-%m-%d %H:%M:%S"), "2042-06-22 00:00:00");
 }
 
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
+    test_sun_angles();
     test_sun_position();
     test_sun_position_day();
     test_season_berlin();
