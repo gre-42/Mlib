@@ -240,7 +240,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !material.txDiffuse.empty() &&
                     !material.txDetail1.empty())
                 {
-                    tl.material.detail_multiplier = 2.f;
+                    tl.material.detail_multiplier = 1.f;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
@@ -261,13 +261,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material.detail_multiplier = 2.f * material.magicMult;
-                    // if ((material.shader == "ksMultilayer_fresnel_nm") &&
-                    //     (material.fresnelMaxLevel == 0.f))
-                    // {
-                    //     // Hack to get the "ALPINE /  Hill Climb" level running
-                    //     tl.material.detail_multiplier *= 0.5f;
-                    // }
+                    tl.material.detail_multiplier = material.magicMult;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
