@@ -468,7 +468,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (has_interiormap) {
-        sstr << "bool is_in_interior(mat3 TBN) {" << std::endl;
+        sstr << "bool is_in_interior(mat3 TBN, float alpha_fac) {" << std::endl;
         sstr << "    vec3 rel_view_pos = transpose(TBN) * (viewPos - interior_bottom_left_fs);" << std::endl;
         sstr << "    vec2 rel_frag_pos = (transpose(TBN) * (FragPos - interior_bottom_left_fs)).xy;" << std::endl;
         sstr << "    rel_view_pos.xy *= interior_multiplier_fs;" << std::endl;
@@ -531,9 +531,38 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size).xy;" << std::endl;
         sstr << "    }" << std::endl;
         sstr << "    frag_color = texture(texture_interior[2 * best_axis + int(best_sign)], best_uv);" << std::endl;
+        sstr << "    frag_color.a *= alpha_fac;" << std::endl;
         sstr << "    return true;" << std::endl;
         sstr << "}" << std::endl;
     }
+    auto compute_normal_and_reorient_uv0 = [&](){
+        if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
+            // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
+            sstr << "    vec3 norm = normalize(Normal);" << std::endl;
+            // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
+        }
+        if (reorient_uv0 || reorient_normals) {
+            if (orthographic) {
+                sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
+            } else {
+                // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
+                sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
+                sstr << "    if (dot(norm, normalvector) < 0.0) {" << std::endl;
+            }
+            if (reorient_normals) {
+                sstr << "        norm = -norm;" << std::endl;
+            }
+            if (reorient_uv0) {
+                sstr << "        tex_coord_flipped.s = -tex_coord_flipped.s;" << std::endl;
+            }
+            sstr << "    }" << std::endl;
+        }
+    };
+    auto compute_TBN = [&](){
+        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
+        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
+        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
+    };
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if ((nbillboard_ids != 0) && !orthographic) {
@@ -572,36 +601,20 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (alpha != 1.f) {
         sstr << "    alpha_fac *= " << alpha << ';' << std::endl;
     }
-    auto compute_normal = [&](){
-        if (!diffusivity.all_equal(0) || !specularity.all_equal(0) || fragments_depend_on_normal) {
-            // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
-            sstr << "    vec3 norm = normalize(Normal);" << std::endl;
-            // sstr << "    vec3 lightDir = normalize(lightPos - FragPos);" << std::endl;
-        }
-        if (reorient_uv0 || reorient_normals) {
-            if (orthographic) {
-                sstr << "    if (dot(norm, viewDir) < 0.0) {" << std::endl;
-            } else {
-                // From: https://stackoverflow.com/questions/2523439/ipad-glsl-from-within-a-fragment-shader-how-do-i-get-the-surface-not-vertex
-                sstr << "    vec3 normalvector = cross(dFdx(FragPos), dFdy(FragPos));" << std::endl;
-                sstr << "    if (dot(norm, normalvector) < 0.0) {" << std::endl;
-            }
-            if (reorient_normals) {
-                sstr << "        norm = -norm;" << std::endl;
-            }
-            if (reorient_uv0) {
-                sstr << "        tex_coord_flipped.s = -tex_coord_flipped.s;" << std::endl;
-            }
-            sstr << "    }" << std::endl;
-        }
-    };
     if (ntextures_color != 0) {
         sstr << "    vec2 tex_coord_flipped = tex_coord;" << std::endl;
     }
+    if (has_interiormap) {
+        compute_normal_and_reorient_uv0();
+        compute_TBN();
+        sstr << "    if (is_in_interior(TBN, alpha_fac)) {" << std::endl;
+        sstr << "        return;" << std::endl;
+        sstr << "    }" << std::endl;
+    }
+    if (((ntextures_color != 0) || !specularity.all_equal(0)) && !has_interiormap) {
+        compute_normal_and_reorient_uv0();
+    }
     if (ntextures_color == 1) {
-        if (reorient_uv0) {
-            compute_normal();
-        }
         sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", "tex_coord_flipped") << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
@@ -621,19 +634,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "    if (texture_color_ambient_diffuse.a < " << alpha_threshold << ") {" << std::endl;
         sstr << "        discard;" << std::endl;
-        sstr << "    }" << std::endl;
-    }
-    if ((ntextures_color != 1) || !reorient_uv0) {
-        compute_normal();
-    }
-    if (has_normalmap || has_interiormap) {
-        sstr << "    vec3 tang = normalize(tangent);" << std::endl;
-        sstr << "    vec3 bitan = normalize(bitangent);" << std::endl;
-        sstr << "    mat3 TBN = mat3(tang, bitan, norm);" << std::endl;
-    }
-    if (has_interiormap) {
-        sstr << "    if (is_in_interior(TBN)) {" << std::endl;
-        sstr << "        return;" << std::endl;
         sstr << "    }" << std::endl;
     }
     if (ntextures_color > 1) {
@@ -772,6 +772,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_normalmap) {
         if (ntextures_color == 1) {
             sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], tex_coord_flipped).rgb - 1.0;" << std::endl;
+        }
+        if (!has_interiormap) {
+            compute_TBN();
         }
         sstr << "    norm = normalize(TBN * tnorm);" << std::endl;
     }
