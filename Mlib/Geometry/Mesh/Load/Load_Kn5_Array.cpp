@@ -13,6 +13,7 @@
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <filesystem>
@@ -35,10 +36,10 @@ static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
 {
     if (R(1u, 1u) > 0.f) {
         // Akagi
-        return dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, float(M_PI), 0.f}));
+        return dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, 180.f * degrees, 0.f}));
     } else {
         // Hondarribia, Irohazaka
-        return trafo(dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{float(M_PI), 0.f, 0.f})));
+        return trafo(dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{180.f * degrees, 0.f, 0.f})));
     }
 }
 
@@ -51,8 +52,12 @@ static TransformationMatrix<float, double, 3> ac_center(
     const TransformationMatrix<float, double, 3>& left,
     const TransformationMatrix<float, double, 3>& right)
 {
+    // Semetin
+    auto d = dot0d((right.t() - left.t()).casted<float>(), left.R().column(0));
     return TransformationMatrix<float, double, 3>{
-        left.R(),
+        d > 0.f
+            ? left.R()
+            : dot2d(left.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 180.f * degrees)),
         (left.t() + right.t()) / 2.};
 }
 
