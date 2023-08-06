@@ -230,10 +230,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
                     }
                 }
-                tl.material.emissivity = OrderableFixedArray{fixed_full<float, 3>(material.ksEmissive)};
-                tl.material.ambience = OrderableFixedArray{fixed_full<float, 3>(material.ksAmbient)};
-                tl.material.diffusivity = OrderableFixedArray{fixed_full<float, 3>(material.ksDiffuse)};
-                tl.material.specularity = OrderableFixedArray{fixed_full<float, 3>(material.ksSpecular)};
+                tl.material.emissivity = OrderableFixedArray{cfg.emissivity_factor * material.ksEmissive};
+                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient};
+                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse};
+                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular};
                 tl.material.specular_exponent = material.ksSpecularEXP;
                 if ((material.useDetail != 0.f) &&
                     (material.detailUVMultiplier != 0.f) &&

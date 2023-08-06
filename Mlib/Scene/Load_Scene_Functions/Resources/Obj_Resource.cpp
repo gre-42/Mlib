@@ -47,6 +47,10 @@ DECLARE_ARGUMENT(magnifying_interpolation_mode);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
 DECLARE_ARGUMENT(reflection_map);
+DECLARE_ARGUMENT(emissivity_factor);
+DECLARE_ARGUMENT(ambience_factor);
+DECLARE_ARGUMENT(diffusivity_factor);
+DECLARE_ARGUMENT(specularity_factor);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
@@ -123,6 +127,10 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .reflection_map = args.arguments.at<std::string>(KnownArgs::reflection_map, ""),
+        .emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor, fixed_ones<float, 3>()),
+        .ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, fixed_ones<float, 3>()),
+        .diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, fixed_ones<float, 3>()),
+        .specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, fixed_ones<float, 3>()),
         .desaturate = args.arguments.at<bool>(KnownArgs::desaturate, false),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
         .triangle_tangent_error_behavior = args.arguments.contains(KnownArgs::triangle_tangent_error_behavior)

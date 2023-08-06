@@ -62,9 +62,9 @@ struct Material {
     bool cull_faces = true;
     bool reorient_uv0 = false;
     OrderableFixedArray<float, 3> emissivity{0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> ambience{0.5f, 0.5f, 0.5f};
-    OrderableFixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
-    OrderableFixedArray<float, 3> specularity{1.f, 1.f, 1.f};
+    OrderableFixedArray<float, 3> ambience{1.f, 1.f, 1.f};
+    OrderableFixedArray<float, 3> diffusivity{0.8f, 0.8f, 0.8f};
+    OrderableFixedArray<float, 3> specularity{0.5f, 0.5f, 0.5f};
     float specular_exponent = 4.f;
     float alpha = 1.f;
     bool reflect_only_y = false;

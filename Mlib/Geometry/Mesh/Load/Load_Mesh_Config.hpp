@@ -30,6 +30,10 @@ struct LoadMeshConfig {
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::string reflection_map;
+    FixedArray<float, 3> emissivity_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
     bool desaturate = false;
     std::string histogram;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
