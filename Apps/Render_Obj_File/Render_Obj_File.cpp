@@ -551,6 +551,7 @@ int main(int argc, char** argv) {
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                     .max_triangle_distance = INFINITY,
                     .cull_faces = false,
+                    .ambience = {1.f, 1.f, 1.f}
                 },
                 scene_node_resources,
                 *RenderingContextStack::primary_rendering_resources());

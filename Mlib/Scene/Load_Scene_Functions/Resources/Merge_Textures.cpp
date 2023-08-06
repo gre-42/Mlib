@@ -26,6 +26,7 @@ DECLARE_ARGUMENT(merged_occluder_pass);
 DECLARE_ARGUMENT(merged_aggregate_mode);
 DECLARE_ARGUMENT(merged_max_triangle_distance);
 DECLARE_ARGUMENT(merged_cull_faces);
+DECLARE_ARGUMENT(merged_ambience);
 }
 
 const std::string MergeBlendedMaterials::key = "merge_textures";
@@ -48,7 +49,8 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::merged_occluder_pass)),
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_aggregate_mode)),
             .max_triangle_distance = args.arguments.at<float>(KnownArgs::merged_max_triangle_distance),
-            .cull_faces = args.arguments.at<bool>(KnownArgs::merged_cull_faces)
+            .cull_faces = args.arguments.at<bool>(KnownArgs::merged_cull_faces),
+            .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::merged_ambience)
          },
          &scene_node_resources = scene_node_resources,
          rendering_resources = rendering_resources]

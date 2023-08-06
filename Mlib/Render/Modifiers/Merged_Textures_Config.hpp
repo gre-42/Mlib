@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <string>
 
 namespace Mlib {
@@ -18,6 +19,7 @@ struct MergedTexturesConfig {
     AggregateMode aggregate_mode;
     float max_triangle_distance;
     bool cull_faces;
+    FixedArray<float, 3> ambience;
 };
 
 }

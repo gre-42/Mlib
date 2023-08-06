@@ -131,7 +131,7 @@ void Mlib::merge_textures(
                         .max_triangle_distance = merged_materials_config.max_triangle_distance,
                         .cull_faces = merged_materials_config.cull_faces,
                         .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
-                        .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
+                        .ambience = OrderableFixedArray{merged_materials_config.ambience},
                         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}},
                     PhysicsMaterial::ATTR_VISIBLE,
