@@ -29,6 +29,9 @@ void Mlib::collide_convex_meshes(
     if (!msh0.mesh->intersects(*msh1.mesh)) {
         return;
     }
+    auto line_mask = (
+        PhysicsMaterial::OBJ_TIRE_LINE |
+        PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT);
     for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
         collide_triangle_and_triangles(
             o0,
@@ -37,7 +40,7 @@ void Mlib::collide_convex_meshes(
             msh1,
             t0,
             history);
-        if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+        if (any(msh1.physics_material & line_mask)) {
             collide_triangle_and_lines(
                 o0,
                 o1,
@@ -54,7 +57,7 @@ void Mlib::collide_convex_meshes(
             msh0,
             t1,
             history);
-        if (any(msh0.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
+        if (any(msh0.physics_material & line_mask)) {
             collide_triangle_and_lines(
                 o1,
                 o0,
