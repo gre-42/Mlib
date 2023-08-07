@@ -156,6 +156,10 @@ struct OsmResourceConfig {
     float street_edge_smoothness = 0;
     float terrain_edge_smoothness = 0;
     float bump_height = 1.f;
+    FixedArray<float, 3> emissivity_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     bool blend_street = false;
     Interp<double> layer_heights{std::vector<double>{}, std::vector<double>{}};

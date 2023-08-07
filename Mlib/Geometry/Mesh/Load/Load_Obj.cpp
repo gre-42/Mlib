@@ -313,10 +313,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 } else {
                     tl.material.occluder_pass = cfg.occluder_pass;
                 }
-                tl.material.emissivity = current_mtl.emissivity;
-                tl.material.ambience = current_mtl.ambience;
-                tl.material.diffusivity = current_mtl.diffusivity;
-                tl.material.specularity = current_mtl.specularity;
+                tl.material.emissivity = cfg.emissivity_factor * current_mtl.emissivity;
+                tl.material.ambience = cfg.ambience_factor * current_mtl.ambience;
+                tl.material.diffusivity = cfg.diffusivity_factor * current_mtl.diffusivity;
+                tl.material.specularity = cfg.specularity_factor * current_mtl.specularity;
                 tl.material.specular_exponent = current_mtl.specular_exponent;
                 tl.material.alpha = current_mtl.alpha;
                 tl.material.compute_color_mode();

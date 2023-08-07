@@ -51,6 +51,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Water_Region_Contours.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Load_Racing_Line_Bvh.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -283,8 +284,10 @@ OsmMapResource::OsmMapResource(
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1.f, 1.f, 1.f},
-                .specularity = {0.f, 0.f, 0.f},
+                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
+                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
+                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
+                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
                 .draw_distance_noperations = 1000},
             buildings,
             nodes,
@@ -344,6 +347,10 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .cull_faces = false,
                 .reorient_uv0 = true,
+                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
+                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
+                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
+                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
                 .draw_distance_noperations = 1000},
             wall_barriers,
             nodes,
@@ -362,6 +369,10 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .cull_faces = false,
                 .reorient_uv0 = true,
+                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
+                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
+                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
+                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
                 .draw_distance_noperations = 1000},
             config.scale,
             config.uv_scale_barrier_wall,
@@ -534,7 +545,10 @@ OsmMapResource::OsmMapResource(
                 .textures = { primary_rendering_resources->get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .ambience = {1.f, 1.f, 1.f},
+                .emissivity = OrderableFixedArray{ROOF_EMISSIVITY * config.emissivity_factor},
+                .ambience = OrderableFixedArray{ROOF_AMBIENCE * config.ambience_factor},
+                .diffusivity = OrderableFixedArray{ROOF_DIFFUSIVITY * config.diffusivity_factor},
+                .specularity = OrderableFixedArray{ROOF_SPECULARITY * config.specularity_factor},
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             roof_color,
             buildings,
@@ -950,13 +964,17 @@ OsmMapResource::OsmMapResource(
             // add_binary_vegetation(
             //     tls,
             //     Material{
-            //         texture: grass_texture,
-            //         mixed_texture: "",
-            //         overlap_npixels: 0,
-            //         blend_mode: BlendMode::BINARY,
-            //         wrap_mode: WrapMode::CLAMP_TO_EDGE,
-            //         collide: false,
-            //         aggregate_mode: AggregateMode::ONCE},
+            //         .texture: grass_texture,
+            //         .mixed_texture: "",
+            //         .overlap_npixels: 0,
+            //         .blend_mode: BlendMode::BINARY,
+            //         .wrap_mode: WrapMode::CLAMP_TO_EDGE,
+            //         .collide: false,
+            //         .aggregate_mode: AggregateMode::ONCE,
+            //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissivity_factor},
+            //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
+            //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
+            //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor},},
             //     grass_texture,
             //     tree_texture,
             //     tree_texture_2,

@@ -431,10 +431,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
     {
-        bool pred0 = reorient_uv0 || (!specularity.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
-        if (pred0 || has_interiormap || reorient_normals) {
+        bool pred0 = (!specularity.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
+        if (pred0 || reorient_uv0 || has_interiormap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
-            if ((pred0 || reorient_normals) && orthographic) {
+            if ((pred0 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
             if ((pred0 && !orthographic) || has_interiormap) {
@@ -1447,9 +1447,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             }
         }
         {
-            bool pred0 = id.has_lookat || (!id.specularity.all_equal(0) && id.specular_exponent != 0.f) || id.reorient_uv0 || (id.fragments_depend_on_distance && !id.orthographic);
-            if (pred0 || id.reorient_normals || (id.ntextures_interior != 0)) {
-                if (((pred0 || id.reorient_normals) && id.orthographic)) {
+            bool pred0 = id.has_lookat || (!id.specularity.all_equal(0) && id.specular_exponent != 0.f) || (id.fragments_depend_on_distance && !id.orthographic);
+            if (pred0 || id.reorient_uv0 || id.reorient_normals || (id.ntextures_interior != 0)) {
+                if (((pred0 || id.reorient_uv0 || id.reorient_normals) && id.orthographic)) {
                     rp->view_dir = checked_glGetUniformLocation(rp->program, "viewDir");
                     rp->view_pos = 0;
                 } else {

@@ -434,7 +434,7 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
         THROW_OR_ABORT("reorient_uv0 requires disabled face culling");
     }
-    bool reorient_uv0 = cva->material.reorient_uv0 && !is_lightmap;
+    bool reorient_uv0 = cva->material.reorient_uv0 && (tic.ntextures_color != 0);
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     const ColoredRenderProgram& rp = rcva_->get_render_program(
@@ -614,10 +614,10 @@ void RenderableColoredVertexArray::render_cva(
     }
     {
         bool pred0 = has_lookat || (any(specularity != 0.f) && (cva->material.specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
-        if (pred0 || (tic.ntextures_interior != 0) || reorient_normals) {
+        if (pred0 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
-            if ((pred0 || reorient_normals) && ortho) {
+            if ((pred0 || reorient_uv0 || reorient_normals) && ortho) {
                 auto d = z3_from_3x3(miv.R());
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));

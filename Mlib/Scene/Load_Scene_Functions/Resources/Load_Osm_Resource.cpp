@@ -202,6 +202,10 @@ DECLARE_ARGUMENT(terrain_edge_smoothness);
 DECLARE_ARGUMENT(bump_height);
 DECLARE_ARGUMENT(driving_direction);
 DECLARE_ARGUMENT(blend_street);
+DECLARE_ARGUMENT(emissivity_factor);
+DECLARE_ARGUMENT(ambience_factor);
+DECLARE_ARGUMENT(diffusivity_factor);
+DECLARE_ARGUMENT(specularity_factor);
 DECLARE_ARGUMENT(layer_heights_layer);
 DECLARE_ARGUMENT(layer_heights_height);
 DECLARE_ARGUMENT(game_level);
@@ -822,6 +826,18 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::blend_street)) {
             config.blend_street = args.arguments.at<bool>(KnownArgs::blend_street);
+        }
+        if (args.arguments.contains(KnownArgs::emissivity_factor)) {
+            config.emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor);
+        }
+        if (args.arguments.contains(KnownArgs::ambience_factor)) {
+            config.ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor);
+        }
+        if (args.arguments.contains(KnownArgs::diffusivity_factor)) {
+            config.diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor);
+        }
+        if (args.arguments.contains(KnownArgs::specularity_factor)) {
+            config.specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor);
         }
         if (args.arguments.contains(KnownArgs::layer_heights_layer)) {
             layer_heights_layer = args.arguments.at<std::vector<double>>(KnownArgs::layer_heights_layer);
