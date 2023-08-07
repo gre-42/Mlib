@@ -90,3 +90,11 @@ void GridResource::modify_physics_material_tags(
 void GridResource::generate_instances() {
     // Do nothing
 }
+
+void GridResource::create_barrier_triangle_hitboxes(
+    float depth,
+    PhysicsMaterial destination_physics_material,
+    const ColoredVertexArrayFilter& filter)
+{
+    // Do nothing
+}

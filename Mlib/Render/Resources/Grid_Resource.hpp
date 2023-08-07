@@ -35,6 +35,10 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
     virtual void generate_instances() override;
+    virtual void create_barrier_triangle_hitboxes(
+        float depth,
+        PhysicsMaterial destination_physics_material,
+        const ColoredVertexArrayFilter& filter) override;
 
 private:
     std::shared_ptr<ColoredVertexArrayResource> rva_;
