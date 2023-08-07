@@ -38,7 +38,8 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                     {"LEVEL_ICON_FILE", "#black"},
                     {"IF_RACEWAY_CIRCULAR", false},
                     {"STAGE_INI_FILENAME", stage_filename}
-                })
+                }),
+                .required = {"%GAME_MODE == 'rally'"}
             },
             .filename = script_filename_});
     };

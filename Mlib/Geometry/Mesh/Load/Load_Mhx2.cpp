@@ -199,9 +199,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}
             },
-            .ambience = OrderableFixedArray{material.at("ambient_color").get<FixedArray<float, 3>>()},
-            .diffusivity = OrderableFixedArray{material.at("diffuse_color").get<FixedArray<float, 3>>()},
-            .specularity = OrderableFixedArray{material.at("specular_color").get<FixedArray<float, 3>>()}
+            .emissivity = OrderableFixedArray{cfg.emissivity_factor * material.at("emissive_color").get<FixedArray<float, 3>>()},
+            .ambience = OrderableFixedArray{cfg.ambience_factor * material.at("ambient_color").get<FixedArray<float, 3>>()},
+            .diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.at("diffuse_color").get<FixedArray<float, 3>>()},
+            .specularity = OrderableFixedArray{cfg.specularity_factor * material.at("specular_color").get<FixedArray<float, 3>>()}
         }}).second) {
             THROW_OR_ABORT("Could not insert material " + material.at("name").get<std::string>());
         }

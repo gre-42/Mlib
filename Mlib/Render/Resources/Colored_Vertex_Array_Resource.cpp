@@ -611,7 +611,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        return;" << std::endl;
         sstr << "    }" << std::endl;
     }
-    if (((ntextures_color != 0) || !specularity.all_equal(0)) && !has_interiormap) {
+    if (((ntextures_color != 0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) && !has_interiormap) {
         compute_normal_and_reorient_uv0();
     }
     if (ntextures_color == 1) {
