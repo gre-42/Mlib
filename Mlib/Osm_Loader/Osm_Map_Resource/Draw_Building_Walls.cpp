@@ -33,6 +33,7 @@ void Mlib::draw_building_walls(
             tls.push_back(std::make_shared<TriangleList<double>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
+                // Add PhysicsMaterial::ATTR_SELF_CONTAINED because touching buildings would require deleting hidden walls.
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | PhysicsMaterial::ATTR_SELF_CONTAINED));
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);

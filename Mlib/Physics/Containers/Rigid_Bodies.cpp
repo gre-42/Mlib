@@ -354,11 +354,11 @@ void RigidBodies::bake_collision_ridges(
         auto b = OrderableFixedArray{r->crp.edge(1)};
         if (a < b) {
             if (!ridge_map_.insert({{a, b}, &r->crp}).second) {
-                lwarn() << "Could not insert into ridge-map, duplicate edge: " << a << " <-> " << b;
+                lwarn() << "Could not insert into ridge-map (expected if objects have ATTR_SELF_CONTAINED). Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
             }
         } else {
             if (!ridge_map_.insert({{b, a}, &r->crp}).second) {
-                lwarn() << "Could not insert into ridge-map, duplicate edge: " << b << " <-> " << a;
+                lwarn() << "Could not insert into ridge-map (expected if objects have ATTR_SELF_CONTAINED). Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
             }
         }
     }
