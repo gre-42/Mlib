@@ -28,4 +28,9 @@ static const float ROOF_AMBIENCE = 1.f;
 static const float ROOF_DIFFUSIVITY = 0.8f;
 static const float ROOF_SPECULARITY = 0.2f;
 
+static const float CEILING_EMISSIVITY = 0.f;
+static const float CEILING_AMBIENCE = 1.f;
+static const float CEILING_DIFFUSIVITY = 0.8f;
+static const float CEILING_SPECULARITY = 0.2f;
+
 }
