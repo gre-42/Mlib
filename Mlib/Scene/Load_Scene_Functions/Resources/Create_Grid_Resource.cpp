@@ -38,6 +38,10 @@ DECLARE_ARGUMENT(uv_scale);
 DECLARE_ARGUMENT(period);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
+DECLARE_ARGUMENT(emissivity_factor);
+DECLARE_ARGUMENT(ambience_factor);
+DECLARE_ARGUMENT(diffusivity_factor);
+DECLARE_ARGUMENT(specularity_factor);
 }
 
 const std::string CreateGridResource::key = "grid_resource";
@@ -48,6 +52,16 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
 
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
+    auto emissivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
+    auto ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience);
+    auto diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity);
+    auto specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity);
+
+    auto emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor, FixedArray<float, 3>(1.f));
+    auto ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, FixedArray<float, 3>(1.f));
+    auto diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, FixedArray<float, 3>(1.f));
+    auto specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, FixedArray<float, 3>(1.f));
+    
     RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
         args.arguments.at<FixedArray<size_t, 2>>(KnownArgs::size),
         TransformationMatrix<float, double, 3>(
@@ -78,9 +92,9 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                     KnownArgs::center_distances,
                     FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
-            .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
-            .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
-            .diffusivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::diffusivity),
-            .specularity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::specularity)
+            .emissivity = OrderableFixedArray{emissivity * emissivity_factor},
+            .ambience = OrderableFixedArray{ambience * ambience_factor},
+            .diffusivity = OrderableFixedArray{diffusivity * diffusivity_factor},
+            .specularity = OrderableFixedArray{specularity * specularity_factor}
             }.compute_color_mode()));
 };
