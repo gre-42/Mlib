@@ -17,5 +17,5 @@ const std::string Echo::key = "echo";
 LoadSceneJsonUserFunction Echo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    linfo() << args.arguments.at<std::string>(KnownArgs::message);
+    linfo() << args.arguments.at(KnownArgs::message);
 };
