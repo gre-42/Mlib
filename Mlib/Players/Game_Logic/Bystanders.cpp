@@ -68,7 +68,7 @@ bool Bystanders::spawn_for_vip(
         // Abort if another car is nearby.
         {
             bool exists = false;
-            for (auto const& [_, player2] : players_.players()) {
+            for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
                     if (sum(squared(sp->position - player2->scene_node().position())) < squared(cfg_.r_neighbors)) {
                         exists = true;

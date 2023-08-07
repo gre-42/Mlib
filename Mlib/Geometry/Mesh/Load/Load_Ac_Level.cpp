@@ -43,7 +43,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             },
             .filename = script_filename_});
     };
-    for (auto const& level_dir : list_dir(path)) {
+    for (const auto& level_dir : list_dir(path)) {
         auto ui_dir = level_dir / fs::path{"ui"};
         if (!path_exists(ui_dir)) {
             continue;
@@ -51,7 +51,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         if (auto ui_track_filename = ui_dir / fs::path{"ui_track.json"}; path_exists(ui_track_filename))
         {
             std::list<fs::path> kn5_candidates;
-            for (auto const& kn5_file : list_dir(level_dir)) {
+            for (const auto& kn5_file : list_dir(level_dir)) {
                 if (kn5_file.path().extension() == ".kn5") {
                     kn5_candidates.push_back(kn5_file);
                 }
@@ -64,7 +64,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 ui_track_filename,
                 kn5_candidates.front().stem().string());
         } else {
-            for (auto const& stage_dir : list_dir(ui_dir)) {
+            for (const auto& stage_dir : list_dir(ui_dir)) {
                 if (!is_listable(stage_dir)) {
                     continue;
                 }

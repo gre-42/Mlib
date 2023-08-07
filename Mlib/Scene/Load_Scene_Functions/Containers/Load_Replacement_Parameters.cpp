@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction LoadReplacementParameters::json_user_function = [](con
     auto& group = args.asset_references.get(id_val);
     static DECLARE_REGEX(manifest_regex, "^.*manifest.*\\.json$");
     for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
-        for (auto const& level_dir : list_dir(root)) {
+        for (const auto& level_dir : list_dir(root)) {
             if (!is_listable(level_dir)) {
                 continue;
             }
