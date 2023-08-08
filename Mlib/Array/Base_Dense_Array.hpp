@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Mlib {
+
 enum class ApplyOverAxisType {
     REDUCE,
     NOREDUCE
@@ -21,3 +23,5 @@ public:
         return *reinterpret_cast<TDerived*>(this);
     }
 };
+
+}
