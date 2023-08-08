@@ -30,16 +30,21 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         if (f->fail()) {
             THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
         }
+        // Storing fields in temporary variables to
+        // work around a bug in MSVC.
+        auto jv = JsonView{j};
+        auto globals = JsonMacroArguments({
+            {"LEVEL_ICON_FILE", "#black"},
+            {"IF_RACEWAY_CIRCULAR", false},
+            {"STAGE_INI_FILENAME", stage_filename}
+        });
+        auto required = std::vector<std::string>({"%GAME_MODE == 'rally'"});
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
                 .id = level_id,
-                .title = JsonView{j}.at<std::string>("name"),
-                .globals = JsonMacroArguments({
-                    {"LEVEL_ICON_FILE", "#black"},
-                    {"IF_RACEWAY_CIRCULAR", false},
-                    {"STAGE_INI_FILENAME", stage_filename}
-                }),
-                .required = {"%GAME_MODE == 'rally'"}
+                .title = jv.at<std::string>("name"),
+                .globals = std::move(globals),
+                .required = std::move(required)
             },
             .filename = script_filename_});
     };
