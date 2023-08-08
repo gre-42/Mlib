@@ -17,10 +17,11 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     for (const auto& t : cva.material.textures) {
         lcm_args.push_back(1.f / t.scale);
     }
-    // linfo() << "period " << cva.material.identifier() << ": " << least_common_multiple(lcm_args.begin(), lcm_args.end(), 1e-6f, 1000);
+    auto period = least_common_multiple(lcm_args.begin(), lcm_args.end(), 1e-6f, 1000);
+    // linfo() << "period " << cva.material.identifier() << ": " << period;
     for (auto& tri : cva.triangles) {
         shift_uv3(
-            least_common_multiple(lcm_args.begin(), lcm_args.end(), 1e-6f, 1000),
+            period,
             tri(0).uv,
             tri(1).uv,
             tri(2).uv,
