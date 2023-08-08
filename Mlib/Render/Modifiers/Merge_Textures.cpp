@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
+#include <Mlib/Math/Bool.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -50,21 +51,39 @@ void Mlib::merge_textures(
                         lwarn() << "Attempt to merge object \"" << cva->name << "\", which has repeating textures";
                         continue;
                     }
+                    bool warning_printed = false;
+                    auto uv_out_of_bounds = FixedArray<bool, 2>{false, false};
                     for (auto& t : cva->triangles) {
                         for (const auto& v : t.flat_iterable()) {
-                            if (any(v.uv < UV_ATLAS_MIN)) {
+                            auto too_small = (v.uv < UV_ATLAS_MIN);
+                            auto too_large = (v.uv > UV_ATLAS_MAX);
+                            if (!warning_printed && any(too_small)) {
                                 lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this.";
-                                goto fallback;
+                                warning_printed = true;
                             }
-                            if (any(v.uv > UV_ATLAS_MAX)) {
+                            if (!warning_printed && any(too_large)) {
                                 lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?";
+                                warning_printed = true;
+                            }
+                            uv_out_of_bounds |= too_small;
+                            uv_out_of_bounds |= too_large;
+                            if (all(uv_out_of_bounds)) {
                                 goto fallback;
                             }
                         }
                     }
+                    if (any(uv_out_of_bounds)) {
+                        goto fallback;
+                    }
                     merged_filenames[MergedTextureName{cva->material}.name].push_back(cva.get());
                     continue;
                     fallback:;
+                    if (uv_out_of_bounds(0)) {
+                        cva->material.wrap_mode_s = WrapMode::REPEAT;
+                    }
+                    if (uv_out_of_bounds(1)) {
+                        cva->material.wrap_mode_t = WrapMode::REPEAT;
+                    }
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }
