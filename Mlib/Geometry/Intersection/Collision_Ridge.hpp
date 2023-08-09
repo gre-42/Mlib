@@ -16,6 +16,9 @@ struct CollisionRidgeSphere {
     FixedArray<FixedArray<double, 3>, 2> edge;
     FixedArray<double, 3> normal;
     double min_cos;
+    inline bool is_touchable() const {
+        return min_cos != RIDGE_UNTOUCHEABLE;
+    }
     inline bool is_oriented() const {
         if (min_cos == RIDGE_SINGLE_FACE) {
             THROW_OR_ABORT("CollisionRidgeSphere has not been finalized");

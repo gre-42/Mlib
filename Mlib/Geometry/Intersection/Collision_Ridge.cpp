@@ -13,8 +13,8 @@ void CollisionRidgeSphere::combine(
     if (min_cos == RIDGE_360) {
         return;
     }
-    if ((min_cos == RIDGE_UNTOUCHEABLE) ||
-        is_oriented())
+    if ((min_cos == RIDGE_SINGLE_FACE) ||
+        (min_cos == RIDGE_UNTOUCHEABLE))
     {
         min_cos = RIDGE_360;
         return;
@@ -46,6 +46,9 @@ void CollisionRidgeSphere::combine(
 }
 
 void CollisionRidgeSphere::finalize() {
+    if (min_cos == RIDGE_UNTOUCHEABLE) {
+        THROW_OR_ABORT("Attempt to finalize an untouchable ridge");
+    }
     if (min_cos == RIDGE_SINGLE_FACE) {
         auto tangent = cross(edge(1) - edge(0), normal);
         auto tlen2 = sum(squared(tangent));
