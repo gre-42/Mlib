@@ -16,7 +16,6 @@
 namespace Mlib {
 
 enum class CollidableMode;
-enum class CollisionRidgeErrorBehavior;
 template <class TPos>
 class ColoredVertexArray;
 class RigidBodyVehicle;
@@ -72,8 +71,7 @@ public:
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
         CollidableMode collidable_mode,
-        const PhysicsResourceFilter& physics_resource_filter,
-        CollisionRidgeErrorBehavior collision_ridge_error_behavior);
+        const PhysicsResourceFilter& physics_resource_filter);
     void delete_rigid_body(const RigidBodyVehicle* rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
@@ -89,8 +87,8 @@ public:
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
-    void bake_collision_ridges(const CollisionRidgesRigidBody& collision_ridges) const;
-    void bake_global_collision_ridges_if_necessary() const;
+    void bake_collision_ridges() const;
+    void bake_collision_ridges_if_necessary() const;
     const PhysicsEngineConfig& cfg_;
     std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
@@ -102,7 +100,7 @@ private:
     mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
     mutable std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*> ridge_map_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
-    CollisionRidgesRigidBody global_collision_ridges_;
+    CollisionRidgesRigidBody collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };
 

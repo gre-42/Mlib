@@ -11,12 +11,11 @@ void CollisionRidges::insert(
     const FixedArray<FixedArray<double, 3>, 3>& tri,
     const FixedArray<double, 3>& normal,
     double max_min_cos_ridge,
-    PhysicsMaterial physics_material,
-    CollisionRidgeErrorBehavior error_behavior)
+    PhysicsMaterial physics_material)
 {
-    insert(tri(0), tri(1), normal, max_min_cos_ridge, physics_material, error_behavior);
-    insert(tri(1), tri(2), normal, max_min_cos_ridge, physics_material, error_behavior);
-    insert(tri(2), tri(0), normal, max_min_cos_ridge, physics_material, error_behavior);
+    insert(tri(0), tri(1), normal, max_min_cos_ridge, physics_material);
+    insert(tri(1), tri(2), normal, max_min_cos_ridge, physics_material);
+    insert(tri(2), tri(0), normal, max_min_cos_ridge, physics_material);
 }
 
 void CollisionRidges::insert(
@@ -24,8 +23,7 @@ void CollisionRidges::insert(
     const FixedArray<double, 3>& b,
     const FixedArray<double, 3>& normal,
     double max_min_cos_ridge,
-    PhysicsMaterial physics_material,
-    CollisionRidgeErrorBehavior error_behavior)
+    PhysicsMaterial physics_material)
 {
     OrderableRidgeSphereBase ridge{
         .collision_ridge_sphere{
@@ -33,11 +31,10 @@ void CollisionRidges::insert(
             .physics_material = physics_material,
             .edge{a, b},
             .normal = normal,
-            .min_cos = NAN}};
+            .min_cos = RIDGE_SINGLE_FACE}};
     CollisionRidgesBase<OrderableRidgeSphereBase>::insert(
         ridge,
-        max_min_cos_ridge,
-        error_behavior);
+        max_min_cos_ridge);
 }
 
 namespace Mlib {

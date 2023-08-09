@@ -40,7 +40,7 @@ public:
       level_{level}
     {}
 
-    const TPayload* insert(
+    TPayload* insert(
         const AxisAlignedBoundingBox<TData, tndim>& aabb,
         const TPayload& data)
     {

@@ -40,7 +40,7 @@ void Mlib::draw_wall_barriers(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
                 "wall_barriers_" + std::to_string(mid++),
                 material,
-                PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED | PhysicsMaterial::ATTR_CONCAVE | PhysicsMaterial::ATTR_SELF_CONTAINED));
+                PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_TWO_SIDED | PhysicsMaterial::ATTR_CONCAVE));
             auto get_style = [&]() -> const BarrierStyle& {
                 if (bu.style.empty()) {
                     if (barrier_styles.empty()) {

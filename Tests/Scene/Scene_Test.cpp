@@ -4,7 +4,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>

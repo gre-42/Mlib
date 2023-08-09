@@ -2,7 +2,6 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
@@ -126,7 +125,7 @@ void Mlib::create_scene_rod(
         AbsoluteMovableSetter ams0{scene.get_node("obj").get_child("n0"), std::move(rb0)};
         AbsoluteMovableSetter ams1_0{scene.get_node("obj").get_child("n1_0"), std::move(rb1_0)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles01}, {}, CollidableMode::STATIC, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{}, CollisionRidgeErrorBehavior::THROW);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles01}, {}, CollidableMode::STATIC, PhysicsResourceFilter{});
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING, PhysicsResourceFilter{});
     }
 }

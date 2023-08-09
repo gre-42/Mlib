@@ -15,16 +15,14 @@ public:
         const FixedArray<FixedArray<double, 3>, 3>& tri,
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
-        PhysicsMaterial physics_material,
-        CollisionRidgeErrorBehavior error_behavior);
+        PhysicsMaterial physics_material);
 protected:
     void insert(
         const FixedArray<double, 3>& a,
         const FixedArray<double, 3>& b,
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
-        PhysicsMaterial physics_material,
-        CollisionRidgeErrorBehavior error_behavior);
+        PhysicsMaterial physics_material);
 };
 
 }

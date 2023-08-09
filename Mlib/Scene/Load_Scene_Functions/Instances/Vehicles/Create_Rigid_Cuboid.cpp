@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/Geometry/Mesh/Collision_Ridge_Error_Behavior.hpp>
 #include <Mlib/Geometry/Mesh/Save_Triangle_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -86,8 +85,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             PhysicsResourceFilter{
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}},
-            collision_ridge_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::collision_ridge_error_behavior, "throw")));
+                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
     } catch (const TriangleException<double>& e) {
         if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
             save_triangle_to_obj(filename, {e.a, e.b, e.c});

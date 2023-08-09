@@ -5,6 +5,10 @@
 namespace Mlib {
 
 enum class PhysicsMaterial;
+static const double RIDGE_SPECIAL_THRESHOLD = 2.f;
+static const double RIDGE_SINGLE_FACE = 3.;
+static const double RIDGE_UNTOUCHEABLE = 4.;
+static const double RIDGE_360 = 5.;
 
 struct CollisionRidgeSphere {
     BoundingSphere<double, 3> bounding_sphere;
@@ -12,6 +16,14 @@ struct CollisionRidgeSphere {
     FixedArray<FixedArray<double, 3>, 2> edge;
     FixedArray<double, 3> normal;
     double min_cos;
+    inline bool is_oriented() const {
+        if (min_cos == RIDGE_SPECIAL_THRESHOLD) {
+            THROW_OR_ABORT("CollisionRidgeSphere has not been finalized");
+        }
+        return min_cos < RIDGE_SPECIAL_THRESHOLD;
+    }
+    void combine(const CollisionRidgeSphere& other, double max_min_cos_ridge);
+    void finalize();
 };
 
 struct CollisionEdgeAabb {

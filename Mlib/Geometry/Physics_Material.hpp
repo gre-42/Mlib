@@ -14,7 +14,6 @@ enum class PhysicsMaterial {
     ATTR_ALIGN_STRICT = (1 << 3),
     ATTR_CONVEX = (1 << 4),
     ATTR_CONCAVE = (1 << 5),
-    ATTR_SELF_CONTAINED = (1 << 6),
     OBJ_ALIGNMENT_PLANE = (1 << 7),
     OBJ_CHASSIS = (1 << 8),
     OBJ_TIRE_LINE = (1 << 9),

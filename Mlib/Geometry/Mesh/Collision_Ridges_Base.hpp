@@ -7,7 +7,6 @@ namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class CollisionRidgeErrorBehavior;
 
 struct OrderableRidgeSphereBase {
     CollisionRidgeSphere collision_ridge_sphere;
@@ -29,8 +28,7 @@ public:
 protected:
     void insert(
         const TOrderableRidgeSphere& ridge,
-        double max_min_cos_ridge,
-        CollisionRidgeErrorBehavior error_behavior);
+        double max_min_cos_ridge);
 private:
     Ridges ridges_;
 };

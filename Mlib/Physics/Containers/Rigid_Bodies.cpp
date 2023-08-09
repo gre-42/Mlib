@@ -33,8 +33,7 @@ void RigidBodies::add_rigid_body(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
     CollidableMode collidable_mode,
-    const PhysicsResourceFilter& physics_resource_filter,
-    CollisionRidgeErrorBehavior collision_ridge_error_behavior)
+    const PhysicsResourceFilter& physics_resource_filter)
 {
     auto& rb = *rigid_body;
     if (!rigid_bodies_.try_emplace(rigid_body.get(), std::move(rigid_body)).second) {
@@ -97,8 +96,7 @@ void RigidBodies::add_rigid_body(
                                     t.triangle,
                                     t.plane.normal,
                                     cfg_.max_min_cos_ridge,
-                                    t.physics_material,
-                                    collision_ridge_error_behavior);
+                                    t.physics_material);
                             }
                             ridges.reserve(collision_ridges.size());
                             for (const auto& e : collision_ridges) {
@@ -127,31 +125,16 @@ void RigidBodies::add_rigid_body(
                             for (const auto& t : transformed) {
                                 triangle_bvh_.insert(t.aabb, {rb, t.base});
                             }
-                            auto insert_triangle = [this, &rb, collision_ridge_error_behavior](
-                                CollisionRidgesRigidBody& collision_ridges,
-                                const CollisionTriangleAabb& t)
-                            {
-                                collision_ridges.insert(
+                            if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
+                                THROW_OR_ABORT("Collision ridges already baked");
+                            }
+                            for (const auto& t : transformed) {
+                                collision_ridges_.insert(
                                     t.base.triangle,
                                     t.base.plane.normal,
                                     cfg_.max_min_cos_ridge,
                                     t.base.physics_material,
-                                    rb,
-                                    collision_ridge_error_behavior);
-                            };
-                            if (any(m->physics_material & PhysicsMaterial::ATTR_SELF_CONTAINED)) {
-                                CollisionRidgesRigidBody collision_ridges;
-                                for (const auto& t : transformed) {
-                                    insert_triangle(collision_ridges, t);
-                                }
-                                bake_collision_ridges(collision_ridges);
-                            } else {
-                                if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
-                                    THROW_OR_ABORT("Collision ridges already baked");
-                                }
-                                for (const auto& t : transformed) {
-                                    insert_triangle(global_collision_ridges_, t);
-                                }
+                                    rb);
                             }
                         }
                     }
@@ -229,7 +212,7 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
             ridge_bvh_.clear();
             ridge_map_.clear();
             line_bvh_.clear();
-            global_collision_ridges_.clear();
+            collision_ridges_.clear();
             collision_ridges_baking_status_ = CollisionRidgeBakingStatus::NOT_BAKED;
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
@@ -319,46 +302,53 @@ const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() c
     return line_bvh_;
 }
 
-void RigidBodies::bake_global_collision_ridges_if_necessary() const {
+void RigidBodies::bake_collision_ridges_if_necessary() const {
     if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKING) {
         THROW_OR_ABORT("Previous collision ridges baking failed");
     }
     if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::NOT_BAKED) {
         collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKING;
-        bake_collision_ridges(global_collision_ridges_);
+        bake_collision_ridges();
         collision_ridges_baking_status_ = CollisionRidgeBakingStatus::BAKED;
     }
 }
 
 const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
-    bake_global_collision_ridges_if_necessary();
+    bake_collision_ridges_if_necessary();
     return ridge_bvh_;
 }
 
 const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
 {
-    bake_global_collision_ridges_if_necessary();
+    bake_collision_ridges_if_necessary();
     return ridge_map_;
 }
 
-void RigidBodies::bake_collision_ridges(
-    const CollisionRidgesRigidBody& collision_ridges) const
+void RigidBodies::bake_collision_ridges() const
 {
-    for (const auto& e : collision_ridges) {
-        const auto* r = ridge_bvh_.insert(
+    for (const auto& e : collision_ridges_) {
+        if (e.collision_ridge_sphere.min_cos == RIDGE_UNTOUCHEABLE) {
+            continue;
+        }
+        auto* r = ridge_bvh_.insert(
             AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
             RigidBodyAndCollisionRidgeSphere{
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});
+        r->crp.finalize();
         auto a = OrderableFixedArray{r->crp.edge(0)};
         auto b = OrderableFixedArray{r->crp.edge(1)};
         if (a < b) {
             if (!ridge_map_.insert({{a, b}, &r->crp}).second) {
-                lwarn() << "Could not insert into ridge-map (expected if objects have ATTR_SELF_CONTAINED). Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
+                std::stringstream sstr;
+                sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
+                THROW_OR_ABORT(sstr.str());
             }
         } else {
             if (!ridge_map_.insert({{b, a}, &r->crp}).second) {
-                lwarn() << "Could not insert into ridge-map (expected if objects have ATTR_SELF_CONTAINED). Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
+                std::stringstream sstr;
+                sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
+                THROW_OR_ABORT(sstr.str());
             }
         }
     }

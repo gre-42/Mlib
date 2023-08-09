@@ -89,10 +89,10 @@ void Mlib::get_overlap2(
             overlap0,
             overlap1);
         if (overlap0 < overlap1) {
-            if (!std::isnan(e0->min_cos) && (-dot0d(n, e0->normal) < e0->min_cos - 1e-4)) {
+            if (e0->is_oriented() && (-dot0d(n, e0->normal) < e0->min_cos - 1e-4)) {
                 continue;
             }
-            if (!std::isnan(e1.min_cos) && (dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
+            if (e1.is_oriented() && (dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
                 continue;
             }
             if (overlap0 < best_min_overlap) {
@@ -102,10 +102,10 @@ void Mlib::get_overlap2(
                 }
             }
         } else {
-            if (!std::isnan(e0->min_cos) && (dot0d(n, e0->normal) < e0->min_cos - 1e-4)) {
+            if (e0->is_oriented() && (dot0d(n, e0->normal) < e0->min_cos - 1e-4)) {
                 continue;
             }
-            if (!std::isnan(e1.min_cos) && (-dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
+            if (e1.is_oriented() && (-dot0d(n, e1.normal) < e1.min_cos - 1e-4)) {
                 continue;
             }
             if (overlap1 < best_min_overlap) {
