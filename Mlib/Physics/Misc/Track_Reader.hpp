@@ -2,18 +2,18 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Extended.hpp>
-#include <istream>
 #include <optional>
 
 namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+class ITrackElementSequence;
 
 class TrackReader {
 public:
     explicit TrackReader(
-        const std::string& filename,
+        std::unique_ptr<ITrackElementSequence>&& sequence,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         TrackElementInterpolationKey interpolation_key,
@@ -31,8 +31,7 @@ public:
         return lap_id_;
     }
 private:
-    std::unique_ptr<std::istream> ifstr_;
-    std::string filename_;
+    std::unique_ptr<ITrackElementSequence> sequence_;
     TrackElementExtended track_element_;
     size_t frame_id_;
     size_t lap_id_;

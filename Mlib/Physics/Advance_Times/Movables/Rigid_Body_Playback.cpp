@@ -9,7 +9,7 @@
 using namespace Mlib;
 
 RigidBodyPlayback::RigidBodyPlayback(
-    const std::string& filename,
+    std::unique_ptr<ITrackElementSequence>&& sequence,
     AdvanceTimes& advance_times,
     const Focuses& focuses,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
@@ -19,7 +19,7 @@ RigidBodyPlayback::RigidBodyPlayback(
   focuses_{focuses},
   speedup_{speedup},
   progress_{0.},
-  track_reader_{filename, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, ntransformations}  // 1 = nlaps
+  track_reader_{std::move(sequence), 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, ntransformations}  // 1 = nlaps
 {
     playback_objects_.resize(ntransformations);
 }

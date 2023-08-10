@@ -3,14 +3,12 @@
 
 using namespace Mlib;
 
-TrackElementExtended TrackElementExtended::from_stream(
+TrackElementExtended TrackElementExtended::create(
     const std::optional<TrackElementExtended>& predecessor,
-    std::istream& istr,
-    const TransformationMatrix<double, double, 3>& geographic_mapping,
-    size_t ntransformations)
+    const TrackElement& track_element)
 {
     TrackElementExtended result;
-    result.element = TrackElement::from_stream(istr, geographic_mapping, ntransformations);
+    result.element = track_element;
     if (!predecessor.has_value()) {
         result.meters_to_start = 0.;
     } else {

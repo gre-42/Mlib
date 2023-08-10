@@ -15,8 +15,14 @@ struct TrackElement {
     void write_to_stream(
         std::ostream& ostr,
         const TransformationMatrix<double, double, 3>& geographic_mapping) const;
+    std::vector<double> to_vector(
+        const TransformationMatrix<double, double, 3>& geographic_mapping) const;
     static TrackElement from_stream(
         std::istream& istr,
+        const TransformationMatrix<double, double, 3>& geographic_mapping,
+        size_t ntransformations);
+    static TrackElement from_vector(
+        const std::vector<double>& data,
         const TransformationMatrix<double, double, 3>& geographic_mapping,
         size_t ntransformations);
     const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;

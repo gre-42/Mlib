@@ -9,6 +9,8 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
+#include <Mlib/Physics/Misc/Track_Element_File.hpp>
+#include <Mlib/Physics/Misc/Track_Element_Vector.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -36,6 +38,7 @@ DECLARE_ARGUMENT(nahead);
 DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(height_changed);
 DECLARE_ARGUMENT(track_filename);
+DECLARE_ARGUMENT(track);
 DECLARE_ARGUMENT(laps);
 DECLARE_ARGUMENT(pacenotes_filename);
 DECLARE_ARGUMENT(pacenotes_meters_ahead);
@@ -94,8 +97,20 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);
+    if (args.arguments.contains_non_null(KnownArgs::track_filename) ==
+        args.arguments.contains_non_null(KnownArgs::track))
+    {
+        THROW_OR_ABORT("Require exactly one of \"track\" and \"track_filename\"");
+    }
+    std::unique_ptr<ITrackElementSequence> sequence;
+    if (args.arguments.contains_non_null(KnownArgs::track_filename)) {
+        auto filename = args.arguments.path(KnownArgs::track_filename);
+        sequence = std::make_unique<TrackElementFile>(create_ifstream(filename), filename);
+    } else {
+        sequence = std::make_unique<TrackElementVector>(args.arguments.at<std::vector<std::vector<double>>>(KnownArgs::track));
+    }
     auto check_points = std::make_unique<CheckPoints>(
-        args.arguments.path(KnownArgs::track_filename),
+        std::move(sequence),
         nlaps,
         scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,

@@ -11,11 +11,9 @@ enum class TrackElementInterpolationKey {
 struct TrackElementExtended {
     TrackElement element;
     double meters_to_start;
-    static TrackElementExtended from_stream(
+    static TrackElementExtended create(
         const std::optional<TrackElementExtended>& predecessor,
-        std::istream& istr,
-        const TransformationMatrix<double, double, 3>& geographic_mapping,
-        size_t ntransformations);
+        const TrackElement& track_element);
     inline double progress(TrackElementInterpolationKey key) const {
         if (key == TrackElementInterpolationKey::ELAPSED_SECONDS) {
             if (std::isnan(element.elapsed_seconds)) {

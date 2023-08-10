@@ -11,6 +11,7 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -84,6 +85,13 @@ public:
     : asset_references_{asset_references},
       asset_id_{std::move(asset_id)}
     {}
+    ~RaceLogic() {
+        if (!asset_references_.get("levels").at(asset_id_).rp.database.contains("CHECKPOINTS")) {
+            asset_references_.get("levels").merge_into_database(
+                asset_id_,
+                JsonMacroArguments{{{"CHECKPOINTS", nlohmann::json()}}});
+        }
+    }
     virtual void set_start_pose(
         const TransformationMatrix<float, double, 3>& pose,
         unsigned int rank) override
@@ -97,6 +105,26 @@ public:
                 }});
         }
     }
+    virtual void set_checkpoints(
+        const std::vector<TransformationMatrix<float, double, 3>>& checkpoints) override
+    {
+        if (checkpoints.empty()) {
+            THROW_OR_ABORT("Received no checkpoints");
+        }
+        const auto geographic_mapping = TransformationMatrix<double, double, 3>::identity();
+        std::vector<std::vector<double>> global_checkpoints;
+        global_checkpoints.reserve(checkpoints.size());
+        for (const auto& c : checkpoints) {
+            global_checkpoints.push_back(
+                TrackElement{
+                    .elapsed_seconds = NAN,
+                    .transformations = {OffsetAndTaitBryanAngles{c.R(), c.t()}}}
+                .to_vector(geographic_mapping));
+        }
+        asset_references_.get("levels").merge_into_database(
+            asset_id_,
+            JsonMacroArguments{{{"CHECKPOINTS", std::move(global_checkpoints)}}});
+    }
 private:
     AssetReferences& asset_references_;
     std::string asset_id_;
@@ -106,7 +134,6 @@ template <class TPos>
 void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
-    RaceLogic race_logic{args.asset_references, name};
     LoadMeshConfig<TPos> load_mesh_config{
         .position = args.arguments.at<FixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
         .rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
@@ -155,7 +182,14 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
         scene_node_resources.add_resource_loader(
             name,
-            [filename, load_mesh_config, &scene_node_resources, rendering_resources, race_logic]() mutable {
+            [filename,
+             load_mesh_config,
+             &scene_node_resources,
+             rendering_resources,
+             &asset_references=args.asset_references,
+             name]()
+            {
+                RaceLogic race_logic{asset_references, name};
                 return load_renderable_kn5(
                     filename,
                     load_mesh_config,

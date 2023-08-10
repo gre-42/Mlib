@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <chrono>
 #include <fstream>
+#include <memory>
 #include <vector>
 
 namespace Mlib {
@@ -15,6 +16,7 @@ class AdvanceTimes;
 class SceneNode;
 class Focuses;
 
+class ITrackElementSequence;
 class RigidBodyPlayback;
 
 class RigidBodySinglePlayback: public AbsoluteMovable {
@@ -29,7 +31,7 @@ private:
 class RigidBodyPlayback: public Object, public AdvanceTime {
 public:
     RigidBodyPlayback(
-        const std::string& filename,
+        std::unique_ptr<ITrackElementSequence>&& sequence,
         AdvanceTimes& advance_times,
         const Focuses& focuses,
         const TransformationMatrix<double, double, 3>* geographic_mapping,

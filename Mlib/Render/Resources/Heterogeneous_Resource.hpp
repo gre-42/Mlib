@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <memory>
 #include <shared_mutex>
@@ -20,12 +21,14 @@ public:
     explicit HeterogeneousResource(
         const SceneNodeResources& scene_node_resources,
         const FixedArray<float, 3>& instance_rotation = fixed_zeros<float, 3>(),
-        float instance_scale = 1.f);
+        float instance_scale = 1.f,
+        const TransformationMatrix<double, double, 3>& geographic_mapping = TransformationMatrix<double, double, 3>::identity());
     virtual ~HeterogeneousResource() override;
     
     // ISceneNodeResource, Misc
     virtual void preload() const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
+    virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
     virtual AggregateMode aggregate_mode() const override;
     virtual void print(std::ostream& ostr) const override;
 
@@ -73,6 +76,7 @@ private:
     mutable std::shared_mutex rcva_mutex_;
     mutable std::shared_mutex physics_arrays_mutex_;
     const SceneNodeResources& scene_node_resources_;
+    TransformationMatrix<double, double, 3> geographic_mapping_;
 };
 
 }

@@ -23,7 +23,7 @@
 using namespace Mlib;
 
 CheckPoints::CheckPoints(
-    const std::string& filename,
+    std::unique_ptr<ITrackElementSequence>&& sequence,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
@@ -44,7 +44,7 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{filename, nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START, 1},
+  track_reader_{std::move(sequence), nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START, 1},
   asset_id_{std::move(asset_id)},
   moving_nodes_{std::move(moving_nodes)},
   resource_name_{resource_name},

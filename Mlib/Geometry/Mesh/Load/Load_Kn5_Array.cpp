@@ -120,14 +120,22 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
             }
             {
-                auto it_l = nodes.find("AC_AB_START_L");
-                auto it_r = nodes.find("AC_AB_START_R");
-                if ((it_l != nodes.end()) && (it_r != nodes.end())) {
+                auto start_l = nodes.find("AC_AB_START_L");
+                auto start_r = nodes.find("AC_AB_START_R");
+                if ((start_l != nodes.end()) && (start_r != nodes.end())) {
                     race_logic->set_start_pose(
                         ac_center(
-                            it_l->second->hmatrix.casted<float, double>(),
-                            it_r->second->hmatrix.casted<float, double>()),
+                            start_l->second->hmatrix.casted<float, double>(),
+                            start_r->second->hmatrix.casted<float, double>()),
                         0);
+                    auto finish_l = nodes.find("AC_AB_FINISH_L");
+                    auto finish_r = nodes.find("AC_AB_FINISH_R");
+                    if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
+                        race_logic->set_checkpoints({
+                            ac_center(
+                                finish_l->second->hmatrix.casted<float, double>(),
+                                finish_r->second->hmatrix.casted<float, double>())});
+                    }
                 }
             }
             {

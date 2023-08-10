@@ -135,7 +135,7 @@ std::string JsonMacroArguments::path(const std::string& name) const {
 }
 
 std::string JsonMacroArguments::path(const std::string& name, const std::string& deflt) const {
-    return contains(name)
+    return contains_non_null(name)
         ? path(name)
         : deflt;
 }

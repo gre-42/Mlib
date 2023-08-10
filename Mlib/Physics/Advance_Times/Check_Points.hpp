@@ -33,7 +33,7 @@ struct BeaconNode {
 class CheckPoints: public DestructionObserver, public AdvanceTime {
 public:
     CheckPoints(
-        const std::string& filename,
+        std::unique_ptr<ITrackElementSequence>&& sequence,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,

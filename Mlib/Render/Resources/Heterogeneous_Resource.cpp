@@ -16,10 +16,12 @@ using namespace Mlib;
 HeterogeneousResource::HeterogeneousResource(
     const SceneNodeResources& scene_node_resources,
     const FixedArray<float, 3>& instance_rotation,
-    float instance_scale)
+    float instance_scale,
+    const TransformationMatrix<double, double, 3>& geographic_mapping)
 : bri{ std::make_unique<BatchResourceInstantiator>(instance_rotation, instance_scale) },
   acvas{ std::make_shared<AnimatedColoredVertexArrays>() },
-  scene_node_resources_{ scene_node_resources }
+  scene_node_resources_{ scene_node_resources },
+  geographic_mapping_{geographic_mapping}
 {}
 
 HeterogeneousResource::~HeterogeneousResource()
@@ -174,4 +176,10 @@ void HeterogeneousResource::generate_instances() {
             THROW_OR_ABORT("Instances require single precision meshes");
         }
     }
+}
+
+TransformationMatrix<double, double, 3> HeterogeneousResource::get_geographic_mapping(
+    const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
+{
+    return geographic_mapping_;
 }

@@ -1,5 +1,6 @@
 #include "Track_Element.hpp"
 #include <Mlib/Io/Read_Number.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -15,13 +16,29 @@ void TrackElement::write_to_stream(
     const TransformationMatrix<double, double, 3>& geographic_mapping) const
 {
     ostr << std::setprecision(18) << std::scientific;
-    ostr <<
-        elapsed_seconds;
+    ostr << elapsed_seconds;
     for (const auto& t : transformations) {
         ostr << ' ' <<
-            geographic_mapping.transform(t.position().casted<double>()) << ' ' <<
+            geographic_mapping.transform(t.position()) << ' ' <<
             t.rotation();
     }
+}
+
+std::vector<double> TrackElement::to_vector(
+    const TransformationMatrix<double, double, 3>& geographic_mapping) const
+{
+    std::vector<double> result(1 + 6 * transformations.size());
+    result[0] = elapsed_seconds;
+    for (size_t i = 0; i < transformations.size(); ++i) {
+        auto pos = geographic_mapping.transform(transformations[i].position());
+        result[1 + i * 6] = pos(0);
+        result[2 + i * 6] = pos(1);
+        result[3 + i * 6] = pos(2);
+        result[4 + i * 6] = transformations[i].rotation(0);
+        result[5 + i * 6] = transformations[i].rotation(1);
+        result[6 + i * 6] = transformations[i].rotation(2);
+    }
+    return result;
 }
 
 TrackElement TrackElement::from_stream(
@@ -42,6 +59,31 @@ TrackElement TrackElement::from_stream(
             t.rotation(1) >>
             t.rotation(2);
         t.position() = inverse_geographic_mapping.transform(pos);
+    }
+    return result;
+}
+
+TrackElement TrackElement::from_vector(
+    const std::vector<double>& data,
+    const TransformationMatrix<double, double, 3>& inverse_geographic_mapping,
+    size_t ntransformations)
+{
+    TrackElement result;
+    if (data.size() != 1 + ntransformations * 6) {
+        THROW_OR_ABORT("Unexpected track data vector size");
+    }
+    result.elapsed_seconds = (float)data[0];
+    result.transformations.resize(ntransformations);
+    for (auto it : enumerate(result.transformations)) {
+        auto pos = FixedArray<double, 3>{
+            data[1 + it.first * 6],
+            data[2 + it.first * 6],
+            data[3 + it.first * 6]};
+        it.second.rotation() = {
+            (float)data[4 + it.first * 6],
+            (float)data[5 + it.first * 6],
+            (float)data[6 + it.first * 6]};
+        it.second.position() = inverse_geographic_mapping.transform(pos);
     }
     return result;
 }

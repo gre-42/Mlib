@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Rigid_Body_Playback.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
+#include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -54,8 +55,9 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         .at(asset_id)
         .rp;
     auto node_prefixes = vars.database.at<std::vector<std::string>>("NODE_PREFIXES");
+    auto filename = wt.value().m_filename;
     auto playback = std::make_shared<RigidBodyPlayback>(
-        wt.value().m_filename,
+        std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
         physics_engine.advance_times_,
         args.ui_focus.focuses,
         scene_node_resources.get_geographic_mapping("world.inverse"),
