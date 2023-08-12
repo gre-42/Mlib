@@ -14,6 +14,7 @@ void Mlib::merge_neighboring_points(
     const TPos& max_distance)
 {
     // linfo() << "Merging: " << cva.name;
+    bool warning_printed = false;
     for (auto& tri : cva.triangles) {
         for (auto& v : tri.flat_iterable()) {
             const FixedArray<TPos, 3>* neighbor;
@@ -25,7 +26,10 @@ void Mlib::merge_neighboring_points(
             if (min_dist2 <= squared(max_distance))
             {
                 if (any(v.position != *neighbor)) {
-                    linfo() << "Merging points at " << v.position;
+                    if (!warning_printed) {
+                        linfo() << "Merging points at " << v.position << ". Further warnings suppressed.";
+                        warning_printed = true;
+                    }
                     v.position = *neighbor;
                 }
             } else {

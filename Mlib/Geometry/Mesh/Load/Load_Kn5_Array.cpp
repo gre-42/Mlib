@@ -166,7 +166,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
             static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
             static const DECLARE_REGEX(road_reg, "^ROAD");
-            static const DECLARE_REGEX(tree_reg, "^tree");
+            static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, collide_reg)) {
                 if (match[1].matched) {
@@ -204,7 +204,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (any(attrs & MetaAttributes::TREE)) {
                     tl.material.merge_textures = true;
-                    tl.material.continuous_blending_z_order = 2;
                     tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
                     tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
@@ -218,14 +217,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     }
-                    if (material.shader == "ksPerPixelAlpha") {
-                        tl.material.blend_mode = cfg.blend_mode;
-                    } else if ((material.shader == "ksPerPixel") ||  // required for Akina track
-                               (material.shader == "ksPerPixelAT") ||
-                               (material.shader == "ksPerPixelAT_NM") ||
-                               (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                    if ((material.shader == "ksPerPixelAlpha") ||
+                        (material.shader == "ksPerPixel") ||        // required for Akina track
+                        (material.shader == "ksPerPixelAT") ||      // required for Hondarribia track
+                        (material.shader == "ksPerPixelAT_NM") ||
+                        (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
-                        tl.material.blend_mode = BlendMode::BINARY_05;
+                        tl.material.blend_mode = cfg.blend_mode;
                     } else if ((material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
                                (material.shader == "ksPerPixelMultiMap_NMDetail") ||

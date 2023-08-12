@@ -58,11 +58,11 @@ void Mlib::merge_textures(
                             auto too_small = (v.uv < UV_ATLAS_MIN);
                             auto too_large = (v.uv > UV_ATLAS_MAX);
                             if (!warning_printed && any(too_small)) {
-                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this.";
+                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" are negative. You can call cleanup_mesh/modulo_uv to fix this. Further warnings suppressed.";
                                 warning_printed = true;
                             }
                             if (!warning_printed && any(too_large)) {
-                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?";
+                                lwarn() << "UV-coordinates (" << v.uv << ") of object \"" << cva->name << "\" do not permit texture atlas. Did you forget to call cleanup_mesh/modulo_uv?. Further warnings suppressed.";
                                 warning_printed = true;
                             }
                             uv_out_of_bounds |= too_small;
@@ -139,6 +139,7 @@ void Mlib::merge_textures(
                     merged_materials_config.array_name,
                     Material{
                         .blend_mode = merged_materials_config.blend_mode,
+                        .continuous_blending_z_order = merged_materials_config.continuous_blending_z_order,
                         .textures = {{.texture_descriptor = {
                             .color = merged_materials_config.texture_name,
                             .color_mode = ColorMode::RGBA,

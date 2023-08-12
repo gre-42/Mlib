@@ -548,6 +548,7 @@ int main(int argc, char** argv) {
                     .array_name = "merged_array",
                     .texture_name = "merged_texture",
                     .blend_mode = BlendMode::SEMI_CONTINUOUS_02,
+                    .continuous_blending_z_order = 1,
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                     .max_triangle_distance = INFINITY,
                     .cull_faces = false,

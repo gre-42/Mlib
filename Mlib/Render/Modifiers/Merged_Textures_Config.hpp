@@ -14,6 +14,7 @@ struct MergedTexturesConfig {
     std::string array_name;
     std::string texture_name;
     BlendMode blend_mode;
+    int continuous_blending_z_order;
     ExternalRenderPassType occluded_pass;
     ExternalRenderPassType occluder_pass;
     AggregateMode aggregate_mode;
