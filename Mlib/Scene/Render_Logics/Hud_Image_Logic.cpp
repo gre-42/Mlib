@@ -2,14 +2,12 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>

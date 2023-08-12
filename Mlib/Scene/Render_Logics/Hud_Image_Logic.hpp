@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -13,7 +12,6 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 enum class ResourceUpdateCycle;
-class RenderLogic;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 
@@ -60,7 +58,6 @@ public:
         const ExternalRenderPass& external_render_pass) const override;
 
 private:
-    void render(int width, int height);
     RenderLogic* scene_logic_;
     CollisionQuery* collision_query_;
     SceneNode* gun_node_;
