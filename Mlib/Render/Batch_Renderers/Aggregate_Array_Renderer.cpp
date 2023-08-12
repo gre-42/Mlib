@@ -19,6 +19,7 @@ static const std::string AAR_NAME = "AggregateArrayRenderer";
 struct AggregateTriangle {
     FixedArray<ColoredVertex<float>, 3> triangle;
     FixedArray<uint8_t, 3> layer;
+    float distance_to_origin2;
     inline operator const FixedArray<ColoredVertex<float>, 3>&() const {
         return triangle;
     }
@@ -37,6 +38,11 @@ AggregateArrayRenderer::AggregateArrayRenderer()
 {}
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;
+
+#ifdef __GNUC__
+    #pragma GCC push_options
+    #pragma GCC optimize ("O3")
+#endif
 
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<double, 3>& offset,
@@ -57,11 +63,15 @@ void AggregateArrayRenderer::update_aggregates(
     //    ntriangles += a.second.triangles->size();
     //}
     std::map<Material, AggregateTriangles> mat_lists;
+    OptionalMaterialHider mhd;
     for (const auto& a : aggregate_queue) {
         if (a->triangles.empty()) {
             THROW_OR_ABORT("Aggregate triangle list is empty");
         }
         auto mat = a->material;
+        if (mhd.is_hidden(mat)) {
+            continue;
+        }
         mat.aggregate_mode = AggregateMode::NONE;
         mat.center_distances = default_step_distances;
         auto it = mat_lists.find(mat);
@@ -81,35 +91,32 @@ void AggregateArrayRenderer::update_aggregates(
         auto max_distance2 = squared(mat.max_triangle_distance);
         for (size_t i = 0; i < a->triangles.size(); ++i) {
             const auto& c = a->triangles[i];
+            auto distance_to_origin2 = sum(squared(c(0).position + c(1).position + c(2).position));
             if ((max_distance2 != INFINITY) &&
-                (sum(squared(c(0).position + c(1).position + c(2).position)) > max_distance2))
+                (distance_to_origin2 > max_distance2))
             {
                 continue;
             }
             if (l.has_texture_layers) {
-                l.atriangles.push_back({c, a->triangle_texture_layers[i]});
+                l.atriangles.push_back({c, a->triangle_texture_layers[i], distance_to_origin2});
             } else {
-                l.atriangles.push_back({c, {UINT8_MAX, UINT8_MAX, UINT8_MAX}});
+                l.atriangles.push_back({c, {UINT8_MAX, UINT8_MAX, UINT8_MAX}, distance_to_origin2});
             }
-        }
-        if (any(a->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-            l.atriangles.sort([](
-                const AggregateTriangle& a,
-                const AggregateTriangle& b)
-                {
-                    return sum(squared(a.triangle(0).position + a.triangle(1).position + a.triangle(2).position)) >
-                        sum(squared(b.triangle(0).position + b.triangle(1).position + b.triangle(2).position));
-                });
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
-    OptionalMaterialHider mhd;
-    for (const auto& [mat, list] : mat_lists) {
+    
+    for (auto& [mat, list] : mat_lists) {
         if (list.atriangles.empty()) {
             continue;
         }
-        if (mhd.is_hidden(mat)) {
-            continue;
+        if (any(mat.blend_mode & BlendMode::ANY_CONTINUOUS)) {
+            list.atriangles.sort([](
+                const AggregateTriangle& a,
+                const AggregateTriangle& b)
+                {
+                    return a.distance_to_origin2 > b.distance_to_origin2;
+                });
         }
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
@@ -135,6 +142,10 @@ void AggregateArrayRenderer::update_aggregates(
         is_initialized_ = true;
     }
 }
+
+#ifdef __GNUC__
+    #pragma GCC pop_options
+#endif
 
 void AggregateArrayRenderer::render_aggregates(
     const FixedArray<double, 4, 4>& vp,
