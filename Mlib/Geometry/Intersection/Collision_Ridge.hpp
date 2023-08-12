@@ -10,13 +10,23 @@ static const double RIDGE_SINGLE_FACE = 3.;
 static const double RIDGE_UNTOUCHEABLE = 4.;
 static const double RIDGE_360 = 5.;
 
+enum class SingleFaceBehavior {
+    TOUCHABLE,
+    UNTOUCHEABLE
+};
+
 struct CollisionRidgeSphere {
     BoundingSphere<double, 3> bounding_sphere;
     PhysicsMaterial physics_material;
     FixedArray<FixedArray<double, 3>, 2> edge;
     FixedArray<double, 3> normal;
     double min_cos;
-    inline bool is_touchable() const {
+    inline bool is_touchable(SingleFaceBehavior behavior) const {
+        if ((behavior == SingleFaceBehavior::UNTOUCHEABLE) &&
+            (min_cos == RIDGE_SINGLE_FACE))
+        {
+            return false;
+        }
         return min_cos != RIDGE_UNTOUCHEABLE;
     }
     inline bool is_oriented() const {

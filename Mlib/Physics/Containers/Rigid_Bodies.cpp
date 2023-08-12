@@ -100,7 +100,7 @@ void RigidBodies::add_rigid_body(
                             }
                             ridges.reserve(collision_ridges.size());
                             for (const auto& e : collision_ridges) {
-                                if (e.collision_ridge_sphere.is_touchable()) {
+                                if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHEABLE)) {
                                     ridges.emplace_back(e.collision_ridge_sphere).finalize();
                                 }
                             }
@@ -329,7 +329,7 @@ const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<dou
 void RigidBodies::bake_collision_ridges() const
 {
     for (const auto& e : collision_ridges_) {
-        if (!e.collision_ridge_sphere.is_touchable()) {
+        if (!e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHEABLE)) {
             continue;
         }
         auto* r = ridge_bvh_.insert(
