@@ -18,6 +18,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
     std::list<ReplacementParameterAndFilename> result;
     auto add_level = [this, &result](
         const fs::path& stage_filename,
+        const fs::path& preview_filename,
         const fs::path& ui_track_filename,
         const std::string& level_id)
     {
@@ -34,7 +35,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         // work around a bug in MSVC.
         auto jv = JsonView{j};
         auto globals = JsonMacroArguments({
-            {"LEVEL_ICON_FILE", "#black"},
+            {"LEVEL_ICON_FILE", preview_filename},
             {"IF_RACEWAY_CIRCULAR", false},
             {"STAGE_INI_FILENAME", stage_filename}
         });
@@ -66,6 +67,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             }
             add_level(
                 kn5_candidates.front(),
+                ui_dir / fs::path{"preview.png"},
                 ui_track_filename,
                 kn5_candidates.front().stem().string());
         } else {
@@ -76,6 +78,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 auto level_id = stage_dir.path().filename().string();
                 add_level(
                     (level_dir / fs::path{"models_" + level_id}).string() + ".ini",
+                    stage_dir.path() / fs::path{"preview.png"},
                     stage_dir.path() / fs::path{"ui_track.json"},
                     level_id);
             }
