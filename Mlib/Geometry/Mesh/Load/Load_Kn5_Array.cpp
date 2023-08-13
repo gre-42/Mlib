@@ -61,6 +61,23 @@ static TransformationMatrix<float, double, 3> ac_center(
         (left.t() + right.t()) / 2.};
 }
 
+static TransformationMatrix<float, double, 3> ac_waypoint(
+    const TransformationMatrix<float, double, 3>& left,
+    const TransformationMatrix<float, double, 3>& right)
+{
+    auto x = (right.t() - left.t()).casted<float>();
+    auto y = FixedArray<float, 3>{0.f, 1.f, 0.f};
+    x -= dot0d(x, y) * y;
+    x /= std::sqrt(sum(squared(x)));
+    auto z = cross(x, y);
+    return TransformationMatrix<float, double, 3>{
+        FixedArray<float, 3, 3>{
+            x(0), y(0), z(0),
+            x(1), y(1), z(1),
+            x(2), y(2), z(2)},
+        (left.t() + right.t()) / 2.};
+}
+
 enum class MetaAttributes {
     NONE = 0,
     VISIBLE = (1 << 0),
@@ -132,7 +149,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     auto finish_r = nodes.find("AC_AB_FINISH_R");
                     if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
                         race_logic->set_checkpoints({
-                            ac_center(
+                            ac_waypoint(
                                 finish_l->second->hmatrix.casted<float, double>(),
                                 finish_r->second->hmatrix.casted<float, double>())});
                     }
