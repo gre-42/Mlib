@@ -25,6 +25,7 @@ DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(locator_size);
 DECLARE_ARGUMENT(minimap);
 DECLARE_ARGUMENT(locator);
+DECLARE_ARGUMENT(pointer_reference_length);
 DECLARE_ARGUMENT(pointer_scale);
 DECLARE_ARGUMENT(pointer_size);
 DECLARE_ARGUMENT(pointer_offset);
@@ -57,6 +58,7 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path_or_variable(KnownArgs::locator).path,
         std::move(widget),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::locator_size)),
+        args.arguments.at<float>(KnownArgs::pointer_reference_length),
         args.arguments.at<float>(KnownArgs::pointer_scale),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::pointer_size),
         args.arguments.at<FixedArray<double, 2>>(KnownArgs::pointer_offset));

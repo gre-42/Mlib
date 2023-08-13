@@ -21,6 +21,7 @@ public:
         const std::string& locator_image_resource_name,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& locator_size,
+        float pointer_reference_length,
         float scale,
         const FixedArray<float, 2>& size,
         const FixedArray<double, 2>& offset);
@@ -46,6 +47,7 @@ private:
     FillWithTextureLogic locator_logic_;
     std::unique_ptr<IWidget> widget_;
     const ILayoutPixels& locator_size_;
+    float pointer_reference_length_;
     float scale_;
     FixedArray<float, 2> size_;
     FixedArray<double, 2> offset_;

@@ -20,6 +20,7 @@ MinimapLogic::MinimapLogic(
     const std::string& locator_image_resource_name,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& locator_size,
+    float pointer_reference_length,
     float scale,
     const FixedArray<float, 2>& size,
     const FixedArray<double, 2>& offset)
@@ -28,6 +29,7 @@ MinimapLogic::MinimapLogic(
   locator_logic_{locator_image_resource_name, ResourceUpdateCycle::ONCE, ColorMode::RGBA},
   widget_{std::move(widget)},
   locator_size_{locator_size},
+  pointer_reference_length_{pointer_reference_length},
   scale_{scale},
   size_{size},
   offset_{offset},
@@ -66,7 +68,8 @@ void MinimapLogic::render(
     {
         auto vg = ViewportGuard::from_widget(*pixel_region);
         if (vg.has_value()) {
-            FixedArray<float, 2> canvas_size = size_;
+            float aspect_ratio = pixel_region->width() / pixel_region->height();
+            auto canvas_size = FixedArray<float, 2>{aspect_ratio, 1.f} * pointer_reference_length_;
             FixedArray<double, 2> p00_r{0.f, 0.f};
             FixedArray<double, 2> p10_r{size_(0), 0.f};
             FixedArray<double, 2> p01_r{0.f, size_(1)};
