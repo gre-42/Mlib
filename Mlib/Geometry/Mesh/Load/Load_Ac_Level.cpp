@@ -7,6 +7,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
+#include <stb/stb_image.h>
 
 namespace fs = std::filesystem;
 using namespace Mlib;
@@ -42,11 +43,21 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         // Storing fields in temporary variables to
         // work around a bug in MSVC.
         auto jv = JsonView{j};
+        int minimap_x;
+        int minimap_y;
+        int minimap_comp;
+        if (!fs::exists(minimap_filename)) {
+            minimap_comp = 0;
+        } else if (stbi_info(minimap_filename.c_str(), &minimap_x, &minimap_y, &minimap_comp) == 0) {
+            THROW_OR_ABORT("Could not read size information from file \"" + minimap_filename.string() + '"');
+        }
         auto globals = JsonMacroArguments({
             {"LEVEL_ICON_FILE", preview_filename},
             {"IF_RACEWAY_CIRCULAR", false},
             {"STAGE_INI_FILENAME", stage_filename},
-            {"MINIMAP_FILE", minimap_filename.string()},
+            {"MINIMAP_FILE", minimap_comp == 4
+                ? nlohmann::json(minimap_filename.string())
+                : nlohmann::json()},
             {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"MINIMAP_SIZE_X", ini_parser.get<float>("PARAMETERS", "WIDTH")},
             {"MINIMAP_SIZE_Y", ini_parser.get<float>("PARAMETERS", "HEIGHT")},
