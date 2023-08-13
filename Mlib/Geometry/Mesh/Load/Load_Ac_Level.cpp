@@ -1,4 +1,7 @@
 #include "Load_Ac_Level.hpp"
+#include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
+#include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Io/Ini_Parser.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -20,25 +23,35 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         const fs::path& stage_filename,
         const fs::path& preview_filename,
         const fs::path& ui_track_filename,
+        const fs::path& minimap_filename,
+        const fs::path& minimap_ini_filename,
         const std::string& level_id)
     {
-        auto f = create_ifstream(ui_track_filename);
-        if (f->fail()) {
-            THROW_OR_ABORT("Could not open file \"" + ui_track_filename.string() + '"');
-        }
         nlohmann::json j;
-        *f >> j;
-        if (f->fail()) {
-            THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
+        {
+            auto f = create_ifstream(ui_track_filename);
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not open file \"" + ui_track_filename.string() + '"');
+            }
+            *f >> j;
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
+            }
         }
+        IniParser ini_parser{minimap_ini_filename};
         // Storing fields in temporary variables to
         // work around a bug in MSVC.
         auto jv = JsonView{j};
         auto globals = JsonMacroArguments({
             {"LEVEL_ICON_FILE", preview_filename},
             {"IF_RACEWAY_CIRCULAR", false},
-            {"STAGE_INI_FILENAME", stage_filename}
-        });
+            {"STAGE_INI_FILENAME", stage_filename},
+            {"MINIMAP_FILENAME", minimap_filename.string()},
+            {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
+            {"MINIMAP_SIZE_X", ini_parser.get<float>("PARAMETERS", "WIDTH")},
+            {"MINIMAP_SIZE_Y", ini_parser.get<float>("PARAMETERS", "HEIGHT")},
+            {"MINIMAP_OFFSET_X", ini_parser.get<float>("PARAMETERS", "X_OFFSET")},
+            {"MINIMAP_OFFSET_Y", ini_parser.get<float>("PARAMETERS", "Z_OFFSET")}});
         auto required = std::vector<std::string>({"%GAME_MODE == 'rally'"});
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
@@ -69,18 +82,22 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 kn5_candidates.front(),
                 ui_dir / fs::path{"preview.png"},
                 ui_track_filename,
+                level_dir / fs::path{"map.png"},
+                level_dir / fs::path{"data"} / fs::path{"map.ini"},
                 kn5_candidates.front().stem().string());
         } else {
             for (const auto& stage_dir : list_dir(ui_dir)) {
                 if (!is_listable(stage_dir)) {
                     continue;
                 }
-                auto level_id = stage_dir.path().filename().string();
+                auto level_id = stage_dir.path().filename();
                 add_level(
-                    (level_dir / fs::path{"models_" + level_id}).string() + ".ini",
-                    stage_dir.path() / fs::path{"preview.png"},
-                    stage_dir.path() / fs::path{"ui_track.json"},
-                    level_id);
+                    (level_dir / fs::path{"models_" + level_id.string()}).string() + ".ini",
+                    stage_dir / fs::path{"preview.png"},
+                    stage_dir / fs::path{"ui_track.json"},
+                    level_dir / level_id / fs::path{"map.png"},
+                    level_dir / level_id / fs::path{"data"} / fs::path{"map.ini"},
+                    level_id.string());
             }
         }
     }

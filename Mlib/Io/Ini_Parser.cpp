@@ -37,6 +37,19 @@ IniParser::IniParser(const std::string& filename) {
     }
 }
 
+const std::string& IniParser::get(const std::string& section, const std::string& key) const
+{
+    auto sit = content_.find(section);
+    if (sit == content_.end()) {
+        THROW_OR_ABORT("Could not find section with name \"" + section + '"');
+    }
+    auto kit = sit->second.find(key);
+    if (kit == sit->second.end()) {
+        THROW_OR_ABORT("Could not find key with name \"" + key + '"');
+    }
+    return kit->second;
+}
+
 std::map<std::string, std::map<std::string, std::string>>::iterator IniParser::begin() {
     return content_.begin();
 }

@@ -1,0 +1,107 @@
+#include "Minimap_Logic.hpp"
+#include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
+#include <Mlib/Layout/ILayout_Pixels.hpp>
+#include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
+#include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
+#include <sstream>
+
+using namespace Mlib;
+
+MinimapLogic::MinimapLogic(
+    SceneNode& node,
+    const std::string& map_image_resource_name,
+    const std::string& locator_image_resource_name,
+    std::unique_ptr<IWidget>&& widget,
+    const ILayoutPixels& locator_size,
+    float scale,
+    const FixedArray<float, 2>& size,
+    const FixedArray<double, 2>& offset)
+: node_{node},
+  centered_texture_image_logic_{map_image_resource_name, ColorMode::RGBA},
+  locator_logic_{locator_image_resource_name, ResourceUpdateCycle::ONCE, ColorMode::RGBA},
+  widget_{std::move(widget)},
+  locator_size_{locator_size},
+  scale_{scale},
+  size_{size},
+  offset_{offset},
+  angle_{NAN}
+{}
+
+MinimapLogic::~MinimapLogic() = default;
+
+void MinimapLogic::advance_time(float dt) {
+    std::scoped_lock lock{pose_mutex_};
+    auto t = node_.absolute_model_matrix();
+    position_ = {t.t(0), t.t(2)};
+    angle_ = std::atan2(-t.R(2, 0), -t.R(2, 2));
+}
+
+void MinimapLogic::render(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
+    LOG_FUNCTION("MinimapLogic::render");
+    FixedArray<double, 2> pos;
+    float angle;
+    {
+        std::scoped_lock lock{pose_mutex_};
+        pos = position_;
+        angle = angle_;
+    }
+    if (std::isnan(angle)) {
+        return;
+    }
+    auto pixel_region = widget_->evaluate(lx, ly, YOrientation::AS_IS);
+    {
+        auto vg = ViewportGuard::from_widget(*pixel_region);
+        if (vg.has_value()) {
+            FixedArray<float, 2> canvas_size = size_;
+            FixedArray<double, 2> p00_r{0.f, 0.f};
+            FixedArray<double, 2> p10_r{size_(0), 0.f};
+            FixedArray<double, 2> p01_r{0.f, size_(1)};
+            FixedArray<double, 2> p11_r{size_(0), size_(1)};
+            auto pc = (offset_ + pos) / (double)scale_;
+            auto p00 = (p00_r - pc).casted<float>();
+            auto p10 = (p10_r - pc).casted<float>();
+            auto p01 = (p01_r - pc).casted<float>();
+            auto p11 = (p11_r - pc).casted<float>();
+            centered_texture_image_logic_.render(
+                canvas_size,
+                -angle,
+                FixedArray<float, 2, 2, 2>{
+                    p00(0), p01(0),
+                    p10(0), p11(0),
+                    p00(1), p01(1),
+                    p10(1), p11(1)});
+        }
+    }
+    {
+        auto center = FixedArray<float, 2>{
+            (pixel_region->left() + pixel_region->right()) / 2.f,
+            (pixel_region->bottom() + pixel_region->top()) / 2.f};
+        PixelRegion locator_pixel_region{
+            center(0) - locator_size_.to_pixels(lx) / 2.f,
+            center(0) + locator_size_.to_pixels(lx) / 2.f,
+            center(1) - locator_size_.to_pixels(ly) / 2.f,
+            center(1) + locator_size_.to_pixels(ly) / 2.f};
+        auto vg = ViewportGuard::from_widget(locator_pixel_region);
+        if (vg.has_value()) {
+            locator_logic_.render();
+        }
+    }
+}
+
+void MinimapLogic::print(std::ostream& ostr, size_t depth) const {
+    ostr << std::string(depth, ' ') << "MinimapLogic\n";
+}

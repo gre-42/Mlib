@@ -38,6 +38,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Hud_Image.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Players_Stats.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Percentage_Region.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Pixel_Region.hpp>
@@ -303,6 +304,7 @@ LoadScene::LoadScene() {
     register_json_user_function(FocusedText::key, FocusedText::json_user_function);
     register_json_user_function(FollowNode::key, FollowNode::json_user_function);
     register_json_user_function(HudImage::key, HudImage::json_user_function);
+    register_json_user_function(Minimap::key, Minimap::json_user_function);
     register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
     register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
     register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);

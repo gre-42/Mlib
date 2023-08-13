@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
@@ -31,6 +32,7 @@ public:
         std::string image_resource_name,
         ResourceUpdateCycle update_cycle,
         ColorMode color_mode,
+        CullFaceMode cull_face_mode = CullFaceMode::CULL,
         const float* quad_vertices = standard_quad_vertices);
     ~FillWithTextureLogic();
     void set_image_resource_name(const std::string& image_resource_name);
@@ -46,6 +48,7 @@ private:
     std::string image_resource_name_;
     ResourceUpdateCycle update_cycle_;
     ColorMode color_mode_;
+    CullFaceMode cull_face_mode_;
 };
 
 }
