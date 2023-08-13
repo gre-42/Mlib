@@ -40,7 +40,7 @@ void MinimapLogic::advance_time(float dt) {
     std::scoped_lock lock{pose_mutex_};
     auto t = node_.absolute_model_matrix();
     position_ = {t.t(0), t.t(2)};
-    angle_ = std::atan2(-t.R(2, 0), -t.R(2, 2));
+    angle_ = std::atan2(t.R(2, 0), t.R(2, 2));
 }
 
 void MinimapLogic::render(

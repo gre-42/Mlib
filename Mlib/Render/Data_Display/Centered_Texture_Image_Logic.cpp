@@ -25,13 +25,13 @@ void CenteredTextureImageLogic::render(
     FixedArray<float, 2, 2, 2> pcr = dot(R, pointer_corners);
     float vertices[] = {
         // positions                                                         // texCoords
-        -pcr(0u, 0u, 1u) / canvas_size(0), pcr(1u, 0u, 1u) / canvas_size(1), 0.0f, 0.0f,
-        -pcr(0u, 0u, 0u) / canvas_size(0), pcr(1u, 0u, 0u) / canvas_size(1), 0.0f, 1.0f,
-        -pcr(0u, 1u, 0u) / canvas_size(0), pcr(1u, 1u, 0u) / canvas_size(1), 1.0f, 1.0f,
+        pcr(0u, 0u, 1u) / canvas_size(0), -pcr(1u, 0u, 1u) / canvas_size(1), 0.0f, 0.0f,
+        pcr(0u, 0u, 0u) / canvas_size(0), -pcr(1u, 0u, 0u) / canvas_size(1), 0.0f, 1.0f,
+        pcr(0u, 1u, 0u) / canvas_size(0), -pcr(1u, 1u, 0u) / canvas_size(1), 1.0f, 1.0f,
 
-        -pcr(0u, 0u, 1u) / canvas_size(0), pcr(1u, 0u, 1u) / canvas_size(1), 0.0f, 0.0f,
-        -pcr(0u, 1u, 0u) / canvas_size(0), pcr(1u, 1u, 0u) / canvas_size(1), 1.0f, 1.0f,
-        -pcr(0u, 1u, 1u) / canvas_size(0), pcr(1u, 1u, 1u) / canvas_size(1), 1.0f, 0.0f
+        pcr(0u, 0u, 1u) / canvas_size(0), -pcr(1u, 0u, 1u) / canvas_size(1), 0.0f, 0.0f,
+        pcr(0u, 1u, 0u) / canvas_size(0), -pcr(1u, 1u, 0u) / canvas_size(1), 1.0f, 1.0f,
+        pcr(0u, 1u, 1u) / canvas_size(0), -pcr(1u, 1u, 1u) / canvas_size(1), 1.0f, 0.0f
     };
 
     CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer));
