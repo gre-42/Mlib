@@ -48,7 +48,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         int minimap_comp;
         if (!fs::exists(minimap_filename)) {
             minimap_comp = 0;
-        } else if (stbi_info(minimap_filename.c_str(), &minimap_x, &minimap_y, &minimap_comp) == 0) {
+        } else if (stbi_info(minimap_filename.string().c_str(), &minimap_x, &minimap_y, &minimap_comp) == 0) {
             THROW_OR_ABORT("Could not read size information from file \"" + minimap_filename.string() + '"');
         }
         auto globals = JsonMacroArguments({
