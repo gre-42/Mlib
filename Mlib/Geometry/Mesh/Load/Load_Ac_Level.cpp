@@ -38,7 +38,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
             }
         }
-        IniParser ini_parser{minimap_ini_filename};
+        IniParser ini_parser{minimap_ini_filename.string()};
         // Storing fields in temporary variables to
         // work around a bug in MSVC.
         auto jv = JsonView{j};
