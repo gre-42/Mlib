@@ -46,7 +46,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             {"LEVEL_ICON_FILE", preview_filename},
             {"IF_RACEWAY_CIRCULAR", false},
             {"STAGE_INI_FILENAME", stage_filename},
-            {"MINIMAP_FILENAME", minimap_filename.string()},
+            {"MINIMAP_FILE", minimap_filename.string()},
             {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"MINIMAP_SIZE_X", ini_parser.get<float>("PARAMETERS", "WIDTH")},
             {"MINIMAP_SIZE_Y", ini_parser.get<float>("PARAMETERS", "HEIGHT")},
