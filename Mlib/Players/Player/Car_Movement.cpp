@@ -20,7 +20,7 @@ void CarMovement::step_on_brakes() {
     if (!player_.has_scene_vehicle()) {
         THROW_OR_ABORT("step_on_brakes despite nullptr");
     }
-    player_.rigid_body().vehicle_controller().step_on_brakes();
+    player_.rigid_body().vehicle_controller().step_on_brakes(1.f);
 }
 
 void CarMovement::drive_forward() {

@@ -22,12 +22,16 @@ RigidBodyVehicleController::RigidBodyVehicleController(
 
 RigidBodyVehicleController::~RigidBodyVehicleController() = default;
 
-void RigidBodyVehicleController::step_on_brakes() {
+void RigidBodyVehicleController::step_on_brakes(float relaxation) {
+    if (relaxation < drive_relaxation_) {
+        return;
+    }
     surface_power_ = NAN;
+    drive_relaxation_ = relaxation;
     if (trailer_ != nullptr) {
         static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
         RecursionGuard rg{recursion_counter};
-        trailer_->step_on_brakes();
+        trailer_->step_on_brakes(relaxation);
     }
 }
 

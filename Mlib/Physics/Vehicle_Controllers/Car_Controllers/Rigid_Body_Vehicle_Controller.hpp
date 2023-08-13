@@ -12,7 +12,7 @@ public:
         RigidBodyVehicle& rb,
         SteeringType steering_type);
     virtual ~RigidBodyVehicleController();
-    void step_on_brakes();
+    void step_on_brakes(float relaxation);
     void drive(float surface_power, float relaxation);
     void roll_tires();
     void steer(float angle, float relaxation);
