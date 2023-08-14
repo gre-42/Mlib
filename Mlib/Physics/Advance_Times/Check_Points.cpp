@@ -109,23 +109,24 @@ void CheckPoints::advance_time(float dt) {
             just_started = true;
         }
     }
-    if (race_state_ == RaceState::ONGOING) {
-        if (just_started) {
-            total_elapsed_seconds_ = 0.f;
-            lap_elapsed_seconds_ = 0.f;
-            player_.notify_race_started();
-        }
-        total_elapsed_seconds_ += dt / s;
-        lap_elapsed_seconds_ += dt / s;
-
-        TrackElement te{.elapsed_seconds = total_elapsed_seconds_};
-        te.transformations.reserve(movings_.size());
-        for (const auto& m : movings_) {
-            auto am = m->get_new_absolute_model_matrix();
-            te.transformations.push_back(OffsetAndTaitBryanAngles<float, double, 3>{am.R(), am.t()});;
-        }
-        movable_track_.push_back(te);
+    if (race_state_ != RaceState::ONGOING) {
+        return;
     }
+    if (just_started) {
+        total_elapsed_seconds_ = 0.f;
+        lap_elapsed_seconds_ = 0.f;
+        player_.notify_race_started();
+    }
+    total_elapsed_seconds_ += dt / s;
+    lap_elapsed_seconds_ += dt / s;
+
+    TrackElement te{.elapsed_seconds = total_elapsed_seconds_};
+    te.transformations.reserve(movings_.size());
+    for (const auto& m : movings_) {
+        auto am = m->get_new_absolute_model_matrix();
+        te.transformations.push_back(OffsetAndTaitBryanAngles<float, double, 3>{am.R(), am.t()});;
+    }
+    movable_track_.push_back(te);
     while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
         if (track_reader_.read(progress_)) {
             progress_ += distance_ / meters;
