@@ -20,12 +20,12 @@ void AssetGroupReplacementParameters::insert(
     if (rp.rp.on_init != nlohmann::detail::value_t::null) {
         mlecd(JsonView{rp.rp.on_init}, nullptr, nullptr);
     }
-    insert(rp);
+    insert(std::move(rp));
 }
 
-void AssetGroupReplacementParameters::insert(const ReplacementParameterAndFilename& rp) {
+void AssetGroupReplacementParameters::insert(ReplacementParameterAndFilename&& rp) {
     std::unique_lock lock{mutex_};
-    if (!replacement_parameters_.insert({rp.rp.id, rp}).second) {
+    if (!replacement_parameters_.try_emplace(rp.rp.id, std::move(rp)).second) {
         THROW_OR_ABORT("Asset with id \"" + rp.rp.id + "\" already exists");
     }
 }

@@ -17,7 +17,7 @@ public:
     AssetGroupReplacementParameters();
     ~AssetGroupReplacementParameters();
     void insert(const std::string& filename, const MacroLineExecutor& mle);
-    void insert(const ReplacementParameterAndFilename& rp);
+    void insert(ReplacementParameterAndFilename&& rp);
     void merge_into_database(const std::string& id, const JsonMacroArguments& params);
     const ReplacementParameterAndFilename& at(const std::string& id) const;
     std::map<std::string, ReplacementParameterAndFilename>::iterator begin();

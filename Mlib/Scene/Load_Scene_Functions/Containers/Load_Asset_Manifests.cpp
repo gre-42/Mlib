@@ -28,8 +28,8 @@ LoadSceneJsonUserFunction LoadAssetManifests::json_user_function = [](const Load
     auto& group = args.asset_references.get(id_val);
     for (const auto& root : args.arguments.path_list(KnownArgs::directory)) {
         for (const auto& loader : group.loaders()) {
-            for (const auto& manifest : loader->try_load(root)) {
-                group.insert(manifest);
+            for (auto&& manifest : loader->try_load(root)) {
+                group.insert(std::move(manifest));
             }
         }
     }

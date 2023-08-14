@@ -10,7 +10,6 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <cereal/external/base64.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>

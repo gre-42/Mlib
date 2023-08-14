@@ -8,6 +8,8 @@ class JsonMacroArgumentsAndLock;
 
 class NotifyingJsonMacroArguments {
     friend JsonMacroArgumentsAndLock;
+    NotifyingJsonMacroArguments(const NotifyingJsonMacroArguments&) = delete;
+    NotifyingJsonMacroArguments& operator = (const NotifyingJsonMacroArguments&) = delete;
 public:
     NotifyingJsonMacroArguments();
     void set_and_notify(const std::string& key, const nlohmann::json& value);
