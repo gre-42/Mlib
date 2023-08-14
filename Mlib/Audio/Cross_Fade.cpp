@@ -75,13 +75,12 @@ void CrossFade::play(
         }
         return;
     }
-    sources_.push_back(AudioSourceAndGain{
+    auto& sg = sources_.emplace_back(AudioSourceAndGain{
         .audio_buffer = &audio_buffer,
         .gain = 0.f,
         .gain_factor = gain_factor,
         .buffer_frequency = buffer_frequency,
         .source = std::make_unique<AudioSource>(audio_buffer, position_requirement_)});
-    auto& sg = sources_.back();
     sg.source->set_loop(true);
     sg.apply_gain();
     if (std::isnan(buffer_frequency)) {

@@ -35,6 +35,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(p_idle);
 DECLARE_ARGUMENT(p_reference);
+DECLARE_ARGUMENT(mute);
 }
 
 const std::string CreateEngine::key = "create_engine";
@@ -89,11 +90,13 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (args.arguments.contains(KnownArgs::audio)) {
         auto a = args.arguments.child(KnownArgs::audio);
         a.validate(Audio::options);
-        av = std::make_shared<EngineAudio>(
-            a.at<std::string>("name"),
-            paused,
-            a.at<float>(Audio::p_idle) * hp,
-            a.at<float>(Audio::p_reference) * hp);
+        if (!a.at<bool>(Audio::mute)) {
+            av = std::make_shared<EngineAudio>(
+                a.at<std::string>("name"),
+                paused,
+                a.at<float>(Audio::p_idle) * hp,
+                a.at<float>(Audio::p_reference) * hp);
+        }
     }
 #endif
     auto ep = rb->engines_.try_emplace(
