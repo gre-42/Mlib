@@ -337,6 +337,9 @@ void Mlib::handle_reflection(
         if (overlap == INFINITY) {
             return;
         }
+        if (dot0d(c.t0.plane.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
+            return;
+        }
         if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), normal) > 0.) {
             return;
         }
