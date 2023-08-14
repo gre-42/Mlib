@@ -180,12 +180,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
             auto attrs = MetaAttributes::VISIBLE;
-            static const DECLARE_REGEX(collide_reg, "^(\\d+)?(\\w+)");
-            static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
-            static const DECLARE_REGEX(road_reg, "^ROAD");
-            static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
+            static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
             Mlib::re::smatch match;
-            if (Mlib::re::regex_search(node.name, match, collide_reg)) {
+            if (Mlib::re::regex_search(node.name, match, name_reg)) {
+                static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
+                static const DECLARE_REGEX(road_reg, "^ROAD");
+                static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
                     if (id > 0) {
@@ -197,6 +197,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), grass_reg)) {
                     attrs |= MetaAttributes::GRASS;
+                }
+                if (Mlib::re::regex_search(match[2].str(), tree_reg)) {
+                    attrs |= MetaAttributes::TREE;
                 }
                 if (Mlib::re::regex_search(match[2].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
@@ -214,8 +217,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
                 if ((material.shader == "ksGrass") ||
-                    (material.shader == "ksTree") ||
-                    Mlib::re::regex_search(node.name, tree_reg))
+                    (material.shader == "ksTree"))
                 {
                     attrs |= MetaAttributes::TREE;
                 }
