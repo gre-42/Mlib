@@ -98,10 +98,10 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_change=args.arguments.at(KnownArgs::on_change)]()
+        [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
-            if (!on_change.empty()) {
-                mle(JsonView{on_change}, nullptr, nullptr);
+            if (on_change.has_value()) {
+                mle(JsonView{on_change.value()}, nullptr, nullptr);
             }
         });
     render_logics.append(nullptr, scene_selector_logic);

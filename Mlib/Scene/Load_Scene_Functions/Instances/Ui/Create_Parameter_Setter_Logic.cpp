@@ -98,9 +98,9 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.external_json_macro_arguments,
         button_press,
         args.ui_focus.selection_ids.at(id),
-        [mle=args.macro_line_executor, on_change=args.arguments.at<std::vector<nlohmann::json>>(KnownArgs::on_change, std::vector<nlohmann::json>{})]() {
-            for (const auto& j : on_change) {
-                mle(JsonView{j}, nullptr, nullptr);
+        [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {
+            if (on_change.has_value() ) {
+                mle(JsonView{on_change.value()}, nullptr, nullptr);
             }
         });
     render_logics.append(nullptr, parameter_setter_logic);
