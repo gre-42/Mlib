@@ -35,7 +35,6 @@ DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
-DECLARE_ARGUMENT(collision_ridge_error_behavior);
 }
 
 const std::string CreateRigidDisk::key = "rigid_disk";

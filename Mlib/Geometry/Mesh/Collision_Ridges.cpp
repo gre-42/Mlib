@@ -1,5 +1,7 @@
 #include "Collision_Ridges.hpp"
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.impl.hpp>
+#include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 
 using namespace Mlib;
 
@@ -13,9 +15,15 @@ void CollisionRidges::insert(
     double max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
-    insert(tri(0), tri(1), normal, max_min_cos_ridge, physics_material);
-    insert(tri(1), tri(2), normal, max_min_cos_ridge, physics_material);
-    insert(tri(2), tri(0), normal, max_min_cos_ridge, physics_material);
+    for (size_t i = 0; i < 3; ++i) {
+        size_t j = (i + 1) % 3;
+        try {
+            insert(tri(i), tri(j), normal, max_min_cos_ridge, physics_material);
+        } catch (const EdgeException<double>& e) {
+            throw TriangleEdgeException<double>{
+                tri(0), tri(1), tri(2), i, j, e.what()};
+        }
+    }
 }
 
 void CollisionRidges::insert(
