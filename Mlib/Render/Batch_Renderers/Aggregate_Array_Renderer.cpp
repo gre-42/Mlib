@@ -122,6 +122,7 @@ void AggregateArrayRenderer::update_aggregates(
             AAR_NAME,
             mat,
             PhysicsMaterial::ATTR_VISIBLE,
+            ModifierBacklog{},
             std::vector<FixedArray<ColoredVertex<float>, 3>>(list.atriangles.begin(), list.atriangles.end()),
             std::vector<FixedArray<ColoredVertex<float>, 2>>(),
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),

@@ -52,7 +52,6 @@ struct Material {
     WrapMode wrap_mode_t = WrapMode::REPEAT;
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
-    bool merge_textures = false;
     float detail_multiplier = 2.f;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
@@ -100,7 +99,6 @@ struct Material {
         archive(wrap_mode_t);
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
-        archive(merge_textures);
         archive(detail_multiplier);
         archive(transformation_mode);
         archive(billboard_atlas_instances);

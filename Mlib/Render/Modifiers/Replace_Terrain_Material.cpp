@@ -23,13 +23,11 @@ void Mlib::replace_terrain_material(
     double uv_period,
     UpAxis up_axis,
     SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources,
-    const ColoredVertexArrayFilter& filter)
+    RenderingResources& rendering_resources)
 {
     scene_node_resources.add_modifier(
         resource_name,
-        [filter,
-         scale,
+        [scale,
          uv_scale,
          uv_period,
          up_axis,
@@ -38,7 +36,7 @@ void Mlib::replace_terrain_material(
         (ISceneNodeResource& scene_node_resource){
             auto replace = [&]<typename T>(const std::list<std::shared_ptr<ColoredVertexArray<T>>>& cvas){
                 for (const auto& cva : cvas) {
-                    if (!filter.matches(*cva)) {
+                    if (!cva->modifier_backlog.convert_to_terrain) {
                         continue;
                     }
                     cva->material.textures.clear();

@@ -6,7 +6,6 @@ namespace Mlib {
 
 class SceneNodeResources;
 class RenderingResources;
-struct ColoredVertexArrayFilter;
 enum class UpAxis;
 
 void replace_terrain_material(
@@ -17,7 +16,6 @@ void replace_terrain_material(
     double uv_period,
     UpAxis up_axis,
     SceneNodeResources& scene_node_resources,
-    RenderingResources& rendering_resources,
-    const ColoredVertexArrayFilter& filter);
+    RenderingResources& rendering_resources);
 
 }

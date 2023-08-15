@@ -46,3 +46,8 @@ std::set<std::string> Mlib::string_to_set(const std::string& str) {
     auto l = string_to_list(str);
     return {l.begin(), l.end()};
 }
+
+std::set<std::string> Mlib::string_to_set(const std::string& str, const Mlib::regex& re, size_t expected_length) {
+    auto l = string_to_list(str, re, expected_length);
+    return {l.begin(), l.end()};
+}

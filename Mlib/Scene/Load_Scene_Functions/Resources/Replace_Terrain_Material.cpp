@@ -21,8 +21,6 @@ DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(uv_scale);
 DECLARE_ARGUMENT(uv_period);
 DECLARE_ARGUMENT(up_axis);
-DECLARE_ARGUMENT(included_names);
-DECLARE_ARGUMENT(excluded_names);
 }
 
 const std::string ReplaceTerrainMaterial::key = "replace_terrain_material";
@@ -45,10 +43,7 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
          uv_period = args.arguments.at<double>(KnownArgs::uv_period),
          up_axis = up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")),
          &scene_node_resources = scene_node_resources,
-         rendering_resources = rendering_resources,
-         filter = ColoredVertexArrayFilter{
-            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}]
+         rendering_resources = rendering_resources]
         (ISceneNodeResource& resource)
         {
             replace_terrain_material(
@@ -59,7 +54,6 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
                 uv_period,
                 up_axis,
                 scene_node_resources,
-                *rendering_resources,
-                filter);
+                *rendering_resources);
         });
 };

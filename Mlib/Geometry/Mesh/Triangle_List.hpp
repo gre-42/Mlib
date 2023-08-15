@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
@@ -197,6 +198,7 @@ public:
     std::string name;
     Material material;
     PhysicsMaterial physics_material;
+    ModifierBacklog modifier_backlog;
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     std::list<uint8_t> triangle_texture_layers;

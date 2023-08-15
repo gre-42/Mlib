@@ -1,6 +1,5 @@
 #include "Add_Foliage_Resource.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Modifiers/Add_Foliage_Resource.hpp>
@@ -15,7 +14,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(mesh_resource_name);
 DECLARE_ARGUMENT(foliage_resource_name);
-DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(near_grass_resource_names);
 DECLARE_ARGUMENT(dirty_near_grass_resource_names);
 DECLARE_ARGUMENT(near_grass_foliagemap);
@@ -41,9 +39,6 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
         args.arguments.at<std::string>(KnownArgs::mesh_resource_name),
         args.arguments.at<std::string>(KnownArgs::foliage_resource_name),
         scene_node_resources,
-        ColoredVertexArrayFilter{
-            .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names))
-        },
         args.arguments.children(KnownArgs::near_grass_resource_names, parse_resource_name_func),
         args.arguments.children(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
         args.arguments.at<double>(KnownArgs::near_grass_distance),

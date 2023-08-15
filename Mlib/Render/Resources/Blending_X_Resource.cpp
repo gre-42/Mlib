@@ -57,6 +57,7 @@ BlendingXResource::BlendingXResource(
                 "BlendingXResource",
                 materials(i),
                 PhysicsMaterial::ATTR_VISIBLE,
+                ModifierBacklog{},
                 std::move(triangles),
                 std::vector<FixedArray<ColoredVertex<float>, 2>>(),
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),

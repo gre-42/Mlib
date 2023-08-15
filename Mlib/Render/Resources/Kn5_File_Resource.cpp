@@ -15,7 +15,11 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_kn5(
     IRaceLogic* race_logic)
 {
     auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
-    hr->acvas TEMPLATE cvas<TPos>() = load_kn5_array<TPos>(file_or_directory, cfg, dds_resources, race_logic);
+    hr->acvas TEMPLATE cvas<TPos>() = load_kn5_array<TPos>(
+        file_or_directory,
+        cfg,
+        dds_resources,
+        race_logic);
     return hr;
 }
 

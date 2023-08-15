@@ -40,8 +40,8 @@ FoliageResource::FoliageResource(
         .near_wayside2_grass_terrain_style_config = { .much_near_distance = 1 },
         .near_flowers_terrain_style_config = { .much_near_distance = 2 },
         .far_flowers_terrain_style_config = { .much_near_distance = 5 },
-        .near_trees_terrain_style_config = { .much_near_distance = 5 },
-        .far_trees_terrain_style_config = { .much_near_distance = 20 },
+        .near_trees_terrain_style_config = { .much_near_distance = 5, .size_classification = SizeClassification::LARGE },
+        .far_trees_terrain_style_config = { .much_near_distance = 20, .size_classification = SizeClassification::LARGE },
         .no_grass_decals_terrain_style_config = { .much_near_distance = 10 }
     }},
   scale_{scale},

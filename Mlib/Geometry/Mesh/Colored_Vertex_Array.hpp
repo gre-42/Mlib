@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
+#include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Ignore_Copy.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
@@ -39,6 +40,7 @@ public:
         const std::string& name,
         Material material,
         PhysicsMaterial physics_material,
+        ModifierBacklog modifier_backlog,
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
@@ -49,6 +51,7 @@ public:
     std::string name;
     Material material;
     PhysicsMaterial physics_material;
+    ModifierBacklog modifier_backlog;
     std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
     std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
@@ -89,6 +92,7 @@ public:
         archive(name);
         archive(material);
         archive(physics_material);
+        archive(modifier_backlog);
         archive(triangles);
         archive(lines);
         archive(triangle_bone_weights);
@@ -105,6 +109,7 @@ public:
         std::string name;
         Material material;
         PhysicsMaterial physics_material;
+        ModifierBacklog modifier_backlog;
         std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
         std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
@@ -115,6 +120,7 @@ public:
         archive(name);
         archive(material);
         archive(physics_material);
+        archive(modifier_backlog);
         archive(triangles);
         archive(lines);
         archive(triangle_bone_weights);
@@ -126,6 +132,7 @@ public:
             name,
             material,
             physics_material,
+            modifier_backlog,
             std::move(triangles),
             std::move(lines),
             std::move(triangle_bone_weights),

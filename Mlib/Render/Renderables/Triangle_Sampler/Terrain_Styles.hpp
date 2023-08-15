@@ -32,8 +32,8 @@ public:
     TerrainStyle near_wayside2_grass_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_flowers_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle far_flowers_terrain_style{ TerrainStyleConfig{ .much_near_distance = 5 } };
-    TerrainStyle near_trees_terrain_style{ TerrainStyleConfig{ .much_near_distance = 5 } };
-    TerrainStyle far_trees_terrain_style{ TerrainStyleConfig{ .much_near_distance = 20 } };
+    TerrainStyle near_trees_terrain_style{ TerrainStyleConfig{ .much_near_distance = 5, .size_classification = SizeClassification::LARGE } };
+    TerrainStyle far_trees_terrain_style{ TerrainStyleConfig{ .much_near_distance = 20, .size_classification = SizeClassification::LARGE } };
     TerrainStyle no_grass_decals_terrain_style{ TerrainStyleConfig{ .much_near_distance = 10 } };
 };
 

@@ -38,7 +38,7 @@ void Mlib::merge_textures(
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
-                    if (!cva->material.merge_textures) {
+                    if (!cva->modifier_backlog.merge_textures) {
                         continue;
                     }
                     if (!any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
@@ -155,6 +155,7 @@ void Mlib::merge_textures(
                         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}},
                     PhysicsMaterial::ATTR_VISIBLE,
+                    ModifierBacklog{},
                     std::vector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
                     std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                     std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

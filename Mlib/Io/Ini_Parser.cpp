@@ -1,4 +1,5 @@
 #include "Ini_Parser.hpp"
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/Trim.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -10,7 +11,7 @@ IniParser::IniParser(const std::string& filename) {
     if (f->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
-    std::string section = "default";
+    std::map<std::string, std::string>* section = &sections_.try_emplace("default", std::map<std::string, std::string>{}).first->second;
     std::string line;
     while (std::getline(*f, line)) {
         trim(line);
@@ -21,14 +22,19 @@ IniParser::IniParser(const std::string& filename) {
             continue;
         }
         if (line[0] == '[') {
-            section = line.substr(1, line.length() - 2);
+            auto sec_name = line.substr(1, line.length() - 2);
+            if (sec_name.ends_with("...")) {
+                section = &lists_[sec_name].emplace_back();
+            } else {
+                section = &sections_[sec_name];
+            }
             continue;
         }
         auto i = line.find('=');
         if (i == line.npos) {
             THROW_OR_ABORT("Could not parse line of INI file: \"" + line + '"');
         }
-        if (!content_[section].insert({line.substr(0, i), line.substr(i + 1)}).second) {
+        if (!section->try_emplace(line.substr(0, i), line.substr(i + 1)).second) {
             THROW_OR_ABORT("Found duplicate key in INI file: \"" + line + '"');
         }
     }
@@ -39,8 +45,8 @@ IniParser::IniParser(const std::string& filename) {
 
 const std::string& IniParser::get(const std::string& section, const std::string& key) const
 {
-    auto sit = content_.find(section);
-    if (sit == content_.end()) {
+    auto sit = sections_.find(section);
+    if (sit == sections_.end()) {
         THROW_OR_ABORT("Could not find section with name \"" + section + '"');
     }
     auto kit = sit->second.find(key);
@@ -50,10 +56,42 @@ const std::string& IniParser::get(const std::string& section, const std::string&
     return kit->second;
 }
 
-std::map<std::string, std::map<std::string, std::string>>::iterator IniParser::begin() {
-    return content_.begin();
+std::optional<std::string> IniParser::try_get(const std::string& section, const std::string& key) const {
+    auto sit = sections_.find(section);
+    if (sit == sections_.end()) {
+        return std::nullopt;
+    }
+    auto kit = sit->second.find(key);
+    if (kit == sit->second.end()) {
+        return std::nullopt;
+    }
+    return kit->second;
 }
 
-std::map<std::string, std::map<std::string, std::string>>::iterator IniParser::end() {
-    return content_.end();
+const std::map<std::string, std::map<std::string, std::string>>& IniParser::sections() const {
+    return sections_;
+}
+
+const std::map<std::string, std::list<std::map<std::string, std::string>>>& IniParser::lists() const {
+    return lists_;
+}
+
+void IniParser::print(std::ostream& ostr) const {
+    ostr << "Sections\n";
+    for (const auto& [name, section] : sections_) {
+        ostr << "  Section " << name << '\n';
+        for (const auto& [k, v] : section) {
+            ostr << "    " << k << " = " << v << '\n';
+        }
+    }
+    ostr << "Lists\n";
+    for (const auto& [name, list] : lists_) {
+        ostr << "  List " << name << '\n';
+        for (const auto& [i, map] : enumerate(list)) {
+            ostr << "    " << i << '\n';
+            for (const auto& [k, v] : map) {
+                ostr << "      " << k << " = " << v << '\n';
+            }
+        }
+    }
 }

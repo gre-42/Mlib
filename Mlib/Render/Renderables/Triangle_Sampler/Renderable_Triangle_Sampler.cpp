@@ -106,10 +106,12 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                 });
         };
         if (orthographic) {
-            triangle_bvh.visit_all([&traverse_triangle](const auto& aabb, const TriangleAndSeed& t){
-                traverse_triangle(t);
-                return true;
-            });
+            if (terrain_style.config.size_classification == SizeClassification::LARGE) {
+                triangle_bvh.visit_all([&traverse_triangle](const auto& aabb, const TriangleAndSeed& t){
+                    traverse_triangle(t);
+                    return true;
+                });
+            }
         } else {
             auto rel_camera_position = m.inverted_scaled().transform(iv.t());
             triangle_bvh.visit(
@@ -120,14 +122,14 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                 });
         }
     };
-    auto add_triangles = [](
+    auto add_triangles = [this](
         std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>& bvhs,
         const TerrainStyle& terrain_style,
         const std::list<FixedArray<ColoredVertex<double>, 3>>& gtl)
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {
-            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.1, 0.1, 0.1}, 10);
+            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.3 * scale_, 0.3 * scale_, 0.3 * scale_}, 16);
             if (!ins.second) {
                 verbose_abort("Internal error, could not insert BVH");
             }

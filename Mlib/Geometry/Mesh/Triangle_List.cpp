@@ -529,6 +529,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         name,
         material,
         physics_material,
+        modifier_backlog,
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles.begin(), triangles.end()},
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights.begin(), triangle_bone_weights.end()},

@@ -91,6 +91,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             cva.name + "_visual",
             cva.material,
             cva.physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
+            cva.modifier_backlog,
             std::vector{cva.triangles},
             std::vector{cva.lines},
             std::vector{cva.triangle_bone_weights},
@@ -140,6 +141,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
                 .aggregate_mode = AggregateMode::ONCE
             },
             destination_physics_material | (cva.physics_material & ~removed_attributes),
+            cva.modifier_backlog,
             std::move(decomposition),
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

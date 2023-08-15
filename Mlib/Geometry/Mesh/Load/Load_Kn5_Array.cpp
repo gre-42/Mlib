@@ -15,7 +15,9 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/Trim.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -117,9 +119,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     IRaceLogic* race_logic)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
+    std::set<std::string> grass_materials;
+    std::vector<unsigned int> texture_grid;
 
-    auto append_kn5 = [&](const std::string& filename) {
-        auto kn5 = load_kn5(filename);
+    auto append_kn5 = [&](const std::string& kn5_filename) {
+        auto kn5 = load_kn5(kn5_filename);
         if (dds_resources != nullptr) {
             for (auto& [name, content] : kn5.textures) {
                 dds_resources->insert_texture(name, std::move(content), TextureAlreadyExistsBehavior::WARN);
@@ -221,8 +225,16 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     attrs |= MetaAttributes::TREE;
                 }
+                if (!any(attrs & MetaAttributes::ROAD) &&
+                    grass_materials.contains(material.name))
+                {
+                    tl.modifier_backlog.add_foliage = true;
+                    if (!texture_grid.empty()) {
+                        tl.modifier_backlog.convert_to_terrain = true;
+                    }
+                }
                 if (any(attrs & MetaAttributes::TREE)) {
-                    tl.material.merge_textures = true;
+                    tl.modifier_backlog.merge_textures = true;
                     tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
                     tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
@@ -348,14 +360,35 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             result.push_back(tl.triangle_array());
         }
     };
+    {
+        auto ext_config_ini_filename =
+            fs::path{filename}.parent_path() /
+            fs::path{"extension"} /
+            fs::path{"ext_config.ini"};
+        if (path_exists(ext_config_ini_filename)) {
+            IniParser ext_config{ext_config_ini_filename};
+            static const DECLARE_REGEX(re, "\\, *");
+            if (auto gm = ext_config.try_get("GRASS_FX", "GRASS_MATERIALS");
+                gm.has_value())
+            {
+                grass_materials = string_to_set(trim_copy(gm.value()), re);
+            }
+            if (auto gm = ext_config.try_get("GRASS_FX", "TEXTURE_GRID");
+                gm.has_value())
+            {
+                texture_grid = string_to_vector(gm.value(), re, safe_stou);
+            }
+        }
+    }
     if (filename.ends_with(".ini")) {
-        for (const auto& [name, section] : IniParser{filename}) {
+        IniParser ini{filename};
+        for (const auto& [name, section] : ini.sections()) {
             if (name.starts_with("MODEL_")) {
                 auto it = section.find("FILE");
                 if (it == section.end()) {
                     THROW_OR_ABORT("Could not find FILE variable in section of INI file: \"" + filename + '"');
                 }
-                append_kn5((std::filesystem::path{filename}.parent_path() / it->second).string());
+                append_kn5((fs::path{filename}.parent_path() / it->second).string());
             }
         }
     } else {
@@ -379,6 +412,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 }
 
 namespace Mlib {
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(const std::string& file_or_directory, const LoadMeshConfig<float>&, IDdsResources*, IRaceLogic*);
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(const std::string& file_or_directory, const LoadMeshConfig<double>&, IDdsResources*, IRaceLogic*);
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<float>(
+    const std::string& file_or_directory,
+    const LoadMeshConfig<float>&,
+    IDdsResources*,
+    IRaceLogic*);
+template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(
+    const std::string& file_or_directory,
+    const LoadMeshConfig<double>&,
+    IDdsResources*,
+    IRaceLogic*);
 }

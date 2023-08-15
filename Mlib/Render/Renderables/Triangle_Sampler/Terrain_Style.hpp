@@ -8,6 +8,11 @@ namespace Mlib {
 
 class SceneNodeResources;
 
+enum class SizeClassification {
+    SMALL,
+    LARGE
+};
+
 struct TerrainStyleConfig {
     std::vector<ParsedResourceName> near_resource_names_valley_regular;
     std::vector<ParsedResourceName> near_resource_names_mountain_regular;
@@ -16,6 +21,7 @@ struct TerrainStyleConfig {
     double much_near_distance = INFINITY;
     std::string foliagemap_filename;
     float foliagemap_scale = 1.f;
+    SizeClassification size_classification = SizeClassification::SMALL;
     bool is_visible() const;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -26,6 +32,7 @@ struct TerrainStyleConfig {
         archive(much_near_distance);
         archive(foliagemap_filename);
         archive(foliagemap_scale);
+        archive(size_classification);
     }
 };
 
