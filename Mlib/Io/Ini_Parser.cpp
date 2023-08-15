@@ -34,7 +34,7 @@ IniParser::IniParser(const std::string& filename) {
         if (i == line.npos) {
             THROW_OR_ABORT("Could not parse line of INI file: \"" + line + '"');
         }
-        if (!section->try_emplace(line.substr(0, i), line.substr(i + 1)).second) {
+        if (!section->try_emplace(trim_copy(line.substr(0, i)), trim_copy(line.substr(i + 1))).second) {
             THROW_OR_ABORT("Found duplicate key in INI file: \"" + line + '"');
         }
     }

@@ -17,7 +17,6 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <Mlib/Strings/Trim.hpp>
 #include <filesystem>
 #include <vector>
 
@@ -120,6 +119,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     std::set<std::string> grass_materials;
+    std::set<std::string> occluding_meshes;
     std::vector<unsigned int> texture_grid;
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
@@ -225,8 +225,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     attrs |= MetaAttributes::TREE;
                 }
-                if (!any(attrs & MetaAttributes::ROAD) &&
-                    grass_materials.contains(material.name))
+                if (grass_materials.contains(material.name) &&
+                    !occluding_meshes.contains(node.name))
                 {
                     tl.modifier_backlog.add_foliage = true;
                     if (!texture_grid.empty()) {
@@ -371,7 +371,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (auto gm = ext_config.try_get("GRASS_FX", "GRASS_MATERIALS");
                 gm.has_value())
             {
-                grass_materials = string_to_set(trim_copy(gm.value()), re);
+                grass_materials = string_to_set(gm.value(), re);
+            }
+            if (auto gm = ext_config.try_get("GRASS_FX", "OCCLUDING_MESHES");
+                gm.has_value())
+            {
+                occluding_meshes = string_to_set(gm.value(), re);
             }
             if (auto gm = ext_config.try_get("GRASS_FX", "TEXTURE_GRID");
                 gm.has_value())
