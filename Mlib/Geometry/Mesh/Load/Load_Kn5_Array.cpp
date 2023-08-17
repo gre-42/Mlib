@@ -192,7 +192,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
                 static const DECLARE_REGEX(road_reg, "^ROAD");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
-                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|GR\\b|GRASS|Terrain|SIDE|far_ter)");
+                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
