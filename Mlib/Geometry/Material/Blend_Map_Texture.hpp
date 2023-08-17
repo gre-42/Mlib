@@ -7,15 +7,18 @@
 namespace Mlib {
 
 enum class BlendMapRole {
-    NONE = 0,
-    SUMMAND = 1,
-    DETAIL_BASE = 2,
-    DETAIL_MASK_R = 3 | (1 << 6),
-    DETAIL_MASK_G = 4 | (1 << 6),
-    DETAIL_MASK_B = 5 | (1 << 6),
-    DETAIL_MASK_A = 6 | (1 << 6),
-    DETAIL_COLOR = 7,
-    ANY_DETAIL_MASK = (1 << 6)
+    ANY_DETAIL_MASK = (1 << 6),
+    ANY_DETAIL_COLOR = (1 << 7),
+    
+    NONE                    = 0,
+    SUMMAND                 = 1,
+    DETAIL_BASE             = 2,
+    DETAIL_MASK_R           = 3 | ANY_DETAIL_MASK,
+    DETAIL_MASK_G           = 4 | ANY_DETAIL_MASK,
+    DETAIL_MASK_B           = 5 | ANY_DETAIL_MASK,
+    DETAIL_MASK_A           = 6 | ANY_DETAIL_MASK,
+    DETAIL_COLOR_HORIZONTAL = 7 | ANY_DETAIL_COLOR,
+    DETAIL_COLOR_VERTICAL   = 8 | ANY_DETAIL_COLOR
 };
 
 inline bool any(BlendMapRole a) {

@@ -42,6 +42,7 @@ struct Material {
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
     std::vector<BlendMapTexture> textures;
+    float period_world = 0.f;
     std::string reflection_map;
     std::string dirt_texture;
     InteriorTextures interior_textures;
@@ -89,6 +90,7 @@ struct Material {
         archive(depth_func);
         archive(depth_test);
         archive(textures);
+        archive(period_world);
         archive(reflection_map);
         archive(dirt_texture);
         archive(interior_textures);

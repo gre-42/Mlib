@@ -18,6 +18,7 @@ struct ColoredRenderProgram: public RenderProgram {
     // GLint light_pos;
     GLint view_dir;
     GLint view_pos;
+    GLint horizontal_detailmap_remainder;
     std::map<size_t, GLint> pose_positions;
     std::map<size_t, GLint> pose_quaternions;
     std::map<size_t, GLint> light_ambiences;
@@ -59,6 +60,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 2> facade_edge_size;
     OrderableFixedArray<float, 2> facade_inner_size;
     OrderableFixedArray<float, 3> interior_size;
+    bool has_horizontal_detailmap;
     ColorMode dirt_color_mode;
     bool has_instances;
     bool has_lookat;

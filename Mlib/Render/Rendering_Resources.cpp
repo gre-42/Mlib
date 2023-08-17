@@ -1171,56 +1171,87 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
         image.load(sstr);
     }
 
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(image.get_num_mipmaps())));
-
-    if (image.is_compressed()) {
-        CHK(glCompressedTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            image.get_format(),
-            integral_cast<GLsizei>(image.get_width()),
-            integral_cast<GLsizei>(image.get_height()),
-            0,
-            integral_cast<GLsizei>(image.get_size()),
-            image));
-
-        for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
-            const nv_dds::CSurface& mipmap = image.get_mipmap(i);
+    if (image.get_num_mipmaps() == 0) {
+        // if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        //     CHK(glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE));
+        // }
+        if (image.is_compressed()) {
             CHK(glCompressedTexImage2D(
                 GL_TEXTURE_2D,
-                integral_cast<GLint>(i + 1),
-                image.get_format(),
-                integral_cast<GLsizei>(mipmap.get_width()),
-                integral_cast<GLsizei>(mipmap.get_height()),
                 0,
-                integral_cast<GLsizei>(mipmap.get_size()),
-                mipmap));
-        }
-    } else {
-        CHK(glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            nchannels2internal_format(image.get_components()),
-            integral_cast<GLsizei>(image.get_width()),
-            integral_cast<GLsizei>(image.get_height()),
-            0,
-            image.get_format(),
-            GL_UNSIGNED_BYTE,
-            image));
-        
-        for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
-            const nv_dds::CSurface& mipmap = image.get_mipmap(i);
+                image.get_format(),
+                integral_cast<GLsizei>(image.get_width()),
+                integral_cast<GLsizei>(image.get_height()),
+                0,
+                integral_cast<GLsizei>(image.get_size()),
+                image));
+        } else {
             CHK(glTexImage2D(
                 GL_TEXTURE_2D,
-                integral_cast<GLint>(i + 1),
+                0,
                 nchannels2internal_format(image.get_components()),
-                integral_cast<GLsizei>(mipmap.get_width()),
-                integral_cast<GLsizei>(mipmap.get_height()),
+                integral_cast<GLsizei>(image.get_width()),
+                integral_cast<GLsizei>(image.get_height()),
                 0,
                 image.get_format(),
                 GL_UNSIGNED_BYTE,
-                mipmap));
+                image));
+        }
+        if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+            CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        }
+    } else {
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(image.get_num_mipmaps())));
+
+        if (image.is_compressed()) {
+            CHK(glCompressedTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                image.get_format(),
+                integral_cast<GLsizei>(image.get_width()),
+                integral_cast<GLsizei>(image.get_height()),
+                0,
+                integral_cast<GLsizei>(image.get_size()),
+                image));
+
+            for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
+                const nv_dds::CSurface& mipmap = image.get_mipmap(i);
+                CHK(glCompressedTexImage2D(
+                    GL_TEXTURE_2D,
+                    integral_cast<GLint>(i + 1),
+                    image.get_format(),
+                    integral_cast<GLsizei>(mipmap.get_width()),
+                    integral_cast<GLsizei>(mipmap.get_height()),
+                    0,
+                    integral_cast<GLsizei>(mipmap.get_size()),
+                    mipmap));
+            }
+        } else {
+            CHK(glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                nchannels2internal_format(image.get_components()),
+                integral_cast<GLsizei>(image.get_width()),
+                integral_cast<GLsizei>(image.get_height()),
+                0,
+                image.get_format(),
+                GL_UNSIGNED_BYTE,
+                image));
+            
+            for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
+                const nv_dds::CSurface& mipmap = image.get_mipmap(i);
+                CHK(glTexImage2D(
+                    GL_TEXTURE_2D,
+                    integral_cast<GLint>(i + 1),
+                    nchannels2internal_format(image.get_components()),
+                    integral_cast<GLsizei>(mipmap.get_width()),
+                    integral_cast<GLsizei>(mipmap.get_height()),
+                    0,
+                    image.get_format(),
+                    GL_UNSIGNED_BYTE,
+                    mipmap));
+            }
         }
     }
 }

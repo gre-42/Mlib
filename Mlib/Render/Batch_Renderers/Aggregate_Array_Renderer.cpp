@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Batch_Renderers/Optional_Material_Hider.hpp>
+#include <Mlib/Render/Batch_Renderers/Optional_Mesh_Hider.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -64,9 +65,13 @@ void AggregateArrayRenderer::update_aggregates(
     //}
     std::map<Material, AggregateTriangles> mat_lists;
     OptionalMaterialHider mhd;
+    OptionalMeshHider nhd;
     for (const auto& a : aggregate_queue) {
         if (a->triangles.empty()) {
             THROW_OR_ABORT("Aggregate triangle list is empty");
+        }
+        if (nhd.is_hidden(a->name)) {
+            continue;
         }
         auto mat = a->material;
         if (mhd.is_hidden(mat)) {

@@ -74,6 +74,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_reflection_map,
     bool has_dirtmap,
     bool has_interiormap,
+    bool has_horizontal_detailmap,
     bool has_diffusivity,
     bool has_nontrivial_specularity,
     bool has_instances,
@@ -160,7 +161,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
+    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
@@ -278,7 +279,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_reflection_map) {
+    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || (fragments_depend_on_distance && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "    FragPos = vPosInstance;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || fragments_depend_on_normal) {
@@ -327,6 +328,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 2>& facade_edge_size,
     const OrderableFixedArray<float, 2>& facade_inner_size,
     const OrderableFixedArray<float, 3>& interior_size,
+    bool has_horizontal_detailmap,
     ColorMode dirt_color_mode,
     const OrderableFixedArray<float, 3>& emissivity,
     const OrderableFixedArray<float, 3>& ambience,
@@ -430,9 +432,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!specularity.all_equal(0)) {
         sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
     }
+    if (has_horizontal_detailmap) {
+        sstr << "uniform vec2 horizontal_detailmap_remainder;" << std::endl;
+    }
     {
         bool pred0 = (!specularity.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
-        if (pred0 || reorient_uv0 || has_interiormap || reorient_normals) {
+        if (pred0 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
             if ((pred0 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
@@ -689,7 +694,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
             }
             sstr << "            float weight = " << t->weight << ';' << std::endl;
-            if (t->role == BlendMapRole::DETAIL_COLOR) {
+            if (any(t->role & BlendMapRole::ANY_DETAIL_COLOR)) {
                 sstr << "            weight *= mask;" << std::endl;
                 sstr << "            weight = max(weight, " << MIN_DETAIL_WEIGHT << ");" << std::endl;
             }
@@ -714,6 +719,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
                 sstr << "            }" << std::endl;
             }
+            auto tex_coords = (t->role == BlendMapRole::DETAIL_COLOR_HORIZONTAL)
+                ? "(FragPos.xz + horizontal_detailmap_remainder)"
+                : "tex_coord_flipped";
             if (t->role == BlendMapRole::DETAIL_MASK_R) {
                 sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).r;" << std::endl;
             } else if (t->role == BlendMapRole::DETAIL_MASK_G) {
@@ -723,21 +731,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             } else if (t->role == BlendMapRole::DETAIL_MASK_A) {
                 sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).a;" << std::endl;
             } else if ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
-                sstr << "            vec4 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgba;" << std::endl;
+                sstr << "            vec4 bcolor = texture(textures_color[" << i << "], " << tex_coords << " * scale).rgba;" << std::endl;
                 sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
                 (t->texture_descriptor.color_mode == ColorMode::RGB) ||
                 ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
             {
-                sstr << "            vec3 bcolor = texture(textures_color[" << i << "], tex_coord_flipped * scale).rgb;" << std::endl;
+                sstr << "            vec3 bcolor = texture(textures_color[" << i << "], " << tex_coords << " * scale).rgb;" << std::endl;
             } else {
                 THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                 sstr << "            mask = weight;" << std::endl;
             } else {
-                if (t->role == BlendMapRole::DETAIL_COLOR) {
+                if (any(t->role & BlendMapRole::ANY_DETAIL_COLOR)) {
                     sstr << "            sum_of_details += weight * bcolor.rgb;" << std::endl;
                 } else if (t->role == BlendMapRole::SUMMAND) {
                     sstr << "            texture_color_ambient_diffuse.rgb += weight * bcolor.rgb;" << std::endl;
@@ -748,7 +756,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     if (t->texture_descriptor.normal.empty()) {
                         sstr << "            tnorm.z += weight;" << std::endl;
                     } else {
-                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], tex_coord_flipped * scale).rgb - 1.0);" << std::endl;
+                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
                     }
                 }
                 sstr << "            sum_weights += weight;" << std::endl;
@@ -1261,6 +1269,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_reflection != 0,
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
+        id.has_horizontal_detailmap,
         !id.diffusivity.all_equal(0),
         !id.specularity.all_equal(0) && (id.specular_exponent != 0.f),
         id.has_instances,
@@ -1296,6 +1305,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.facade_edge_size,
         id.facade_inner_size,
         id.interior_size,
+        id.has_horizontal_detailmap,
         id.dirt_color_mode,
         id.emissivity,
         id.ambience,
@@ -1464,6 +1474,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 rp->view_dir = 0;
                 rp->view_pos = 0;
             }
+        }
+        if (id.has_horizontal_detailmap) {
+            rp->horizontal_detailmap_remainder = checked_glGetUniformLocation(rp->program, "horizontal_detailmap_remainder");
+        } else {
+            rp->horizontal_detailmap_remainder = 0;
         }
 
         auto& result = *rp;

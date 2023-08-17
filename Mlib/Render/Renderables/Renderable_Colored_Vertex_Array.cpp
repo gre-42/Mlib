@@ -369,6 +369,15 @@ void RenderableColoredVertexArray::render_cva(
         ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
             ? cva->material.textures.size()
             : 0;
+    bool has_horizontal_detailmap = false;
+    if (tic.ntextures_color != 0) {
+        for (const auto& t : cva->material.textures) {
+            if (t.role == BlendMapRole::DETAIL_COLOR_HORIZONTAL) {
+                has_horizontal_detailmap = true;
+                break;
+            }
+        }
+    }
     tic.ntextures_filtered_lights = filtered_lights.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
@@ -460,6 +469,7 @@ void RenderableColoredVertexArray::render_cva(
             .facade_edge_size = cva->material.interior_textures.facade_edge_size,
             .facade_inner_size = cva->material.interior_textures.facade_inner_size,
             .interior_size = cva->material.interior_textures.interior_size,
+            .has_horizontal_detailmap = has_horizontal_detailmap,
             .dirt_color_mode = (tic.ntextures_dirt != 0)
                 ? rcva_->rendering_resources_->get_existing_texture_descriptor(cva->material.dirt_texture).color_mode
                 : ColorMode::UNDEFINED,
@@ -637,6 +647,18 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, l.quaternion().vector().flat_begin()));
             ++i;
         }
+    }
+    if (has_horizontal_detailmap) {
+        if (cva->material.period_world == 0.f) {
+            THROW_OR_ABORT("Horizontal detailmap requires world period");
+        }
+        if (render_pass.internal != InternalRenderPass::AGGREGATE) {
+            THROW_OR_ABORT("Horizontal detailmap requires aggregation");
+        }
+        FixedArray<float, 2> rem{
+            (float)std::fmod(m.t(0), cva->material.period_world),
+            (float)std::fmod(m.t(2), cva->material.period_world)};
+        CHK(glUniform2fv(rp.horizontal_detailmap_remainder, 1, rem.flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
     auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor, GLenum target = GL_TEXTURE_2D) {

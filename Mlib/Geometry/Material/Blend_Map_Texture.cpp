@@ -16,8 +16,10 @@ BlendMapRole Mlib::blend_map_role_from_string(const std::string& s) {
         return BlendMapRole::DETAIL_MASK_B;
     } else if (s == "detail_mask_a") {
         return BlendMapRole::DETAIL_MASK_A;
-    } else if (s == "detail_color") {
-        return BlendMapRole::DETAIL_COLOR;
+    } else if (s == "detail_color_horizontal") {
+        return BlendMapRole::DETAIL_COLOR_HORIZONTAL;
+    } else if (s == "detail_color_vertical") {
+        return BlendMapRole::DETAIL_COLOR_VERTICAL;
     }
     THROW_OR_ABORT("Unknown blend map role: \"" + s + '"');
 }

@@ -85,7 +85,9 @@ enum class MetaAttributes {
     COLLIDABLE = (1 << 1),
     GRASS = (1 << 2),
     ROAD = (1 << 3),
-    TREE = (1 << 4)
+    TREE = (1 << 4),
+    HORIZONTAL = (1 << 5),
+    VERTICAL = (1 << 6)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -190,6 +192,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
                 static const DECLARE_REGEX(road_reg, "^ROAD");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
+                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|GR\\b|GRASS|Terrain|SIDE|far_ter)");
+                static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
                     if (id > 0) {
@@ -207,6 +211,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
+                }
+                if (Mlib::re::regex_search(match[2].str(), horizontal_reg)) {
+                    attrs |= MetaAttributes::HORIZONTAL;
+                }
+                if (Mlib::re::regex_search(match[2].str(), vertical_reg)) {
+                    attrs |= MetaAttributes::VERTICAL;
                 }
             }
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
@@ -229,9 +239,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !occluding_meshes.contains(node.name))
                 {
                     tl.modifier_backlog.add_foliage = true;
-                    if (!texture_grid.empty()) {
-                        tl.modifier_backlog.convert_to_terrain = true;
-                    }
+                    // if (!texture_grid.empty()) {
+                    //     tl.modifier_backlog.convert_to_terrain = true;
+                    // }
                 }
                 if (any(attrs & MetaAttributes::TREE)) {
                     tl.modifier_backlog.merge_textures = true;
@@ -290,7 +300,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = material.txDetail1,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .scale = material.detailUVMultiplier,
-                        .role = BlendMapRole::DETAIL_COLOR});
+                        .role = BlendMapRole::DETAIL_COLOR_VERTICAL});
                     tl.material.compute_color_mode();
                 } else if (
                     !material.txDiffuse.empty() &&
@@ -308,23 +318,26 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .role = BlendMapRole::DETAIL_BASE}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail4(i).empty() ||
-                            (material.mult(i) == 0.f) ||
-                            (material.detailUVMultiplier == 0.f))
+                            (material.mult(i) == 0.f))
                         {
                             continue;
+                        }
+                        if (any(attrs & MetaAttributes::HORIZONTAL) == any(attrs & MetaAttributes::VERTICAL)) {
+                            THROW_OR_ABORT("Could not determine horizontal/vertical UV-coordinates for node \"" + node.name + '"');
                         }
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txMask,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                            .scale = material.mult(i),
                             .role = BlendMapRole::DETAIL_MASK_R + i});
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = material.txDetail4(i),
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                            .scale = material.detailUVMultiplier,
-                            .role = BlendMapRole::DETAIL_COLOR});
+                            .scale = material.mult(i),
+                            .role = any(attrs & MetaAttributes::VERTICAL)
+                                ? BlendMapRole::DETAIL_COLOR_VERTICAL
+                                : BlendMapRole::DETAIL_COLOR_HORIZONTAL});
                     }
                     tl.material.compute_color_mode();
                 } else {
