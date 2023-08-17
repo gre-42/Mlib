@@ -6,10 +6,10 @@
 
 using namespace Mlib;
 
-IniParser::IniParser(const std::string& filename) {
+IniParser::IniParser(const std::filesystem::path& filename) {
     auto f = create_ifstream(filename);
     if (f->fail()) {
-        THROW_OR_ABORT("Could not open file \"" + filename + '"');
+        THROW_OR_ABORT("Could not open file \"" + filename.string() + '"');
     }
     std::map<std::string, std::string>* section = &sections_.try_emplace("default", std::map<std::string, std::string>{}).first->second;
     std::string line;
@@ -39,7 +39,7 @@ IniParser::IniParser(const std::string& filename) {
         }
     }
     if (!f->eof()) {
-        THROW_OR_ABORT("Could not read from file \"" + filename + '"');
+        THROW_OR_ABORT("Could not read from file \"" + filename.string() + '"');
     }
 }
 

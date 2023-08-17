@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Strings/To_Number.hpp>
+#include <filesystem>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -10,7 +11,7 @@ namespace Mlib {
 
 class IniParser {
 public:
-    explicit IniParser(const std::string& filename);
+    explicit IniParser(const std::filesystem::path& filename);
     const std::string& get(const std::string& section, const std::string& key) const;
     template <class T>
     T get(const std::string& section, const std::string& key) const {
