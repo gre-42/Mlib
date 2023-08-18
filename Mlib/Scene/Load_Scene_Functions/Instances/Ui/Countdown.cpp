@@ -43,10 +43,10 @@ Countdown::Countdown(RenderableScene& renderable_scene)
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext {
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // ready by CountDownLogic
-        .particle_resources = primary_rendering_context.particle_resources,    // ready by CountDownLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // ready by CountDownLogic
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                // read by render_logics
+        .scene_node_resources = primary_rendering_context.scene_node_resources,     // read by CountDownLogic
+        .particle_resources = primary_rendering_context.particle_resources,         // read by CountDownLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,       // read by CountDownLogic
+        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                   // read by render_logics
     auto countdown_logic = std::make_shared<CountDownLogic>(
         physics_engine.advance_times_,
         args.arguments.path(KnownArgs::ttf_file),
