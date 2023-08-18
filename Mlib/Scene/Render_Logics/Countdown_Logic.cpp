@@ -53,8 +53,10 @@ void CountDownLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("CountDownLogic::render");
-    std::shared_lock lock{focuses_.mutex};
-    if (focuses_.contains(counting_focus_)) {
+    if ([&](){
+        std::shared_lock lock{focuses_.mutex};
+        return focuses_.contains(counting_focus_);}())
+    {
         renderable_text().render(
             font_height_.to_pixels(ly),
             position_,
