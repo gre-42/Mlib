@@ -1,5 +1,6 @@
 #pragma once
 #include <poly2tri/poly2tri.h>
+#include <cstddef>
 
 using namespace Mlib;
 
@@ -7,7 +8,7 @@ namespace Mlib {
 
 class PTri {
 public:
-    p2t::Point* operator () (size_t i) const {
+    inline p2t::Point* operator () (size_t i) const {
         return v->GetPoint((int)i);
     }
 private:

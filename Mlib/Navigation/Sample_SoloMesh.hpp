@@ -6,9 +6,6 @@
 #include <list>
 
 class InputGeom;
-class dtNavMesh;
-class dtNavMeshQuery;
-class rcContext;
 
 namespace Mlib {
 
@@ -76,8 +73,8 @@ public:
 
 private:
     // Explicitly disabled copy constructor and copy assignment operator.
-    Sample_SoloMesh(const Sample_SoloMesh&);
-    Sample_SoloMesh& operator=(const Sample_SoloMesh&);
+    Sample_SoloMesh(const Sample_SoloMesh&) = delete;
+    Sample_SoloMesh& operator=(const Sample_SoloMesh&) = delete;
 };
 
 }
