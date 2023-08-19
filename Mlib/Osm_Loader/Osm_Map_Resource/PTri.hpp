@@ -1,6 +1,6 @@
 #pragma once
-#include <poly2tri/poly2tri.h>
 #include <cstddef>
+#include <poly2tri/poly2tri.h>
 
 using namespace Mlib;
 
