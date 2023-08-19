@@ -88,8 +88,7 @@ enum class MetaAttributes {
     GRAVEL = (1 << 4),
     SIDE = (1 << 5),
     TREE = (1 << 6),
-    HORIZONTAL = (1 << 7),
-    VERTICAL = (1 << 8)
+    VERTICAL = (1 << 7)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -196,7 +195,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(gravel_reg, "^GRAVEL(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
-                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
@@ -221,9 +219,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[2].str(), side_reg)) {
                     attrs |= MetaAttributes::SIDE;
-                }
-                if (Mlib::re::regex_search(match[2].str(), horizontal_reg)) {
-                    attrs |= MetaAttributes::HORIZONTAL;
                 }
                 if (Mlib::re::regex_search(match[2].str(), vertical_reg)) {
                     attrs |= MetaAttributes::VERTICAL;
@@ -356,9 +351,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             (material.mult(i) == 0.f))
                         {
                             continue;
-                        }
-                        if (any(attrs & MetaAttributes::HORIZONTAL) == any(attrs & MetaAttributes::VERTICAL)) {
-                            THROW_OR_ABORT("Could not determine horizontal/vertical UV-coordinates for node \"" + node.name + '"');
                         }
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
