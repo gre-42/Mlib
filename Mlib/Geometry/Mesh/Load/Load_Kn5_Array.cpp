@@ -191,13 +191,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
-                static const DECLARE_REGEX(grass_reg, "^(?:GR|GRASS)(?:\\b|_)");
-                static const DECLARE_REGEX(road_reg, "^ROAD(?:\\b|_)");
-                static const DECLARE_REGEX(gravel_reg, "^GRAVEL(?:\\b|_)");
-                static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_)");
-                static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)(?:\\b|_)");
-                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)(?:\\b|_)");
-                static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_)");
+                static const DECLARE_REGEX(grass_reg, "^(?:GR|GRASS)(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(road_reg, "^ROAD(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(gravel_reg, "^GRAVEL(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
                     if (id > 0) {
@@ -292,13 +292,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     }
-                    if ((material.shader == "ksPerPixel") ||                // required for Akina track
-                        (material.shader == "ksPerPixelAT_NM"))             // required for Semetin track
+                    if ((material.shader == "ksPerPixel") ||                    // required for Akina track
+                        (material.shader == "ksPerPixelAT") ||                  // required for Hondarribia and Akagi tracks
+                        (material.shader == "ksPerPixelAT_NM") ||               // required for Semetin track
+                        (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
                         tl.material.blend_mode = BlendMode::BINARY_05;
-                    } else if ((material.shader == "ksPerPixelAlpha") ||
-                               (material.shader == "ksPerPixelAT") ||       // required for Hondarribia track
-                               (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                    } else if (material.shader == "ksPerPixelAlpha")
                     {
                         tl.material.blend_mode = cfg.blend_mode;
                     } else if ((material.shader == "ksPerPixelNM") ||
