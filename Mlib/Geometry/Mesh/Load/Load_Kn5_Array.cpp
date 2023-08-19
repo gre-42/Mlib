@@ -85,9 +85,11 @@ enum class MetaAttributes {
     COLLIDABLE = (1 << 1),
     GRASS = (1 << 2),
     ROAD = (1 << 3),
-    TREE = (1 << 4),
-    HORIZONTAL = (1 << 5),
-    VERTICAL = (1 << 6)
+    GRAVEL = (1 << 4),
+    SIDE = (1 << 5),
+    TREE = (1 << 6),
+    HORIZONTAL = (1 << 7),
+    VERTICAL = (1 << 8)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -189,11 +191,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
-                static const DECLARE_REGEX(grass_reg, "^(?:GR\\b|GRASS)");
-                static const DECLARE_REGEX(road_reg, "^ROAD");
-                static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)");
-                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)");
-                static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)");
+                static const DECLARE_REGEX(grass_reg, "^(?:GR|GRASS)(?:\\b|_)");
+                static const DECLARE_REGEX(road_reg, "^ROAD(?:\\b|_)");
+                static const DECLARE_REGEX(gravel_reg, "^GRAVEL(?:\\b|_)");
+                static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_)");
+                static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush)(?:\\b|_)");
+                static const DECLARE_REGEX(horizontal_reg, "^(?:GRAVEL|ROAD|PITS|VISIBLE_SURFACE|GR\\b|GRASS|Terrain|SIDE|far_ter)(?:\\b|_)");
+                static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_)");
                 if (match[1].matched) {
                     size_t id = safe_stoz(match[1].str());
                     if (id > 0) {
@@ -212,6 +216,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (Mlib::re::regex_search(match[2].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
                 }
+                if (Mlib::re::regex_search(match[2].str(), gravel_reg)) {
+                    attrs |= MetaAttributes::GRAVEL;
+                }
+                if (Mlib::re::regex_search(match[2].str(), side_reg)) {
+                    attrs |= MetaAttributes::SIDE;
+                }
                 if (Mlib::re::regex_search(match[2].str(), horizontal_reg)) {
                     attrs |= MetaAttributes::HORIZONTAL;
                 }
@@ -222,6 +232,30 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (any(attrs & MetaAttributes::COLLIDABLE)) {
                 tl.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
                 tl.physics_material |= PhysicsMaterial::ATTR_CONCAVE;
+            }
+            if (any(attrs & MetaAttributes::ROAD)) {
+                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                    THROW_OR_ABORT("Surface material already set");
+                }
+                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_TARMAC;
+            }
+            if (any(attrs & MetaAttributes::GRAVEL)) {
+                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                    THROW_OR_ABORT("Surface material already set");
+                }
+                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRAVEL;
+            }
+            if (any(attrs & MetaAttributes::GRASS)) {
+                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                    THROW_OR_ABORT("Surface material already set");
+                }
+                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRASS;
+            }
+            if (any(attrs & MetaAttributes::SIDE)) {
+                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                    THROW_OR_ABORT("Surface material already set");
+                }
+                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_DIRT;
             }
             if (!node.isRenderable || !any(attrs & MetaAttributes::VISIBLE)) {
                 tl.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
