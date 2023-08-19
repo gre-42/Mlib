@@ -56,12 +56,10 @@ void RenderLogics::render(
     std::shared_lock lock{mutex_};
 
     for (const auto& [_, c] : render_logics_) {
-        bool has_focus;
-        {
+        if ([this, &c=c](){
             std::shared_lock lock{ui_focus_.focuses.mutex};
-            has_focus = ui_focus_.has_focus(c.render_logic->focus_filter());
-        }
-        if (has_focus) {
+            return ui_focus_.has_focus(c.render_logic->focus_filter());}())
+        {
             c.render_logic->render(
                 lx,
                 ly,
