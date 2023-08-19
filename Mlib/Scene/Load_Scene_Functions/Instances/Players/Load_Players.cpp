@@ -185,6 +185,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
                             {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"MUTE", false},
                             {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
                         }
                     }
@@ -211,7 +212,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
                             {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
-                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)}
+                            {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"MUTE", false}
                         }
                     }
                 };
