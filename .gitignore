@@ -8,3 +8,5 @@
 *.pyc
 /freealut
 /OpenAL
+/engine-sim
+/Android
