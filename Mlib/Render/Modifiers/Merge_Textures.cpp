@@ -17,7 +17,6 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <map>
-#include <ranges>
 
 using namespace Mlib;
 

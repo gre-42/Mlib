@@ -14,6 +14,8 @@ void Mlib::assert_no_opengl_error(const char* position, FailureBehavior failure_
             descr += " (invalid value)";
         } else if (code == GL_INVALID_OPERATION) {
             descr += " (invalid operation)";
+        } else if (code == GL_INVALID_ENUM) {
+            descr += " (invalid enum)";
         }
         std::string msg = "OpenGL error at line \"" + std::string(position) + "\": " + descr;
         if (failure_behavior == FailureBehavior::WARN) {

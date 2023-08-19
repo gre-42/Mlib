@@ -17,6 +17,7 @@ enum TextureType {
 };
 
 #ifdef NV_DDS_NO_GL_SUPPORT
+    #define GL_RED                            0x1903
     #define GL_RGB                            0x1907
     #define GL_RGBA                           0x1908
     #define GL_LUMINANCE                      0x1909

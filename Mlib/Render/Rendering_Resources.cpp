@@ -515,10 +515,10 @@ GLuint RenderingResources::get_texture(
             linfo() << this << " Loading texture: " << desc.mixed;
         }
     }
-    
+
     float aniso = 0.0f;
-    CHK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
-    aniso = std::min({ aniso, (float)desc.anisotropic_filtering_level, float(max_anisotropic_filtering_level_) });
+    WARN(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
+    aniso = std::min({ aniso, (float)desc.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
     GLuint texture;
 

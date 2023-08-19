@@ -292,8 +292,13 @@ DirectoryIterator::DirectoryIterator(
   current_asset_filename_{ AAssetDir_getNextFileName(asset_dir_.get()) }
 {
   if (JNIHelper::GetInstance()->PathExists(dir_name, StorageType::EXTERNAL)) {
+    std::string s = JNIHelper::GetInstance()->GetExternalFilesDir();
+    if (dir_name[0] != '/') {
+      s.append("/");
+    }
+    s.append(dir_name);
     std::error_code ec;
-    filesystem_directory_iterator_ = fs::directory_iterator(dir_name, ec);
+    filesystem_directory_iterator_ = fs::directory_iterator(s, ec);
     if (ec) {
       Mlib::verbose_abort(
           std::string("Could not create directory iterator for \"") +

@@ -1,5 +1,4 @@
 #include "Replace_Terrain_Material.hpp"
-#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Filter.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>
@@ -10,8 +9,6 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <map>
-#include <ranges>
 
 using namespace Mlib;
 
