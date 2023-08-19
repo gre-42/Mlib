@@ -258,11 +258,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     }
-                    if (material.shader == "ksPerPixel") {                 // required for Akina track
+                    if ((material.shader == "ksPerPixel") ||                // required for Akina track
+                        (material.shader == "ksPerPixelAT_NM"))             // required for Semetin track
+                    {
                         tl.material.blend_mode = BlendMode::BINARY_05;
                     } else if ((material.shader == "ksPerPixelAlpha") ||
-                               (material.shader == "ksPerPixelAT") ||      // required for Hondarribia track
-                               (material.shader == "ksPerPixelAT_NM") ||
+                               (material.shader == "ksPerPixelAT") ||       // required for Hondarribia track
                                (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
                         tl.material.blend_mode = cfg.blend_mode;
