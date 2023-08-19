@@ -21,11 +21,11 @@ T ReadBinary(std::istream& str) {
 static std::string ReadStr(std::istream& str, uint32_t len) {
     //int len = str.ReadInt32();
     std::vector<uint8_t> stringData(len);
-    str.read((char*)stringData.data(), len);
+    str.read((char*)stringData.data(), integral_cast<std::streamsize>(len));
     if (str.fail()) {
         THROW_OR_ABORT("Could not read string from stream");
     }
-    return std::string(stringData.begin(), stringData.end());
+    return { stringData.begin(), stringData.end() };
 }
 
 static int32_t ReadInt32(std::istream& str) {
