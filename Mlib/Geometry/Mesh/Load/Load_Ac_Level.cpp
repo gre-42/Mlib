@@ -57,9 +57,9 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             ini_parser.get<float>("PARAMETERS", "X_OFFSET"),
             ini_parser.get<float>("PARAMETERS", "Z_OFFSET")};
         auto globals = JsonMacroArguments({
-            {"LEVEL_ICON_FILE", preview_filename},
+            {"LEVEL_ICON_FILE", preview_filename.string()},
             {"IF_RACEWAY_CIRCULAR", false},
-            {"STAGE_INI_FILENAME", stage_filename},
+            {"STAGE_INI_FILENAME", stage_filename.string()},
             {"MINIMAP_FILE", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
                 ? nlohmann::json(minimap_filename.string())
                 : nlohmann::json()},

@@ -1,9 +1,11 @@
 cd /D "%~dp0" || exit /b
 
+IF "%CMAKE_BUILD_TYPE%"=="" set CMAKE_BUILD_TYPE=Release
+
 for %%I in ( ^
-    freealut\build\src\Release\alut.dll ^
-    VSRecastBuild\Detour\Release\Detour.dll ^
-    VSRecastBuild\DebugUtils\Release\DebugUtils.dll ^
-    VSRecastBuild\Recast\Release\Recast.dll ^
+    freealut\build\src\%CMAKE_BUILD_TYPE%\alut.dll ^
+    VSRecastBuild\Detour\%CMAKE_BUILD_TYPE%\Detour.dll ^
+    VSRecastBuild\DebugUtils\%CMAKE_BUILD_TYPE%\DebugUtils.dll ^
+    VSRecastBuild\Recast\%CMAKE_BUILD_TYPE%\Recast.dll ^
     glfw_vc2022\lib\glfw3.dll ^
-    ) do copy %%I GVS\Bin\Release\
+    ) do copy %%I GVS\Bin\%CMAKE_BUILD_TYPE%\ || exit /b
