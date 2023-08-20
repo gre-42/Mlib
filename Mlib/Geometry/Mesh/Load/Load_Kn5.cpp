@@ -29,7 +29,7 @@ static std::string ReadStr(std::istream& str, uint32_t len) {
 }
 
 static int32_t ReadInt32(std::istream& str) {
-    auto result = ReadBinary<int32_t>(str);;
+    auto result = ReadBinary<int32_t>(str);
     if (str.fail()) {
         THROW_OR_ABORT("Could not read int32 from stream");
     }
@@ -37,7 +37,7 @@ static int32_t ReadInt32(std::istream& str) {
 }
 
 static float ReadSingle(std::istream& str) {
-    auto result = ReadBinary<float>(str);;
+    auto result = ReadBinary<float>(str);
     if (str.fail()) {
         THROW_OR_ABORT("Could not read float from stream");
     }
@@ -45,7 +45,7 @@ static float ReadSingle(std::istream& str) {
 }
 
 static uint8_t ReadByte(std::istream& str) {
-    auto result = ReadBinary<uint8_t>(str);;
+    auto result = ReadBinary<uint8_t>(str);
     if (str.fail()) {
         THROW_OR_ABORT("Could not read byte from stream");
     }
@@ -295,7 +295,7 @@ static void readNodes(
 }
 
 kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
-    auto binStream = create_ifstream(filename);
+    auto binStream = create_ifstream(filename, std::ios::binary);
     if (binStream->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
