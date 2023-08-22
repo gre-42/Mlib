@@ -116,7 +116,7 @@ private:
     mutable BackgroundLoop small_instances_bg_worker_;
     std::mutex uuid_mutex_;
     size_t uuid_;
-    bool shutting_down_;
+    std::atomic_bool shutting_down_;
     std::list<std::unique_ptr<const ColorStyle>> color_styles_;
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
     SceneNodeResources* scene_node_resources_;

@@ -162,13 +162,16 @@ void Scene::delete_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    shutdown();
+    if (!shutting_down_) {
+        shutdown();
+    }
 }
 
 void Scene::shutdown() {
     if (shutting_down_) {
-        return;
+        verbose_abort("Scene already shutting down");
     }
+    std::scoped_lock lock{mutex_};
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
@@ -554,7 +557,6 @@ void Scene::print(std::ostream& ostr) const {
 }
 
 bool Scene::shutting_down() const {
-    std::shared_lock lock{mutex_};
     return shutting_down_;
 }
 
