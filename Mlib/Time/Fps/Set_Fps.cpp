@@ -12,7 +12,9 @@ SetFps::SetFps(
   prefix_{prefix},
   stop_requested_{false},
   paused_{paused}
-{}
+{
+    std::scoped_lock lock{execute_mutex_};
+}
 
 void SetFps::tick(
     float dt,

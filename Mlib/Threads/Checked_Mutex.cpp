@@ -4,17 +4,29 @@
 
 using namespace Mlib;
 
+CheckedMutex::CheckedMutex() = default;
+
+CheckedMutex::~CheckedMutex() = default;
+
 void CheckedMutex::lock() {
     if (locked_by_caller()) {
         THROW_OR_ABORT("Mutex already locked by caller");
     }
-    std::shared_mutex::lock();
+    mutex_.lock();
     m_holder = std::this_thread::get_id(); 
 }
 
 void CheckedMutex::unlock() {
     m_holder = std::thread::id();
-    std::shared_mutex::unlock();
+    mutex_.unlock();
+}
+
+void CheckedMutex::lock_shared() {
+    mutex_.lock_shared();
+}
+
+void CheckedMutex::unlock_shared() {
+    mutex_.unlock_shared();
 }
 
 bool CheckedMutex::locked_by_caller() const {
