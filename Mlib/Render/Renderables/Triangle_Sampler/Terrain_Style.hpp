@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -55,12 +55,12 @@ public:
         archive(config);
     }
 private:
-    mutable std::shared_mutex max_distance_to_camera_mutex_;
-    mutable std::shared_mutex distances_to_bdry_mutex_;
+    mutable SafeSharedMutex max_distance_to_camera_mutex_;
+    mutable SafeSharedMutex distances_to_bdry_mutex_;
     mutable double max_distance_to_camera_ = NAN;
     mutable TerrainStyleDistancesToBdry distances_to_bdry_;
 
-    mutable std::shared_mutex foliagemap_mutex_;
+    mutable SafeSharedMutex foliagemap_mutex_;
     mutable Array<float> foliagemap_array_;
 };
 

@@ -5,8 +5,8 @@
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <optional>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -69,7 +69,7 @@ private:
     RenderLogics& render_logics_;
     AdvanceTimes& advance_times_;
     SceneNode* moving_node_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <map>
-#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -28,9 +28,9 @@ private:
     std::string fallback_camera_node_name_ = "stadium_camera";
     Scene& scene_;
     std::string camera_node_name_ = "follower_camera";
-    mutable std::shared_mutex cycle_near_mutex_;
-    mutable std::shared_mutex cycle_far_mutex_;
-    mutable std::shared_mutex camera_mutex_;
+    mutable SafeSharedMutex cycle_near_mutex_;
+    mutable SafeSharedMutex cycle_far_mutex_;
+    mutable SafeSharedMutex camera_mutex_;
 };
 
 }

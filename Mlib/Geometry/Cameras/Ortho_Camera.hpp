@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera_Config.hpp>
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 
 namespace Mlib {
 
@@ -31,7 +31,7 @@ public:
 private:
     OrthoCameraConfig cfg_;
     Postprocessing postprocessing_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

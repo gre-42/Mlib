@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <memory>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -26,7 +26,7 @@ public:
     const std::list<std::unique_ptr<IAssetLoader>>& loaders() const;
 private:
     std::map<std::string, ReplacementParameterAndFilename> replacement_parameters_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
     std::list<std::unique_ptr<IAssetLoader>> asset_loaders_;
 };
 

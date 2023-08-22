@@ -1,8 +1,8 @@
 #pragma once
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <memory>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -24,7 +24,7 @@ public:
 
 private:
     std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

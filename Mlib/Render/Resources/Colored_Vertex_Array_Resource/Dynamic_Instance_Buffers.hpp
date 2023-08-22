@@ -4,7 +4,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <string>
 #include <vector>
 
@@ -50,7 +50,7 @@ private:
     TransformationMode transformation_mode_;
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

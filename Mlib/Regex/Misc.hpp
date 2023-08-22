@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <functional>
 #include <iosfwd>
 #include <list>
 #include <map>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -48,7 +48,7 @@ public:
     bool get_bool(const std::string& key) const;
 private:
     std::map<std::string, std::string> s_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);

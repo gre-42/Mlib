@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -33,7 +33,7 @@ private:
     mutable std::map<std::string, std::shared_ptr<AudioBuffer>> buffers_;
     mutable std::map<std::string, AudioFileSequenceInformation> buffer_sequence_filenames_;
     mutable std::map<std::string, std::shared_ptr<AudioBufferSequence>> buffer_sequences_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

@@ -4,11 +4,11 @@
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Ignore_Copy.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
-#include <shared_mutex>
 #include <vector>
 
 namespace Mlib {
@@ -142,7 +142,7 @@ public:
     }
 private:
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
-    mutable IgnoreCopy<std::shared_mutex> aabb_mutex_;
+    mutable IgnoreCopy<SafeSharedMutex> aabb_mutex_;
 };
 
 }

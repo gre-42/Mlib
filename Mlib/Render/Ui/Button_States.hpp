@@ -10,7 +10,7 @@
 #endif
 
 #include <set>
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 
 namespace Mlib {
 
@@ -38,16 +38,16 @@ public:
 private:
 #ifdef __ANDROID__
     std::unordered_map<int, float> gamepad_axes_;
-    mutable std::shared_mutex gamepad_axes_mutex_;
+    mutable SafeSharedMutex gamepad_axes_mutex_;
 #else
     GLFWgamepadstate gamepad_state_;
     bool has_gamepad_;
-    mutable std::shared_mutex gamepad_state_mutex_;
+    mutable SafeSharedMutex gamepad_state_mutex_;
 #endif
     std::set<int> keys_down_;
     std::set<int> mouse_buttons_down_;
-    mutable std::shared_mutex keys_mutex_;
-    mutable std::shared_mutex mouse_button_mutex_;
+    mutable SafeSharedMutex keys_mutex_;
+    mutable SafeSharedMutex mouse_button_mutex_;
 };
 
 }

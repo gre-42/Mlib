@@ -6,7 +6,7 @@
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 
 namespace p2t {
 
@@ -124,7 +124,7 @@ private:
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
 
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
-    mutable std::shared_mutex street_bvh_mutex_;
+    mutable SafeSharedMutex street_bvh_mutex_;
 
     TerrainStyles terrain_styles_;
 };

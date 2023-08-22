@@ -2,8 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <memory>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -50,7 +50,7 @@ private:
     std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
     std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
-    std::shared_mutex mutex_;
+    SafeSharedMutex mutex_;
 };
 
 }

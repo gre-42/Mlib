@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <compare>
 #include <map>
 #include <memory>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -46,7 +46,7 @@ private:
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

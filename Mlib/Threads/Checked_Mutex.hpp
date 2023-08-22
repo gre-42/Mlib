@@ -1,5 +1,5 @@
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <atomic>
-#include <shared_mutex>
 #include <thread>
 
 namespace Mlib {
@@ -18,7 +18,7 @@ public:
 
 private:
     std::atomic<std::thread::id> m_holder;
-    std::shared_mutex mutex_;
+    SafeSharedMutex mutex_;
 };
 
 }

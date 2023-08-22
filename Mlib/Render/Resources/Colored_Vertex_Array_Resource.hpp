@@ -4,10 +4,10 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
 #include <map>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -114,7 +114,7 @@ private:
     mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     SceneNodeResources& scene_node_resources_;
     std::shared_ptr<RenderingResources> rendering_resources_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeSharedMutex mutex_;
     std::unique_ptr<Instances> instances_;
     DeallocationToken deallocation_token_;
 };

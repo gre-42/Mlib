@@ -3,9 +3,9 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <atomic>
 #include <mutex>
-#include <shared_mutex>
 #include <string>
 
 namespace Mlib {
@@ -41,7 +41,7 @@ protected:
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
     float health_;
-    mutable std::shared_mutex health_mutex_;
+    mutable SafeSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
     DeleteNodeMutex& delete_node_mutex_;
 };
