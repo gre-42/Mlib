@@ -16,6 +16,7 @@ BackgroundLoop::BackgroundLoop()
                 return;
             }
             task_();
+            task_ = std::function<void()>();
             done_ = true;
         }
     }}
