@@ -8,11 +8,16 @@ using namespace Mlib;
 DestructionObservers::DestructionObservers(const Object& obj)
 : shutting_down_{false},
   obj_{obj}
-{}
+{
+    // Transfer the "obj" reference.
+    std::scoped_lock lock{mutex_};
+}
 
 DestructionObservers::~DestructionObservers() {
     if (!shutting_down_) {
-        shutdown();
+        std::scoped_lock lock{mutex_};
+        shutting_down_ = true;
+        send_shutdown_messages();
     }
 }
 
@@ -24,6 +29,9 @@ void DestructionObservers::add(
     DestructionObserver& destruction_observer,
     ObserverAlreadyExistsBehavior already_exists_behavior)
 {
+    if (shutting_down_) {
+        verbose_abort("DestructionObservers::add despite shutdown");
+    }
     std::scoped_lock lock{mutex_};
     auto r = observers_.insert(&destruction_observer);
     if (!r.second && (already_exists_behavior == ObserverAlreadyExistsBehavior::RAISE)) {
@@ -35,8 +43,8 @@ void DestructionObservers::remove(
     DestructionObserver& destruction_observer,
     ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
-    std::scoped_lock lock{mutex_};
-    if (!shutting_down()) {
+    if (!shutting_down_) {
+        std::scoped_lock lock{mutex_};
         size_t nerased = observers_.erase(&destruction_observer);
         if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
             verbose_abort("Could not find destruction observer to be erased");
@@ -48,6 +56,7 @@ void DestructionObservers::shutdown() {
     if (shutting_down_) {
         verbose_abort("Already shutting down (0)");
     }
+    std::scoped_lock lock{mutex_};
     shutting_down_ = true;
     send_shutdown_messages();
 }
@@ -56,7 +65,10 @@ void DestructionObservers::notify_destroyed() {
     if (shutting_down_) {
         verbose_abort("Already shutting down (1)");
     }
+    std::scoped_lock lock{mutex_};
+    shutting_down_ = true;
     send_shutdown_messages();
+    shutting_down_ = false;
 }
 
 void DestructionObservers::send_shutdown_messages() {

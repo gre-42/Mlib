@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <mutex>
 #include <set>
 
@@ -33,7 +34,7 @@ private:
     void send_shutdown_messages();
     std::set<DestructionObserver*> observers_;
     mutable std::mutex mutex_;
-    bool shutting_down_;
+    std::atomic_bool shutting_down_;
     const Object& obj_;
 };
 

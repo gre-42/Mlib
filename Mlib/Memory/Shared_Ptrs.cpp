@@ -13,18 +13,18 @@ SharedPtrs::~SharedPtrs() {
 }
 
 void SharedPtrs::add(std::shared_ptr<Object> ptr) {
-    std::scoped_lock lock{mutex_};
     if (clearing_) {
         verbose_abort("SharedPtrs::add called during clearing");
     }
+    std::scoped_lock lock{mutex_};
     ptrs_.push_back(std::move(ptr));
 }
 
 void SharedPtrs::clear() {
-    std::scoped_lock lock{mutex_};
     if (clearing_) {
         verbose_abort("SharedPtrs already clearing");
     }
+    std::scoped_lock lock{mutex_};
     clearing_ = true;
     clear_container_recursively(ptrs_);
     clearing_ = false;
