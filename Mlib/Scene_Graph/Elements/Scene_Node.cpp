@@ -53,7 +53,7 @@ SceneNode::~SceneNode() {
         }
     }
     destruction_observers.shutdown();
-    clear();
+    clear_internal();
 }
 
 bool SceneNode::shutting_down() const {
@@ -222,7 +222,9 @@ bool SceneNode::has_node_modifier() const {
 
 void SceneNode::clear_renderable_instance(const std::string& name) {
     std::scoped_lock lock{mutex_};
-    renderables_.erase(name);
+    if (renderables_.erase(name) != 1) {
+        THROW_OR_ABORT("Could not clear renderable with name \"" + name + '"');
+    }
 }
 
 void SceneNode::clear_absolute_observer() {
@@ -237,6 +239,14 @@ void SceneNode::clear_absolute_observer() {
 }
 
 void SceneNode::clear() {
+    std::shared_lock lock{mutex_};
+    if (shutting_down()) {
+        verbose_abort("Node to be cleared is shutting down");
+    }
+    clear_internal();
+}
+
+void SceneNode::clear_internal() {
     clearing_observers.notify_destroyed();
     clearing_pointers.clear();
 
@@ -250,12 +260,18 @@ void SceneNode::clear() {
     renderables_.clear();
     clear_map_recursively(children_, [this](const auto& child){
         if (child.mapped().is_registered) {
+            if (child.mapped().scene_node->shutting_down()) {
+                verbose_abort("Child node \"" + child.key() + "\" already shutting down (0)");
+            }
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
     });
     clear_map_recursively(aggregate_children_, [this](const auto& child){
         if (child.mapped().is_registered) {
+            if (child.mapped().scene_node->shutting_down()) {
+                verbose_abort("Child node \"" + child.key() + "\" already shutting down (1)");
+            }
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
@@ -307,6 +323,9 @@ void SceneNode::remove_child(const std::string& name) {
     if (it->second.is_registered) {
         if (scene_ == nullptr) {
             verbose_abort("Can not deregister child \"" + name + "\" because scene is not set");
+        }
+        if (it->second.scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + name + "\" shutting down (2)");
         }
         scene_->unregister_node(name);
     }

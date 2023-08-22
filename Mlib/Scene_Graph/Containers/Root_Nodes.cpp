@@ -32,6 +32,9 @@ void RootNodes::clear() {
     clear_map_recursively(
         root_nodes_,
         [this](const auto& node){
+            if (node.mapped()->shutting_down()) {
+                verbose_abort("Node \"" + node.key() + "\" already shutting down");
+            }
             scene_.unregister_node(node.key());
             root_nodes_to_delete_.erase(node.key());
         });
