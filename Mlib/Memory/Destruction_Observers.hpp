@@ -34,7 +34,7 @@ private:
     std::set<DestructionObserver*> observers_;
     mutable std::mutex mutex_;
     bool shutting_down_;
-    const Object* obj_;
+    const Object& obj_;
 };
 
 }

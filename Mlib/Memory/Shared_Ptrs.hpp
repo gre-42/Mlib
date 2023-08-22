@@ -2,6 +2,7 @@
 #include <Mlib/Object.hpp>
 #include <list>
 #include <memory>
+#include <mutex>
 
 namespace Mlib {
 
@@ -13,6 +14,8 @@ public:
     void clear();
 private:
     std::list<std::shared_ptr<Object>> ptrs_;
+    mutable std::mutex mutex_;
+    bool clearing_;
 };
 
 };

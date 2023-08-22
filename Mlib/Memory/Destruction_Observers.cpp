@@ -7,7 +7,7 @@ using namespace Mlib;
 
 DestructionObservers::DestructionObservers(const Object& obj)
 : shutting_down_{false},
-  obj_{&obj}
+  obj_{obj}
 {}
 
 DestructionObservers::~DestructionObservers() {
@@ -61,6 +61,6 @@ void DestructionObservers::notify_destroyed() {
 
 void DestructionObservers::send_shutdown_messages() {
     clear_set_recursively(observers_, [this](DestructionObserver* obs){
-        obs->notify_destroyed(*obj_);
+        obs->notify_destroyed(obj_);
     });
 }
