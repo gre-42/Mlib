@@ -606,7 +606,6 @@ IParticleInstantiator& Scene::particle_instantiator(const std::string& resource_
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {
-    std::shared_lock lock{mutex_};
     scene.print(ostr);
     return ostr;
 }
