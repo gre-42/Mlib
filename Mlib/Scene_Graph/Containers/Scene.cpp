@@ -162,14 +162,12 @@ void Scene::delete_nodes(const Mlib::regex& regex) {
 }
 
 Scene::~Scene() {
-    if (!shutting_down_) {
-        shutdown();
-    }
+    shutdown();
 }
 
 void Scene::shutdown() {
     if (shutting_down_) {
-        verbose_abort("Scene already shutting down");
+        return;
     }
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.clear_deleter_thread();
@@ -196,6 +194,7 @@ void Scene::shutdown() {
     if (!root_imposter_nodes_.empty()) {
         verbose_abort("Imposter nodes remain after shutdown");
     }
+    shutting_down_ = false;
 }
 
 bool Scene::contains_node(const std::string& name) const {
