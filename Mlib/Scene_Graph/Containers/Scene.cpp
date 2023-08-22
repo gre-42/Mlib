@@ -195,7 +195,6 @@ void Scene::shutdown() {
     if (!root_imposter_nodes_.empty()) {
         verbose_abort("Imposter nodes remain after shutdown");
     }
-    shutting_down_ = false;
 }
 
 bool Scene::contains_node(const std::string& name) const {
