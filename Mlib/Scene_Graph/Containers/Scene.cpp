@@ -112,6 +112,7 @@ void Scene::try_delete_root_node(const std::string& name) {
 }
 
 void Scene::delete_root_imposter_node(SceneNode& scene_node) {
+    std::scoped_lock lock{mutex_};
     if (root_imposter_nodes_.erase(&scene_node) != 1) {
         verbose_abort("Could not delete root imposter node");
     }
@@ -597,6 +598,7 @@ DeleteNodeMutex& Scene::delete_node_mutex() const {
 }
 
 IParticleInstantiator& Scene::particle_instantiator(const std::string& resource_name) const {
+    std::shared_lock lock{mutex_};
     if (particle_renderer_ == nullptr) {
         THROW_OR_ABORT("Particle renderer not set");
     }
@@ -604,6 +606,7 @@ IParticleInstantiator& Scene::particle_instantiator(const std::string& resource_
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {
+    std::shared_lock lock{mutex_};
     scene.print(ostr);
     return ostr;
 }
