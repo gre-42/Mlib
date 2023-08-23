@@ -249,6 +249,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 }
 
 SceneNode& Scene::get_node(const std::string& name) const {
+    delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
@@ -257,6 +258,7 @@ SceneNode& Scene::get_node(const std::string& name) const {
 }
 
 std::list<std::pair<std::string, SceneNode&>> Scene::get_nodes(const Mlib::regex& regex) const {
+    delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
     std::list<std::pair<std::string, SceneNode&>> result;
     for (const auto& [name, node] : nodes_) {
@@ -271,6 +273,7 @@ std::list<std::pair<std::string, SceneNode&>> Scene::get_nodes(const Mlib::regex
 }
 
 SceneNode& Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
+    delete_node_mutex_.notify_reading();
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         THROW_OR_ABORT("Could not find node with name (2) \"" + name + '"');
