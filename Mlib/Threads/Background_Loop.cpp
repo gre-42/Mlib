@@ -1,4 +1,5 @@
 #include "Background_Loop.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -14,6 +15,9 @@ BackgroundLoop::BackgroundLoop()
             task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });
             if (thread_.get_stop_token().stop_requested()) {
                 return;
+            }
+            if (!task_) {
+                verbose_abort("Task not set");
             }
             task_();
             task_ = std::function<void()>();
