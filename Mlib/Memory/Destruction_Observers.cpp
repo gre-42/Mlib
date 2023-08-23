@@ -8,10 +8,7 @@ using namespace Mlib;
 DestructionObservers::DestructionObservers(const Object& obj)
 : shutting_down_{false},
   obj_{obj}
-{
-    // Transfer the "obj" reference.
-    std::scoped_lock lock{mutex_};
-}
+{}
 
 DestructionObservers::~DestructionObservers() {
     if (!shutting_down_) {
