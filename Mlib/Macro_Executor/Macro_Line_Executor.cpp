@@ -99,7 +99,7 @@ void MacroLineExecutor::operator () (
         {
             std::stringstream msg;
             msg << j;
-            THROW_OR_ABORT("Could not find exactly out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
+            THROW_OR_ABORT("Could not find exactly one out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
         auto context = j.at<std::string>(MacroKeys::context, context_);
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
