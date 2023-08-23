@@ -51,11 +51,11 @@ void BackgroundLoop::run(const std::function<void()>& task) {
     if (!thread_.joinable()) {
         THROW_OR_ABORT("BackgroundLoop::run despite not joinable thread");
     }
-    if (!done_) {
-        THROW_OR_ABORT("BackgroundLoop::run despite not done");
-    }
     {
         std::scoped_lock lck{ mutex_ };
+        if (!done_) {
+            THROW_OR_ABORT("BackgroundLoop::run despite not done");
+        }
         task_ = task;
         done_ = false;
     }
