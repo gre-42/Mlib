@@ -44,6 +44,7 @@ SceneNode::SceneNode()
 {}
 
 SceneNode::~SceneNode() {
+    std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
@@ -85,6 +86,7 @@ SceneNode& SceneNode::parent() {
 }
 
 const SceneNode& SceneNode::parent() const {
+    std::shared_lock lock{mutex_};
     return const_cast<SceneNode*>(this)->parent();
 }
 
@@ -409,6 +411,7 @@ void SceneNode::add_instances_position(
 }
 
 void SceneNode::optimize_instances_search_time(std::ostream& ostr) const {
+    std::shared_lock lock{mutex_};
     for (const auto& [name, i] : instances_children_) {
         ostr << name << std::endl;
         i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, std::cerr);
@@ -951,6 +954,7 @@ TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const 
 }
 
 TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const {
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::DETACHED) {
         scene_->delete_node_mutex().notify_reading();
     }
@@ -972,6 +976,7 @@ TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
 }
 
 TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
+    std::shared_lock lock{mutex_};
     if (state_ != SceneNodeState::DETACHED) {
         scene_->delete_node_mutex().notify_reading();
     }
