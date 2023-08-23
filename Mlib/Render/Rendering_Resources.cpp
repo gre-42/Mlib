@@ -496,7 +496,8 @@ static GLenum nchannels2format(size_t nchannels) {
 GLuint RenderingResources::get_texture(
     const std::string& name,
     const TextureDescriptor& descriptor,
-    CallerType caller_type) const {
+    CallerType caller_type) const
+{
     LOG_FUNCTION("RenderingResources::get_texture " + name);
     std::scoped_lock lock{mutex_};
     if (auto it = textures_.find(name); it != textures_.end())

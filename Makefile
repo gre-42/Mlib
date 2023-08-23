@@ -37,6 +37,11 @@ build_tsan:
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=T${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
+build_asan_clang:
+	CC=/usr/bin/clang CXX=/usr/bin/clang++ \
+	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=LA${BUILD_PREFIX} \
+		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
 build_tsan_clang:
 	CC=/usr/bin/clang CXX=/usr/bin/clang++ \
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
