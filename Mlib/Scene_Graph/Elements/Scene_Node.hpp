@@ -7,6 +7,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <atomic>
 #include <cstdint>
 #include <iosfwd>
 #include <map>
@@ -277,6 +278,7 @@ private:
     std::string aperiodic_animation_;
     SceneNodeState state_;
     mutable SafeRecursiveSharedMutex mutex_;
+    std::atomic_bool shutting_down_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SceneNode& node);

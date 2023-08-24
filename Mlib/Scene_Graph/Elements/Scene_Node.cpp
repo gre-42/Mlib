@@ -40,7 +40,8 @@ SceneNode::SceneNode()
   rotation_{ 0.f, 0.f, 0.f },
   scale_{ 1.f },
   rotation_matrix_{ fixed_identity_array<float, 3>() },
-  state_{ SceneNodeState::DETACHED }
+  state_{ SceneNodeState::DETACHED },
+  shutting_down_{ false }
 {}
 
 SceneNode::~SceneNode() {
@@ -53,15 +54,16 @@ SceneNode::~SceneNode() {
             verbose_abort("ERROR: Static node is being deleted but scene not shutting down");
         }
     }
+    shutting_down_ = true;
     destruction_observers.shutdown();
+    destruction_pointers.clear();
     clear_internal();
 }
 
 bool SceneNode::shutting_down() const {
-    std::shared_lock lock{mutex_};
     // The destruction order is specified explicitly
     // in the SceneNode destructor.
-    return destruction_observers.shutting_down();
+    return shutting_down_;
 }
 
 void SceneNode::set_parent(SceneNode& parent) {
