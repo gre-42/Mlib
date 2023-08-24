@@ -363,11 +363,18 @@ void Scene::render(
                     auto large_aggregate_renderer_update_func = [&](){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer](){
-                            std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
-                            for (const auto& [_, node] : static_root_nodes_) {
-                                node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                            std::list<const SceneNode*> nodes;
+                            {
+                                std::shared_lock lock{mutex_};
+                                for (const auto& [_, node] : static_root_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
+                                for (const auto& [_, node] : root_aggregate_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
                             }
-                            for (const auto& [_, node] : root_aggregate_nodes_) {
+                            std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
+                            for (const auto* node : nodes) {
                                 node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                             }
                             large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue);
@@ -390,11 +397,18 @@ void Scene::render(
                     auto large_instances_renderer_update_func = [&](){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_instances_renderer](){
-                            LargeInstancesQueue instances_queue{external_render_pass.pass};
-                            for (const auto& [_, node] : static_root_nodes_) {
-                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                            std::list<const SceneNode*> nodes;
+                            {
+                                std::shared_lock lock{mutex_};
+                                for (const auto& [_, node] : static_root_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
+                                for (const auto& [_, node] : root_aggregate_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
                             }
-                            for (const auto& [_, node] : root_aggregate_nodes_) {
+                            LargeInstancesQueue instances_queue{external_render_pass.pass};
+                            for (const auto* node : nodes) {
                                 node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                             }
                             large_instances_renderer->update_instances(iv.t(), instances_queue.queue());
@@ -418,11 +432,18 @@ void Scene::render(
                     auto small_sorted_aggregate_renderer_update_func = [&](){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
-                            std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
-                            for (const auto& [_, node] : static_root_nodes_) {
-                                node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
+                            std::list<const SceneNode*> nodes;
+                            {
+                                std::shared_lock lock{mutex_};
+                                for (const auto& [_, node] : static_root_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
+                                for (const auto& [_, node] : root_aggregate_nodes_) {
+                                    nodes.push_back(node.get());
+                                }
                             }
-                            for (const auto& [_, node] : root_aggregate_nodes_) {
+                            std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
+                            for (const auto* node : nodes) {
                                 node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                             aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
@@ -456,6 +477,16 @@ void Scene::render(
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
                                                       small_sorted_instances_renderers]()
                             {
+                                std::list<const SceneNode*> nodes;
+                                {
+                                    std::shared_lock lock{mutex_};
+                                    for (const auto& [_, node] : static_root_nodes_) {
+                                        nodes.push_back(node.get());
+                                    }
+                                    for (const auto& [_, node] : root_instances_nodes_) {
+                                        nodes.push_back(node.get());
+                                    }
+                                }
                                 // auto start_time = std::chrono::steady_clock::now();
                                 std::set<ExternalRenderPassType> black_render_passes;
                                 if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
@@ -465,10 +496,7 @@ void Scene::render(
                                 SmallInstancesQueues instances_queues{
                                     external_render_pass.pass,
                                     black_render_passes};
-                                for (const auto& [_, node] : static_root_nodes_) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
-                                }
-                                for (const auto& [_, node] : root_instances_nodes_) {
+                                for (const auto* node : nodes) {
                                     node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
