@@ -37,6 +37,7 @@ void BackgroundLoop::shutdown() {
     }
     thread_.request_stop();
     task_ready_cv_.notify_one();
+    thread_.join();
 }
 
 WorkerStatus BackgroundLoop::tick(size_t update_interval) {
