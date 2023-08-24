@@ -18,6 +18,76 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+class PathResolver {
+public:
+    explicit PathResolver(
+        const std::list<std::string>* search_path,
+        std::string script_filename)
+    : search_path_{search_path},
+      script_filename_{std::move(script_filename)}
+    {}
+    std::list<std::string> fpathes(const std::filesystem::path& f) const {
+        if (f.is_absolute()) {
+            return { f.string() };
+        } else {
+            std::list<std::string> result;
+            for (const std::string& wdir : *search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (path_exists(path)) {
+                    result.push_back(path.string());
+                }
+            }
+            if (result.empty()) {
+                THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
+            }
+            return result;
+        }
+    }
+    FPath fpath(const std::filesystem::path& f) const {
+        if (f.empty()) {
+            return FPath{.is_variable = false, .path = ""};
+        } else if (f.string()[0] == '#') {
+            return FPath{.is_variable = true, .path = f.string().substr(1)};
+        } else {
+            if (f.is_absolute()) {
+                return FPath{.is_variable = false, .path = f.string()};
+            } else {
+                for (const std::string& wdir : *search_path_) {
+                    auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                    if (path_exists(path)) {
+                        return FPath{.is_variable = false, .path = path.string()};
+                    }
+                }
+                THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
+            }
+        }
+    }
+    std::string spath(const std::filesystem::path& f) const {
+        if (f.empty()) {
+            THROW_OR_ABORT("Received empty script path");
+        } else if (f.is_absolute()) {
+            return f.string();
+        } else {
+            {
+                auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
+                if (path_exists(local_path)) {
+                    return local_path.string();
+                }
+            }
+            for (const std::string& wdir : *search_path_) {
+                auto path = fs::weakly_canonical(fs::path(wdir) / f);
+                if (path_exists(path)) {
+                    return path.string();
+                }
+            }
+            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories. Script: \"" + script_filename_ + '"');
+        }
+    }
+private:
+    const std::list<std::string>* search_path_;
+    std::string script_filename_;
+};
+
 namespace DeclareMacroArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(declare_macro);
@@ -125,9 +195,10 @@ void MacroLineExecutor::operator () (
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;
-            args.set_fpathes([this](const std::filesystem::path& path){return fpathes(path);});
-            args.set_fpath([this](const std::filesystem::path& path){return fpath(path);});
-            args.set_spath([this](const std::filesystem::path& path){return spath(path);});
+            PathResolver path_resolver{search_path_, script_filename_};
+            args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
+            args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
+            args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
             try {
                 if (jv.contains(MacroKeys::literals)) {
                     args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::literals), global_args, asset_references_));
@@ -181,7 +252,7 @@ void MacroLineExecutor::operator () (
                 (*this)(j_subst.at(MacroKeys::execute), &args, nullptr);
             } else if (jv.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
-                    spath(j_subst.at<std::string>(MacroKeys::include)),
+                    path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
                     context);
                 macro_recorder_(mle2, &args);
             } else if (jv.contains(MacroKeys::declare_macro)) {
@@ -216,65 +287,5 @@ void MacroLineExecutor::operator () (
         std::stringstream msg;
         msg << j;
         THROW_OR_ABORT("Not object or array: \"" + msg.str() + '"');
-    }
-}
-
-std::list<std::string> MacroLineExecutor::fpathes(const fs::path& f) const {
-    if (f.is_absolute()) {
-        return { f.string() };
-    } else {
-        std::list<std::string> result;
-        for (const std::string& wdir : *search_path_) {
-            auto path = fs::weakly_canonical(fs::path(wdir) / f);
-            if (path_exists(path)) {
-                result.push_back(path.string());
-            }
-        }
-        if (result.empty()) {
-            THROW_OR_ABORT("Could not find a single relative path \"" + f.string() + "\" in search directories");
-        }
-        return result;
-    }
-}
-
-FPath MacroLineExecutor::fpath(const fs::path& f) const {
-    if (f.empty()) {
-        return FPath{.is_variable = false, .path = ""};
-    } else if (f.string()[0] == '#') {
-        return FPath{.is_variable = true, .path = f.string().substr(1)};
-    } else {
-        if (f.is_absolute()) {
-            return FPath{.is_variable = false, .path = f.string()};
-        } else {
-            for (const std::string& wdir : *search_path_) {
-                auto path = fs::weakly_canonical(fs::path(wdir) / f);
-                if (path_exists(path)) {
-                    return FPath{.is_variable = false, .path = path.string()};
-                }
-            }
-            THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in search directories");
-        }
-    }
-}
-
-std::string MacroLineExecutor::spath(const fs::path& f) const {
-    if (f.empty()) {
-        THROW_OR_ABORT("Received empty script path");
-    } else if (f.is_absolute()) {
-        return f.string();
-    } else {
-        {
-            auto local_path = fs::weakly_canonical(fs::path(script_filename_).parent_path() / f);
-            if (path_exists(local_path)) {
-                return local_path.string();
-            }
-        }
-        for (const std::string& wdir : *search_path_) {
-            auto path = fs::weakly_canonical(fs::path(wdir) / f);
-            if (path_exists(path)) {
-                return path.string();
-            }
-        }
-        THROW_OR_ABORT("Could not find relative path \"" + f.string() + "\" in script directory or search directories");
     }
 }

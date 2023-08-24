@@ -43,10 +43,6 @@ public:
         const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const;
 private:
-    std::list<std::string> fpathes(const std::filesystem::path& f) const;
-    FPath fpath(const std::filesystem::path& f) const;
-    std::string spath(const std::filesystem::path& f) const;
-
     MacroRecorder& macro_recorder_;
     std::string script_filename_;
     const std::list<std::string>* search_path_;
