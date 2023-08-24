@@ -181,10 +181,7 @@ void Scene::shutdown() {
         verbose_abort("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
-    large_aggregate_bg_worker_.shutdown();
-    large_instances_bg_worker_.shutdown();
-    small_aggregate_bg_worker_.shutdown();
-    small_instances_bg_worker_.shutdown();
+    stop_and_join();
     morn_.clear();
     if (!nodes_.empty()) {
         for (const auto& [name, _] : nodes_) {
