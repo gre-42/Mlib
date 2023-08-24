@@ -39,7 +39,7 @@ public:
         std::string script_filename,
         std::string context) const;
     void operator () (
-        const JsonView& j,
+        const nlohmann::json& j,
         const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const;
 private:

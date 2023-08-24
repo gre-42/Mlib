@@ -12,10 +12,17 @@
 
 namespace Mlib {
 
+enum class CheckIsObjectBehavior {
+    CHECK,
+    NO_CHECK
+};
+
 class JsonView {
     friend std::ostream& operator << (std::ostream& ostr, const JsonView& container);
 public:
-    explicit JsonView(const nlohmann::json& j);
+    explicit JsonView(
+        const nlohmann::json& j,
+        CheckIsObjectBehavior check = CheckIsObjectBehavior::CHECK);
     std::optional<nlohmann::json> try_at(const std::string& name) const;
     std::optional<nlohmann::json> try_at_non_null(const std::string& name) const;
     template <class T>
@@ -89,9 +96,6 @@ public:
             return decltype(at_vector_non_null<TData>(name, op))();
         }
         return at_vector_non_null<TData>(name, op);
-    }
-    inline nlohmann::detail::value_t type() const {
-        return j_.type();
     }
     inline void validate(const std::set<std::string>& known_keys, const std::string& prefix = "") const {
         Mlib::validate(j_, known_keys, prefix);

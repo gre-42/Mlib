@@ -77,7 +77,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 subst.insert_json("BULLET_DAMAGE_RADIUS", bullet_damage_radius);
                 subst.insert_json("BULLET_VELOCITY", bullet_velocity);
                 subst.insert_json("BULLET_RIGID_BODY_FLAGS", bullet_rigid_body_flags);
-                macro_line_executor(JsonView{create}, &subst, nullptr);
+                macro_line_executor(create, &subst, nullptr);
             },
             .ammo_type = ammo_type,
             .cool_down = cool_down * s,

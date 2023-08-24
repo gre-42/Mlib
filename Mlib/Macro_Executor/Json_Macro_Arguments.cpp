@@ -6,29 +6,42 @@
 using namespace Mlib;
 
 JsonMacroArguments::JsonMacroArguments()
-: JsonView{j_}
+: JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
+  j_(nlohmann::json::value_t::object)
 {}
 
 JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
-: JsonView{j_},
+: JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
   j_(other.j_),
   fpathes_{other.fpathes_},
   fpath_{other.fpath_},
   spath_{other.spath_}
-{}
+{
+    if (j_.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+}
 
 JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
-: JsonView{j_},
+: JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
   j_(std::move(other.j_)),
   fpathes_{std::move(other.fpathes_)},
   fpath_{std::move(other.fpath_)},
   spath_{std::move(other.spath_)}
-{}
+{
+    if (j_.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+}
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
-: JsonView{j_},
+: JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
   j_(std::move(j))
-{}
+{
+    if (j_.type() != nlohmann::detail::value_t::object) {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+}
 
 JsonMacroArguments::~JsonMacroArguments() = default;
 

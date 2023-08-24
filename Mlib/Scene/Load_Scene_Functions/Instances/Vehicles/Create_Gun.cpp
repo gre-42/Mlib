@@ -156,7 +156,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 local_substitutions.insert_json(capture.value());
             }
             local_substitutions.insert_json("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
-            macro_line_executor(JsonView{macro.value()}, &local_substitutions, nullptr);
+            macro_line_executor(macro.value(), &local_substitutions, nullptr);
         },
         delete_node_mutex);
         

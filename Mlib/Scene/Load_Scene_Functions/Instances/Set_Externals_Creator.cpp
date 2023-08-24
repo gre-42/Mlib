@@ -62,10 +62,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
                 {"IF_MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
             });
-            macro_line_executor(
-                JsonView{macro},
-                &local_args,
-                nullptr);
+            macro_line_executor(macro, &local_args, nullptr);
         }
     );
 }

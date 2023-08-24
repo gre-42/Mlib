@@ -31,16 +31,16 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
 
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
 
-    auto parse_resource_name_func = [&scene_node_resources](const JsonMacroArguments& jma){
-        return parse_resource_name(scene_node_resources, jma.get<std::string>());
+    auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
+        return parse_resource_name(scene_node_resources, jma);
     };
     
     add_foliage_resource(
         args.arguments.at<std::string>(KnownArgs::mesh_resource_name),
         args.arguments.at<std::string>(KnownArgs::foliage_resource_name),
         scene_node_resources,
-        args.arguments.children(KnownArgs::near_grass_resource_names, parse_resource_name_func),
-        args.arguments.children(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
+        args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
+        args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
         args.arguments.at<double>(KnownArgs::near_grass_distance),
         args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).path,
         1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),

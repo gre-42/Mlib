@@ -18,7 +18,7 @@ void AssetGroupReplacementParameters::insert(
     auto rp = ReplacementParameterAndFilename::from_json(filename);
     auto mlecd = mle.changed_script_filename(filename);
     if (rp.rp.on_init != nlohmann::detail::value_t::null) {
-        mlecd(JsonView{rp.rp.on_init}, nullptr, nullptr);
+        mlecd(rp.rp.on_init, nullptr, nullptr);
     }
     insert(std::move(rp));
 }

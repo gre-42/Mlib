@@ -42,13 +42,13 @@ void MacroRecorder::operator()(
         if (!ifs.eof() && ifs.fail()) {
             THROW_OR_ABORT("Error reading from file: \"" + macro_line_executor.script_filename_ + '"');
         }
-        macro_line_executor(JsonView{j}, caller_args, nullptr);
+        macro_line_executor(j, caller_args, nullptr);
     } else if (macro_line_executor.script_filename_.ends_with(".json")) {
         auto rp = ReplacementParameterAndFilename::from_json(macro_line_executor.script_filename_);
         if (macro_line_executor.verbose_) {
             linfo() << "Processing JSON macro \"" << rp.rp.on_execute << '"';
         }
-        macro_line_executor(JsonView{rp.rp.on_execute}, nullptr, nullptr);
+        macro_line_executor(rp.rp.on_execute, nullptr, nullptr);
     } else {
         THROW_OR_ABORT("Unknown script file extension: \"" + macro_line_executor.script_filename_ + '"');
     }

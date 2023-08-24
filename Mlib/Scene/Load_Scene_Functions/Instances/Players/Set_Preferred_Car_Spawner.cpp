@@ -62,7 +62,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
                 {"SPAWNER_NAME", spawner_name}});
-            macro_line_executor(JsonView{macro}, &a, nullptr);
+            macro_line_executor(macro, &a, nullptr);
         }
     );
 }

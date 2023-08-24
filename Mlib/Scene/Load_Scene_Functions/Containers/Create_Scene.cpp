@@ -95,7 +95,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
          mle = args.macro_line_executor]()
         {
             if (l.has_value()) {
-                mle(JsonView{l.value()}, nullptr, nullptr);
+                mle(l.value(), nullptr, nullptr);
             }
         },
         FocusFilter{

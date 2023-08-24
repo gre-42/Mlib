@@ -73,7 +73,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
 }
 
 void MacroLineExecutor::operator () (
-    const JsonView& j,
+    const nlohmann::json& j,
     const JsonMacroArguments* caller_args,
     JsonMacroArguments* local_json_macro_arguments) const
 {
@@ -89,31 +89,32 @@ void MacroLineExecutor::operator () (
         merged_args.merge(*local_json_macro_arguments);
     }
     if (j.type() == nlohmann::detail::value_t::object) {
-        j.validate(MacroKeys::options);
-        if ((int)j.contains(MacroKeys::call) +
-            (int)j.contains(MacroKeys::declare_macro) +
-            (int)j.contains(MacroKeys::playback) +
-            (int)j.contains(MacroKeys::execute) +
-            (int)j.contains(MacroKeys::include) +
-            (int)j.contains(MacroKeys::comment) != 1)
+        JsonView jv{j};
+        jv.validate(MacroKeys::options);
+        if ((int)jv.contains(MacroKeys::call) +
+            (int)jv.contains(MacroKeys::declare_macro) +
+            (int)jv.contains(MacroKeys::playback) +
+            (int)jv.contains(MacroKeys::execute) +
+            (int)jv.contains(MacroKeys::include) +
+            (int)jv.contains(MacroKeys::comment) != 1)
         {
             std::stringstream msg;
             msg << j;
             THROW_OR_ABORT("Could not find exactly one out of call/declare_macro/playback/include/comment in \"" + msg.str() + '"');
         }
-        auto context = j.at<std::string>(MacroKeys::context, context_);
+        auto context = jv.at<std::string>(MacroKeys::context, context_);
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
-        if (j.contains(MacroKeys::required)) {
-            for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::required)) {
+        if (jv.contains(MacroKeys::required)) {
+            for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::required)) {
                 if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
                     include = false;
                     break;
                 }
             }
         }
-        if (j.contains(MacroKeys::exclude)) {
-            for (const auto& e : j.at<std::vector<std::string>>(MacroKeys::exclude)) {
+        if (jv.contains(MacroKeys::exclude)) {
+            for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
                 if (eval<bool>(e, global_args, merged_args, asset_references_)) {
                     include = false;
                     break;
@@ -128,8 +129,8 @@ void MacroLineExecutor::operator () (
             args.set_fpath([this](const std::filesystem::path& path){return fpath(path);});
             args.set_spath([this](const std::filesystem::path& path){return spath(path);});
             try {
-                if (j.contains(MacroKeys::literals)) {
-                    args.insert_json(merged_args.subst_and_replace(j.at(MacroKeys::literals), global_args, asset_references_));
+                if (jv.contains(MacroKeys::literals)) {
+                    args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::literals), global_args, asset_references_));
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
@@ -137,10 +138,10 @@ void MacroLineExecutor::operator () (
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
-            auto j_subst_raw = merged_args.subst_and_replace(j.json(), global_args, asset_references_);
+            auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_);
             global_args.unlock();
             auto j_subst = JsonView{j_subst_raw};
-            if (j.contains(MacroKeys::playback)) {
+            if (jv.contains(MacroKeys::playback)) {
                 auto name = j_subst.at<std::string>(MacroKeys::playback);
                 auto macro_it = macro_recorder_.json_macros_.find(name);
                 if (macro_it == macro_recorder_.json_macros_.end()) {
@@ -149,8 +150,8 @@ void MacroLineExecutor::operator () (
                 auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
                     context);
-                mle2(JsonView{macro_it->second.content}, &args, nullptr);
-            } else if (j.contains(MacroKeys::call)) {
+                mle2(macro_it->second.content, &args, nullptr);
+            } else if (jv.contains(MacroKeys::call)) {
                 auto name = j_subst.at<std::string>(MacroKeys::call);
                 bool success;
                 try {
@@ -176,16 +177,16 @@ void MacroLineExecutor::operator () (
                     }
                     THROW_OR_ABORT(msg.str());
                 }
-            } else if (j.contains(MacroKeys::execute)) {
-                (*this)(JsonView{j_subst.at(MacroKeys::execute)}, &args, nullptr);
-            } else if (j.contains(MacroKeys::include)) {
+            } else if (jv.contains(MacroKeys::execute)) {
+                (*this)(j_subst.at(MacroKeys::execute), &args, nullptr);
+            } else if (jv.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     spath(j_subst.at<std::string>(MacroKeys::include)),
                     context);
                 macro_recorder_(mle2, &args);
-            } else if (j.contains(MacroKeys::declare_macro)) {
-                j.validate(DeclareMacroArgs::options);
-                auto name = j.at<std::string>(MacroKeys::declare_macro);
+            } else if (jv.contains(MacroKeys::declare_macro)) {
+                jv.validate(DeclareMacroArgs::options);
+                auto name = jv.at<std::string>(MacroKeys::declare_macro);
                 if (verbose_) {
                     linfo() << "Storing macro \"" << name << '"';
                 }
@@ -193,12 +194,12 @@ void MacroLineExecutor::operator () (
                     name,
                     JsonMacro{
                         .filename = script_filename_,
-                        .content = j.at(DeclareMacroArgs::content)
+                        .content = jv.at(DeclareMacroArgs::content)
                     }).second)
                 {
                     THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");
                 }
-            } else if (j.contains(MacroKeys::comment)) {
+            } else if (jv.contains(MacroKeys::comment)) {
                 // Do nothing
             } else {
                 std::stringstream msg;
@@ -208,8 +209,8 @@ void MacroLineExecutor::operator () (
         }
     } else if (j.type() == nlohmann::detail::value_t::array) {
         JsonMacroArguments local_json_macro_arguments_2;
-        for (const nlohmann::json& l : j.json()) {
-            (*this)(JsonView{l}, caller_args, &local_json_macro_arguments_2);
+        for (const nlohmann::json& l : j) {
+            (*this)(l, caller_args, &local_json_macro_arguments_2);
         }
     } else {
         std::stringstream msg;

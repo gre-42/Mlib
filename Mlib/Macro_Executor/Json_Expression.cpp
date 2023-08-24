@@ -123,11 +123,11 @@ static nlohmann::json eval_recursion(
             }
             if (op == "in") {
                 auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
-                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<nlohmann::json>());
+                return elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1));
             }
             if (op == "not in") {
                 auto elems = eval_recursion(right, globals, locals, asset_references, recursion + 1).get<std::set<nlohmann::json>>();
-                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1).get<nlohmann::json>());
+                return !elems.contains(eval_recursion(left, globals, locals, asset_references, recursion + 1));
             }
             THROW_OR_ABORT("Unknown operator: \"" + op);
         }

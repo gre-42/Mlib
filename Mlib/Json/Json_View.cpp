@@ -3,9 +3,17 @@
 
 using namespace Mlib;
 
-JsonView::JsonView(const nlohmann::json& j)
+JsonView::JsonView(
+    const nlohmann::json& j,
+    CheckIsObjectBehavior check)
 : j_{j}
-{}
+{
+    if ((check == CheckIsObjectBehavior::CHECK) &&
+        (j_.type() != nlohmann::detail::value_t::object))
+    {
+        THROW_OR_ABORT("JSON is not of type object");
+    }
+}
 
 bool JsonView::contains(const std::string& name) const {
     return j_.contains(name);

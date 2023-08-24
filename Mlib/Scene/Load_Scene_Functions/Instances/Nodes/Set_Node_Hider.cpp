@@ -150,7 +150,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
             }
-            macro_line_executor(JsonView{on_hide.value()}, &local_args, nullptr);
+            macro_line_executor(on_hide.value(), &local_args, nullptr);
         },
         [
             macro_line_executor = args.macro_line_executor,
@@ -164,7 +164,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (capture.has_value()) {
                 local_args.insert_json(capture.value());
             }
-            macro_line_executor(JsonView{on_destroy.value()}, &local_args, nullptr);
+            macro_line_executor(on_destroy.value(), &local_args, nullptr);
         },
         [
             punch_angle_node,
@@ -184,7 +184,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
             }
-            macro_line_executor(JsonView{on_update.value()}, &local_args, nullptr);
+            macro_line_executor(on_update.value(), &local_args, nullptr);
         });
     node_to_hide.clearing_observers.add(*node_hider);
     camera_node.clearing_observers.add(*node_hider);
