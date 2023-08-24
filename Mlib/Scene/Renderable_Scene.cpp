@@ -216,6 +216,7 @@ void RenderableScene::stop_and_join() {
         physics_loop_->stop_and_join();
         physics_loop_ = nullptr;
     }
+    scene_.stop_and_join();
 }
 
 void RenderableScene::clear() {

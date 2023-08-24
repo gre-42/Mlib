@@ -197,6 +197,13 @@ void Scene::shutdown() {
     }
 }
 
+void Scene::stop_and_join() {
+    large_aggregate_bg_worker_.shutdown();
+    large_instances_bg_worker_.shutdown();
+    small_aggregate_bg_worker_.shutdown();
+    small_instances_bg_worker_.shutdown();
+}
+
 bool Scene::contains_node(const std::string& name) const {
     std::shared_lock lock{mutex_};
     return nodes_.contains(name);

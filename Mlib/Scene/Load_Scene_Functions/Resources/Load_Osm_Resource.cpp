@@ -300,8 +300,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 }
             };
         };
-        auto parse_resource_name_func = [&scene_node_resources](const JsonMacroArguments& jma){
-            return parse_resource_name(scene_node_resources, jma.get<std::string>());
+        auto parse_resource_name_func = [&scene_node_resources](const std::string& jma){
+            return parse_resource_name(scene_node_resources, jma);
         };
         resource_name = args.arguments.at<std::string>(KnownArgs::name);
         config.filename = args.arguments.path(KnownArgs::filename);
@@ -520,52 +520,52 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.water_height = args.arguments.at<float>(KnownArgs::water_height);
         }
         if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
-            config.tree_resource_names = args.arguments.children(KnownArgs::tree_resource_names, parse_resource_name_func);
+            config.tree_resource_names = args.arguments.at_vector<std::string>(KnownArgs::tree_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::grass_resource_names)) {
-            config.grass_resource_names = args.arguments.children(KnownArgs::grass_resource_names, parse_resource_name_func);
+            config.grass_resource_names = args.arguments.at_vector<std::string>(KnownArgs::grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_grass_resource_names)) {
-            tconfig.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_grass_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_dirty_grass_resource_names)) {
-            tconfig.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::near_dirty_grass_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.at_vector<std::string>(KnownArgs::near_dirty_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_grass_resource_names)) {
-            tconfig.far_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_grass_resource_names, parse_resource_name_func);
+            tconfig.far_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::far_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_dirty_grass_resource_names)) {
-            tconfig.far_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.children(KnownArgs::far_dirty_grass_resource_names, parse_resource_name_func);
+            tconfig.far_grass_terrain_style_config.near_resource_names_valley_dirt = args.arguments.at_vector<std::string>(KnownArgs::far_dirty_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside1_grass_resource_names)) {
-            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside1_grass_resource_names, parse_resource_name_func);
+            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_wayside1_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside2_grass_resource_names)) {
-            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_wayside2_grass_resource_names, parse_resource_name_func);
+            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_wayside2_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_rocks_resource_names)) {
-            tconfig.near_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.at_vector<std::string>(KnownArgs::near_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside1_rocks_resource_names)) {
-            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside1_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_wayside1_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.at_vector<std::string>(KnownArgs::near_wayside1_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_wayside2_rocks_resource_names)) {
-            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.children(KnownArgs::near_wayside2_rocks_resource_names, parse_resource_name_func);
+            tconfig.near_wayside2_grass_terrain_style_config.near_resource_names_mountain_regular = args.arguments.at_vector<std::string>(KnownArgs::near_wayside2_rocks_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_flowers_resource_names)) {
-            tconfig.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_flowers_resource_names, parse_resource_name_func);
+            tconfig.near_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_flowers_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_flowers_resource_names)) {
-            tconfig.far_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_flowers_resource_names, parse_resource_name_func);
+            tconfig.far_flowers_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::far_flowers_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_trees_resource_names)) {
-            tconfig.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::near_trees_resource_names, parse_resource_name_func);
+            tconfig.near_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_trees_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::far_trees_resource_names)) {
-            tconfig.far_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::far_trees_resource_names, parse_resource_name_func);
+            tconfig.far_trees_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::far_trees_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::dirt_decals_resource_names)) {
-            tconfig.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.children(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
+            tconfig.no_grass_decals_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::dirt_decals_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::wayside_resource_names)) {
             config.waysides = args.arguments.children(KnownArgs::wayside_resource_names, [&parse_resource_name_func](const JsonMacroArguments& a){
@@ -573,7 +573,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 return WaysideResourceNames{
                     .min_dist = a.at<float>(WaysideKnownArgs::min_dist),
                     .max_dist = a.at<float>(WaysideKnownArgs::max_dist),
-                    .resource_names = a.children(WaysideKnownArgs::resource_names, parse_resource_name_func)
+                    .resource_names = a.at_vector<std::string>(WaysideKnownArgs::resource_names, parse_resource_name_func)
                 };
             });
         }
@@ -797,7 +797,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.extrude_water_floor_amout = args.arguments.at<float>(KnownArgs::extrude_water_floor_amout);
         }
         if (args.arguments.contains_non_null(KnownArgs::street_light_resource_names)) {
-            config.street_light_resource_names = args.arguments.children(KnownArgs::street_light_resource_names, parse_resource_name_func);
+            config.street_light_resource_names = args.arguments.at_vector<std::string>(KnownArgs::street_light_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::max_wall_width)) {
             config.max_wall_width = args.arguments.at<float>(KnownArgs::max_wall_width);

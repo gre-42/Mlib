@@ -14,6 +14,7 @@ BackgroundLoop::BackgroundLoop()
             std::unique_lock lck{ mutex_ };
             task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });
             if (thread_.get_stop_token().stop_requested()) {
+                task_ = std::function<void()>();
                 return;
             }
             if (!task_) {
