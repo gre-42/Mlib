@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Iterator/Guarded_Iterable.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <list>
@@ -22,33 +23,6 @@ enum class InsertionStatus {
     FAILURE_SHUTDOWN
 };
 
-template <class TIterator>
-class GuardedIterable {
-    GuardedIterable(const GuardedIterable&) = delete;
-    GuardedIterable& operator = (const GuardedIterable&) = delete;
-public:
-    template <class TContainer>
-    GuardedIterable(SafeRecursiveSharedMutex& mutex, TContainer& container)
-    : lock_{mutex},
-      begin_{container.unsafe_begin()},
-      end_{container.unsafe_end()}
-    {
-        if (container.shutting_down()) {
-            verbose_abort("Container is shutting down");
-        }
-    }
-    TIterator begin() {
-        return begin_;
-    }
-    TIterator end() {
-        return end_;
-    }
-private:
-    std::shared_lock<SafeRecursiveSharedMutex> lock_;
-    TIterator begin_;
-    TIterator end_;
-};
-
 class RenderableScenes {
     using map_type = std::map<std::string, RenderableScene>;
     RenderableScenes(const RenderableScenes&) = delete;
@@ -56,7 +30,7 @@ class RenderableScenes {
 public:
     RenderableScenes();
     ~RenderableScenes();
-    GuardedIterable<map_type::iterator> guarded_iterable();
+    GuardedIterable<map_type::iterator, std::shared_lock<SafeRecursiveSharedMutex>> guarded_iterable();
     map_type::iterator unsafe_begin();
     map_type::iterator unsafe_end();
     RenderableScene& operator[](const std::string& name);
