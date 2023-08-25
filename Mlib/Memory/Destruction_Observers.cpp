@@ -60,7 +60,6 @@ void DestructionObservers::shutdown() {
     });
 }
 
-
 void DestructionObservers::notify_destroyed() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::notify_destroyed despite shutdown");
