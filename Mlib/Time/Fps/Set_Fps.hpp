@@ -13,6 +13,7 @@ public:
     explicit SetFps(
         const std::string& prefix,
         const std::function<bool()>& paused = [](){return false;});
+    ~SetFps();
     void tick(
         float dt,
         float max_residual_time,
