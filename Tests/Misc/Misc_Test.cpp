@@ -1,6 +1,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <iostream>
@@ -35,11 +36,23 @@ void test_substitute() {
     }
 }
 
+void test_dangling_unique() {
+    std::list<DanglingPtr<int>> lst;
+    {
+        auto a = make_dunique<int>(5);
+        std::cerr << a.ref() << std::endl;
+        auto b = a.get();
+        std::cerr << b.ref() << std::endl;
+        lst.push_back(a.get());
+        lst.clear();
+    }
+}
 
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     test_resource_ptr();
     test_substitute();
+    test_dangling_unique();
     return 0;
 }
