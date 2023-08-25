@@ -14,10 +14,7 @@ SetFps::SetFps(
   paused_{paused}
 {}
 
-SetFps::~SetFps() {
-    std::scoped_lock lock{execute_mutex_};
-    funcs_.clear();
-}
+SetFps::~SetFps() = default;
 
 void SetFps::tick(
     float dt,
