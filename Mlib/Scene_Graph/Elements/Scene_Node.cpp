@@ -280,7 +280,6 @@ void SceneNode::clear_internal() {
             scene_->unregister_node(child.key());
         }
     });
-    aggregate_children_.clear();
     instances_children_.clear();
     lights_.clear();
     animation_state_ = nullptr;
