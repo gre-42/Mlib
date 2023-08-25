@@ -76,7 +76,7 @@ private:
 
 template< class T, class... Args >
 DanglingUniquePtr<T> make_dunique( Args&&... args ) {
-    return DanglingUniquePtr{std::make_unique<T>(args...)};
+    return DanglingUniquePtr{std::make_unique<T>(std::forward<Args>(args)...)};
 }
 
 }
