@@ -170,7 +170,7 @@ void Scene::shutdown() {
     if (shutting_down_) {
         return;
     }
-    std::scoped_lock lock{mutex_};
+    stop_and_join();
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
@@ -181,7 +181,6 @@ void Scene::shutdown() {
         verbose_abort("Scene::shutdown: some nodes are not allowed to be deleted");
     }
     shutting_down_ = true;
-    stop_and_join();
     morn_.clear();
     if (!nodes_.empty()) {
         for (const auto& [name, _] : nodes_) {
@@ -294,7 +293,6 @@ void Scene::render(
     const ExternalRenderPass& external_render_pass,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
-    std::shared_lock lock{mutex_};
     LOG_FUNCTION("Scene::render");
     if (!delete_node_mutex_.is_locked_by_this_thread()) {
         THROW_OR_ABORT("Scene::render: delete node mutex is not locked");
@@ -302,15 +300,23 @@ void Scene::render(
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
-    for (const auto& s : color_styles_) {
-        color_styles.push_back(s.get());
+    {
+        std::shared_lock lock{mutex_};
+        for (const auto& s : color_styles_) {
+            color_styles.push_back(s.get());
+        }
     }
     if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
-        auto it = root_nodes_.find(external_render_pass.black_node_name);
-        if (it == root_nodes_.end()) {
-            THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+        std::shared_lock lock{mutex_};
+        const SceneNode* node;
+        {
+            auto it = root_nodes_.find(external_render_pass.black_node_name);
+            if (it == root_nodes_.end()) {
+                THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+            }
+            node = it->second.get();
         }
-        it->second->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else {
         if (!external_render_pass.black_node_name.empty()) {
             THROW_OR_ABORT("Expected empty black node");
@@ -321,11 +327,20 @@ void Scene::render(
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
-        for (const auto& [_, node] : root_nodes_) {
-            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
-        }
-        for (const auto& [_, node] : static_root_nodes_) {
-            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
+        {
+            std::list<const SceneNode*> nodes;
+            {
+                std::shared_lock lock{mutex_};
+                for (const auto& [_, node] : root_nodes_) {
+                    nodes.push_back(node.get());
+                }
+                for (const auto& [_, node] : static_root_nodes_) {
+                    nodes.push_back(node.get());
+                }
+            }
+            for (const auto* node : nodes) {
+                node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
+            }
         }
         if (external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
             if (external_render_pass.singular_node == nullptr) {
@@ -338,14 +353,23 @@ void Scene::render(
             external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         } else {
             LOG_INFO("Scene::render non-blended");
-            for (const auto& [_, node] : root_nodes_) {
-                node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
-            }
-            for (const auto& node : root_imposter_nodes_) {
-                node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
-            }
-            for (const auto& [_, node] : static_root_nodes_) {
-                node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            {
+                std::list<const SceneNode*> nodes;
+                {
+                    std::shared_lock lock{mutex_};
+                    for (const auto& [_, node] : root_nodes_) {
+                       nodes.push_back(node.get());
+                    }
+                    for (const auto& node : root_imposter_nodes_) {
+                        nodes.push_back(node);
+                    }
+                    for (const auto& [_, node] : static_root_nodes_) {
+                        nodes.push_back(node.get());
+                    }
+                }
+                for (const auto* node : nodes) {
+                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                }
             }
             {
                 bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);

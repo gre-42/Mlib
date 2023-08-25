@@ -45,7 +45,6 @@ SceneNode::SceneNode()
 {}
 
 SceneNode::~SceneNode() {
-    std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
@@ -57,7 +56,7 @@ SceneNode::~SceneNode() {
     shutting_down_ = true;
     destruction_observers.shutdown();
     destruction_pointers.clear();
-    clear_internal();
+    clear_unsafe();
 }
 
 bool SceneNode::shutting_down() const {
@@ -92,7 +91,7 @@ const SceneNode& SceneNode::parent() const {
     return const_cast<SceneNode*>(this)->parent();
 }
 
-void SceneNode::setup_child(
+void SceneNode::setup_child_unsafe(
     const std::string& name,
     SceneNode& node,
     ChildRegistrationState child_registration_state,
@@ -117,7 +116,7 @@ void SceneNode::setup_child(
         THROW_OR_ABORT("Conflicting scene nullness and node state");
     }
     if (scene_ != nullptr) {
-        node.set_scene_and_state(*scene_, state_);
+        node.set_scene_and_state_unsafe(*scene_, state_);
     }
 }
 
@@ -170,13 +169,14 @@ RelativeMovable& SceneNode::get_relative_movable() const {
 
 void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable)
 {
+    auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
     if (relative_movable_ != nullptr) {
         THROW_OR_ABORT("Relative movable already set");
     }
     relative_movable_ = relative_movable.get();
-    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix());
-    relative_movable_->set_absolute_model_matrix(absolute_model_matrix());
+    relative_movable_->set_initial_relative_model_matrix(relative_model_matrix_unsafe());
+    relative_movable_->set_absolute_model_matrix(m);
     if (relative_movable.observer() != nullptr) {
         clearing_observers.add(*relative_movable.observer());
     }
@@ -192,6 +192,7 @@ AbsoluteObserver& SceneNode::get_absolute_observer() const {
 
 void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer)
 {
+    auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
     if (absolute_observer_ != nullptr) {
         THROW_OR_ABORT("Absolute observer already set");
@@ -200,7 +201,7 @@ void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& abso
         THROW_OR_ABORT("Absolute destruction observer cannot be null");
     }
     absolute_observer_ = absolute_observer.get();
-    absolute_observer_->set_absolute_model_matrix(absolute_model_matrix());
+    absolute_observer_->set_absolute_model_matrix(m);
     clearing_observers.add(*absolute_observer.observer());
 
     absolute_destruction_observer_ = absolute_observer.observer();
@@ -247,10 +248,10 @@ void SceneNode::clear() {
     if (shutting_down()) {
         verbose_abort("Node to be cleared is shutting down");
     }
-    clear_internal();
+    clear_unsafe();
 }
 
-void SceneNode::clear_internal() {
+void SceneNode::clear_unsafe() {
     clearing_observers.notify_destroyed();
     clearing_pointers.clear();
 
@@ -296,7 +297,7 @@ void SceneNode::add_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
@@ -347,7 +348,7 @@ void SceneNode::add_aggregate_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
@@ -363,7 +364,7 @@ void SceneNode::add_instances_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
@@ -690,8 +691,8 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix().affine());
-    auto m = parent_m * relative_model_matrix();
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix_unsafe().affine());
+    auto m = parent_m * relative_model_matrix_unsafe();
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
@@ -764,8 +765,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix().affine());
-    auto m = parent_m * relative_model_matrix();
+    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, relative_model_matrix_unsafe().affine());
+    auto m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
@@ -787,7 +788,7 @@ void SceneNode::append_large_aggregates_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large aggregates to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
@@ -812,7 +813,7 @@ void SceneNode::append_small_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append small instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -855,7 +856,7 @@ void SceneNode::append_large_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix();
+    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
@@ -886,7 +887,7 @@ void SceneNode::append_lights_to_queue(
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
 {
     std::shared_lock lock{mutex_};
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix();
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -961,6 +962,7 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix() const 
     }
     auto result = relative_model_matrix_unsafe();
     if (parent_ != nullptr) {
+        lock.unlock();
         return parent_->absolute_model_matrix() * result;
     } else {
         return result;
@@ -983,6 +985,7 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix() const {
     }
     auto result = relative_view_matrix_unsafe();
     if (parent_ != nullptr) {
+        lock.unlock();
         return result * parent_->absolute_view_matrix();
     } else {
         return result;
@@ -1098,6 +1101,10 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
 
 void SceneNode::set_scene_and_state(Scene& scene, SceneNodeState state) {
     std::scoped_lock lock{mutex_};
+    set_scene_and_state_unsafe(scene, state);
+}
+
+void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
     if (scene_ != nullptr) {
         THROW_OR_ABORT("Scene node already has a scene");
     }

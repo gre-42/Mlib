@@ -12,9 +12,7 @@ DestructionObservers::DestructionObservers(const Object& obj)
 
 DestructionObservers::~DestructionObservers() {
     if (!shutting_down_) {
-        std::scoped_lock lock{mutex_};
-        shutting_down_ = true;
-        send_shutdown_messages();
+        shutdown_unsafe();
     }
 }
 
@@ -51,24 +49,37 @@ void DestructionObservers::remove(
 
 void DestructionObservers::shutdown() {
     if (shutting_down_) {
-        verbose_abort("Already shutting down (0)");
+        verbose_abort("DestructionObservers::shutdown despite active shutdown");
     }
-    std::scoped_lock lock{mutex_};
+    std::unique_lock lock{mutex_};
     shutting_down_ = true;
-    send_shutdown_messages();
+    clear_set_recursively(observers_, [this, &lock](DestructionObserver* obs){
+        lock.unlock();
+        obs->notify_destroyed(obj_);
+        lock.lock();
+    });
 }
+
 
 void DestructionObservers::notify_destroyed() {
     if (shutting_down_) {
-        verbose_abort("Already shutting down (1)");
+        verbose_abort("DestructionObservers::notify_destroyed despite shutdown");
     }
-    std::scoped_lock lock{mutex_};
+    std::unique_lock lock{mutex_};
     shutting_down_ = true;
-    send_shutdown_messages();
+    clear_set_recursively(observers_, [this, &lock](DestructionObserver* obs){
+        lock.unlock();
+        obs->notify_destroyed(obj_);
+        lock.lock();
+    });
     shutting_down_ = false;
 }
 
-void DestructionObservers::send_shutdown_messages() {
+void DestructionObservers::shutdown_unsafe() {
+    if (shutting_down_) {
+        verbose_abort("DestructionObservers::shutdown_unsafe despite shutdown");
+    }
+    shutting_down_ = true;
     clear_set_recursively(observers_, [this](DestructionObserver* obs){
         obs->notify_destroyed(obj_);
     });

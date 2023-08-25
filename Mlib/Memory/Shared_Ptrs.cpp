@@ -24,8 +24,8 @@ void SharedPtrs::clear() {
     if (clearing_) {
         verbose_abort("SharedPtrs already clearing");
     }
-    std::scoped_lock lock{mutex_};
+    std::unique_lock lock{mutex_};
     clearing_ = true;
-    clear_container_recursively(ptrs_);
+    clear_list_recursively_with_lock(ptrs_, lock);
     clearing_ = false;
 }

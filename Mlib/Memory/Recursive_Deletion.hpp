@@ -28,11 +28,24 @@ void clear_set_recursively(TContainer& container, const TFunction& deleter) {
 template <class TContainer, class TFunction>
 void clear_list_recursively(TContainer& elements, const TFunction& deleter) {
     while (!elements.empty()) {
-        TContainer list2;
         auto it_second = elements.begin();
         ++it_second;
+        TContainer list2;
         list2.splice(list2.begin(), elements, elements.begin(), it_second);
         deleter(list2.front());
+    }
+}
+
+template <class TContainer, class TLock>
+void clear_list_recursively_with_lock(TContainer& elements, TLock& lock) {
+    while (!elements.empty()) {
+        auto it_second = elements.begin();
+        ++it_second;
+        TContainer list2;
+        list2.splice(list2.begin(), elements, elements.begin(), it_second);
+        lock.unlock();
+        list2.clear();
+        lock.lock();
     }
 }
 

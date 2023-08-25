@@ -31,7 +31,7 @@ public:
     void shutdown();
     void notify_destroyed();
 private:
-    void send_shutdown_messages();
+    void shutdown_unsafe();
     std::set<DestructionObserver*> observers_;
     mutable std::mutex mutex_;
     std::atomic_bool shutting_down_;

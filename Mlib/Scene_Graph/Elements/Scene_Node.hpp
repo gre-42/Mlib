@@ -244,12 +244,13 @@ public:
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
 private:
-    void setup_child(
+    void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
+    void setup_child_unsafe(
         const std::string& name,
         SceneNode& node,
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
-    void clear_internal();
+    void clear_unsafe();
     TransformationMatrix<float, double, 3> relative_model_matrix_unsafe() const;
     TransformationMatrix<float, double, 3> relative_view_matrix_unsafe() const;
     Scene* scene_;
