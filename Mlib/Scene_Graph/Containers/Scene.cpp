@@ -157,7 +157,7 @@ void Scene::delete_nodes(const Mlib::regex& regex) {
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
-            delete_node(it->first);
+            delete_node(n->first);
         }
     }
 }
