@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Save_Triangle_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -55,7 +56,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::size),
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::size) * meters,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s,
@@ -65,11 +66,22 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
-    if (args.arguments.contains(KnownArgs::hitboxes)) {
-        auto hitboxes = args.arguments.at<std::string>(KnownArgs::hitboxes);
-        auto cvas = scene_node_resources.get_physics_arrays(hitboxes);
-        s_hitboxes.insert(s_hitboxes.end(), cvas->scvas.begin(), cvas->scvas.end());
-        d_hitboxes.insert(d_hitboxes.end(), cvas->dcvas.begin(), cvas->dcvas.end());
+    {
+        PhysicsResourceFilter filter{
+            .cva_filter = {
+                .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
+                .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}};
+        auto acva = scene_node_resources.get_physics_arrays(
+            args.arguments.at<std::string>(KnownArgs::hitboxes));
+        auto insert = [&filter](auto& hitboxes, const auto& cvas){
+            for (const auto& cva: cvas) {
+                if (filter.matches(*cva)) {
+                    hitboxes.push_back(cva);
+                }
+            }
+        };
+        insert(s_hitboxes, acva->scvas);
+        insert(d_hitboxes, acva->dcvas);
     }
     CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.
@@ -80,11 +92,7 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::move(ams.absolute_movable),
             s_hitboxes,
             d_hitboxes,
-            collidable_mode,
-            PhysicsResourceFilter{
-                .cva_filter = {
-                    .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-                    .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))}});
+            collidable_mode);
     } catch (const TriangleException<double>& e) {
         if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
             save_triangle_to_obj(filename, {e.a, e.b, e.c});

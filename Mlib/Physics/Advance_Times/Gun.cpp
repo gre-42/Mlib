@@ -18,7 +18,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -154,8 +153,7 @@ void Gun::generate_bullet() {
             std::move(ams.absolute_movable),
             scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->scvas,
             scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->dcvas,
-            CollidableMode::MOVING,
-            PhysicsResourceFilter{});
+            CollidableMode::MOVING);
     }
     std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();
     auto bullet = std::make_unique<Bullet>(

@@ -3,8 +3,7 @@
 
 using namespace Mlib;
 
-ColoredVertexArrayFilter::~ColoredVertexArrayFilter()
-{}
+ColoredVertexArrayFilter::~ColoredVertexArrayFilter() = default;
 
 template <class TPos>
 bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) const {
