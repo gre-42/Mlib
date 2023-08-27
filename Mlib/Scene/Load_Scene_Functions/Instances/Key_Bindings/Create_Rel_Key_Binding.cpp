@@ -41,7 +41,7 @@ CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene)
 
 void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),

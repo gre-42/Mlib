@@ -44,12 +44,12 @@ HudImage::HudImage(RenderableScene& renderable_scene)
 void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingPtr<SceneNode> gun_node = args.arguments.contains(KnownArgs::gun_node)
-        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node)).ptr()
+        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC).ptr()
         : nullptr;
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
+    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node), DP_LOC);
     YawPitchLookAtNodes* ypln = nullptr;
     if (args.arguments.contains(KnownArgs::ypln_node)) {
-        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node))->get_relative_movable());
+        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node), DP_LOC)->get_relative_movable());
         if (ypln == nullptr) {
             THROW_OR_ABORT("Relative movable is not a ypln");
         }

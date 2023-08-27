@@ -145,6 +145,7 @@ void Player::reset_node() {
     if (!delete_externals_.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
         clear_map_recursively(delete_externals_, [](const auto& p){
+            p.key() = nullptr;
             p.mapped()();
         });
     }

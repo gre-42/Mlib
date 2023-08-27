@@ -85,7 +85,7 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     CollidableMode collidable_mode = collidable_mode_from_string(args.arguments.at<std::string>(KnownArgs::collidable_mode));
     // 1. Set movable, which updates the transformation-matrix.
-    AbsoluteMovableSetter ams{scene.get_node(args.arguments.at<std::string>(KnownArgs::node)), std::move(rb)};
+    AbsoluteMovableSetter ams{scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC), std::move(rb)};
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(

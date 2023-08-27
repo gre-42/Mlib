@@ -55,7 +55,7 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
     if (args.arguments.contains(KnownArgs::node)) {
-        DanglingRef<SceneNode> n = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+        DanglingRef<SceneNode> n = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
         n->add_color_style(std::move(style));
     } else {
         scene.add_color_style(std::move(style));

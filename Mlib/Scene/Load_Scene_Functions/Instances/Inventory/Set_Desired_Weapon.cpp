@@ -30,7 +30,7 @@ SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene)
 
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
+    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
     auto wc = dynamic_cast<WeaponCycle*>(&cycle_node->get_node_modifier());
     if (wc == nullptr) {

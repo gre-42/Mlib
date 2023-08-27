@@ -35,7 +35,7 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 
 void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
         .node = node.ptr(),
         .surface_power = args.arguments.at<float>(KnownArgs::surface_power, 0.f) * W,

@@ -30,7 +30,7 @@ SetSpawnPoints::SetSpawnPoints(RenderableScene& renderable_scene)
 
 void SetSpawnPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     std::list<SpawnPoint> spawn_points = scene_node_resources.spawn_points(args.arguments.at<std::string>(KnownArgs::resource));
     game_logic.spawn.set_spawn_points(node, spawn_points);
 }

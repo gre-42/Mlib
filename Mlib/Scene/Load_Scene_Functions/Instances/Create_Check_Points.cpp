@@ -93,7 +93,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::vector<DanglingPtr<SceneNode>> moving_nodes;
     moving_nodes.reserve(prefixes.size());
     for (const auto& p : prefixes) {
-        moving_nodes.push_back(scene.get_node(p + suffix).ptr());
+        moving_nodes.push_back(scene.get_node(p + suffix, DP_LOC).ptr());
     }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);

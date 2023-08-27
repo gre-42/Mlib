@@ -30,7 +30,7 @@ RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable
 void RegisterGeographicMapping::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     scene_node_resources.register_geographic_mapping(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::name),

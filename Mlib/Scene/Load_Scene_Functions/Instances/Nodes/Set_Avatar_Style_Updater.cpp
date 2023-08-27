@@ -32,8 +32,8 @@ SetAvatarStyleUpdater::SetAvatarStyleUpdater(RenderableScene& renderable_scene)
 
 void SetAvatarStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::avatar_node));
-    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node));
+    DanglingRef<SceneNode> avatar_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::avatar_node), DP_LOC);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&avatar_node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Styled node movable is not a rigid body");

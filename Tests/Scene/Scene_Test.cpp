@@ -188,7 +188,7 @@ void test_physics_engine(unsigned int seed) {
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto append_lightmap_logic = [&](){
         std::scoped_lock lock{delete_node_mutex};
-        DanglingRef<SceneNode> light_node = scene.get_node("light_node");
+        DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
         auto lightmap_logic = std::make_shared<LightmapLogic>(
             *read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,

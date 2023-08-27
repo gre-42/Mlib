@@ -31,7 +31,7 @@ AppendExternalsDeleter::AppendExternalsDeleter(RenderableScene& renderable_scene
 void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
-    DanglingRef<SceneNode> node = scene.get_node(node_name);
+    DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     players.get_player(args.arguments.at<std::string>(KnownArgs::player)).append_delete_externals(
         node.ptr(),
         [&scene = scene, node_name]()

@@ -31,8 +31,8 @@ SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene)
 
 void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node));
-    DanglingRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node));
+    DanglingRef<SceneNode> skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node), DP_LOC);
+    DanglingRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node), DP_LOC);
     std::string resource = args.arguments.at<std::string>(KnownArgs::resource);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node->get_absolute_movable());
     if (rb == nullptr) {

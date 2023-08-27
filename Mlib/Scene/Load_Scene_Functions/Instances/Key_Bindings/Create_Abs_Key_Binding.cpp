@@ -59,7 +59,7 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");

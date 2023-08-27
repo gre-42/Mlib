@@ -55,7 +55,7 @@ CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene
 
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");

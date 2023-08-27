@@ -39,7 +39,7 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     node->set_rotation(args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees);
     node->set_scale(args.arguments.at<float>(KnownArgs::scale, 1.f));
     std::string type = args.arguments.at<std::string>(KnownArgs::type);
-    DanglingRef<SceneNode> parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
+    DanglingRef<SceneNode> parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent), DP_LOC);
     std::string node_name = args.arguments.at<std::string>(KnownArgs::name);
     DanglingRef<SceneNode> node_ref = node.ref(DP_LOC);
     if (type == "aggregate") {

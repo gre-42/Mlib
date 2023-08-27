@@ -38,7 +38,7 @@ CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& render
 
 void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),

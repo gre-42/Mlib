@@ -59,13 +59,13 @@ ReferenceCounter& erase_type(const ObjectAndReferenceCounter<T>& v) {
 }
 
 template <class T>
-ReferenceCounter& counter_from_object(T& v) {
+ReferenceCounter& counter_from_object(const T& v) {
     static_assert(sizeof(ObjectAndReferenceCounter<T>) == sizeof(ReferenceCounter) + sizeof(MagicNumber) + sizeof(T));
-    auto& obj = *reinterpret_cast<ObjectAndReferenceCounter<T>*>(reinterpret_cast<ReferenceCounter*>(&v) - 2);
+    const auto& obj = *reinterpret_cast<const ObjectAndReferenceCounter<T>*>(reinterpret_cast<const ReferenceCounter*>(&v) - 2);
     if (obj.magic_number != 0xc0ffee42u) {
         verbose_abort("Incorrect magic number during reference counting");
     }
-    return obj.nptrs;
+    return const_cast<ReferenceCounter&>(obj.nptrs);
 }
 
 struct PointedSourceLocation {

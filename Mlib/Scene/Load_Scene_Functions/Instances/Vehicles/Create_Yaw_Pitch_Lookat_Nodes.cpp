@@ -56,9 +56,9 @@ CreateYawPitchLookatNodes::CreateYawPitchLookatNodes(RenderableScene& renderable
 void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::yaw_node));
-    DanglingRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::pitch_node));
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_follower_rigid_body_node));
+    DanglingRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::yaw_node), DP_LOC);
+    DanglingRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::pitch_node), DP_LOC);
+    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
     auto follower_rb = dynamic_cast<RigidBodyVehicle*>(&follower_node->get_absolute_movable());
     if (follower_rb == nullptr) {
         THROW_OR_ABORT("Follower movable is not a rigid body");
@@ -66,7 +66,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     DanglingPtr<SceneNode> followed_node = nullptr;
     RigidBodyVehicle* followed_rb = nullptr;
     if (args.arguments.contains(KnownArgs::followed)) {
-        followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed)).ptr();
+        followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed), DP_LOC).ptr();
         followed_rb = dynamic_cast<RigidBodyVehicle*>(&followed_node->get_absolute_movable());
         if (followed_rb == nullptr) {
             THROW_OR_ABORT("Followed movable is not a rigid body");
@@ -124,7 +124,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         increment_pitch_error);
     follower->set_followed(followed_node, followed_rb);
     if (args.arguments.contains(KnownArgs::head_node)) {
-        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node)));
+        follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node), DP_LOC));
     }
     linker.link_relative_movable(yaw_node, std::move(follower));
     linker.link_relative_movable(pitch_node, std::move(follower_pitch));

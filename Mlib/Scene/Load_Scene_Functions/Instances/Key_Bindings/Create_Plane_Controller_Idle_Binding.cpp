@@ -31,7 +31,7 @@ CreatePlaneControllerIdleBinding::CreatePlaneControllerIdleBinding(RenderableSce
 
 void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{.node = node.ptr()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(

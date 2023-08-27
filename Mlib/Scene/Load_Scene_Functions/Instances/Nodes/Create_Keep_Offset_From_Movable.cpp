@@ -32,8 +32,8 @@ CreateKeepOffsetFromMovable::CreateKeepOffsetFromMovable(RenderableScene& render
 void CreateKeepOffsetFromMovable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
-    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
+    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower), DP_LOC);
+    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed), DP_LOC);
     auto follower = std::make_unique<KeepOffsetFromMovable>(
         physics_engine.advance_times_,
         scene,

@@ -32,5 +32,5 @@ void SaveToObjFile::execute(const LoadSceneJsonUserFunctionArgs& args)
     scene_node_resources.save_to_obj_file(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::prefix),
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::node))->absolute_model_matrix());
+        scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)->absolute_model_matrix());
 }

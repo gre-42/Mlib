@@ -36,7 +36,7 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 #ifdef _MSC_VER
     THROW_OR_ABORT("Keyword not supported under the MSC compiler due to a compiler bug");
 #else
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),

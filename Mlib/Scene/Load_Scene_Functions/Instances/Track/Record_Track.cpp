@@ -33,7 +33,7 @@ RecordTrack::RecordTrack(RenderableScene& renderable_scene)
 
 void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&recorder_node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");

@@ -161,12 +161,12 @@ FlyingCameraLogic::FlyingCameraLogic(
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     if (fly_) {
-        DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name());
+        DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name(), DP_LOC);
         user_object_.position = cn->position();
         user_object_.angles = cn->rotation();
     }
     if (rotate_) {
-        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name);
+        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name, DP_LOC);
         user_object_.obj_position = on->position();
         user_object_.obj_angles = on->rotation();
     }
@@ -203,7 +203,7 @@ void FlyingCameraLogic::render(
         toggle_fullscreen(window_, user_object_.window_position);
     }
 #endif
-    DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name());
+    DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name(), DP_LOC);
     if (fly_) {
 #ifdef __ANDROID__
         flying_key_callback(button_press_, user_object_);
@@ -216,7 +216,7 @@ void FlyingCameraLogic::render(
         nofly_key_callback(button_press_, user_object_, *keys_);
     }
     if (rotate_) {
-        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name);
+        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name, DP_LOC);
         on->set_position(user_object_.obj_position);
         on->set_rotation(user_object_.obj_angles);
     }

@@ -72,6 +72,7 @@ void SceneNode::set_parent(DanglingRef<SceneNode> parent) {
         THROW_OR_ABORT("Node already has a parent");
     }
     parent_ = parent.ptr();
+    parent_.set_loc(DP_LOC);
 }
 
 bool SceneNode::has_parent() const {
@@ -1140,6 +1141,20 @@ Scene& SceneNode::scene() {
         THROW_OR_ABORT("Scene not set");
     }
     return *scene_;
+}
+
+const Scene& SceneNode::scene() const {
+    return const_cast<SceneNode*>(this)->scene();
+}
+
+void SceneNode::set_debug_message(std::string message) {
+    std::scoped_lock lock{mutex_};
+    debug_message_ = message;
+}
+
+std::string SceneNode::debug_message() const {
+    std::shared_lock lock{mutex_};
+    return debug_message_;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {

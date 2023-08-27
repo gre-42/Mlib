@@ -160,19 +160,19 @@ void Mlib::create_scene_flat(
     scene.add_root_node("obj", std::move(scene_nodeR));
     scene.add_root_node("follower_camera", make_dunique<SceneNode>());
     scene.add_root_node("light_node", std::move(scene_nodeL));
-    scene.get_node("follower_camera")->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node("light_node")->set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node("light_node", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene.get_node("obj")->get_child("n0"), std::move(rb0)};
-        AbsoluteMovableSetter ams1_0{scene.get_node("obj")->get_child("n1_0"), std::move(rb1_0)};
-        AbsoluteMovableSetter ams1_1{scene.get_node("obj")->get_child("n1_1"), std::move(rb1_1)};
-        AbsoluteMovableSetter ams1_2{scene.get_node("obj")->get_child("n1_2"), std::move(rb1_2)};
+        AbsoluteMovableSetter ams0{scene.get_node("obj", DP_LOC)->get_child("n0"), std::move(rb0)};
+        AbsoluteMovableSetter ams1_0{scene.get_node("obj", DP_LOC)->get_child("n1_0"), std::move(rb1_0)};
+        AbsoluteMovableSetter ams1_1{scene.get_node("obj", DP_LOC)->get_child("n1_1"), std::move(rb1_1)};
+        AbsoluteMovableSetter ams1_2{scene.get_node("obj", DP_LOC)->get_child("n1_2"), std::move(rb1_2)};
 
         pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING);
@@ -182,7 +182,7 @@ void Mlib::create_scene_flat(
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
-    assert_allclose(scene.get_node("obj")->get_child("n0")->position(), fixed_zeros<double, 3>());
+    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
     scene.move(physics_cfg.dt);
-    assert_allclose(scene.get_node("obj")->get_child("n0")->position(), fixed_zeros<double, 3>());
+    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
 }

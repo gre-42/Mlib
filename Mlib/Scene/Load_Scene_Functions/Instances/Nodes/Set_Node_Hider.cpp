@@ -80,6 +80,7 @@ public:
         } else {
             verbose_abort("Unknown destroyed object");
         }
+        node_to_hide_ = nullptr;
         camera_node_ = nullptr;
     }
 
@@ -123,10 +124,10 @@ private:
 
 void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide));
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
+    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide), DP_LOC);
+    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node), DP_LOC);
     DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
-        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node)).ptr()
+        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
     auto capture = args.arguments.try_at(KnownArgs::capture);
     auto node_hider = std::make_unique<NodeHiderWithEvent>(

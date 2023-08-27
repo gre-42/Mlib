@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
@@ -17,12 +18,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-template <class T>
-class DanglingUniquePtr;
-template <class T>
-class DanglingPtr;
-template <class T>
-class DanglingRef;
 class SceneNode;
 class SceneNodeResources;
 class IParticleRenderer;
@@ -74,7 +69,7 @@ public:
         DanglingRef<SceneNode> scene_node);
     void unregister_node(const std::string& name);
     void unregister_nodes(const Mlib::regex& regex);
-    DanglingRef<SceneNode> get_node(const std::string& name) const;
+    DanglingRef<SceneNode> get_node(const std::string& name, std::source_location loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     void render(
         const FixedArray<double, 4, 4>& vp,

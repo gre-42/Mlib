@@ -241,6 +241,9 @@ public:
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     Scene& scene();
+    const Scene& scene() const;
+    void set_debug_message(std::string message);
+    std::string debug_message() const;
     mutable DestructionObservers<DanglingRef<const SceneNode>> clearing_observers;
     mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
@@ -282,6 +285,7 @@ private:
     SceneNodeState state_;
     mutable SafeRecursiveSharedMutex mutex_;
     std::atomic_bool shutting_down_;
+    std::string debug_message_;
 };
 
 std::ostream& operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node);

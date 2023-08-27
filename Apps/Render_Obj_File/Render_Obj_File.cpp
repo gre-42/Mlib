@@ -717,22 +717,22 @@ int main(int argc, char** argv) {
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
             scene.add_root_node("light_node0", make_dunique<SceneNode>());
-            scene.get_node("light_node0")->set_position({
+            scene.get_node("light_node0", DP_LOC)->set_position({
                 safe_stof(args.named_value("--light_x", "0")),
                 safe_stof(args.named_value("--light_y", "50")),
                 safe_stof(args.named_value("--light_z", "0"))});
-            scene.get_node("light_node0")->set_rotation({
+            scene.get_node("light_node0", DP_LOC)->set_rotation({
                 safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                 safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
             auto light = create_light("light_node0");
-            lights.push_back({.light = *light, .node = scene.get_node("light_node0")});
-            scene.get_node("light_node0")->add_light(std::move(light));
-            scene.get_node("light_node0")->set_camera(
+            lights.push_back({.light = *light, .node = scene.get_node("light_node0", DP_LOC)});
+            scene.get_node("light_node0", DP_LOC)->add_light(std::move(light));
+            scene.get_node("light_node0", DP_LOC)->set_camera(
                 std::make_unique<PerspectiveCamera>(
                     PerspectiveCameraConfig(),
                     PerspectiveCamera::Postprocessing::ENABLED));
-            add_light_beacon_if_set(scene.get_node("light_node0"));
+            add_light_beacon_if_set(scene.get_node("light_node0", DP_LOC));
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
@@ -749,14 +749,14 @@ int main(int argc, char** argv) {
             for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                 std::string name = "light" + std::to_string(i++);
                 scene.add_root_node(name, make_dunique<SceneNode>());
-                scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                    scene.get_node(name)->position(),
-                    scene.get_node("obj")->position())).casted<float>());
+                scene.get_node(name, DP_LOC)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                scene.get_node(name, DP_LOC)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                    scene.get_node(name, DP_LOC)->position(),
+                    scene.get_node("obj", DP_LOC)->position())).casted<float>());
                 auto light = create_light(name);
-                lights.push_back({.light = *light, .node = scene.get_node(name)});
-                scene.get_node(name)->add_light(std::move(light));
-                scene.get_node(name)->set_camera(
+                lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
+                scene.get_node(name, DP_LOC)->add_light(std::move(light));
+                scene.get_node(name, DP_LOC)->set_camera(
                     std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
@@ -768,14 +768,14 @@ int main(int argc, char** argv) {
                 for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                     std::string name = "light_s" + std::to_string(i++);
                     scene.add_root_node(name, make_dunique<SceneNode>());
-                    scene.get_node(name)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                    scene.get_node(name)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                        scene.get_node(name)->position(),
-                        scene.get_node("obj")->position())).casted<float>());
+                    scene.get_node(name, DP_LOC)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
+                    scene.get_node(name, DP_LOC)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                        scene.get_node(name, DP_LOC)->position(),
+                        scene.get_node("obj", DP_LOC)->position())).casted<float>());
                     auto light = create_light(name);
-                    lights.push_back({.light = *light, .node = scene.get_node(name)});
-                    scene.get_node(name)->add_light(std::move(light));
-                    scene.get_node(name)->set_camera(std::make_unique<PerspectiveCamera>(
+                    lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
+                    scene.get_node(name, DP_LOC)->add_light(std::move(light));
+                    scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
                     lights.back().light.ambience = 0.f;
@@ -790,9 +790,9 @@ int main(int argc, char** argv) {
             std::string name = "background_light";
             scene.add_root_node(name, make_dunique<SceneNode>());
             auto light = create_light(name);
-            lights.push_back({.light = *light, .node = scene.get_node(name)});
-            scene.get_node(name)->add_light(std::move(light));
-            scene.get_node(name)->set_camera(std::make_unique<PerspectiveCamera>(
+            lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
+            scene.get_node(name, DP_LOC)->add_light(std::move(light));
+            scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
                 PerspectiveCamera::Postprocessing::ENABLED));
             lights.back().light.ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
@@ -802,13 +802,13 @@ int main(int argc, char** argv) {
         
         scene.add_root_node("follower_camera", make_dunique<SceneNode>());
         if (args.has_named("--look_at_aabb")) {
-            auto aabb = scene.get_node("obj")->relative_aabb();
+            auto aabb = scene.get_node("obj", DP_LOC)->relative_aabb();
             if (!aabb.has_value()) {
                 throw std::runtime_error("Node has no AABB");
             }
             auto la = gl_lookat_aabb(
-                scene.get_node("follower_camera")->position(),
-                scene.get_node("obj")->absolute_model_matrix(),
+                scene.get_node("follower_camera", DP_LOC)->position(),
+                scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
                 aabb.value());
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum");
@@ -825,23 +825,23 @@ int main(int argc, char** argv) {
                 render_results.outputs.at(rsd).width = npixels.value().width;
                 render_results.outputs.at(rsd).height = npixels.value().height;
             }
-            scene.get_node("follower_camera")->set_camera(std::make_unique<FrustumCamera>(
+            scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
                     npixels.value().scaled_sensor_aabb,
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-            scene.get_node("follower_camera")->set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
+            scene.get_node("follower_camera", DP_LOC)->set_rotation(matrix_2_tait_bryan_angles(la.value().extrinsic_R));
         } else {
-            scene.get_node("follower_camera")->set_position({
+            scene.get_node("follower_camera", DP_LOC)->set_position({
                 safe_stof(args.named_value("--camera_x", "0")),
                 safe_stof(args.named_value("--camera_y", "0")),
                 safe_stof(args.named_value("--camera_z", "0"))});
-            scene.get_node("follower_camera")->set_rotation({
+            scene.get_node("follower_camera", DP_LOC)->set_rotation({
                 safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
                 safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
                 safe_stof(args.named_value("--camera_angle_z", "0")) * degrees});
-            scene.get_node("follower_camera")->set_camera(std::make_unique<PerspectiveCamera>(
+            scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},
                 PerspectiveCamera::Postprocessing::ENABLED));

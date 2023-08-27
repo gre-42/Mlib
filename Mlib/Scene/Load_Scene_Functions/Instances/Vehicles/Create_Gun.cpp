@@ -93,13 +93,13 @@ private:
 void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    DanglingRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_rigid_body_node));
+    DanglingRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_rigid_body_node), DP_LOC);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    DanglingRef<SceneNode> punch_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    DanglingRef<SceneNode> punch_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC);
     float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
     float punch_angle_shoot_std = args.arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
     float punch_angle_idle_alpha = 0.002f;

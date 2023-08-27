@@ -142,10 +142,12 @@ void Scene::try_delete_node(const std::string& name) {
 void Scene::delete_node(const std::string& name) {
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.notify_deleting();
-    DanglingRef<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name);
+    DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
     if (!node->shutting_down()) {
         if (node->has_parent()) {
-            node->parent()->remove_child(name);
+            DanglingRef<SceneNode> parent = node->parent();
+            node = nullptr;
+            parent->remove_child(name);
         } else {
             delete_root_node(name);
         }
@@ -252,13 +254,16 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     }
 }
 
-DanglingRef<SceneNode> Scene::get_node(const std::string& name) const {
+DanglingRef<SceneNode> Scene::get_node(const std::string& name, std::source_location loc) const {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
-    return get_node_that_may_be_scheduled_for_deletion(name);
+    auto res = get_node_that_may_be_scheduled_for_deletion(name);
+    res.set_loc(loc);
+    res->set_debug_message(name);
+    return res;
 }
 
 std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::regex& regex) const {

@@ -41,7 +41,7 @@ void RenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
             .imposters = &imposters,
             .supply_depots = &supply_depots,
             .instance_name = args.arguments.at<std::string>(KnownArgs::name),
-            .scene_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node)),
+            .scene_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {
                     .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

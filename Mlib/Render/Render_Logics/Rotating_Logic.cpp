@@ -138,7 +138,7 @@ void RotatingLogic::render(
     RenderToScreenGuard rsg;
     float aspect_ratio = lx.flength() / ly.flength();
 
-    DanglingRef<SceneNode> cn = scene_.get_node("camera");
+    DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);
     cn->set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});
     auto co = cn->get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
@@ -148,7 +148,7 @@ void RotatingLogic::render(
     TransformationMatrix<float, double, 3> iv = cn->absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
-        DanglingRef<SceneNode> on = scene_.get_node("obj");
+        DanglingRef<SceneNode> on = scene_.get_node("obj", DP_LOC);
         on->set_scale(user_object_.scale);
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
@@ -156,7 +156,7 @@ void RotatingLogic::render(
             0.f});
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
-        DanglingRef<SceneNode> bn = scene_.get_node("obj")->get_child("beacon");
+        DanglingRef<SceneNode> bn = scene_.get_node("obj", DP_LOC)->get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, double, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();

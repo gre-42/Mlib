@@ -34,7 +34,7 @@ CreateTrailerNode::CreateTrailerNode(RenderableScene& renderable_scene)
 
 void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::car_instance))->get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::car_instance), DP_LOC)->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }

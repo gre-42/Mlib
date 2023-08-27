@@ -40,7 +40,7 @@ SetAnimationState::SetAnimationState(RenderableScene& renderable_scene)
 
 void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     float animation_loop_end;
     if (args.arguments.contains(KnownArgs::animation_loop_end)) {
         auto le = args.arguments.at(KnownArgs::animation_loop_end);
