@@ -1496,7 +1496,7 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
 {
     hri_.instantiate_renderable(options);
     if (terrain_styles_.requires_renderer()) {
-        options.scene_node.add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
+        options.scene_node->add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
             scene_node_resources_,
             terrain_styles_,
             terrain_triangles(),

@@ -9,6 +9,8 @@ struct TrackElement;
 class Bullet;
 class RigidBodyVehicle;
 enum class RaceState;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class IPlayer {
 public:

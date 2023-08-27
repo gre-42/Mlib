@@ -49,11 +49,11 @@ float stoa(float v) {
 
 void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
+        .node = node.ptr(),
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
@@ -68,7 +68,7 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             : std::optional<float>()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_car_controller_key_binding(kb);
         }

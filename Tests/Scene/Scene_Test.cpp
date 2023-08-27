@@ -188,7 +188,7 @@ void test_physics_engine(unsigned int seed) {
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto append_lightmap_logic = [&](){
         std::scoped_lock lock{delete_node_mutex};
-        auto& light_node = scene.get_node("light_node");
+        DanglingRef<SceneNode> light_node = scene.get_node("light_node");
         auto lightmap_logic = std::make_shared<LightmapLogic>(
             *read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
@@ -196,7 +196,7 @@ void test_physics_engine(unsigned int seed) {
             "light_node",
             "",    // black_node_name
             true); // with_depth_texture
-        render_logics.append(&light_node, lightmap_logic);
+        render_logics.append(light_node.ptr(), lightmap_logic);
     };
 
     render_logics.append(nullptr, flying_camera_logic);

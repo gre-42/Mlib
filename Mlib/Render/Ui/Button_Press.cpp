@@ -25,10 +25,10 @@ ButtonPress::~ButtonPress() {
     }
 }
 
-void ButtonPress::notify_destroyed(const Object& destroyed_object) {
+void ButtonPress::notify_destroyed(const BaseKeyCombination& destroyed_object) {
     size_t ndeleted = 0;
-    ndeleted += keys_down_times_.erase(dynamic_cast<const BaseKeyCombination*>(&destroyed_object));
-    ndeleted += keys_down_.erase(dynamic_cast<const BaseKeyCombination*>(&destroyed_object));
+    ndeleted += keys_down_times_.erase(&destroyed_object);
+    ndeleted += keys_down_.erase(&destroyed_object);
     if (ndeleted == 0) {
         THROW_OR_ABORT("Could not delete key binding");
     }
@@ -76,7 +76,7 @@ bool ButtonPress::keys_pressed(const BaseKeyCombination& k, const std::string& r
         return false;
     }
     if (k.destruction_observers == nullptr) {
-        k.destruction_observers = std::make_unique<DestructionObservers>(k);
+        k.destruction_observers = std::make_unique<DestructionObservers<const BaseKeyCombination&>>(k);
     }
     k.destruction_observers->add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     bool& old_is_down = keys_down_[&k];
@@ -87,7 +87,7 @@ bool ButtonPress::keys_pressed(const BaseKeyCombination& k, const std::string& r
 
 float ButtonPress::keys_alpha(const BaseKeyCombination& k, const std::string& role, float max_duration) {
     if (k.destruction_observers == nullptr) {
-        k.destruction_observers = std::make_unique<DestructionObservers>(k);
+        k.destruction_observers = std::make_unique<DestructionObservers<const BaseKeyCombination&>>(k);
     }
     k.destruction_observers->add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     auto default_time = std::chrono::time_point<std::chrono::steady_clock>();

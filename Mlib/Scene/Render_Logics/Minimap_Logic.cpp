@@ -15,7 +15,7 @@
 using namespace Mlib;
 
 MinimapLogic::MinimapLogic(
-    SceneNode& node,
+    DanglingRef<SceneNode> node,
     const std::string& map_image_resource_name,
     const std::string& locator_image_resource_name,
     std::unique_ptr<IWidget>&& widget,
@@ -40,7 +40,7 @@ MinimapLogic::~MinimapLogic() = default;
 
 void MinimapLogic::advance_time(float dt) {
     std::scoped_lock lock{pose_mutex_};
-    auto t = node_.absolute_model_matrix();
+    auto t = node_->absolute_model_matrix();
     position_ = {t.t(0), t.t(2)};
     angle_ = std::atan2(t.R(2, 0), t.R(2, 2));
 }

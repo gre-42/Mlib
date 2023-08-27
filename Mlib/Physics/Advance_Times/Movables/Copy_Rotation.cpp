@@ -7,9 +7,9 @@ using namespace Mlib;
 
 CopyRotation::CopyRotation(
     AdvanceTimes& advance_times,
-    SceneNode& from)
+    DanglingRef<SceneNode> from)
 : advance_times_{advance_times},
-  from_{&from}
+  from_{from.ptr()}
 {}
 
 CopyRotation::~CopyRotation()
@@ -42,8 +42,8 @@ void CopyRotation::advance_time(float dt) {
     // Do nothing
 }
 
-void CopyRotation::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == from_) {
+void CopyRotation::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == from_) {
         from_ = nullptr;
     } else {
         if (from_ != nullptr) {

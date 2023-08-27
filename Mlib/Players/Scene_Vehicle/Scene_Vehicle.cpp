@@ -7,7 +7,7 @@ using namespace Mlib;
 SceneVehicle::SceneVehicle(
     DeleteNodeMutex& delete_node_mutex,
     std::string scene_node_name,
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     RigidBodyVehicle& rb)
 : destruction_observers{*this},
   delete_node_mutex_{delete_node_mutex},
@@ -47,12 +47,12 @@ const std::string& SceneVehicle::scene_node_name() const {
     return scene_node_name_;
 }
 
-SceneNode& SceneVehicle::scene_node() {
+DanglingRef<SceneNode> SceneVehicle::scene_node() {
     delete_node_mutex_.notify_reading();
     return scene_node_;
 }
 
-const SceneNode& SceneVehicle::scene_node() const {
+DanglingRef<const SceneNode> SceneVehicle::scene_node() const {
     delete_node_mutex_.notify_reading();
     return scene_node_;
 }

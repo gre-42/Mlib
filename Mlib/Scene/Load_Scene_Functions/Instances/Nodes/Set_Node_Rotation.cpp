@@ -29,6 +29,6 @@ SetNodeRotation::SetNodeRotation(RenderableScene& renderable_scene)
 
 void SetNodeRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::name));
-    node.set_rotation(args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees);
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::name));
+    node->set_rotation(args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees);
 }

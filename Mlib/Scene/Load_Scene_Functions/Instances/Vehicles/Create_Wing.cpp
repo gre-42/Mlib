@@ -47,8 +47,8 @@ CreateWing::CreateWing(RenderableScene& renderable_scene)
 
 void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle));
-    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node.get_absolute_movable());
+    DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle));
+    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node->get_absolute_movable());
     if (vehicle_rb == nullptr) {
         THROW_OR_ABORT("Car movable is not a rigid body");
     }
@@ -75,11 +75,11 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }
     if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node)).set_relative_movable(
-            observer_ptr<RelativeMovable>{&tp.first->second->angle_of_attack_movable, nullptr});
+        scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node))->set_relative_movable(
+            observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->angle_of_attack_movable, nullptr});
     }
     if (args.arguments.contains(KnownArgs::brake_angle_node)) {
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node)).set_relative_movable(
-            observer_ptr<RelativeMovable>{&tp.first->second->brake_angle_movable, nullptr});
+        scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node))->set_relative_movable(
+            observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->brake_angle_movable, nullptr});
     }
 }

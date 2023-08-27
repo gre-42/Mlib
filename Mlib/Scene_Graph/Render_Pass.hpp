@@ -1,11 +1,8 @@
 #pragma once
-#include <compare>
 #include <iosfwd>
 #include <string>
 
 namespace Mlib {
-
-class SceneNode;
 
 /**
  * Ordering is only important for the occluded-pass, not the occluder-pass.
@@ -70,24 +67,5 @@ ExternalRenderPassType external_render_pass_type_from_string(const std::string& 
 std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
 
 std::ostream& operator << (std::ostream& ostr, ExternalRenderPassType pass);
-
-struct ExternalRenderPass {
-    ExternalRenderPassType pass;
-    std::string black_node_name;
-    SceneNode* singular_node = nullptr;
-    SceneNode* camera_node = nullptr;
-    std::strong_ordering operator <=> (const ExternalRenderPass&) const = default;
-};
-
-enum class InternalRenderPass {
-    INITIAL,
-    BLENDED,
-    AGGREGATE
-};
-
-struct RenderPass {
-    const ExternalRenderPass external;
-    const InternalRenderPass internal;
-};
 
 }

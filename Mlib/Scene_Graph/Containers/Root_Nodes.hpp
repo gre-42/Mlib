@@ -1,31 +1,34 @@
 #pragma once
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <map>
-#include <memory>
 #include <mutex>
 #include <set>
 #include <string>
 
 namespace Mlib {
 
+template <class T>
+class DanglingUniquePtr;
 class SceneNode;
 class DeleteNodeMutex;
 class Scene;
 
 class RootNodes {
-    using RootNodesMap = std::map<std::string, std::unique_ptr<SceneNode>>;
+    using RootNodesMap = std::map<std::string, DanglingUniquePtr<SceneNode>>;
 public:
     explicit RootNodes(Scene& scene);
     ~RootNodes();
     RootNodesMap::const_iterator find(const std::string& name) const;
     RootNodesMap::const_iterator begin() const;
     RootNodesMap::const_iterator end() const;
+    RootNodesMap::iterator begin();
+    RootNodesMap::iterator end();
     void clear();
     bool erase(const std::string& name);
     bool contains(const std::string& name) const;
     void add_root_node(
         const std::string& name,
-        std::unique_ptr<SceneNode>&& scene_node);
+        DanglingUniquePtr<SceneNode>&& scene_node);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
     bool no_root_nodes_scheduled_for_deletion() const;

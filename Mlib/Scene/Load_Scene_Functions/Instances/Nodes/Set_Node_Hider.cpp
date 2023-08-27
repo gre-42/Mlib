@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -37,18 +38,18 @@ SetNodeHider::SetNodeHider(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-class NodeHiderWithEvent: public NodeHider, public DestructionObserver, public AdvanceTime {
+class NodeHiderWithEvent: public NodeHider, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
 public:
     NodeHiderWithEvent(
         AdvanceTimes& advance_times,
-        SceneNode& node_to_hide,
-        SceneNode& camera_node,
+        DanglingRef<SceneNode> node_to_hide,
+        DanglingRef<SceneNode> camera_node,
         const std::function<void()>& on_hide,
         const std::function<void()>& on_destroy,
         const std::function<void()>& on_update)
     : advance_times_{advance_times},
-      node_to_hide_{&node_to_hide},
-      camera_node_{&camera_node},
+      node_to_hide_{node_to_hide.ptr()},
+      camera_node_{camera_node.ptr()},
       on_hide_{on_hide},
       on_destroy_{on_destroy},
       on_update_{on_update},
@@ -63,7 +64,7 @@ public:
         }
     }
 
-    virtual void notify_destroyed(const Object& destroyed_object) override {
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override {
         if (camera_node_ == nullptr) {
             return;
         }
@@ -71,9 +72,9 @@ public:
             on_destroy_();
         }
         advance_times_.schedule_delete_advance_time(*this);
-        if (&destroyed_object == node_to_hide_) {
+        if (destroyed_object.ptr() == node_to_hide_) {
             camera_node_->clearing_observers.remove(*this);
-        } else if (&destroyed_object == camera_node_) {
+        } else if (destroyed_object.ptr() == camera_node_) {
             node_to_hide_->clearing_observers.remove(*this);
             node_to_hide_->remove_node_hider(*this);
         } else {
@@ -83,7 +84,7 @@ public:
     }
 
     virtual bool node_shall_be_hidden(
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
         if (camera_node_ == nullptr) {
@@ -92,7 +93,7 @@ public:
         if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
             return false;
         }
-        bool hide = (camera_node_ == &camera_node);
+        bool hide = (camera_node_ == camera_node.ptr());
         if (hide) {
             if (!hide_old_) {
                 on_hide_();
@@ -112,8 +113,8 @@ public:
 
 private:
     AdvanceTimes& advance_times_;
-    SceneNode* node_to_hide_;
-    SceneNode* camera_node_;
+    DanglingPtr<SceneNode> node_to_hide_;
+    DanglingPtr<SceneNode> camera_node_;
     std::function<void()> on_hide_;
     std::function<void()> on_destroy_;
     std::function<void()> on_update_;
@@ -122,10 +123,10 @@ private:
 
 void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide));
-    auto& camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
-    auto* punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
-        ? &scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node))
+    DanglingRef<SceneNode> node_to_hide = scene.get_node(args.arguments.at<std::string>(KnownArgs::node_to_hide));
+    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
+    DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
+        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node)).ptr()
         : nullptr;
     auto capture = args.arguments.try_at(KnownArgs::capture);
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
@@ -186,8 +187,8 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             macro_line_executor(on_update.value(), &local_args, nullptr);
         });
-    node_to_hide.clearing_observers.add(*node_hider);
-    camera_node.clearing_observers.add(*node_hider);
-    node_to_hide.insert_node_hider(*node_hider);
+    node_to_hide->clearing_observers.add(*node_hider);
+    camera_node->clearing_observers.add(*node_hider);
+    node_to_hide->insert_node_hider(*node_hider);
     physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

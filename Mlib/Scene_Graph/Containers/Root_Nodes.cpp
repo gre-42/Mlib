@@ -28,6 +28,14 @@ RootNodes::RootNodesMap::const_iterator RootNodes::end() const {
     return root_nodes_.end();
 }
 
+RootNodes::RootNodesMap::iterator RootNodes::begin() {
+    return root_nodes_.begin();
+}
+
+RootNodes::RootNodesMap::iterator RootNodes::end() {
+    return root_nodes_.end();
+}
+
 void RootNodes::clear() {
     clear_map_recursively(
         root_nodes_,
@@ -45,7 +53,7 @@ void RootNodes::clear() {
 
 void RootNodes::add_root_node(
     const std::string& name,
-    std::unique_ptr<SceneNode>&& scene_node)
+    DanglingUniquePtr<SceneNode>&& scene_node)
 {
     if (root_nodes_to_delete_.contains(name)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");

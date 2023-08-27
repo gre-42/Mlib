@@ -179,7 +179,7 @@ const std::string& Player::scene_node_name() const {
     return vehicle().scene_node_name();
 }
 
-void Player::set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node) {
+void Player::set_ypln(YawPitchLookAtNodes& ypln, DanglingPtr<SceneNode> gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (controlled_.ypln != nullptr) {
         THROW_OR_ABORT("ypln already set");
@@ -312,26 +312,28 @@ bool Player::can_see(
         time_offset);
 }
 
-void Player::notify_destroyed(const Object& destroyed_object) {
+void Player::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (&destroyed_object == target_scene_node_) {
+    if (destroyed_object.ptr() == target_scene_node_) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
+    // If node != nullptr in "append_delete_externals",
+    // it is assumed that all objects that would be
+    // deleted in the externals-deleters are children of
+    // the external nodes. The children will therefore get
+    // deleted by the node itself.
+    delete_externals_.erase(destroyed_object.ptr());
+}
+
+void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (&destroyed_object == next_scene_vehicle_) {
         next_scene_vehicle_ = nullptr;
     }
     if (&destroyed_object == vehicle_) {
         reset_node();
     } 
-    // If node != nullptr in "append_delete_externals",
-    // it is assumed that all objects that would be
-    // deleted in the externals-deleters are children of
-    // the external nodes. The children will therefore get
-    // deleted by the node itself.
-    if (auto* node = const_cast<SceneNode*>(dynamic_cast<const SceneNode*>(&destroyed_object)); node != nullptr) {
-        delete_externals_.erase(node);
-    }
 }
 
 void Player::advance_time(float dt) {
@@ -445,7 +447,7 @@ void Player::trigger_gun() {
 }
 
 bool Player::has_gun_node() const {
-    assert_true(!controlled_.ypln == !controlled_.gun_node);
+    assert_true((controlled_.ypln == nullptr) == (controlled_.gun_node == nullptr));
     return (controlled_.gun_node != nullptr);
 }
 
@@ -458,11 +460,11 @@ const Inventory& Player::inventory() const {
 }
 
 bool Player::has_weapon_cycle() const {
-    return scene_node().has_node_modifier();
+    return scene_node()->has_node_modifier();
 }
 
 WeaponCycle& Player::weapon_cycle() {
-    auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
+    auto wc = dynamic_cast<WeaponCycle*>(&scene_node()->get_node_modifier());
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
@@ -481,7 +483,7 @@ size_t Player::nbullets_available() const {
 }
 
 std::string Player::best_weapon_in_inventory() const {
-    auto wc = dynamic_cast<WeaponCycle*>(&scene_node().get_node_modifier());
+    auto wc = dynamic_cast<WeaponCycle*>(&scene_node()->get_node_modifier());
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }
@@ -513,7 +515,7 @@ bool Player::has_scene_vehicle() const {
     if (vehicle_ == nullptr) {
         return false;
     }
-    if (vehicle_->scene_node().shutting_down()) {
+    if (vehicle_->scene_node()->shutting_down()) {
         THROW_OR_ABORT("Player::has_rigid_body: Scene node shutting down");
     }
     if (scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name())) {
@@ -548,7 +550,7 @@ void Player::aim_and_shoot() {
     if (!skills_.at(ControlSource::AI).can_aim) {
         return;
     }
-    assert_true(!target_scene_node_ == !target_rb_);
+    assert_true((target_scene_node_ == nullptr) == (target_rb_ == nullptr));
     if ((target_rb_ != nullptr) && !can_see(*target_rb_)) {
         clear_opponent();
     }
@@ -559,7 +561,7 @@ void Player::aim_and_shoot() {
         return;
     }
     assert_true((vehicle_ == nullptr) ||
-                (&vehicle_->scene_node() != target_scene_node_));
+                (vehicle_->scene_node().ptr() != target_scene_node_));
     controlled_.ypln->set_followed(target_scene_node_, target_rb_);
     if (controlled_.gun_node == nullptr) {
         return;
@@ -609,7 +611,7 @@ void Player::select_next_opponent() {
     for (const auto& [_, p] : players_.players()) {
         if ((target_scene_node_ != nullptr) &&
             (p->vehicle_ != nullptr) &&
-            (target_scene_node_ == &p->vehicle_->scene_node()))
+            (target_scene_node_ == p->vehicle_->scene_node().ptr()))
         {
             if (current_opponent_index != SIZE_MAX) {
                 THROW_OR_ABORT("Found multiple players with target node");
@@ -663,19 +665,19 @@ void Player::set_opponent(const Player& opponent) {
     if (opponent.vehicle_ == nullptr) {
         THROW_OR_ABORT("Opponent has no avatar or vehicle");
     }
-    target_scene_node_ = &opponent.vehicle_->scene_node();
+    target_scene_node_ = opponent.vehicle_->scene_node().ptr();
     target_rb_ = &opponent.vehicle_->rb();
     target_scene_node_->clearing_observers.add(*this);
 }
 
-SceneNode& Player::scene_node() {
+DanglingRef<SceneNode> Player::scene_node() {
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene node");
     }
     return vehicle_->scene_node();
 }
 
-const SceneNode& Player::scene_node() const {
+DanglingRef<const SceneNode> Player::scene_node() const {
     return const_cast<Player*>(this)->scene_node();
 }
 
@@ -768,7 +770,7 @@ PlaybackWaypoints& Player::playback_waypoints() {
 }
 
 void Player::append_delete_externals(
-    SceneNode* node,
+    DanglingPtr<SceneNode> node,
     const std::function<void()>& delete_externals)
 {
     // Consider reading the line

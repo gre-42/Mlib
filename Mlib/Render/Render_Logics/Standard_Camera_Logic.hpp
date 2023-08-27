@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 
@@ -28,7 +29,7 @@ public:
     virtual float far_plane() const override;
     virtual const FixedArray<double, 4, 4>& vp() const override;
     virtual const TransformationMatrix<float, double, 3>& iv() const override;
-    virtual const SceneNode& camera_node() const override;
+    virtual DanglingRef<const SceneNode> camera_node() const override;
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
@@ -38,7 +39,7 @@ private:
     const DeleteNodeMutex& delete_node_mutex_;
     FixedArray<double, 4, 4> vp_;
     TransformationMatrix<float, double, 3> iv_;
-    const SceneNode* camera_node_;
+    DanglingPtr<const SceneNode> camera_node_;
 };
 
 }

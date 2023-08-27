@@ -30,11 +30,11 @@ CreateCopyRotation::CreateCopyRotation(RenderableScene& renderable_scene)
 void CreateCopyRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& from = scene.get_node(args.arguments.at<std::string>(KnownArgs::from));
-    auto& to = scene.get_node(args.arguments.at<std::string>(KnownArgs::to));
+    DanglingRef<SceneNode> from = scene.get_node(args.arguments.at<std::string>(KnownArgs::from));
+    DanglingRef<SceneNode> to = scene.get_node(args.arguments.at<std::string>(KnownArgs::to));
     auto rt = std::make_unique<CopyRotation>(
         physics_engine.advance_times_, from);
     auto& rt_p = *rt;
     linker.link_relative_movable(to, std::move(rt));
-    from.clearing_observers.add(rt_p);
+    from->clearing_observers.add(rt_p);
 }

@@ -13,10 +13,13 @@ struct RenderResults;
 struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
 struct FocusFilter;
+template <class T>
+class DanglingRef;
 class SceneNode;
 
 class RenderLogic {
 public:
+    RenderLogic();
     virtual ~RenderLogic();
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -30,7 +33,7 @@ public:
     virtual float far_plane() const;
     virtual const FixedArray<double, 4, 4>& vp() const;
     virtual const TransformationMatrix<float, double, 3>& iv() const;
-    virtual const SceneNode& camera_node() const;
+    virtual DanglingRef<const SceneNode> camera_node() const;
     virtual bool requires_postprocessing() const;
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };

@@ -28,7 +28,7 @@ BvhResource::BvhResource(
 
 static void instantiate_bvh(
     const std::string& name,
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
     const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3>& bvh)
@@ -41,7 +41,7 @@ static void instantiate_bvh(
             aabb.extend(b.first);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_position((center - position_shift).casted<double>());
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
         for (const auto& [material, cva] : cvas) {
@@ -74,11 +74,11 @@ static void instantiate_bvh(
                 .instance_name = "renderable_bvh",
                 .scene_node = *node,
                 .renderable_resource_filter = renderable_resource_filter});
-        scene_node.add_child(name + "_data", std::move(node));
+        scene_node->add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
     for (const auto& c : bvh.children()) {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_position(((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>());
         instantiate_bvh(
             name,
@@ -86,7 +86,7 @@ static void instantiate_bvh(
             position_shift + node->position().casted<float>(),
             renderable_resource_filter,
             c.second);
-        scene_node.add_child("bvh_" + std::to_string(i), std::move(node));
+        scene_node->add_child("bvh_" + std::to_string(i), std::move(node));
         ++i;
     }
 }

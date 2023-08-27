@@ -67,8 +67,8 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
-        auto& node = scene.get_node(prefix + suffix);
-        node.clearing_pointers.add(playback);
+        DanglingRef<SceneNode> node = scene.get_node(prefix + suffix);
+        node->clearing_pointers.add(playback);
         auto& playback_object = playback->get_playback_object(i);
         AbsoluteMovableSetter ams{node, playback_object};
     }

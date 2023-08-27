@@ -161,14 +161,14 @@ FlyingCameraLogic::FlyingCameraLogic(
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
     if (fly_) {
-        auto& cn = scene_.get_node(user_object_.cameras.camera_node_name());
-        user_object_.position = cn.position();
-        user_object_.angles = cn.rotation();
+        DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name());
+        user_object_.position = cn->position();
+        user_object_.angles = cn->rotation();
     }
     if (rotate_) {
-        auto& on = scene_.get_node(user_object_.obj_node_name);
-        user_object_.obj_position = on.position();
-        user_object_.obj_angles = on.rotation();
+        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name);
+        user_object_.obj_position = on->position();
+        user_object_.obj_angles = on->rotation();
     }
 }
 
@@ -203,22 +203,22 @@ void FlyingCameraLogic::render(
         toggle_fullscreen(window_, user_object_.window_position);
     }
 #endif
-    auto& cn = scene_.get_node(user_object_.cameras.camera_node_name());
+    DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name());
     if (fly_) {
 #ifdef __ANDROID__
         flying_key_callback(button_press_, user_object_);
 #else
         flying_key_callback(window_, button_press_, user_object_, *keys_);
 #endif
-        cn.set_position(user_object_.position);
-        cn.set_rotation(user_object_.angles);
+        cn->set_position(user_object_.position);
+        cn->set_rotation(user_object_.angles);
     } else {
         nofly_key_callback(button_press_, user_object_, *keys_);
     }
     if (rotate_) {
-        auto& on = scene_.get_node(user_object_.obj_node_name);
-        on.set_position(user_object_.obj_position);
-        on.set_rotation(user_object_.obj_angles);
+        DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name);
+        on->set_position(user_object_.obj_position);
+        on->set_rotation(user_object_.obj_angles);
     }
 }
 

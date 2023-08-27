@@ -25,7 +25,7 @@ void SmokeParticleGenerator::generate_root(
     ParticleType particle_type)
 {
     if (particle_type == ParticleType::NODE) {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_position(position);
         node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
             .aperiodic_animation_frame = AperiodicAnimationFrame{
@@ -51,13 +51,13 @@ void SmokeParticleGenerator::generate_root(
 }
 
 void SmokeParticleGenerator::generate_child(
-    SceneNode& parent,
+    DanglingRef<SceneNode> parent,
     const std::string& resource_name,
     const std::string& child_node_name,
     const FixedArray<double, 3>& relative_position,
     float animation_duration)
 {
-    auto child_node = std::make_unique<SceneNode>();
+    auto child_node = make_dunique<SceneNode>();
     child_node->set_position(relative_position);
 
     child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
@@ -73,8 +73,8 @@ void SmokeParticleGenerator::generate_child(
             .instance_name = resource_name,
             .scene_node = *child_node,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    SceneNode& child_node_ref = *child_node;
-    parent.add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
+    DanglingRef<SceneNode> child_node_ref = *child_node;
+    parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
     scene_.register_node(child_node_name, child_node_ref);
 }
 

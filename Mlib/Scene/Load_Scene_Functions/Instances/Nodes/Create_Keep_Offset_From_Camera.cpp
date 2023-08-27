@@ -30,7 +30,7 @@ CreateKeepOffsetFromCamera::CreateKeepOffsetFromCamera(RenderableScene& renderab
 void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
+    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
     auto follower = std::make_unique<KeepOffsetFromCamera>(
         physics_engine.advance_times_,
         scene,

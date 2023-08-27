@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
@@ -28,8 +29,8 @@
 using namespace Mlib;
 
 SceneNode::SceneNode()
-: clearing_observers{*this},
-  destruction_observers{*this},
+: clearing_observers{DanglingRef<SceneNode>::from_object(*this)},
+  destruction_observers{DanglingRef<SceneNode>::from_object(*this)},
   scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
@@ -65,12 +66,12 @@ bool SceneNode::shutting_down() const {
     return shutting_down_;
 }
 
-void SceneNode::set_parent(SceneNode& parent) {
+void SceneNode::set_parent(DanglingRef<SceneNode> parent) {
     std::scoped_lock lock{mutex_};
     if (has_parent()) {
         THROW_OR_ABORT("Node already has a parent");
     }
-    parent_ = &parent;
+    parent_ = parent.ptr();
 }
 
 bool SceneNode::has_parent() const {
@@ -78,7 +79,7 @@ bool SceneNode::has_parent() const {
     return (parent_ != nullptr);
 }
 
-SceneNode& SceneNode::parent() {
+DanglingRef<SceneNode> SceneNode::parent() {
     std::shared_lock lock{mutex_};
     if (!has_parent()) {
         THROW_OR_ABORT("Node has no parent");
@@ -86,14 +87,13 @@ SceneNode& SceneNode::parent() {
     return *parent_;
 }
 
-const SceneNode& SceneNode::parent() const {
-    std::shared_lock lock{mutex_};
+DanglingRef<const SceneNode> SceneNode::parent() const {
     return const_cast<SceneNode*>(this)->parent();
 }
 
 void SceneNode::setup_child_unsafe(
     const std::string& name,
-    SceneNode& node,
+    DanglingRef<SceneNode> node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -105,18 +105,18 @@ void SceneNode::setup_child_unsafe(
         THROW_OR_ABORT("Child node has no name");
     }
     if (child_parent_state == ChildParentState::PARENT_NOT_SET) {
-        if (node.parent_ != nullptr) {
+        if (node->parent_ != nullptr) {
             THROW_OR_ABORT("Scene node \"" + name + "\" already has a parent");
         }
-        node.parent_ = this;
-    } else if (node.parent_ != this) {
+        node->parent_ = DanglingPtr<SceneNode>::from_object(*this);
+    } else if (node->parent_ != DanglingPtr<SceneNode>::from_object(*this)) {
         THROW_OR_ABORT("Child parent mismatch");
     }
     if ((scene_ != nullptr) != (state_ != SceneNodeState::DETACHED)) {
         THROW_OR_ABORT("Conflicting scene nullness and node state");
     }
     if (scene_ != nullptr) {
-        node.set_scene_and_state_unsafe(*scene_, state_);
+        node->set_scene_and_state_unsafe(*scene_, state_);
     }
 }
 
@@ -167,7 +167,7 @@ RelativeMovable& SceneNode::get_relative_movable() const {
     return *relative_movable_;
 }
 
-void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable)
+void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>& relative_movable)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
@@ -190,7 +190,7 @@ AbsoluteObserver& SceneNode::get_absolute_observer() const {
     return *absolute_observer_;
 }
 
-void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer)
+void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
@@ -292,7 +292,7 @@ void SceneNode::clear_unsafe() {
 
 void SceneNode::add_child(
     const std::string& name,
-    std::unique_ptr<SceneNode>&& node,
+    DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -306,13 +306,17 @@ void SceneNode::add_child(
     }
 }
 
-SceneNode& SceneNode::get_child(const std::string& name) const {
+DanglingRef<SceneNode> SceneNode::get_child(const std::string& name) {
     std::shared_lock lock{mutex_};
     auto it = children_.find(name);
     if (it == children_.end()) {
         THROW_OR_ABORT("Node does not have a child with name \"" + name + '"');
     }
-    return *it->second.scene_node.get();
+    return *it->second.scene_node;
+}
+
+DanglingRef<const SceneNode> SceneNode::get_child(const std::string& name) const {
+    return const_cast<SceneNode*>(this)->get_child(name);
 }
 
 void SceneNode::remove_child(const std::string& name) {
@@ -343,7 +347,7 @@ bool SceneNode::contains_child(const std::string& name) const {
 
 void SceneNode::add_aggregate_child(
     const std::string& name,
-    std::unique_ptr<SceneNode>&& node,
+    DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -359,7 +363,7 @@ void SceneNode::add_aggregate_child(
 
 void SceneNode::add_instances_child(
     const std::string& name,
-    std::unique_ptr<SceneNode>&& node,
+    DanglingUniquePtr<SceneNode>&& node,
     ChildRegistrationState child_registration_state,
     ChildParentState child_parent_state)
 {
@@ -665,7 +669,7 @@ void SceneNode::render(
     const FixedArray<double, 4, 4>& parent_mvp,
     const TransformationMatrix<float, double, 3>& parent_m,
     const TransformationMatrix<float, double, 3>& iv,
-    const SceneNode& camera_node,
+    DanglingRef<const SceneNode> camera_node,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
@@ -1119,13 +1123,13 @@ void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
         THROW_OR_ABORT("Scene is null in static node");
     }
     state_ = state;
-    for (const auto& [_, c] : children_) {
+    for (auto& [_, c] : children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
-    for (const auto& [_, c] : aggregate_children_) {
+    for (auto& [_, c] : aggregate_children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
-    for (const auto& [_, c] : instances_children_) {
+    for (auto& [_, c] : instances_children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
 }
@@ -1138,7 +1142,7 @@ Scene& SceneNode::scene() {
     return *scene_;
 }
 
-std::ostream& Mlib::operator << (std::ostream& ostr, const SceneNode& node) {
-    node.print(ostr);
+std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {
+    node->print(ostr);
     return ostr;
 }

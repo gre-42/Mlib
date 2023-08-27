@@ -124,10 +124,10 @@ TransformationMatrix<float, double, 3> PitchLookAtNode::get_new_relative_model_m
 }
 
 void PitchLookAtNode::set_followed(
-    SceneNode* followed_node,
+    DanglingPtr<SceneNode> followed_node,
     const RigidBodyVehicle* followed)
 {
-    assert_true(!followed_node == !followed);
+    assert_true((followed_node == nullptr) == (followed == nullptr));
     if (followed_node_ != nullptr) {
         followed_node_->clearing_observers.remove(*this);
     }
@@ -138,19 +138,19 @@ void PitchLookAtNode::set_followed(
     }
 }
 
-void PitchLookAtNode::set_head_node(SceneNode& head_node) {
+void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
     if (head_node_ != nullptr) {
         THROW_OR_ABORT("Head node already set");
     }
-    head_node_ = &head_node;
+    head_node_ = head_node.ptr();
 }
 
 bool PitchLookAtNode::target_locked_on() const {
     return target_locked_on_;
 }
 
-void PitchLookAtNode::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == followed_node_) {
+void PitchLookAtNode::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

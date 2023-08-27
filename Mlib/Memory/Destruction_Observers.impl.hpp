@@ -3,25 +3,29 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 
-using namespace Mlib;
+namespace Mlib {
 
-DestructionObservers::DestructionObservers(const Object& obj)
+template <class T>
+DestructionObservers<T>::DestructionObservers(T obj)
 : shutting_down_{false},
   obj_{obj}
 {}
 
-DestructionObservers::~DestructionObservers() {
+template <class T>
+DestructionObservers<T>::~DestructionObservers() {
     if (!shutting_down_) {
         shutdown_unsafe();
     }
 }
 
-bool DestructionObservers::shutting_down() const {
+template <class T>
+bool DestructionObservers<T>::shutting_down() const {
     return shutting_down_;
 }
 
-void DestructionObservers::add(
-    DestructionObserver& destruction_observer,
+template <class T>
+void DestructionObservers<T>::add(
+    DestructionObserver<T>& destruction_observer,
     ObserverAlreadyExistsBehavior already_exists_behavior)
 {
     if (shutting_down_) {
@@ -34,8 +38,9 @@ void DestructionObservers::add(
     }
 }
 
-void DestructionObservers::remove(
-    DestructionObserver& destruction_observer,
+template <class T>
+void DestructionObservers<T>::remove(
+    DestructionObserver<T>& destruction_observer,
     ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
     if (!shutting_down_) {
@@ -47,26 +52,28 @@ void DestructionObservers::remove(
     }
 }
 
-void DestructionObservers::shutdown() {
+template <class T>
+void DestructionObservers<T>::shutdown() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::shutdown despite active shutdown");
     }
     std::unique_lock lock{mutex_};
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this, &lock](DestructionObserver* obs){
+    clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
         lock.unlock();
         obs->notify_destroyed(obj_);
         lock.lock();
     });
 }
 
-void DestructionObservers::notify_destroyed() {
+template <class T>
+void DestructionObservers<T>::notify_destroyed() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::notify_destroyed despite shutdown");
     }
     std::unique_lock lock{mutex_};
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this, &lock](DestructionObserver* obs){
+    clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
         lock.unlock();
         obs->notify_destroyed(obj_);
         lock.lock();
@@ -74,12 +81,15 @@ void DestructionObservers::notify_destroyed() {
     shutting_down_ = false;
 }
 
-void DestructionObservers::shutdown_unsafe() {
+template <class T>
+void DestructionObservers<T>::shutdown_unsafe() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::shutdown_unsafe despite shutdown");
     }
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this](DestructionObserver* obs){
+    clear_set_recursively(observers_, [this](DestructionObserver<T>* obs){
         obs->notify_destroyed(obj_);
     });
+}
+
 }

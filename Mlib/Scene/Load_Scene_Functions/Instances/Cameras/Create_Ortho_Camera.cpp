@@ -35,7 +35,7 @@ CreateOrthoCamera::CreateOrthoCamera(RenderableScene& renderable_scene)
 
 void CreateOrthoCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto oc = std::make_unique<OrthoCamera>(
         OrthoCameraConfig(),
         OrthoCamera::Postprocessing::ENABLED);
@@ -46,5 +46,5 @@ void CreateOrthoCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
     oc->set_bottom_plane(args.arguments.at<float>(KnownArgs::bottom_plane));
     oc->set_top_plane(args.arguments.at<float>(KnownArgs::top_plane));
     oc->set_requires_postprocessing(args.arguments.at<bool>(KnownArgs::requires_postprocessing));
-    node.set_camera(std::move(oc));
+    node->set_camera(std::move(oc));
 }

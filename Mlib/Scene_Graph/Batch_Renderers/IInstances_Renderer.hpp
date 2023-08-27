@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <list>
 #include <memory>
@@ -16,6 +15,7 @@ struct SceneGraphConfig;
 struct TransformedColoredVertexArray;
 class IInstancesRenderer;
 enum class ExternalRenderPassType;
+struct ExternalRenderPass;
 
 class IInstancesRenderers {
 public:

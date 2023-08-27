@@ -79,7 +79,7 @@ void BlendingXResource::preload() const {
 void BlendingXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -87,15 +87,15 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node.add_aggregate_child(options.instance_name + "+0", std::move(node));
+            options.scene_node->add_aggregate_child(options.instance_name + "+0", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
-            options.scene_node.add_child(options.instance_name + "+0", std::move(node));
+            options.scene_node->add_child(options.instance_name + "+0", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. });
         rva_(0)->instantiate_renderable(InstantiationOptions{
@@ -103,15 +103,15 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node.add_aggregate_child(options.instance_name + "-0", std::move(node));
+            options.scene_node->add_aggregate_child(options.instance_name + "-0", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
-            options.scene_node.add_child(options.instance_name + "-0", std::move(node));
+            options.scene_node->add_child(options.instance_name + "-0", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -119,15 +119,15 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node.add_aggregate_child(options.instance_name + "+1", std::move(node));
+            options.scene_node->add_aggregate_child(options.instance_name + "+1", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
-            options.scene_node.add_child(options.instance_name + "+1", std::move(node));
+            options.scene_node->add_child(options.instance_name + "+1", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
     }
     {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, -(square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(0)->instantiate_renderable(InstantiationOptions{
@@ -135,9 +135,9 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
             .scene_node = *node,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node.add_aggregate_child(options.instance_name + "-1", std::move(node));
+            options.scene_node->add_aggregate_child(options.instance_name + "-1", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
-            options.scene_node.add_child(options.instance_name + "-1", std::move(node));
+            options.scene_node->add_child(options.instance_name + "-1", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }

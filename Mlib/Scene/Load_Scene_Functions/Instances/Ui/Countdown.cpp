@@ -59,7 +59,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
-    auto node = std::make_unique<SceneNode>();
+    auto node = make_dunique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
     node->clearing_observers.add(*countdown_logic);
     render_logics.append(node.get(), countdown_logic);

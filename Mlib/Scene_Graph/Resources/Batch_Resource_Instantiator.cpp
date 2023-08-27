@@ -94,8 +94,7 @@ void BatchResourceInstantiator::instantiate_renderables(
     {
         size_t i = 0;
         for (const auto& p : object_resource_descriptors_) {
-            auto unode = std::make_unique<SceneNode>();
-            SceneNode* node = unode.get();
+            DanglingUniquePtr<SceneNode> node = make_dunique<SceneNode>();
             scene_node_resources.instantiate_renderable(
                 p.name,
                 InstantiationOptions{
@@ -111,11 +110,11 @@ void BatchResourceInstantiator::instantiate_renderables(
                 if (options.supply_depots == nullptr) {
                     THROW_OR_ABORT("Supplies requested, but no supply depots available");
                 }
-                auto pm = options.scene_node.absolute_model_matrix();
+                auto pm = options.scene_node->absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
                 options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
-                options.scene_node.scene().add_root_node(child_name, std::move(unode));
+                options.scene_node->scene().add_root_node(child_name, std::move(node));
             } else {
                 node->set_position(p.position);
                 node->set_scale(scale_ * p.scale);
@@ -128,9 +127,9 @@ void BatchResourceInstantiator::instantiate_renderables(
                         }
                         options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
                     }
-                    options.scene_node.add_child(
+                    options.scene_node->add_child(
                         child_name,
-                        std::move(unode),
+                        std::move(node),
                         ChildRegistrationState::NOT_REGISTERED,
                         ChildParentState::PARENT_ALREADY_SET);
                 } else {
@@ -141,13 +140,13 @@ void BatchResourceInstantiator::instantiate_renderables(
                         THROW_OR_ABORT("Cannot create imposter for aggregate node");
                     }
                     std::cerr << "Adding aggregate " << p.name << std::endl;
-                    options.scene_node.add_aggregate_child(child_name, std::move(unode));
+                    options.scene_node->add_aggregate_child(child_name, std::move(node));
                 }
             }
         }
     }
     for (const auto& [name, ps] : resource_instance_positions_) {
-        auto node = std::make_unique<SceneNode>();
+        auto node = make_dunique<SceneNode>();
         node->set_rotation(rotation_);
         scene_node_resources.instantiate_renderable(
             name,
@@ -159,9 +158,9 @@ void BatchResourceInstantiator::instantiate_renderables(
         if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
             THROW_OR_ABORT("Object " + name + " requires render pass");
         }
-        options.scene_node.add_instances_child(name, std::move(node));
+        options.scene_node->add_instances_child(name, std::move(node));
         for (const auto& r : ps) {
-            options.scene_node.add_instances_position(name, r.position, r.yangle, r.billboard_id);
+            options.scene_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
         }
     }
     // if (!resource_instance_positions_.empty()) {

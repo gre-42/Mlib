@@ -4,7 +4,6 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
@@ -84,7 +83,7 @@ struct TrailerHitches {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public Object, public DestructionObserver, public AbsoluteMovable, public StatusWriter, public NodeHider {
+class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public StatusWriter, public NodeHider {
 public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
@@ -172,7 +171,7 @@ public:
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 
     // DestructionObserver
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
@@ -181,7 +180,7 @@ public:
 
     // NodeHider
     virtual bool node_shall_be_hidden(
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 
     bool feels_gravity() const;
@@ -193,7 +192,7 @@ public:
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();
 
-    DestructionObservers destruction_observers;
+    DestructionObservers<const RigidBodyVehicle&> destruction_observers;
 
     RigidBodies* rigid_bodies_;
 

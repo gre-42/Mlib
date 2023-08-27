@@ -4,6 +4,8 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingRef;
 template <typename TData, size_t... tshape>
 class FixedArray;
 class Scene;
@@ -27,7 +29,7 @@ public:
         float animation_duration,
         ParticleType particle_type);
     void generate_child(
-        SceneNode& parent,
+        DanglingRef<SceneNode> parent,
         const std::string& resource_name,
         const std::string& child_node_name,
         const FixedArray<double, 3>& relative_position,

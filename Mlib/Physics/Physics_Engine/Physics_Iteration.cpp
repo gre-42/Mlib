@@ -63,7 +63,7 @@ void PhysicsIteration::operator()() {
             scene_.delete_root_nodes(re);
             size_t i = 0;
             for (const auto& beacon : beacons) {
-                auto node = std::make_unique<SceneNode>();
+                auto node = make_dunique<SceneNode>();
                 scene_node_resources_.instantiate_renderable(
                     beacon.resource_name,
                     InstantiationOptions{

@@ -5,8 +5,8 @@
 
 namespace Mlib {
 
+template <class T>
 class DestructionObserver;
-class Object;
 
 enum class ObserverAlreadyExistsBehavior {
     IGNORE,
@@ -18,24 +18,25 @@ enum class ObserverDoesNotExistBehavior {
     RAISE
 };
 
+template <class T>
 class DestructionObservers {
 public:
-    explicit DestructionObservers(const Object& obj);
+    explicit DestructionObservers(T obj);
     ~DestructionObservers();
 
-    void add(DestructionObserver& destruction_observer,
+    void add(DestructionObserver<T>& destruction_observer,
              ObserverAlreadyExistsBehavior already_exists_behavior = ObserverAlreadyExistsBehavior::RAISE);
-    void remove(DestructionObserver& destruction_observer,
+    void remove(DestructionObserver<T>& destruction_observer,
                 ObserverDoesNotExistBehavior does_not_exist_behavior = ObserverDoesNotExistBehavior::RAISE);
     bool shutting_down() const;
     void shutdown();
     void notify_destroyed();
 private:
     void shutdown_unsafe();
-    std::set<DestructionObserver*> observers_;
+    std::set<DestructionObserver<T>*> observers_;
     mutable std::mutex mutex_;
     std::atomic_bool shutting_down_;
-    const Object& obj_;
+    T obj_;
 };
 
 }

@@ -30,14 +30,14 @@ LookAtNode::LookAtNode(RenderableScene& renderable_scene)
 void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
-    auto& followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
+    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower));
+    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed));
     auto follower = std::make_unique<LookAtMovable>(
         physics_engine.advance_times_,
         scene,
         args.arguments.at<std::string>(KnownArgs::follower),
         followed_node,
-        followed_node.get_absolute_movable());
+        followed_node->get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(
         follower_node, followed_node, std::move(follower));
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
@@ -21,7 +22,7 @@ class Player;
 class Team;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public DestructionObserver, public AbsoluteObserver, public AdvanceTime {
+class Gun final: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteObserver, public AdvanceTime {
 public:
     Gun(Scene& scene,
         SceneNodeResources& scene_node_resources,
@@ -30,8 +31,8 @@ public:
         AdvanceTimes& advance_times,
         float cool_down,
         RigidBodyVehicle& parent_rb,
-        SceneNode& node,
-        SceneNode& punch_angle_node,
+        DanglingRef<SceneNode> node,
+        DanglingRef<SceneNode> punch_angle_node,
         const std::string& bullet_renderable_resource_name,
         const std::string& bullet_hitbox_resource_name,
         const std::string& bullet_explosion_resource_name,
@@ -56,7 +57,7 @@ public:
     ~Gun();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     void trigger(
         Player* player = nullptr,
         Team* team = nullptr);
@@ -76,8 +77,8 @@ private:
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
-    SceneNode& node_;
-    SceneNode& punch_angle_node_;
+    DanglingRef<SceneNode> node_;
+    DanglingRef<SceneNode> punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;
     std::string bullet_explosion_resource_name_;

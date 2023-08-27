@@ -7,17 +7,19 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingRef;
 class AdvanceTimes;
 class SceneNode;
 
-class MovableLogger: public DestructionObserver, public AdvanceTime {
+class MovableLogger: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
 public:
     MovableLogger(
-        SceneNode& scene_node,
+        DanglingRef<SceneNode> scene_node,
         AdvanceTimes& advance_times,
         StatusWriter* status_writer,
         StatusComponents log_components);
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
 private:
     AdvanceTimes& advance_times_;

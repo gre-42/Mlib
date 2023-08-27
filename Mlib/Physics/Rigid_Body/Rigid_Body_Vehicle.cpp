@@ -8,6 +8,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
@@ -385,7 +386,7 @@ TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_
     return rbi_.rbp_.abs_transformation();
 }
 
-void RigidBodyVehicle::notify_destroyed(const Object& destroyed_object) {
+void RigidBodyVehicle::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;
@@ -778,7 +779,7 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<std::strin
 }
 
 bool RigidBodyVehicle::node_shall_be_hidden(
-    const SceneNode& camera_node,
+    DanglingRef<const SceneNode> camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     return is_deactivated_avatar();

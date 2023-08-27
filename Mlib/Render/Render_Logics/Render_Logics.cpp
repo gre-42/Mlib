@@ -11,11 +11,11 @@
 using namespace Mlib;
 
 static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
-    find_render_logic(const SceneNode& node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
+    find_render_logic(DanglingRef<const SceneNode> node, std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
     return std::find_if(
         lst.begin(),
         lst.end(),
-        [&node](const auto& v){ return v.second.node == &node; });
+        [&node](const auto& v){ return v.second.node == node.ptr(); });
 }
 
 static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
@@ -34,7 +34,7 @@ RenderLogics::RenderLogics(UiFocus& ui_focus)
 
 RenderLogics::~RenderLogics() {
     std::scoped_lock lock{mutex_};
-    std::set<SceneNode*> visited_nodes;
+    std::set<DanglingPtr<SceneNode>> visited_nodes;
     for (const auto& n : render_logics_) {
         if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
             visited_nodes.insert(n.second.node);
@@ -79,11 +79,11 @@ void RenderLogics::print(std::ostream& ostr, size_t depth) const {
     }
 }
 
-void RenderLogics::prepend(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
+void RenderLogics::prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
     insert(scene_node, render_logic, true);
 }
 
-void RenderLogics::append(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
+void RenderLogics::append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
     insert(scene_node, render_logic, false);
 }
 
@@ -100,7 +100,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     }
 }
 
-void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
+void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
     std::scoped_lock lock{mutex_};
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
@@ -118,12 +118,12 @@ void RenderLogics::insert(SceneNode* scene_node, const std::shared_ptr<RenderLog
     }
 }
 
-void RenderLogics::notify_destroyed(const Object& destroyed_object) {
+void RenderLogics::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     std::scoped_lock lock{mutex_};
     size_t nfound = 0;
     while(true) {
         auto del = [&destroyed_object](std::map<ZorderAndId, SceneNodeAndRenderLogic>& lst) {
-            auto it = find_render_logic(dynamic_cast<const SceneNode&>(destroyed_object), lst);
+            auto it = find_render_logic(destroyed_object, lst);
             if (it == lst.end()) {
                 return false;
             }

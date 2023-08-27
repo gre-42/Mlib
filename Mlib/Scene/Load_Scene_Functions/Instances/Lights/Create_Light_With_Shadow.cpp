@@ -41,7 +41,7 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock_guard{ delete_node_mutex };
     std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
-    auto& node = scene.get_node(node_name);
+    DanglingRef<SceneNode> node = scene.get_node(node_name);
     ExternalRenderPassType render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
@@ -50,14 +50,14 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
-    render_logics.prepend(&node, std::make_shared<LightmapLogic>(
+    render_logics.prepend(node.ptr(), std::make_shared<LightmapLogic>(
         read_pixels_logic,
         render_pass,
         node,
         resource_suffix,
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
         args.arguments.at<bool>(KnownArgs::with_depth_texture)));   // with_depth_texture
-    node.add_light(std::make_unique<Light>(Light{
+    node->add_light(std::make_unique<Light>(Light{
         .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
         .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),

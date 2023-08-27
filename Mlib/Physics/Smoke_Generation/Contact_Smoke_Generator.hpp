@@ -15,13 +15,13 @@ struct IntersectionScene;
 struct SurfaceContactInfo;
 class SurfaceContactDb;
 
-class ContactSmokeGenerator: public DestructionObserver {
+class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&> {
 public:
     explicit ContactSmokeGenerator(
         SurfaceContactDb& surface_contact_db,
         SmokeParticleGenerator& smoke_particle_generator);
     ~ContactSmokeGenerator();
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
 
     SurfaceContactInfo* notify_contact(
         const FixedArray<double, 3>& intersection_point,

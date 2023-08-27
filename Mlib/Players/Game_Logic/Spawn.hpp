@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingRef;
 class Bystanders;
 struct SpawnPoint;
 class VehicleSpawner;
@@ -35,7 +37,7 @@ public:
         Scene& scene);
     ~Spawn();
     void set_spawn_points(
-        const SceneNode& node,
+        DanglingRef<const SceneNode> node,
         const std::list<SpawnPoint>& spawn_points);
     void respawn_all_players();
     void spawn_player_during_match(VehicleSpawner& spawner);

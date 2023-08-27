@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
@@ -23,7 +24,7 @@ class OriginalNodeHider: public NodeHider {
 public:
     explicit OriginalNodeHider(ImposterLogic& imposter_logic);
     virtual bool node_shall_be_hidden(
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 private:
     ImposterLogic& imposter_logic_;
@@ -32,7 +33,7 @@ private:
 class ImposterNodeHider: public NodeHider {
 public:
     virtual bool node_shall_be_hidden(
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 };
 
@@ -42,7 +43,7 @@ public:
     explicit ImposterLogic(
         RenderLogic& child_logic,
         Scene& scene,
-        SceneNode& orig_node,
+        DanglingRef<SceneNode> orig_node,
         SelectedCameras& cameras,
         const std::string& debug_prefix,
         uint32_t max_texture_size,
@@ -75,7 +76,7 @@ private:
 
     RenderLogic& child_logic_;
     Scene& scene_;
-    SceneNode& orig_node_;
+    DanglingRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
@@ -83,7 +84,7 @@ private:
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     std::string texture_id_;
-    std::unique_ptr<SceneNode> imposter_node_;
+    DanglingUniquePtr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;
     float down_sampling_;

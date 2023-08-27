@@ -34,7 +34,7 @@ CreateTrailerNode::CreateTrailerNode(RenderableScene& renderable_scene)
 
 void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::car_instance)).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::car_instance))->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
@@ -44,7 +44,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         .get("vehicles")
         .at(trailer_asset_id)
         .rp;
-    auto node = std::make_unique<SceneNode>();
+    auto node = make_dunique<SceneNode>();
     auto pose0 = TransformationMatrix<float, double, 3>(
         fixed_identity_array<float, 3>(),
         rb->trailer_hitches_.get_position_male().casted<double>() -

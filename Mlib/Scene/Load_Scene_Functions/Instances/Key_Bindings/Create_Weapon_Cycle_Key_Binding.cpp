@@ -38,15 +38,15 @@ CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& render
 
 void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
+        .node = node.ptr(),
         .direction = args.arguments.at<int>(KnownArgs::weapon_increment)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_weapon_cycle_key_binding(kb);
         }

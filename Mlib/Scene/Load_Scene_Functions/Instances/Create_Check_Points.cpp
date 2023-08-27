@@ -90,10 +90,10 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Prefixes cannot be empty");
     }
 
-    std::vector<SceneNode*> moving_nodes;
+    std::vector<DanglingPtr<SceneNode>> moving_nodes;
     moving_nodes.reserve(prefixes.size());
     for (const auto& p : prefixes) {
-        moving_nodes.push_back(&scene.get_node(p + suffix));
+        moving_nodes.push_back(scene.get_node(p + suffix).ptr());
     }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);

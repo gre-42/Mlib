@@ -89,14 +89,14 @@ void BinaryXResource::instantiate_renderable(const InstantiationOptions& options
 {
     rva_0_->instantiate_renderable(options);
 
-    auto node90 = std::make_unique<SceneNode>();
+    auto node90 = make_dunique<SceneNode>();
     node90->set_rotation({0.f, -90.f * degrees, 0.f });
     rva_90_->instantiate_renderable(
         InstantiationOptions{
             .instance_name = options.instance_name,
             .scene_node = *node90,
             .renderable_resource_filter = RenderableResourceFilter{}});
-    options.scene_node.add_child(options.instance_name + "_node90", std::move(node90));
+    options.scene_node->add_child(options.instance_name + "_node90", std::move(node90));
 }
 
 AggregateMode BinaryXResource::aggregate_mode() const {

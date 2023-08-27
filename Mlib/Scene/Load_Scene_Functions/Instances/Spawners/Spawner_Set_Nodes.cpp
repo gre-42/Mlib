@@ -47,8 +47,8 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::list<std::unique_ptr<SceneVehicle>> vehicles;
     for (const auto& prefix : prefixes) {
         auto name = prefix + suffix;
-        auto& node = scene.get_node(name);
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+        DanglingRef<SceneNode> node = scene.get_node(name);
+        auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
         if (rb == nullptr) {
             THROW_OR_ABORT("Follower movable is not a rigid body");
         }

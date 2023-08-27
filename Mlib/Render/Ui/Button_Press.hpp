@@ -10,13 +10,13 @@ struct BaseKeyBinding;
 struct BaseKeyCombination;
 class ButtonStates;
 
-class ButtonPress: public DestructionObserver {
+class ButtonPress: public DestructionObserver<const BaseKeyCombination&> {
     ButtonPress& operator = (const ButtonPress&) = delete;
 public:
     explicit ButtonPress(const ButtonStates& button_states);
     ~ButtonPress();
 
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(const BaseKeyCombination& destroyed_object) override;
 
     void print(bool physical = false, bool only_pressed = false) const;
 

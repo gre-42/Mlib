@@ -7,9 +7,12 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingRef;
+class SceneNode;
 class AdvanceTimes;
 
-class RelativeTransformer: public DestructionObserver, public RelativeMovable, public AdvanceTime {
+class RelativeTransformer: public DestructionObserver<DanglingRef<const SceneNode>>, public RelativeMovable, public AdvanceTime {
 public:
     explicit RelativeTransformer(
         AdvanceTimes& advance_times,
@@ -21,7 +24,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     AdvanceTimes& advance_times_;
     TransformationMatrix<float, double, 3> transformation_matrix_;
     FixedArray<float, 3> v_;

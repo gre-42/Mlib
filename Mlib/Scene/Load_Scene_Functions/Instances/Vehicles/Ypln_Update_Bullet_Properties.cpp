@@ -34,8 +34,8 @@ YplnUpdateBulletProperties::YplnUpdateBulletProperties(RenderableScene& renderab
 
 void YplnUpdateBulletProperties::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
+    DanglingRef<SceneNode> ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node->get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }

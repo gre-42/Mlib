@@ -30,5 +30,5 @@ void ClearRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     scene
     .get_node(args.arguments.at<std::string>(KnownArgs::node))
-    .clear_renderable_instance(args.arguments.at<std::string>(KnownArgs::name));
+    ->clear_renderable_instance(args.arguments.at<std::string>(KnownArgs::name));
 }

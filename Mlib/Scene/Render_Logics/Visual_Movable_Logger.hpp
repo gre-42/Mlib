@@ -10,14 +10,14 @@ namespace Mlib {
 class VisualMovableLoggerView;
 class AdvanceTimes;
 
-class VisualMovableLogger: public RenderLogic, public DestructionObserver, public AdvanceTime {
+class VisualMovableLogger: public RenderLogic, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
 public:
     explicit VisualMovableLogger(AdvanceTimes& advance_times);
     virtual ~VisualMovableLogger();
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
 
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

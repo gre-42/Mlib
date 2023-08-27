@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <list>
 #include <memory>
@@ -17,6 +16,7 @@ struct RenderConfig;
 struct SceneGraphConfig;
 class IAggregateRenderer;
 struct ColorStyle;
+struct ExternalRenderPass;
 
 class AggregateRendererGuard {
     AggregateRendererGuard(const AggregateRendererGuard&) = delete;

@@ -26,8 +26,8 @@ std::string SelectedCameras::camera_node_name() const {
         cnn = camera_node_name_;
     }
     if (scene_.contains_node(cnn)) {
-        auto& node = scene_.get_node(cnn);
-        if (node.has_camera()) {
+        DanglingRef<SceneNode> node = scene_.get_node(cnn);
+        if (node->has_camera()) {
             return camera_node_name_;
         } else {
             std::shared_lock lock{camera_mutex_};

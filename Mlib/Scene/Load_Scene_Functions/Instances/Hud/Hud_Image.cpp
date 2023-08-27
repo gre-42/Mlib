@@ -43,13 +43,13 @@ HudImage::HudImage(RenderableScene& renderable_scene)
 
 void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto* gun_node = args.arguments.contains(KnownArgs::gun_node)
-        ? &scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node))
+    DanglingPtr<SceneNode> gun_node = args.arguments.contains(KnownArgs::gun_node)
+        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node)).ptr()
         : nullptr;
-    auto& camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
+    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node));
     YawPitchLookAtNodes* ypln = nullptr;
     if (args.arguments.contains(KnownArgs::ypln_node)) {
-        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node)).get_relative_movable());
+        ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node))->get_relative_movable());
         if (ypln == nullptr) {
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
@@ -67,11 +67,11 @@ void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
     physics_engine.advance_times_.add_advance_time(*hud_image);
-    camera_node.insert_node_hider(*hud_image);
-    render_logics.append(&camera_node, hud_image);
+    camera_node->insert_node_hider(*hud_image);
+    render_logics.append(camera_node.ptr(), hud_image);
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &camera_node,
+        camera_node.ptr(),
         [&hi=*hud_image, &rl=render_logics](){
             rl.remove(hi);
         }

@@ -32,15 +32,15 @@ CreateHumanAsCarController::CreateHumanAsCarController(RenderableScene& renderab
 
 void CreateHumanAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Car movable is not a rigid body");
     }
     if (rb->vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Human controller already set");
     }
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node.get_relative_movable());
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&node->get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }

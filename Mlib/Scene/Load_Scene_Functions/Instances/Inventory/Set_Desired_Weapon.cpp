@@ -30,9 +30,9 @@ SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene)
 
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
+    DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node));
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
-    auto wc = dynamic_cast<WeaponCycle*>(&cycle_node.get_node_modifier());
+    auto wc = dynamic_cast<WeaponCycle*>(&cycle_node->get_node_modifier());
     if (wc == nullptr) {
         THROW_OR_ABORT("Node modifier is not a weapon inventory");
     }

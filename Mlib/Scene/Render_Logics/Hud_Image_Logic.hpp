@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -27,8 +28,8 @@ public:
     HudImageLogic(
         RenderLogic* scene_logic,
         CollisionQuery* collision_query,
-        SceneNode* gun_node,
-        SceneNode& node_to_hide,
+        DanglingPtr<SceneNode> gun_node,
+        DanglingRef<SceneNode> node_to_hide,
         YawPitchLookAtNodes* ypln,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
@@ -54,14 +55,14 @@ public:
 
     // NodeHider
     virtual bool node_shall_be_hidden(
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 
 private:
     RenderLogic* scene_logic_;
     CollisionQuery* collision_query_;
-    SceneNode* gun_node_;
-    SceneNode& node_to_hide_;
+    DanglingPtr<SceneNode> gun_node_;
+    DanglingRef<SceneNode> node_to_hide_;
     YawPitchLookAtNodes* ypln_;
     AdvanceTimes& advance_times_;
     FixedArray<float, 2> center_;

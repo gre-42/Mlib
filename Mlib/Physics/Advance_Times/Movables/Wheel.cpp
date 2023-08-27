@@ -1,6 +1,7 @@
 #include "Wheel.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
@@ -57,6 +58,6 @@ void Wheel::advance_time(float dt) {
     transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);
 }
 
-void Wheel::notify_destroyed(const Object& destroyed_object) {
+void Wheel::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }

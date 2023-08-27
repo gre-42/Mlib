@@ -1,6 +1,7 @@
 #include "Relative_Transformer.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 
 using namespace Mlib;
@@ -45,6 +46,6 @@ void RelativeTransformer::advance_time(float dt) {
     transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }
 
-void RelativeTransformer::notify_destroyed(const Object& destroyed_object) {
+void RelativeTransformer::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <optional>
 #include <string>
 
@@ -10,7 +11,7 @@ class SceneNode;
 struct CarControllerKeyBinding {
     std::string id;
     std::string role;
-    SceneNode* node;
+    DanglingPtr<SceneNode> node;
     std::optional<float> surface_power;
     std::optional<Interp<float>> tire_angle_interp;
     std::optional<float> ascend_velocity;

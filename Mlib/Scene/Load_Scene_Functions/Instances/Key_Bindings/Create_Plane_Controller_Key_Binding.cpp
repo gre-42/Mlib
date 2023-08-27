@@ -41,11 +41,11 @@ CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene
 
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
+        .node = node.ptr(),
         .turbine_power = args.arguments.contains(KnownArgs::turbine_power)
             ? args.arguments.at<float>(KnownArgs::turbine_power) * W
             : std::optional<float>(),
@@ -63,7 +63,7 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
             : std::optional<float>(),});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_key_binding(kb);
         }

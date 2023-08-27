@@ -13,8 +13,8 @@ public:
 
     template <class TAbsoluteMovable>
     void link_absolute_movable_and_additional_node(
-        SceneNode& moved_node,
-        SceneNode& observed_node,
+        DanglingRef<SceneNode> moved_node,
+        DanglingRef<SceneNode> observed_node,
         std::unique_ptr<TAbsoluteMovable>&& absolute_movable) const
     {
         auto& am = *absolute_movable;
@@ -23,11 +23,11 @@ public:
         // 2. Add to physics engine.
         advance_times_.add_advance_time(std::move(ams.absolute_movable));
         // 3. Observe an additional node.
-        observed_node.clearing_observers.add(am);
+        observed_node->clearing_observers.add(am);
     }
 
     template <class TAbsoluteMovable>
-    void link_absolute_movable(SceneNode& node, std::unique_ptr<TAbsoluteMovable>&& absolute_movable) const {
+    void link_absolute_movable(DanglingRef<SceneNode> node, std::unique_ptr<TAbsoluteMovable>&& absolute_movable) const {
         // 1. Set movable, which updates the transformation-matrix.
         AbsoluteMovableSetter ams{node, std::move(absolute_movable)};
         // 2. Add to physics engine.
@@ -35,14 +35,14 @@ public:
     }
 
     template <class TRelativeMovable>
-    void link_relative_movable(SceneNode& node, std::unique_ptr<TRelativeMovable>&& relative_movable) const {
-        node.set_relative_movable(relative_movable.get());
+    void link_relative_movable(DanglingRef<SceneNode> node, std::unique_ptr<TRelativeMovable>&& relative_movable) const {
+        node->set_relative_movable(relative_movable.get());
         advance_times_.add_advance_time(std::move(relative_movable));
     }
 
     template <class TAbsoluteObserver>
-    void link_absolute_observer(SceneNode& node, std::unique_ptr<TAbsoluteObserver>&& absolute_observer) const {
-        node.set_absolute_observer(absolute_observer.get());
+    void link_absolute_observer(DanglingRef<SceneNode> node, std::unique_ptr<TAbsoluteObserver>&& absolute_observer) const {
+        node->set_absolute_observer(absolute_observer.get());
         advance_times_.add_advance_time(std::move(absolute_observer));
     };
 private:

@@ -62,7 +62,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         OutOfRangeBehavior::CLAMP};
     size_t tire_id = args.arguments.at<size_t>(KnownArgs::tire_id);
 
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body).get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body)->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }

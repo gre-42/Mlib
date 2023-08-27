@@ -28,7 +28,7 @@ CheckPoints::CheckPoints(
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
     std::string asset_id,
-    std::vector<SceneNode*> moving_nodes,
+    std::vector<DanglingPtr<SceneNode>> moving_nodes,
     const std::string& resource_name,
     IPlayer& player,
     size_t nbeacons,
@@ -134,7 +134,7 @@ void CheckPoints::advance_time(float dt) {
                 .track_element = track_reader_.track_element(),
                 .lap_index = track_reader_.lap_id()});
             if (i01_ == beacon_nodes_.size()) {
-                auto node = std::make_unique<SceneNode>();
+                auto node = make_dunique<SceneNode>();
                 node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
                 beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
                 scene_node_resources_.instantiate_renderable(
@@ -221,7 +221,7 @@ void CheckPoints::advance_time(float dt) {
     }
 }
 
-void CheckPoints::notify_destroyed(const Object& destroyed_object) {
+void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
             n->clearing_observers.remove(*this);

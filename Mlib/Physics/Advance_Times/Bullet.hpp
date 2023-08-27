@@ -21,7 +21,12 @@ class IPlayer;
 class ITeam;
 class SmokeParticleGenerator;
 
-class Bullet: public DestructionObserver, public CollisionObserver, public AdvanceTime {
+class Bullet:
+    public DestructionObserver<const IPlayer&>,
+    public DestructionObserver<const ITeam&>,
+    public CollisionObserver,
+    public AdvanceTime
+{
 public:
     Bullet(
         Scene& scene,
@@ -42,7 +47,8 @@ public:
         float trail_animation_time,
         DeleteNodeMutex& delete_node_mutex);
     ~Bullet();
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(const IPlayer& destroyed_object) override;
+    virtual void notify_destroyed(const ITeam& destroyed_object) override;
     virtual void advance_time(float dt) override;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,

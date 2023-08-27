@@ -64,7 +64,7 @@ static FixedArray<double, 3> parse_position(
 
 void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = std::make_unique<SceneNode>();
+    auto node = make_dunique<SceneNode>();
     FixedArray<double, 3> pos;
     // root nodes do not have a default pose
     auto jpos = args.arguments.at<FixedArray<nlohmann::json, 3>>(KnownArgs::position);

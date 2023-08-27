@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Players/Scene_Vehicle/Skills.hpp>
 #include <functional>
 #include <string>
@@ -14,7 +14,7 @@ class RigidBodyVehicle;
 enum class ExternalsMode;
 enum class ControlSource;
 
-class SceneVehicle: public Object {
+class SceneVehicle {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
@@ -22,7 +22,7 @@ public:
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         std::string scene_node_name,
-        SceneNode& scene_node,
+        DanglingRef<SceneNode> scene_node,
         RigidBodyVehicle& rb);
     ~SceneVehicle();
     void create_externals(
@@ -32,15 +32,15 @@ public:
     void set_create_externals(const CreateExternals& create_externals);
     std::string& scene_node_name();
     const std::string& scene_node_name() const;
-    SceneNode& scene_node();
-    const SceneNode& scene_node() const;
+    DanglingRef<SceneNode> scene_node();
+    DanglingRef<const SceneNode> scene_node() const;
     RigidBodyVehicle& rb();
     const RigidBodyVehicle& rb() const;
-    DestructionObservers destruction_observers;
+    DestructionObservers<const SceneVehicle&> destruction_observers;
 private:
     DeleteNodeMutex& delete_node_mutex_;
     std::string scene_node_name_;
-    SceneNode& scene_node_;
+    DanglingRef<SceneNode> scene_node_;
     RigidBodyVehicle& rb_;
     CreateExternals create_externals_;
 };

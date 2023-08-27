@@ -14,7 +14,7 @@ using namespace Mlib;
 
 AvatarAnimationUpdater::AvatarAnimationUpdater(
     const RigidBodyVehicle& rb,
-    SceneNode& gun_node,
+    DanglingRef<SceneNode> gun_node,
     const std::string& resource_wo_gun,
     const std::string& resource_w_gun)
 : rb_{ rb },
@@ -35,7 +35,7 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
     Gun* gun;
     try {
-        gun = dynamic_cast<Gun*>(&gun_node_.get_absolute_observer());
+        gun = dynamic_cast<Gun*>(&gun_node_->get_absolute_observer());
     } catch (const std::runtime_error& e) {
         THROW_OR_ABORT("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
     }

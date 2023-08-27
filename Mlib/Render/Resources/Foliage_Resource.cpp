@@ -64,7 +64,7 @@ void FoliageResource::instantiate_renderable(const InstantiationOptions& options
         nullptr,                // street_bvh
         scale_,                 // scale
         up_axis_);              // up
-    options.scene_node.add_renderable(options.instance_name, res);
+    options.scene_node->add_renderable(options.instance_name, res);
 }
 
 std::list<SpawnPoint> FoliageResource::spawn_points() const {

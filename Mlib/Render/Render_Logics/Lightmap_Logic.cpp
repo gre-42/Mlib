@@ -20,7 +20,7 @@ using namespace Mlib;
 LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
-    SceneNode& light_node,
+    DanglingRef<SceneNode> light_node,
     std::string resource_suffix,
     std::string black_node_name,
     bool with_depth_texture)
@@ -77,7 +77,7 @@ void LightmapLogic::render(
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{
-            .external_render_pass = {render_pass_type_, black_node_name_, nullptr, &light_node_},
+            .external_render_pass = {render_pass_type_, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0,
             .light_resource_suffix = resource_suffix_};
 #pragma GCC diagnostic pop

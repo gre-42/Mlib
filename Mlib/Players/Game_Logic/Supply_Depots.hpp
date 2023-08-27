@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <cstdint>
 #include <map>
@@ -12,7 +13,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 
 struct SupplyDepot {
-    SceneNode& node;
+    DanglingRef<SceneNode> node;
     FixedArray<double, 3> center;
     std::map<std::string, uint32_t> supplies;
     float cooldown;
@@ -36,7 +37,7 @@ public:
         const FixedArray<double, 3> position,
         const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
-        SceneNode& scene_node,
+        DanglingRef<SceneNode> scene_node,
         const std::map<std::string, uint32_t>& supplies,
         float cooldown) override;
 private:

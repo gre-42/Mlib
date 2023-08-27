@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <cstdint>
 #include <set>
@@ -10,7 +9,7 @@ namespace Mlib {
 
 class Player;
 
-class Team: public Object, public ITeam {
+class Team final: public ITeam {
 public:
     Team();
     ~Team();
@@ -29,7 +28,7 @@ public:
     void increase_nlosses();
     void increase_nkills();
 
-    DestructionObservers destruction_observers;
+    DestructionObservers<const ITeam&> destruction_observers;
 private:
     std::set<std::string> players_;
     uint32_t nwins_;

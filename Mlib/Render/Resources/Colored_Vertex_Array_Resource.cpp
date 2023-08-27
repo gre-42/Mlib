@@ -1061,7 +1061,7 @@ void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptio
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
-    options.scene_node.add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
+    options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
         shared_from_this(),
         options.renderable_resource_filter));
 }

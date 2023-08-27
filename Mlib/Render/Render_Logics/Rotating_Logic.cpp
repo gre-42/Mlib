@@ -138,29 +138,29 @@ void RotatingLogic::render(
     RenderToScreenGuard rsg;
     float aspect_ratio = lx.flength() / ly.flength();
 
-    auto& cn = scene_.get_node("camera");
-    cn.set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});
-    auto co = cn.get_camera().copy();
+    DanglingRef<SceneNode> cn = scene_.get_node("camera");
+    cn->set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});
+    auto co = cn->get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<double, 4, 4> vp = dot2d(
         co->projection_matrix().casted<double>(),
-        cn.absolute_view_matrix().affine());
-    TransformationMatrix<float, double, 3> iv = cn.absolute_model_matrix();
+        cn->absolute_view_matrix().affine());
+    TransformationMatrix<float, double, 3> iv = cn->absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
-        auto& on = scene_.get_node("obj");
-        on.set_scale(user_object_.scale);
-        on.set_rotation(FixedArray<float, 3>{
+        DanglingRef<SceneNode> on = scene_.get_node("obj");
+        on->set_scale(user_object_.scale);
+        on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
             0.f});
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
-        auto& bn = scene_.get_node("obj").get_child("beacon");
+        DanglingRef<SceneNode> bn = scene_.get_node("obj")->get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, double, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
-        bn.set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
+        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
     }
 
     RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

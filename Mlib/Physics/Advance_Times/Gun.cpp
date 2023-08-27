@@ -32,8 +32,8 @@ Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
     RigidBodyVehicle& parent_rb,
-    SceneNode& node,
-    SceneNode& punch_angle_node,
+    DanglingRef<SceneNode> node,
+    DanglingRef<SceneNode> punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
     const std::string& bullet_explosion_resource_name,
@@ -97,7 +97,7 @@ void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     punch_angle_ = punch_angle_rng_(maybe_generate_bullet());
-    punch_angle_node_.set_rotation(punch_angle_);
+    punch_angle_node_->set_rotation(punch_angle_);
     triggered_ = false;
 }
 
@@ -133,7 +133,7 @@ void Gun::generate_bullet() {
     rcu->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
         + parent_rb_.rbi_.rbp_.v_;
-    auto node = std::make_unique<SceneNode>();
+    auto node = make_dunique<SceneNode>();
     FixedArray<double, 3> t = absolute_model_matrix_.t();
     FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
     node->set_position(t);
@@ -204,7 +204,7 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::notify_destroyed(const Object& destroyed_object) {
+void Gun::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }
 

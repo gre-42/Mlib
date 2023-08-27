@@ -14,7 +14,7 @@ using namespace Mlib;
 
 FollowMovable::FollowMovable(
     AdvanceTimes& advance_times,
-    SceneNode& followed_node,
+    DanglingRef<const SceneNode> followed_node,
     AbsoluteMovable& followed,
     float attachment_distance,
     const FixedArray<float, 3>& node_displacement,
@@ -25,7 +25,7 @@ FollowMovable::FollowMovable(
     float dt,
     float dt_ref)
 : advance_times_{advance_times},
-  followed_node_{&followed_node},
+  followed_node_{followed_node.ptr()},
   followed_{&followed},
   attachment_distance_{attachment_distance},
   attachment_position_{fixed_nans<double, 2>()},
@@ -45,10 +45,10 @@ FollowMovable::FollowMovable(
 FollowMovable::~FollowMovable()
 {}
 
-void FollowMovable::initialize(SceneNode& follower_node) {
+void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
     initialized_ = true;
     advance_time(NAN);
-    follower_node.set_absolute_pose(
+    follower_node->set_absolute_pose(
         transformation_matrix_.t(),
         matrix_2_tait_bryan_angles(transformation_matrix_.R()),
         1);
@@ -98,8 +98,8 @@ TransformationMatrix<float, double, 3> FollowMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void FollowMovable::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == followed_node_) {
+void FollowMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

@@ -30,7 +30,7 @@ struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
 struct KeyConfiguration;
 
-class KeyBindings: public DestructionObserver, public ExternalForceProvider, public RenderLogic {
+class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
         ButtonPress& button_press,
@@ -43,7 +43,7 @@ public:
         Players& players);
     ~KeyBindings();
 
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
     // ExternalForceProvider
     virtual void increment_external_forces(const std::list<RigidBodyVehicle*>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;

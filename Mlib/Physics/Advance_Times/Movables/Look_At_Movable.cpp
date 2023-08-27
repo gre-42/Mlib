@@ -11,12 +11,12 @@ LookAtMovable::LookAtMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
     const std::string& follower_name,
-    SceneNode& followed_node,
+    DanglingRef<SceneNode> followed_node,
     AbsoluteMovable& followed)
 : advance_times_{advance_times},
   scene_{scene},
   follower_name_{follower_name},
-  followed_node_{&followed_node},
+  followed_node_{followed_node.ptr()},
   followed_{&followed}
 {}
 
@@ -40,8 +40,8 @@ TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void LookAtMovable::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == followed_node_) {
+void LookAtMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
         if (!follower_name_.empty()) {

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <string>
 
 namespace Mlib {
@@ -7,7 +8,7 @@ namespace Mlib {
 class SceneNode;
 
 struct AbsoluteMovableIdleBinding {
-    SceneNode* node;
+    DanglingPtr<SceneNode> node;
     FixedArray<float, 3> tires_z;
 };
 

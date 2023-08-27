@@ -30,7 +30,7 @@ SupplyDepots::~SupplyDepots()
 void SupplyDepots::reset_cooldown() {
     bvh_.visit_all([](const auto& aabb, SupplyDepot& supply_depot){
         supply_depot.time_since_last_visit = supply_depot.cooldown;
-        supply_depot.node.color_style("").emissivity = -1.f;
+        supply_depot.node->color_style("").emissivity = -1.f;
         return true;
     });
 }
@@ -69,7 +69,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         bool old_cd = supply_depot.is_cooling_down();
         supply_depot.time_since_last_visit += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {
-            supply_depot.node.color_style("").emissivity = -1.f;
+            supply_depot.node->color_style("").emissivity = -1.f;
         }
         return true;
     });
@@ -90,18 +90,18 @@ void SupplyDepots::handle_supply_depots(float dt) {
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }
                 supply_depot.time_since_last_visit = 0.f;
-                supply_depot.node.color_style("").emissivity = 2.f;
+                supply_depot.node->color_style("").emissivity = 2.f;
                 return true;
             });
     }
 }
 
 void SupplyDepots::add_supply_depot(
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     const std::map<std::string, uint32_t>& supplies,
     float cooldown)
 {
-    auto center = scene_node.absolute_model_matrix().t();
+    auto center = scene_node->absolute_model_matrix().t();
     bvh_.insert(
         AxisAlignedBoundingBox<double, 3>{center},
         SupplyDepot{
@@ -114,7 +114,7 @@ void SupplyDepots::add_supply_depot(
         advance_times_,
         fixed_zeros<float, 3>(),
         FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
-    scene_node.add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{.selector = Mlib::compile_regex("")}));
-    scene_node.set_relative_movable(rt.get());
+    scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{.selector = Mlib::compile_regex("")}));
+    scene_node->set_relative_movable(rt.get());
     advance_times_.add_advance_time(std::move(rt));
 }

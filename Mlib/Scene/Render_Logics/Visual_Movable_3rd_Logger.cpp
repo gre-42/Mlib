@@ -14,7 +14,7 @@ using namespace Mlib;
 
 VisualMovable3rdLogger::VisualMovable3rdLogger(
     RenderLogic& scene_logic,
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     AdvanceTimes& advance_times,
     StatusWriter& status_writer,
     StatusComponents log_components,
@@ -32,12 +32,12 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height}
 {
-    scene_node.clearing_observers.add(*this);
+    scene_node->clearing_observers.add(*this);
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;
 
-void VisualMovable3rdLogger::notify_destroyed(const Object& destroyed_object) {
+void VisualMovable3rdLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 
@@ -61,7 +61,7 @@ void VisualMovable3rdLogger::render(
             ttf_filename_,
             FixedArray<float, 3>{1.f, 1.f, 1.f});
     }
-    FixedArray<double, 3> node_pos = scene_node_.absolute_model_matrix().t();
+    FixedArray<double, 3> node_pos = scene_node_->absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
     if (position4(2) > scene_logic_.near_plane()) {
         FixedArray<float, 2> position2{

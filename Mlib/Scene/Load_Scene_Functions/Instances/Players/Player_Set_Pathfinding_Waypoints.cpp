@@ -33,11 +33,11 @@ PlayerSetPathfindingWaypoints::PlayerSetPathfindingWaypoints(RenderableScene& re
 void PlayerSetPathfindingWaypoints::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points = scene_node_resources.way_points(
         args.arguments.at<std::string>(KnownArgs::resource));
     for (auto& [l, wps] : way_points) {
-        wps.transform(node.absolute_model_matrix());
+        wps.transform(node->absolute_model_matrix());
     }
     player.set_pathfinding_waypoints(way_points);
 }

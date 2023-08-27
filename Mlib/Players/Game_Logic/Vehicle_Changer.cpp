@@ -33,10 +33,10 @@ void VehicleChanger::change_vehicles() {
         if (!p.has_scene_vehicle()) {
             continue;
         }
-        if (&next_vehicle->scene_node() == &p.scene_node()) {
+        if (next_vehicle->scene_node().ptr() == p.scene_node().ptr()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
-        auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_vehicle->scene_node().get_absolute_movable());
+        auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_vehicle->scene_node()->get_absolute_movable());
         if (next_rb == nullptr) {
             THROW_OR_ABORT("Next movable is no rigid body");
         }

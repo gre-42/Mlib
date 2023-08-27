@@ -32,8 +32,8 @@ ConsoleLog::ConsoleLog(RenderableScene& renderable_scene)
 
 void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }

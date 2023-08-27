@@ -32,14 +32,14 @@ PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene)
 
 void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::ypln_node));
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node.get_relative_movable());
+    DanglingRef<SceneNode> ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::ypln_node));
+    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node->get_relative_movable());
     if (ypln == nullptr) {
         THROW_OR_ABORT("Relative movable is not a ypln");
     }
-    SceneNode* gun_node = nullptr;
+    DanglingPtr<SceneNode> gun_node = nullptr;
     if (args.arguments.contains(KnownArgs::gun_node)) {
-        gun_node = &scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node));
+        gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node)).ptr();
     }
     players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_ypln(*ypln, gun_node);
 }

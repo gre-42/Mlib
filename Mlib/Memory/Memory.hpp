@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-template <class T>
+template <class T, class TSender>
 class observer_ptr {
 public:
     template <class T2>
@@ -11,19 +11,19 @@ public:
     :   ptr_{ptr},
         observer_{ptr}
     {}
-    observer_ptr(T* ptr, DestructionObserver* observer)
+    observer_ptr(T* ptr, DestructionObserver<TSender>* observer)
     :   ptr_{ptr},
         observer_{observer}
     {}
     T* get() const {
         return ptr_;
     }
-    DestructionObserver* observer() const {
+    DestructionObserver<TSender>* observer() const {
         return observer_;
     }
 private:
     T* ptr_;
-    DestructionObserver* observer_;
+    DestructionObserver<TSender>* observer_;
 };
 
 }

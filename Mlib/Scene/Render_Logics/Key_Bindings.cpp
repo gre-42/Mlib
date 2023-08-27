@@ -134,7 +134,7 @@ KeyBindings::KeyBindings(
 {}
 
 KeyBindings::~KeyBindings() {
-    std::set<SceneNode*> nodes;
+    std::set<DanglingPtr<SceneNode>> nodes;
     for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : relative_movable_key_bindings_) { nodes.insert(b.node); }
@@ -152,19 +152,20 @@ KeyBindings::~KeyBindings() {
     }
 }
 
-void KeyBindings::notify_destroyed(const Object& destroyed_object) {
-    absolute_movable_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    absolute_movable_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    relative_movable_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    car_controller_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    car_controller_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    plane_controller_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    plane_controller_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    avatar_controller_idle_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    avatar_controller_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    weapon_cycle_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    gun_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
-    player_key_bindings_.remove_if([&destroyed_object](const auto& b){return b.node == &destroyed_object;});
+void KeyBindings::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    auto dop = destroyed_object.ptr();
+    absolute_movable_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    absolute_movable_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    relative_movable_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    car_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    car_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    plane_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    plane_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    avatar_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    avatar_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    weapon_cycle_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    gun_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    player_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
 }
 
 void KeyBindings::load_key_configurations(

@@ -35,16 +35,16 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 
 void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
-        .node = &node,
+        .node = node.ptr(),
         .surface_power = args.arguments.at<float>(KnownArgs::surface_power, 0.f) * W,
         .steer_angle = args.arguments.at<float>(KnownArgs::steer_angle, 0.f) * degrees,
         .drive_relaxation = args.arguments.at<float>(KnownArgs::drive_relaxation, 0.f),
         .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_car_controller_idle_binding(kb);
         }

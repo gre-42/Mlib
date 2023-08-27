@@ -2,6 +2,7 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -40,7 +41,7 @@ CountDownLogic::CountDownLogic(
 
 CountDownLogic::~CountDownLogic() = default;
 
-void CountDownLogic::notify_destroyed(const Object& destroyed_object) {
+void CountDownLogic::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.delete_advance_time(*this);
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
@@ -62,7 +63,7 @@ struct PositionAndYAngle {
 
 struct SceneNodeInstances {
     bool is_registered;
-    std::unique_ptr<SceneNode> scene_node;
+    DanglingUniquePtr<SceneNode> scene_node;
     double max_center_distance;
     Bvh<double, PositionAndYAngle, 3> small_instances;
     std::list<PositionAndYAngle> large_instances;
@@ -70,7 +71,7 @@ struct SceneNodeInstances {
 
 struct SceneNodeChild {
     bool is_registered;
-    std::unique_ptr<SceneNode> scene_node;
+    DanglingUniquePtr<SceneNode> scene_node;
 };
 
 struct SceneNodeBone {
@@ -103,10 +104,10 @@ enum class ChildParentState {
 class SceneNode: public Object {
     template <class TAbsoluteMovable>
     friend class AbsoluteMovableSetter;
-public:
-    explicit SceneNode();
     SceneNode(const SceneNode& other) = delete;
     SceneNode& operator = (const SceneNode& other) = delete;
+public:
+    explicit SceneNode();
     ~SceneNode();
     bool shutting_down() const;
     AbsoluteMovable& get_absolute_movable() const;
@@ -114,37 +115,38 @@ public:
     NodeModifier& get_node_modifier() const;
     AbsoluteObserver& get_absolute_observer() const;
     bool has_node_modifier() const;
-    void set_relative_movable(const observer_ptr<RelativeMovable>& relative_movable);
+    void set_relative_movable(const observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>& relative_movable);
     void set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier);
     void insert_node_hider(NodeHider& node_hider);
     void remove_node_hider(NodeHider& node_hider);
-    void set_absolute_observer(const observer_ptr<AbsoluteObserver>& absolute_observer);
+    void set_absolute_observer(const observer_ptr<AbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);
     void add_child(
         const std::string& name,
-        std::unique_ptr<SceneNode>&& node,
+        DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState =  ChildParentState::PARENT_NOT_SET);
-    void set_parent(SceneNode& parent);
+    void set_parent(DanglingRef<SceneNode> parent);
     bool has_parent() const;
-    SceneNode& parent();
-    const SceneNode& parent() const;
+    DanglingRef<SceneNode> parent();
+    DanglingRef<const SceneNode> parent() const;
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
     void clear();
-    SceneNode& get_child(const std::string& name) const;
+    DanglingRef<SceneNode> get_child(const std::string& name);
+    DanglingRef<const SceneNode> get_child(const std::string& name) const;
     void remove_child(const std::string& name);
     bool contains_child(const std::string& name) const;
     void add_aggregate_child(
         const std::string& name,
-        std::unique_ptr<SceneNode>&& node,
+        DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_child(
         const std::string& name,
-        std::unique_ptr<SceneNode>&& node,
+        DanglingUniquePtr<SceneNode>&& node,
         ChildRegistrationState child_registration_state = ChildRegistrationState::NOT_REGISTERED,
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
@@ -167,7 +169,7 @@ public:
         const FixedArray<double, 4, 4>& parent_mvp,
         const TransformationMatrix<float, double, 3>& parent_m,
         const TransformationMatrix<float, double, 3>& iv,
-        const SceneNode& camera_node,
+        DanglingRef<const SceneNode> camera_node,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
@@ -239,28 +241,28 @@ public:
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
     Scene& scene();
-    mutable DestructionObservers clearing_observers;
-    mutable DestructionObservers destruction_observers;
+    mutable DestructionObservers<DanglingRef<const SceneNode>> clearing_observers;
+    mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
 private:
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(
         const std::string& name,
-        SceneNode& node,
+        DanglingRef<SceneNode> node,
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
     TransformationMatrix<float, double, 3> relative_model_matrix_unsafe() const;
     TransformationMatrix<float, double, 3> relative_view_matrix_unsafe() const;
     Scene* scene_;
-    SceneNode* parent_;
+    DanglingPtr<SceneNode> parent_;
     AbsoluteMovable* absolute_movable_;
     RelativeMovable* relative_movable_;
     std::unique_ptr<NodeModifier> node_modifier_;
     std::set<NodeHider*> node_hiders_;
     AbsoluteObserver* absolute_observer_;
-    DestructionObserver* absolute_destruction_observer_;
+    DestructionObserver<DanglingRef<const SceneNode>>* absolute_destruction_observer_;
     std::unique_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
@@ -282,6 +284,6 @@ private:
     std::atomic_bool shutting_down_;
 };
 
-std::ostream& operator << (std::ostream& ostr, const SceneNode& node);
+std::ostream& operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node);
 
 }

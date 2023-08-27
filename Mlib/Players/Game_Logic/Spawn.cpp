@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -37,11 +38,11 @@ Spawn::Spawn(
 
 Spawn::~Spawn() = default;
 
-void Spawn::set_spawn_points(const SceneNode& node, const std::list<SpawnPoint>& spawn_points) {
+void Spawn::set_spawn_points(DanglingRef<const SceneNode> node, const std::list<SpawnPoint>& spawn_points) {
     spawn_points_.clear();
     spawn_points_.reserve(spawn_points.size());
-    TransformationMatrix tm{node.absolute_model_matrix()};
-    FixedArray<float, 3, 3> R = tm.R() / node.scale();
+    TransformationMatrix tm{node->absolute_model_matrix()};
+    FixedArray<float, 3, 3> R = tm.R() / node->scale();
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {

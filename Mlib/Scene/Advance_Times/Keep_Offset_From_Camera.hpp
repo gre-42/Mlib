@@ -8,12 +8,14 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingRef;
 class AdvanceTimes;
 class SceneNode;
 class Scene;
 class SelectedCameras;
 
-class KeepOffsetFromCamera: public DestructionObserver, public AbsoluteMovable, public AdvanceTime {
+class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public AdvanceTime {
 public:
     KeepOffsetFromCamera(
         AdvanceTimes& advance_times,
@@ -24,7 +26,7 @@ public:
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
 private:
     AdvanceTimes& advance_times_;

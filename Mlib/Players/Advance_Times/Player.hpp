@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
@@ -91,10 +92,16 @@ enum class ControlSource;
 
 struct PlayerControlled {
     YawPitchLookAtNodes* ypln;
-    SceneNode* gun_node;
+    DanglingPtr<SceneNode> gun_node;
 };
 
-class Player: public Object, public IPlayer, DestructionObserver, public AdvanceTime, public ExternalForceProvider {
+class Player:
+    public IPlayer,
+    public DestructionObserver<DanglingRef<const SceneNode>>,
+    public DestructionObserver<const SceneVehicle&>,
+    public AdvanceTime,
+    public ExternalForceProvider
+{
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
     friend SingleWaypoint;
@@ -126,13 +133,13 @@ public:
     void set_scene_vehicle(SceneVehicle& pv);
     RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;
-    SceneNode& scene_node();
-    const SceneNode& scene_node() const;
+    DanglingRef<SceneNode> scene_node();
+    DanglingRef<const SceneNode> scene_node() const;
     SceneVehicle* next_scene_vehicle();
     const std::string& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
-    void set_ypln(YawPitchLookAtNodes& ypln, SceneNode* gun_node);
+    void set_ypln(YawPitchLookAtNodes& ypln, DanglingPtr<SceneNode> gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team_name() const;
@@ -178,7 +185,7 @@ public:
     void select_next_opponent();
     void select_next_vehicle();
     void append_delete_externals(
-        SceneNode* node,
+        DanglingPtr<SceneNode> node,
         const std::function<void()>& delete_externals);
     void create_externals(ExternalsMode externals_mode);
     ExternalsMode externals_mode() const;
@@ -199,7 +206,8 @@ public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual void notify_bullet_destroyed(Bullet& bullet) override;
     // DestructionObserver
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // ExternalForceProvider
@@ -208,7 +216,7 @@ public:
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
     
-    DestructionObservers destruction_observers;
+    DestructionObservers<const IPlayer&> destruction_observers;
     VehicleMovement vehicle_movement;
     CarMovement car_movement;
     AvatarMovement avatar_movement;
@@ -229,7 +237,7 @@ private:
     std::string team_;
     SceneVehicle* vehicle_;
     PlayerControlled controlled_;
-    SceneNode* target_scene_node_;
+    DanglingPtr<SceneNode> target_scene_node_;
     RigidBodyVehicle* target_rb_;
     PlayerStats stats_;
     GameMode game_mode_;
@@ -242,7 +250,7 @@ private:
     std::unordered_map<ControlSource, Skills> skills_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
-    std::multimap<SceneNode*, std::function<void()>> delete_externals_;
+    std::multimap<DanglingPtr<const SceneNode>, std::function<void()>> delete_externals_;
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;

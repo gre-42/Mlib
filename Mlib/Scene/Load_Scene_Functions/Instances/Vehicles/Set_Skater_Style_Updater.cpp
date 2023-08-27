@@ -31,10 +31,10 @@ SetSkaterStyleUpdater::SetSkaterStyleUpdater(RenderableScene& renderable_scene)
 
 void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node));
-    auto& skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node));
+    DanglingRef<SceneNode> skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node));
+    DanglingRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node));
     std::string resource = args.arguments.at<std::string>(KnownArgs::resource);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node.get_absolute_movable());
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Styled node movable is not a rigid body");
     }
@@ -43,6 +43,6 @@ void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto updater = std::make_unique<SkaterAnimationUpdater>(*rb, skateboard_node, resource);
     AnimationStateUpdater* ptr = updater.get();
-    skater_node.set_animation_state_updater(std::move(updater));
+    skater_node->set_animation_state_updater(std::move(updater));
     rb->animation_state_updater_ = ptr;
 }

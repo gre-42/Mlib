@@ -26,5 +26,5 @@ ClearNode::ClearNode(RenderableScene& renderable_scene)
 
 void ClearNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    scene.get_node(args.arguments.at<std::string>(KnownArgs::node)).clear();
+    scene.get_node(args.arguments.at<std::string>(KnownArgs::node))->clear();
 }

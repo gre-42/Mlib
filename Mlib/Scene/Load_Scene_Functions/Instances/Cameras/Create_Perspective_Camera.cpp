@@ -33,7 +33,7 @@ CreatePerspectiveCamera::CreatePerspectiveCamera(RenderableScene& renderable_sce
 
 void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto pc = std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED);
@@ -41,5 +41,5 @@ void CreatePerspectiveCamera::execute(const LoadSceneJsonUserFunctionArgs& args)
     pc->set_near_plane(args.arguments.at<float>(KnownArgs::near_plane));
     pc->set_far_plane(args.arguments.at<float>(KnownArgs::far_plane));
     pc->set_requires_postprocessing(args.arguments.at<bool>(KnownArgs::requires_postprocessing));
-    node.set_camera(std::move(pc));
+    node->set_camera(std::move(pc));
 }

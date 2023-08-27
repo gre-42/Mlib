@@ -40,8 +40,8 @@ VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene)
 
 void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto lo = dynamic_cast<StatusWriter*>(&node.get_absolute_movable());
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
     if (lo == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a status writer");
     }
@@ -56,6 +56,6 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
-    render_logics.append(&node, logger);
+    render_logics.append(node.ptr(), logger);
     physics_engine.advance_times_.add_advance_time(*logger);
 }

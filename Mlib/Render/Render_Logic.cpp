@@ -1,9 +1,12 @@
 #include "Render_Logic.hpp"
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
+
+RenderLogic::RenderLogic() = default;
 
 RenderLogic::~RenderLogic() = default;
 
@@ -27,7 +30,7 @@ const TransformationMatrix<float, double, 3>& RenderLogic::iv() const {
     THROW_OR_ABORT("iv not implemented");
 }
 
-const SceneNode& RenderLogic::camera_node() const {
+DanglingRef<const SceneNode> RenderLogic::camera_node() const {
     THROW_OR_ABORT("camera_node not implemented");
 }
 

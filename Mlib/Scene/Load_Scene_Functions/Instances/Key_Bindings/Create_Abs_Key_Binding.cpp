@@ -59,15 +59,15 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }
     auto& kb = key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
+        .node = node.ptr(),
         .force = {
             .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
             .position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, rb->rbi_.rbp_.com_.casted<double>()) * (double)meters},
@@ -93,7 +93,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             : std::optional<float>()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_absolute_movable_key_binding(kb);
         }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <optional>
 #include <string>
 
@@ -11,7 +12,7 @@ class SceneNode;
 struct AbsoluteMovableKeyBinding {
     std::string id;
     std::string role;
-    SceneNode* node;
+    DanglingPtr<SceneNode> node;
     VectorAtPosition<float, double, 3> force;
     FixedArray<float, 3> rotate;
     std::optional<float> car_surface_power;

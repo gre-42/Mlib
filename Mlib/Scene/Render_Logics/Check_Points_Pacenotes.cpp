@@ -28,7 +28,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     size_t pacenotes_maximum_number,
     RenderLogics& render_logics,
     AdvanceTimes& advance_times,
-    SceneNode& moving_node)
+    DanglingRef<SceneNode> moving_node)
 : widget_distance_{widget_distance},
   text_widget_{std::move(text_widget)},
   picture_widget_{std::move(picture_widget)},
@@ -39,7 +39,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
   display_{gallery, text_, pictures_left, pictures_right},
   render_logics_{render_logics},
   advance_times_{advance_times},
-  moving_node_{&moving_node}
+  moving_node_{moving_node.ptr()}
 {
     pacenotes_.reserve(pacenotes_maximum_number);
     moving_node_->clearing_observers.add(*this);
@@ -70,7 +70,7 @@ void CheckPointsPacenotes::advance_time(float dt) {
     // }
 }
 
-void CheckPointsPacenotes::notify_destroyed(const Object& destroyed_object) {
+void CheckPointsPacenotes::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     check_points_ = nullptr;
     pacenotes_.clear();
     moving_node_ = nullptr;

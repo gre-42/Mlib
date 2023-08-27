@@ -1,11 +1,12 @@
 #include "Movable_Logger.hpp"
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
 MovableLogger::MovableLogger(
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     AdvanceTimes& advance_times,
     StatusWriter* status_writer,
     StatusComponents log_components)
@@ -13,10 +14,10 @@ MovableLogger::MovableLogger(
   status_writer_{status_writer},
   log_components_{log_components}
 {
-    scene_node.clearing_observers.add(*this);
+    scene_node->clearing_observers.add(*this);
 }
 
-void MovableLogger::notify_destroyed(const Object& destroyed_object) {
+void MovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this);
 }
 

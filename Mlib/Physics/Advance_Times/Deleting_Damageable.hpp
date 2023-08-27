@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -11,10 +12,11 @@
 namespace Mlib {
 
 class AdvanceTimes;
+class SceneNode;
 class Scene;
 class DeleteNodeMutex;
 
-class DeletingDamageable: public Damageable, public DestructionObserver, public AdvanceTime, public StatusWriter {
+class DeletingDamageable: public Damageable, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime, public StatusWriter {
     DeletingDamageable(const DeletingDamageable&) = delete;
     DeletingDamageable& operator = (const DeletingDamageable&) = delete;
 public:
@@ -26,7 +28,7 @@ public:
         bool delete_node_when_health_leq_zero,
         DeleteNodeMutex& delete_node_mutex);
     // DestructionObserver
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // StatusWriter

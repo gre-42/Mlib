@@ -15,7 +15,7 @@ class CountDownLogic:
     public RenderLogic,
     public RenderTextLogic,
     public AdvanceTime,
-    public DestructionObserver {
+    public DestructionObserver<DanglingRef<const SceneNode>> {
 public:
     CountDownLogic(
         AdvanceTimes& advance_times,
@@ -32,7 +32,7 @@ public:
     ~CountDownLogic();
 
     // DestructionObserver
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
     // RenderLogic
     virtual void render(

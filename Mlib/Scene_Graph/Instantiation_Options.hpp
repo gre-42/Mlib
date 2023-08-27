@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <string>
 
 namespace Mlib {
@@ -12,7 +13,7 @@ struct InstantiationOptions {
     IImposters* imposters = nullptr;
     ISupplyDepots* supply_depots = nullptr;
     const std::string& instance_name;
-    SceneNode& scene_node;
+    DanglingRef<SceneNode> scene_node;
     const RenderableResourceFilter& renderable_resource_filter;
 };
 

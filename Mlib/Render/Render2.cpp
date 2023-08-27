@@ -145,7 +145,7 @@ void Render2::render_scene(
 }
 
 void Render2::render_node(
-    std::unique_ptr<SceneNode>&& node,
+    DanglingUniquePtr<SceneNode>&& node,
     const FixedArray<float, 3>& background_color,
     bool rotate,
     float scale,
@@ -161,11 +161,11 @@ void Render2::render_node(
         scene.shutdown();
     }};
     scene.add_root_node("obj", std::move(node));
-    scene.add_root_node("camera", std::make_unique<SceneNode>());
+    scene.add_root_node("camera", make_dunique<SceneNode>());
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Postprocessing::ENABLED, GenericCamera::Mode::PERSPECTIVE)
-    scene.get_node("camera").set_camera(std::move(camera));
-    scene.add_root_node("light", std::make_unique<SceneNode>());
-    scene.get_node("light").add_light(std::make_unique<Light>(Light{
+    scene.get_node("camera")->set_camera(std::move(camera));
+    scene.add_root_node("light", make_dunique<SceneNode>());
+    scene.get_node("light")->add_light(std::make_unique<Light>(Light{
         .ambience = {0.5f, 0.5f, 0.5f},
         .diffusivity = {1.f, 1.f, 1.f},
         .specularity = {1.f, 1.f, 1.f},

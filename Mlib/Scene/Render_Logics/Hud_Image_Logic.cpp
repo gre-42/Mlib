@@ -27,8 +27,8 @@ HudErrorBehavior Mlib::hud_error_behavior_from_string(const std::string& s) {
 HudImageLogic::HudImageLogic(
     RenderLogic* scene_logic,
     CollisionQuery* collision_query,
-    SceneNode* gun_node,
-    SceneNode& node_to_hide,
+    DanglingPtr<SceneNode> gun_node,
+    DanglingRef<SceneNode> node_to_hide,
     YawPitchLookAtNodes* ypln,
     AdvanceTimes& advance_times,
     const std::string& image_resource_name,
@@ -53,16 +53,16 @@ HudImageLogic::HudImageLogic(
   near_plane_{NAN},
   far_plane_{NAN}
 {
-    if (!gun_node != !scene_logic) {
+    if ((gun_node == nullptr) != (scene_logic == nullptr)) {
         THROW_OR_ABORT("Inconsistent nullness for gun node and scene logic");
     }
-    if (!gun_node != !collision_query) {
+    if ((gun_node == nullptr) != (collision_query == nullptr)) {
         THROW_OR_ABORT("Inconsistent nullness for gun node and collision query");
     }
 }
 
 HudImageLogic::~HudImageLogic() {
-    node_to_hide_.remove_node_hider(*this);
+    node_to_hide_->remove_node_hider(*this);
     advance_times_.delete_advance_time(*this);
 }
 
@@ -173,11 +173,11 @@ void HudImageLogic::render(
 }
 
 bool HudImageLogic::node_shall_be_hidden(
-    const SceneNode& camera_node,
+    DanglingRef<const SceneNode> camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     std::scoped_lock lock{render_mutex_};
-    is_visible_ = (&node_to_hide_ == &camera_node);
+    is_visible_ = (node_to_hide_.ptr() == camera_node.ptr());
     vp_ = scene_logic_->vp();
     near_plane_ = scene_logic_->near_plane();
     far_plane_ = scene_logic_->far_plane();

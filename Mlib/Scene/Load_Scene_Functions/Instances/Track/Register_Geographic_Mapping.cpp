@@ -30,9 +30,9 @@ RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable
 void RegisterGeographicMapping::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     scene_node_resources.register_geographic_mapping(
         args.arguments.at<std::string>(KnownArgs::resource),
         args.arguments.at<std::string>(KnownArgs::name),
-        node.absolute_model_matrix().casted<double, double>());
+        node->absolute_model_matrix().casted<double, double>());
 }

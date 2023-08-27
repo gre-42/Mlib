@@ -10,8 +10,8 @@ using namespace Mlib;
 
 PermanentPointContact::PermanentPointContact(
     PermanentContacts& permanent_contacts,
-    SceneNode& scene_node0,
-    SceneNode& scene_node1,
+    DanglingRef<SceneNode> scene_node0,
+    DanglingRef<SceneNode> scene_node1,
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const FixedArray<double, 3>& p0,
@@ -24,16 +24,16 @@ PermanentPointContact::PermanentPointContact(
   p0_{p0},
   p1_{p1}
 {
-    scene_node0_.destruction_observers.add(*this);
-    scene_node1_.destruction_observers.add(*this);
+    scene_node0_->destruction_observers.add(*this);
+    scene_node1_->destruction_observers.add(*this);
 }
 
-void PermanentPointContact::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == &scene_node0_) {
-        scene_node1_.destruction_observers.remove(*this);
+void PermanentPointContact::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == scene_node0_.ptr()) {
+        scene_node1_->destruction_observers.remove(*this);
     }
-    if (&destroyed_object == &scene_node1_) {
-        scene_node0_.destruction_observers.remove(*this);
+    if (destroyed_object.ptr() == scene_node1_.ptr()) {
+        scene_node0_->destruction_observers.remove(*this);
     }
     permanent_contacts_.remove(*this);
 }

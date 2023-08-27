@@ -40,7 +40,7 @@ OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
-    const SceneNode& camera_node,
+    DanglingRef<const SceneNode> camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -53,7 +53,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
 }
 
 bool ImposterNodeHider::node_shall_be_hidden(
-    const SceneNode& camera_node,
+    DanglingRef<const SceneNode> camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -65,7 +65,7 @@ bool ImposterNodeHider::node_shall_be_hidden(
 ImposterLogic::ImposterLogic(
     RenderLogic& child_logic,
     Scene& scene,
-    SceneNode& orig_node,
+    DanglingRef<SceneNode> orig_node,
     SelectedCameras& cameras,
     const std::string& debug_prefix,
     uint32_t max_texture_size,
@@ -89,12 +89,12 @@ ImposterLogic::ImposterLogic(
         THROW_OR_ABORT("Imposter texture size out of bounds");
     }
     texture_id_ = "imposter_color" + scene.get_temporary_instance_suffix();
-    auto aabb = orig_node_.relative_aabb();
+    auto aabb = orig_node_->relative_aabb();
     if (!aabb.has_value()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
     obj_relative_aabb_ = aabb.value();
-    orig_node.insert_node_hider(orig_hider);
+    orig_node->insert_node_hider(orig_hider);
 }
 
 ImposterLogic::~ImposterLogic() {
@@ -126,7 +126,7 @@ void ImposterLogic::add_imposter(
         FixedArray<float, 2, 2>{ips.uv.min()(0), ips.uv.min()(1), ips.uv.max()(0), ips.uv.max()(1)},
         TransformationMatrix<float, float, 3>::identity(),
         material};
-    auto new_imposter_node = std::make_unique<SceneNode>();
+    auto new_imposter_node = make_dunique<SceneNode>();
     new_imposter_node->set_relative_pose(
         FixedArray<double, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
@@ -136,7 +136,7 @@ void ImposterLogic::add_imposter(
         .scene_node = *new_imposter_node,
         .renderable_resource_filter = RenderableResourceFilter{}});
     new_imposter_node->insert_node_hider(imposter_hider_);
-    scene_.add_root_imposter_node(new_imposter_node.get());
+    scene_.add_root_imposter_node(*new_imposter_node);
     imposter_node_ = std::move(new_imposter_node);
 }
 
@@ -159,11 +159,11 @@ void ImposterLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
-    auto& camera_node = scene_.get_node(cameras_.camera_node_name());
-    auto v = camera_node.absolute_view_matrix();
-    auto m = orig_node_.absolute_model_matrix();
+    DanglingRef<SceneNode> camera_node = scene_.get_node(cameras_.camera_node_name());
+    auto v = camera_node->absolute_view_matrix();
+    auto m = orig_node_->absolute_model_matrix();
     {
-        auto cam_cp = camera_node.get_camera().copy();
+        auto cam_cp = camera_node->get_camera().copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
         auto mvp = dot2d(cam_cp->projection_matrix(), (v * m).casted<float, float>().affine());
         VisibilityCheck<float> vc{mvp};
@@ -176,7 +176,7 @@ void ImposterLogic::render(
             return;
         }
     }
-    auto camera_position = camera_node.absolute_model_matrix().t();
+    auto camera_position = camera_node->absolute_model_matrix().t();
     auto cam_to_obj2 = FixedArray<double, 2>{
         m.t(0) - camera_position(0),
         m.t(2) - camera_position(2)};
@@ -251,16 +251,16 @@ void ImposterLogic::render(
         if (!npixels.has_value()) {
             return;
         }
-        SceneNode imposter_camera_node;
-        imposter_camera_node.set_relative_pose(camera_position, matrix_2_tait_bryan_angles(la.value().extrinsic_R), 1.f);
-        imposter_camera_node.set_camera(
+        DanglingStackPtr<SceneNode> imposter_camera_node;
+        imposter_camera_node->set_relative_pose(camera_position, matrix_2_tait_bryan_angles(la.value().extrinsic_R), 1.f);
+        imposter_camera_node->set_camera(
             std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
                     npixels.value().scaled_sensor_aabb,
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, "", &orig_node_, &imposter_camera_node}, .time_id = 0};
+        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, "", orig_node_.ptr(), imposter_camera_node.get()}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }

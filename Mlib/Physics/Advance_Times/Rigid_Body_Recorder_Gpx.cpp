@@ -12,13 +12,13 @@ using namespace Mlib;
 RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
     AdvanceTimes& advance_times,
-    SceneNode& recorded_node,
+    DanglingRef<SceneNode> recorded_node,
     RigidBodyIntegrator* rbi,
     const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const Focuses& focuses)
 : focuses_{focuses},
   advance_times_{advance_times},
-  recorded_node_{&recorded_node},
+  recorded_node_{recorded_node.ptr()},
   rbi_{rbi},
   geographic_coordinates_{geographic_coordinates},
   track_writer_{filename},
@@ -43,7 +43,7 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
 }
 
-void RigidBodyRecorderGpx::notify_destroyed(const Object& destroyed_object) {
+void RigidBodyRecorderGpx::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     rbi_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this);

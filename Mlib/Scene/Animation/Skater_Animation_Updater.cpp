@@ -10,13 +10,13 @@ using namespace Mlib;
 
 SkaterAnimationUpdater::SkaterAnimationUpdater(
     const RigidBodyVehicle& rb,
-    SceneNode& skateboard_node,
+    DanglingRef<SceneNode> skateboard_node,
     const std::string& resource)
 : rb_{ rb },
   skateboard_node_{ skateboard_node },
   resource_{ resource }
 {
-    skateboard_node_.set_periodic_animation("<no_animation>");
+    skateboard_node_->set_periodic_animation("<no_animation>");
 }
 
 void SkaterAnimationUpdater::notify_movement_intent()
@@ -41,7 +41,7 @@ void SkaterAnimationUpdater::update_animation_state(AnimationState* animation_st
                         .get_animation_duration(new_skelletal_animation),
                     RenderingContextStack::primary_scene_node_resources()
                         .get_animation_duration(new_skateboard_animation));
-        skateboard_node_.set_aperiodic_animation(new_skateboard_animation);
+        skateboard_node_->set_aperiodic_animation(new_skateboard_animation);
     } else if (new_skelletal_animation != animation_state->periodic_skelletal_animation_name) {
         animation_state->periodic_skelletal_animation_name = new_skelletal_animation;
         animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;

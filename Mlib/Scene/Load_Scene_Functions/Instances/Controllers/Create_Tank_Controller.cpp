@@ -35,8 +35,8 @@ CreateTankController::CreateTankController(RenderableScene& renderable_scene)
 
 void CreateTankController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node.get_absolute_movable());
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Tank movable is not a rigid body");
     }

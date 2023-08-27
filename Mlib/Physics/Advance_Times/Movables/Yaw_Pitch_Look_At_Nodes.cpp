@@ -117,10 +117,10 @@ TransformationMatrix<float, double, 3> YawPitchLookAtNodes::get_new_relative_mod
 }
 
 void YawPitchLookAtNodes::set_followed(
-    SceneNode* followed_node,
+    DanglingPtr<SceneNode> followed_node,
     const RigidBodyVehicle* followed)
 {
-    assert_true(!followed_node == !followed);
+    assert_true((followed_node == nullptr) == (followed == nullptr));
     if (followed_node_ != nullptr) {
         followed_node_->clearing_observers.remove(*this);
     }
@@ -142,8 +142,8 @@ PitchLookAtNode& YawPitchLookAtNodes::pitch_look_at_node() const {
     return pitch_look_at_node_;
 }
 
-void YawPitchLookAtNodes::notify_destroyed(const Object& destroyed_object) {
-    if (&destroyed_object == followed_node_) {
+void YawPitchLookAtNodes::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {

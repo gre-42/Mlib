@@ -16,11 +16,11 @@ Imposters::Imposters(
 {}
 
 void Imposters::create_imposter(
-    SceneNode& scene_node,
+    DanglingRef<SceneNode> scene_node,
     const std::string& debug_prefix,
     uint32_t max_texture_size)
 {
-    render_logics_.prepend(&scene_node, std::make_shared<ImposterLogic>(
+    render_logics_.prepend(scene_node.ptr(), std::make_shared<ImposterLogic>(
         child_logic_,
         scene_,
         scene_node,

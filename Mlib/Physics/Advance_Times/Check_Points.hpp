@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
@@ -26,11 +27,11 @@ struct CheckPointPose {
 };
 
 struct BeaconNode {
-    SceneNode* beacon_node;
+    DanglingPtr<SceneNode> beacon_node;
     CheckPointPose* check_point_pose;
 };
 
-class CheckPoints: public DestructionObserver, public AdvanceTime {
+class CheckPoints: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,
@@ -38,7 +39,7 @@ public:
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,
         std::string asset_id,
-        std::vector<SceneNode*> moving_nodes,
+        std::vector<DanglingPtr<SceneNode>> moving_nodes,
         const std::string& resource_name,
         IPlayer& player,
         size_t nbeacons,
@@ -55,7 +56,7 @@ public:
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(const Object& destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     bool has_meters_to_start() const;
     double meters_to_start() const;
     size_t lap_index() const;
@@ -63,7 +64,7 @@ private:
     AdvanceTimes& advance_times_;
     TrackReader track_reader_;
     std::string asset_id_;
-    std::vector<SceneNode*> moving_nodes_;
+    std::vector<DanglingPtr<SceneNode>> moving_nodes_;
     std::vector<AbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;

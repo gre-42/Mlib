@@ -32,13 +32,13 @@ ConnectTrailer::ConnectTrailer(RenderableScene& renderable_scene)
 
 void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& car_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::car));
-    auto car_rb = dynamic_cast<RigidBodyVehicle*>(&car_node.get_absolute_movable());
+    DanglingRef<SceneNode> car_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::car));
+    auto car_rb = dynamic_cast<RigidBodyVehicle*>(&car_node->get_absolute_movable());
     if (car_rb == nullptr) {
         THROW_OR_ABORT("Car absolute movable is not a rigid body");
     }
-    auto& trailer_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::trailer));
-    auto trailer_rb = dynamic_cast<RigidBodyVehicle*>(&trailer_node.get_absolute_movable());
+    DanglingRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::trailer));
+    auto trailer_rb = dynamic_cast<RigidBodyVehicle*>(&trailer_node->get_absolute_movable());
     if (trailer_rb == nullptr) {
         THROW_OR_ABORT("Trailer absolute movable is not a rigid body");
     }

@@ -2,11 +2,10 @@
 
 namespace Mlib {
 
-class Object;
-
+template <class T>
 class DestructionObserver {
 public:
-    virtual void notify_destroyed(const Object& destroyed_object) = 0;
+    virtual void notify_destroyed(T destroyed_object) = 0;
 };
 
 }

@@ -37,13 +37,13 @@ FollowNode::FollowNode(RenderableScene& renderable_scene)
 void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
-    auto& follower_node = scene.get_node(args.arguments.at(KnownArgs::follower));
-    auto& followed_node = scene.get_node(args.arguments.at(KnownArgs::followed));
+    DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at(KnownArgs::follower));
+    DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at(KnownArgs::followed));
     auto distance = args.arguments.at<float>(KnownArgs::distance);
     auto follower = std::make_unique<FollowMovable>(
         physics_engine.advance_times_,
         followed_node,
-        followed_node.get_absolute_movable(),
+        followed_node->get_absolute_movable(),
         distance,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::node_displacement),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::look_at_displacement),

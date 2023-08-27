@@ -179,7 +179,7 @@ const TransformationMatrix<float, double, 3>& SkyboxLogic::iv() const {
     return child_logic_.iv();
 }
 
-const SceneNode& SkyboxLogic::camera_node() const {
+DanglingRef<const SceneNode> SkyboxLogic::camera_node() const {
     return child_logic_.camera_node();
 }
 

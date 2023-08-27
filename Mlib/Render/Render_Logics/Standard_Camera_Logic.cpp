@@ -48,14 +48,14 @@ void StandardCameraLogic::render(
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        camera_node_ = &scene_.get_node(cameras_.dirtmap_node_name());
+        camera_node_ = scene_.get_node(cameras_.dirtmap_node_name()).ptr();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
             THROW_OR_ABORT("Imposter render pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        camera_node_ = &scene_.get_node(cameras_.camera_node_name());
+        camera_node_ = scene_.get_node(cameras_.camera_node_name()).ptr();
     } else {
         THROW_OR_ABORT(
             "StandardCameraLogic::render: unknown render pass: \"" +
@@ -71,11 +71,11 @@ void StandardCameraLogic::render(
 }
 
 float StandardCameraLogic::near_plane() const {
-    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_near_plane();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera().get_near_plane();
 }
 
 float StandardCameraLogic::far_plane() const {
-    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_far_plane();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera().get_far_plane();
 }
 
 const FixedArray<double, 4, 4>& StandardCameraLogic::vp() const {
@@ -92,7 +92,7 @@ const TransformationMatrix<float, double, 3>& StandardCameraLogic::iv() const {
     return iv_;
 }
 
-const SceneNode& StandardCameraLogic::camera_node() const {
+DanglingRef<const SceneNode> StandardCameraLogic::camera_node() const {
     if (camera_node_ == nullptr) {
         THROW_OR_ABORT("camera node not set in StandardCameraLogic::camera_node");
     }
@@ -100,7 +100,7 @@ const SceneNode& StandardCameraLogic::camera_node() const {
 }
 
 bool StandardCameraLogic::requires_postprocessing() const {
-    return scene_.get_node(cameras_.camera_node_name()).get_camera().get_requires_postprocessing();
+    return scene_.get_node(cameras_.camera_node_name())->get_camera().get_requires_postprocessing();
 }
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {

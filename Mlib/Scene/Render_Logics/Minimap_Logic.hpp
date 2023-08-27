@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -16,7 +17,7 @@ class ILayoutPixels;
 class MinimapLogic: public RenderLogic, public AdvanceTime {
 public:
     MinimapLogic(
-        SceneNode& node,
+        DanglingRef<SceneNode> node,
         const std::string& map_image_resource_name,
         const std::string& locator_image_resource_name,
         std::unique_ptr<IWidget>&& widget,
@@ -42,7 +43,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    SceneNode& node_;
+    DanglingRef<SceneNode> node_;
     CenteredTextureImageLogic centered_texture_image_logic_;
     FillWithTextureLogic locator_logic_;
     std::unique_ptr<IWidget> widget_;

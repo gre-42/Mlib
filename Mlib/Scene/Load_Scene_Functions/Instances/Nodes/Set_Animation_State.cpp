@@ -40,7 +40,7 @@ SetAnimationState::SetAnimationState(RenderableScene& renderable_scene)
 
 void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     float animation_loop_end;
     if (args.arguments.contains(KnownArgs::animation_loop_end)) {
         auto le = args.arguments.at(KnownArgs::animation_loop_end);
@@ -60,7 +60,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         animation_loop_end = NAN;
     }
     std::map<std::string, std::string> reflection_maps;
-    node.set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
+    node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .periodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::animation_loop_name, ""),
         .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name, ""),
         .periodic_skelletal_animation_frame = {

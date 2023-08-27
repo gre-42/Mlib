@@ -44,11 +44,11 @@ CreateAvatarControllerKeyBinding::CreateAvatarControllerKeyBinding(RenderableSce
 
 void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node));
     auto& kb = key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
-        .node = &node,
+        .node = node.ptr(),
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
@@ -68,7 +68,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             : std::optional<FixedArray<float, 3>>()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        &node,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_avatar_controller_key_binding(kb);
         }

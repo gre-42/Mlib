@@ -65,7 +65,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(
-        args.arguments.at<std::string>(KnownArgs::rigid_body)).get_absolute_movable());
+        args.arguments.at<std::string>(KnownArgs::rigid_body))->get_absolute_movable());
     if (rb == nullptr) {
         THROW_OR_ABORT("Absolute movable is not a rigid body");
     }

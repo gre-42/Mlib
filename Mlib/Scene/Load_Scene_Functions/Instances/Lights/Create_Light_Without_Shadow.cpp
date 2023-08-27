@@ -37,8 +37,8 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
 {
     std::scoped_lock lock_guard{ delete_node_mutex };
     std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
-    auto& node = scene.get_node(node_name);
-    node.add_light(std::make_unique<Light>(Light{
+    DanglingRef<SceneNode> node = scene.get_node(node_name);
+    node->add_light(std::make_unique<Light>(Light{
         .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
         .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),

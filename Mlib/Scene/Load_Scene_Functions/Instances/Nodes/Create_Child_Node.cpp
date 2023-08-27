@@ -34,20 +34,20 @@ CreateChildNode::CreateChildNode(RenderableScene& renderable_scene)
 
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = std::make_unique<SceneNode>();
+    auto node = make_dunique<SceneNode>();
     node->set_position(args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, fixed_zeros<double, 3>()));
     node->set_rotation(args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees);
     node->set_scale(args.arguments.at<float>(KnownArgs::scale, 1.f));
     std::string type = args.arguments.at<std::string>(KnownArgs::type);
-    auto& parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
+    DanglingRef<SceneNode> parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
     std::string node_name = args.arguments.at<std::string>(KnownArgs::name);
-    auto& node_ref = *node;
+    DanglingRef<SceneNode> node_ref = *node;
     if (type == "aggregate") {
-        parent.add_aggregate_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
+        parent->add_aggregate_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "instances") {
-        parent.add_instances_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
+        parent->add_instances_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "dynamic") {
-        parent.add_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
+        parent->add_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else {
         THROW_OR_ABORT("Unknown non-root node type: " + type);
     }

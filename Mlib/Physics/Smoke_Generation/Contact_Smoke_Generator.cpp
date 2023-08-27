@@ -18,8 +18,8 @@ ContactSmokeGenerator::ContactSmokeGenerator(
 
 ContactSmokeGenerator::~ContactSmokeGenerator() = default;
 
-void ContactSmokeGenerator::notify_destroyed(const Object& destroyed_object) {
-    if (tire_smoke_trail_generators_.erase(const_cast<RigidBodyVehicle*>(dynamic_cast<const RigidBodyVehicle*>(&destroyed_object))) != 1) {
+void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
+    if (tire_smoke_trail_generators_.erase(const_cast<RigidBodyVehicle*>(&destroyed_object)) != 1) {
         THROW_OR_ABORT("Could not find surface contact info to be deleted");
     }
 }

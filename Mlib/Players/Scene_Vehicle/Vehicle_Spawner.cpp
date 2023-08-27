@@ -95,7 +95,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
         if (v->scene_node_name().empty()) {
             THROW_OR_ABORT("Rigid body scene node name is empty");
         }
-        if (v->scene_node().shutting_down()) {
+        if (v->scene_node()->shutting_down()) {
             THROW_OR_ABORT("Player received scene node that is shutting down");
         }
         if (scene_.root_node_scheduled_for_deletion(v->scene_node_name())) {

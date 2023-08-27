@@ -27,7 +27,7 @@ void Mlib::render_height_map(
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
-    auto on = std::make_unique<SceneNode>();
+    auto on = make_dunique<SceneNode>();
     scene_node_resources.instantiate_renderable(
         "HeightMapResource",
         InstantiationOptions{

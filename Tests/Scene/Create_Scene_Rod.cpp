@@ -81,10 +81,10 @@ void Mlib::create_scene_rod(
             .werror = true},
         scene_node_resources));
     // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
-    auto scene_node0 = std::make_unique<SceneNode>();
-    auto scene_node1_0 = std::make_unique<SceneNode>();
-    auto scene_nodeR = std::make_unique<SceneNode>();
-    auto scene_nodeL = std::make_unique<SceneNode>();
+    auto scene_node0 = make_dunique<SceneNode>();
+    auto scene_node1_0 = make_dunique<SceneNode>();
+    auto scene_nodeR = make_dunique<SceneNode>();
+    auto scene_nodeL = make_dunique<SceneNode>();
 
     scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
         .instance_name = "obj0",
@@ -110,19 +110,19 @@ void Mlib::create_scene_rod(
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.add_root_node("obj", std::move(scene_nodeR));
-    scene.add_root_node("follower_camera", std::make_unique<SceneNode>());
+    scene.add_root_node("follower_camera", make_dunique<SceneNode>());
     scene.add_root_node("light_node", std::move(scene_nodeL));
-    scene.get_node("follower_camera").set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node("follower_camera")->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
-    scene.get_node("light_node").set_camera(std::make_unique<PerspectiveCamera>(
+    scene.get_node("light_node")->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene.get_node("obj").get_child("n0"), std::move(rb0)};
-        AbsoluteMovableSetter ams1_0{scene.get_node("obj").get_child("n1_0"), std::move(rb1_0)};
+        AbsoluteMovableSetter ams0{scene.get_node("obj")->get_child("n0"), std::move(rb0)};
+        AbsoluteMovableSetter ams1_0{scene.get_node("obj")->get_child("n1_0"), std::move(rb1_0)};
 
         pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles01}, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING);

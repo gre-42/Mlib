@@ -70,7 +70,7 @@ bool Bystanders::spawn_for_vip(
             bool exists = false;
             for (const auto& [_, player2] : players_.players()) {
                 if (player2->has_scene_vehicle()) {
-                    if (sum(squared(sp->position - player2->scene_node().position())) < squared(cfg_.r_neighbors)) {
+                    if (sum(squared(sp->position - player2->scene_node()->position())) < squared(cfg_.r_neighbors)) {
                         exists = true;
                         break;
                     }
@@ -130,7 +130,7 @@ bool Bystanders::delete_for_vip(
     }
     size_t ndelete_votes = 0;
     for (const auto& vehicle : spawner.get_scene_vehicles()) {
-        FixedArray<double, 3> player_pos = vehicle->scene_node().position();
+        FixedArray<double, 3> player_pos = vehicle->scene_node()->position();
         double dist2 = sum(squared(player_pos - vip_pos));
         if (dist2 > squared(cfg_.r_delete_near)) {
             // Abort if behind car.
@@ -192,7 +192,7 @@ void Bystanders::handle_bystanders() {
     if (players_.players().empty()) {
         return;
     }
-    TransformationMatrix<float, double, 3> vip_m = vip_->scene_node().absolute_model_matrix();
+    TransformationMatrix<float, double, 3> vip_m = vip_->scene_node()->absolute_model_matrix();
     const FixedArray<double, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     auto it = vehicle_spawners_.spawners().begin();

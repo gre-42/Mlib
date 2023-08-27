@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Object.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <list>
 
 namespace Mlib {
 
-struct BaseKeyCombination: public Object {
+struct BaseKeyCombination {
 public:
     BaseKeyCombination() = default;
     BaseKeyCombination(
@@ -28,7 +27,7 @@ public:
     }
     std::list<BaseKeyBinding> key_bindings;
     BaseKeyBinding not_key_binding;
-    mutable std::unique_ptr<DestructionObservers> destruction_observers;
+    mutable std::unique_ptr<DestructionObservers<const BaseKeyCombination&>> destruction_observers;
 };
 
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -14,7 +15,7 @@ public:
     explicit LightmapLogic(
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
-        SceneNode& light_node,
+        DanglingRef<SceneNode> light_node,
         std::string resource_suffix,
         std::string black_node_name,
         bool with_depth_texture);
@@ -40,7 +41,7 @@ private:
     RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
     ExternalRenderPassType render_pass_type_;
-    SceneNode& light_node_;
+    DanglingRef<SceneNode> light_node_;
     std::string resource_suffix_;
     const std::string black_node_name_;
     bool with_depth_texture_;
