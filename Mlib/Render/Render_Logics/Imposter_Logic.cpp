@@ -133,16 +133,16 @@ void ImposterLogic::add_imposter(
         1.f);
     res.instantiate_renderable(InstantiationOptions{
         .instance_name = "imposter",
-        .scene_node = *new_imposter_node,
+        .scene_node = new_imposter_node.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     new_imposter_node->insert_node_hider(imposter_hider_);
-    scene_.add_root_imposter_node(*new_imposter_node);
+    scene_.add_root_imposter_node(new_imposter_node.ref(DP_LOC));
     imposter_node_ = std::move(new_imposter_node);
 }
 
 void ImposterLogic::delete_imposter_if_exists() {
     if (imposter_node_ != nullptr) {
-        scene_.delete_root_imposter_node(*imposter_node_);
+        scene_.delete_root_imposter_node(imposter_node_.ref(DP_LOC));
         imposter_node_ = nullptr;
     }
 }
@@ -160,6 +160,7 @@ void ImposterLogic::render(
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
     DanglingRef<SceneNode> camera_node = scene_.get_node(cameras_.camera_node_name());
+    camera_node.set_loc(DP_LOC);
     auto v = camera_node->absolute_view_matrix();
     auto m = orig_node_->absolute_model_matrix();
     {
@@ -260,7 +261,7 @@ void ImposterLogic::render(
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, "", orig_node_.ptr(), imposter_camera_node.get()}, .time_id = 0};
+        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, "", orig_node_.ptr(), imposter_camera_node.get(DP_LOC)}, .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }

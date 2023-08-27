@@ -62,6 +62,6 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node = make_dunique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
     node->clearing_observers.add(*countdown_logic);
-    render_logics.append(node.get(), countdown_logic);
+    render_logics.append(node.get(DP_LOC), countdown_logic);
     scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
 }

@@ -40,8 +40,8 @@ void test_dangling_unique() {
     std::list<DanglingPtr<int>> lst;
     {
         auto a = make_dunique<int>(5);
-        auto b = a.get();
-        lst.push_back(a.get());
+        auto b = a.get(DP_LOC);
+        lst.push_back(a.get(DP_LOC));
         lst.clear();
     }
 }

@@ -83,7 +83,7 @@ void add_reference_bone(
         "reference_bone",
         InstantiationOptions{
             .instance_name = "reference_bone",
-            .scene_node = *bone_node,
+            .scene_node = bone_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
     parent_node->add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
@@ -111,9 +111,9 @@ void add_bone_frame(
         "frame_bone",
         InstantiationOptions{
             .instance_name = "frame_bone",
-            .scene_node = *bone_node,
+            .scene_node = bone_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
-    DanglingRef<SceneNode> parent = *bone_node;
+    DanglingRef<SceneNode> parent = bone_node.ref(DP_LOC);
     parent_node->add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
         add_bone_frame(*c, frame, parent, scene_node_resources);
@@ -504,7 +504,7 @@ int main(int argc, char** argv) {
                             args.named_value("--reference_bone"),
                             bone_cfg,
                             scene_node_resources));
-                        add_reference_bone(rmhx2->skeleton(), *scene_node, scene_node_resources);
+                        add_reference_bone(rmhx2->skeleton(), scene_node.ref(DP_LOC), scene_node_resources);
                     }
                     if (args.has_named_value("--bvh")) {
                         BvhConfig bvh_config{
@@ -527,7 +527,7 @@ int main(int argc, char** argv) {
                             add_bone_frame(
                                 rmhx2->skeleton(),
                                 rmhx2->vectorize_joint_poses(scene_node_resources.get_relative_poses("anim", bone_frame)),
-                                *scene_node,
+                                scene_node.ref(DP_LOC),
                                 scene_node_resources);
                         }
                         // This invalidates the bone weights and clears the skeleton => must be after "add_bone_frame"
@@ -571,7 +571,7 @@ int main(int argc, char** argv) {
                         "objs",
                         InstantiationOptions{
                             .instance_name = "objs",
-                            .scene_node = *scene_node,
+                            .scene_node = scene_node.ref(DP_LOC),
                             .renderable_resource_filter = RenderableResourceFilter{
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
                                 .cva_filter = {

@@ -17,6 +17,7 @@ public:
         const Scene& scene,
         SelectedCameras& cameras,
         const DeleteNodeMutex& delete_node_mutex);
+    ~StandardCameraLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -33,6 +34,7 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void reset();
 private:
     const Scene& scene_;
     SelectedCameras& cameras_;

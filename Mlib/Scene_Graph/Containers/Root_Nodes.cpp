@@ -61,7 +61,7 @@ void RootNodes::add_root_node(
     if (scene_node == nullptr) {
         THROW_OR_ABORT("add_root_node received nullptr");
     }
-    scene_.register_node(name, *scene_node.get());
+    scene_.register_node(name, scene_node.ref(DP_LOC));
     if (!root_nodes_.insert({ name, std::move(scene_node) }).second) {
         THROW_OR_ABORT("add_root_node could not insert node");
     };
@@ -125,6 +125,7 @@ void RootNodes::delete_root_node(const std::string& name) {
 
 void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
     scene_.delete_node_mutex_.notify_deleting();
+    scene_.unregister_nodes(regex);
     for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
@@ -132,7 +133,6 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
             root_nodes_.erase(n->first);
         }
     }
-    scene_.unregister_nodes(regex);
 }
 
 void RootNodes::print(std::ostream& ostr) const {

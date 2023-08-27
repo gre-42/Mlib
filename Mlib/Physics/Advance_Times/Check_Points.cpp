@@ -136,12 +136,12 @@ void CheckPoints::advance_time(float dt) {
             if (i01_ == beacon_nodes_.size()) {
                 auto node = make_dunique<SceneNode>();
                 node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
-                beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get() });
+                beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get(DP_LOC) });
                 scene_node_resources_.instantiate_renderable(
                     resource_name_,
                     InstantiationOptions{
                         .instance_name = "check_point_beacon_" + std::to_string(i01_),
-                        .scene_node = *node,
+                        .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});
                 scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
             } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {

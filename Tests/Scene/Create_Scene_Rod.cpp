@@ -88,11 +88,11 @@ void Mlib::create_scene_rod(
 
     scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
         .instance_name = "obj0",
-        .scene_node = *scene_node0,
+        .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
         .instance_name = "obj1_0",
-        .scene_node = *scene_node1_0,
+        .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)});
     scene_node0->set_position({0., -4., 0.});

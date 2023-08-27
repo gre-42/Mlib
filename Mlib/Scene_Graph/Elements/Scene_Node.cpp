@@ -29,8 +29,8 @@
 using namespace Mlib;
 
 SceneNode::SceneNode()
-: clearing_observers{DanglingRef<SceneNode>::from_object(*this)},
-  destruction_observers{DanglingRef<SceneNode>::from_object(*this)},
+: clearing_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
+  destruction_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
   scene_{ nullptr },
   parent_{ nullptr },
   absolute_movable_{ nullptr },
@@ -108,8 +108,8 @@ void SceneNode::setup_child_unsafe(
         if (node->parent_ != nullptr) {
             THROW_OR_ABORT("Scene node \"" + name + "\" already has a parent");
         }
-        node->parent_ = DanglingPtr<SceneNode>::from_object(*this);
-    } else if (node->parent_ != DanglingPtr<SceneNode>::from_object(*this)) {
+        node->parent_ = DanglingPtr<SceneNode>::from_object(*this, DP_LOC);
+    } else if (node->parent_ != DanglingPtr<SceneNode>::from_object(*this, DP_LOC)) {
         THROW_OR_ABORT("Child parent mismatch");
     }
     if ((scene_ != nullptr) != (state_ != SceneNodeState::DETACHED)) {
@@ -297,7 +297,7 @@ void SceneNode::add_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
     if (!children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
@@ -312,7 +312,7 @@ DanglingRef<SceneNode> SceneNode::get_child(const std::string& name) {
     if (it == children_.end()) {
         THROW_OR_ABORT("Node does not have a child with name \"" + name + '"');
     }
-    return *it->second.scene_node;
+    return it->second.scene_node.ref(DP_LOC);
 }
 
 DanglingRef<const SceneNode> SceneNode::get_child(const std::string& name) const {
@@ -352,7 +352,7 @@ void SceneNode::add_aggregate_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
     if (!aggregate_children_.insert(std::make_pair(name, SceneNodeChild{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node)})).second)
@@ -368,7 +368,7 @@ void SceneNode::add_instances_child(
     ChildParentState child_parent_state)
 {
     std::scoped_lock lock{mutex_};
-    setup_child_unsafe(name, *node, child_registration_state, child_parent_state);
+    setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
     if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),

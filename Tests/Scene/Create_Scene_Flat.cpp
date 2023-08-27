@@ -118,19 +118,19 @@ void Mlib::create_scene_flat(
 
     scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
         .instance_name = "obj0",
-        .scene_node = *scene_node0,
+        .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
         .instance_name = "obj1_0",
-        .scene_node = *scene_node1_0,
+        .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
         .instance_name = "obj1_1",
-        .scene_node = *scene_node1_1,
+        .scene_node = scene_node1_1.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
         .instance_name = "obj1_2",
-        .scene_node = *scene_node1_2,
+        .scene_node = scene_node1_2.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {
         scene_node1_1->set_position(FixedArray<double, 3>{0., 4., 0.});

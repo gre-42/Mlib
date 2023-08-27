@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
                 "tl",
                 InstantiationOptions{
                     .instance_name = "tl",
-                    .scene_node = *scene_node,
+                    .scene_node = scene_node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }
         scene.add_root_node("obj", std::move(scene_node));

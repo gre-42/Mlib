@@ -25,6 +25,8 @@ StandardCameraLogic::StandardCameraLogic(
   camera_node_{ nullptr }
 {}
 
+StandardCameraLogic::~StandardCameraLogic() = default;
+
 void StandardCameraLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -105,4 +107,8 @@ bool StandardCameraLogic::requires_postprocessing() const {
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "StandardCameraLogic\n";
+}
+
+void StandardCameraLogic::reset() {
+    camera_node_ = nullptr;
 }

@@ -223,6 +223,7 @@ void RenderableScene::clear() {
     RenderingContextGuard rrg0{primary_rendering_context_};
     RenderingContextGuard rrg1{secondary_rendering_context_};
     std::scoped_lock lock{ delete_node_mutex_ };
+    standard_camera_logic_.reset();
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
         physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_);

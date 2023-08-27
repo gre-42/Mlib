@@ -38,7 +38,7 @@ void SmokeParticleGenerator::generate_root(
             resource_name,
             InstantiationOptions{
                 .instance_name = resource_name,
-                .scene_node = *node,
+                .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = RenderableResourceFilter{}});
         scene_.add_root_node(node_name, std::move(node));
     } else if (particle_type == ParticleType::INSTANCE) {
@@ -71,9 +71,9 @@ void SmokeParticleGenerator::generate_child(
         resource_name,
         InstantiationOptions{
             .instance_name = resource_name,
-            .scene_node = *child_node,
+            .scene_node = child_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
-    DanglingRef<SceneNode> child_node_ref = *child_node;
+    DanglingRef<SceneNode> child_node_ref = child_node.ref(DP_LOC);
     parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);
     scene_.register_node(child_node_name, child_node_ref);
 }

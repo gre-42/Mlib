@@ -140,13 +140,13 @@ void Gun::generate_bullet() {
     node->set_rotation(r);
     auto& rc = *rcu;
     {
-        AbsoluteMovableSetter ams{*node, std::move(rcu)};
+        AbsoluteMovableSetter ams{node.ref(DP_LOC), std::move(rcu)};
         if (!bullet_renderable_resource_name_.empty()) {
             scene_node_resources_.instantiate_renderable(
                 bullet_renderable_resource_name_,
                 InstantiationOptions{
                     .instance_name = "bullet",
-                    .scene_node = *node,
+                    .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }
         rigid_bodies_.add_rigid_body(

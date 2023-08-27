@@ -100,7 +100,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                 InstantiationOptions{
                     .supply_depots = options.supply_depots,
                     .instance_name = p.name,
-                    .scene_node = *node,
+                    .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = options.renderable_resource_filter});
             std::string child_name = p.name + "-" + std::to_string(i++);
             auto local_rotation = dot2d(
@@ -113,7 +113,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                 auto pm = options.scene_node->absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
                 node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
-                options.supply_depots->add_supply_depot(*node, p.supplies, p.supplies_cooldown);
+                options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
                 options.scene_node->scene().add_root_node(child_name, std::move(node));
             } else {
                 node->set_position(p.position);
@@ -125,7 +125,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                         if (options.imposters == nullptr) {
                             THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(*node, child_name, p.max_imposter_texture_size);
+                        options.imposters->create_imposter(node.ref(DP_LOC), child_name, p.max_imposter_texture_size);
                     }
                     options.scene_node->add_child(
                         child_name,
@@ -153,7 +153,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             InstantiationOptions{
                 .supply_depots = options.supply_depots,
                 .instance_name = name,
-                .scene_node = *node,
+                .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = options.renderable_resource_filter});
         if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
             THROW_OR_ABORT("Object " + name + " requires render pass");

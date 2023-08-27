@@ -3,26 +3,34 @@
 #include <atomic>
 #include <compare>
 #include <cstdint>
+#include <map>
 #include <memory>
+#include <mutex>
+#include <source_location>
 #include <type_traits>
 
 namespace Mlib {
+
+#define DP_LOC std::source_location::current()
 
 using ReferenceCounter = std::atomic_uint32_t;
 using MagicNumber = uint32_t;
 static_assert(sizeof(ReferenceCounter) == 4);
 
-
 template <class T>
 struct ObjectAndReferenceCounter {
     template<class... Args>
     ObjectAndReferenceCounter(Args&&... args)
-    : nptrs{0},
-      obj(std::forward<Args>(args)...)
-    {}
+    : nptrs{0}
+    {
+        new(obj) T(std::forward<Args>(args)...);
+    }
+    T& tobj() {
+        return reinterpret_cast<T&>(obj);
+    }
     ReferenceCounter nptrs;
     MagicNumber magic_number = 0xc0ffee42u;
-    T obj;
+    char obj[sizeof(T)];
 };
 
 inline void inc(ReferenceCounter& v) {
@@ -60,6 +68,84 @@ ReferenceCounter& counter_from_object(T& v) {
     return obj.nptrs;
 }
 
+struct PointedSourceLocation {
+    const ReferenceCounter* target;
+    std::source_location loc;
+};
+
+template <class T>
+std::map<const void*, PointedSourceLocation>& locs() {
+    static std::map<const void*, PointedSourceLocation> result;
+    return result;
+}
+
+template <class T>
+std::mutex& loc_mutex() {
+    static std::mutex result;
+    return result;
+}
+
+template <class T>
+void add_source_location(const void* ptr, const ReferenceCounter& v, std::source_location loc) {
+    std::scoped_lock lock{loc_mutex<T>()};
+    if (!locs<T>().insert({ptr, {&v, loc}}).second) {
+        verbose_abort("Could not insert source location");
+    }
+}
+
+template <class T>
+void remove_source_location(const void* ptr) {
+    std::scoped_lock lock{loc_mutex<T>()};
+    if (locs<T>().erase(ptr) != 1) {
+        verbose_abort("Could not erase source location");
+    }
+}
+
+template <class T>
+void print_source_locations(const ReferenceCounter& v) {
+    using NT = std::remove_const_t<T>;
+    using CT = const T;
+    {
+        linfo() << "Non-const:";
+        std::scoped_lock lock{loc_mutex<NT>()};
+        for (const auto& [ptr, psl] : locs<NT>()) {
+            if (psl.target == &v) {
+                linfo() << psl.loc.file_name() << ':' << psl.loc.line();
+            }
+        }
+    }
+    {
+        linfo() << "Const:";
+        std::scoped_lock lock{loc_mutex<CT>()};
+        for (const auto& [ptr, psl] : locs<CT>()) {
+            if (psl.target == &v) {
+                linfo() << psl.loc.file_name() << ':' << psl.loc.line();
+            }
+        }
+    }
+}
+
+template <class T>
+void check_consistency(const ReferenceCounter& v) {
+    using NT = std::remove_const_t<T>;
+    using CT = const T;
+
+    uint32_t count = 0;
+    for (const auto& [ptr, psl] : locs<NT>()) {
+        if (psl.target == &v) {
+            ++count;
+        }
+    }
+    for (const auto& [ptr, psl] : locs<CT>()) {
+        if (psl.target == &v) {
+            ++count;
+        }
+    }
+    if (count != v) {
+        verbose_abort("Inconsistent count. Locations: " + std::to_string(count) + ". Counter: " + std::to_string(v));
+    }
+}
+
 template <class T>
 class DanglingPtr;
 
@@ -82,28 +168,33 @@ public:
         u_ = nullptr;
     }
     ~DanglingUniquePtr() {
-        if ((u_ != nullptr) && (u_->nptrs != 0)) {
-            verbose_abort("DanglingUniquePtr: Dangling pointers remain");
+        if (u_ == nullptr) {
+            return;
+        }
+        u_->tobj().~T();
+        if (u_->nptrs != 0) {
+            print_source_locations<T>(erase_type(*u_));
+            verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");
         }
     }
-    DanglingPtr<T> get() const {
+    DanglingPtr<T> get(std::source_location loc) const {
         if (u_ == nullptr) {
             return DanglingPtr<T>{nullptr};
         } else {
-            return DanglingPtr<T>{erase_type(*u_)};
+            return DanglingPtr<T>{erase_type(*u_), loc};
         }
     }
-    DanglingRef<T> operator * () const {
+    DanglingRef<T> ref(std::source_location loc) const {
         if (u_ == nullptr) {
             verbose_abort("Nullptr dereferenciation");
         }
-        return DanglingRef<T>{erase_type(*u_)};
+        return DanglingRef<T>{erase_type(*u_), loc};
     }
     T* operator -> () {
-        return &u_->obj;
+        return &u_->tobj();
     }
     const T* operator -> () const {
-        return &u_->obj;
+        return &u_->tobj();
     }
     // Comparison
     bool operator == (std::nullptr_t) const {
@@ -124,21 +215,23 @@ class DanglingStackPtr {
 public:
     DanglingStackPtr() = default;
     ~DanglingStackPtr() {
+        u_.tobj().~T();
         if (u_.nptrs != 0) {
-            verbose_abort("DanglingStackPtr: Dangling pointers remain");
+            print_source_locations<T>(erase_type(u_));
+            verbose_abort("DanglingStackPtr: " + std::to_string(u_.nptrs) + " dangling pointers remain");
         }
     }
-    DanglingPtr<T> get() const {
-        return DanglingPtr<T>{erase_type(u_)};
+    DanglingPtr<T> get(std::source_location loc) const {
+        return DanglingPtr<T>{erase_type(u_), loc};
     }
-    DanglingRef<T> operator * () const {
-        return DanglingRef<T>{erase_type(u_)};
+    DanglingRef<T> ref(std::source_location loc) const {
+        return DanglingRef<T>{erase_type(u_), loc};
     }
     T* operator -> () {
-        return &u_.obj;
+        return &u_.tobj();
     }
     const T* operator -> () const {
-        return &u_.obj;
+        return &u_.tobj();
     }
 private:
     ObjectAndReferenceCounter<T> u_;
@@ -147,58 +240,104 @@ private:
 template <class T>
 class DanglingPtr {
 public:
-    static DanglingPtr from_object(T& v) {
-        return DanglingPtr{counter_from_object(v)};
+    static DanglingPtr from_object(T& v, std::source_location loc)
+    {
+        return DanglingPtr{counter_from_object(v), loc};
     }
     // Constructor from pointer
     DanglingPtr(std::nullptr_t)
-    : u_{nullptr}
+    : u_{nullptr},
+      loc_{std::source_location::current()}
     {}
-    // Constructor from ObjectAndReferenceCounter
-    explicit DanglingPtr(ReferenceCounter& u): u_{&u} {
+    // Constructor from ReferenceCounter
+    explicit DanglingPtr(ReferenceCounter& u, std::source_location loc): u_{&u}, loc_{loc} {
+        add_source_location<T>(this, *u_, loc);
         inc(*u_);
+        // check_consistency<T>(*u_);
     }
     // Copy-constructor from DanglingPtr
-    DanglingPtr(const DanglingPtr& other) : u_{other.u_} {
+    DanglingPtr(const DanglingPtr& other) : u_{other.u_}, loc_{other.loc_} {
         if (u_ != nullptr) {
+            add_source_location<T>(this, *u_, loc_);
             inc(*u_);
+            // check_consistency<T>(*u_);
         }
     }
-    DanglingPtr(DanglingPtr&& other) : u_{other.u_} {
-        other.u_ = nullptr;
+    DanglingPtr(DanglingPtr&& other) : u_{other.u_}, loc_{other.loc_} {
+        if (u_ != nullptr) {
+            remove_source_location<T>(&other);
+            add_source_location<T>(this, *u_, loc_);
+            other.u_ = nullptr;
+            // check_consistency<T>(*u_);
+        }
+    }
+    void set_loc(std::source_location loc) {
+        if (u_ == nullptr) {
+            verbose_abort("set_loc of nullptr");
+        }
+        loc_ = loc;
+        remove_source_location<T>(this);
+        add_source_location<T>(this, *u_, loc_);
+    }
+    T& release() {
+        if (u_ == nullptr) {
+            verbose_abort("Attempt to release nullptr");
+        }
+        remove_source_location<T>(this);
+        dec(*u_);
+        T& res = data<T>(*u_);
+        u_ = nullptr;
+        return res;
     }
     // Assignment operator from DanglingPtr
     void operator = (const DanglingPtr& other) {
         if (u_ != nullptr) {
+            remove_source_location<T>(this);
             dec(*u_);
         }
         u_ = other.u_;
         if (u_ != nullptr) {
+            add_source_location<T>(this, *u_, loc_);
             inc(*u_);
+            // check_consistency<T>(*u_);
         }
     }
     void operator = (DanglingPtr&& other) {
+        if (u_ == other.u_) {
+            return;
+        }
+        if (u_ != nullptr) {
+            remove_source_location<T>(this);
+            dec(*u_);
+        }
         u_ = other.u_;
-        other.u_ = nullptr;
+        if (u_ != nullptr) {
+            remove_source_location<T>(&other);
+            add_source_location<T>(this, *u_, loc_);
+            other.u_ = nullptr;
+            // check_consistency<T>(*u_);
+        }
     }
     // Misc
     ~DanglingPtr() {
         if (u_ != nullptr) {
+            remove_source_location<T>(this);
             dec(*u_);
+            // check_consistency<T>(*u_);
         }
     }
     operator DanglingPtr<const T>() const {
         if (u_ == nullptr) {
             return DanglingPtr<const T>{nullptr};
         } else {
-            return DanglingPtr<const T>{*const_cast<ReferenceCounter*>(u_)};
+            return DanglingPtr<const T>{*const_cast<ReferenceCounter*>(u_), loc_};
         }
     }
     DanglingRef<T> operator * () const {
         if (u_ == nullptr) {
             verbose_abort("Nullptr dereferenciation");
         }
-        return DanglingRef<T>{*u_};
+        return DanglingRef<T>{*u_, loc_};
     }
     T* operator -> () const {
         return &data<T>(*u_);
@@ -215,32 +354,49 @@ public:
     bool operator != (std::nullptr_t) const {
         return u_ != nullptr;
     }
-    std::strong_ordering operator <=> (const DanglingPtr&) const = default;
+    std::strong_ordering operator <=> (const DanglingPtr& other) const {
+        return u_ <=> other.u_;
+    }
 private:
     ReferenceCounter* u_;
+    std::source_location loc_;
 };
 
 template <class T>
 class DanglingRef {
 public:
-    static DanglingRef from_object(T& v) {
-        return DanglingRef{counter_from_object(v)};
+    static DanglingRef from_object(T& v, std::source_location loc) {
+        return DanglingRef{counter_from_object(v), loc};
     }
     // Constructor from ReferenceCounter
-    explicit DanglingRef(ReferenceCounter& u): u_{u} {
+    DanglingRef(ReferenceCounter& u, std::source_location loc): u_{u}, loc_{loc} {
+        add_source_location<T>(this, u_, loc);
         inc(u_);
+        // check_consistency<T>(u_);
     }
-    DanglingRef(const DanglingRef& other) : u_{other.u_} {
-        inc(u_);
-    }
+    DanglingRef(const DanglingRef& other): DanglingRef{other.u_, other.loc_}
+    {}
     ~DanglingRef() {
+        remove_source_location<T>(this);
         dec(u_);
+        // check_consistency<T>(u_);
     }
+    void set_loc(std::source_location loc) {
+        loc_ = loc;
+        remove_source_location<T>(this);
+        add_source_location<T>(this, u_, loc_);
+        // check_consistency<T>(u_);
+    }
+    // T& release() {
+    //     dec(u_);
+    //     T& res = data<T>(u_);
+    //     return res;
+    // }
     operator DanglingRef<const T>() const {
-        return DanglingRef<const T>{u_};
+        return DanglingRef<const T>{u_, loc_};
     }
     DanglingPtr<T> ptr() const {
-        return DanglingPtr<T>{u_};
+        return DanglingPtr<T>{u_, loc_};
     }
     T* operator -> () const {
         return &data<T>(u_);
@@ -256,6 +412,7 @@ public:
     }
 private:
     ReferenceCounter& u_;
+    std::source_location loc_;
 };
 
 template< class T, class... Args >

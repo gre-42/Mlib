@@ -41,7 +41,7 @@ void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string type = args.arguments.at<std::string>(KnownArgs::type);
     DanglingRef<SceneNode> parent = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent));
     std::string node_name = args.arguments.at<std::string>(KnownArgs::name);
-    DanglingRef<SceneNode> node_ref = *node;
+    DanglingRef<SceneNode> node_ref = node.ref(DP_LOC);
     if (type == "aggregate") {
         parent->add_aggregate_child(node_name, std::move(node), ChildRegistrationState::REGISTERED);
     } else if (type == "instances") {

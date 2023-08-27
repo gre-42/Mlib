@@ -72,7 +72,7 @@ static void instantiate_bvh(
                 std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
             instantiate_renderable(InstantiationOptions{
                 .instance_name = "renderable_bvh",
-                .scene_node = *node,
+                .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = renderable_resource_filter});
         scene_node->add_child(name + "_data", std::move(node));
     }
@@ -82,7 +82,7 @@ static void instantiate_bvh(
         node->set_position(((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>());
         instantiate_bvh(
             name,
-            *node,
+            node.ref(DP_LOC),
             position_shift + node->position().casted<float>(),
             renderable_resource_filter,
             c.second);

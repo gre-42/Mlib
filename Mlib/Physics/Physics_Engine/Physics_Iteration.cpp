@@ -68,7 +68,7 @@ void PhysicsIteration::operator()() {
                     beacon.resource_name,
                     InstantiationOptions{
                         .instance_name = "beacon",
-                        .scene_node = *node,
+                        .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});
                 node->set_relative_pose(
                     beacon.location.t(),

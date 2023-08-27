@@ -314,7 +314,7 @@ void Scene::render(
                 if (it == root_nodes_.end()) {
                     THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
                 }
-                return *it->second;
+                return it->second.ref(DP_LOC);
             }();
         node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else {
@@ -332,10 +332,10 @@ void Scene::render(
             {
                 std::shared_lock lock{mutex_};
                 for (const auto& [_, node] : root_nodes_) {
-                    nodes.push_back(node.get());
+                    nodes.push_back(node.get(DP_LOC));
                 }
                 for (const auto& [_, node] : static_root_nodes_) {
-                    nodes.push_back(node.get());
+                    nodes.push_back(node.get(DP_LOC));
                 }
             }
             for (const auto& node : nodes) {
@@ -358,13 +358,13 @@ void Scene::render(
                 {
                     std::shared_lock lock{mutex_};
                     for (const auto& [_, node] : root_nodes_) {
-                       nodes.push_back(node.get());
+                       nodes.push_back(node.get(DP_LOC));
                     }
                     for (const auto& node : root_imposter_nodes_) {
                         nodes.push_back(node);
                     }
                     for (const auto& [_, node] : static_root_nodes_) {
-                        nodes.push_back(node.get());
+                        nodes.push_back(node.get(DP_LOC));
                     }
                 }
                 for (const auto& node : nodes) {
@@ -388,10 +388,10 @@ void Scene::render(
                             {
                                 std::shared_lock lock{mutex_};
                                 for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                                 for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
@@ -422,10 +422,10 @@ void Scene::render(
                             {
                                 std::shared_lock lock{mutex_};
                                 for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                                 for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
@@ -457,10 +457,10 @@ void Scene::render(
                             {
                                 std::shared_lock lock{mutex_};
                                 for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                                 for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get());
+                                    nodes.push_back(node.get(DP_LOC));
                                 }
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
@@ -502,10 +502,10 @@ void Scene::render(
                                 {
                                     std::shared_lock lock{mutex_};
                                     for (const auto& [_, node] : static_root_nodes_) {
-                                        nodes.push_back(node.get());
+                                        nodes.push_back(node.get(DP_LOC));
                                     }
                                     for (const auto& [_, node] : root_instances_nodes_) {
-                                        nodes.push_back(node.get());
+                                        nodes.push_back(node.get(DP_LOC));
                                     }
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();

@@ -32,7 +32,7 @@ void Mlib::render_height_map(
         "HeightMapResource",
         InstantiationOptions{
             .instance_name = "HeightMapResource",
-            .scene_node = *on,
+            .scene_node = on.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
     std::unique_ptr<Camera> camera(new PerspectiveCamera(
         camera_config,
