@@ -11,6 +11,25 @@
 
 namespace Mlib {
 
+struct PointedSourceLocation;
+
+template <class T>
+std::map<const void*, PointedSourceLocation>& locs();
+template <class T>
+std::mutex& loc_mutex();
+
+#define DP_IMPLEMENT(T)                                                         \
+    template <>                                                                 \
+    std::map<const void*, ::Mlib::PointedSourceLocation>& Mlib::locs<T>() {     \
+        static std::map<const void*, ::Mlib::PointedSourceLocation> result;     \
+        return result;                                                          \
+    }                                                                           \
+    template <>                                                                 \
+    std::mutex& ::Mlib::loc_mutex<T>() {                                        \
+        static std::mutex result;                                               \
+        return result;                                                          \
+    }
+
 #define DP_LOC std::source_location::current()
 
 using ReferenceCounter = std::atomic_uint32_t;
@@ -72,18 +91,6 @@ struct PointedSourceLocation {
     const ReferenceCounter* target;
     std::source_location loc;
 };
-
-template <class T>
-std::map<const void*, PointedSourceLocation>& locs() {
-    static std::map<const void*, PointedSourceLocation> result;
-    return result;
-}
-
-template <class T>
-std::mutex& loc_mutex() {
-    static std::mutex result;
-    return result;
-}
 
 template <class T>
 void add_source_location(const void* ptr, const ReferenceCounter& v, std::source_location loc) {
