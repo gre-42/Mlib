@@ -36,6 +36,9 @@ void test_substitute() {
     }
 }
 
+DP_IMPLEMENT(int);
+DP_IMPLEMENT(const int);
+
 void test_dangling_unique() {
     std::list<DanglingPtr<int>> lst;
     {
