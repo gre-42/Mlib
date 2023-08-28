@@ -27,6 +27,7 @@ struct CheckPointPose {
 };
 
 struct BeaconNode {
+    std::string beacon_node_name;
     DanglingPtr<SceneNode> beacon_node;
     CheckPointPose* check_point_pose;
 };
@@ -90,6 +91,7 @@ private:
     FixedArray<float, 3> selection_emissivity_;
     FixedArray<float, 3> deselection_emissivity_;
     std::function<void()> on_finish_;
+    bool shutting_down_;
 };
 
 }

@@ -262,7 +262,9 @@ DanglingRef<SceneNode> Scene::get_node(const std::string& name, std::source_loca
     }
     auto res = get_node_that_may_be_scheduled_for_deletion(name);
     res.set_loc(loc);
-    res->set_debug_message(name);
+    // Only for debugging purposes, as it
+    // overwrites the debug-message with each call.
+    // res->set_debug_message(name);
     return res;
 }
 

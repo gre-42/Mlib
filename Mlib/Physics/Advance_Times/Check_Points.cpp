@@ -66,7 +66,8 @@ CheckPoints::CheckPoints(
   enable_height_changed_mode_{enable_height_changed_mode},
   selection_emissivity_{selection_emissivity},
   deselection_emissivity_{deselection_emissivity},
-  on_finish_{on_finish}
+  on_finish_{on_finish},
+  shutting_down_{false}
 {
     if (nbeacons == 0) {
         THROW_OR_ABORT("Need at least one beacon node");
@@ -89,8 +90,8 @@ CheckPoints::CheckPoints(
 }
 
 CheckPoints::~CheckPoints() {
-    for (const auto& n : moving_nodes_) {
-        n->clearing_observers.remove(*this);
+    if (!shutting_down_) {
+        verbose_abort("CheckPoints dtor without shutdown");
     }
 }
 
@@ -136,14 +137,17 @@ void CheckPoints::advance_time(float dt) {
             if (i01_ == beacon_nodes_.size()) {
                 auto node = make_dunique<SceneNode>();
                 node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
-                beacon_nodes_.push_back(BeaconNode{ .beacon_node = node.get(DP_LOC) });
+                auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
+                    .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
+                    .beacon_node = node.get(DP_LOC)});
                 scene_node_resources_.instantiate_renderable(
                     resource_name_,
                     InstantiationOptions{
-                        .instance_name = "check_point_beacon_" + std::to_string(i01_),
+                        .instance_name = "beacon",
                         .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});
-                scene_.add_root_node("check_point_beacon_" + std::to_string(i01_), std::move(node));
+                node->clearing_observers.add(*this);
+                scene_.add_root_node(beacon_info.beacon_node_name, std::move(node));
             } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
                 beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
             }
@@ -222,6 +226,12 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (shutting_down_) {
+        verbose_abort("CheckPoints received multiple shutdown requests");
+    }
+
+    shutting_down_ = true;
+
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
             n->clearing_observers.remove(*this);
@@ -233,9 +243,16 @@ void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
 
     // Scene destruction happens before physics destruction,
     // so the nodes are deleted here and not in the destructor.
-    static const DECLARE_REGEX(re, "^check_point_beacon_.*");
     std::scoped_lock lock{ delete_node_mutex_ };
-    scene_.delete_root_nodes(re);
+    for (auto& b : beacon_nodes_) {
+        if (b.beacon_node->shutting_down()) {
+            b.beacon_node = nullptr;
+        } else {
+            b.beacon_node->clearing_observers.remove(*this);
+            b.beacon_node = nullptr;
+            scene_.delete_root_node(b.beacon_node_name);
+        }
+    }
 }
 
 bool CheckPoints::has_meters_to_start() const {
