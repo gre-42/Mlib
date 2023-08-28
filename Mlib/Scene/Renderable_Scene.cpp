@@ -1,5 +1,6 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
@@ -172,6 +173,7 @@ void RenderableScene::render(
     const RenderedSceneDescriptor& frame_id)
 {
     std::scoped_lock lock{delete_node_mutex_};
+    DestructionGuard dg{[&](){standard_camera_logic_.reset();}};
     render_logics_.render(
         lx,
         ly,
@@ -179,7 +181,6 @@ void RenderableScene::render(
         scene_graph_config,
         render_results,
         frame_id);
-    standard_camera_logic_.reset();
 }
 
 void RenderableScene::print(std::ostream& ostr, size_t depth) const {
