@@ -25,12 +25,12 @@ std::vector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vect
         m.offset() = fixed_nans<float, 3>();
     }
 #endif
-    for (const auto& p : poses) {
-        auto it = bone_indices.find(p.first);
+    for (const auto& [name, pose] : poses) {
+        auto it = bone_indices.find(name);
         if (it == bone_indices.end()) {
-            THROW_OR_ABORT("vectorize_joint_poses: Could not find bone with name " + p.first);
+            THROW_OR_ABORT("vectorize_joint_poses: Could not find bone with name " + name);
         }
-        ms.at(it->second) = p.second;
+        ms.at(it->second) = pose;
     }
 #ifndef NDEBUG
     for (const auto& m : ms) {
@@ -48,13 +48,13 @@ std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::genera
     const ColoredVertexArrayFilter& filter) const
 {
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
-    for (auto& t : scvas) {
+    for (const auto& t : scvas) {
         if (filter.matches(*t)) {
             result->scvas.push_back(std::make_shared<ColoredVertexArray<float>>(
                 t->generate_grind_lines(edge_angle, averaged_normal_angle)));
         }
     }
-    for (auto& t : dcvas) {
+    for (const auto& t : dcvas) {
         if (filter.matches(*t)) {
             result->dcvas.push_back(std::make_shared<ColoredVertexArray<double>>(
                 t->generate_grind_lines(edge_angle, averaged_normal_angle)));
@@ -68,7 +68,7 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
     PhysicsMaterial destination_physics_material,
     const ColoredVertexArrayFilter& filter)
 {
-    for (auto& t : scvas) {
+    for (const auto& t : scvas) {
         if (filter.matches(*t)) {
             THROW_OR_ABORT("Single-precision array matches terrain convex decomposition filter");
         }
