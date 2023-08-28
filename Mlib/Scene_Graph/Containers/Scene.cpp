@@ -149,6 +149,7 @@ void Scene::delete_node(const std::string& name) {
             node = nullptr;
             parent->remove_child(name);
         } else {
+            node = nullptr;
             delete_root_node(name);
         }
     }
