@@ -18,7 +18,8 @@ public:
     LookAtMovable(
         AdvanceTimes& advance_times,
         Scene& scene,
-        const std::string& follower_name,
+        std::string follower_name,
+        DanglingRef<SceneNode> follower_node,
         DanglingRef<SceneNode> followed_node,
         AbsoluteMovable& followed);
     ~LookAtMovable();
@@ -31,6 +32,7 @@ private:
     AdvanceTimes& advance_times_;
     Scene& scene_;
     std::string follower_name_;
+    DanglingPtr<SceneNode> follower_node_;
     DanglingPtr<SceneNode> followed_node_;
     AbsoluteMovable* followed_;
     TransformationMatrix<float, double, 3> transformation_matrix_;

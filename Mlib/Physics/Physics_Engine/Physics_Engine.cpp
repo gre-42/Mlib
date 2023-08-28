@@ -60,7 +60,7 @@ PhysicsEngine::~PhysicsEngine() {
             success = false;
             lerr() << "~PhysicsEngine: " << advance_times_.advance_times_to_delete_.size() << " advance_times_to_delete still exist.";
             for (const auto& o : advance_times_.advance_times_to_delete_) {
-                lerr() << "  " << typeid(*o).name();
+                lerr() << "  " << typeid(*o.first).name();
             }
         }
         if (!advance_times_.advance_times_shared_.empty()) {

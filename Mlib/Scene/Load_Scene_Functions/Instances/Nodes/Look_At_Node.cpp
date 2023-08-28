@@ -36,6 +36,7 @@ void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.advance_times_,
         scene,
         args.arguments.at<std::string>(KnownArgs::follower),
+        follower_node,
         followed_node,
         followed_node->get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(

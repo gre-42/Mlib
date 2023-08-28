@@ -10,12 +10,14 @@ using namespace Mlib;
 LookAtMovable::LookAtMovable(
     AdvanceTimes& advance_times,
     Scene& scene,
-    const std::string& follower_name,
+    std::string follower_name,
+    DanglingRef<SceneNode> follower_node,
     DanglingRef<SceneNode> followed_node,
     AbsoluteMovable& followed)
 : advance_times_{advance_times},
   scene_{scene},
-  follower_name_{follower_name},
+  follower_name_{std::move(follower_name)},
+  follower_node_{follower_node.ptr()},
   followed_node_{followed_node.ptr()},
   followed_{&followed}
 {}
@@ -41,20 +43,22 @@ TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_mat
 }
 
 void LookAtMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == followed_node_) {
-        followed_node_ = nullptr;
-        followed_ = nullptr;
-        if (!follower_name_.empty()) {
-            std::string fn = follower_name_;
-            follower_name_.clear();
-            scene_.delete_root_node(fn);
-        }
-    } else {
-        if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove(*this);
-            followed_node_ = nullptr;
-        }
-        advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
-        follower_name_.clear();
+    if ((follower_node_ == nullptr) != (followed_node_ == nullptr)) {
+        verbose_abort("LookAtMovable in inconsistent state");
     }
+    if (follower_node_ == nullptr) {
+        return;
+    }
+    if (destroyed_object.ptr() == follower_node_) {
+        if (!followed_node_->shutting_down()) {
+            followed_node_->clearing_observers.remove(*this);
+        }
+    } else if (destroyed_object.ptr() == followed_node_) {
+        if (!follower_node_->shutting_down()) {
+            follower_node_->clearing_observers.remove(*this);
+        }
+    }
+    follower_node_ = nullptr;
+    followed_node_ = nullptr;
+    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
 }
