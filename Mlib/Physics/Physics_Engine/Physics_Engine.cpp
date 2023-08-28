@@ -39,7 +39,7 @@ PhysicsEngine::~PhysicsEngine() {
     // => We need to call "delete_scheduled_advance_times" in the PhysicsEngine destructor (in the main thread).
     // No special handling is required for objects (i.e. rigid bodies), because their deletion is not scheduled,
     // but happens instantaneously.
-    advance_times_.delete_scheduled_advance_times();
+    advance_times_.delete_scheduled_advance_times(std::source_location::current());
     if (check_objects_deleted_on_destruction_) {
         bool success = true;
         if (!rigid_bodies_.rigid_bodies_.empty()) {

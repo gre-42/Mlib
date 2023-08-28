@@ -30,7 +30,7 @@ GameLogic::GameLogic(
 }
 
 GameLogic::~GameLogic() {
-    advance_times_.delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this, std::source_location::current());
 }
 
 void GameLogic::advance_time(float dt) {

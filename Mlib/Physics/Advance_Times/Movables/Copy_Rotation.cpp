@@ -49,6 +49,6 @@ void CopyRotation::notify_destroyed(DanglingRef<const SceneNode> destroyed_objec
         if (from_ != nullptr) {
             from_->clearing_observers.remove(*this);
         }
-        advance_times_.schedule_delete_advance_time(*this);
+        advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
     }
 }

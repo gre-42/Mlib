@@ -106,20 +106,20 @@ void print_source_locations(const ReferenceCounter& v) {
     using NT = std::remove_const_t<T>;
     using CT = const T;
     {
-        linfo() << "Non-const:";
+        lerr() << "Non-const:";
         std::scoped_lock lock{loc_mutex<NT>()};
         for (const auto& [ptr, psl] : locs<NT>()) {
             if (psl.target == &v) {
-                linfo() << psl.loc.file_name() << ':' << psl.loc.line();
+                lerr() << psl.loc.file_name() << ':' << psl.loc.line();
             }
         }
     }
     {
-        linfo() << "Const:";
+        lerr() << "Const:";
         std::scoped_lock lock{loc_mutex<CT>()};
         for (const auto& [ptr, psl] : locs<CT>()) {
             if (psl.target == &v) {
-                linfo() << psl.loc.file_name() << ':' << psl.loc.line();
+                lerr() << psl.loc.file_name() << ':' << psl.loc.line();
             }
         }
     }

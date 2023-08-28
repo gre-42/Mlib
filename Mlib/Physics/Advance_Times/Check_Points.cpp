@@ -239,7 +239,7 @@ void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
     }
     moving_nodes_.clear();
     movings_.clear();
-    advance_times_.schedule_delete_advance_time(*this);
+    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
 
     // Scene destruction happens before physics destruction,
     // so the nodes are deleted here and not in the destructor.

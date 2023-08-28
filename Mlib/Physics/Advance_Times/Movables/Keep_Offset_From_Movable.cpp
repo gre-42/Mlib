@@ -53,7 +53,7 @@ void KeepOffsetFromMovable::notify_destroyed(DanglingRef<const SceneNode> destro
         if (followed_node_ != nullptr) {
             followed_node_->clearing_observers.remove(*this);
         }
-        advance_times_.schedule_delete_advance_time(*this);
+        advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
         follower_name_.clear();
     }
 }

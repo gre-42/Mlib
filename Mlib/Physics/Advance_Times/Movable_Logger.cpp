@@ -18,7 +18,7 @@ MovableLogger::MovableLogger(
 }
 
 void MovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this);
+    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
 }
 
 void MovableLogger::advance_time(float dt) {

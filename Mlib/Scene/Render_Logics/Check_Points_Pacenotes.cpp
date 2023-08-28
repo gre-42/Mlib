@@ -74,7 +74,7 @@ void CheckPointsPacenotes::notify_destroyed(DanglingRef<const SceneNode> destroy
     check_points_ = nullptr;
     pacenotes_.clear();
     moving_node_ = nullptr;
-    advance_times_.delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this, std::source_location::current());
     render_logics_.remove(*this);
 }
 

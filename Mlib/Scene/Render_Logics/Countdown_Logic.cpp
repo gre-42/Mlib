@@ -42,7 +42,7 @@ CountDownLogic::CountDownLogic(
 CountDownLogic::~CountDownLogic() = default;
 
 void CountDownLogic::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this, std::source_location::current());
 }
 
 void CountDownLogic::render(

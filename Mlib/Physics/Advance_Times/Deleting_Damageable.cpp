@@ -24,7 +24,7 @@ DeletingDamageable::DeletingDamageable(
 }
 
 void DeletingDamageable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this);
+    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
 }
 
 void DeletingDamageable::advance_time(float dt) {

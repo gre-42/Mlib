@@ -227,7 +227,7 @@ void RenderableScene::clear() {
     std::scoped_lock lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
-        physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_);
+        physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, std::source_location::current());
         audio_listener_updater_ = nullptr;
     }
 }

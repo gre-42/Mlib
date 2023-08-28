@@ -19,5 +19,5 @@ DeleteScheduledAdvanceTimes::DeleteScheduledAdvanceTimes(RenderableScene& render
 
 void DeleteScheduledAdvanceTimes::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    physics_engine.advance_times_.delete_scheduled_advance_times();
+    physics_engine.advance_times_.delete_scheduled_advance_times(std::source_location::current());
 }

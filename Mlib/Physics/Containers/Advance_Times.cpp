@@ -13,7 +13,7 @@ AdvanceTimes::~AdvanceTimes()
     }
 }
 
-void AdvanceTimes::delete_scheduled_advance_times() {
+void AdvanceTimes::delete_scheduled_advance_times(std::source_location loc) {
     std::scoped_lock log{scheduled_deletion_mutex_};
     for (auto it = advance_times_shared_.begin(); it != advance_times_shared_.end(); ) {
         auto v = it++;
@@ -24,6 +24,7 @@ void AdvanceTimes::delete_scheduled_advance_times() {
         }
     }
     if (!advance_times_to_delete_.empty()) {
+        lerr() << loc.file_name() << ':' << loc.line();
         verbose_abort("Could not delete all shared advance times");
     }
 }
@@ -37,11 +38,12 @@ void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
     advance_times_ptr_.push_back(&advance_time);
 }
 
-void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time) {
+void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time, std::source_location loc) {
     std::scoped_lock log{scheduled_deletion_mutex_};
     for (const auto& a : advance_times_shared_) {
         if (a.get() == &advance_time) {
             if (!advance_times_to_delete_.insert(&advance_time).second) {
+                lerr() << loc.file_name() << ':' << loc.line();
                 verbose_abort("Multiple deletes scheduled for a single shared advance_time");
             }
             return;
@@ -50,8 +52,9 @@ void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time)
     verbose_abort("Could not find shared advance time");
 }
 
-void AdvanceTimes::delete_advance_time(const AdvanceTime& advance_time) {
+void AdvanceTimes::delete_advance_time(const AdvanceTime& advance_time, std::source_location loc) {
     if (advance_times_ptr_.remove_if([&advance_time](AdvanceTime* a){ return a == &advance_time; }) != 1) {
+        lerr() << loc.file_name() << ':' << loc.line();
         verbose_abort("Could not delete advance time");
     }
 }

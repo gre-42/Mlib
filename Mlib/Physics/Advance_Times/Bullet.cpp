@@ -59,7 +59,7 @@ Bullet::Bullet(
 {}
 
 Bullet::~Bullet() {
-    advance_times_.delete_advance_time(*this);
+    advance_times_.delete_advance_time(*this, std::source_location::current());
     if (gunner_ != nullptr) {
         gunner_->notify_bullet_destroyed(*this);
     }
