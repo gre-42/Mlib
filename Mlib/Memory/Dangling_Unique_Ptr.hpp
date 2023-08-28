@@ -146,6 +146,11 @@ void check_consistency(const ReferenceCounter& v) {
     }
 }
 
+template<typename T1, typename T2>
+concept pointers_are_comparable = requires(const T2* v) {
+    { (T1*)nullptr == v };
+};
+
 template <class T>
 class DanglingPtr;
 
@@ -239,6 +244,8 @@ private:
 
 template <class T>
 class DanglingPtr {
+    friend DanglingPtr<const T>;
+    friend DanglingPtr<std::remove_const_t<T>>;
 public:
     static DanglingPtr from_object(T& v, std::source_location loc)
     {
@@ -342,10 +349,14 @@ public:
     T* operator -> () const {
         return &data<T>(*u_);
     }
-    bool operator == (const DanglingPtr<T>& other) const {
+    template <typename T2>
+    requires pointers_are_comparable<T, T2>
+    bool operator == (const DanglingPtr<T2>& other) const {
         return u_ == other.u_;
     }
-    bool operator != (const DanglingPtr<T>& other) const {
+    template <typename T2>
+    requires pointers_are_comparable<T, T2>
+    bool operator != (const DanglingPtr<T2>& other) const {
         return u_ != other.u_;
     }
     bool operator == (std::nullptr_t) const {
