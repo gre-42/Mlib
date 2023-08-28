@@ -303,6 +303,7 @@ public:
             dec(*u_);
         }
         u_ = other.u_;
+        loc_ = other.loc_;
         if (u_ != nullptr) {
             add_source_location<T>(this, *u_, loc_);
             inc(*u_);
@@ -318,6 +319,7 @@ public:
             dec(*u_);
         }
         u_ = other.u_;
+        loc_ = other.loc_;
         if (u_ != nullptr) {
             remove_source_location<T>(&other);
             add_source_location<T>(this, *u_, loc_);
