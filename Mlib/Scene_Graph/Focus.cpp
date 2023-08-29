@@ -91,6 +91,8 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const Focuses& focuses) {
 
 UiFocus::UiFocus() = default;
 
+UiFocus::~UiFocus() = default;
+
 void UiFocus::insert_submenu(
     const std::string& id,
     const SubmenuHeader& header,

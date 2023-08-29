@@ -45,7 +45,7 @@ void SmallInstancesQueues::insert(
                 tcva = &invisible_queue_.back();
             } else {
                 standard_queue_.push_back({
-                    vc.sorting_key(scva->material),
+                    (float)vc.sorting_key(scva->material),
                     TransformedColoredVertexArray{
                         .scva = scva,
                         .trafo = TransformationAndBillboardId{

@@ -89,6 +89,7 @@ struct SubmenuHeader {
 
 struct UiFocus {
     UiFocus();
+	~UiFocus();
     UiFocus(const UiFocus&) = delete;
     UiFocus& operator = (const UiFocus&) = delete;
     Focuses focuses;

@@ -33,7 +33,7 @@ DECLARE_ARGUMENT(moving_suffix);
 DECLARE_ARGUMENT(resource);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(nbeacons);
-DECLARE_ARGUMENT(nth);
+DECLARE_ARGUMENT(distance);
 DECLARE_ARGUMENT(nahead);
 DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(height_changed);
@@ -119,7 +119,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::resource),
         players.get_player(args.arguments.at<std::string>(KnownArgs::player)),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
-        args.arguments.at<size_t>(KnownArgs::nth),
+        args.arguments.at<float>(KnownArgs::distance),
         args.arguments.at<size_t>(KnownArgs::nahead),
         args.arguments.at<float>(KnownArgs::radius),
         scene_node_resources,
