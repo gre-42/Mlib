@@ -66,30 +66,33 @@ NOTE: The variables above should not usually be used in CMakeLists.txt files!
 
 if(NOT RECAST_LIBRARY)
     find_library(RECAST_LIBRARY_RELEASE NAMES Recast HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Recast/Release lib Recast)
+    find_library(RECAST_LIBRARY_RELWITHDEBINFO NAMES Recast HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Recast/RelWithDebInfo lib Recast)
     find_library(RECAST_LIBRARY_DEBUG NAMES Recast-d HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Recast/Debug lib Recast)
     include(SelectLibraryConfigurations)
     select_library_configurations(RECAST)
-    mark_as_advanced(RECAST_LIBRARY_RELEASE RECAST_LIBRARY_DEBUG)
+    mark_as_advanced(RECAST_LIBRARY_RELEASE RECAST_LIBRARY_RELWITHDEBINFO RECAST_LIBRARY_DEBUG)
 else()
     file(TO_CMAKE_PATH "${RECAST_LIBRARY}" RECAST_LIBRARY)
 endif()
 
 if(NOT DETOUR_LIBRARY)
     find_library(DETOUR_LIBRARY_RELEASE NAMES Detour HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Detour/Release lib Detour)
+    find_library(DETOUR_LIBRARY_RELWITHDEBINFO NAMES Detour HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Detour/RelWithDebInfo lib Detour)
     find_library(DETOUR_LIBRARY_DEBUG NAMES Detour-d HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES Detour/Debug lib Detour)
     include(SelectLibraryConfigurations)
     select_library_configurations(DETOUR)
-    mark_as_advanced(DETOUR_LIBRARY_RELEASE DETOUR_LIBRARY_DEBUG)
+    mark_as_advanced(DETOUR_LIBRARY_RELEASE DETOUR_LIBRARY_RELWITHDEBINFO DETOUR_LIBRARY_DEBUG)
 else()
     file(TO_CMAKE_PATH "${DETOUR_LIBRARY}" DETOUR_LIBRARY)
 endif()
 
 if(NOT DEBUGUTILS_LIBRARY)
     find_library(DEBUGUTILS_LIBRARY_RELEASE NAMES DebugUtils HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES DebugUtils/Release lib DebugUtils)
+    find_library(DEBUGUTILS_LIBRARY_RELWITHDEBINFO NAMES DebugUtils HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES DebugUtils/RelWithDebInfo lib DebugUtils)
     find_library(DEBUGUTILS_LIBRARY_DEBUG NAMES DebugUtils-d HINTS ${RECASTNAVIGATION_ROOT} PATH_SUFFIXES DebugUtils/Debug lib DebugUtils)
     include(SelectLibraryConfigurations)
     select_library_configurations(DEBUGUTILS)
-    mark_as_advanced(DEBUGUTILS_LIBRARY_RELEASE DEBUGUTILS_LIBRARY_DEBUG)
+    mark_as_advanced(DEBUGUTILS_LIBRARY_RELEASE DEBUGUTILS_LIBRARY_RELWITHDEBINFO DEBUGUTILS_LIBRARY_DEBUG)
 else()
     file(TO_CMAKE_PATH "${DEBUGUTILS_LIBRARY}" DEBUGUTILS_LIBRARY)
 endif()
@@ -143,6 +146,13 @@ if(RecastNavigation_FOUND)
                     IMPORTED_LOCATION_RELEASE "${RECAST_LIBRARY_RELEASE}")
         endif()
 
+        if(RECAST_LIBRARY_RELWITHDEBINFO)
+            set_property(TARGET RecastNavigation::Recast APPEND PROPERTY
+                    IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
+            set_target_properties(RecastNavigation::Recast PROPERTIES
+                    IMPORTED_LOCATION_RELWITHDEBINFO "${RECAST_LIBRARY_RELWITHDEBINFO}")
+        endif()
+
         if(RECAST_LIBRARY_DEBUG)
             set_property(TARGET RecastNavigation::Recast APPEND PROPERTY
                     IMPORTED_CONFIGURATIONS DEBUG)
@@ -150,7 +160,7 @@ if(RecastNavigation_FOUND)
                     IMPORTED_LOCATION_DEBUG "${RECAST_LIBRARY_DEBUG}")
         endif()
 
-        if(NOT RECAST_LIBRARY_RELEASE AND NOT RECAST_LIBRARY_DEBUG)
+        if(NOT RECAST_LIBRARY_RELEASE AND NOT RECAST_LIBRARY_RELWITHDEBINFO AND NOT RECAST_LIBRARY_DEBUG)
             set_property(TARGET RecastNavigation::Recast APPEND PROPERTY
                     IMPORTED_LOCATION "${RECAST_LIBRARY}")
         endif()
@@ -167,6 +177,13 @@ if(RecastNavigation_FOUND)
                     IMPORTED_CONFIGURATIONS RELEASE)
             set_target_properties(RecastNavigation::Detour PROPERTIES
                     IMPORTED_LOCATION_RELEASE "${DETOUR_LIBRARY_RELEASE}")
+        endif()
+
+        if(DETOUR_LIBRARY_RELWITHDEBINFO)
+            set_property(TARGET RecastNavigation::Detour APPEND PROPERTY
+                    IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
+            set_target_properties(RecastNavigation::Detour PROPERTIES
+                    IMPORTED_LOCATION_RELWITHDEBINFO "${DETOUR_LIBRARY_RELWITHDEBINFO}")
         endif()
 
         if(DETOUR_LIBRARY_DEBUG)
@@ -193,6 +210,13 @@ if(RecastNavigation_FOUND)
                     IMPORTED_CONFIGURATIONS RELEASE)
             set_target_properties(RecastNavigation::DebugUtils PROPERTIES
                     IMPORTED_LOCATION_RELEASE "${DEBUGUTILS_LIBRARY_RELEASE}")
+        endif()
+
+        if(DEBUGUTILS_LIBRARY_RELWITHDEBINFO)
+            set_property(TARGET RecastNavigation::DebugUtils APPEND PROPERTY
+                    IMPORTED_CONFIGURATIONS RELWITHDEBINFO)
+            set_target_properties(RecastNavigation::DebugUtils PROPERTIES
+                    IMPORTED_LOCATION_RELWITHDEBINFO "${DEBUGUTILS_LIBRARY_RELWITHDEBINFO}")
         endif()
 
         if(DEBUGUTILS_LIBRARY_DEBUG)
