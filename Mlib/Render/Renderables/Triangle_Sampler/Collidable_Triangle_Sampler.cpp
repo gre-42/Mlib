@@ -6,7 +6,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
-#include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.cpp>
+#include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <list>
 #include <memory>
 
