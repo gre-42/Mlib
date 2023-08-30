@@ -15,7 +15,7 @@ ParticlesInstance::ParticlesInstance(
 : dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
     triangles->material.transformation_mode,
     max_num_instances,
-    triangles->material.billboard_atlas_instances.size())},
+    integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))},
   cvar_{std::make_shared<ColoredVertexArrayResource>(
     triangles,
     dynamic_instance_buffers_)},

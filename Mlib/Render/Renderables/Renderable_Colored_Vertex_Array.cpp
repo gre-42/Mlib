@@ -938,7 +938,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
         if (vc.is_visible(cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
-            aggregate_queue.push_back({ vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
+            aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
         }
     }
 }
