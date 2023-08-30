@@ -1,7 +1,7 @@
 cd /D "%~dp0" || exit /b
 
 IF "%CMAKE_BUILD_TYPE%"=="" set CMAKE_BUILD_TYPE=Release
-set BUILD_DIR=%BUILD_PREFIX%VSRecastBuild
+set BUILD_DIR=VSRecastBuild
 mkdir %BUILD_DIR%
 cd %BUILD_DIR% || exit /b
 cmake ../recastnavigation ^
