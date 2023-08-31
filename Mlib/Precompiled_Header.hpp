@@ -1,5 +1,15 @@
 #pragma once
-#include <Mlib/Json/Misc.hpp>
+
+#ifdef __GNUC__
+
+// Include less because of this bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117
+#include <Mlib/Json/Base.hpp>
+
+#else
+
 #include <Mlib/Json/Json_View.hpp>
+#include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
+
+#endif
