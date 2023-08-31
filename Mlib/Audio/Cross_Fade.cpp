@@ -30,7 +30,7 @@ CrossFade::CrossFade(
                 float total_gain = 0;
                 sources_.remove_if([&](AudioSourceAndGain& sg){
                     if (&sg == &sources_.back()) {
-                        sg.gain = 1 - total_gain;
+                        sg.gain = std::min(1.f - total_gain, sg.gain + dgain);
                     } else {
                         sg.gain = std::min(1.f - total_gain, sg.gain - dgain);
                         if (sg.gain <= 0) {
