@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Regex/Misc.hpp>
+#include <Mlib/Regex/Template_Regex.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -49,11 +50,67 @@ void test_dangling_unique() {
     }
 }
 
+void test_template_regex() {
+    using namespace TemplateRegex;
+    auto re_hello = str("hello");
+    auto re_world = str("world");
+    SMatch match;
+    assert_true(regex_match("hello world", match, re_hello));
+    assert_true(!regex_match("hello world", match, re_world));
+    {
+        auto re_group_hello = group(re_hello);
+        assert_true(regex_match("hello world", match, re_group_hello));
+        assert_true(match[1].matched);
+        assert_true(match[1].str() == "hello");
+    }
+    {
+        auto re_group_world = group(re_world);
+        assert_true(!regex_match("hello world", match, re_group_world));
+        assert_true(!match[1].matched);
+        assert_true(match[1].str() == "");
+    }
+    {
+        auto re_group_world = group(star(re_hello));
+        assert_true(regex_match("", match, re_group_world));
+        assert_true(match[1].matched);
+        assert_true(match[1].str() == "");
+    }
+    {
+        auto re_group_world = group(plus(re_hello));
+        assert_true(!regex_match("", match, re_group_world));
+        assert_true(!match[1].matched);
+        assert_true(match[1].str() == "");
+    }
+    {
+        auto re_group_world = group(plus(re_hello));
+        assert_true(regex_match("hello", match, re_group_world));
+        assert_true(match[1].matched);
+        assert_true(match[1].str() == "hello");
+    }
+    {
+        auto re_group_world = seq(group(plus(re_hello)), space);
+        assert_true(regex_match("hello world", match, re_group_world));
+        assert_true(match[1].matched);
+        assert_true(match[1].str() == "hello");
+    }
+    {
+        auto re_group_world = seq(group(plus(re_hello)), no_space);
+        assert_true(!regex_match("hello world", match, re_group_world));
+        assert_true(match[1].matched);
+        assert_true(match[1].str() == "hello");
+    }
+    // {
+    //     auto re_group_world = seq(bdry, str("hello"), bdry);
+    //     assert_true(regex_match("hello world", match, re_group_world));
+    // }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     test_resource_ptr();
     test_substitute();
     test_dangling_unique();
+    test_template_regex();
     return 0;
 }
