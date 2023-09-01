@@ -183,69 +183,9 @@ auto seq(E0 e0, E1 e1) {
     return Sequence{e0, e1};
 }
 
-template <class E0, class E1, class E2>
-auto seq(E0 e0, E1 e1, E2 e2) {
-    return seq(seq(e0, e1), e2);
-}
-
-template <class E0, class E1, class E2, class E3>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3) {
-    return seq(seq(e0, e1, e2), e3);
-}
-
-template <class E0, class E1, class E2, class E3, class E4>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4) {
-    return seq(seq(e0, e1, e2, e3), e4);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5) {
-    return seq(seq(e0, e1, e2, e3, e4), e5);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6) {
-    return seq(seq(e0, e1, e2, e3, e4, e5), e6);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6), e7);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7), e8);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8), e9);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9, class E10>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9, E10 e10) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9), e10);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9, class E10, class E11>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9, E10 e10, E11 e11) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10), e11);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9, class E10, class E11, class E12>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9, E10 e10, E11 e11, E12 e12) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11), e12);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9, class E10, class E11, class E12, class E13>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9, E10 e10, E11 e11, E12 e12, E13 e13) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12), e13);
-}
-
-template <class E0, class E1, class E2, class E3, class E4, class E5, class E6, class E7, class E8, class E9, class E10, class E11, class E12, class E13, class E14>
-auto seq(E0 e0, E1 e1, E2 e2, E3 e3, E4 e4, E5 e5, E6 e6, E7 e7, E8 e8, E9 e9, E10 e10, E11 e11, E12 e12, E13 e13, E14 e14) {
-    return seq(seq(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13), e14);
+template<class E0, class... ERight>
+auto seq(E0 e0, ERight... eright) {
+    return seq(e0, seq(eright...));
 }
 
 class EndOfString {
