@@ -29,9 +29,10 @@ template <> inline bool safe_sto<bool>(const std::string_view& s) { return safe_
 template <class T>
 T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
     T res;
-    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), res);
+	auto end = s.data() + s.size();
+    auto [ptr, ec] = std::from_chars(s.data(), end, res);
  
-    if ((ec != std::errc()) || (ptr != s.end())) {
+    if ((ec != std::errc()) || (ptr != end)) {
         THROW_OR_ABORT(msg + std::string{": \""} + std::string{s} + '"');
     }
     return res;
