@@ -130,7 +130,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     static const auto line_reg = seq(
         str("l"), sp,
         dp, sp,
-        dp, ss);
+        dp, ss, eof);
     static const auto face3_reg = seq(
         str("f"), sp,
         dp, opt(seq(sl, ds, opt(seq(sl, dp)))), sp,
