@@ -15,26 +15,9 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
-#include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Strings/String_View_To_Number.hpp>
 #include <filesystem>
 #include <vector>
-
-namespace Mlib{
-
-static float safe_stof(const std::string_view& s) {
-    return safe_stof(std::string{s});
-}
-
-static size_t safe_stoz(const std::string_view& s) {
-    return safe_stoz(std::string{s});
-}
-
-template <class T>
-static T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
-    return safe_stox<T>(std::string{s}, msg);
-}
-
-}
 
 namespace fs = std::filesystem;
 
