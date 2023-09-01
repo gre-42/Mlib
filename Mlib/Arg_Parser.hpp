@@ -79,18 +79,18 @@ public:
 };
 
 class ArgParser {
-    const std::string help;
+    std::string help;
     std::set<std::string> options;
     std::set<std::string> options_with_value;
     std::set<std::string> options_with_list;
     friend class OptIterator;
 public:
     ArgParser(
-        const std::string& help,
+        std::string help,
         std::vector<std::string> options,
         std::vector<std::string> options_with_value,
         std::vector<std::string> options_with_list = {})
-    : help(help),
+    : help(std::move(help)),
       options(options.begin(), options.end()),
       options_with_value(options_with_value.begin(), options_with_value.end()),
       options_with_list(options_with_list.begin(), options_with_list.end()) {}
