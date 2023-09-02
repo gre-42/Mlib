@@ -25,7 +25,7 @@ RigidBodyPlayback::RigidBodyPlayback(
 }
 
 RigidBodyPlayback::~RigidBodyPlayback() {
-    advance_times_.delete_advance_time(*this, std::source_location::current());
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void RigidBodyPlayback::advance_time(float dt) {

@@ -1,4 +1,6 @@
 #pragma once
+#include <compare>
+#include <memory>
 
 namespace Mlib {
 template<typename T1, typename T2>
@@ -9,13 +11,11 @@ concept pointers_are_comparable = requires(const T2* v) {
 
 #ifdef WITH_DANGLING_UNIQUE_PTR
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Source_Location.hpp>
 #include <atomic>
-#include <compare>
 #include <cstdint>
 #include <map>
-#include <memory>
 #include <mutex>
-#include <source_location>
 #include <type_traits>
 
 namespace Mlib {
@@ -39,8 +39,8 @@ std::mutex& loc_mutex();
         return result;                                                          \
     }
 
-#define SOURCE_LOCATION std::source_location
-#define DP_LOC std::source_location::current()
+#define SOURCE_LOCATION SourceLocation
+#define DP_LOC CURRENT_SOURCE_LOCATION
 
 using ReferenceCounter = std::atomic_uint32_t;
 using MagicNumber = uint32_t;
@@ -99,11 +99,11 @@ ReferenceCounter& counter_from_object(const T& v) {
 
 struct PointedSourceLocation {
     const ReferenceCounter* target;
-    std::source_location loc;
+    SourceLocation loc;
 };
 
 template <class T>
-void add_source_location(const void* ptr, const ReferenceCounter& v, std::source_location loc) {
+void add_source_location(const void* ptr, const ReferenceCounter& v, SourceLocation loc) {
     std::scoped_lock lock{loc_mutex<T>()};
     if (!locs<T>().insert({ptr, {&v, loc}}).second) {
         verbose_abort("Could not insert source location");
@@ -194,14 +194,14 @@ public:
             verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");
         }
     }
-    DanglingPtr<T> get(std::source_location loc) const {
+    DanglingPtr<T> get(SourceLocation loc) const {
         if (u_ == nullptr) {
             return DanglingPtr<T>{nullptr};
         } else {
             return DanglingPtr<T>{erase_type(*u_), loc};
         }
     }
-    DanglingRef<T> ref(std::source_location loc) const {
+    DanglingRef<T> ref(SourceLocation loc) const {
         if (u_ == nullptr) {
             verbose_abort("Nullptr dereferenciation");
         }
@@ -238,10 +238,10 @@ public:
             verbose_abort("DanglingStackPtr: " + std::to_string(u_.nptrs) + " dangling pointers remain");
         }
     }
-    DanglingPtr<T> get(std::source_location loc) const {
+    DanglingPtr<T> get(SourceLocation loc) const {
         return DanglingPtr<T>{erase_type(u_), loc};
     }
-    DanglingRef<T> ref(std::source_location loc) const {
+    DanglingRef<T> ref(SourceLocation loc) const {
         return DanglingRef<T>{erase_type(u_), loc};
     }
     T* operator -> () {
@@ -259,17 +259,17 @@ class DanglingPtr {
     friend DanglingPtr<const T>;
     friend DanglingPtr<std::remove_const_t<T>>;
 public:
-    static DanglingPtr from_object(T& v, std::source_location loc)
+    static DanglingPtr from_object(T& v, SourceLocation loc)
     {
         return DanglingPtr{counter_from_object(v), loc};
     }
     // Constructor from pointer
     DanglingPtr(std::nullptr_t)
     : u_{nullptr},
-      loc_{std::source_location::current()}
+      loc_{CURRENT_SOURCE_LOCATION}
     {}
     // Constructor from ReferenceCounter
-    DanglingPtr(ReferenceCounter& u, std::source_location loc): u_{&u}, loc_{loc} {
+    DanglingPtr(ReferenceCounter& u, SourceLocation loc): u_{&u}, loc_{loc} {
         add_source_location<T>(this, *u_, loc);
         inc(*u_);
         // check_consistency<T>(*u_);
@@ -290,7 +290,7 @@ public:
             // check_consistency<T>(*u_);
         }
     }
-    void set_loc(std::source_location loc) {
+    void set_loc(SourceLocation loc) {
         if (u_ == nullptr) {
             verbose_abort("set_loc of nullptr");
         }
@@ -384,17 +384,17 @@ public:
     }
 private:
     ReferenceCounter* u_;
-    std::source_location loc_;
+    SourceLocation loc_;
 };
 
 template <class T>
 class DanglingRef {
 public:
-    static DanglingRef from_object(T& v, std::source_location loc) {
+    static DanglingRef from_object(T& v, SourceLocation loc) {
         return DanglingRef{counter_from_object(v), loc};
     }
     // Constructor from ReferenceCounter
-    DanglingRef(ReferenceCounter& u, std::source_location loc): u_{u}, loc_{loc} {
+    DanglingRef(ReferenceCounter& u, SourceLocation loc): u_{u}, loc_{loc} {
         add_source_location<T>(this, u_, loc);
         inc(u_);
         // check_consistency<T>(u_);
@@ -406,7 +406,7 @@ public:
         dec(u_);
         // check_consistency<T>(u_);
     }
-    void set_loc(std::source_location loc) {
+    void set_loc(SourceLocation loc) {
         loc_ = loc;
         remove_source_location<T>(this);
         add_source_location<T>(this, u_, loc_);
@@ -437,7 +437,7 @@ public:
     }
 private:
     ReferenceCounter& u_;
-    std::source_location loc_;
+    SourceLocation loc_;
 };
 
 template< class T, class... Args >

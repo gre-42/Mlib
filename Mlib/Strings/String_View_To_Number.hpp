@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <string_view>
 
+#ifdef __ANDROID__
+#include <fast_double_parser/fast_double_parser.hpp>
+#endif
+
 namespace Mlib {
 
 double safe_stod(const std::string_view& s);
@@ -27,15 +31,34 @@ template <> inline uint64_t safe_sto<uint64_t>(const std::string_view& s) { retu
 template <> inline bool safe_sto<bool>(const std::string_view& s) { return safe_stob(s); }
 
 template <class T>
-T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
+static T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
     T res;
-	auto end = s.data() + s.size();
+    auto end = s.data() + s.size();
     auto [ptr, ec] = std::from_chars(s.data(), end, res);
- 
+
     if ((ec != std::errc()) || (ptr != end)) {
         THROW_OR_ABORT(msg + std::string{": \""} + std::string{s} + '"');
     }
     return res;
 }
+
+#ifdef __ANDROID__
+template <>
+double safe_stox<double>(const std::string_view& s, const char* msg) {
+    double res;
+    auto end = s.data() + s.size();
+    auto ptr = fast_double_parser::parse_number(s.data(), end, &res);
+
+    if (ptr != end) {
+        THROW_OR_ABORT(msg + std::string{": \""} + std::string{s} + '"');
+    }
+    return res;
+}
+
+template <>
+float safe_stox<float>(const std::string_view& s, const char* msg) {
+    return (float)safe_stox<double>(s, msg);
+}
+#endif
 
 }

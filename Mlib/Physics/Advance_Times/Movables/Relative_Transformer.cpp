@@ -47,5 +47,5 @@ void RelativeTransformer::advance_time(float dt) {
 }
 
 void RelativeTransformer::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
+    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

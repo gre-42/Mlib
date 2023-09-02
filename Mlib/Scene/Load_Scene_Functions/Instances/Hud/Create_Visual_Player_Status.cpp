@@ -109,7 +109,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
         nullptr,
         [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
         {
-            at.delete_advance_time(*l, std::source_location::current());
+            at.delete_advance_time(*l, CURRENT_SOURCE_LOCATION);
             rl.remove(*l);
         }
     );

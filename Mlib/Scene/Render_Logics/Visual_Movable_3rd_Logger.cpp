@@ -38,7 +38,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
 VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;
 
 void VisualMovable3rdLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.delete_advance_time(*this, std::source_location::current());
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void VisualMovable3rdLogger::advance_time(float dt) {

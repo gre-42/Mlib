@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
+#include <Mlib/Source_Location.hpp>
 #include <ostream>
 
 using namespace Mlib;
@@ -18,7 +19,7 @@ void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& 
 }
 
 void VisualMovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.delete_advance_time(*this, std::source_location::current());
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void VisualMovableLogger::advance_time(float dt) {

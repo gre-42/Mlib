@@ -56,9 +56,10 @@ void LookAtMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_obje
     } else if (destroyed_object.ptr() == followed_node_) {
         if (!follower_node_->shutting_down()) {
             follower_node_->clearing_observers.remove(*this);
+            scene_.schedule_delete_root_node(follower_name_);
         }
     }
     follower_node_ = nullptr;
     followed_node_ = nullptr;
-    advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
+    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

@@ -147,7 +147,7 @@ void YawPitchLookAtNodes::notify_destroyed(DanglingRef<const SceneNode> destroye
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
-        advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
+        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
     }
 }
 

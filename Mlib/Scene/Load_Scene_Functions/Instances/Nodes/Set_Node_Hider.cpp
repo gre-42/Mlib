@@ -71,7 +71,7 @@ public:
         if (hide_old_) {
             on_destroy_();
         }
-        advance_times_.schedule_delete_advance_time(*this, std::source_location::current());
+        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
         if (destroyed_object.ptr() == node_to_hide_) {
             camera_node_->clearing_observers.remove(*this);
         } else if (destroyed_object.ptr() == camera_node_) {

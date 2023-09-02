@@ -68,8 +68,8 @@ private:
     std::string_view value_;
 };
 
-String str(std::string_view value) {
-    return String(std::move(value));
+inline String str(std::string_view value) {
+    return String(value);
 }
 
 template <class Inner>
@@ -97,7 +97,7 @@ private:
 };
 
 template <class Inner>
-Group<Inner> group(Inner inner) {
+inline Group<Inner> group(Inner inner) {
     return Group<Inner>{std::move(inner), 42};
 }
 
@@ -141,18 +141,18 @@ private:
 };
 
 template <class Inner>
-Repeat<Inner> plus(Inner inner) {
+inline Repeat<Inner> plus(Inner inner) {
     return Repeat<Inner>{std::move(inner), 1, SIZE_MAX};
 }
 
 template <class Inner>
-Repeat<Inner> star(Inner inner) {
+inline Repeat<Inner> star(Inner inner) {
     return Repeat<Inner>{std::move(inner), 0, SIZE_MAX};
 }
 
 
 template <class Inner>
-Repeat<Inner> opt(Inner inner) {
+inline Repeat<Inner> opt(Inner inner) {
     return Repeat<Inner>{std::move(inner), 0, 1};
 }
 
@@ -179,13 +179,13 @@ private:
 };
 
 template <class E0, class E1>
-auto seq(E0 e0, E1 e1) {
-    return Sequence{e0, e1};
+inline auto seq(E0 e0, E1 e1) {
+    return Sequence{std::move(e0), std::move(e1)};
 }
 
 template<class E0, class... ERight>
-auto seq(E0 e0, ERight... eright) {
-    return seq(e0, seq(eright...));
+inline auto seq(E0 e0, ERight... eright) {
+    return seq(std::move(e0), seq(std::move(eright)...));
 }
 
 class EndOfString {
