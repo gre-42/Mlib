@@ -9,6 +9,7 @@
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Render/Yield.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -96,6 +97,9 @@ void AggregateArrayRenderer::update_aggregates(
         }
         auto max_distance2 = squared(mat.max_triangle_distance);
         for (size_t i = 0; i < a->triangles.size(); ++i) {
+            if (i % THREAD_YIELD_INTERVAL == 0) {
+                std::this_thread::yield();
+            }
             const auto& c = a->triangles[i];
             auto distance_to_origin2 = sum(squared(c(0).position + c(1).position + c(2).position));
             if ((max_distance2 != INFINITY) &&

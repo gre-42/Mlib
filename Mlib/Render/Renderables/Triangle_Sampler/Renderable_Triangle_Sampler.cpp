@@ -11,6 +11,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
+#include <Mlib/Render/Yield.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -59,6 +60,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queue) const
 {
+    unsigned int yield_counter = 0;
     bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto sample_triangles = [&](
         const Bvh<double, TriangleAndSeed, 3>& triangle_bvh,
@@ -88,10 +90,14 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
             tiis.sample_triangle(
                 t.triangle,
                 t.seed,
-                [this, &mvp, &m, &offset, &scene_graph_config, &instances_queue](
+                [this, &mvp, &m, &offset, &scene_graph_config, &instances_queue, &yield_counter](
                     const FixedArray<double, 3>& p,
                     const ParsedResourceName& prn)
                 {
+                    if (++yield_counter >= THREAD_YIELD_INTERVAL) {
+                        yield_counter = 0;
+                        std::this_thread::yield();
+                    };
                     auto scvas = scene_node_resources_.get_single_precision_arrays(prn.name);
                     TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
                     auto mvp_instance = dot2d(mvp, mi_rel.affine());
