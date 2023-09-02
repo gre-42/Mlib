@@ -15,11 +15,11 @@ const AudioBufferAndFrequency& AudioBufferSequenceWithHysteresis::get_buffer_and
     float frequency,
     PitchAdjustmentStrategy strategy)
 {
-    if (frequency < 1e-6) {
-        THROW_OR_ABORT("Requested audio frequency is too low");
+    if (frequency < 0.f) {
+        THROW_OR_ABORT("Requested negative audio frequency");
     }
     if ((previous_result_ == nullptr) ||
-        (std::abs(previous_result_->frequency - frequency) / previous_result_->frequency > hysteresis_step_))
+        (std::abs(previous_result_->frequency - frequency) / (previous_result_->frequency + 1e-6) > hysteresis_step_))
     {
         previous_result_ = &seq_.get_buffer_and_frequency(frequency, strategy);
     }
