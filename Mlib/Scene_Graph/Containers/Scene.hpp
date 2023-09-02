@@ -69,7 +69,7 @@ public:
         DanglingRef<SceneNode> scene_node);
     void unregister_node(const std::string& name);
     void unregister_nodes(const Mlib::regex& regex);
-    DanglingRef<SceneNode> get_node(const std::string& name, std::source_location loc) const;
+    DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     void render(
         const FixedArray<double, 4, 4>& vp,

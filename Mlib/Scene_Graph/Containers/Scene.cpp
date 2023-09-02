@@ -255,7 +255,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     }
 }
 
-DanglingRef<SceneNode> Scene::get_node(const std::string& name, std::source_location loc) const {
+DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION loc) const {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
     if (morn_.root_node_scheduled_for_deletion(name, false)) {

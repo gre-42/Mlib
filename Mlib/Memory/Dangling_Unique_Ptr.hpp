@@ -1,4 +1,13 @@
 #pragma once
+
+namespace Mlib {
+template<typename T1, typename T2>
+concept pointers_are_comparable = requires(const T2* v) {
+    { (T1*)nullptr == v };
+};
+}
+
+#ifdef WITH_DANGLING_UNIQUE_PTR
 #include <Mlib/Os/Os.hpp>
 #include <atomic>
 #include <compare>
@@ -30,6 +39,7 @@ std::mutex& loc_mutex();
         return result;                                                          \
     }
 
+#define SOURCE_LOCATION std::source_location
 #define DP_LOC std::source_location::current()
 
 using ReferenceCounter = std::atomic_uint32_t;
@@ -153,11 +163,6 @@ void check_consistency(const ReferenceCounter& v) {
     }
 }
 
-template<typename T1, typename T2>
-concept pointers_are_comparable = requires(const T2* v) {
-    { (T1*)nullptr == v };
-};
-
 template <class T>
 class DanglingPtr;
 
@@ -264,7 +269,7 @@ public:
       loc_{std::source_location::current()}
     {}
     // Constructor from ReferenceCounter
-    explicit DanglingPtr(ReferenceCounter& u, std::source_location loc): u_{&u}, loc_{loc} {
+    DanglingPtr(ReferenceCounter& u, std::source_location loc): u_{&u}, loc_{loc} {
         add_source_location<T>(this, *u_, loc);
         inc(*u_);
         // check_consistency<T>(*u_);
@@ -441,3 +446,183 @@ DanglingUniquePtr<T> make_dunique( Args&&... args ) {
 }
 
 }
+
+#else
+
+#define DP_IMPLEMENT(T)
+using SOURCE_LOCATION = int;
+static const SOURCE_LOCATION DP_LOC = 42;
+
+namespace Mlib {
+
+template <class T>
+class DanglingPtr;
+
+template <class T>
+class DanglingRef;
+
+template <class T>
+class DanglingUniquePtr {
+public:
+    explicit DanglingUniquePtr(std::unique_ptr<T>&& u)
+    : u_{std::move(u)}
+    {}
+    DanglingUniquePtr(DanglingUniquePtr&& u)
+    : u_{std::move(u.u_)}
+    {}
+    void operator = (DanglingUniquePtr&& u) {
+        u_ = std::move(u.u_);
+    }
+    void operator = (std::nullptr_t) {
+        u_ = nullptr;
+    }
+    ~DanglingUniquePtr() = default;
+    DanglingPtr<T> get(SOURCE_LOCATION) const {
+        return DanglingPtr<T>{u_.get()};
+    }
+    DanglingRef<T> ref(SOURCE_LOCATION) const {
+        return DanglingRef<T>{*u_};
+    }
+    T* operator -> () {
+        return u_.get();
+    }
+    const T* operator -> () const {
+        return u_.get();
+    }
+    // Comparison
+    bool operator == (std::nullptr_t) const {
+        return u_ == nullptr;
+    }
+    bool operator != (std::nullptr_t) const {
+        return u_ != nullptr;
+    }
+    std::strong_ordering operator <=> (const DanglingUniquePtr& other) const {
+        return u_ <=> other;
+    }
+private:
+    std::unique_ptr<T> u_;
+};
+
+template <class T>
+class DanglingStackPtr {
+public:
+    DanglingStackPtr() = default;
+    ~DanglingStackPtr() = default;
+    DanglingPtr<T> get(SOURCE_LOCATION) const {
+        return DanglingPtr<T>{const_cast<T*>(&u_)};
+    }
+    DanglingRef<T> ref(SOURCE_LOCATION) const {
+        return DanglingRef<T>{const_cast<T&>(u_)};
+    }
+    T* operator -> () {
+        return &u_;
+    }
+    const T* operator -> () const {
+        return &u_;
+    }
+private:
+    T u_;
+};
+
+template <class T>
+class DanglingPtr {
+    friend DanglingPtr<const T>;
+    friend DanglingPtr<std::remove_const_t<T>>;
+public:
+    static DanglingPtr from_object(T& v, SOURCE_LOCATION)
+    {
+        return DanglingPtr{&v};
+    }
+    DanglingPtr(std::nullptr_t): u_{nullptr} {}
+    explicit DanglingPtr(T* u): u_{u} {}
+    DanglingPtr(const DanglingPtr& other) : u_{other.u_} {}
+    DanglingPtr(DanglingPtr&& other) : u_{other.u_} {}
+    void set_loc(SOURCE_LOCATION) {}
+    T& release() {
+        T& res = *u_;
+        u_ = nullptr;
+        return res;
+    }
+    void operator = (std::nullptr_t) {
+        u_ = nullptr;
+    }
+    void operator = (const DanglingPtr& other) {
+        u_ = other.u_;
+    }
+    void operator = (DanglingPtr&& other) {
+        u_ = other.u_;
+    }
+    ~DanglingPtr() = default;
+    operator DanglingPtr<const T>() const {
+        return DanglingPtr<const T>{u_};
+    }
+    DanglingRef<T> operator * () const {
+        return DanglingRef<T>{*u_};
+    }
+    T* operator -> () const {
+        return u_;
+    }
+    template <typename T2>
+    requires pointers_are_comparable<T, T2>
+    bool operator == (const DanglingPtr<T2>& other) const {
+        return u_ == other.u_;
+    }
+    template <typename T2>
+    requires pointers_are_comparable<T, T2>
+    bool operator != (const DanglingPtr<T2>& other) const {
+        return u_ != other.u_;
+    }
+    bool operator == (std::nullptr_t) const {
+        return u_ == nullptr;
+    }
+    bool operator != (std::nullptr_t) const {
+        return u_ != nullptr;
+    }
+    std::strong_ordering operator <=> (const DanglingPtr& other) const {
+        return u_ <=> other.u_;
+    }
+private:
+    T* u_;
+};
+
+template <class T>
+class DanglingRef {
+public:
+    static DanglingRef from_object(T& v, SOURCE_LOCATION) {
+        return DanglingRef{v};
+    }
+    explicit DanglingRef(T& u): u_{u} {}
+    DanglingRef(const DanglingRef& other): DanglingRef{other.u_}
+    {}
+    ~DanglingRef() = default;
+    void set_loc(SOURCE_LOCATION) {}
+    operator DanglingRef<const T>() const {
+        return DanglingRef<const T>{u_};
+    }
+    DanglingPtr<T> ptr() const {
+        return DanglingPtr<T>{&u_};
+    }
+    T* operator -> () const {
+        return &u_;
+    }
+    bool operator < (const T& p) const {
+        return u_ < p;
+    }
+    bool operator == (const T& p) const {
+        return u_ == p;
+    }
+    bool operator != (const T& p) const {
+        return u_ != p;
+    }
+private:
+    T& u_;
+};
+
+template< class T, class... Args >
+DanglingUniquePtr<T> make_dunique( Args&&... args ) {
+    return DanglingUniquePtr{std::make_unique<T>(std::forward<Args>(args)...)};
+}
+
+}
+
+#endif

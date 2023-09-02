@@ -47,6 +47,7 @@ void test_dangling_unique() {
         auto b = a.get(DP_LOC);
         lst.push_back(a.get(DP_LOC));
         lst.clear();
+        assert_true(*b == 5);
     }
 }
 
