@@ -1,6 +1,6 @@
 #include "Audio_Resources.hpp"
 #include <Mlib/Audio/Audio_Buffer.hpp>
-#include <Mlib/Audio/Audio_Buffer_Sequence.hpp>
+#include <Mlib/Audio/Audio_Buffer_Sequence_With_Hysteresis.hpp>
 #include <Mlib/Audio/Audio_File_Sequence.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <list>
@@ -44,23 +44,23 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const std::string& name)
     return buffer;
 }
 
-void AudioResources::add_buffer_sequence(const std::string& name, const std::string& filename, float gain) {
+void AudioResources::add_buffer_sequence(const std::string& name, const std::string& filename, float gain, float hysteresis_step) {
     std::unique_lock lock{mutex_};
-    if (!buffer_filenames_.insert({name, {filename, gain}}).second) {
+    if (!buffer_sequence_filenames_.insert({name, {filename, gain, hysteresis_step}}).second) {
         THROW_OR_ABORT("Audio sequence with name \"" + name + "\" already exists");
     }
 }
 
 float AudioResources::get_buffer_sequence_gain(const std::string& name) const {
     std::shared_lock lock{mutex_};
-    auto it = buffer_filenames_.find(name);
-    if (it == buffer_filenames_.end()) {
+    auto it = buffer_sequence_filenames_.find(name);
+    if (it == buffer_sequence_filenames_.end()) {
         THROW_OR_ABORT("Could not find audio sequence with name \"" + name + '"');
     }
     return it->second.gain;
 }
 
-std::shared_ptr<AudioBufferSequence> AudioResources::get_buffer_sequence(const std::string& name) const {
+std::shared_ptr<AudioBufferSequenceWithHysteresis> AudioResources::get_buffer_sequence(const std::string& name) const {
     {
         std::shared_lock lock{mutex_};
         auto it = buffer_sequences_.find(name);
@@ -69,8 +69,8 @@ std::shared_ptr<AudioBufferSequence> AudioResources::get_buffer_sequence(const s
         }
     }
     std::unique_lock lock{mutex_};
-    auto it = buffer_filenames_.find(name);
-    if (it == buffer_filenames_.end()) {
+    auto it = buffer_sequence_filenames_.find(name);
+    if (it == buffer_sequence_filenames_.end()) {
         THROW_OR_ABORT("Could not find audio sequence with name \"" + name + '"');
     }
     auto items = load_audio_file_sequence(it->second.filename);
@@ -80,7 +80,7 @@ std::shared_ptr<AudioBufferSequence> AudioResources::get_buffer_sequence(const s
             .buffer = std::make_shared<AudioBuffer>(AudioBuffer::from_wave(i.filename)),
             .frequency = i.frequency});
     }
-    auto seq = std::make_shared<AudioBufferSequence>(std::vector(buffers.begin(), buffers.end()));
+    auto seq = std::make_shared<AudioBufferSequenceWithHysteresis>(std::vector(buffers.begin(), buffers.end()), it->second.hysteresis_step);
     if (!buffer_sequences_.insert({name, seq}).second) {
         THROW_OR_ABORT("Could not insert audio buffer sequence \"" + name + '"');
     }

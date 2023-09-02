@@ -10,7 +10,7 @@
 namespace Mlib {
 
 class AudioBuffer;
-class AudioBufferSequence;
+class AudioBufferSequenceWithHysteresis;
 
 class EngineAudio: public EngineEventListener {
 public:
@@ -28,7 +28,7 @@ public:
     virtual void set_position(const FixedArray<double, 3>& position) override;
 private:
 #ifndef WITHOUT_ALUT
-    std::shared_ptr<AudioBufferSequence> driving_buffer_sequence_;
+    std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;
     float driving_gain_;
     CrossFade cross_fade_;
     float p_reference_;

@@ -15,6 +15,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(gain);
+DECLARE_ARGUMENT(hysteresis_step);
 }
 
 LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
@@ -24,6 +25,7 @@ LoadSceneJsonUserFunction AddAudioSequence::json_user_function = [](const LoadSc
     AudioResourceContextStack::primary_audio_resources()->add_buffer_sequence(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.path(KnownArgs::filename),
-        args.arguments.at<float>(KnownArgs::gain, 1.f));
+        args.arguments.at<float>(KnownArgs::gain, 1.f),
+        args.arguments.at<float>(KnownArgs::hysteresis_step));
 #endif
 };

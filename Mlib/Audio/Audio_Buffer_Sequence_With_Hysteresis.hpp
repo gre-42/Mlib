@@ -1,0 +1,20 @@
+#pragma once
+#include <Mlib/Audio/Audio_Buffer_Sequence.hpp>
+
+namespace Mlib {
+
+class AudioBufferSequenceWithHysteresis {
+public:
+    AudioBufferSequenceWithHysteresis(
+        std::vector<AudioBufferAndFrequency> buffers,
+        float hysteresis_step);
+    const AudioBufferAndFrequency& get_buffer_and_frequency(
+        float frequency,
+        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::ROUNDING);
+private:
+    const AudioBufferAndFrequency* previous_result_;
+    float hysteresis_step_;
+    AudioBufferSequence seq_;
+};
+
+}
