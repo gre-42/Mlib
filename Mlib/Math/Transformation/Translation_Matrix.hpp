@@ -25,12 +25,6 @@ public:
     LeftArray(const FixedArray<TData, n+1, n+1>& a)
     : a_{a}
     {}
-    constexpr static FixedArrayShape<n+1, n> shape() {
-        return FixedArrayShape<n+1, n>();
-    }
-    const LeftArray& rows_as_1D() const {
-        return *this;
-    }
     const TData& operator () (size_t r, size_t c) const {
         return a_(r, c);
     }

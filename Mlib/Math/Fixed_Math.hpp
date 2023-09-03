@@ -75,6 +75,35 @@ FixedArray<TData, nrows, ncolumns> dot2d(
     return result;
 }
 
+template <class TDerived, class TData, size_t... tsize>
+constexpr const auto& rows_as_1D(const BaseDenseFixedArray<TDerived, TData, tsize...>& a) {
+    if constexpr (FixedArrayShape<tsize...>::ndim() == 2) {
+        return *a;
+    } else {
+        return a->rows_as_1D();
+    }
+}
+
+template <class TDerived, class TData, size_t... tsize>
+constexpr const auto& columns_as_1D(const BaseDenseFixedArray<TDerived, TData, tsize...>& a) {
+    if constexpr (FixedArrayShape<tsize...>::ndim() == 2) {
+        return *a;
+    } else {
+        return a->columns_as_1D();
+    }
+}
+
+template <class TDerived, class TData, size_t... tsize_a, size_t... tsize_new>
+const auto& reshaped(
+    const BaseDenseFixedArray<TDerived, TData, tsize_a...>& a,
+    const FixedArrayShape<tsize_new...>& new_shape) {
+    if constexpr (FixedArrayShape<tsize_a...>() == FixedArrayShape<tsize_new...>()) {
+        return *a;
+    } else {
+        return a->columns_as_1D();
+    }
+}
+
 template <class TDerived, class TData, size_t... tsize_a, size_t... tsize_b>
 auto dot(
     const BaseDenseFixedArray<TDerived, TData, tsize_a...>& a,
@@ -83,23 +112,16 @@ auto dot(
     // a.shape = (a_l0, a_l1, n)
     // b.shape = (n, b_l0, b_l1)
     // r.shape = (a_l0, a_l1, b_r0, b_r1)
-    if constexpr (
-        (FixedArray<TData, tsize_a...>::ndim() != 2) ||
-        (FixedArray<TData, tsize_b...>::ndim() != 2))
-    {
-        const auto& a2 = a->rows_as_1D();
-        const auto& b2 = b.columns_as_1D();
-        auto r = dot2d(a2, b2);
-        auto r_shape =
-            a->shape()
-            .erased_last()
-            .concatenated(
-                b.shape()
-                .erased_first());
-        return r.reshaped(r_shape);
-    } else {
-        return dot2d(a, b);
-    }
+    const auto& a2 = rows_as_1D(a);
+    const auto& b2 = columns_as_1D(b);
+    auto r = dot2d(a2, b2);
+    auto r_shape =
+        FixedArrayShape<tsize_a...>()
+        .erased_last()
+        .concatenated(
+            FixedArrayShape<tsize_b...>()
+            .erased_first());
+    return r.reshaped(r_shape);
 }
 
 template <class TDerived, class TData, size_t tsize_r, size_t tsize_c>

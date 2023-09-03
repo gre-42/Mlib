@@ -55,7 +55,7 @@ public:
         return tshape0;
     }
     static constexpr size_t ndim() {
-        return 1 + FixedArray<TData, tshape...>::ndim();
+        return shape().ndim();
     }
 
     FixedArray() = default;

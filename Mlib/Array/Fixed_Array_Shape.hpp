@@ -26,6 +26,7 @@ public:
     constexpr static auto concatenated(const FixedArrayShape<tsize_b...>& b) { return ::Mlib::FasUtils::concatenated(A(), b); }
     constexpr static auto last();
     constexpr static auto nelements();
+    constexpr static auto ndim();
     constexpr static auto rows_as_1D();
     constexpr static auto columns_as_1D();
     template <size_t N>
@@ -167,9 +168,19 @@ namespace FasUtils {
     }
 
     template <size_t tsize0, size_t... tsize>
-    constexpr auto nelements(FixedArrayShape<tsize0, tsize...>) {
+    constexpr size_t nelements(FixedArrayShape<tsize0, tsize...>) {
         constexpr FixedArrayShape<tsize...> a;
         return tsize0 * nelements(a);
+    }
+
+    constexpr size_t ndim(FixedArrayShape<>) {
+        return 0;
+    }
+
+    template <size_t tsize0, size_t... tsize>
+    constexpr size_t ndim(FixedArrayShape<tsize0, tsize...>) {
+        constexpr FixedArrayShape<tsize...> a;
+        return 1 + ndim(a);
     }
 }
 
@@ -201,6 +212,9 @@ constexpr auto FixedArrayShape<tsize...>::last() { return ::Mlib::FasUtils::last
 
 template <size_t... tsize>
 constexpr auto FixedArrayShape<tsize...>::nelements() { return ::Mlib::FasUtils::nelements(A()); }
+
+template <size_t... tsize>
+constexpr auto FixedArrayShape<tsize...>::ndim() { return ::Mlib::FasUtils::ndim(A()); }
 
 template <size_t... tsize>
 constexpr auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils::rows_as_1D(A()); }
