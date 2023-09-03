@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
@@ -89,6 +90,7 @@ public:
         unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
     void preload(const TextureDescriptor& descriptor) const;
+    bool texture_is_loaded_and_try_preload(const TextureDescriptor& descriptor);
     GLuint get_texture(
         const TextureDescriptor& descriptor,
         CallerType caller_type = CallerType::RENDER) const;
@@ -150,6 +152,7 @@ public:
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
+    bool texture_is_loaded_unsafe(const std::string& name) const;
     void deallocate();
     void initialize_non_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
@@ -163,6 +166,7 @@ private:
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
     mutable std::map<std::pair<std::string, float>, LoadedFont> font_textures_;
     mutable SafeRecursiveSharedMutex mutex_;
+    mutable std::mutex map_mutex_;
     std::map<std::string, FixedArray<double, 4, 4>> vps_;
     std::map<std::string, float> offsets_;
     std::map<std::string, float> discreteness_;
@@ -172,6 +176,7 @@ private:
     mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
+    BackgroundLoop preloader_background_loop_;
     DeallocationToken deallocation_token_;
 };
 

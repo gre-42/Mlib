@@ -13,6 +13,7 @@ public:
     ControlsLogic(
         const std::string& gamepad_texture,
         std::unique_ptr<IWidget>&& widget,
+        DelayLoadPolicy delay_load_policy,
         FocusFilter focus_filter);
     ~ControlsLogic();
 

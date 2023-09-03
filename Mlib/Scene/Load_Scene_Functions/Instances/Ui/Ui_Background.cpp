@@ -6,6 +6,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
@@ -26,6 +27,7 @@ DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(update);
+DECLARE_ARGUMENT(delay_load_policy);
 DECLARE_ARGUMENT(focus_mask);
 }
 
@@ -58,6 +60,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
+        delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{ .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)) });
     render_logics.append(nullptr, bg);
 }

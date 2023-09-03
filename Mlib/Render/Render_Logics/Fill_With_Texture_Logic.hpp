@@ -37,6 +37,7 @@ public:
     ~FillWithTextureLogic();
     void set_image_resource_name(const std::string& image_resource_name);
     void update_texture_id();
+    bool texture_is_loaded_and_try_preload() const;
     void render();
     void render(
         const LayoutConstraintParameters& lx,

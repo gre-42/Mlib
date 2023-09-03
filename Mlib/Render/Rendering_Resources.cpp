@@ -323,7 +323,8 @@ RenderingResources::RenderingResources(
     unsigned int max_anisotropic_filtering_level)
 : name_{ std::move(name) },
   max_anisotropic_filtering_level_{ max_anisotropic_filtering_level },
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+  preloader_background_loop_{"Preload"},
+  deallocation_token_{ render_deallocator.insert([this](){deallocate();}) }
 {}
 
 RenderingResources::~RenderingResources() {
@@ -333,14 +334,17 @@ RenderingResources::~RenderingResources() {
 void RenderingResources::deallocate() {
     std::scoped_lock lock{mutex_};
     render_programs_.clear();
-    std::erase_if(textures_, [](auto& item){
-        auto& [_, texture] = item;
-        if (texture.needs_gc) {
-            try_delete_texture(const_cast<GLuint&>(texture.handle));
-            return true;
-        }
-        return false;
-    });
+    {
+        std::scoped_lock lock{map_mutex_};
+        std::erase_if(textures_, [](auto& item){
+            auto& [_, texture] = item;
+            if (texture.needs_gc) {
+                try_delete_texture(const_cast<GLuint&>(texture.handle));
+                return true;
+            }
+            return false;
+        });
+    }
     font_textures_.clear();
 }
 
@@ -365,7 +369,9 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             !preloaded_texture_dds_data_.contains(descriptor.color) &&
             !auto_atlas_tile_descriptors_.contains(descriptor.color))
         {
-            if (!preloaded_texture_data_.insert({descriptor.color, get_texture_data(desc, FlipMode::VERTICAL)}).second) {
+            auto data = get_texture_data(desc, FlipMode::VERTICAL);
+            std::scoped_lock lock{map_mutex_};
+            if (!preloaded_texture_data_.try_emplace(descriptor.color, std::move(data)).second) {
                 THROW_OR_ABORT("Could not preload color");
             } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded color texture: " << descriptor.color;
@@ -377,20 +383,57 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             !preloaded_texture_dds_data_.contains(desc.normal) &&
             !auto_atlas_tile_descriptors_.contains(descriptor.normal))
         {
-            if (!preloaded_texture_data_.insert({
-                desc.normal,
-                get_texture_data(
-                    TextureDescriptor{
-                        .color = desc.normal,
-                        .color_mode = ColorMode::RGB},
-                    FlipMode::VERTICAL)}).second)
-            {
+            auto data = get_texture_data(
+                TextureDescriptor{
+                    .color = desc.normal,
+                    .color_mode = ColorMode::RGB},
+                FlipMode::VERTICAL);
+            std::scoped_lock lock{map_mutex_};
+            if (!preloaded_texture_data_.try_emplace(desc.normal, std::move(data)).second) {
                 THROW_OR_ABORT("Could not preload normal");
             } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded normal texture: " << desc.normal;
             }
         }
     }
+}
+
+bool RenderingResources::texture_is_loaded_and_try_preload(const TextureDescriptor& descriptor) {
+    {
+        std::scoped_lock lock{map_mutex_};
+        if (texture_is_loaded_unsafe(descriptor.color)) {
+            return true;
+        }
+    }
+    if (!preloader_background_loop_.done()) {
+        return false;
+    }
+    std::scoped_lock lock{mutex_};
+    if (texture_is_loaded_unsafe(descriptor.color)) {
+        return true;
+    }
+    if (preloader_background_loop_.done()) {
+        preloader_background_loop_.run([this, descriptor](){
+            preload(descriptor);
+        });
+    }
+    return false;
+}
+
+bool RenderingResources::texture_is_loaded_unsafe(const std::string& name) const {
+    if (preloaded_texture_dds_data_.contains(name)) {
+        return true;
+    }
+    if (preloaded_texture_data_.contains(name)) {
+        return true;
+    }
+    if (textures_.contains(name)) {
+        return true;
+    }
+    if (auto_atlas_tile_descriptors_.contains(name)) {
+        THROW_OR_ABORT("Attempted lazy access to auto texture atlas");
+    }
+    return false;
 }
 
 bool RenderingResources::contains_texture(const std::string& name) const {
@@ -523,14 +566,20 @@ GLuint RenderingResources::get_texture(
 
     GLuint texture;
 
-    if (auto_atlas_tile_descriptors_.contains(descriptor.color)) {
+    if (auto ait = auto_atlas_tile_descriptors_.find(descriptor.color); ait != auto_atlas_tile_descriptors_.end()) {
         if (caller_type != CallerType::PRELOAD) {
             THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color + '"');
         }
-        const auto& adesc = auto_atlas_tile_descriptors_.at(descriptor.color);
+        const auto& adesc = ait->second;
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
-        CHK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, adesc.mip_level_count, nchannels2sized_internal_format((GLenum)adesc.color_mode), adesc.width, adesc.height, integral_cast<GLsizei>(adesc.tiles.size())));
+        CHK(glTexStorage3D(
+            GL_TEXTURE_2D_ARRAY,
+            adesc.mip_level_count,
+            nchannels2sized_internal_format((GLenum)adesc.color_mode),
+            adesc.width,
+            adesc.height,
+            integral_cast<GLsizei>(adesc.tiles.size())));
         if ((desc.anisotropic_filtering_level != 0) &&
             (max_anisotropic_filtering_level_ != 0) &&
             (aniso != 0))
@@ -553,6 +602,7 @@ GLuint RenderingResources::get_texture(
                 //     integral_cast<size_t>(adesc.height / (1 << level)));
             }
         }
+        auto_atlas_tile_descriptors_.erase(ait);
     } else {
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D, texture));
@@ -570,7 +620,8 @@ GLuint RenderingResources::get_texture(
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
 
-    textures_.insert({name, TextureHandleAndNeedsGc{texture, true}});
+    std::scoped_lock map_lock{map_mutex_};
+    textures_.try_emplace(name, TextureHandleAndNeedsGc{texture, true});
     return texture;
 }
 
@@ -618,7 +669,8 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    if (auto it2 = textures_.insert({name, TextureHandleAndNeedsGc{textureID, true}}); !it2.second) {
+    std::scoped_lock map_lock{map_mutex_};
+    if (auto it2 = textures_.try_emplace(name, TextureHandleAndNeedsGc{textureID, true}); !it2.second) {
         THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
     }
     return textureID;
@@ -673,7 +725,7 @@ void RenderingResources::add_auto_texture_atlas(
     append_render_allocator(
         [this, name, texture_atlas_descriptor]()
         {preload({.color = name, .color_mode = texture_atlas_descriptor.color_mode});});
-    if (auto it = auto_atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
+    if (auto it = auto_atlas_tile_descriptors_.try_emplace(name, texture_atlas_descriptor); !it.second) {
         THROW_OR_ABORT("Auto atlas descriptor with name \"" + name + "\" already exists");
     } 
 }
@@ -885,7 +937,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
     std::scoped_lock lock{mutex_};
-    if (!blend_map_textures_.insert({ name, bmt }).second) {
+    if (!blend_map_textures_.try_emplace(name, bmt).second) {
         THROW_OR_ABORT("Blend map texture with name \"" + name + "\" already exists");
     }
 }
@@ -1029,7 +1081,7 @@ const LoadedFont& RenderingResources::get_font_texture(
             return it->second;
         }
     }
-    auto ins = font_textures_.insert({{ttf_filename, font_height_pixels}, LoadedFont()});
+    auto ins = font_textures_.try_emplace({ttf_filename, font_height_pixels}, LoadedFont());
     if (!ins.second) {
         THROW_OR_ABORT("Could not insert font texture");
     }
@@ -1092,6 +1144,13 @@ void RenderingResources::insert_texture(
         }
         THROW_OR_ABORT("Preloaded non-DDS-texture with name \"" + name + "\" already exists");
     }
+    if (auto_atlas_tile_descriptors_.contains(name)) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
+            lwarn() << "Auto texture atlas with name \"" + name + "\" already exists";
+            return;
+        }
+        THROW_OR_ABORT("Auto texture atlas with name \"" + name + "\" already exists");
+    }
     if (textures_.contains(name)) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
             lwarn() << "Non-DDS-texture with name \"" + name + "\" already exists";
@@ -1107,10 +1166,12 @@ void RenderingResources::insert_texture(
     {
         auto d = std::move(data);
         auto image = stb_load8(name, FlipMode::NONE, &d, IncorrectDatasizeBehavior::CONVERT);
+        std::scoped_lock lock{map_mutex_};
         if (!preloaded_texture_data_.try_emplace(name, std::move(image)).second) {
             THROW_OR_ABORT("Internal error: Preloaded STB-texture with name \"" + name + "\" already exists");
         }
     } else if (extension == ".dds") {
+        std::scoped_lock lock{map_mutex_};
         if (!preloaded_texture_dds_data_.try_emplace(name, std::move(data)).second) {
             THROW_OR_ABORT("Internal error: Preloaded DDS-texture with name \"" + name + "\" already exists");
         }
@@ -1129,6 +1190,7 @@ void RenderingResources::initialize_non_dds_texture(
             linfo() << this << " Using preloaded texture: " << name;
         }
         si = std::move(preloaded_texture_data_.at(name));
+        std::scoped_lock lock{map_mutex_};
         preloaded_texture_data_.erase(name);
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
@@ -1255,4 +1317,5 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
             }
         }
     }
+    preloaded_texture_dds_data_.erase(it);
 }

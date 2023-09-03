@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -21,6 +22,7 @@ DECLARE_ARGUMENT(left);
 DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
+DECLARE_ARGUMENT(delay_load_policy);
 }
 
 const std::string Controls::key = "controls";
@@ -57,6 +59,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
+        delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } });

@@ -68,6 +68,10 @@ void FillWithTextureLogic::update_texture_id() {
     }
 }
 
+bool FillWithTextureLogic::texture_is_loaded_and_try_preload() const {
+    return rendering_resources_->texture_is_loaded_and_try_preload({.color = image_resource_name_});
+}
+
 void FillWithTextureLogic::render()
 {
     LOG_FUNCTION("FillWithTextureLogic::render");

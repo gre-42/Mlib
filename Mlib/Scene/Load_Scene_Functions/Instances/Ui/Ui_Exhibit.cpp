@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
+#include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -25,6 +26,7 @@ DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(update);
+DECLARE_ARGUMENT(delay_load_policy);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 }
@@ -44,10 +46,10 @@ UiExhibit::UiExhibit(RenderableScene& renderable_scene)
 void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .particle_resources = primary_rendering_context.particle_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                // read by RenderLogics
+        .scene_node_resources = primary_rendering_context.scene_node_resources,     // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
+        .particle_resources = primary_rendering_context.particle_resources,         // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
+        .rendering_resources = primary_rendering_context.rendering_resources,       // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
+        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                   // read by RenderLogics
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         args.gallery[args.arguments.at<std::string>(KnownArgs::id_in_gallery)],
         std::make_unique<Widget>(
@@ -55,6 +57,7 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
+        delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});

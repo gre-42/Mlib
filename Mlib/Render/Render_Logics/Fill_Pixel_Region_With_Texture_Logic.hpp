@@ -7,12 +7,14 @@
 namespace Mlib {
 
 class IWidget;
+enum class DelayLoadPolicy;
 
 class FillPixelRegionWithTextureLogic: public RenderLogic {
 public:
     FillPixelRegionWithTextureLogic(
         std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic,
         std::unique_ptr<IWidget>&& widget,
+        DelayLoadPolicy delay_load_policy,
         FocusFilter focus_filter);
 
     virtual void render(
@@ -28,6 +30,7 @@ public:
 private:
     std::shared_ptr<FillWithTextureLogic> fill_with_texture_logic_;
     std::unique_ptr<IWidget> widget_;
+    DelayLoadPolicy delay_load_policy_;
     FocusFilter focus_filter_;
 };
 
