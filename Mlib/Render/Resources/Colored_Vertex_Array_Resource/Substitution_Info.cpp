@@ -139,7 +139,7 @@ void SubstitutionInfo::delete_triangles_far_away(
     };
     if (run_in_background) {
         if (background_loop_ == nullptr) {
-            background_loop_ = std::make_unique<BackgroundLoop>();
+            background_loop_ = std::make_unique<BackgroundLoop>("Subst_BG");
             triangles_to_delete_.reserve(noperations2_);
             triangles_to_insert_.reserve(noperations2_);
         }

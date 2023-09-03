@@ -5,11 +5,11 @@
 
 using namespace Mlib;
 
-BackgroundLoop::BackgroundLoop()
+BackgroundLoop::BackgroundLoop(std::string thread_name)
 : i_{SIZE_MAX},
   done_{true},
-  thread_{[this](){
-        set_thread_name("Background loop");
+  thread_{[this, tn = std::move(thread_name)](){
+        set_thread_name(tn);
         while (true) {
             std::unique_lock lck{ mutex_ };
             task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });

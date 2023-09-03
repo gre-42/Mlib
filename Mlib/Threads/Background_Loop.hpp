@@ -13,7 +13,7 @@ namespace Mlib {
  */
 class BackgroundLoop {
 public:
-    BackgroundLoop();
+    explicit BackgroundLoop(std::string thread_name);
     ~BackgroundLoop();
     WorkerStatus tick(size_t update_interval);
     void run(const std::function<void()>& task);
