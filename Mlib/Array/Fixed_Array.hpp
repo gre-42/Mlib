@@ -1,6 +1,6 @@
 #pragma once
-#include "Base_Dense_Array.hpp"
-#include "Fixed_Array_Shape.hpp"
+#include <Mlib/Array/Base_Dense_Fixed_Array.hpp>
+#include <Mlib/Array/Fixed_Array_Shape.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Template.hpp>
@@ -39,7 +39,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 template <typename TData, size_t tshape0, size_t... tshape>
-class FixedArray<TData, tshape0, tshape...>: public BaseDenseArray<FixedArray<TData, tshape0, tshape...>, TData>
+class FixedArray<TData, tshape0, tshape...>: public BaseDenseFixedArray<FixedArray<TData, tshape0, tshape...>, TData, tshape0, tshape...>
 {
 public:
     typedef TData value_type;
@@ -359,7 +359,7 @@ private:
 };
 
 template <typename TData>
-class FixedArray<TData>: public BaseDenseArray<FixedArray<TData>, TData>
+class FixedArray<TData>: public BaseDenseFixedArray<FixedArray<TData>, TData>
 {
 public:
     typedef TData value_type;

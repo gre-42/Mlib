@@ -122,7 +122,6 @@ void TriangleInteriorInstancesSampler::sample_triangle(
             if (prn == nullptr) {
                 return;
             }
-            TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
             f(p, *prn);
         });
 }

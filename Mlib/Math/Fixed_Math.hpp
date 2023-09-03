@@ -57,9 +57,9 @@ auto outer(
     }
 }
 
-template <class TData, size_t nrows, size_t ncolumns, size_t nsum>
+template <class TDerived, class TData, size_t nrows, size_t ncolumns, size_t nsum>
 FixedArray<TData, nrows, ncolumns> dot2d(
-    const FixedArray<TData, nrows, nsum>& a,
+    const BaseDenseFixedArray<TDerived, TData, nrows, nsum>& a,
     const FixedArray<TData, nsum, ncolumns>& b)
 {
     FixedArray<TData, nrows, ncolumns> result;
@@ -67,7 +67,7 @@ FixedArray<TData, nrows, ncolumns> dot2d(
         for (size_t c = 0; c < ncolumns; ++c) {
             TData v = 0;
             for (size_t i = 0; i < nsum; ++i) {
-                v += a(r, i) * b(i, c);
+                v += (*a)(r, i) * b(i, c);
             }
             result(r, c) = v;
         }
@@ -75,9 +75,9 @@ FixedArray<TData, nrows, ncolumns> dot2d(
     return result;
 }
 
-template <class TData, size_t... tsize_a, size_t... tsize_b>
+template <class TDerived, class TData, size_t... tsize_a, size_t... tsize_b>
 auto dot(
-    const FixedArray<TData, tsize_a...>& a,
+    const BaseDenseFixedArray<TDerived, TData, tsize_a...>& a,
     const FixedArray<TData, tsize_b...>& b)
 {
     // a.shape = (a_l0, a_l1, n)
@@ -87,11 +87,11 @@ auto dot(
         (FixedArray<TData, tsize_a...>::ndim() != 2) ||
         (FixedArray<TData, tsize_b...>::ndim() != 2))
     {
-        const auto& a2 = a.rows_as_1D();
+        const auto& a2 = a->rows_as_1D();
         const auto& b2 = b.columns_as_1D();
         auto r = dot2d(a2, b2);
         auto r_shape =
-            a.shape()
+            a->shape()
             .erased_last()
             .concatenated(
                 b.shape()
@@ -102,9 +102,9 @@ auto dot(
     }
 }
 
-template <class TData, size_t tsize_r, size_t tsize_c>
+template <class TDerived, class TData, size_t tsize_r, size_t tsize_c>
 FixedArray<TData, tsize_r> dot1d(
-    const FixedArray<TData, tsize_r, tsize_c>& a,
+    const BaseDenseFixedArray<TDerived, TData, tsize_r, tsize_c>& a,
     const FixedArray<TData, tsize_c>& b)
 {
     return dot(a, b);

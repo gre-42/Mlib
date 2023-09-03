@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Sampler2.hpp>
+#include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
@@ -82,7 +83,8 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                     t.triangle(0).position,
                     t.triangle(1).position,
                     t.triangle(2).position}};
-                auto mvp_center = dot2d(mvp, TransformationMatrix<float, double, 3>{ fixed_identity_array<float, 3>(), bs.center() }.affine());
+                TranslationMatrix<double, 3> mc_rel{ bs.center() };
+                auto mvp_center = mvp * mc_rel;
                 if (!VisibilityCheck{ mvp_center }.is_visible(2. * bs.radius() / scale_ + max_distance_to_camera)) {
                     return;
                 }
@@ -99,8 +101,8 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                         std::this_thread::yield();
                     };
                     auto scvas = scene_node_resources_.get_single_precision_arrays(prn.name);
-                    TransformationMatrix<float, double, 3> mi_rel{ fixed_identity_array<float, 3>(), p };
-                    auto mvp_instance = dot2d(mvp, mi_rel.affine());
+                    TranslationMatrix<double, 3> mi_rel{ p };
+                    auto mvp_instance = mvp * mi_rel;
                     auto m_instance_d = m * mi_rel;
                     instances_queue.insert(
                         scvas,

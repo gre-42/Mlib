@@ -5,6 +5,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Translation_Matrix.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -45,8 +46,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         .at(trailer_asset_id)
         .rp;
     auto node = make_dunique<SceneNode>();
-    auto pose0 = TransformationMatrix<float, double, 3>(
-        fixed_identity_array<float, 3>(),
+    auto pose0 = TranslationMatrix<double, 3>(
         rb->trailer_hitches_.get_position_male().casted<double>() -
         vars.database.at<FixedArray<double, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
     auto pose1 = rb->rbi_.rbp_.abs_transformation() * pose0;
