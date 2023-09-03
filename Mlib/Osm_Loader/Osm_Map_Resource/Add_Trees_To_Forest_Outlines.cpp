@@ -7,8 +7,8 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -25,8 +25,8 @@ void Mlib::add_trees_to_forest_outlines(
     double tree_inwards_distance,
     double scale)
 {
-    UniformRandomNumberGenerator<double> na_rng{ 0 };
-    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
+    FastUniformRandomNumberGenerator<double> na_rng{ 0 };
+    FastNormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     // size_t rid = 0;
     for (const auto& w : ways) {
         const auto& tags = w.second.tags;

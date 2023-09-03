@@ -23,7 +23,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -35,8 +35,8 @@ void Mlib::create_scene_flat(
     const PhysicsEngineConfig& physics_cfg,
     unsigned int seed)
 {
-    UniformRandomNumberGenerator<float> prng{seed, -1.f, 1.f};
-    UniformRandomNumberGenerator<float> rrng{seed + 1, -0.1f * (float)M_PI, 0.1f * (float)M_PI};
+    FastUniformRandomNumberGenerator<float> prng{seed, -1.f, 1.f};
+    FastUniformRandomNumberGenerator<float> rrng{seed + 1, -0.1f * (float)M_PI, 0.1f * (float)M_PI};
     auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
     auto rb1_0 = rigid_cuboid("rb0", "rb0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
     auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});

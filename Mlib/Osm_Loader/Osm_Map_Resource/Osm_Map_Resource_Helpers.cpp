@@ -290,8 +290,8 @@ void Mlib::add_beacons_to_raceways(
 //     float tree_inwards_distance,
 //     float scale)
 // {
-//     NormalRandomNumberGenerator<float> rng{0, 4.9, 0.2};
-//     NormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
+//     FastNormalRandomNumberGenerator<float> rng{0, 4.9, 0.2};
+//     FastNormalRandomNumberGenerator<float> rng2{0, 0, 1.2};
 //     GammaRandomNumberGenerator<float> rng3{0, 3, 2};
 //     NextGrassResourceName ntrn{continuous};
 //     for (float f : Linspace<float>(tree_inwards_distance, tree_inwards_distance + 5.f, 3)) {

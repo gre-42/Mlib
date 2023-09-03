@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <functional>
 
 namespace Mlib {
@@ -37,7 +37,7 @@ public:
         rng2_.seed(seed);
     }
 private:
-    NormalRandomNumberGenerator<TData> rng2_;
+    FastNormalRandomNumberGenerator<TData> rng2_;
 };
 
 }

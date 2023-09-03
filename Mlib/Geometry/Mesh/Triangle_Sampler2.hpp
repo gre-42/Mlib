@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <functional>
 
 namespace Mlib {
@@ -37,7 +37,7 @@ public:
         rng_.seed(seed);
     }
 private:
-    UniformRandomNumberGenerator<TData> rng_;
+    FastUniformRandomNumberGenerator<TData> rng_;
 };
 
 }

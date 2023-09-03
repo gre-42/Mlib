@@ -6,7 +6,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -20,8 +20,8 @@ void Mlib::add_trees_to_tree_nodes(
     const std::map<std::string, Node>& nodes,
     float scale)
 {
-    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
-    UniformRandomNumberGenerator<float> yangle_rng{1, 0.f, 2 * float(M_PI)};
+    FastNormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
+    FastUniformRandomNumberGenerator<float> yangle_rng{1, 0.f, 2 * float(M_PI)};
     for (const auto& n : nodes) {
         const auto& tags = n.second.tags;
         if (tags.contains("natural", "tree")) {

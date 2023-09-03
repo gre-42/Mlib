@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -81,14 +81,14 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     // octave> a=0.004; a/sum((a * (1 - a).^(0 : 100000)).^2)
     // ans = 1.9960
     // => var = a / 2, std = sqrt(a / 2)
-    auto velocity_estimation_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-        NormalRandomNumberGenerator<float>{ 0, 0.f, velocity_error_std * std::sqrt(2.f / error_alpha) },
+    auto velocity_estimation_error = RandomProcess<FastNormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        FastNormalRandomNumberGenerator<float>{ 0, 0.f, velocity_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, velocity_error_std } };
-    auto increment_yaw_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-        NormalRandomNumberGenerator<float>{ 0, 0.f, yaw_error_std * std::sqrt(2.f / error_alpha) },
+    auto increment_yaw_error = RandomProcess<FastNormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        FastNormalRandomNumberGenerator<float>{ 0, 0.f, yaw_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, yaw_error_std } };
-    auto increment_pitch_error = RandomProcess<NormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
-        NormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
+    auto increment_pitch_error = RandomProcess<FastNormalRandomNumberGenerator<float>, ExponentialSmoother<float>>{
+        FastNormalRandomNumberGenerator<float>{ 0, 0.f, pitch_velocity_error_std * std::sqrt(2.f / error_alpha) },
         ExponentialSmoother<float>{ error_alpha, pitch_velocity_error_std } };
 
     float bullet_start_offset  = args.arguments.at<float>(KnownArgs::bullet_start_offset) * meters;

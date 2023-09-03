@@ -11,7 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -83,8 +83,8 @@ public:
         return punch_angle_;
     }
 private:
-    NormalRandomNumberGenerator<float> idle_rng_;
-    NormalRandomNumberGenerator<float> shoot_rng_;
+    FastNormalRandomNumberGenerator<float> idle_rng_;
+    FastNormalRandomNumberGenerator<float> shoot_rng_;
     ExponentialSmoother<float> idle_smoother_;
     float decay_;
     float punch_angle_;

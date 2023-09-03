@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <functional>
 #include <vector>
@@ -48,7 +48,7 @@ public:
         index_.seed(seed);
     }
 private:
-    UniformIntRandomNumberGenerator<size_t> index_;
+    FastUniformIntRandomNumberGenerator<size_t> index_;
     std::vector<TResource> resources_;
 };
 

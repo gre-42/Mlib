@@ -5,10 +5,10 @@
 namespace Mlib {
 
 template <class TData>
-class UniformRandomNumberGenerator {
+class FastUniformRandomNumberGenerator {
 public:
     typedef typename FloatType<TData>::value_type float_type;
-    explicit UniformRandomNumberGenerator(unsigned int seed, const float_type& low = 0, const float_type& high = 1)
+    explicit FastUniformRandomNumberGenerator(unsigned int seed, const float_type& low = 0, const float_type& high = 1)
     : e_(seed),
       d_(low, high)
     {}
@@ -19,14 +19,14 @@ public:
         e_.seed(seed);
     }
 private:
-    std::mt19937 e_;
+    std::minstd_rand e_;
     std::uniform_real_distribution<typename FloatType<TData>::value_type> d_;
 };
 
 template <class TData>
-class UniformIntRandomNumberGenerator {
+class FastUniformIntRandomNumberGenerator {
 public:
-    explicit UniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
+    explicit FastUniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
     : e_(seed),
       d_(low, high)
     {}
@@ -37,15 +37,15 @@ public:
         e_.seed(seed);
     }
 private:
-    std::mt19937 e_;
+    std::minstd_rand e_;
     std::uniform_int_distribution<TData> d_;
 };
 
 template <class TData>
-class NormalRandomNumberGenerator {
+class FastNormalRandomNumberGenerator {
 public:
     typedef typename FloatType<TData>::value_type float_type;
-    explicit NormalRandomNumberGenerator(unsigned int seed, const float_type& mean = 0, const float_type& stddev = 1)
+    explicit FastNormalRandomNumberGenerator(unsigned int seed, const float_type& mean = 0, const float_type& stddev = 1)
     : e_(seed),
       d_(mean, stddev)
     {}
@@ -56,15 +56,15 @@ public:
         e_.seed(seed);
     }
 private:
-    std::mt19937 e_;
+    std::minstd_rand e_;
     std::normal_distribution<typename FloatType<TData>::value_type> d_;
 };
 
 template <class TData>
-class GammaRandomNumberGenerator {
+class FastGammaRandomNumberGenerator {
 public:
     typedef typename FloatType<TData>::value_type float_type;
-    explicit GammaRandomNumberGenerator(unsigned int seed, const float_type& alpha, const float_type& beta = 1)
+    explicit FastGammaRandomNumberGenerator(unsigned int seed, const float_type& alpha, const float_type& beta = 1)
     : e_(seed),
       d_(alpha, beta)
     {}
@@ -75,7 +75,7 @@ public:
         e_.seed(seed);
     }
 private:
-    std::mt19937 e_;
+    std::minstd_rand e_;
     std::gamma_distribution<typename FloatType<TData>::value_type> d_;
 };
 

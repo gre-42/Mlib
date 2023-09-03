@@ -22,7 +22,7 @@ private:
         const ParsedResourceName& prn,
         const LocationInformation& location_info);
     bool predicate1(const ParsedResourceName& prn);
-    UniformRandomNumberGenerator<float> probability_;
+    FastUniformRandomNumberGenerator<float> probability_;
 };
 
 }

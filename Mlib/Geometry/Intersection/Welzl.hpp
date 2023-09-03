@@ -2,7 +2,7 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <set>
 #include <stdexcept>
@@ -10,8 +10,8 @@
 
 namespace Mlib {
 
-inline UniformIntRandomNumberGenerator<size_t> welzl_rng() {
-    return UniformIntRandomNumberGenerator<size_t>{43, 0, SIZE_MAX};
+inline FastUniformIntRandomNumberGenerator<size_t> welzl_rng() {
+    return FastUniformIntRandomNumberGenerator<size_t>{43, 0, SIZE_MAX};
 }
 
 template <class TData, size_t tndim>

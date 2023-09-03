@@ -7,7 +7,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Steiner_Point_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Way_Bvh.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -34,7 +34,7 @@ void Mlib::add_street_steiner_points(
         }
     }
     size_t ix = 0;
-    NormalRandomNumberGenerator<double> rng2{0, 0.f, 1.2f};
+    FastNormalRandomNumberGenerator<double> rng2{0, 0.f, 1.2f};
     for (double x = bounding_info.boundary_min(0) + bounding_info.border_width / 2; x < bounding_info.boundary_max(0) - bounding_info.border_width / 2; x += dist0) {
         size_t iy = 0;
         for (double y = bounding_info.boundary_min(1) + bounding_info.border_width / 2; y < bounding_info.boundary_max(1) - bounding_info.border_width / 2; y += dist0) {

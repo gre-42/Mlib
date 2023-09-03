@@ -19,7 +19,7 @@ void Mlib::add_grass_inside_triangles(
         return;
     }
     TriangleSampler2<double> ts{ 1 };
-    NormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
+    FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
     for (auto& t : triangles.triangles) {
         ts.sample_triangle_interior<3>(
             t(0).position,

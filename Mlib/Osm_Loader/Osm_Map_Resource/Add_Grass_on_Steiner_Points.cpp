@@ -4,7 +4,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Resource_Name_Cycle.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
 using namespace Mlib;
 
@@ -18,7 +18,7 @@ void Mlib::add_grass_on_steiner_points(
     float dmin,
     float dmax)
 {
-    NormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
+    FastNormalRandomNumberGenerator<float> scale_rng{0, 1.f, 0.2f};
     for (const auto& p : steiner_points) {
         if (p.type == SteinerPointType::STREET_NEIGHBOR) {
             FixedArray<double, 2> pt{ p.position(0), p.position(1) };
