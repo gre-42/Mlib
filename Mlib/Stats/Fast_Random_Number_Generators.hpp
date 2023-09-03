@@ -11,12 +11,15 @@ public:
     explicit FastUniformRandomNumberGenerator(unsigned int seed, const float_type& low = 0, const float_type& high = 1)
     : e_(seed),
       d_(low, high)
-    {}
+    {
+        e_();
+    }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
+        e_();
     }
 private:
     std::minstd_rand e_;
@@ -29,12 +32,15 @@ public:
     explicit FastUniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
     : e_(seed),
       d_(low, high)
-    {}
+    {
+        e_();
+    }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
+        e_();
     }
 private:
     std::minstd_rand e_;
@@ -48,12 +54,15 @@ public:
     explicit FastNormalRandomNumberGenerator(unsigned int seed, const float_type& mean = 0, const float_type& stddev = 1)
     : e_(seed),
       d_(mean, stddev)
-    {}
+    {
+        e_();
+    }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
+        e_();
     }
 private:
     std::minstd_rand e_;
@@ -73,6 +82,7 @@ public:
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
+        e_();
     }
 private:
     std::minstd_rand e_;
