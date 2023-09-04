@@ -21,7 +21,7 @@ void AssetReferences::add(const std::string& group) {
     }
 }
 
-const AssetGroupReplacementParameters& AssetReferences::get(const std::string& group) const
+const AssetGroupReplacementParameters& AssetReferences::operator [] (const std::string& group) const
 {
     std::shared_lock lock{mutex_};
     auto it = replacement_parameters_.find(group);
@@ -31,8 +31,8 @@ const AssetGroupReplacementParameters& AssetReferences::get(const std::string& g
     return it->second;
 }
 
-AssetGroupReplacementParameters& AssetReferences::get(const std::string& group)
+AssetGroupReplacementParameters& AssetReferences::operator [] (const std::string& group)
 {
     const AssetReferences& a = *this;
-    return const_cast<AssetGroupReplacementParameters&>(a.get(group));
+    return const_cast<AssetGroupReplacementParameters&>(a[group]);
 }

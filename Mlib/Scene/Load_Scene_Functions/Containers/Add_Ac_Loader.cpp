@@ -23,7 +23,7 @@ LoadSceneJsonUserFunction AddAcLoader::json_user_function = [](const LoadSceneJs
     if (!args.asset_references.contains(id_val)) {
         args.asset_references.add(id_val);
     }
-    auto& group = args.asset_references.get(id_val);
+    auto& group = args.asset_references[id_val];
     group.add_asset_loader(std::make_unique<LoadAcLevel>(
         args.arguments.spath(KnownArgs::script)));
 };

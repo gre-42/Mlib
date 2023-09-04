@@ -49,8 +49,7 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
-        .asset_references
-        .get("vehicles")
+        .asset_references["vehicles"]
         .at(asset_id)
         .rp;
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});

@@ -19,8 +19,8 @@ public:
     bool contains(const std::string& group) const;
     void add(const std::string& group);
 
-    const AssetGroupReplacementParameters& get(const std::string& group) const;
-    AssetGroupReplacementParameters& get(const std::string& group);
+    const AssetGroupReplacementParameters& operator [] (const std::string& group) const;
+    AssetGroupReplacementParameters& operator [] (const std::string& group);
 
 private:
     std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;

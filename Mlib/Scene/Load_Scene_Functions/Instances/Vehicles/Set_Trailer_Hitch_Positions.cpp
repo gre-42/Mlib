@@ -38,8 +38,7 @@ void SetTrailerHitchPositions::execute(const LoadSceneJsonUserFunctionArgs& args
     }
     auto trailer_asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
     const auto& vars = args
-        .asset_references
-        .get("vehicles")
+        .asset_references["vehicles"]
         .at(trailer_asset_id)
         .rp;
     if (auto pos = vars.database.at("TRAILER_HITCH_POSITION_FEMALE"); pos.type() != nlohmann::detail::value_t::null) {

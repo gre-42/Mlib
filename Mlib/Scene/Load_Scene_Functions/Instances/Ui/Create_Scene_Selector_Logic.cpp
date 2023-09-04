@@ -51,7 +51,7 @@ CreateSceneSelectorLogic::CreateSceneSelectorLogic(RenderableScene& renderable_s
 void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::list<SceneEntry> scene_entries;
-    for (const auto& [_, rpe] : args.asset_references.get(args.arguments.at<std::string>(KnownArgs::assets))) {
+    for (const auto& [_, rpe] : args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)]) {
         try {
             auto& entry = scene_entries.emplace_back(SceneEntry{
                 .name = rpe.rp.title,

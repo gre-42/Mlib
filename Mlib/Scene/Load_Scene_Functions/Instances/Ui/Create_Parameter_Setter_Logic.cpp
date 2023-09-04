@@ -58,7 +58,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         rps = args.arguments.at<std::list<ReplacementParameter>>(KnownArgs::parameters);
     }
     if (args.arguments.contains(KnownArgs::assets)) {
-        auto& assets = args.asset_references.get(args.arguments.at<std::string>(KnownArgs::assets));
+        auto& assets = args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)];
         for (const auto& [_, a] : assets) {
             auto& rp = rps.emplace_back(ReplacementParameter{
                 .title = a.rp.title,

@@ -76,8 +76,7 @@ static nlohmann::json eval_recursion(
             if (!Mlib::re::regex_match(s, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + s + '"');
             }
-            return asset_references
-                .get(subst(match[DbQueryGroups::group].str()))
+            return asset_references[subst(match[DbQueryGroups::group].str())]
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
                 .database
@@ -185,8 +184,7 @@ static nlohmann::json eval_recursion(
             if (!Mlib::re::regex_match(expression, match, query_re)) {
                 THROW_OR_ABORT("Could not parse asset path: \"" + expression + '"');
             }
-            var = asset_references
-                .get(subst(match[DbQueryGroups::group].str()))
+            var = asset_references[subst(match[DbQueryGroups::group].str())]
                 .at(subst(match[DbQueryGroups::asset_id].str()))
                 .rp
                 .database

@@ -86,8 +86,8 @@ public:
       asset_id_{std::move(asset_id)}
     {}
     ~RaceLogic() {
-        if (!asset_references_.get("levels").at(asset_id_).rp.database.contains("CHECKPOINTS")) {
-            asset_references_.get("levels").merge_into_database(
+        if (!asset_references_["levels"].at(asset_id_).rp.database.contains("CHECKPOINTS")) {
+            asset_references_["levels"].merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{{"CHECKPOINTS", nlohmann::json()}}});
         }
@@ -97,7 +97,7 @@ public:
         unsigned int rank) override
     {
         if (rank == 0) {
-            asset_references_.get("levels").merge_into_database(
+            asset_references_["levels"].merge_into_database(
                 asset_id_,
                 JsonMacroArguments{{
                     {"CAR_NODE_POSITION", pose.t()},
@@ -121,7 +121,7 @@ public:
                     .transformations = {OffsetAndTaitBryanAngles{c.R(), c.t()}}}
                 .to_vector(geographic_mapping));
         }
-        asset_references_.get("levels").merge_into_database(
+        asset_references_["levels"].merge_into_database(
             asset_id_,
             JsonMacroArguments{{{"CHECKPOINTS", std::move(global_checkpoints)}}});
     }

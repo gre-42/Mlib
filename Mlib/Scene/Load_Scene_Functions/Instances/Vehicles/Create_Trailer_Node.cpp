@@ -41,8 +41,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto trailer_asset_id = args.arguments.at<std::string>(KnownArgs::trailer_asset_id);
     const auto& vars = args
-        .asset_references
-        .get("vehicles")
+        .asset_references["vehicles"]
         .at(trailer_asset_id)
         .rp;
     auto node = make_dunique<SceneNode>();
