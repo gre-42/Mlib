@@ -81,7 +81,6 @@ void ParameterSetterLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("ParameterSetterLogic::render");
-    list_view_.handle_input();
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
     ListViewStringDrawer drawer{
           ListViewOrientation::VERTICAL,
@@ -91,7 +90,7 @@ void ParameterSetterLogic::render(
           *ew,
           ly,
           [this](size_t index) {return options_.at(index).title;}};
-    list_view_.render(lx, ly, drawer);
+    list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
 }
 

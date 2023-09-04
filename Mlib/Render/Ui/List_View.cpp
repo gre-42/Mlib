@@ -24,12 +24,12 @@ ListView::ListView(
         case ListViewOrientation::HORIZONTAL:
             previous_ = {{{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}}};
             next_ = {{{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}}};
-            first_ = {{{.key = ""}}};
-            last_ = {{{.key = ""}}};
             break;
         case ListViewOrientation::VERTICAL:
             previous_ = {{{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}}};
             next_ = {{{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}}};
+            previous_fast_ = {{{.key = "PAGE_UP"}}};
+            next_fast_ = {{{.key = "PAGE_DOWN"}}};
             first_ = {{{.key = "HOME"}}};
             last_ = {{{.key = "END"}}};
             break;
@@ -45,83 +45,94 @@ ListView::ListView(
 
 ListView::~ListView() = default;
 
-void ListView::handle_input() {
-    if (contents_.num_entries() != 0) {
-        auto go_to_previous = [this](){
-            if (selection_index_ == 0) {
+void ListView::handle_input(size_t left, size_t right) {
+    if (contents_.num_entries() == 0) {
+        return;
+    }
+    auto go_to_previous = [this](){
+        if (selection_index_ == 0) {
+            return;
+        }
+        size_t new_selection_index = selection_index_ - 1;
+        while (true) {
+            if (contents_.is_visible(new_selection_index)) {
+                selection_index_ = new_selection_index;
                 return;
             }
-            size_t new_selection_index = selection_index_ - 1;
-            while (true) {
-                if (contents_.is_visible(new_selection_index)) {
-                    selection_index_ = new_selection_index;
-                    return;
-                }
-                if (new_selection_index > 0) {
-                    --new_selection_index;
-                } else {
-                    break;
-                }
+            if (new_selection_index > 0) {
+                --new_selection_index;
+            } else {
+                break;
             }
-        };
-        auto go_to_next = [this](){
-            if (contents_.num_entries() == 0) {
+        }
+    };
+    auto go_to_next = [this](){
+        if (contents_.num_entries() == 0) {
+            return;
+        }
+        if (selection_index_ >= contents_.num_entries() - 1) {
+            return;
+        }
+        size_t new_selection_index = selection_index_ + 1;
+        while (true) {
+            if (contents_.is_visible(new_selection_index)) {
+                selection_index_ = new_selection_index;
                 return;
             }
-            if (selection_index_ >= contents_.num_entries() - 1) {
-                return;
+            if (new_selection_index < contents_.num_entries() - 1) {
+                ++new_selection_index;
+            } else {
+                break;
             }
-            size_t new_selection_index = selection_index_ + 1;
-            while (true) {
-                if (contents_.is_visible(new_selection_index)) {
-                    selection_index_ = new_selection_index;
-                    return;
-                }
-                if (new_selection_index < contents_.num_entries() - 1) {
-                    ++new_selection_index;
-                } else {
-                    break;
-                }
-            }
-        };
-        if (button_press_.keys_pressed(previous_)) {
-            size_t old_selection_index = selection_index_;
+        }
+    };
+    auto go_to_previous_fast = [this, &go_to_previous, left](){
+        if (selection_index_ == left) {
             go_to_previous();
-            if ((selection_index_ != old_selection_index) && on_change_) {
-                on_change_();
-            }
+        } else {
+            selection_index_ = left;
         }
-        if (button_press_.keys_pressed(next_)) {
-            size_t old_selection_index = selection_index_;
+    };
+    auto go_to_next_fast = [this, &go_to_next, right](){
+        if (selection_index_ == right) {
             go_to_next();
-            if ((selection_index_ != old_selection_index) && on_change_) {
-                on_change_();
-            }
+        } else {
+            selection_index_ = right;
         }
-        if (button_press_.keys_pressed(first_)) {
-            if (selection_index_ != 0) {
-                size_t old_selection_index = selection_index_;
-                selection_index_ = 0;
-                if (!contents_.is_visible(selection_index_)) {
-                    go_to_next();
-                }
-                if ((selection_index_ != old_selection_index) && on_change_) {
-                    on_change_();
-                }
-            }
+    };
+    auto go_to_first = [this, &go_to_next](){
+        selection_index_ = 0;
+        if (!contents_.is_visible(selection_index_)) {
+            go_to_next();
         }
-        if (button_press_.keys_pressed(last_)) {
-            if (selection_index_ != contents_.num_entries() - 1) {
-                size_t old_selection_index = selection_index_;
-                selection_index_ = contents_.num_entries() - 1;
-                if (!contents_.is_visible(selection_index_)) {
-                    go_to_previous();
-                }
-                if ((selection_index_ != old_selection_index) && on_change_) {
-                    on_change_();
-                }
-            }
+    };
+    auto go_to_last = [this, &go_to_previous](){
+        selection_index_ = contents_.num_entries() - 1;
+        if (!contents_.is_visible(selection_index_)) {
+            go_to_previous();
         }
+    };
+    size_t old_selection_index = selection_index_;
+    if (button_press_.keys_pressed(previous_)) {
+        go_to_previous();
+    }
+    if (button_press_.keys_pressed(next_)) {
+        go_to_next();
+    }
+    if (button_press_.keys_pressed(previous_fast_)) {
+        go_to_previous_fast();
+    }
+    if (button_press_.keys_pressed(next_fast_)) {
+        go_to_next_fast();
+    }
+    if (button_press_.keys_pressed(first_)) {
+        go_to_first();
+    }
+    if (button_press_.keys_pressed(last_)) {
+        go_to_last();
+    }
+    if ((selection_index_ != old_selection_index) && on_change_) {
+        on_change_();
     }
 }
 
@@ -155,13 +166,13 @@ static std::pair<size_t, size_t> get_visible_window(
     return {left, right};
 }
 
-void ListView::render(
+std::pair<size_t, size_t> ListView::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     IListViewDrawer& drawer)
 {
     if (!has_selected_element()) {
-        return;
+        return {SIZE_MAX, SIZE_MAX};
     }
     std::vector<size_t> filtered_options;
     size_t filtered_selection_index = SIZE_MAX;
@@ -209,6 +220,18 @@ void ListView::render(
     }
     if (right_dots_required) {
         drawer.draw_right_dots(filtered_index);
+    }
+    return {filtered_options[left], filtered_options[right]};
+}
+
+void ListView::render_and_handle_input(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    IListViewDrawer& drawer)
+{
+    auto [left, right] = render(lx, ly, drawer);
+    if ((left != SIZE_MAX) && (right != SIZE_MAX)) {
+        handle_input(left, right);
     }
 }
 

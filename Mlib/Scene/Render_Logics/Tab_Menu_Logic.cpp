@@ -97,7 +97,6 @@ void TabMenuLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("TabMenuLogic::render");
-    list_view_.handle_input();
     if (button_press_.keys_pressed(key_binding_)) {
         // ui_focus_.focus.pop_back();
         if (previous_level_id_ != substitutions_.at<std::string>("LEVEL_ID")) {
@@ -117,7 +116,7 @@ void TabMenuLogic::render(
             *ew,
             ly,
             [this](size_t index) {return options_.at(index).title;}};
-        list_view_.render(lx, ly, drawer);
+        list_view_.render_and_handle_input(lx, ly, drawer);
         drawer.render();
     } else if (list_view_style_ == ListViewStyle::ICON) {
         if (icon_widget_ == nullptr) {
@@ -149,7 +148,7 @@ void TabMenuLogic::render(
             ew->width(),
             0.f, // margin
             *iw};
-        list_view_.render(lx, ly, drawer);
+        list_view_.render_and_handle_input(lx, ly, drawer);
     } else {
         THROW_OR_ABORT("Unknown listview style");
     }

@@ -84,7 +84,6 @@ void SceneSelectorLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("SceneSelectorLogic::render");
-    list_view_.handle_input();
     auto ew = widget_->evaluate(lx, ly, YOrientation::AS_IS);
     ListViewStringDrawer drawer{
         ListViewOrientation::VERTICAL,
@@ -94,7 +93,7 @@ void SceneSelectorLogic::render(
         *ew,
         ly,
         [this](size_t index) {return scene_files_.at(index).name;}};
-    list_view_.render(lx, ly, drawer);
+    list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
 }
 

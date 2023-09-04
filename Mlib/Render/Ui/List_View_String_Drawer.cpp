@@ -51,7 +51,7 @@ size_t ListViewStringDrawer::max_entries_visible() const {
     if (orientation_ == ListViewOrientation::HORIZONTAL) {
         return SIZE_MAX;
     } else {
-        return (size_t)std::floor(ew_.height() / line_distance_pixels);
+        return (size_t)std::floor(std::max(0.f, ew_.height()) / line_distance_pixels);
     }
 }
 
