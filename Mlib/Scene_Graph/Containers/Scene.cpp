@@ -428,7 +428,7 @@ void Scene::render(
                             for (const auto& node : nodes) {
                                 node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                             }
-                            large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue);
+                            large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue, external_render_pass);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
@@ -502,7 +502,7 @@ void Scene::render(
                             for (auto& e : aggregate_queue) {
                                 sorted_aggregate_queue.push_back(std::move(e.second));
                             }
-                            small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue);
+                            small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue, external_render_pass);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {

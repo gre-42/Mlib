@@ -49,7 +49,8 @@ AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<double, 3>& offset,
-    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue)
+    const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
+    const ExternalRenderPass& external_render_pass)
 {
     // size_t ntris = 0;
     // for (const auto& a : aggregate_queue) {
@@ -103,7 +104,8 @@ void AggregateArrayRenderer::update_aggregates(
             const auto& c = a->triangles[i];
             auto distance_to_origin2 = sum(squared(c(0).position + c(1).position + c(2).position));
             if ((max_distance2 != INFINITY) &&
-                (distance_to_origin2 > max_distance2))
+                (distance_to_origin2 > max_distance2) &&
+                !any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
             {
                 continue;
             }
