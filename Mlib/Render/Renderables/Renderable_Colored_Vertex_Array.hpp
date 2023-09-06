@@ -61,6 +61,10 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         LargeInstancesQueue& instances_queue) const override;
+    virtual void extend_aabb(
+        const TransformationMatrix<float, double, 3>& mv,
+        ExternalRenderPassType render_pass,
+        AxisAlignedBoundingBox<float, 3>& aabb) const override;
     virtual AxisAlignedBoundingBox<float, 3> aabb() const override;
     virtual double max_center_distance(uint32_t billboard_id) const override;
     void print_stats(std::ostream& ostr) const;

@@ -44,6 +44,10 @@ public:
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queue) const override;
+    virtual void extend_aabb(
+        const TransformationMatrix<float, double, 3>& mv,
+        ExternalRenderPassType render_pass,
+        AxisAlignedBoundingBox<float, 3>& aabb) const override;
 private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;

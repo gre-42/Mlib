@@ -1001,6 +1001,30 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
     }
 }
 
+void RenderableColoredVertexArray::extend_aabb(
+    const TransformationMatrix<float, double, 3>& mv,
+    ExternalRenderPassType render_pass,
+    AxisAlignedBoundingBox<float, 3>& aabb) const
+{
+    auto extend = [&](auto& cvas){
+        for (const auto& cva : cvas) {
+            if (!any(cva->material.occluded_pass & render_pass)) {
+                continue;
+            }
+            for (const auto& t : cva->triangles) {
+                for (const auto& v : t.flat_iterable()) {
+                    aabb.extend(mv.transform(v.position TEMPLATEV casted<double>()) TEMPLATEV casted<float>());
+                }
+            }
+        }
+    };
+    extend(aggregate_off_);
+    extend(aggregate_once_);
+    extend(aggregate_sorted_continuously_);
+    extend(instances_once_);
+    extend(instances_sorted_continuously_);
+}
+
 AxisAlignedBoundingBox<float, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }

@@ -651,6 +651,21 @@ void SceneNode::set_aperiodic_animation(const std::string& name) {
     aperiodic_animation_ = name;
 }
 
+void SceneNode::visit(
+    const TransformationMatrix<float, double, 3>& parent_m,
+    const std::function<void(
+        const TransformationMatrix<float, double, 3>& m,
+        const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
+{
+    std::shared_lock lock{mutex_};
+    scene_->delete_node_mutex().notify_reading();
+    auto m = parent_m * relative_model_matrix_unsafe();
+    func(m, renderables_);
+    for (const auto& [_, n] : children_) {
+        n.scene_node->visit(m, func);
+    }
+}
+
 bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
     std::shared_lock lock{mutex_};
     for (const auto& [_, r] : renderables_) {

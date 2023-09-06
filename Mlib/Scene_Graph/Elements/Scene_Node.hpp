@@ -159,6 +159,11 @@ public:
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
+    void visit(
+        const TransformationMatrix<float, double, 3>& parent_m,
+        const std::function<void(
+            const TransformationMatrix<float, double, 3>& m,
+            const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void move(
         const TransformationMatrix<float, double, 3>& v,
         float dt,

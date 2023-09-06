@@ -297,6 +297,26 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
     return *it->second;
 }
 
+void Scene::visit(const std::function<void(
+    const TransformationMatrix<float, double, 3>& m,
+    const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
+{
+    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{mutex_};
+    for (const auto& [_, node] : root_nodes_) {
+        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
+    }
+    for (const auto& [_, node] : static_root_nodes_) {
+        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
+    }
+    for (const auto& [_, node] : root_aggregate_nodes_) {
+        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
+    }
+    for (const auto& [_, node] : root_instances_nodes_) {
+        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
+    }
+}
+
 void Scene::render(
     const FixedArray<double, 4, 4>& vp,
     const TransformationMatrix<float, double, 3>& iv,
@@ -307,9 +327,7 @@ void Scene::render(
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
     LOG_FUNCTION("Scene::render");
-    if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        THROW_OR_ABORT("Scene::render: delete node mutex is not locked");
-    }
+    delete_node_mutex_.notify_reading();
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;

@@ -36,9 +36,9 @@ CreateLightOnlyShadow::CreateLightOnlyShadow(RenderableScene& renderable_scene)
 void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock_guard{ delete_node_mutex };
-    std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
-    DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
-    ExternalRenderPassType render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
+    auto node_name = args.arguments.at<std::string>(KnownArgs::node);
+    auto node = scene.get_node(node_name, DP_LOC);
+    auto render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLACK_NODE))

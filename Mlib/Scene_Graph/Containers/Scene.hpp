@@ -5,6 +5,7 @@
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
+#include <functional>
 #include <iosfwd>
 #include <list>
 #include <memory>
@@ -26,6 +27,7 @@ struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
 struct ColorStyle;
+class Renderable;
 
 class Scene {
     friend RootNodes;
@@ -71,6 +73,9 @@ public:
     void unregister_nodes(const Mlib::regex& regex);
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
+    void visit(const std::function<void(
+        const TransformationMatrix<float, double, 3>& m,
+        const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

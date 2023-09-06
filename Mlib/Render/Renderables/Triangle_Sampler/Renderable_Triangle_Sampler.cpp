@@ -211,3 +211,11 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
             nullptr);
     }
 }
+
+void RenderableTriangleSampler::extend_aabb(
+    const TransformationMatrix<float, double, 3>& mv,
+    ExternalRenderPassType render_pass,
+    AxisAlignedBoundingBox<float, 3>& aabb) const
+{
+    // Not yet implemented
+}
