@@ -24,8 +24,9 @@ int main(int argc, char** argv) {
         "[--niter <value>] "
         "[--gain <value>] "
         "[--pitch <value>] "
-        "[--pitch_adjustment {rounding,up_sampling,down_sampling}]",
-        {},
+        "[--pitch_adjustment {rounding,up_sampling,down_sampling}] "
+        "[--verbose]",
+        {"--verbose"},
         {"--dgain",
          "--dt_fade",
          "--dt_append",
@@ -68,6 +69,9 @@ int main(int argc, char** argv) {
                 f,
                 pitch_adjustment_strategy_from_string(
                     args.named_value("--pitch_adjustment", "rounding")));
+            if (args.has_named("--verbose")) {
+                linfo() << "Requested frequency: " << f << "Hz. Template frequency: " << bf.frequency;
+            }
             cross_fade.play(*bf.buffer, gain_factor, f * pitch, bf.frequency);
             std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
         }

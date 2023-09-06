@@ -31,6 +31,7 @@ def compute_offset(data0: np.ndarray, data1: np.ndarray) -> int:
 
 def remix(args):
     os.makedirs(args.out_dir, exist_ok=True)
+    # Column-names of the labels-file.
     TIME0 = 0
     TIME1 = 1
     LABEL = 2
@@ -41,6 +42,7 @@ def remix(args):
         samplerate, data = wavfile.read(f)
     if data.shape[0] == 0:
         return
+    # Compute offset s.t. the beginning of the audio-file is discarded.
     time_offset = (data.shape[0] - 1) / samplerate - float(labels[-1][TIME1])
     print(f'Time offset: {time_offset}')
 
@@ -95,10 +97,10 @@ def remix(args):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
+    parser = ArgumentParser(help='Note: You need to manually delete the labels before engine start')
     parser.add_argument("--source_labels", required=True)
     parser.add_argument("--source_wav", required=True)
     parser.add_argument("--out_dir", required=True)
-    parser.add_argument("--frequency_multiplier", type=float, required=True)
+    parser.add_argument("--frequency_multiplier", type=float, required=True, help='Four-stroke engine: 2')
 
     remix(parser.parse_args())
