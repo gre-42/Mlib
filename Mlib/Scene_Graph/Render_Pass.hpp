@@ -7,7 +7,7 @@ namespace Mlib {
 /**
  * Ordering is only important for the occluded-pass, not the occluder-pass.
  * See Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.cpp:
- *     "cva->material.occluded_pass >= l.second->shadow_render_pass"
+ *     "cva->material.occluded_pass < l.second->shadow_render_pass"
  */
 enum class ExternalRenderPassType {
     NONE                                = 0,
