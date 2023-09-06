@@ -25,7 +25,7 @@ public:
     explicit AudioBufferSequence(std::vector<AudioBufferAndFrequency> buffers);
     const AudioBufferAndFrequency& get_buffer_and_frequency(
         float frequency,
-        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::ROUNDING) const;
+        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::UP_SAMPLING) const;
 private:
     std::vector<AudioBufferAndFrequency> buffers_;
 };

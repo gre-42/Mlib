@@ -10,7 +10,7 @@ public:
         float hysteresis_step);
     const AudioBufferAndFrequency& get_buffer_and_frequency(
         float frequency,
-        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::ROUNDING);
+        PitchAdjustmentStrategy strategy = PitchAdjustmentStrategy::UP_SAMPLING);
 private:
     const AudioBufferAndFrequency* previous_result_;
     float hysteresis_step_;
