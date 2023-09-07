@@ -18,7 +18,9 @@ public:
         DanglingRef<SceneNode> light_node,
         std::string resource_suffix,
         std::string black_node_name,
-        bool with_depth_texture);
+        bool with_depth_texture,
+        int lightmap_width,
+        int lightmap_height);
     ~LightmapLogic();
 
     virtual void render(
@@ -45,6 +47,8 @@ private:
     std::string resource_suffix_;
     const std::string black_node_name_;
     bool with_depth_texture_;
+    int lightmap_width_;
+    int lightmap_height_;
     DeallocationToken deallocation_token_;
 };
 

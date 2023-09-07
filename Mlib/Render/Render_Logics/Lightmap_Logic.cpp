@@ -23,7 +23,9 @@ LightmapLogic::LightmapLogic(
     DanglingRef<SceneNode> light_node,
     std::string resource_suffix,
     std::string black_node_name,
-    bool with_depth_texture)
+    bool with_depth_texture,
+    int lightmap_width,
+    int lightmap_height)
 : child_logic_{child_logic},
   rendering_context_{RenderingContextStack::resource_context()},
   render_pass_type_{render_pass_type},
@@ -31,6 +33,8 @@ LightmapLogic::LightmapLogic(
   resource_suffix_{std::move(resource_suffix)},
   black_node_name_{std::move(black_node_name)},
   with_depth_texture_{with_depth_texture},
+  lightmap_width_{lightmap_width},
+  lightmap_height_{lightmap_height},
   deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
@@ -67,13 +71,7 @@ void LightmapLogic::render(
         THROW_OR_ABORT("LightmapLogic received wrong rendering");
     }
     if ((fbs_ == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
-        GLsizei lightmap_width = black_node_name_.empty()
-            ? render_config.scene_lightmap_width
-            : render_config.black_lightmap_width;
-        GLsizei lightmap_height = black_node_name_.empty()
-            ? render_config.scene_lightmap_height
-            : render_config.black_lightmap_height;
-        ViewportGuard vg{lightmap_width, lightmap_height};
+        ViewportGuard vg{lightmap_width_, lightmap_height_};
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{
@@ -85,8 +83,8 @@ void LightmapLogic::render(
             fbs_ = std::make_unique<FrameBuffer>();
         }
         fbs_->configure({
-            .width = lightmap_width,
-            .height = lightmap_height,
+            .width = lightmap_width_,
+            .height = lightmap_height_,
             .depth_kind = with_depth_texture_
                 ? FrameBufferChannelKind::TEXTURE
                 : FrameBufferChannelKind::ATTACHMENT,
@@ -111,11 +109,11 @@ void LightmapLogic::render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)lightmap_width - 1.f},
+                    .max_pixel = (float)lightmap_width_ - 1.f},
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)lightmap_width - 1.f},
+                    .max_pixel = (float)lightmap_width_ - 1.f},
                 render_config,
                 scene_graph_config,
                 render_results, light_rsd);

@@ -129,7 +129,6 @@ std::future<void> loader_thread(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
-    SceneNodeResources& scene_node_resources,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -389,10 +388,6 @@ int main(int argc, char** argv) {
             .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
             .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
-            .scene_lightmap_width = safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
-            .scene_lightmap_height = safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
-            .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "1024")),
-            .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "1024")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
             .double_buffer = args.has_named("--double_buffer"),
@@ -476,7 +471,11 @@ int main(int argc, char** argv) {
                     {"IF_RECORD_TRACK", args.has_named("--record_track")},
                     {"IF_DEVEL", args.has_named("--devel_mode")},
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
-                    {"IF_ANDROID", false}};
+                    {"IF_ANDROID", false},
+                    {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
+                    {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
+                    {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
+                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
@@ -522,7 +521,6 @@ int main(int argc, char** argv) {
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
-                    scene_node_resources,
                     surface_contact_db,
                     scene_config,
                     button_states,

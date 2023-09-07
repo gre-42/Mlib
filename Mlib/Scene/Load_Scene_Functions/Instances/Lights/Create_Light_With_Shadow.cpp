@@ -23,6 +23,8 @@ DECLARE_ARGUMENT(with_depth_texture);
 DECLARE_ARGUMENT(ambience);
 DECLARE_ARGUMENT(diffusivity);
 DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(lightmap_width);
+DECLARE_ARGUMENT(lightmap_height);
 }
 
 const std::string CreateLightWithShadow::key = "light_with_shadow";
@@ -56,7 +58,9 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         node,
         resource_suffix,
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
-        args.arguments.at<bool>(KnownArgs::with_depth_texture)));   // with_depth_texture
+        args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
+        args.arguments.at<int>(KnownArgs::lightmap_width),
+        args.arguments.at<int>(KnownArgs::lightmap_height)));
     node->add_light(std::make_unique<Light>(Light{
         .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),

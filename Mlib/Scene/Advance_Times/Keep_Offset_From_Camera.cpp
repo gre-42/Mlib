@@ -11,18 +11,34 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     AdvanceTimes& advance_times,
     Scene& scene,
     const SelectedCameras& cameras,
-    const FixedArray<float, 3>& offset)
+    const FixedArray<float, 3>& offset,
+    const FixedArray<float, 3>& grid)
 : advance_times_{advance_times},
   scene_{scene},
   cameras_{cameras},
-  offset_{offset}
+  offset_{offset},
+  grid_{grid}
 {}
 
 KeepOffsetFromCamera::~KeepOffsetFromCamera()
 {}
 
 void KeepOffsetFromCamera::advance_time(float dt) {
-    transformation_matrix_.t() = scene_.get_node(cameras_.camera_node_name(), DP_LOC)->absolute_model_matrix().t() + offset_.casted<double>();
+    auto new_position_abs = scene_.get_node(cameras_.camera_node_name(), DP_LOC)->absolute_model_matrix().t() + offset_.casted<double>();
+    if (all(grid_ == 0.f)) {
+        transformation_matrix_.t() = new_position_abs;
+    } else {
+        auto R = transformation_matrix_.R().casted<double>();
+        auto diff_rel = dot(new_position_abs, R);
+        for (size_t i = 0; i < 3; ++i) {
+            if (grid_(i) == 0.f) {
+                diff_rel(i) = 0.;
+            } else {
+                diff_rel(i) = std::remainder(diff_rel(i), (double)grid_(i));
+            }
+        }
+        transformation_matrix_.t() = new_position_abs - dot1d(R, diff_rel);
+    }
 }
 
 void KeepOffsetFromCamera::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {

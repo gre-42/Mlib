@@ -60,6 +60,26 @@ float OrthoCamera::get_far_plane() const {
     return cfg_.far_plane;
 }
 
+float OrthoCamera::get_left_plane() const {
+    std::shared_lock lock{mutex_};
+    return cfg_.left_plane;
+}
+
+float OrthoCamera::get_right_plane() const {
+    std::shared_lock lock{mutex_};
+    return cfg_.right_plane;
+}
+
+float OrthoCamera::get_bottom_plane() const {
+    std::shared_lock lock{mutex_};
+    return cfg_.bottom_plane;
+}
+
+float OrthoCamera::get_top_plane() const {
+    std::shared_lock lock{mutex_};
+    return cfg_.top_plane;
+}
+
 void OrthoCamera::set_requires_postprocessing(bool value) {
     std::scoped_lock lock{mutex_};
     postprocessing_ = (Postprocessing)value;

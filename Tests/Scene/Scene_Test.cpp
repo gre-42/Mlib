@@ -194,8 +194,10 @@ void test_physics_engine(unsigned int seed) {
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
             "light_node",
-            "",    // black_node_name
-            true); // with_depth_texture
+            "",     // black_node_name
+            true,   // with_depth_texture
+            2048,   // lightmap_width
+            2048);  // lightmap_height
         render_logics.append(light_node.ptr(), lightmap_logic);
     };
 

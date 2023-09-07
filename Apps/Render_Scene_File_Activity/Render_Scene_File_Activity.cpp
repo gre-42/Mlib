@@ -388,10 +388,10 @@ void android_main(android_app* app) {
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
-        #ifndef WITHOUT_ALUT
+#ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device};
-        #endif
+#endif
 
         std::atomic_size_t num_renderings;
         RenderConfig render_config{
@@ -411,10 +411,6 @@ void android_main(android_app* app) {
             .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
             .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
-            .scene_lightmap_width = safe_stoi(args.named_value("--scene_lightmap_width", "2048")),
-            .scene_lightmap_height = safe_stoi(args.named_value("--scene_lightmap_height", "2048")),
-            .black_lightmap_width = safe_stoi(args.named_value("--black_lightmap_width", "1024")),
-            .black_lightmap_height = safe_stoi(args.named_value("--black_lightmap_height", "1024")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
             .double_buffer = args.has_named("--double_buffer"),
@@ -451,12 +447,12 @@ void android_main(android_app* app) {
         // AUi::RequestReadExternalStoragePermission();
 
         UiFocus ui_focus;
-        NotifyingJsonMacroArguments external_substitutions;
+        NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
-            JsonMacroArgumentsObserverGuard smog{external_substitutions};
+            JsonMacroArgumentsObserverGuard smog{external_json_macro_arguments};
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();
@@ -491,8 +487,9 @@ void android_main(android_app* app) {
             SceneNodeResources scene_node_resources;
             ParticleResources particle_resources;
             SurfaceContactDb surface_contact_db;
+            LayoutConstraints layout_constraints;
             {
-                nlohmann::json sstr{
+                nlohmann::json j{
                     {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
                     {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
                     {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", args.has_named("--print_gamepad_buttons")},
@@ -506,11 +503,13 @@ void android_main(android_app* app) {
                     {"IF_RECORD_TRACK", args.has_named("--record_track")},
                     {"IF_DEVEL", args.has_named("--devel_mode")},
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
-                    {"IF_ANDROID", true}
-                };
-                external_substitutions.merge_and_notify(JsonMacroArguments{std::move(sstr)});
+                    {"IF_ANDROID", true},
+                    {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
+                    {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
+                    {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
+                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))}};
+                external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
-            LayoutConstraints layout_constraints;
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
             // threads have lambda functions operating on the "load_scene.macro_recorder_" object.
             // In case of an exception in the main thread, destruction of "load_scene" must therefore happen
@@ -542,7 +541,7 @@ void android_main(android_app* app) {
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
-                    external_substitutions,
+                    external_json_macro_arguments,
                     num_renderings,
                     surface_contact_db,
                     scene_config,

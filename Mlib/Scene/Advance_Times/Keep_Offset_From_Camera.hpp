@@ -21,7 +21,8 @@ public:
         AdvanceTimes& advance_times,
         Scene& scene,
         const SelectedCameras& cameras,
-        const FixedArray<float, 3>& offset);
+        const FixedArray<float, 3>& offset,
+        const FixedArray<float, 3>& grid);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -33,6 +34,7 @@ private:
     Scene& scene_;
     const SelectedCameras& cameras_;
     FixedArray<float, 3> offset_;
+    FixedArray<float, 3> grid_;
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 

@@ -19,6 +19,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(black_node);
 DECLARE_ARGUMENT(render_pass);
+DECLARE_ARGUMENT(lightmap_width);
+DECLARE_ARGUMENT(lightmap_height);
 }
 
 const std::string CreateLightOnlyShadow::key = "light_only_shadow";
@@ -53,7 +55,9 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         node,
         resource_suffix,
         args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
-        false));                                                    // with_depth_texture
+        false,                                                      // with_depth_texture
+        args.arguments.at<int>(KnownArgs::lightmap_width),
+        args.arguments.at<int>(KnownArgs::lightmap_height)));
     node->add_light(std::make_unique<Light>(Light{
         .ambience = {1.f, 1.f, 1.f},
         .diffusivity = {1.f, 1.f, 1.f},

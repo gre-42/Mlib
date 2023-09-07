@@ -22,6 +22,11 @@ public:
     virtual void set_requires_postprocessing(bool value) override;
     virtual bool get_requires_postprocessing() const override;
 
+    float get_left_plane() const;
+    float get_right_plane() const;
+    float get_bottom_plane() const;
+    float get_top_plane() const;
+
     void set_near_plane(float near_plane);
     void set_far_plane(float far_plane);
     void set_left_plane(float left_plane);

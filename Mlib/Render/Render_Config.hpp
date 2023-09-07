@@ -50,10 +50,6 @@ struct RenderConfig {
     int windowed_height = 480;
     int fullscreen_width = 0;
     int fullscreen_height = 0;
-    int scene_lightmap_width = 2048;
-    int scene_lightmap_height = 2048;
-    int black_lightmap_width = 512;
-    int black_lightmap_height = 512;
     bool motion_interpolation = false;
     bool fullscreen = false;
     bool double_buffer = false;

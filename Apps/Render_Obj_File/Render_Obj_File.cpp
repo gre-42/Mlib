@@ -891,8 +891,10 @@ int main(int argc, char** argv) {
                     l.light.shadow_render_pass,
                     l.node,
                     l.light.resource_suffix,
-                    "",                           // black_node_name
-                    true));                       // with_depth_texture
+                    "",                             // black_node_name
+                    true,                           // with_depth_texture
+                    2048,                           // lightmap_width
+                    2048));                         // lightmap_height
             }
         }
 
