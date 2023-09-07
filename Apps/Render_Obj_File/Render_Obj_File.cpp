@@ -173,6 +173,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             ? ExternalRenderPassType::NONE
             : ExternalRenderPassType::LIGHTMAP_DEPTH,
         .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+        .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_value("--magnifying_interpolation_mode", "nearest")),
         .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
         .transformation_mode = TransformationMode::ALL,
         .textures = textures,
@@ -297,6 +298,7 @@ int main(int argc, char** argv) {
         "    [--multilayer_mask <value>]\n"
         "    [--multilayer_detail0-3 <value>]\n"
         "    [--multilayer_mult0-3 <value>]\n"
+        "    [--magnifying_interpolation_mode <value>]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
          "--cull_faces_render",
@@ -410,7 +412,8 @@ int main(int argc, char** argv) {
          "--multilayer_mult0",
          "--multilayer_mult1",
          "--multilayer_mult2",
-         "--multilayer_mult3"});
+         "--multilayer_mult3",
+         "--magnifying_interpolation_mode"});
     try {
         const auto args = parser.parsed(argc, argv);
 
