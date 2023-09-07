@@ -42,7 +42,6 @@ DECLARE_ARGUMENT(billboards);
 }
 
 namespace BB {
-
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(uv_scale);
 DECLARE_ARGUMENT(uv_offset);
@@ -50,7 +49,6 @@ DECLARE_ARGUMENT(vertex_scale);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(max_center_distance);
 DECLARE_ARGUMENT(occluder_pass);
-
 }
 
 namespace Mlib {
