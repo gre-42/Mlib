@@ -21,6 +21,8 @@ ExternalRenderPassType Mlib::external_render_pass_type_from_string(const std::st
         return ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC;
     } else if (str == "lightmap_black_local_instances") {
         return ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES;
+    } else if (str == "lightmap_black_movables") {
+        return ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES;
     } else if (str == "lightmap_black_node") {
         return ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
     } else if (str == "lightmap_black_global_and_local") {

@@ -338,15 +338,26 @@ void Scene::render(
         }
     }
     if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
-        std::shared_lock lock{mutex_};
         DanglingRef<SceneNode> node = [this, &external_render_pass](){
-                auto it = root_nodes_.find(external_render_pass.black_node_name);
-                if (it == root_nodes_.end()) {
-                    THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
-                }
-                return it->second.ref(DP_LOC);
-            }();
+            std::shared_lock lock{mutex_};
+            auto it = root_nodes_.find(external_render_pass.black_node_name);
+            if (it == root_nodes_.end()) {
+                THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
+            }
+            return it->second.ref(DP_LOC);
+        }();
         node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+    } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
+        std::list<DanglingPtr<const SceneNode>> nodes;
+        {
+            std::shared_lock lock{mutex_};
+            for (const auto& [_, node] : root_nodes_) {
+                nodes.push_back(node.get(DP_LOC));
+            }
+        }
+        for (const auto& node : nodes) {
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        }
     } else {
         if (!external_render_pass.black_node_name.empty()) {
             THROW_OR_ABORT("Expected empty black node");
