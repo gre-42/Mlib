@@ -43,7 +43,9 @@ public:
         const std::string& name,
         const ResourceInstanceDescriptor& rid);
     
-    void preload(const SceneNodeResources& scene_node_resources) const;
+    void preload(
+        const SceneNodeResources& scene_node_resources,
+        const RenderableResourceFilter& filter) const;
     
     void instantiate_renderables(
         const SceneNodeResources& scene_node_resources,

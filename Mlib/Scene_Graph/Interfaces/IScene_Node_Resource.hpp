@@ -35,7 +35,7 @@ public:
     ISceneNodeResource();
     virtual ~ISceneNodeResource();
     // Misc
-    virtual void preload() const;
+    virtual void preload(const RenderableResourceFilter& filter) const;
     virtual void instantiate_renderable(const InstantiationOptions& options) const;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     virtual AggregateMode aggregate_mode() const;

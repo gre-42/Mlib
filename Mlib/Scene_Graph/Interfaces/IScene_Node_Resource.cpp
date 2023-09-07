@@ -11,7 +11,7 @@ ISceneNodeResource::ISceneNodeResource()
 ISceneNodeResource::~ISceneNodeResource()
 {}
 
-void ISceneNodeResource::preload() const {
+void ISceneNodeResource::preload(const RenderableResourceFilter& filter) const {
     THROW_OR_ABORT("preload not implemented");
 }
 

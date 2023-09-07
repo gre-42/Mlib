@@ -50,8 +50,8 @@ FoliageResource::FoliageResource(
 
 FoliageResource::~FoliageResource() = default;
 
-void FoliageResource::preload() const {
-}
+void FoliageResource::preload(const RenderableResourceFilter& filter) const
+{}
 
 void FoliageResource::instantiate_renderable(const InstantiationOptions& options) const
 {

@@ -50,6 +50,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     TriangleList<TPos> tl{
         filename,
         Material{
+            .textures = cfg.textures,
+            .period_world = cfg.period_world,
             .reflection_map = cfg.reflection_map,
             .occluded_pass = cfg.occluded_pass,
             .occluder_pass = cfg.occluder_pass,
@@ -61,6 +63,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .max_triangle_distance = cfg.max_triangle_distance,
             .cull_faces = cfg.cull_faces_default},
         cfg.physics_material};
+    tl.material.compute_color_mode();
     StaticFaceLighting sfl;
 
     auto ifs_p = create_ifstream(filename);
@@ -344,7 +347,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 if (!td.color.empty() || !td.specular.empty() || !td.normal.empty()) {
                     tl.material.textures = { {.texture_descriptor = td } };
                 } else {
-                    tl.material.textures = {};
+                    tl.material.textures = cfg.textures;
                 }
                 if (current_mtl.has_alpha_texture || (current_mtl.alpha != 1.f)) {
                     tl.material.blend_mode = cfg.blend_mode;

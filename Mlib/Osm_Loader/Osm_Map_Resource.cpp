@@ -1469,8 +1469,8 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
 OsmMapResource::~OsmMapResource()
 {}
 
-void OsmMapResource::preload() const {
-    hri_.preload();
+void OsmMapResource::preload(const RenderableResourceFilter& filter) const {
+    hri_.preload(filter);
 }
 
 TerrainTriangles OsmMapResource::terrain_triangles() const {

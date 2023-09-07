@@ -66,8 +66,8 @@ SquareResource::SquareResource(
             std::vector<FixedArray<uint8_t, 2>>()));
 }
 
-void SquareResource::preload() const {
-    rva_->preload();
+void SquareResource::preload(const RenderableResourceFilter& filter) const {
+    rva_->preload(filter);
 }
 
 void SquareResource::instantiate_renderable(const InstantiationOptions& options) const

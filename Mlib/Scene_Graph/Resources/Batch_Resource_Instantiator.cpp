@@ -78,12 +78,14 @@ void BatchResourceInstantiator::add_hitbox(
     hitboxes_[name].push_back(rid);
 }
 
-void BatchResourceInstantiator::preload(const SceneNodeResources& scene_node_resources) const {
+void BatchResourceInstantiator::preload(
+    const SceneNodeResources& scene_node_resources,
+    const RenderableResourceFilter& filter) const {
     for (const auto& p : object_resource_descriptors_) {
-        scene_node_resources.preload_single(p.name);
+        scene_node_resources.preload_single(p.name, filter);
     }
     for (const auto& [name, _] : resource_instance_positions_) {
-        scene_node_resources.preload_single(name);
+        scene_node_resources.preload_single(name, filter);
     }
 }
 

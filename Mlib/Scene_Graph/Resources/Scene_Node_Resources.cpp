@@ -36,7 +36,10 @@ void SceneNodeResources::write_loaded_resources(const std::string& filename) con
     }
 }
 
-void SceneNodeResources::preload_many(const std::string& filename) const {
+void SceneNodeResources::preload_many(
+    const std::string& filename,
+    const RenderableResourceFilter& filter) const
+{
     std::scoped_lock lock{mutex_};
     auto fstr = create_ifstream(filename);
     if (fstr->fail()) {
@@ -56,14 +59,16 @@ void SceneNodeResources::preload_many(const std::string& filename) const {
         throw std::runtime_error("Could not parse file: \"" + filename + '"');
     }
     for (const auto& resource_name : resource_names) {
-        preload_single(resource_name);
+        preload_single(resource_name, filter);
     }
 }
 
-void SceneNodeResources::preload_single(const std::string& name) const {
+void SceneNodeResources::preload_single(
+    const std::string& name,
+    const RenderableResourceFilter& filter) const {
     auto resource = get_resource(name);
     try {
-        resource->preload();
+        resource->preload(filter);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Could not preload \"" + name + "\": " + e.what());
     }
@@ -107,7 +112,7 @@ void SceneNodeResources::instantiate_renderable(
     auto resource = get_resource(resource_name);
     try {
         if (preload_behavior == PreloadBehavior::PRELOAD) {
-            resource->preload();
+            resource->preload(options.renderable_resource_filter);
         }
         resource->instantiate_renderable(options);
         auto cit = companions_.find(resource_name);

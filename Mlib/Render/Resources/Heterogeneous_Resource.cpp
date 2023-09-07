@@ -1,12 +1,14 @@
 #include "Heterogeneous_Resource.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
@@ -29,10 +31,13 @@ HeterogeneousResource::~HeterogeneousResource()
 
 // ISceneNodeResource
 
-void HeterogeneousResource::preload() const {
-    bri->preload(scene_node_resources_);
-    auto preload_textures = [](const auto& cvas) {
-        for (const auto& cva : cvas) {
+void HeterogeneousResource::preload(const RenderableResourceFilter& filter) const {
+    bri->preload(scene_node_resources_, filter);
+    auto preload_textures = [&filter](const auto& cvas) {
+        for (const auto& [i, cva] : enumerate(cvas)) {
+            if (!filter.matches(i, *cva)) {
+                continue;
+            }
             for (const auto& tex : cva->material.textures) {
                 RenderingContextStack::primary_rendering_resources()->preload(tex.texture_descriptor);
             }

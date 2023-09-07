@@ -28,7 +28,7 @@ public:
     std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
 
     // ISceneNodeResource, Misc
-    void preload() const override;
+    virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 

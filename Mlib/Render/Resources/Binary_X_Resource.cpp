@@ -80,9 +80,9 @@ BinaryXResource::BinaryXResource(
 BinaryXResource::~BinaryXResource()
 {}
 
-void BinaryXResource::preload() const {
-    rva_0_->preload();
-    rva_90_->preload();
+void BinaryXResource::preload(const RenderableResourceFilter& filter) const {
+    rva_0_->preload(filter);
+    rva_90_->preload(filter);
 }
 
 void BinaryXResource::instantiate_renderable(const InstantiationOptions& options) const
@@ -95,7 +95,7 @@ void BinaryXResource::instantiate_renderable(const InstantiationOptions& options
         InstantiationOptions{
             .instance_name = options.instance_name,
             .scene_node = node90.ref(DP_LOC),
-            .renderable_resource_filter = RenderableResourceFilter{}});
+            .renderable_resource_filter = options.renderable_resource_filter});
     options.scene_node->add_child(options.instance_name + "_node90", std::move(node90));
 }
 

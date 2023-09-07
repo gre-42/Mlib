@@ -30,6 +30,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <iostream>
@@ -1044,9 +1045,12 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
 
-void ColoredVertexArrayResource::preload() const {
-    auto preload_textures = [this](const auto& cvas) {
-        for (auto& cva : cvas) {
+void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter) const {
+    auto preload_textures = [this, &filter](const auto& cvas) {
+        for (const auto& [i, cva] : enumerate(cvas)) {
+            if (!filter.matches(i, *cva)) {
+                continue;
+            }
             for (auto& t : cva->material.textures) {
                 rendering_resources_->preload(t.texture_descriptor);
             }

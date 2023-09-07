@@ -25,11 +25,11 @@ CompoundResource::CompoundResource(
 CompoundResource::~CompoundResource()
 {}
 
-void CompoundResource::preload() const {
+void CompoundResource::preload(const RenderableResourceFilter& filter) const {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
-        scene_node_resources_.preload_single(resource_name);
+        scene_node_resources_.preload_single(resource_name, filter);
     }
 }
 

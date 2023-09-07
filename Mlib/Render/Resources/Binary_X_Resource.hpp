@@ -14,7 +14,7 @@ public:
         const Material& material_0,
         const Material& material_90);
     ~BinaryXResource();
-    virtual void preload() const override;
+    virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 private:

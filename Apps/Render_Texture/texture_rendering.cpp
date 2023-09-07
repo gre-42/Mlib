@@ -94,12 +94,17 @@ int main(int argc, char** argv)
             if (names.empty()) {
                 THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.unnamed_value(0) + '"');
             }
-            RenderingContextStack::primary_rendering_resources()->generate_auto_texture_atlas("__texture__", std::vector(names.begin(), names.end()), &atlas);
+            RenderingContextStack::primary_rendering_resources()->generate_auto_texture_atlas(
+                "__texture__",
+                std::vector(names.begin(), names.end()),
+                &atlas);
         } else {
-            RenderingContextStack::primary_rendering_resources()->add_texture_descriptor("__texture__", TextureDescriptor{
-                .color = parsed.unnamed_value(0),
-                .color_mode = ColorMode::RGBA,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS});
+            RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
+                "__texture__",
+                TextureDescriptor{
+                    .color = parsed.unnamed_value(0),
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS});
             ftl.emplace("__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
         }
 

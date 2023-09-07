@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
@@ -92,9 +93,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     requires_blending_pass_ = false;
     auto add_cvas = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
     {
-        size_t i = 0;
-        for (const auto& t : cvas) {
-            if (renderable_resource_filter.matches(i++, *t)) {
+        for (const auto& [i, t] : enumerate(cvas)) {
+            if (renderable_resource_filter.matches(i, *t)) {
                 if ((t->material.aggregate_mode == AggregateMode::NONE) ||
                     (rcva->instances_ != nullptr))
                 {

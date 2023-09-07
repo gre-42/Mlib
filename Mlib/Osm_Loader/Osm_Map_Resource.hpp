@@ -54,7 +54,7 @@ public:
     ~OsmMapResource();
 
     // ISceneNodeResource, Misc
-    virtual void preload() const override;
+    virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;

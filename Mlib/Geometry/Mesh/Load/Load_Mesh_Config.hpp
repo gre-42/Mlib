@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
+#include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <vector>
 
 namespace Mlib {
 
@@ -36,6 +38,8 @@ struct LoadMeshConfig {
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
     bool desaturate = false;
     std::string histogram;
+    std::vector<BlendMapTexture> textures;
+    float period_world;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
     float laplace_ao_strength;

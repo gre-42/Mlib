@@ -17,7 +17,7 @@ public:
     virtual ~HeightMapResource() override;
 
     // Misc
-    virtual void preload() const override;
+    virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 
     // Animation

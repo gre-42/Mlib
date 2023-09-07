@@ -17,6 +17,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Math/Least_Common_Multiple.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -127,10 +128,44 @@ struct LightAndNode {
 
 template <class TPos>
 LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
+    std::vector<BlendMapTexture> textures;
+    float period_world = 0.f;
+    if (args.has_named_value("--multilayer_diffuse")) {
+        textures = {BlendMapTexture{
+            .texture_descriptor = {
+                .color = args.named_value("--multilayer_diffuse"),
+                .normal = args.named_value("--multilayer_normal", ""),
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+            .role = BlendMapRole::DETAIL_BASE}};
+        std::vector<float> lcm_world_args;
+        for (uint32_t i = 0; i < 4; ++i) {
+            auto detail = args.named_value("--multilayer_detail" + std::to_string(i), "");
+            if (detail.empty()) {
+                continue;
+            }
+            float multilayer_mult = safe_stof(args.named_value("--multilayer_mult" + std::to_string(i)));
+            textures.push_back(BlendMapTexture{
+                .texture_descriptor = {
+                    .color = args.named_value("--multilayer_mask"),
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .role = BlendMapRole::DETAIL_MASK_R + i});
+            textures.push_back(BlendMapTexture{
+                .texture_descriptor = {
+                    .color = detail,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .scale = multilayer_mult,
+                .role = BlendMapRole::DETAIL_COLOR_HORIZONTAL});
+            lcm_world_args.push_back(multilayer_mult);
+        }
+        period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 1000);
+    }
     return LoadMeshConfig<TPos>{
         .position = fixed_zeros<TPos, 3>(),
         .rotation = fixed_zeros<float, 3>(),
-        .scale = fixed_full<float, 3>(safe_stof(args.named_value("--scale", "1"))),
+        .scale = FixedArray<float, 3>{
+            safe_stof(args.named_value("--scale_x", "1")),
+            safe_stof(args.named_value("--scale_y", "1")),
+            safe_stof(args.named_value("--scale_z", "1"))} * safe_stof(args.named_value("--scale", "1")),
         .blend_mode = blend_mode_from_string(args.named_value("--blend_mode", "binary_05")),
         .cull_faces_default = !args.has_named("--no_cull_faces_default"),
         .cull_faces_alpha = args.has_named("--cull_faces_alpha"),
@@ -140,6 +175,8 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
         .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
         .transformation_mode = TransformationMode::ALL,
+        .textures = textures,
+        .period_world = period_world,
         .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
         .apply_static_lighting = args.has_named("--apply_static_lighting"),
         .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
@@ -158,6 +195,9 @@ int main(int argc, char** argv) {
         "    [--bone_frame <id>]\n"
         "    [--hide_object]\n"
         "    [--scale <scale>]\n"
+        "    [--scale_x <scale>]\n"
+        "    [--scale_y <scale>]\n"
+        "    [--scale_z <scale>]\n"
         "    [--node_scale <scale>]\n"
         "    [--bvh_scale <scale>]\n"
         "    [--bvh_demean]\n"
@@ -252,6 +292,11 @@ int main(int argc, char** argv) {
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
         "    [--look_at_aabb]\n"
+        "    [--multilayer_diffuse <value>]\n"
+        "    [--multilayer_normal <value>]\n"
+        "    [--multilayer_mask <value>]\n"
+        "    [--multilayer_detail0-3 <value>]\n"
+        "    [--multilayer_mult0-3 <value>]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
          "--cull_faces_render",
@@ -282,6 +327,9 @@ int main(int argc, char** argv) {
          "--animation_frame",
          "--bone_frame",
          "--scale",
+         "--scale_x",
+         "--scale_y",
+         "--scale_z",
          "--node_scale",
          "--bvh_scale",
          "--y_fov",
@@ -351,7 +399,18 @@ int main(int argc, char** argv) {
          "--triangle_tangent_error_behavior",
          "--light_beacon",
          "--light_beacon_scale",
-         "--laplace_ao_strength"});
+         "--laplace_ao_strength",
+         "--multilayer_diffuse",
+         "--multilayer_normal",
+         "--multilayer_mask",
+         "--multilayer_detail0",
+         "--multilayer_detail1",
+         "--multilayer_detail2",
+         "--multilayer_detail3",
+         "--multilayer_mult0",
+         "--multilayer_mult1",
+         "--multilayer_mult2",
+         "--multilayer_mult3"});
     try {
         const auto args = parser.parsed(argc, argv);
 
@@ -576,7 +635,8 @@ int main(int argc, char** argv) {
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
                                 .cva_filter = {
                                     .included_names = Mlib::compile_regex(args.named_value("--include", "")),
-                                    .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))}}});
+                                    .excluded_names = Mlib::compile_regex(args.named_value("--exclude", "$ ^"))}}},
+                        PreloadBehavior::NO_PRELOAD);
                 }
                 if (args.has_named_value("--color_gradient_min_x") || args.has_named_value("--color_gradient_max_x")) {
                     auto apply_color_gradient = [&args]<typename TPos>(std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
