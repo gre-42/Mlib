@@ -917,13 +917,7 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& nam
     std::shared_lock lock{mutex_};
     if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
         if (auto tit = texture_descriptors_.find(name); tit != texture_descriptors_.end()) {
-            return BlendMapTexture{ .texture_descriptor = {
-                .color = name,
-                .alpha = tit->second.alpha,
-                .specular = tit->second.specular,
-                .normal = tit->second.normal,
-                .mipmap_mode = tit->second.mipmap_mode,
-                .anisotropic_filtering_level = tit->second.anisotropic_filtering_level } };
+            return BlendMapTexture{ .texture_descriptor = tit->second };
         } else {
             return BlendMapTexture{ .texture_descriptor = {
                 .color = name,

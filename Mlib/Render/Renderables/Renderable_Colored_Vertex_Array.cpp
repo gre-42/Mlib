@@ -663,8 +663,8 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
     auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor, GLenum target = GL_TEXTURE_2D) {
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.wrap_mode_s)));
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.wrap_mode_t)));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.wrap_modes(0))));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.wrap_modes(1))));
         if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {

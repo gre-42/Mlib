@@ -25,8 +25,7 @@ struct TextureDescriptor {
     OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
-    WrapMode wrap_mode_s = WrapMode::REPEAT;
-    WrapMode wrap_mode_t = WrapMode::REPEAT;
+    OrderableFixedArray<WrapMode, 2> wrap_modes = {WrapMode::REPEAT, WrapMode::REPEAT};
     std::partial_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -46,8 +45,7 @@ struct TextureDescriptor {
         archive(lighten_bottom);
         archive(mipmap_mode);
         archive(anisotropic_filtering_level);
-        archive(wrap_mode_s);
-        archive(wrap_mode_t);
+        archive(wrap_modes);
     }
 };
 

@@ -9,12 +9,15 @@ void Mlib::shift_uv3(
     FixedArray<float, 2>& u0,
     FixedArray<float, 2>& u1,
     FixedArray<float, 2>& u2,
-    const FixedArray<WrapMode, 2>& wrap_mode)
+    WrapMode wrap_mode,
+    size_t i)
 {
-    UvShifter3<float> uv_shifter3{period, u0, u1, u2, wrap_mode};
-    u0 = uv_shifter3.u0;
-    u1 = uv_shifter3.u1;
-    u2 = uv_shifter3.u2;
+    auto offset = (wrap_mode == WrapMode::REPEAT)
+        ? std::round((u0(i) + u1(i) + u2(i)) / 3.f / period) * period
+        : std::floor((std::min({u0(i), u1(i), u2(i)}) - UV_ATLAS_MIN) / period) * period;
+    u0(i) -= offset;
+    u1(i) -= offset;
+    u2(i) -= offset;
 }
 
 template <class TPos>
@@ -33,21 +36,6 @@ UvShifter3<TPos>::UvShifter3(
         this->u1(i) = float(u1(i) - offset);
         this->u2(i) = float(u2(i) - offset);
     }
-}
-
-void Mlib::shift_uv4(
-    float period,
-    FixedArray<float, 2>& u0,
-    FixedArray<float, 2>& u1,
-    FixedArray<float, 2>& u2,
-    FixedArray<float, 2>& u3,
-    const FixedArray<WrapMode, 2>& wrap_mode)
-{
-    UvShifter4<float> uv_shifter4{period, u0, u1, u2, u3, wrap_mode};
-    u0 = uv_shifter4.u0;
-    u1 = uv_shifter4.u1;
-    u2 = uv_shifter4.u2;
-    u3 = uv_shifter4.u3;
 }
 
 template <class TPos>
