@@ -65,7 +65,7 @@ void Mlib::draw_boundary_barriers(
 
     tl->material.textures = { primary_rendering_resources->get_blend_map_texture(barrier_style.texture) };
     tl->material.blend_mode = barrier_style.blend_mode;
-    tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
+    // tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
     tl->material.reorient_uv0 = barrier_style.reorient_uv0;
     tl->material.ambience *= barrier_style.ambience;
     tl->material.diffusivity *= barrier_style.diffusivity;

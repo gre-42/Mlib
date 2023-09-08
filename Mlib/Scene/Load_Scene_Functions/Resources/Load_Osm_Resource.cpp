@@ -218,8 +218,7 @@ DECLARE_ARGUMENT(refine_explicit_waypoints);
 namespace ST {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(lanes);
-DECLARE_ARGUMENT(texture0);
-DECLARE_ARGUMENT(texture1);
+DECLARE_ARGUMENT(textures);
 DECLARE_ARGUMENT(uvx);
 DECLARE_ARGUMENT(unknown);
 }
@@ -271,10 +270,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             for (const auto& street_texture : street_textures) {
                 street_texture.validate(ST::options, "street texture: ");
                 RoadProperties rp{.type=road_type, .nlanes = street_texture.at<size_t>(ST::lanes)};
-                std::vector<std::string> textures =
-                    street_texture.contains(ST::texture1)
-                        ? std::vector<std::string>{ street_texture.path_or_variable(ST::texture0).path, street_texture.path_or_variable(ST::texture1).path }
-                        : std::vector<std::string>{ street_texture.path_or_variable(ST::texture0).path };
+                auto textures = street_texture.pathes_or_variables(ST::textures, [](const FPath& v){return v.path;});
                 RoadStyle rs{
                     .textures = textures,
                     .uvx = street_texture.contains(ST::uvx)
@@ -290,7 +286,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                     .texture = barrier_style.path_or_variable(BS::texture).path,
                     .uv = barrier_style.at(BS::uv).get<FixedArray<float, 2>>(),
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
-                    .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
+                    // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
                     .ambience = barrier_style.at<float>(BS::ambience),
                     .diffusivity = barrier_style.at<float>(BS::diffusivity),

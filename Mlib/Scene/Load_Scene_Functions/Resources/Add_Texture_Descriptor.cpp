@@ -27,6 +27,8 @@ DECLARE_ARGUMENT(lighten_top);
 DECLARE_ARGUMENT(lighten_bottom);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
+DECLARE_ARGUMENT(wrap_mode_s);
+DECLARE_ARGUMENT(wrap_mode_t);
 }
 
 const std::string AddTextureDescriptor::key = "add_texture_descriptor";
@@ -59,6 +61,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
             .mipmap_mode = args.arguments.contains(KnownArgs::mipmap_mode)
                 ? mipmap_mode_from_string(args.arguments.at<std::string>(KnownArgs::mipmap_mode))
                 : MipmapMode::WITH_MIPMAPS,
-            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level)});
+            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
+            .wrap_mode_s = wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
+            .wrap_mode_t = wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))});
 
 }

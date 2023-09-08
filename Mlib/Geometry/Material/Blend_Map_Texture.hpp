@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <cmath>
 #include <cstdint>
+#include <string_view>
 
 namespace Mlib {
 
@@ -33,7 +34,7 @@ inline BlendMapRole operator + (BlendMapRole a, uint32_t b) {
     return (BlendMapRole)(uint32_t(a) + b);
 }
 
-BlendMapRole blend_map_role_from_string(const std::string& s);
+BlendMapRole blend_map_role_from_string(std::string_view s);
 
 struct BlendMapTexture {
     TextureDescriptor texture_descriptor;

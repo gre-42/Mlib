@@ -233,6 +233,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
                 .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
@@ -268,7 +269,8 @@ OsmTriangleLists::OsmTriangleLists(
                         .dirt_texture = config.street_dirt_texture,
                         .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                         .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                        .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
+                        // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
+                        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                         // depth-func==equal requires aggregation, because the terrain is also aggregated.
                         .aggregate_mode = AggregateMode::ONCE,
                         .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
@@ -280,9 +282,9 @@ OsmTriangleLists::OsmTriangleLists(
                     PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
                 .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
     }
-    WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
-        ? WrapMode::REPEAT
-        : WrapMode::CLAMP_TO_EDGE;
+    // WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
+    //     ? WrapMode::REPEAT
+    //     : WrapMode::CLAMP_TO_EDGE;
     for (const auto& [tpe, texture] : config.curb_street_texture) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
@@ -298,7 +300,7 @@ OsmTriangleLists::OsmTriangleLists(
                     : "",
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                .wrap_mode_s = curb_wrap_mode_s,
+                // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
                 .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
@@ -345,7 +347,7 @@ OsmTriangleLists::OsmTriangleLists(
                     : "",
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
-                .wrap_mode_s = curb_wrap_mode_s,
+                // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
                 .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
@@ -361,8 +363,8 @@ OsmTriangleLists::OsmTriangleLists(
             .continuous_blending_z_order = 1,
             .depth_func = DepthFunc::EQUAL,
             .textures = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
-            .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
-            .wrap_mode_t = WrapMode::REPEAT,
+            // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
+            // .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
             .aggregate_mode = AggregateMode::ONCE,
             .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},

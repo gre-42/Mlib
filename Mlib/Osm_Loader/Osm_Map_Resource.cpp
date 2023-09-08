@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.cpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
@@ -1152,7 +1153,9 @@ OsmMapResource::OsmMapResource(
     {
         for (auto& l2 : *l) {
             if (!l2->triangles.empty()) {
-                hri_.acvas->dcvas.push_back(l2->triangle_array());
+                auto cva = l2->triangle_array();
+                modulo_uv(*cva);
+                hri_.acvas->dcvas.push_back(cva);
             }
         }
     }

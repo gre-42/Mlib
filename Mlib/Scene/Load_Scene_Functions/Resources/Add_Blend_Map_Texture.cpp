@@ -21,6 +21,7 @@ DECLARE_ARGUMENT(cosine);
 DECLARE_ARGUMENT(discreteness);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(weight);
+DECLARE_ARGUMENT(role);
 }
 
 const std::string AddBlendMapTexture::key = "add_blend_map_texture";
@@ -48,5 +49,6 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
             .cosines = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::cosine),
             .discreteness = args.arguments.at<float>(KnownArgs::discreteness, 2.f),
             .scale = args.arguments.at<float>(KnownArgs::scale),
-            .weight = args.arguments.at<float>(KnownArgs::weight) });
+            .weight = args.arguments.at<float>(KnownArgs::weight),
+            .role = blend_map_role_from_string(args.arguments.at<std::string>(KnownArgs::role, "summand")) });
 }

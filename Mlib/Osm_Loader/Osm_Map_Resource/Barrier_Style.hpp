@@ -11,7 +11,6 @@ struct BarrierStyle {
     std::string texture;
     FixedArray<float, 2> uv;
     BlendMode blend_mode;
-    WrapMode wrap_mode_t;
     bool reorient_uv0;
     float ambience;
     float diffusivity;

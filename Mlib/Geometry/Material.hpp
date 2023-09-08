@@ -6,7 +6,6 @@
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
-#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
@@ -49,8 +48,6 @@ struct Material {
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
-    WrapMode wrap_mode_s = WrapMode::REPEAT;
-    WrapMode wrap_mode_t = WrapMode::REPEAT;
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
     float detail_multiplier = 2.f;
@@ -97,8 +94,6 @@ struct Material {
         archive(occluded_pass);
         archive(occluder_pass);
         archive(alpha_distances);
-        archive(wrap_mode_s);
-        archive(wrap_mode_t);
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
         archive(detail_multiplier);

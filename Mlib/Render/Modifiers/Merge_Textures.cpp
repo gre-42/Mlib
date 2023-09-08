@@ -44,12 +44,12 @@ void Mlib::merge_textures(
                         lwarn() << "Attempt to merge object \"" << cva->name << "\", which has a non-continuous material";
                         continue;
                     }
-                    if ((cva->material.wrap_mode_s == WrapMode::REPEAT) ||
-                        (cva->material.wrap_mode_t == WrapMode::REPEAT))
-                    {
-                        lwarn() << "Attempt to merge object \"" << cva->name << "\", which has repeating textures";
-                        continue;
-                    }
+                    // if ((cva->material.wrap_mode_s == WrapMode::REPEAT) ||
+                    //     (cva->material.wrap_mode_t == WrapMode::REPEAT))
+                    // {
+                    //     lwarn() << "Attempt to merge object \"" << cva->name << "\", which has repeating textures";
+                    //     continue;
+                    // }
                     bool warning_printed = false;
                     auto uv_out_of_bounds = FixedArray<bool, 2>{false, false};
                     for (auto& t : cva->triangles) {
@@ -77,12 +77,12 @@ void Mlib::merge_textures(
                     merged_filenames[MergedTextureName{cva->material}.name].push_back(cva.get());
                     continue;
                     fallback:;
-                    if (uv_out_of_bounds(0)) {
-                        cva->material.wrap_mode_s = WrapMode::REPEAT;
-                    }
-                    if (uv_out_of_bounds(1)) {
-                        cva->material.wrap_mode_t = WrapMode::REPEAT;
-                    }
+                    // if (uv_out_of_bounds(0)) {
+                    //     cva->material.wrap_mode_s = WrapMode::REPEAT;
+                    // }
+                    // if (uv_out_of_bounds(1)) {
+                    //     cva->material.wrap_mode_t = WrapMode::REPEAT;
+                    // }
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }

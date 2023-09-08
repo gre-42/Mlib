@@ -663,8 +663,8 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
     auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor, GLenum target = GL_TEXTURE_2D) {
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.wrap_mode_s)));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.wrap_mode_t)));
         if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
@@ -784,8 +784,8 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_texture({.color = cva->material.dirt_texture})));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(cva->material.wrap_mode_s)));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(cva->material.wrap_mode_t)));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(WrapMode::REPEAT)));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, get_wrap_param(WrapMode::REPEAT)));
         CHK(glActiveTexture(GL_TEXTURE0));
     }
     if (tic.ntextures_interior != 0) {

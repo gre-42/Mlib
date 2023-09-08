@@ -1,25 +1,26 @@
 #include "Blend_Map_Texture.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
 
+using namespace std::string_view_literals;
 using namespace Mlib;
 
-BlendMapRole Mlib::blend_map_role_from_string(const std::string& s) {
-    if (s == "summand") {
+BlendMapRole Mlib::blend_map_role_from_string(std::string_view s) {
+    if (s == "summand"sv) {
         return BlendMapRole::SUMMAND;
-    } else if (s == "detail_base") {
+    } else if (s == "detail_base"sv) {
         return BlendMapRole::DETAIL_BASE;
-    } else if (s == "detail_mask_r") {
+    } else if (s == "detail_mask_r"sv) {
         return BlendMapRole::DETAIL_MASK_R;
-    } else if (s == "detail_mask_g") {
+    } else if (s == "detail_mask_g"sv) {
         return BlendMapRole::DETAIL_MASK_G;
-    } else if (s == "detail_mask_b") {
+    } else if (s == "detail_mask_b"sv) {
         return BlendMapRole::DETAIL_MASK_B;
-    } else if (s == "detail_mask_a") {
+    } else if (s == "detail_mask_a"sv) {
         return BlendMapRole::DETAIL_MASK_A;
-    } else if (s == "detail_color_horizontal") {
+    } else if (s == "detail_color_horizontal"sv) {
         return BlendMapRole::DETAIL_COLOR_HORIZONTAL;
-    } else if (s == "detail_color_vertical") {
+    } else if (s == "detail_color_vertical"sv) {
         return BlendMapRole::DETAIL_COLOR_VERTICAL;
     }
-    THROW_OR_ABORT("Unknown blend map role: \"" + s + '"');
+    THROW_OR_ABORT("Unknown blend map role: \"" + std::string{s} + '"');
 }

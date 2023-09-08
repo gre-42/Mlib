@@ -36,7 +36,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
                 tri(0).uv,
                 tri(1).uv,
                 tri(2).uv,
-                {cva.material.wrap_mode_s, cva.material.wrap_mode_t});
+                {WrapMode::CLAMP_TO_EDGE, WrapMode::CLAMP_TO_EDGE});
         }
     }
 }

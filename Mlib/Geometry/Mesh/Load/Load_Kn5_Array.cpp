@@ -274,8 +274,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (any(attrs & MetaAttributes::TREE)) {
                     tl.modifier_backlog.merge_textures = true;
-                    tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
-                    tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
+                    // tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
+                    // tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
                     tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
                     tl.material.blend_mode = cfg.blend_mode;

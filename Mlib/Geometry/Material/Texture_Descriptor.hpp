@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
+#include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <iosfwd>
 #include <string>
@@ -24,6 +25,8 @@ struct TextureDescriptor {
     OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
+    WrapMode wrap_mode_s = WrapMode::REPEAT;
+    WrapMode wrap_mode_t = WrapMode::REPEAT;
     std::partial_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -43,6 +46,8 @@ struct TextureDescriptor {
         archive(lighten_bottom);
         archive(mipmap_mode);
         archive(anisotropic_filtering_level);
+        archive(wrap_mode_s);
+        archive(wrap_mode_t);
     }
 };
 
