@@ -144,14 +144,17 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
                 continue;
             }
             float multilayer_mult = safe_stof(args.named_value("--multilayer_mult" + std::to_string(i)));
-            textures.push_back(BlendMapTexture{
-                .texture_descriptor = {
-                    .color = args.named_value("--multilayer_mask"),
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                .role = BlendMapRole::DETAIL_MASK_R + i});
+            if (args.has_named_value("--multilayer_mask")) {
+                textures.push_back(BlendMapTexture{
+                    .texture_descriptor = {
+                        .color = args.named_value("--multilayer_mask"),
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .role = BlendMapRole::DETAIL_MASK_R + i});
+            }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
                     .color = detail,
+                    .normal = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""),
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .scale = multilayer_mult,
                 .role = BlendMapRole::DETAIL_COLOR_HORIZONTAL});
@@ -297,6 +300,7 @@ int main(int argc, char** argv) {
         "    [--multilayer_normal <value>]\n"
         "    [--multilayer_mask <value>]\n"
         "    [--multilayer_detail0-3 <value>]\n"
+        "    [--multilayer_detail_normal0-3 <value>]\n"
         "    [--multilayer_mult0-3 <value>]\n"
         "    [--magnifying_interpolation_mode <value>]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
@@ -409,6 +413,10 @@ int main(int argc, char** argv) {
          "--multilayer_detail1",
          "--multilayer_detail2",
          "--multilayer_detail3",
+         "--multilayer_detail_normal0",
+         "--multilayer_detail_normal1",
+         "--multilayer_detail_normal2",
+         "--multilayer_detail_normal3",
          "--multilayer_mult0",
          "--multilayer_mult1",
          "--multilayer_mult2",
