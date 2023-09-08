@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include <string_view>
 
 namespace Mlib {
 
@@ -8,6 +8,6 @@ enum class InterpolationMode {
     LINEAR
 };
 
-InterpolationMode interpolation_mode_from_string(const std::string& str);
+InterpolationMode interpolation_mode_from_string(std::string_view str);
 
 }
