@@ -2,16 +2,16 @@
 
 namespace Mlib {
 
-static const float TARMAC_SPECULARITY = 0.2f;
-static const float GRAVEL_SPECULARITY = 0.f;
-static const float SNOW_SPECULARITY = 0.4f;
-static const float ICE_SPECULARITY = 0.5f;
-static const float SAND_SPECULARITY = 0.1f;
+static const float TARMAC_SPECULARITY = 0.8f;
+static const float GRAVEL_SPECULARITY = 0.8f;
+static const float SNOW_SPECULARITY = 1.2f;
+static const float ICE_SPECULARITY = 1.5f;
+static const float SAND_SPECULARITY = 0.5f;
 static const float GRASS_SPECULARITY = 0.f;
-static const float DIRT_SPECULARITY = 0.2f;
-static const float STONE_SPECULARITY = 0.f;
+static const float DIRT_SPECULARITY = 0.8f;
+static const float STONE_SPECULARITY = 0.8f;
 
-static const float CURB_SPECULARITY = 0.f;
+static const float CURB_SPECULARITY = 0.8f;
 
 static const float DEFAULT_EMISSIVITY = 0.f;
 static const float DEFAULT_AMBIENCE = 1.f;
