@@ -44,7 +44,12 @@ std::shared_ptr<AudioBuffer> AudioResources::get_buffer(const std::string& name)
     return buffer;
 }
 
-void AudioResources::add_buffer_sequence(const std::string& name, const std::string& filename, float gain, float hysteresis_step) {
+void AudioResources::add_buffer_sequence(
+    const std::string& name,
+    const std::string& filename,
+    float gain,
+    float hysteresis_step)
+{
     std::unique_lock lock{mutex_};
     if (!buffer_sequence_filenames_.insert({name, {filename, gain, hysteresis_step}}).second) {
         THROW_OR_ABORT("Audio sequence with name \"" + name + "\" already exists");

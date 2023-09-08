@@ -26,7 +26,11 @@ public:
     float get_buffer_gain(const std::string& name) const;
     std::shared_ptr<AudioBuffer> get_buffer(const std::string& name) const;
 
-    void add_buffer_sequence(const std::string& name, const std::string& filename, float gain, float hysteresis_step);
+    void add_buffer_sequence(
+        const std::string& name,
+        const std::string& filename,
+        float gain,
+        float hysteresis_step);
     float get_buffer_sequence_gain(const std::string& name) const;
     std::shared_ptr<AudioBufferSequenceWithHysteresis> get_buffer_sequence(const std::string& name) const;
 private:
