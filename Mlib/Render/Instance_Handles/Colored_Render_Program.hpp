@@ -46,7 +46,6 @@ struct RenderProgramIdentifier {
     size_t nbones;
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;
-    float detail_multiplier;
     size_t ntextures_color;
     size_t ntextures_normal;
     std::vector<size_t> lightmap_indices_color;

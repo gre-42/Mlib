@@ -50,7 +50,6 @@ struct Material {
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
-    float detail_multiplier = 2.f;
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
@@ -96,7 +95,6 @@ struct Material {
         archive(alpha_distances);
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);
-        archive(detail_multiplier);
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);

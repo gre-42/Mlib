@@ -318,7 +318,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !material.txDiffuse.empty() &&
                     !material.txDetail1.empty())
                 {
-                    tl.material.detail_multiplier = 1.f;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
@@ -339,12 +338,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
-                    tl.material.detail_multiplier = material.magicMult;
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = material.txDiffuse,
                             .normal = material.txNormal,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .weight = material.magicMult,
                         .role = BlendMapRole::DETAIL_BASE}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail4(i).empty() ||
