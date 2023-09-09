@@ -16,7 +16,7 @@ enum class PositionRequirement {
 class AudioSource {
     AudioSource(const AudioSource&) = delete;
     AudioSource& operator = (const AudioSource&) = delete;
-    AudioSource(PositionRequirement position_requirement);
+    explicit AudioSource(PositionRequirement position_requirement);
 public:
     AudioSource(
         const AudioBuffer& buffer,
