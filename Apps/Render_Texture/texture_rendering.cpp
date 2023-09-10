@@ -102,7 +102,7 @@ int main(int argc, char** argv)
             RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
                 "__texture__",
                 TextureDescriptor{
-                    .color = parsed.unnamed_value(0),
+                    .color = {.filename = parsed.unnamed_value(0)},
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS});
             ftl.emplace("__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);

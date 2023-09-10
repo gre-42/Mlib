@@ -193,9 +193,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         if (!materials.insert({material.at("name"), Material{
             .textures{
                 BlendMapTexture{.texture_descriptor = {
-                    .color = gen_filename(filename, material.at("diffuse_texture")),
-                    .desaturate = cfg.desaturate,
-                    .histogram = cfg.histogram,
+                    .color = ImageWithModifiers{
+                        .filename = gen_filename(filename, material.at("diffuse_texture")),
+                        .desaturate = cfg.desaturate,
+                    .histogram = cfg.histogram},
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}
             },

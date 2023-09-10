@@ -297,7 +297,7 @@ static GenShaderText vertex_shader_text_gen{[](
         linfo();
         linfo() << "Vertex";
         if (!textures.empty()) {
-            linfo() << "Color: " + textures[0]->texture_descriptor.color;
+            linfo() << "Color: " + textures[0]->texture_descriptor.color.filename;
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -941,7 +941,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         linfo();
         linfo() << "Fragment";
         if (!textures.empty()) {
-            linfo() << "Color: " + textures[0]->texture_descriptor.color;
+            linfo() << "Color: " + textures[0]->texture_descriptor.color.filename;
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -1489,7 +1489,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     } catch (const std::runtime_error& e) {
         std::string identifier;
         if (!textures.empty()) {
-            identifier = "\nAmbient+diffuse: " + textures[0]->texture_descriptor.color;
+            identifier = "\nAmbient+diffuse: " + textures[0]->texture_descriptor.color.filename;
         }
         THROW_OR_ABORT(
             std::string("Could not generate render program.\n") +

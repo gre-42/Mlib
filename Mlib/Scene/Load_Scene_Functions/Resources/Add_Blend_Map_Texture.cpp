@@ -41,7 +41,7 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         BlendMapTexture{
             .texture_descriptor = tex.is_variable
                 ? RenderingContextStack::primary_rendering_resources()->get_existing_texture_descriptor(tex.path)
-                : TextureDescriptor{ .color = tex.path },
+                : TextureDescriptor{ .color = {.filename = tex.path} },
             .min_height = args.arguments.at<float>(KnownArgs::min_height),
             .max_height = args.arguments.at<float>(KnownArgs::max_height),
             .distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::distances),

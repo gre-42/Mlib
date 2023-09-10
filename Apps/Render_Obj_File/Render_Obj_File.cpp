@@ -133,7 +133,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{
             .texture_descriptor = {
-                .color = args.named_value("--multilayer_diffuse"),
+                .color = {.filename = args.named_value("--multilayer_diffuse")},
                 .normal = args.named_value("--multilayer_normal", ""),
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
             .role = BlendMapRole::DETAIL_BASE}};
@@ -147,20 +147,20 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
-                        .color = args.named_value("--multilayer_mask"),
+                        .color = {.filename = args.named_value("--multilayer_mask")},
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
-                    .color = detail,
+                    .color = {.filename = detail},
                     .normal = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""),
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .scale = multilayer_mult,
                 .role = BlendMapRole::DETAIL_COLOR_HORIZONTAL});
             lcm_world_args.push_back(multilayer_mult);
         }
-        period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 1000);
+        period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
     }
     return LoadMeshConfig<TPos>{
         .position = fixed_zeros<TPos, 3>(),

@@ -443,7 +443,7 @@ void test_eigen_jacobi() {
 
 void test_least_common_multiple() {
     std::vector<float> data({1.3f, 2.6f, 0.65f});
-    assert_isclose(least_common_multiple(data.begin(), data.end(), 1e-6f, 1000), 2.6f);
+    assert_isclose(least_common_multiple(data.begin(), data.end(), 1e-6f, 10'000), 2.6f);
 }
 
 int main(int argc, const char** argv) {

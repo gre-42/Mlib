@@ -62,14 +62,14 @@ void FillWithTextureLogic::update_texture_id() {
     }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
             rp_.texture_id_ = rendering_resources_->get_texture({
-                .color = image_resource_name_,
+                .color = {.filename = image_resource_name_},
                 .color_mode = color_mode_,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS});
     }
 }
 
 bool FillWithTextureLogic::texture_is_loaded_and_try_preload() const {
-    return rendering_resources_->texture_is_loaded_and_try_preload({.color = image_resource_name_});
+    return rendering_resources_->texture_is_loaded_and_try_preload({.color = {.filename = image_resource_name_}});
 }
 
 void FillWithTextureLogic::render()

@@ -26,7 +26,7 @@ bool OptionalMaterialHider::is_hidden(const Material& material) const {
         return false;
     }
     bool result = hidden_names_.value().contains(
-        material.textures[0].texture_descriptor.color);
+        material.textures[0].texture_descriptor.color.filename);
     if (print_materials_ && !result) {
         linfo() << "Drawing material " << material.identifier();
     }

@@ -31,6 +31,6 @@ void SaveTextureAtlasPng::execute(const LoadSceneJsonUserFunctionArgs& args)
     RenderingContextStack::primary_rendering_resources()->save_to_file(
         args.arguments.at<std::string>(KnownArgs::filename),
         TextureDescriptor{
-            .color = args.arguments.at<std::string>(KnownArgs::name),
+            .color = {.filename = args.arguments.at<std::string>(KnownArgs::name)},
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))});
 }

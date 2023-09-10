@@ -116,7 +116,7 @@ void ImposterLogic::add_imposter(
     Material material{
         // .blend_mode = BlendMode::SEMI_CONTINUOUS_08,  // does not work with vegetation
         .blend_mode = BlendMode::BINARY_08,
-        .textures = { {.texture_descriptor = TextureDescriptor{.color = texture_id_, .color_mode = ColorMode::RGBA}} },
+        .textures = { {.texture_descriptor = TextureDescriptor{.color = {.filename = texture_id_}, .color_mode = ColorMode::RGBA}} },
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};

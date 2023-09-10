@@ -320,13 +320,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
-                            .color = material.txDiffuse,
+                            .color = {.filename = material.txDiffuse},
                             .normal = material.txNormal,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .role = BlendMapRole::DETAIL_BASE}};
                     tl.material.textures.push_back(BlendMapTexture{
                         .texture_descriptor = {
-                            .color = material.txDetail1,
+                            .color = {.filename = material.txDetail1},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .scale = material.detailUVMultiplier,
                         .role = BlendMapRole::DETAIL_COLOR_VERTICAL});
@@ -340,7 +340,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
-                            .color = material.txDiffuse,
+                            .color = {.filename = material.txDiffuse},
                             .normal = material.txNormal,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .weight = material.magicMult,
@@ -353,12 +353,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         }
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
-                                .color = material.txMask,
+                                .color = {.filename = material.txMask},
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .role = BlendMapRole::DETAIL_MASK_R + i});
                         tl.material.textures.push_back(BlendMapTexture{
                             .texture_descriptor = {
-                                .color = material.txDetail4(i),
+                                .color = {.filename = material.txDetail4(i)},
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.mult(i),
                             .role = any(attrs & MetaAttributes::VERTICAL)
@@ -370,7 +370,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     if (!material.txDiffuse.empty()) {
                         tl.material.textures = {BlendMapTexture{
                             .texture_descriptor = {
-                                .color = material.txDiffuse,
+                                .color = {.filename = material.txDiffuse},
                                 .normal = material.txNormal,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
                         tl.material.compute_color_mode();

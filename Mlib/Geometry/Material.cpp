@@ -46,7 +46,7 @@ bool Material::fragments_depend_on_normal() const {
 
 std::string Material::identifier() const {
     if (textures.size() > 0) {
-        return "color: " + textures.front().texture_descriptor.color;
+        return "color: " + textures.front().texture_descriptor.color.filename;
     } else {
         return "<no texture>";
     }

@@ -32,7 +32,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
         }
     }
     if (!lcm_world_args.empty()) {
-        cva.material.period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 1000);
+        cva.material.period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
         // linfo() << "period_world " << cva.material.identifier() << ": " << cva.material.period_world;
     }
     for (size_t i = 0; i < 2; ++i) {
@@ -40,7 +40,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
             if (detected_non_repeat(i)) {
                 THROW_OR_ABORT("Detected mixture of repeat/non-repeat wrap modes in material: " + cva.material.identifier());
             }
-            auto period_local = least_common_multiple(lcm_local_args(i).begin(), lcm_local_args(i).end(), 1e-6f, 1000);
+            auto period_local = least_common_multiple(lcm_local_args(i).begin(), lcm_local_args(i).end(), 1e-6f, 10'000);
             // linfo() << "period_local " << cva.material.identifier() << ": " << period_local;
             for (auto& tri : cva.triangles) {
                 shift_uv3(

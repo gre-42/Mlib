@@ -327,14 +327,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 auto material_name = std::string{match[1].str()};
                 current_mtl = mtllib.at(material_name);
                 TextureDescriptor td{
-                    .desaturate = cfg.desaturate,
-                    .histogram = cfg.histogram,
+                    .color = {
+                        .desaturate = cfg.desaturate,
+                        .histogram = cfg.histogram},
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level
                 };
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.color = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string();
+                    td.color = {.filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string()};
                 }
                 if (!current_mtl.specular_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
@@ -344,7 +345,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     fs::path p = fs::path(filename).parent_path();
                     td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
                 }
-                if (!td.color.empty() || !td.specular.empty() || !td.normal.empty()) {
+                if (!td.color.filename.empty() || !td.specular.empty() || !td.normal.empty()) {
                     tl.material.textures = { {.texture_descriptor = td } };
                 } else {
                     tl.material.textures = cfg.textures;

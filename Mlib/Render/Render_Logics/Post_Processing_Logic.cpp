@@ -244,9 +244,9 @@ void PostProcessingLogic::render(
                 CHK(glBindTexture(
                     GL_TEXTURE_2D,
                     rendering_context_.rendering_resources->get_texture(
-                        "soft_light",
+                        {.filename = "soft_light"},
                         TextureDescriptor{
-                            .color = soft_light_filename_,
+                            .color = {.filename = soft_light_filename_},
                             .color_mode = ColorMode::RGB,
                             .mipmap_mode = MipmapMode::NO_MIPMAPS})));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
