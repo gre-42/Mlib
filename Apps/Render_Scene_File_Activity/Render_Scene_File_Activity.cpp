@@ -40,6 +40,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -578,20 +579,21 @@ void android_main(android_app* app) {
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     } catch (const std::runtime_error& e) {
-        std::string remaining_msg = e.what();
-        while (!remaining_msg.empty()) {
-            auto current_msg = remaining_msg.substr(0, 1000);
-            LOGE("Runtime error: %s", current_msg.c_str());
-            AUi::ShowMessage("Error", current_msg);
-            remaining_msg = remaining_msg.substr(current_msg.size());
+        for (const auto substr : iterate_over_blocks_of_string(e.what(), 1000))
+        {
+            lerr() << "Runtime error: " << substr;
         }
+        AUi::ShowMessage("Error", e.what());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();
     }
     if (unhandled_exceptions_occured()) {
         std::stringstream sstr;
         print_unhandled_exceptions(sstr);
-        LOGE("Unhandled exception(s): %s", sstr.str().c_str());
+        for (const auto substr : iterate_over_blocks_of_string(sstr.str(), 1000))
+        {
+            lerr() << "Unhandled exception(s): " << substr;
+        }
         AUi::ShowMessage("Error", sstr.str());
         std::this_thread::sleep_for(std::chrono::seconds(5));
         std::abort();

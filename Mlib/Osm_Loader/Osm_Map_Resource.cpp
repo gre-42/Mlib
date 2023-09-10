@@ -362,23 +362,27 @@ OsmMapResource::OsmMapResource(
     }
     if (!config.boundary_barrier_style.empty()) {
         LOG_INFO("draw_boundary_barriers");
-        draw_boundary_barriers(
-            tls_wall_barriers,
-            street_hole_triangles,
-            Material{
-                .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
-                .aggregate_mode = AggregateMode::ONCE,
-                .cull_faces = false,
-                .reorient_uv0 = true,
-                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
-                .draw_distance_noperations = 1000},
-            config.scale,
-            config.uv_scale_barrier_wall,
-            config.boundary_barrier_height,
-            config.barrier_styles.get(config.boundary_barrier_style));
+        try {
+            draw_boundary_barriers(
+                tls_wall_barriers,
+                street_hole_triangles,
+                Material{
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
+                    .aggregate_mode = AggregateMode::ONCE,
+                    .cull_faces = false,
+                    .reorient_uv0 = true,
+                    .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
+                    .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
+                    .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
+                    .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
+                    .draw_distance_noperations = 1000},
+                config.scale,
+                config.uv_scale_barrier_wall,
+                config.boundary_barrier_height,
+                config.barrier_styles.get(config.boundary_barrier_style));
+        } catch (const EdgeException<double>& e) {
+            handle_edge_exception(e, "Could not draw boundary barriers");
+        }
     }
 
     std::vector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
@@ -1174,11 +1178,11 @@ OsmMapResource::OsmMapResource(
             for (const Building& bu : spawn_lines) {
                 auto iteam = bu.way.tags.find("team");
                 for (auto it = bu.way.nd.begin(); it != bu.way.nd.end(); ++it) {
-                    auto s = it;
-                    ++s;
-                    if (s != bu.way.nd.end()) {
-                        FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*s).position) / 2.;
-                        FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*s).position;
+                    auto next = it;
+                    ++next;
+                    if (next != bu.way.nd.end()) {
+                        FixedArray<double, 2> p = (nodes.at(*it).position + nodes.at(*next).position) / 2.;
+                        FixedArray<double, 2> dir = nodes.at(*it).position - nodes.at(*next).position;
                         double len2 = sum(squared(dir));
                         if (len2 < 1e-12) {
                             throw PointException{ p, "Spawn direction too small" };
@@ -1356,6 +1360,7 @@ OsmMapResource::OsmMapResource(
     }
     print_waypoints_if_requested(debug_prefix);
     save_to_obj_file_if_requested(debug_prefix);
+    save_bad_triangles_to_obj_file_if_requested(debug_prefix);
 }
 
 const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::street_bvh() const {
