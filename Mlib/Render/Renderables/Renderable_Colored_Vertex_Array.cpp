@@ -568,7 +568,7 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_normal != 0) {
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
-            if (!t.texture_descriptor.normal.empty()) {
+            if (!t.texture_descriptor.normal.filename.empty()) {
                 CHK(glUniform1i(rp.texture_normalmap_locations.at(i), (GLint)tic.id_normal(i)));
             }
             ++i;
@@ -742,7 +742,7 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_normal != 0) {
         size_t i = 0;
         for (const auto& t : cva->material.textures) {
-            if (!t.texture_descriptor.normal.empty()) {
+            if (!t.texture_descriptor.normal.filename.empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
                 CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_normalmap_texture(t.texture_descriptor)));
                 setup_texture(t.texture_descriptor);

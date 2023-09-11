@@ -321,7 +321,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = {.filename = material.txDiffuse},
-                            .normal = material.txNormal,
+                            .normal = {.filename = material.txNormal},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .role = BlendMapRole::DETAIL_BASE}};
                     tl.material.textures.push_back(BlendMapTexture{
@@ -341,7 +341,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.textures = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = {.filename = material.txDiffuse},
-                            .normal = material.txNormal,
+                            .normal = {.filename = material.txNormal},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .weight = material.magicMult,
                         .role = BlendMapRole::DETAIL_BASE}};
@@ -371,7 +371,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material.textures = {BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {.filename = material.txDiffuse},
-                                .normal = material.txNormal,
+                                .normal = {.filename = material.txNormal},
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
                         tl.material.compute_color_mode();
                     }

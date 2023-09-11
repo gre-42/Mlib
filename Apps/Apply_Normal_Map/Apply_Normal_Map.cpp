@@ -102,10 +102,10 @@ int main(int argc, char** argv) {
                 "tl",
                 Material{
                     .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
-                        .color = ImageWithModifiers{
+                        .color = ColormapWithModifiers{
                             .filename = args.named_value("--color"),
                             .histogram = args.named_value("--histogram", "")},
-                        .normal = args.named_value("--normal"),
+                        .normal = {.filename = args.named_value("--normal")},
                         .color_mode = ColorMode::RGB}} }
                     },
                 PhysicsMaterial::ATTR_VISIBLE};

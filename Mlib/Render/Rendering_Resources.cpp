@@ -37,6 +37,7 @@
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_alpha_fac.hpp>
 #include <stb_cpp/stb_array.hpp>
+#include <stb_cpp/stb_blend.hpp>
 #include <stb_cpp/stb_colorize.hpp>
 #include <stb_cpp/stb_desaturate.hpp>
 #include <stb_cpp/stb_image_atlas.hpp>
@@ -151,39 +152,35 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
         si0 = stb_load_texture(
             desc.color.filename, (int)desc.color_mode, flip_mode);
     }
-    if (!desc.color.mixed.empty()) {
-        auto si1_raw = stb_load_texture(
-            desc.color.mixed, (int)desc.color_mode, flip_mode);
-        std::unique_ptr<unsigned char[]> si1_resized{
-            new unsigned char[(size_t)(si0.width * si0.height * si1_raw.nrChannels)]};
-        stbir_resize_uint8(si1_raw.data.get(),
-                           si1_raw.width,
-                           si1_raw.height,
-                           0,
-                           si1_resized.get(),
-                           si0.width,
-                           si0.height,
-                           0,
-                           si1_raw.nrChannels);
-        //int max_dist = si0.width * overlap_npixels;
-        int max_dist = 5;
-        for (int r = 0; r < si0.height; ++r) {
-            for (int c = 0; c < si0.width; ++c) {
-                int dist = std::min(c, si0.width - c - 1);
-                float fac;
-                if (dist < max_dist) {
-                    fac = float(dist) / (float)max_dist;
-                } else {
-                    fac = 1;
-                }
-                for (int d = 0; d < si0.nrChannels; ++d) {
-                    int i0 = (r * si0.width + c) * si0.nrChannels + d;
-                    int i1 = (r * si0.width + c) * si1_raw.nrChannels + d;
-                    si0.data.get()[i0] =
-                        (unsigned char)(fac * (float)si0.data.get()[i0] + (1 - fac) * (float)si1_resized.get()[i1]);
-                }
-            }
-        }
+    if (!desc.color.average.empty()) {
+        auto si1 = stb_load_texture(
+            desc.color.average, (int)desc.color_mode, flip_mode);
+        stb_average(
+            si0.data.get(),
+            si1.data.get(),
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si1.width,
+            si1.height,
+            si0.nrChannels,
+            si1.nrChannels,
+            si0.nrChannels);
+    }
+    if (!desc.color.multiply.empty()) {
+        auto si1 = stb_load_texture(
+            desc.color.multiply, (int)desc.color_mode, flip_mode);
+        stb_multiply_color(
+            si0.data.get(),
+            si1.data.get(),
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si1.width,
+            si1.height,
+            si0.nrChannels,
+            si1.nrChannels,
+            si0.nrChannels);
     }
     if (desc.alpha_fac != 1.f) {
         stb_alpha_fac(
@@ -359,7 +356,7 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
         if (!desc.color.filename.empty()) {
             get_texture(desc, CallerType::PRELOAD);
         }
-        if (!desc.normal.empty()) {
+        if (!desc.normal.filename.empty()) {
             get_normalmap_texture(desc);
         }
     } else {
@@ -377,19 +374,19 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
                 linfo() << this << " Preloaded color texture: " << descriptor.color;
             }
         }
-        if (!desc.normal.empty() &&
-            !textures_.contains({.filename = desc.normal}) &&
-            !preloaded_texture_data_.contains({.filename = desc.normal}) &&
-            !preloaded_texture_dds_data_.contains(desc.normal) &&
-            !auto_atlas_tile_descriptors_.contains(descriptor.normal))
+        if (!desc.normal.filename.empty() &&
+            !textures_.contains({.filename = desc.normal.filename, .average = desc.normal.average}) &&
+            !preloaded_texture_data_.contains({.filename = desc.normal.filename, .average = desc.normal.average}) &&
+            !preloaded_texture_dds_data_.contains(desc.normal.filename) &&
+            !auto_atlas_tile_descriptors_.contains(descriptor.normal.filename))
         {
             auto data = get_texture_data(
                 TextureDescriptor{
-                    .color = {.filename = desc.normal},
+                    .color = {.filename = desc.normal.filename, .average = desc.normal.average},
                     .color_mode = ColorMode::RGB},
                 FlipMode::VERTICAL);
             std::scoped_lock lock{map_mutex_};
-            if (!preloaded_texture_data_.try_emplace({.filename = desc.normal}, std::move(data)).second) {
+            if (!preloaded_texture_data_.try_emplace({.filename = desc.normal.filename, .average = desc.normal.average}, std::move(data)).second) {
                 THROW_OR_ABORT("Could not preload normal");
             } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded normal texture: " << desc.normal;
@@ -420,7 +417,7 @@ bool RenderingResources::texture_is_loaded_and_try_preload(const TextureDescript
     return false;
 }
 
-bool RenderingResources::texture_is_loaded_unsafe(const ImageWithModifiers& name) const {
+bool RenderingResources::texture_is_loaded_unsafe(const ColormapWithModifiers& name) const {
     if (preloaded_texture_dds_data_.contains(name.filename)) {
         return true;
     }
@@ -436,7 +433,7 @@ bool RenderingResources::texture_is_loaded_unsafe(const ImageWithModifiers& name
     return false;
 }
 
-bool RenderingResources::contains_texture(const ImageWithModifiers& name) const {
+bool RenderingResources::contains_texture(const ColormapWithModifiers& name) const {
     std::shared_lock lock{mutex_};
     return textures_.contains(name) || auto_atlas_tile_descriptors_.contains(name.filename);
 }
@@ -454,7 +451,8 @@ std::string RenderingResources::get_texture_filename(
     if (manual_atlas_tile_descriptors_.contains(desc.color.filename) ||
         desc.color.desaturate ||
         !desc.color.histogram.empty() ||
-        !desc.color.mixed.empty() ||
+        !desc.color.average.empty() ||
+        !desc.color.multiply.empty() ||
         !desc.color.mean_color.all_equal(-1.f) ||
         !desc.color.lighten.all_equal(0.f))
     {
@@ -487,7 +485,9 @@ GLuint RenderingResources::get_texture(
 
 GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descriptor) const {
     return get_texture(TextureDescriptor{
-        .color = {.filename = descriptor.normal},
+        .color = {
+            .filename = descriptor.normal.filename,
+            .average = descriptor.normal.average},
         .color_mode = ColorMode::RGB,
         .mipmap_mode = descriptor.mipmap_mode,
         .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
@@ -537,7 +537,7 @@ static GLenum nchannels2format(size_t nchannels) {
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 
 GLuint RenderingResources::get_texture(
-    const ImageWithModifiers& name,
+    const ColormapWithModifiers& name,
     const TextureDescriptor& descriptor,
     CallerType caller_type) const
 {
@@ -555,8 +555,11 @@ GLuint RenderingResources::get_texture(
         : descriptor;
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
         linfo() << this << " Loading texture: " << desc.color;
-        if (!desc.color.mixed.empty()) {
-            linfo() << this << " Loading texture: " << desc.color.mixed;
+        if (!desc.color.average.empty()) {
+            linfo() << this << " Loading texture: " << desc.color.average;
+        }
+        if (!desc.color.multiply.empty()) {
+            linfo() << this << " Loading texture: " << desc.color.multiply;
         }
     }
 
@@ -1175,7 +1178,7 @@ void RenderingResources::insert_texture(
 }
 
 void RenderingResources::initialize_non_dds_texture(
-    const ImageWithModifiers& name,
+    const ColormapWithModifiers& name,
     const TextureDescriptor& descriptor) const
 {
     StbInfo<uint8_t> si;

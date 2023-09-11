@@ -193,7 +193,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         if (!materials.insert({material.at("name"), Material{
             .textures{
                 BlendMapTexture{.texture_descriptor = {
-                    .color = ImageWithModifiers{
+                    .color = ColormapWithModifiers{
                         .filename = gen_filename(filename, material.at("diffuse_texture")),
                         .desaturate = cfg.desaturate,
                     .histogram = cfg.histogram},

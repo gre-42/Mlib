@@ -19,8 +19,8 @@ DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(alpha_fac);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
-DECLARE_ARGUMENT(mixed);
-DECLARE_ARGUMENT(overlap_npixels);
+DECLARE_ARGUMENT(multiply_color);
+DECLARE_ARGUMENT(average_normal);
 DECLARE_ARGUMENT(mean_color);
 DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(lighten_top);
@@ -48,15 +48,17 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .filename = args.arguments.path_or_variable(KnownArgs::color).path,
                 .desaturate = args.arguments.at<bool>(KnownArgs::desaturate, false),
                 .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
-                .mixed = args.arguments.at<std::string>(KnownArgs::mixed, ""),
-                .overlap_npixels = args.arguments.at<size_t>(KnownArgs::overlap_npixels, 0),
+                .average = "",
+                .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
                 .mean_color = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
                 .lighten = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_top = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_bottom = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f))},
             .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
             .specular = args.arguments.try_path_or_variable(KnownArgs::specular).path,
-            .normal = args.arguments.try_path_or_variable(KnownArgs::normal).path,
+            .normal = {
+                .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
+                .average =  args.arguments.try_path_or_variable(KnownArgs::average_normal).path},
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
             .mipmap_mode = args.arguments.contains(KnownArgs::mipmap_mode)

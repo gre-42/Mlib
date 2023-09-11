@@ -16,7 +16,7 @@ Material& Material::compute_color_mode() {
 
 bool Material::has_normalmap() const {
     for (const auto& t : textures) {
-        if (!t.texture_descriptor.normal.empty()) {
+        if (!t.texture_descriptor.normal.filename.empty()) {
             return true;
         }
     }

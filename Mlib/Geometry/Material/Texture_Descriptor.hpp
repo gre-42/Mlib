@@ -1,7 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
-#include <Mlib/Geometry/Material/Image_With_Modifiers.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
+#include <Mlib/Geometry/Material/Normalmap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <iosfwd>
@@ -10,10 +11,10 @@
 namespace Mlib {
 
 struct TextureDescriptor {
-    ImageWithModifiers color;
+    ColormapWithModifiers color;
     std::string alpha;
     std::string specular;
-    std::string normal;
+    NormalmapWithModifiers normal;
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;

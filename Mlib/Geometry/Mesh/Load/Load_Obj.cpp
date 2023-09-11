@@ -343,9 +343,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.normal = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string();
+                    td.normal = {.filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string()};
                 }
-                if (!td.color.filename.empty() || !td.specular.empty() || !td.normal.empty()) {
+                if (!td.color.filename.empty() || !td.specular.empty() || !td.normal.filename.empty()) {
                     tl.material.textures = { {.texture_descriptor = td } };
                 } else {
                     tl.material.textures = cfg.textures;

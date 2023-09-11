@@ -643,7 +643,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     if (ntextures_color > 1) {
         if (has_normalmap) {
-            if (textures[0]->texture_descriptor.normal.empty()) {
+            if (textures[0]->texture_descriptor.normal.filename.empty()) {
                 sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
             } else {
                 sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], tex_coord_flipped * " << textures[0]->scale << ").rgb - 1.0;" << std::endl;
@@ -753,7 +753,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     THROW_OR_ABORT("Unknown blend map role");
                 }
                 if (has_normalmap) {
-                    if (t->texture_descriptor.normal.empty()) {
+                    if (t->texture_descriptor.normal.filename.empty()) {
                         sstr << "            tnorm.z += weight;" << std::endl;
                     } else {
                         sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
@@ -1392,7 +1392,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.ntextures_normal != 0) {
             size_t i = 0;
             for (const auto& r : textures) {
-                if (!r->texture_descriptor.normal.empty()) {
+                if (!r->texture_descriptor.normal.filename.empty()) {
                     rp->texture_normalmap_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_normalmap[" + std::to_string(i) + "]").c_str());
                 }
                 ++i;

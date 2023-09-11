@@ -134,7 +134,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         textures = {BlendMapTexture{
             .texture_descriptor = {
                 .color = {.filename = args.named_value("--multilayer_diffuse")},
-                .normal = args.named_value("--multilayer_normal", ""),
+                .normal = {.filename = args.named_value("--multilayer_normal", "")},
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
             .role = BlendMapRole::DETAIL_BASE}};
         std::vector<float> lcm_world_args;
@@ -154,7 +154,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
                     .color = {.filename = detail},
-                    .normal = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""),
+                    .normal = {.filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .scale = multilayer_mult,
                 .role = BlendMapRole::DETAIL_COLOR_HORIZONTAL});

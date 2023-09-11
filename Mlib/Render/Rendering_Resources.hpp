@@ -21,7 +21,7 @@ enum class FlipMode;
 
 namespace Mlib {
 
-struct ImageWithModifiers;
+struct ColormapWithModifiers;
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
@@ -96,12 +96,12 @@ public:
         const TextureDescriptor& descriptor,
         CallerType caller_type = CallerType::RENDER) const;
     GLuint get_texture(
-        const ImageWithModifiers& name,
+        const ColormapWithModifiers& name,
         const TextureDescriptor& descriptor,
         CallerType caller_type = CallerType::RENDER) const;
     GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name) const;
-    bool contains_texture(const ImageWithModifiers& name) const;
+    bool contains_texture(const ColormapWithModifiers& name) const;
     void set_texture(const std::string& name, GLuint id);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
@@ -153,15 +153,15 @@ public:
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
-    bool texture_is_loaded_unsafe(const ImageWithModifiers& name) const;
+    bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
-    void initialize_non_dds_texture(const ImageWithModifiers& name, const TextureDescriptor& descriptor) const;
+    void initialize_non_dds_texture(const ColormapWithModifiers& name, const TextureDescriptor& descriptor) const;
     void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
-    mutable std::map<ImageWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
+    mutable std::map<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
     mutable std::map<std::string, std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
-    mutable std::map<ImageWithModifiers, TextureHandleAndNeedsGc> textures_;
+    mutable std::map<ColormapWithModifiers, TextureHandleAndNeedsGc> textures_;
     mutable std::map<std::string, ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable std::map<std::string, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
