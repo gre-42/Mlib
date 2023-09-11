@@ -2,9 +2,9 @@
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
-#include <Mlib/Scalar.hpp>
 #include <Mlib/Template.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Type_Traits/Scalar.hpp>
 #include <climits>
 #include <optional>
 #include <random>

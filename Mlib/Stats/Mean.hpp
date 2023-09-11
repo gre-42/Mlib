@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Get_Scalar.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Type_Traits/Get_Scalar.hpp>
 
 namespace Mlib {
 

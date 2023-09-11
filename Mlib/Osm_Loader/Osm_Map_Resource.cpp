@@ -221,6 +221,8 @@ OsmMapResource::OsmMapResource(
                 config.driving_direction,
                 config.layer_heights
             }};
+        } catch (const PointException<double, 3>& e) {
+            handle_point_exception3(e, "Could not draw streets");
         } catch (const TriangleException<double>& e) {
             handle_triangle_exception(e, "Could not draw streets");
         }

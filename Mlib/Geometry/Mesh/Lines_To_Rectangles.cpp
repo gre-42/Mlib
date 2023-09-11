@@ -7,7 +7,7 @@ using namespace Mlib;
 /* From: https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Half-angle_formulae
  */
 double half_angle_cos(double cos) {
-    return std::sqrt((1 + cos) / 2.f);
+    return std::sqrt((1 + cos) / 2);
 }
 
 /**
@@ -39,7 +39,7 @@ bool Mlib::lines_to_rectangles(
     FixedArray<double, 2> n_cdL = FixedArray<double, 2>{dL(1) - c(1), c(0) - dL(0)};
     FixedArray<double, 2> n_cdR = FixedArray<double, 2>{dR(1) - c(1), c(0) - dR(0)};
 
-    // Handle special case of line endings (a or d dont exist).
+    // Handle special case of line endings (a or d do not exist).
     if (all(n_aLb == -n_bc)) n_aLb = n_bc;
     if (all(n_aRb == -n_bc)) n_aRb = n_bc;
     if (all(n_cdL == -n_bc)) n_cdL = n_bc;

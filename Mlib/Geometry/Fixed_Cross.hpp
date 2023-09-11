@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Type_Traits/HigherPrecision.hpp>
 
 namespace Mlib {
 
@@ -13,10 +14,12 @@ FixedArray<TData, 3, 3> cross(const FixedArray<TData, 3>& k) {
 
 template <class TData>
 FixedArray<TData, 3> cross(const FixedArray<TData, 3>& a, const FixedArray<TData, 3>& b) {
+    using H = typename HigherPrecision<TData>::value_type;
+    using L = TData;
     return FixedArray<TData, 3>{
-        -a(2) * b(1) + a(1) * b(2),
-        a(2) * b(0) -a(0) * b(2),
-        -a(1) * b(0) + a(0) * b(1)};
+        L(H(-a(2)) * H(b(1)) + H(a(1)) * H(b(2))),
+        L(H(a(2)) * H(b(0)) + H(-a(0)) * H(b(2))),
+        L(H(-a(1)) * H(b(0)) + H(a(0)) * H(b(1)))};
 }
 
 }
