@@ -7,7 +7,7 @@
 
 #ifdef __ANDROID__
 static std::mutex mutex_;
-size_t nreserved_realtime_threads_ = SIZE_MAX;
+uint32_t nreserved_realtime_threads_ = UINT32_MAX;
 
 void Mlib::register_realtime_thread() {
     // Do nothing
@@ -17,10 +17,10 @@ void Mlib::unregister_realtime_thread() {
 }
 #elif defined(__linux__)
 static std::mutex mutex_;
-size_t nreserved_realtime_threads_ = SIZE_MAX;
-std::unordered_map<unsigned int, pthread_t> cpu_2_thread_;
+uint32_t nreserved_realtime_threads_ = UINT32_MAX;
+std::unordered_map<uint32_t, pthread_t> cpu_2_thread_;
 
-static void pin_current_thread_to_cpu_range(unsigned int min, unsigned int max) {
+static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     for (auto i = min; i < max; ++i) {
@@ -38,13 +38,13 @@ static void pin_current_thread_to_cpu_range(unsigned int min, unsigned int max) 
 
 void Mlib::register_realtime_thread() {
     std::scoped_lock lock{mutex_};
-    if (nreserved_realtime_threads_ == SIZE_MAX) {
+    if (nreserved_realtime_threads_ == UINT32_MAX) {
         THROW_OR_ABORT("Number of realtime-threads not set");
     }
     if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
         THROW_OR_ABORT("Not enough real-time threads reserved");
     }
-    for (unsigned int i = 0; i < std::thread::hardware_concurrency(); ++i) {
+    for (uint32_t i = 0; i < std::thread::hardware_concurrency(); ++i) {
         if (!cpu_2_thread_.contains(i)) {
             pin_current_thread_to_cpu_range(i, i + 1);
             if (!cpu_2_thread_.try_emplace(i, pthread_self()).second) {
@@ -69,8 +69,8 @@ void Mlib::unregister_realtime_thread() {
 #elif defined(_WIN32)
 #include <Windows.h>
 static std::mutex mutex_;
-size_t nreserved_realtime_threads_ = SIZE_MAX;
-std::unordered_map<unsigned int, HANDLE> cpu_2_thread_;
+uint32_t nreserved_realtime_threads_ = UINT32_MAX;
+std::unordered_map<uint32_t, HANDLE> cpu_2_thread_;
 
 // From: https://stackoverflow.com/questions/1387064
 static //Returns the last Win32 error, in string format. Returns an empty string if there is no error.
@@ -98,9 +98,9 @@ std::string GetLastErrorAsString()
 	return message;
 }
 
-static void pin_current_thread_to_cpu_range(unsigned int min, unsigned int max) {
+static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
 	DWORD_PTR affinity_mask = 0;
-	for (size_t i = min; i < max; ++i) {
+	for (uint32_t i = min; i < max; ++i) {
 		affinity_mask |= (DWORD_PTR(1) << i);
 	}
 	if (int rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
@@ -110,7 +110,7 @@ static void pin_current_thread_to_cpu_range(unsigned int min, unsigned int max) 
 
 void Mlib::register_realtime_thread() {
 	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ == SIZE_MAX) {
+	if (nreserved_realtime_threads_ == UINT32_MAX) {
 		THROW_OR_ABORT("Number of realtime-threads not set");
 	}
 	if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
@@ -141,12 +141,12 @@ void Mlib::unregister_realtime_thread() {
 
 #endif
 
-void Mlib::reserve_realtime_threads(size_t nreserved_realtime_threads) {
+void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {
 	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ != SIZE_MAX) {
+	if (nreserved_realtime_threads_ != UINT32_MAX) {
 		THROW_OR_ABORT("Number of realtime-threads already set");
 	}
-	if (nreserved_realtime_threads == SIZE_MAX) {
+	if (nreserved_realtime_threads == UINT32_MAX) {
 		THROW_OR_ABORT("Invalid argument for nrealtime_threads");
 	}
 	if (std::thread::hardware_concurrency() < nreserved_realtime_threads) {
@@ -157,7 +157,7 @@ void Mlib::reserve_realtime_threads(size_t nreserved_realtime_threads) {
 
 void Mlib::pin_background_thread() {
 	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ == SIZE_MAX) {
+	if (nreserved_realtime_threads_ == UINT32_MAX) {
 		THROW_OR_ABORT("Number of realtime-threads not set");
 	}
 	pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());

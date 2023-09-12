@@ -1,9 +1,9 @@
 #pragma once
-#include <cstddef>
+#include <cstdint>
 
 namespace Mlib {
 
-void reserve_realtime_threads(size_t nreserved_realtime_threads);
+void reserve_realtime_threads(uint32_t nreserved_realtime_threads);
 
 void register_realtime_thread();
 void unregister_realtime_thread();
