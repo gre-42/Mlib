@@ -5,6 +5,20 @@
 #include <thread>
 #include <unordered_map>
 
+#ifdef __ANDROID__
+void Mlib::reserve_realtime_threads(size_t nreserved_realtime_threads) {
+    // Do nothing
+}
+void Mlib::register_realtime_thread() {
+    // Do nothing
+}
+void Mlib::unregister_realtime_thread() {
+    // Do nothing
+}
+void Mlib::pin_background_thread() {
+    // Do nothing
+}
+#elif defined(__linux__)
 static std::mutex mutex_;
 size_t nreserved_realtime_threads_ = SIZE_MAX;
 std::unordered_map<unsigned int, pthread_t> cpu_2_thread_;
@@ -79,3 +93,5 @@ void Mlib::pin_background_thread() {
     }
     pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());
 }
+#else
+#endif

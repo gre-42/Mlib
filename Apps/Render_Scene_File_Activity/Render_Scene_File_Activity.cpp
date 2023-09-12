@@ -249,8 +249,9 @@ void android_main(android_app* app) {
     // This code sometimes caused crashes on some devices,
     // it is now moved to the NdkTestActivity Java class.
     // AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
-    
-    // The render-loop is called by the system.
+
+    // This currently has no effect, because the implementation is empty on Android.
+    // The render-loop is called by the system, which is therefore in control of the frame rate.
     reserve_realtime_threads(0);
 
     const ArgParser parser(
