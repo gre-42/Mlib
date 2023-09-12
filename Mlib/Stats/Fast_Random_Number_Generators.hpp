@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Float_Type.hpp>
 #include <random>
+#include <tuple>
 
 namespace Mlib {
 
@@ -12,14 +13,14 @@ public:
     : e_(seed),
       d_(low, high)
     {
-        e_();
+        std::ignore = e_();
     }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-        e_();
+		std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
@@ -33,14 +34,14 @@ public:
     : e_(seed),
       d_(low, high)
     {
-        e_();
+		std::ignore = e_();
     }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-        e_();
+		std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
@@ -55,14 +56,14 @@ public:
     : e_(seed),
       d_(mean, stddev)
     {
-        e_();
+		std::ignore = e_();
     }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-        e_();
+		std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
@@ -76,13 +77,15 @@ public:
     explicit FastGammaRandomNumberGenerator(unsigned int seed, const float_type& alpha, const float_type& beta = 1)
     : e_(seed),
       d_(alpha, beta)
-    {}
+    {
+		std::ignore = e_();
+	}
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-        e_();
+		std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
