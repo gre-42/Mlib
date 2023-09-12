@@ -1,5 +1,5 @@
 #include "Cross_Fade.hpp"
-#include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 
 using namespace Mlib;
 
@@ -15,7 +15,7 @@ CrossFade::CrossFade(
 : position_requirement_{position_requirement},
   paused_{std::move(paused)},
   fader_{[this, dgain, dt](){
-    set_thread_name("Audio CrossFade");
+    ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
     while (!fader_.get_stop_token().stop_requested()) {
         {
             bool pause = paused_();

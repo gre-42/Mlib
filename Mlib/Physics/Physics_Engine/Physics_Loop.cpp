@@ -2,8 +2,8 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
-#include <Mlib/Threads/Set_Thread_Name.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
@@ -21,7 +21,7 @@ PhysicsLoop::PhysicsLoop(
   physics_iteration_{physics_iteration},
   physics_thread_{run_in_background([&, thread_name, nframes](){
     try {
-        set_thread_name(thread_name);
+        ThreadInitializer ti{thread_name, ThreadAffinity::POOL};
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};

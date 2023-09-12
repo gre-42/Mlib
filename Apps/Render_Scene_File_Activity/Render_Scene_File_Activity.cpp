@@ -45,7 +45,7 @@
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
-#include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <filesystem>
 #include <future>
@@ -189,7 +189,7 @@ std::future<void> loader_thread(
 {
     return std::async(std::launch::async, [&](){
         try {
-            set_thread_name("scene_loader");
+            ThreadInitializer ti{"scene_loader", ThreadAffinity::POOL};
             #ifndef WITHOUT_ALUT
             AudioResourceContext arc;
             #endif
@@ -249,6 +249,9 @@ void android_main(android_app* app) {
     // This code sometimes caused crashes on some devices,
     // it is now moved to the NdkTestActivity Java class.
     // AUi::SetRequestedScreenOrientation(ScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE);
+    
+    // The render-loop is called by the system.
+    reserve_realtime_threads(0);
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn.json\n"

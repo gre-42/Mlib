@@ -1,6 +1,6 @@
 #include "Background_Loop.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -9,7 +9,7 @@ BackgroundLoop::BackgroundLoop(std::string thread_name)
 : i_{SIZE_MAX},
   done_{true},
   thread_{[this, tn = std::move(thread_name)](){
-        set_thread_name(tn);
+        ThreadInitializer ti{tn, ThreadAffinity::POOL};
         while (true) {
             std::unique_lock lck{ mutex_ };
             task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });

@@ -15,8 +15,9 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
-#include <Mlib/Threads/Set_Thread_Name.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Fps.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
@@ -210,7 +211,7 @@ void Renderer::render_and_handle_events(
 {
     FutureGuard future_guard{
         std::async(std::launch::async, [&](){
-            set_thread_name("render");
+            ThreadInitializer ti{"render", ThreadAffinity::DEDICATED};
             render(logic, scene_graph_config);
         })};
     EventHandler(*this, button_states, cursor_states, scroll_wheel_states);
