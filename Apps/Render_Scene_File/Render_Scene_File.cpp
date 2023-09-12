@@ -222,6 +222,7 @@ void main_func(
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
     reserve_realtime_threads(1);
+    ThreadInitializer ti{"main", ThreadAffinity::POOL};
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn\n"

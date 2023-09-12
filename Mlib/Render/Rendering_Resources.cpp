@@ -320,7 +320,7 @@ RenderingResources::RenderingResources(
     unsigned int max_anisotropic_filtering_level)
 : name_{ std::move(name) },
   max_anisotropic_filtering_level_{ max_anisotropic_filtering_level },
-  preloader_background_loop_{"Preload"},
+  preloader_background_loop_{"Preload_BG"},
   deallocation_token_{ render_deallocator.insert([this](){deallocate();}) }
 {}
 
