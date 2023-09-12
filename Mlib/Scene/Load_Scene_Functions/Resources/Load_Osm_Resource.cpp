@@ -61,10 +61,10 @@ DECLARE_ARGUMENT(trees_dirt_texture);
 DECLARE_ARGUMENT(street_dirt_texture);
 DECLARE_ARGUMENT(street_reflection_map);
 DECLARE_ARGUMENT(path_reflection_map);
-DECLARE_ARGUMENT(street_crossing_texture);
+DECLARE_ARGUMENT(street_crossing_textures);
 DECLARE_ARGUMENT(street_texture);
 DECLARE_ARGUMENT(street_textures);
-DECLARE_ARGUMENT(path_crossing_texture);
+DECLARE_ARGUMENT(path_crossing_textures);
 DECLARE_ARGUMENT(path_texture);
 DECLARE_ARGUMENT(path_textures);
 DECLARE_ARGUMENT(wall_textures);
@@ -388,8 +388,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::path_reflection_map)) {
             config.street_reflection_map[RoadType::PATH] = args.arguments.at<std::string>(KnownArgs::path_reflection_map);
         }
-        if (args.arguments.contains(KnownArgs::street_crossing_texture)) {
-            config.street_crossing_texture[RoadType::STREET] = args.arguments.path_or_variable(KnownArgs::street_crossing_texture).path;
+        if (args.arguments.contains(KnownArgs::street_crossing_textures)) {
+            config.street_crossing_textures[RoadType::STREET] = fpathps(KnownArgs::street_crossing_textures);
         }
         if (args.arguments.contains(KnownArgs::street_texture)) {
             RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
@@ -399,8 +399,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::street_textures)) {
             add_street_textures(RoadType::STREET, args.arguments.children(KnownArgs::street_textures));
         }
-        if (args.arguments.contains(KnownArgs::path_crossing_texture)) {
-            config.street_crossing_texture[RoadType::PATH] = args.arguments.path_or_variable(KnownArgs::path_crossing_texture).path;
+        if (args.arguments.contains(KnownArgs::path_crossing_textures)) {
+            config.street_crossing_textures[RoadType::PATH] = fpathps(KnownArgs::path_crossing_textures);
         }
         if (args.arguments.contains(KnownArgs::path_texture)) {
             RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};

@@ -217,16 +217,21 @@ OsmTriangleLists::OsmTriangleLists(
         tl_terrain_visuals[tt]->material.compute_color_mode();
         tl_terrain_extrusion[tt]->material.compute_color_mode();
     }
-    for (const auto& [tpe, texture] : config.street_crossing_texture) {
+    for (const auto& [tpe, textures] : config.street_crossing_textures) {
         auto pmit = config.street_materials.find(tpe);
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(tpe) + '"');
         }
         auto rit = config.street_reflection_map.find(tpe);
+        std::vector<BlendMapTexture> blend_textures;
+        blend_textures.reserve(textures.size());
+        for (const std::string& texture : textures) {
+            blend_textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+        }
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
             "crossing_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .textures = blend_textures,
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : "",
