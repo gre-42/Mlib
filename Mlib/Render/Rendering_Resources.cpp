@@ -103,7 +103,7 @@ static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
 static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc, FlipMode flip_mode) {
     std::string touch_file = desc.color.filename + ".xpltd";
     if ((desc.color_mode == ColorMode::RGBA) &&
-        desc.alpha.empty() &&
+        desc.color.alpha.empty() &&
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
         !fs::exists(touch_file))
     {
@@ -121,7 +121,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
         }
     }
     StbInfo<uint8_t> si0;
-    if (!desc.alpha.empty()) {
+    if (!desc.color.alpha.empty()) {
         if (desc.color_mode != ColorMode::RGBA) {
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color.filename + '"');
         }
@@ -131,14 +131,14 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             THROW_OR_ABORT("#channels not 3: \"" + desc.color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
-            desc.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
+            desc.color.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
         if (si_alpha.nrChannels != 1) {
-            THROW_OR_ABORT("#channels not 1: \"" + desc.alpha + '"');
+            THROW_OR_ABORT("#channels not 1: \"" + desc.color.alpha + '"');
         }
         if ((si_alpha.width != si0.width) ||
             (si_alpha.height != si0.height))
         {
-            THROW_OR_ABORT("Size mismatch between files \"" + desc.color.filename + "\" and \"" + desc.alpha + '"');
+            THROW_OR_ABORT("Size mismatch between files \"" + desc.color.filename + "\" and \"" + desc.color.alpha + '"');
         }
         StbInfo<uint8_t> si0_rgb = std::move(si0);
         si0 = stb_create<uint8_t>(si0_rgb.width, si0_rgb.height, 4);

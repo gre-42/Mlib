@@ -10,6 +10,7 @@ struct ColormapWithModifiers {
     std::string filename;
     ColorMode color_mode = ColorMode::UNDEFINED;
     bool desaturate = false;
+    std::string alpha = "";
     std::string histogram = "";
     std::string average = "";
     std::string multiply = "";
@@ -23,6 +24,7 @@ struct ColormapWithModifiers {
         archive(filename);
         archive(color_mode);
         archive(desaturate);
+        archive(alpha);
         archive(histogram);
         archive(average);
         archive(multiply);

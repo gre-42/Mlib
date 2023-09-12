@@ -47,6 +47,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
             .color = {
                 .filename = args.arguments.path_or_variable(KnownArgs::color).path,
                 .desaturate = args.arguments.at<bool>(KnownArgs::desaturate, false),
+                .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
                 .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
                 .average = "",
                 .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
@@ -54,7 +55,6 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .lighten = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_top = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_bottom = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f))},
-            .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
             .specular = args.arguments.try_path_or_variable(KnownArgs::specular).path,
             .normal = {
                 .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
