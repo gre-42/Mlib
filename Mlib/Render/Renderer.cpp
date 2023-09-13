@@ -112,11 +112,13 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             if (render_results_ != nullptr && !render_results_->outputs.empty()) {
                 GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
             }
-            // Set FPS, assuming that "window_->draw();" below will take 0 time.
-            TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
-            set_fps_.tick();
             {
-                TIME_GUARD_DECLARE(time_guard, "window_->draw", "window_->draw");
+                // Set FPS, assuming that "window_->draw();" below will take 0 time.
+                TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
+                set_fps_.tick();
+            }
+            {
+                TIME_GUARD_DECLARE(time_guard, "window_.draw", "window_.draw");
                 window_.draw();
             }
             // Compute FPS, including the time that "window_->draw();" took.
