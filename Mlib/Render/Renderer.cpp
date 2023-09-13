@@ -17,6 +17,7 @@
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Fps.hpp>
@@ -32,11 +33,13 @@ Renderer::Renderer(
     Window& window,
     const RenderConfig& render_config,
     std::atomic_size_t& num_renderings,
+    SetFps& set_fps,
     RenderResults* render_results)
 : window_{window},
   render_config_{render_config},
   num_renderings_{num_renderings},
-  render_results_{render_results}
+  render_results_{render_results},
+  set_fps_{set_fps}
 {
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();
@@ -51,7 +54,6 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 {
     try {
         GlContextGuard gcg{ window_ };
-        SetFps set_fps{"Render FPS: "};
         Fps fps;
         size_t fps_i = 0;
         size_t fps_i_max = 500;
@@ -112,14 +114,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             }
             // Set FPS, assuming that "window_->draw();" below will take 0 time.
             TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
-            set_fps.tick(
-                render_config_.min_dt,
-                render_config_.max_residual_time,
-                render_config_.control_fps,
-                render_config_.print_residual_time);
-            if ((render_config_.min_dt == 0) && render_config_.motion_interpolation) {
-                THROW_OR_ABORT("Motion interpolation requires render_dt");
-            }
+            set_fps_.tick();
             {
                 TIME_GUARD_DECLARE(time_guard, "window_->draw", "window_->draw");
                 window_.draw();
@@ -211,7 +206,7 @@ void Renderer::render_and_handle_events(
 {
     FutureGuard future_guard{
         std::async(std::launch::async, [&](){
-            ThreadInitializer ti{"render", ThreadAffinity::DEDICATED};
+            ThreadInitializer ti{"render", ThreadAffinity::POOL};
             render(logic, scene_graph_config);
         })};
     EventHandler(*this, button_states, cursor_states, scroll_wheel_states);

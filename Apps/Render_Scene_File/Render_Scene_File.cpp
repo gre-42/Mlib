@@ -31,7 +31,10 @@
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
 #include <filesystem>
 #include <future>
 
@@ -49,7 +52,7 @@ std::future<void> render_thread(
 {
     return std::async(std::launch::async, [&](){
         try {
-            ThreadInitializer ti{"render", ThreadAffinity::DEDICATED};
+            ThreadInitializer ti{"render", ThreadAffinity::POOL};
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
                     const LayoutConstraintParameters& ly,
@@ -130,6 +133,7 @@ std::future<void> loader_thread(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
+    DependentSleeper& render_fps_dependent_sleeper,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -161,6 +165,7 @@ std::future<void> loader_thread(
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
+                    render_fps_dependent_sleeper,
                     args.has_named("--verbose"),
                     surface_contact_db,
                     scene_config,
@@ -184,7 +189,7 @@ std::future<void> loader_thread(
             {
                 for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
-                    r.start_physics_loop(("Physics_" + n).substr(0, 15));
+                    r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
                 }
             }
         } catch (...) {
@@ -221,7 +226,7 @@ void main_func(
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
-    reserve_realtime_threads(1);
+    reserve_realtime_threads(0);
     ThreadInitializer ti{"main", ThreadAffinity::POOL};
 
     const ArgParser parser(
@@ -253,7 +258,7 @@ int main(int argc, char** argv) {
         "    [--no_normalmaps]\n"
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
-        "    [--render_dt <dt> ]\n"
+        "    [--render_sleep_dt <dt> ]\n"
         "    [--no_control_physics_fps ]\n"
         "    [--no_control_render_fps ]\n"
         "    [--print_physics_residual_time]\n"
@@ -343,7 +348,7 @@ int main(int argc, char** argv) {
          "--bvh_max_size",
          "--physics_dt",
          "--oversampling",
-         "--render_dt",
+         "--render_sleep_dt",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -399,14 +404,15 @@ int main(int argc, char** argv) {
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .print_fps = args.has_named("--print_render_fps"),
-            .control_fps = !args.has_named("--no_control_render_fps"),
-            .print_residual_time = args.has_named("--print_render_residual_time"),
-            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")),
+            .sleep_dt = safe_stof(args.named_value("--render_sleep_dt", "0.00833")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
+        DependentSleeper render_fps_dependent_sleeper;
+        SetFps render_set_fps{render_fps_dependent_sleeper};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             render_config,
             num_renderings,
+            render_set_fps,
             nullptr};
         render2.print_hardware_info();
 
@@ -524,6 +530,7 @@ int main(int argc, char** argv) {
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
+                    render_fps_dependent_sleeper,
                     surface_contact_db,
                     scene_config,
                     button_states,

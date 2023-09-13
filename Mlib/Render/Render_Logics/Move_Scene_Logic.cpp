@@ -13,7 +13,7 @@ MoveSceneLogic::MoveSceneLogic(
     DeleteNodeMutex& delete_node_mutex,
     float speed)
 : scene_{ scene },
-  deleter_thread_set_{ false },
+  first_render_{ true },
   delete_node_mutex_{ delete_node_mutex },
   speed_{ speed }
 {}
@@ -28,12 +28,14 @@ void MoveSceneLogic::render(
 {
     LOG_FUNCTION("MoveSceneLogic::render");
 
-    if (!deleter_thread_set_) {
+    if (first_render_) {
+        last_time_ = std::chrono::steady_clock::now();
         delete_node_mutex_.clear_deleter_thread();
         delete_node_mutex_.set_deleter_thread();
-        deleter_thread_set_ = true;
+        first_render_ = false;
+    } else {
+        scene_.move(std::chrono::duration<float>(std::chrono::steady_clock::now() - last_time_).count() * speed_);
     }
-    scene_.move(render_config.min_dt * speed_);
 }
 
 void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {

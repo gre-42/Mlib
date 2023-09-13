@@ -53,6 +53,9 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
+#include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
+#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <atomic>
 #include <thread>
@@ -76,9 +79,12 @@ void test_physics_engine(unsigned int seed) {
         .wire_frame = BoolRenderOption::UNCHANGED,
         .window_title = "Physics test",
         .show_mouse_cursor = true};
+    FixedTimeSleeper render_sleeper{render_config.sleep_dt};
+    SetFps set_fps{render_sleeper};
     Render2 render2{
         render_config,
         num_renderings,
+        set_fps,
         &render_results};
 
     PhysicsEngineConfig physics_cfg{
@@ -130,7 +136,13 @@ void test_physics_engine(unsigned int seed) {
     GravityEfp gefp{ gravity_vector };
     pe.add_external_force_provider(gefp);
 
-    SetFps physics_set_fps{"Physics FPS: "};
+    RealtimeSleeper physics_sleeper{
+        "Physics FPS: ",
+        physics_cfg.dt / s,
+        physics_cfg.max_residual_time / s,
+        physics_cfg.control_fps,
+        physics_cfg.print_residual_time};
+    SetFps physics_set_fps{physics_sleeper};
     PhysicsIteration pi{
         scene_node_resources,
         scene,
@@ -140,8 +152,8 @@ void test_physics_engine(unsigned int seed) {
     delete_node_mutex.clear_deleter_thread();
     PhysicsLoop pl{
         "Physics",
+        ThreadAffinity::POOL,
         pi,
-        physics_cfg,
         physics_set_fps,
         is_interactive ? SIZE_MAX : 20};
     if (!is_interactive) {

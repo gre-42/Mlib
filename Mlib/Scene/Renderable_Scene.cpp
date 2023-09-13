@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 
 using namespace Mlib;
 
@@ -37,7 +38,8 @@ RenderableScene::RenderableScene(
     size_t max_tracks,
     const RaceIdentifier& race_identfier,
     const std::function<void()>& setup_new_round,
-    const FocusFilter& focus_filter)
+    const FocusFilter& focus_filter,
+    DependentSleeper& dependent_sleeper)
 : scene_node_resources_{scene_node_resources},
   particle_resources_{particle_resources},
   particle_renderer_{std::make_unique<ParticleRenderer>(particle_resources)},
@@ -73,7 +75,14 @@ RenderableScene::RenderableScene(
     std::shared_lock lock{ui_focus.focuses.mutex};
     return !ui_focus.has_focus(focus_filter);
   }},
-  physics_set_fps_{"Physics FPS: ", paused_},
+  physics_sleeper_{
+      "Physics FPS: ",
+      scene_config_.physics_engine_config.dt / s,
+      scene_config_.physics_engine_config.max_residual_time / s,
+      scene_config_.physics_engine_config.control_fps,
+      scene_config_.physics_engine_config.print_residual_time},
+  physics_set_fps_{physics_sleeper_, paused_},
+  busy_state_provider_guard_{dependent_sleeper, physics_set_fps_},
   gefp_{gravity_vector},
   physics_iteration_{
       scene_node_resources,
@@ -189,15 +198,18 @@ void RenderableScene::print(std::ostream& ostr, size_t depth) const {
 }
 
 // Misc
-void RenderableScene::start_physics_loop(const std::string& thread_name) {
+void RenderableScene::start_physics_loop(
+    const std::string& thread_name,
+    ThreadAffinity thread_affinity)
+{
     if (physics_loop_ != nullptr) {
         THROW_OR_ABORT("physics loop already started");
     }
     physics_loop_.reset(
         new PhysicsLoop{
             thread_name,
+            thread_affinity,
             physics_iteration_,
-            scene_config_.physics_engine_config,
             physics_set_fps_,
             SIZE_MAX,  // nframes
             RenderingContextStack::generate_thread_runner(

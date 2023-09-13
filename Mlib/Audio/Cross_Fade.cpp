@@ -1,4 +1,5 @@
 #include "Cross_Fade.hpp"
+#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 
 using namespace Mlib;

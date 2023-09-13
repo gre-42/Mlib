@@ -40,8 +40,10 @@ static void error_callback(int error, const char* description)
 Render2::Render2(
     const RenderConfig& render_config,
     std::atomic_size_t& num_renderings,
+    SetFps& set_fps,
     RenderResults* render_results)
 : num_renderings_{num_renderings},
+  set_fps_{set_fps},
   render_results_{render_results},
   render_config_{render_config}
 {
@@ -103,7 +105,7 @@ void Render2::print_hardware_info() const {
 
 Renderer Render2::generate_renderer() const
 {
-    return Renderer{*window_, render_config_, num_renderings_, render_results_};
+    return Renderer{*window_, render_config_, num_renderings_, set_fps_, render_results_};
 }
 
 void Render2::render(

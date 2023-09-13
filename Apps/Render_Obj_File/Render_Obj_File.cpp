@@ -63,6 +63,8 @@
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -243,7 +245,7 @@ int main(int argc, char** argv) {
         "    [--no_cull_faces_default]\n"
         "    [--cull_faces_alpha]\n"
         "    [--wire_frame]\n"
-        "    [--render_dt <dt>]\n"
+        "    [--render_sleep_dt <dt>]\n"
         "    [--print_render_fps]\n"
         "    [--width <width>]\n"
         "    [--height <height>]\n"
@@ -361,7 +363,7 @@ int main(int argc, char** argv) {
          "--lightmap_nsamples_msaa",
          "--blend_mode",
          "--aggregate_mode",
-         "--render_dt",
+         "--render_sleep_dt",
          "--width",
          "--height",
          "--output_width",
@@ -458,10 +460,13 @@ int main(int argc, char** argv) {
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true,
             .print_fps = args.has_named("--print_render_fps"),
-            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667"))};
+            .sleep_dt = safe_stof(args.named_value("--render_sleep_dt", "0.00833"))};
+        FixedTimeSleeper sleeper{render_config.sleep_dt};
+        SetFps set_fps{sleeper};
         Render2 render2{
             render_config,
             num_renderings,
+            set_fps,
             &render_results};
 
         render2.print_hardware_info();

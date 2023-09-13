@@ -1,5 +1,6 @@
 #include "Background_Loop.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

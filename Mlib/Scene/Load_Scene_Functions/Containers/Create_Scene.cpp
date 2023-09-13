@@ -100,7 +100,8 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         },
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-            .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
+            .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},
+        args.render_set_fps_sleeper);
     if (state == InsertionStatus::FAILURE_NAME_COLLISION) {
         THROW_OR_ABORT("Scene with name \"" + name + "\" already exists");
     }

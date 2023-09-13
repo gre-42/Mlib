@@ -5,10 +5,7 @@
 
 namespace Mlib {
 
-enum class ThreadAffinity {
-    DEDICATED,
-    POOL
-};
+enum class ThreadAffinity;
 
 class ThreadInitializer {
 public:

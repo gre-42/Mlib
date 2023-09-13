@@ -7,6 +7,7 @@
 
 namespace Mlib {
 
+class SetFps;
 struct RenderResults;
 class RenderLogic;
 class Window;
@@ -25,6 +26,7 @@ public:
         Window& window,
         const RenderConfig& render_config,
         std::atomic_size_t& num_renderings,
+        SetFps& set_fps,
         RenderResults* render_results);
     ~Renderer();
     void render(
@@ -42,6 +44,7 @@ private:
     const RenderConfig& render_config_;
     std::atomic_size_t& num_renderings_;
     RenderResults* render_results_;
+    SetFps& set_fps_;
 };
 
 class EventHandler {

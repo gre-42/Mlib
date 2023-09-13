@@ -25,6 +25,8 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -78,9 +80,12 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
+        FixedTimeSleeper sleeper{render_config.sleep_dt};
+        SetFps set_fps{sleeper};
         Render2 render2{
             render_config,
             num_renderings,
+            set_fps,
             &render_results};
 
         render2.print_hardware_info();

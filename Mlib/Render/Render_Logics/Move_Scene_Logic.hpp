@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <chrono>
 
 namespace Mlib {
 
@@ -24,9 +25,10 @@ public:
 
 private:
     Scene& scene_;
-    bool deleter_thread_set_;
+    bool first_render_;
     DeleteNodeMutex& delete_node_mutex_;
     float speed_;
+    std::chrono::steady_clock::time_point last_time_;
 };
 
 }

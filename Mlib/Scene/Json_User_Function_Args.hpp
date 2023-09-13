@@ -23,6 +23,7 @@ class CursorStates;
 struct UiFocus;
 class LayoutConstraints;
 class AssetReferences;
+class DependentSleeper;
 
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
@@ -42,6 +43,7 @@ struct LoadSceneJsonUserFunctionArgs {
     GLFWwindow& glfw_window;
 #endif
     std::atomic_size_t& num_renderings;
+    DependentSleeper& render_set_fps_sleeper;
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;
     RenderLogicGallery& gallery;

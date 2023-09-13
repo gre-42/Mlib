@@ -1,0 +1,32 @@
+#pragma once
+#include <Mlib/Time/Fps/ISleeper.hpp>
+#include <atomic>
+#include <chrono>
+#include <mutex>
+#include <string>
+
+namespace Mlib {
+
+class RealtimeSleeper: public ISleeper {
+public:
+    explicit RealtimeSleeper(
+        std::string prefix,
+        float dt,
+        float max_residual_time,
+        bool control_fps,
+        bool print_residual_time);
+    ~RealtimeSleeper();
+    virtual void tick() override;
+    virtual void reset() override;
+    virtual bool is_up_to_date() const override;
+private:
+    float dt_;
+    float max_residual_time_;
+    bool control_fps_;
+    bool print_residual_time_;
+    std::chrono::steady_clock::time_point sim_time_;
+    std::string prefix_;
+    std::atomic_bool is_up_to_date_;
+};
+
+}

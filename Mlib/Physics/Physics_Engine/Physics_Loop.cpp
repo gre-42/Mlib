@@ -12,16 +12,16 @@ using namespace Mlib;
 
 PhysicsLoop::PhysicsLoop(
     const std::string& thread_name,
+    ThreadAffinity thread_affinity,
     PhysicsIteration& physics_iteration,
-    const PhysicsEngineConfig& physics_cfg,
     SetFps& set_fps,
     size_t nframes,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background)
 : set_fps_{set_fps},
   physics_iteration_{physics_iteration},
-  physics_thread_{run_in_background([&, thread_name, nframes](){
+  physics_thread_{run_in_background([&, thread_name, thread_affinity, nframes](){
     try {
-        ThreadInitializer ti{thread_name, ThreadAffinity::POOL};
+        ThreadInitializer ti{thread_name, thread_affinity};
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
         // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
@@ -38,11 +38,7 @@ PhysicsLoop::PhysicsLoop(
                 // std::cerr << rb0->get_new_absolute_model_matrix() << std::endl;
                 // TimeGuard tg2{"physics tick"};
             }
-            set_fps.tick(
-                physics_cfg.dt / s,
-                physics_cfg.max_residual_time / s,
-                physics_cfg.control_fps,
-                physics_cfg.print_residual_time);
+            set_fps.tick();
             // TimeGuard::print_groups(std::cerr);
             // lag_finder.stop();
         }

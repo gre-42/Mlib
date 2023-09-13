@@ -1,6 +1,6 @@
 #include "Thread_Initializer.hpp"
 #include <Mlib/Threads/Set_Thread_Name.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
 
 using namespace Mlib;
 

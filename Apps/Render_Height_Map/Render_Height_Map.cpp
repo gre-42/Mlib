@@ -16,6 +16,8 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <vector>
@@ -50,7 +52,9 @@ int main(int argc, char** argv) {
 
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
-        Render2 render{ render_config, num_renderings };
+        FixedTimeSleeper sleeper{ render_config.sleep_dt };
+        SetFps set_fps{ sleeper };
+        Render2 render{ render_config, num_renderings, set_fps };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(

@@ -25,6 +25,7 @@ class CursorStates;
 class Camera;
 class Renderer;
 struct RenderConfig;
+class SetFps;
 
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -37,6 +38,7 @@ public:
     explicit Render2(
         const RenderConfig& render_config,
         std::atomic_size_t& num_renderings,
+        SetFps& set_fps,
         RenderResults* render_results = nullptr);
     ~Render2();
 
@@ -77,6 +79,7 @@ public:
 
 private:
     std::atomic_size_t& num_renderings_;
+    SetFps& set_fps_;
     RenderResults* render_results_;
     const RenderConfig& render_config_;
     std::unique_ptr<Window> window_;

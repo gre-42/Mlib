@@ -438,6 +438,7 @@ void LoadScene::operator()(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
+    DependentSleeper& render_set_fps_sleeper,
     bool verbose,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
@@ -481,6 +482,7 @@ void LoadScene::operator()(
             .glfw_window = glfw_window,
 #endif
             .num_renderings = num_renderings,
+            .render_set_fps_sleeper = render_set_fps_sleeper,
             .script_filename = script_filename,
             .next_scene_filename = next_scene_filename,
             .gallery = gallery,

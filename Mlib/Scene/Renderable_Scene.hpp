@@ -28,6 +28,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
+#include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
+#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
@@ -55,6 +57,7 @@ class ButtonStates;
 class CursorStates;
 class PodBots;
 
+enum class ThreadAffinity;
 enum class ClearMode;
 
 struct FocusFilter;
@@ -91,7 +94,8 @@ public:
         size_t max_tracks,
         const RaceIdentifier& race_identfier,
         const std::function<void()>& setup_new_round,
-        const FocusFilter& focus_filter);
+        const FocusFilter& focus_filter,
+        DependentSleeper& dependent_sleeper);
     ~RenderableScene();
     RenderableScene(const RenderableScene&) = delete;
     RenderableScene& operator = (const RenderableScene&) = delete;
@@ -107,7 +111,9 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     // Misc
-    void start_physics_loop(const std::string& thread_name);
+    void start_physics_loop(
+        const std::string& thread_name,
+        ThreadAffinity thread_affinity);
     void print_physics_engine_search_time() const;
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
@@ -130,7 +136,9 @@ public:
     ContactSmokeGenerator contact_smoke_generator_;
 
     std::function<bool()> paused_;
+    RealtimeSleeper physics_sleeper_;
     SetFps physics_set_fps_;
+    BusyStateProviderGuard busy_state_provider_guard_;
     FifoLog fifo_log_{10 * 1000};
     GravityEfp gefp_;
     PhysicsIteration physics_iteration_;
