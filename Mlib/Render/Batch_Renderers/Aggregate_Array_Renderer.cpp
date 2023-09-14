@@ -150,8 +150,13 @@ void AggregateArrayRenderer::update_aggregates(
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
     {
         std::scoped_lock lock_guard{mutex_};
-        std::swap(rcvai_, rcvai);
-        offset_ = offset;
+        if (next_rcva_ != nullptr) {
+            lwarn() << "Could not aggregate in time";
+            return;
+        }
+        std::swap(next_rcva_, rcva);
+        std::swap(next_rcvai_, rcvai);
+        next_offset_ = offset;
         is_initialized_ = true;
     }
 }
@@ -171,6 +176,15 @@ void AggregateArrayRenderer::render_aggregates(
 {
     std::scoped_lock lock_guard{mutex_};
     if (is_initialized_) {
+        if ((next_rcva_ != nullptr) && (!next_rcva_->copy_in_progress())) {
+            next_rcva_ = nullptr;
+            rcvai_ = std::move(next_rcvai_);
+            offset_ = next_offset_;
+        }
+        if (rcvai_ == nullptr) {
+            return;
+        }
+
         ColorStyle r_style;
         for (const auto& style : color_styles) {
             if (Mlib::re::regex_search(AAR_NAME, style->selector)) {

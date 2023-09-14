@@ -97,6 +97,8 @@ public:
         PhysicsMaterial add,
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
+    
+    bool copy_in_progress() const;
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,

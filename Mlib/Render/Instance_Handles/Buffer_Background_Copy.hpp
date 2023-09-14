@@ -49,6 +49,7 @@ public:
     inline bool is_good() const {
         return (state_ >= BackgroundCopyState::COPY_IN_PROGRESS);
     }
+    bool copy_in_progress() const;
 private:
     void set_type_erased(const char* begin, const char* end);
     GLuint buffer_;

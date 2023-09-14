@@ -31,6 +31,14 @@ void VertexArray::initialize() {
     }
 }
 
+bool VertexArray::copy_in_progress() const {
+    return
+        vertex_buffer.copy_in_progress() ||
+        bone_weight_buffer.copy_in_progress() ||
+        texture_layer_buffer.copy_in_progress() ||
+        interior_mapping_buffer.copy_in_progress();
+}
+
 GLuint VertexArray::vertex_array() const {
     if (!initialized()) {
         THROW_OR_ABORT("Vertex-array not initialized");

@@ -31,8 +31,11 @@ public:
         const ExternalRenderPass& external_render_pass,
         const std::list<const ColorStyle*>& color_styles) const override;
 private:
-    std::unique_ptr<RenderableColoredVertexArray> rcvai_;
-    FixedArray<double, 3> offset_;
+    mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;
+    mutable std::unique_ptr<RenderableColoredVertexArray> rcvai_;
+    mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;
+    mutable FixedArray<double, 3> offset_;
+    FixedArray<double, 3> next_offset_;
     mutable std::mutex mutex_;
     bool is_initialized_;
 };

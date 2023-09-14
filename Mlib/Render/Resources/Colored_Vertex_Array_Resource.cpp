@@ -1658,3 +1658,12 @@ void ColoredVertexArrayResource::import_bone_weights(
         other_acvas,
         max_distance);
 }
+
+bool ColoredVertexArrayResource::copy_in_progress() const {
+    for (const auto& cva : triangles_res_->scvas) {
+        if (get_vertex_array(cva).va_.copy_in_progress()) {
+            return true;
+        }
+    }
+    return false;
+}

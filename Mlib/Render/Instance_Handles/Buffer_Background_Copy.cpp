@@ -65,6 +65,25 @@ void BufferBackgroundCopy::wait() const {
     state_ = BackgroundCopyState::AWAITED;
 }
 
+// From: https://stackoverflow.com/questions/10890242/get-the-status-of-a-stdfuture
+template<typename R>
+static bool is_ready(std::future<R> const& f) {
+    return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+}
+
+bool BufferBackgroundCopy::copy_in_progress() const {
+    if (state_ == BackgroundCopyState::AWAITED) {
+        return false;
+    }
+    if (state_ == BackgroundCopyState::UNINITIALIZED) {
+        return false;
+    }
+    if (state_ != BackgroundCopyState::COPY_IN_PROGRESS) {
+        THROW_OR_ABORT("Checking copy_in_progress on broken buffer");
+    }
+    return !is_ready(future_);
+}
+
 void BufferBackgroundCopy::deallocate() {
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
         ABORT(glDeleteBuffers(1, &buffer_));
