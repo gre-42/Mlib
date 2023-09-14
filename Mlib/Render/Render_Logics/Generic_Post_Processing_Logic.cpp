@@ -25,13 +25,10 @@ GenericPostProcessingLogic::~GenericPostProcessingLogic()
 {}
 
 VertexArray& GenericPostProcessingLogic::va() {
-    if (va_.vertex_array == (GLuint)-1) {
+    if (!va_.initialized()) {
         // screen quad VAO
-        CHK(glGenVertexArrays(1, &va_.vertex_array));
-        CHK(glGenBuffers(1, &va_.vertex_buffer));
-        CHK(glBindVertexArray(va_.vertex_array));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * 6, quad_vertices_, GL_STATIC_DRAW));
+        va_.initialize();
+        va_.vertex_buffer.set(quad_vertices_, quad_vertices_ + 4 * 6);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0));
         CHK(glEnableVertexAttribArray(1));

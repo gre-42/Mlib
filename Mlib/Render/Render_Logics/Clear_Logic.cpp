@@ -46,7 +46,7 @@ ClearLogic::ClearLogic() = default;
 ClearLogic::~ClearLogic() = default;
 
 void ClearLogic::ensure_va_initialized() {
-    if (va_.vertex_array == (GLuint)-1) {
+    if (!va_.initialized()) {
         float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
             // positions
             -1.0f,  1.0f,
@@ -58,11 +58,8 @@ void ClearLogic::ensure_va_initialized() {
             1.0f,  1.0f,
         };
 
-        CHK(glGenVertexArrays(1, &va_.vertex_array));
-        CHK(glGenBuffers(1, &va_.vertex_buffer));
-        CHK(glBindVertexArray(va_.vertex_array));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW));
+        va_.initialize();
+        va_.vertex_buffer.set(quadVertices);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));
@@ -78,7 +75,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
     }
     CHK(glUseProgram(rp_color_only_.program));
     CHK(glUniform4fv(rp_color_only_.clear_color_location, 1, color.flat_begin()));
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va_.vertex_array()));
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 }
@@ -96,7 +93,7 @@ void ClearLogic::clear_depth() {
     CHK(glEnable(GL_DEPTH_TEST));
 
     CHK(glUseProgram(rp_depth_only_.program));
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va_.vertex_array()));
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 
@@ -119,7 +116,7 @@ void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
 
     CHK(glUseProgram(rp_color_and_depth_.program));
     CHK(glUniform4fv(rp_color_and_depth_.clear_color_location, 1, color.flat_begin()));
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va_.vertex_array()));
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 

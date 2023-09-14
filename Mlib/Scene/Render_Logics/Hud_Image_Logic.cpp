@@ -165,7 +165,7 @@ void HudImageLogic::render(
         offset(0) + center_(0) + size_(0) / aspect_ratio, offset(1) + center_(1) + size_(1), 1.0f, 1.0f
     };
 
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer.handle()));
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 

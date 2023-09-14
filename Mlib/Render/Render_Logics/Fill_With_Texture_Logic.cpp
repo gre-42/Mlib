@@ -91,7 +91,7 @@ void FillWithTextureLogic::render()
     CHK(glBindTexture(GL_TEXTURE_2D, rp_.texture_id_));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
 
-    CHK(glBindVertexArray(va().vertex_array));
+    CHK(glBindVertexArray(va().vertex_array()));
 
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
 

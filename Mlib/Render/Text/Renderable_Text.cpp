@@ -81,11 +81,8 @@ void TextResource::ensure_initialized(float font_height) const
     {
         // configure VAO/VBO for texture quads
         // -----------------------------------
-        CHK(glGenVertexArrays(1, &va_.vertex_array));
-        CHK(glGenBuffers(1, &va_.vertex_buffer));
-        CHK(glBindVertexArray(va_.vertex_array));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.capacity()), nullptr, GL_DYNAMIC_DRAW));
+        va_.initialize();
+        va_.vertex_buffer.reserve<Letter>(vdata_.capacity());
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr));
         CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -117,7 +114,7 @@ void TextResource::set_contents(
                 stbtt_aligned_quad q;
                 stbtt_GetBakedQuad(loaded_font_->cdata.data(), TEXTURE_SIZE, TEXTURE_SIZE, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
                 // update VBO for each character
-                vdata_.push_back(FixedArray<VData, 2, 3>{
+                vdata_.push_back(Letter{
                     VData{ q.x0, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s0, q.t0 },
                     VData{ q.x0, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s0, q.t1 },
                     VData{ q.x1, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s1, q.t1 },
@@ -149,7 +146,7 @@ void TextResource::set_contents(
         }
     }
     // update content of VBO memory
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.size()), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
@@ -171,7 +168,7 @@ void TextResource::render() const
     mat4x4_ortho(projection, 0, canvas_size_(0), 0, canvas_size_(1), -2, 2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));
     CHK(glBindTexture(GL_TEXTURE_2D, loaded_font_->texture_handle));
-    CHK(glBindVertexArray(va_.vertex_array));
+    CHK(glBindVertexArray(va_.vertex_array()));
 
     // render quad
     CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(vdata_.size() * 2 * 3)));

@@ -68,7 +68,8 @@ private:
     size_t max_nchars_;
 
     // 2 triangles, 3 vertices, 2 positions, 2 uv
-    mutable std::vector<FixedArray<VData, 2, 3>> vdata_;
+    using Letter = FixedArray<VData, 2, 3>;
+    mutable std::vector<Letter> vdata_;
     DeallocationToken deallocation_token_;
 };
 

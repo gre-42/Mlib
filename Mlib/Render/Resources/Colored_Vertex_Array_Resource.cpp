@@ -1525,12 +1525,8 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     auto si = std::make_unique<SubstitutionInfo>();
     auto& va = si->va_;
     // https://stackoverflow.com/a/13405205/2292832
-    CHK(glGenVertexArrays(1, &va.vertex_array));
-    CHK(glBindVertexArray(va.vertex_array));
-
-    CHK(glGenBuffers(1, &va.vertex_buffer));
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va.vertex_buffer));
-    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(cva->triangles[0]) * cva->triangles.size()), cva->triangles.data(), GL_STATIC_DRAW));
+    va.initialize();
+    va.vertex_buffer.set(cva->triangles);
 
     ColoredVertex<float>* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
@@ -1596,9 +1592,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                 }
             }
         }
-        CHK(glGenBuffers(1, &va.bone_weight_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.bone_weight_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(triangle_bone_weights[0]) * triangle_bone_weights.size()), triangle_bone_weights.data(), GL_STATIC_DRAW));
+        va.bone_weight_buffer.set(triangle_bone_weights);
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
@@ -1610,9 +1604,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         if (cva->triangle_texture_layers.size() != cva->triangles.size()) {
             THROW_OR_ABORT("#triangle_texture_layers != #triangles");
         }
-        CHK(glGenBuffers(1, &va.texture_layer_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.texture_layer_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(cva->triangle_texture_layers[0]) * cva->triangle_texture_layers.size()), cva->triangle_texture_layers.data(), GL_STATIC_DRAW));
+        va.texture_layer_buffer.set(cva->triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
@@ -1628,9 +1620,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                 });
             }
         }
-        CHK(glGenBuffers(1, &va.interior_mapping_buffer));
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va.interior_mapping_buffer));
-        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(sizeof(shader_interior_mapped_facade[0]) * shader_interior_mapped_facade.size()), shader_interior_mapped_facade.data(), GL_STATIC_DRAW));
+        va.interior_mapping_buffer.set(shader_interior_mapped_facade);
 
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));

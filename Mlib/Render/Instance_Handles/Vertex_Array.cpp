@@ -7,7 +7,8 @@
 using namespace Mlib;
 
 VertexArray::VertexArray()
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+: vertex_array_{(GLuint)-1},
+  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
 VertexArray::~VertexArray() {
@@ -18,43 +19,50 @@ VertexArray::~VertexArray() {
     }
 }
 
-void VertexArray::deallocate() {
-    if (vertex_array != (GLuint)-1) {
-        ABORT(glDeleteVertexArrays(1, &vertex_array));
-        vertex_array = (GLuint)-1;
-    }
-    if (vertex_buffer != (GLuint)-1) {
-        ABORT(glDeleteBuffers(1, &vertex_buffer));
-        vertex_buffer = (GLuint)-1;
-    }
-    if (bone_weight_buffer != (GLuint)-1) {
-        ABORT(glDeleteBuffers(1, &bone_weight_buffer));
-        bone_weight_buffer = (GLuint)-1;
-    }
-    if (texture_layer_buffer != (GLuint)-1) {
-        ABORT(glDeleteBuffers(1, &texture_layer_buffer));
-        texture_layer_buffer = (GLuint)-1;
-    }
-    if (interior_mapping_buffer != (GLuint)-1) {
-        ABORT(glDeleteBuffers(1, &interior_mapping_buffer));
-        interior_mapping_buffer = (GLuint)-1;
+bool VertexArray::initialized() const {
+    return (vertex_array_ != (GLuint)-1);
+}
+
+void VertexArray::initialize() {
+    CHK(glGenVertexArrays(1, &vertex_array_));
+    CHK(glBindVertexArray(vertex_array_));
+    if (vertex_array_ == (GLuint)-1) {
+        THROW_OR_ABORT("Unexpected vertex-array index");
     }
 }
 
+GLuint VertexArray::vertex_array() const {
+    if (!initialized()) {
+        THROW_OR_ABORT("Vertex-array not initialized");
+    }
+    wait();
+    return vertex_array_;
+}
+
+void VertexArray::wait() const {
+    vertex_buffer.wait();
+    bone_weight_buffer.wait();
+    texture_layer_buffer.wait();
+    interior_mapping_buffer.wait();
+}
+
+void VertexArray::deallocate() {
+    if (vertex_array_ != (GLuint)-1) {
+        ABORT(glDeleteVertexArrays(1, &vertex_array_));
+        vertex_array_ = (GLuint)-1;
+    }
+    vertex_buffer.deallocate();
+    bone_weight_buffer.deallocate();
+    texture_layer_buffer.deallocate();
+    interior_mapping_buffer.deallocate();
+}
+
 void VertexArray::gc_deallocate() {
-    if (vertex_array != (GLuint)-1) {
-        render_gc_append_to_vertex_arrays(vertex_array);
+    if (vertex_array_ != (GLuint)-1) {
+        render_gc_append_to_vertex_arrays(vertex_array_);
     }
-    if (vertex_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(vertex_buffer);
-    }
-    if (bone_weight_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(bone_weight_buffer);
-    }
-    if (texture_layer_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(texture_layer_buffer);
-    }
-    if (interior_mapping_buffer != (GLuint)-1) {
-        render_gc_append_to_buffers(interior_mapping_buffer);
-    }
+    vertex_buffer.gc_deallocate();
+    bone_weight_buffer.gc_deallocate();
+    texture_layer_buffer.gc_deallocate();
+    interior_mapping_buffer.gc_deallocate();
 }

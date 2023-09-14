@@ -841,7 +841,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
     {
         MaterialRenderConfigGuard mrcf{ cva->material };
-        CHK(glBindVertexArray(si.va_.vertex_array));
+        CHK(glBindVertexArray(si.va_.vertex_array()));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
             instances->update();

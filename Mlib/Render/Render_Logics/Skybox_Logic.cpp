@@ -117,11 +117,8 @@ void SkyboxLogic::render(
             rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
             rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
 
-            CHK(glGenVertexArrays(1, &va_.vertex_array));
-            CHK(glGenBuffers(1, &va_.vertex_buffer));
-            CHK(glBindVertexArray(va_.vertex_array));
-            CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
-            CHK(glBufferData(GL_ARRAY_BUFFER, sizeof(skybox_vertices), &skybox_vertices, GL_STATIC_DRAW));
+            va_.initialize();
+            va_.vertex_buffer.set(skybox_vertices);
             CHK(glEnableVertexAttribArray(0));
             CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
             CHK(glBindVertexArray(0));
@@ -153,7 +150,7 @@ void SkyboxLogic::render(
         CHK(glActiveTexture(GL_TEXTURE0));
         CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_context_.rendering_resources->get_cubemap(alias_)));
 
-        CHK(glBindVertexArray(va_.vertex_array));
+        CHK(glBindVertexArray(va_.vertex_array()));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
 
         // Reset to defaults

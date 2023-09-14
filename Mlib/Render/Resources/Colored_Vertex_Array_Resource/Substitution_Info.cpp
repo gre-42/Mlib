@@ -149,7 +149,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
-                CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+                CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
                 // CHK(auto* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
                 CHK(auto* ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
@@ -171,7 +171,7 @@ void SubstitutionInfo::delete_triangles_far_away(
             THROW_OR_ABORT("Substitution both in fg and bg");
         }
         update_counters();
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer));
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
         func();
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }

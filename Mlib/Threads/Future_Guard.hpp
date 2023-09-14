@@ -12,6 +12,13 @@ public:
     explicit FutureGuard(std::future<void>&& f)
     : f_{std::move(f)}
     {}
+    FutureGuard& operator = (std::future<void>&& f) {
+        if (f_.valid()) {
+            THROW_OR_ABORT("FutureGuard already set");
+        }
+        f_ = std::move(f);
+        return *this;
+    }
     ~FutureGuard() {
         if (f_.valid()) {
             try {

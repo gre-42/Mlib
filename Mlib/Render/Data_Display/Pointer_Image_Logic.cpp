@@ -37,7 +37,7 @@ void PointerImageLogic::render(
         (center(0) + pcr(0u, 1u, 1u)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1u, 1u, 1u)) / canvas_size(1) * 2.f - 1.f, 1.0f, 1.0f
     };
 
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer));
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer.handle()));
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
