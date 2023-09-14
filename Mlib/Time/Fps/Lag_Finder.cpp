@@ -3,8 +3,8 @@
 
 using namespace Mlib;
 
-LagFinder::LagFinder(const std::string& prefix, const std::chrono::milliseconds& lag_duration)
-: prefix_{ prefix },
+LagFinder::LagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration)
+: prefix_{ std::move(prefix) },
   lag_duration_{ lag_duration },
   end_time_{ std::chrono::steady_clock::now() }
 {}
