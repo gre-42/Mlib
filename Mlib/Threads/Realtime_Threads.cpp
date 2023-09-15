@@ -6,20 +6,27 @@
 #include <unordered_map>
 
 #ifdef __ANDROID__
-static std::mutex mutex_;
-uint32_t nreserved_realtime_threads_ = UINT32_MAX;
+#include <sys/syscall.h>
+#include <unistd.h>
 
-void Mlib::register_realtime_thread() {
-    // Do nothing
-}
-void Mlib::unregister_realtime_thread() {
-    // Do nothing
+static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    for (auto i = min; i < max; ++i) {
+        CPU_SET(i, &cpuset);
+    }
+
+    if (int res = sched_setaffinity(gettid(), sizeof(cpuset), &cpuset); res != 0)
+    {
+        switch (errno) {
+            case EFAULT: THROW_OR_ABORT("EFAULT: A supplied memory address was invalid.");
+            case EINVAL: THROW_OR_ABORT("EINVAL: Affinity bit mask contains no processors currently physically on the system and permitted to the process according to any restrictions that may be imposed by the \"cpuset\" mechanism");
+            case ESRCH: THROW_OR_ABORT("ESRCH: The process whose ID is pid could not be found");
+            default: Mlib::verbose_abort("Unknown errno: " + std::to_string(errno));
+        }
+    }
 }
 #elif defined(__linux__)
-static std::mutex mutex_;
-uint32_t nreserved_realtime_threads_ = UINT32_MAX;
-std::unordered_map<uint32_t, pthread_t> cpu_2_thread_;
-
 static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
@@ -35,6 +42,13 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
         }
     }
 }
+#endif
+
+#ifdef __linux__
+#include <pthread.h>
+static std::mutex mutex_;
+uint32_t nreserved_realtime_threads_ = UINT32_MAX;
+std::unordered_map<uint32_t, pthread_t> cpu_2_thread_;
 
 void Mlib::register_realtime_thread() {
     std::scoped_lock lock{mutex_};
@@ -66,7 +80,9 @@ void Mlib::unregister_realtime_thread() {
     }
     verbose_abort("Could not unregister real-time thread");
 }
-#elif defined(_WIN32)
+#endif
+
+#ifdef _WIN32
 #include <Windows.h>
 static std::mutex mutex_;
 uint32_t nreserved_realtime_threads_ = UINT32_MAX;

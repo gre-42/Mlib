@@ -45,8 +45,10 @@
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
 #include <future>
 
@@ -60,11 +62,13 @@ public:
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
-        const ParsedArgs &args)
+        const ParsedArgs &args,
+        RealtimeDependentFps& render_set_fps)
     : render_config_{render_config},
       scene_graph_config_{scene_graph_config},
       render_results_{render_results},
-      args_{args}
+      args_{args},
+      render_set_fps_{render_set_fps}
     {}
 
     void load_resources() override {
@@ -122,6 +126,7 @@ public:
         } else {
             clear_color({0.2f, 0.2f, 0.2f, 1.f});
         }
+        render_set_fps_.set_fps.tick();
     }
 
     void set_scene(
@@ -137,6 +142,7 @@ private:
     const SceneGraphConfig& scene_graph_config_;
     RenderResults* render_results_;
     const ParsedArgs &args_;
+    RealtimeDependentFps& render_set_fps_;
     std::weak_ptr<RenderableScenes> renderable_scenes_;
     std::weak_ptr<std::atomic_bool> load_scene_finished_;
     RootRenderedSceneDescriptor rrsd_;
@@ -176,6 +182,7 @@ std::future<void> loader_thread(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_substitutions,
     std::atomic_size_t& num_renderings,
+    RealtimeDependentFps& render_set_fps,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -206,6 +213,7 @@ std::future<void> loader_thread(
                     next_scene_filename,
                     external_substitutions,
                     num_renderings,
+                    render_set_fps,
                     args.has_named("--verbose"),
                     surface_contact_db,
                     scene_config,
@@ -228,7 +236,7 @@ std::future<void> loader_thread(
             {
                 for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
-                    r.start_physics_loop(("Physics_" + n).substr(0, 15));
+                    r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
                 }
             }
         } catch (...) {
@@ -283,8 +291,9 @@ void android_main(android_app* app) {
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
         "    [--render_dt <dt> ]\n"
+        "    [--render_max_residual_time <dt> ]\n"
         "    [--no_control_physics_fps ]\n"
-        "    [--no_control_render_fps ]\n"
+        "    [--control_render_fps ]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -348,7 +357,7 @@ void android_main(android_app* app) {
          "--no_avoid_burnout",
          "--print_search_time",
          "--no_control_physics_fps",
-         "--no_control_render_fps",
+         "--control_render_fps",
          "--fxaa",
          "--verbose"},
         {"--swap_interval",
@@ -372,6 +381,7 @@ void android_main(android_app* app) {
          "--physics_dt",
          "--oversampling",
          "--render_dt",
+         "--render_max_residual_time",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -424,10 +434,14 @@ void android_main(android_app* app) {
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .print_fps = args.has_named("--print_render_fps"),
-            .control_fps = !args.has_named("--no_control_render_fps"),
-            .print_residual_time = args.has_named("--print_render_residual_time"),
-            .min_dt = safe_stof(args.named_value("--render_dt", "0.01667")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
+
+        RealtimeDependentFps render_set_fps{
+            "Render set FPS: ",
+            safe_stof(args.named_value("--render_dt", "0.01667")),
+            safe_stof(args.named_value("--render_max_residual_time", "0.5")),
+            args.has_named("--control_render_fps"),
+            args.has_named("--print_render_residual_time")};
 
         SceneGraphConfig scene_graph_config{
             .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
@@ -440,7 +454,8 @@ void android_main(android_app* app) {
             render_config,
             scene_graph_config,
             nullptr,    // render_results
-            args};
+            args,
+            render_set_fps};
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
@@ -548,6 +563,7 @@ void android_main(android_app* app) {
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
+                    render_set_fps,
                     surface_contact_db,
                     scene_config,
                     button_states,

@@ -24,6 +24,13 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+#ifdef __ANDROID__
+    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
+    is_mapped_ = false;
+    std::promise<void> p;
+    p.set_value();
+    future_ = p.get_future();
+#else
     if (begin == nullptr) {
         CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_STATIC_DRAW));
         is_mapped_ = false;
@@ -38,6 +45,7 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
             std::copy(begin, end, dest);
         });
     }
+#endif
     state_ = BackgroundCopyState::COPY_IN_PROGRESS;
 }
 
