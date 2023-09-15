@@ -24,6 +24,7 @@ struct UiFocus;
 class LayoutConstraints;
 class AssetReferences;
 class DependentSleeper;
+class SetFps;
 
 struct LoadSceneJsonUserFunctionArgs {
     const std::string& name;
@@ -44,6 +45,7 @@ struct LoadSceneJsonUserFunctionArgs {
 #endif
     std::atomic_size_t& num_renderings;
     DependentSleeper& render_set_fps_sleeper;
+    SetFps& render_set_fps;
     const std::string& script_filename;
     ThreadSafeString& next_scene_filename;
     RenderLogicGallery& gallery;

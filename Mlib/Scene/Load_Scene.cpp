@@ -31,6 +31,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Define_Winner_Conditionals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Scheduled_Advance_Times.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Render_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Node_Status.hpp>
@@ -301,6 +302,7 @@ LoadScene::LoadScene() {
     register_json_user_function(DeleteRootNode::key, DeleteRootNode::json_user_function);
     register_json_user_function(DeleteScheduledAdvanceTimes::key, DeleteScheduledAdvanceTimes::json_user_function);
     register_json_user_function(ExecuteInPhysicsThread::key, ExecuteInPhysicsThread::json_user_function);
+    register_json_user_function(ExecuteInRenderThread::key, ExecuteInRenderThread::json_user_function);
     register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
     register_json_user_function(FocusedText::key, FocusedText::json_user_function);
     register_json_user_function(FollowNode::key, FollowNode::json_user_function);
@@ -439,6 +441,7 @@ void LoadScene::operator()(
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
     DependentSleeper& render_set_fps_sleeper,
+    SetFps& render_set_fps,
     bool verbose,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
@@ -483,6 +486,7 @@ void LoadScene::operator()(
 #endif
             .num_renderings = num_renderings,
             .render_set_fps_sleeper = render_set_fps_sleeper,
+            .render_set_fps = render_set_fps,
             .script_filename = script_filename,
             .next_scene_filename = next_scene_filename,
             .gallery = gallery,
