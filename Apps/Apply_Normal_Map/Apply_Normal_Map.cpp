@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
-        FixedTimeSleeper sleeper{render_config.sleep_dt};
+        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.16667")) };
         SetFps set_fps{sleeper};
         Render2 render2{
             render_config,

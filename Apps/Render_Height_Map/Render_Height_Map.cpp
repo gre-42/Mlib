@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
-        FixedTimeSleeper sleeper{ render_config.sleep_dt };
+        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.16667")) };
         SetFps set_fps{ sleeper };
         Render2 render{ render_config, num_renderings, set_fps };
         SceneNodeResources scene_node_resources;

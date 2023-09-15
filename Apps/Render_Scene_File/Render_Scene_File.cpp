@@ -35,6 +35,8 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
+#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
+#include <Mlib/Time/Fps/Sleeper_Sequence.hpp>
 #include <filesystem>
 #include <future>
 
@@ -260,7 +262,8 @@ int main(int argc, char** argv) {
         "    [--no_normalmaps]\n"
         "    [--no_physics ]\n"
         "    [--physics_dt <dt> ]\n"
-        "    [--render_sleep_dt <dt> ]\n"
+        "    [--render_dt <dt> ]\n"
+        "    [--render_max_residual_time <dt> ]\n"
         "    [--no_control_physics_fps ]\n"
         "    [--no_control_render_fps ]\n"
         "    [--print_physics_residual_time]\n"
@@ -350,7 +353,8 @@ int main(int argc, char** argv) {
          "--bvh_max_size",
          "--physics_dt",
          "--oversampling",
-         "--render_sleep_dt",
+         "--render_dt",
+         "--render_max_residual_time",
          "--stiction_coefficient",
          "--friction_coefficient",
          "--max_extra_w",
@@ -406,10 +410,16 @@ int main(int argc, char** argv) {
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .print_fps = args.has_named("--print_render_fps"),
-            .sleep_dt = safe_stof(args.named_value("--render_sleep_dt", "0.00833")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
+        RealtimeSleeper rts{
+            "Render set FPS: ",
+            safe_stof(args.named_value("--render_dt", "0.01667")),
+            safe_stof(args.named_value("--render_max_residual_time", "0.5")),
+            !args.has_named("--no_control_render_fps"),
+            args.has_named("--print_render_residual_time")};
         DependentSleeper render_fps_dependent_sleeper;
-        SetFps render_set_fps{render_fps_dependent_sleeper};
+        SleeperSequence sls{rts, render_fps_dependent_sleeper};
+        SetFps render_set_fps{sls};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             render_config,

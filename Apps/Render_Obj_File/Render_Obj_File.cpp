@@ -459,9 +459,8 @@ int main(int argc, char** argv) {
             .double_buffer = args.has_named("--double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true,
-            .print_fps = args.has_named("--print_render_fps"),
-            .sleep_dt = safe_stof(args.named_value("--render_sleep_dt", "0.00833"))};
-        FixedTimeSleeper sleeper{render_config.sleep_dt};
+            .print_fps = args.has_named("--print_render_fps")};
+        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.16667")) };
         SetFps set_fps{sleeper};
         Render2 render2{
             render_config,
