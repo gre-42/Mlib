@@ -99,6 +99,7 @@ public:
         const ColoredVertexArrayFilter& filter) override;
     
     bool copy_in_progress() const;
+    void wait() const;
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,

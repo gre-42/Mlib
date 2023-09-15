@@ -10,6 +10,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Yield.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -50,7 +51,8 @@ AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 void AggregateArrayRenderer::update_aggregates(
     const FixedArray<double, 3>& offset,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
-    const ExternalRenderPass& external_render_pass)
+    const ExternalRenderPass& external_render_pass,
+    TaskLocation task_location)
 {
     // size_t ntris = 0;
     // for (const auto& a : aggregate_queue) {
@@ -148,6 +150,9 @@ void AggregateArrayRenderer::update_aggregates(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{});
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
+    if (task_location == TaskLocation::FOREGROUND) {
+        rcva->wait();
+    }
     {
         std::scoped_lock lock_guard{mutex_};
         if (next_rcva_ != nullptr) {

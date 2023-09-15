@@ -21,7 +21,8 @@ public:
     virtual void update_aggregates(
         const FixedArray<double, 3>& offset,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
-        const ExternalRenderPass& external_render_pass) override;
+        const ExternalRenderPass& external_render_pass,
+        TaskLocation task_location) override;
     virtual void render_aggregates(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

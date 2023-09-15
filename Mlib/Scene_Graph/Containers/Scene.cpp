@@ -7,6 +7,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
@@ -422,9 +423,9 @@ void Scene::render(
                 std::shared_ptr<IAggregateRenderer> large_aggregate_renderer = IAggregateRenderer::large_aggregate_renderer();
                 if (large_aggregate_renderer != nullptr) {
                     LOG_INFO("Scene::render large_aggregate_renderer");
-                    auto large_aggregate_renderer_update_func = [&](){
+                    auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer](){
+                        return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer, task_location](){
                             std::list<DanglingPtr<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
@@ -439,17 +440,18 @@ void Scene::render(
                             for (const auto& node : nodes) {
                                 node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                             }
-                            large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue, external_render_pass);
+                            large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue, external_render_pass, task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_aggregate_renderer->is_initialized())) {
-                        large_aggregate_renderer_update_func()();
+                        large_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_aggregate_bg_worker_.done()) {
                         WorkerStatus status = large_aggregate_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
                         if (status == WorkerStatus::IDLE) {
-                            large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func());
+                            large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
+                    // GuardedLagFinder lag_finder{"Large aggregates: ", std::chrono::milliseconds{10}};
                     large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -484,6 +486,7 @@ void Scene::render(
                             large_instances_bg_worker_.run(large_instances_renderer_update_func());
                         }
                     }
+                    // GuardedLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{10}};
                     large_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }
 
@@ -491,9 +494,9 @@ void Scene::render(
                 if (small_sorted_aggregate_renderer != nullptr) {
                     // Contains continuous alpha and must therefore be rendered late.
                     LOG_INFO("Scene::render small_sorted_aggregate_renderer");
-                    auto small_sorted_aggregate_renderer_update_func = [&](){
+                    auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer](){
+                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer, task_location](){
                             std::list<DanglingPtr<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
@@ -513,17 +516,18 @@ void Scene::render(
                             for (auto& e : aggregate_queue) {
                                 sorted_aggregate_queue.push_back(std::move(e.second));
                             }
-                            small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue, external_render_pass);
+                            small_sorted_aggregate_renderer->update_aggregates(iv.t(), sorted_aggregate_queue, external_render_pass, task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !small_sorted_aggregate_renderer->is_initialized())) {
-                        small_sorted_aggregate_renderer_update_func()();
+                        small_sorted_aggregate_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && small_aggregate_bg_worker_.done()) {
                         WorkerStatus status = small_aggregate_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
                         if (status == WorkerStatus::IDLE) {
-                            small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func());
+                            small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
+                    // GuardedLagFinder lag_finder{"Small sorted aggregates: ", std::chrono::milliseconds{10}};
                     small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -582,6 +586,7 @@ void Scene::render(
                             }
                         }
                     }
+                    // GuardedLagFinder lag_finder{"Small sorted instances: ", std::chrono::milliseconds{10}};
                     small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->render_instances(
                         vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }

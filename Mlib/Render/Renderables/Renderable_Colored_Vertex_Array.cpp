@@ -320,24 +320,20 @@ void RenderableColoredVertexArray::render_cva(
     for (size_t i = 0; i < blended_textures.size(); ++i) {
         blended_textures[i] = &cva->material.textures[i];
     }
-    {
-        size_t i = 0;
-        for (const auto& t : cva->material.textures) {
-            if (t.texture_descriptor.color.filename.empty()) {
-                THROW_OR_ABORT("Empty color texture not supported, cva: " + cva->name);
+    for (const auto& [i, t] : enumerate(cva->material.textures)) {
+        if (t.texture_descriptor.color.filename.empty()) {
+            THROW_OR_ABORT("Empty color texture not supported, cva: " + cva->name);
+        }
+        if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+            THROW_OR_ABORT("Material's color texture \"" + t.texture_descriptor.color.filename + "\" has undefined color mode");
+        }
+        if (i == 0) {
+            if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
+                THROW_OR_ABORT("Opaque material's color texture \"" + t.texture_descriptor.color.filename + "\" was loaded as RGBA");
             }
-            if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
-                THROW_OR_ABORT("Material's color texture \"" + t.texture_descriptor.color.filename + "\" has undefined color mode");
+            if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGB)) {
+                THROW_OR_ABORT("Transparent material's color texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGB");
             }
-            if (i == 0) {
-                if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
-                    THROW_OR_ABORT("Opaque material's color texture \"" + t.texture_descriptor.color.filename + "\" was loaded as RGBA");
-                }
-                if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGB)) {
-                    THROW_OR_ABORT("Transparent material's color texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGB");
-                }
-            }
-            ++i;
         }
     }
     FixedArray<float, 3> emissivity;
@@ -682,8 +678,7 @@ void RenderableColoredVertexArray::render_cva(
         }
     };
     if (tic.ntextures_color != 0) {
-        size_t i = 0;
-        for (const auto& t : cva->material.textures) {
+        for (const auto& [i, t] : enumerate(cva->material.textures)) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color.filename + '"');
             GLuint texture = secondary_rendering_resources_->contains_texture(t.texture_descriptor.color)
                 ? secondary_rendering_resources_->get_texture(t.texture_descriptor)
@@ -697,7 +692,6 @@ void RenderableColoredVertexArray::render_cva(
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color.filename + '"');
             setup_texture(t.texture_descriptor, target);
             CHK(glActiveTexture(GL_TEXTURE0));
-            ++i;
         }
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
@@ -740,15 +734,13 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
     if (tic.ntextures_normal != 0) {
-        size_t i = 0;
-        for (const auto& t : cva->material.textures) {
+        for (const auto& [i, t] : enumerate(cva->material.textures)) {
             if (!t.texture_descriptor.normal.filename.empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
                 CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_->get_normalmap_texture(t.texture_descriptor)));
                 setup_texture(t.texture_descriptor);
                 CHK(glActiveTexture(GL_TEXTURE0));
             }
-            ++i;
         }
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");

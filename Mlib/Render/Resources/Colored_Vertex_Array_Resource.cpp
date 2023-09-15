@@ -1667,3 +1667,9 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
     }
     return false;
 }
+
+void ColoredVertexArrayResource::wait() const {
+    for (const auto& cva : triangles_res_->scvas) {
+        get_vertex_array(cva).va_.wait();
+    }
+}
