@@ -35,7 +35,7 @@ struct RenderConfig {
     void unapply_material() const;
 
     int opengl_major_version = 4;
-    int opengl_minor_version = 1;
+    int opengl_minor_version = 4;
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
     int imposter_nsamples_msaa = 4;

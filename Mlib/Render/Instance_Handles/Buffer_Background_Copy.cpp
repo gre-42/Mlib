@@ -8,7 +8,8 @@
 using namespace Mlib;
 
 BufferBackgroundCopy::BufferBackgroundCopy()
-: state_{BackgroundCopyState::UNINITIALIZED},
+: is_mapped_{false},
+  state_{BackgroundCopyState::UNINITIALIZED},
   deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
 
@@ -20,16 +21,19 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
     CHK(glGenBuffers(1, &buffer_));
     state_ = BackgroundCopyState::BUFFER_CREATED;
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
-    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_STATIC_DRAW));
 
-    CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
     if (begin == nullptr) {
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_STATIC_DRAW));
+        is_mapped_ = false;
         std::promise<void> p;
         p.set_value();
         future_ = p.get_future();
     } else {
+        CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
+        CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+        is_mapped_ = true;
         future_ = std::async(std::launch::async, [dest, begin, end](){
             std::copy(begin, end, dest);
         });
@@ -60,9 +64,11 @@ void BufferBackgroundCopy::wait() const {
         THROW_OR_ABORT("Waiting for an incomplete buffer");
     }
     future_.get();
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
-    CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     state_ = BackgroundCopyState::AWAITED;
+    if (is_mapped_) {
+        CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
+        CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+    }
 }
 
 // From: https://stackoverflow.com/questions/10890242/get-the-status-of-a-stdfuture
