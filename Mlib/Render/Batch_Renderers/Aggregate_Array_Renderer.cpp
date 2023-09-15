@@ -218,4 +218,7 @@ bool AggregateArrayRenderer::is_initialized() const {
 void AggregateArrayRenderer::invalidate() {
     std::scoped_lock lock_guard{mutex_};
     is_initialized_ = false;
+    next_rcva_ = nullptr;
+    rcvai_ = nullptr;
+    next_rcvai_ = nullptr;
 }
