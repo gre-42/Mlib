@@ -124,6 +124,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     std::set<std::string> grass_materials;
     std::set<std::string> occluding_meshes;
     std::vector<unsigned int> texture_grid;
+    float lit_mult = 1.f;
+    float specular_mult = 1.f;
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
         auto kn5 = load_kn5(kn5_filename);
@@ -309,9 +311,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                 }
                 tl.material.emissivity = OrderableFixedArray{cfg.emissivity_factor * material.ksEmissive};
-                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient};
-                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse};
-                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular};
+                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient * lit_mult};
+                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse * lit_mult};
+                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular * lit_mult * specular_mult};
                 tl.material.specular_exponent = material.ksSpecularEXP;
                 if ((material.useDetail != 0.f) &&
                     (material.detailUVMultiplier != 0.f) &&
@@ -407,6 +409,16 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         if (path_exists(ext_config_ini_filename)) {
             IniParser ext_config{ext_config_ini_filename};
             static const DECLARE_REGEX(re, "\\, *");
+            if (auto gm = ext_config.try_get("LIGHTING", "LIT_MULT");
+                gm.has_value())
+            {
+                lit_mult = safe_stof(gm.value());
+            }
+            if (auto gm = ext_config.try_get("LIGHTING", "SPECULAR_MULT");
+                gm.has_value())
+            {
+                specular_mult = safe_stof(gm.value());
+            }
             if (auto gm = ext_config.try_get("GRASS_FX", "GRASS_MATERIALS");
                 gm.has_value())
             {
