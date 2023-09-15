@@ -10,7 +10,7 @@ using namespace Mlib;
 CenteredTextureImageLogic::CenteredTextureImageLogic(
     const std::string& image_resource_name,
     ColorMode color_mode)
-: FillWithTextureLogic{ image_resource_name, ResourceUpdateCycle::ONCE, color_mode }
+: FillWithTextureLogic{ image_resource_name, ResourceUpdateCycle::ONCE, color_mode, CullFaceMode::CULL, nullptr }
 {}
 
 CenteredTextureImageLogic::~CenteredTextureImageLogic() = default;

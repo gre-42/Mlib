@@ -10,7 +10,7 @@ using namespace Mlib;
 
 PointerImageLogic::PointerImageLogic(
     const std::string& image_resource_name)
-: FillWithTextureLogic{ image_resource_name, ResourceUpdateCycle::ONCE, ColorMode::RGBA }
+: FillWithTextureLogic{ image_resource_name, ResourceUpdateCycle::ONCE, ColorMode::RGBA, CullFaceMode::CULL, nullptr }
 {}
 
 PointerImageLogic::~PointerImageLogic() = default;
