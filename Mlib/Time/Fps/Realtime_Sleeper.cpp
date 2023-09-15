@@ -66,3 +66,7 @@ void RealtimeSleeper::reset() {
 bool RealtimeSleeper::is_up_to_date() const {
     return is_up_to_date_;
 }
+
+void RealtimeSleeper::set_dt(float dt) {
+    dt_ = dt;
+}

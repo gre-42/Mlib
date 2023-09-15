@@ -21,8 +21,7 @@ class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
 class LayoutConstraints;
-class DependentSleeper;
-class SetFps;
+struct RealtimeDependentFps;
 
 class LoadScene {
 public:
@@ -34,8 +33,7 @@ public:
         ThreadSafeString& next_scene_filename,
         NotifyingJsonMacroArguments& external_json_macro_arguments,
         std::atomic_size_t& num_renderings,
-        DependentSleeper& render_set_fps_sleeper,
-        SetFps& render_set_fps,
+        RealtimeDependentFps& render_set_fps,
         bool verbose,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,

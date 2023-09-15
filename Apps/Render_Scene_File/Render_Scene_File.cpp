@@ -33,10 +33,7 @@
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
-#include <Mlib/Time/Fps/Set_Fps.hpp>
-#include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
-#include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
-#include <Mlib/Time/Fps/Sleeper_Sequence.hpp>
+#include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
 #include <future>
 
@@ -135,8 +132,7 @@ std::future<void> loader_thread(
     ThreadSafeString& next_scene_filename,
     NotifyingJsonMacroArguments& external_json_macro_arguments,
     std::atomic_size_t& num_renderings,
-    DependentSleeper& render_fps_dependent_sleeper,
-    SetFps& render_set_fps,
+    RealtimeDependentFps& render_set_fps,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -168,7 +164,6 @@ std::future<void> loader_thread(
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
-                    render_fps_dependent_sleeper,
                     render_set_fps,
                     args.has_named("--verbose"),
                     surface_contact_db,
@@ -411,20 +406,17 @@ int main(int argc, char** argv) {
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .print_fps = args.has_named("--print_render_fps"),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
-        RealtimeSleeper rts{
+        RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
             safe_stof(args.named_value("--render_dt", "0.01667")),
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             !args.has_named("--no_control_render_fps"),
             args.has_named("--print_render_residual_time")};
-        DependentSleeper render_fps_dependent_sleeper;
-        SleeperSequence sls{rts, render_fps_dependent_sleeper};
-        SetFps render_set_fps{sls};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             render_config,
             num_renderings,
-            render_set_fps,
+            render_set_fps.set_fps,
             nullptr};
         render2.print_hardware_info();
 
@@ -542,7 +534,6 @@ int main(int argc, char** argv) {
                     next_scene_filename,
                     external_json_macro_arguments,
                     num_renderings,
-                    render_fps_dependent_sleeper,
                     render_set_fps,
                     surface_contact_db,
                     scene_config,

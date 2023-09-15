@@ -19,6 +19,8 @@ public:
     virtual void tick() override;
     virtual void reset() override;
     virtual bool is_up_to_date() const override;
+
+    void set_dt(float dt);
 private:
     float dt_;
     float max_residual_time_;
