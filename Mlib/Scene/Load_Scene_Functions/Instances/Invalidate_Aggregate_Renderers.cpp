@@ -2,6 +2,8 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 
 using namespace Mlib;
 
@@ -19,5 +21,8 @@ InvalidateAggregateRenderers::InvalidateAggregateRenderers(RenderableScene& rend
 
 void InvalidateAggregateRenderers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    standard_render_logic.invalidate_aggregate_renderers();
+    args.render_set_fps.set_fps.execute([&scene=scene, &rl=standard_render_logic](){
+        scene.wait_until_done();
+        rl.invalidate_aggregate_renderers();
+    });
 }

@@ -72,3 +72,9 @@ void BackgroundLoop::run(const std::function<void()>& task) {
 bool BackgroundLoop::done() const {
     return done_;
 }
+
+void BackgroundLoop::wait_until_done() const {
+    while (!done_) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}

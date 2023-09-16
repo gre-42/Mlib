@@ -18,6 +18,7 @@ public:
     WorkerStatus tick(size_t update_interval);
     void run(const std::function<void()>& task);
     bool done() const;
+    void wait_until_done() const;
     void shutdown();
 private:
     size_t i_;

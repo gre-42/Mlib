@@ -91,6 +91,7 @@ public:
     void shutdown();
     bool shutting_down() const;
     void stop_and_join();
+    void wait_until_done() const;
     void add_node_not_allowed_to_be_unregistered(const std::string& name);
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
