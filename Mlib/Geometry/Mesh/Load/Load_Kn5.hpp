@@ -58,6 +58,23 @@ struct kn5Material
     std::string shaderProps = "";
 };
 
+struct kn5Vertex {
+    FixedArray<float, 3> position;
+    FixedArray<float, 3> normal;
+    FixedArray<float, 2> uv;
+    FixedArray<float, 3> tangent;
+};
+static_assert(sizeof(kn5Vertex) == 4 * (3 + 3 + 2 + 3));
+
+struct kn5AnimatedVertex {
+    FixedArray<float, 3> position;
+    FixedArray<float, 3> normal;
+    FixedArray<float, 2> uv;
+    FixedArray<float, 3> tangent;
+    char weights[32];
+};
+static_assert(sizeof(kn5AnimatedVertex) == 4 * (3 + 3 + 2 + 3) + 32);
+
 struct kn5Node
 {
     int type = 1;
@@ -70,10 +87,8 @@ struct kn5Node
     bool isRenderable = true;
     bool isTransparent = false;
 
-    size_t vertexCount = 0;
-    std::vector<FixedArray<float, 3>> position;
-    std::vector<FixedArray<float, 3>> normal;
-    std::vector<FixedArray<float, 2>> uv;
+    std::vector<kn5Vertex> vertices;
+    std::vector<kn5AnimatedVertex> animatedVertices;
 
     std::vector<FixedArray<uint16_t, 3>> triangles;
 
@@ -81,6 +96,19 @@ struct kn5Node
 
     //std::list<kn5Node> children; //do I really wanna do this? no
     std::optional<size_t> parentID;
+
+    const FixedArray<float, 3>& position(size_t i) const {
+        return vertices.empty() ? animatedVertices.at(i).position : vertices.at(i).position;
+    }
+    const FixedArray<float, 3>& normal(size_t i) const {
+        return vertices.empty() ? animatedVertices.at(i).normal : vertices.at(i).normal;
+    }
+    const FixedArray<float, 2>& uv(size_t i) const {
+        return vertices.empty() ? animatedVertices.at(i).uv : vertices.at(i).uv;
+    }
+    const FixedArray<float, 3>& tangent(size_t i) const {
+        return vertices.empty() ? animatedVertices.at(i).tangent : vertices.at(i).tangent;
+    }
 };
 
 struct kn5Model

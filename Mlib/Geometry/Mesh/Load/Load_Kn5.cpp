@@ -14,7 +14,7 @@ using namespace Mlib;
 template <class T>
 T ReadBinary(std::istream& str) {
     T result;
-    str.read((char*)&result, sizeof(result));
+    str.read(reinterpret_cast<char*>(&result), sizeof(result));
     return result;
 }
 
@@ -60,12 +60,12 @@ static uint32_t ReadUInt32(std::istream& str) {
     return result;
 }
 
-static uint16_t ReadUInt16(std::istream& str) {
-    auto result = ReadBinary<uint16_t>(str);
+template <class T>
+static void ReadVector(std::istream& str, std::vector<T>& vec) {
+    str.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(T) * vec.size()));
     if (str.fail()) {
-        THROW_OR_ABORT("Could not read uint16 from stream");
+        THROW_OR_ABORT("Could not read vector from stream");
     }
-    return result;
 }
 
 static void readNodes(
@@ -119,28 +119,12 @@ static void readNodes(
                 newNode.isRenderable = (bool)ReadByte(modelStream);
                 newNode.isTransparent = (bool)ReadByte(modelStream);
 
-                newNode.vertexCount = ReadUInt32(modelStream);
-                newNode.position.resize(newNode.vertexCount);
-                newNode.normal.resize(newNode.vertexCount);
-                newNode.uv.resize(newNode.vertexCount);
+                uint32_t vertexCount = ReadUInt32(modelStream);
+                newNode.vertices.resize(vertexCount);
+                ReadVector(modelStream, newNode.vertices);
 
-                for (size_t v = 0; v < newNode.vertexCount; v++)
-                {
-                    newNode.position[v] = {
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream)};
-
-                    newNode.normal[v] = {
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream)};
-
-                    newNode.uv[v] = {
-                        ReadSingle(modelStream),
-                        1 - ReadSingle(modelStream)};
-
-                    modelStream.seekg(12, std::ios::cur); //tangents
+                for (auto& vertex : newNode.vertices) {
+                    vertex.uv(1) = 1 - vertex.uv(1);
                 }
 
                 size_t indexCount = ReadUInt32(modelStream);
@@ -148,12 +132,7 @@ static void readNodes(
                     THROW_OR_ABORT("Index-count not divisible by 3");
                 }
                 newNode.triangles.resize(indexCount / 3);
-                for (size_t i = 0; i < indexCount / 3; i++) {
-                    newNode.triangles[i] = {
-                        ReadUInt16(modelStream),
-                        ReadUInt16(modelStream),
-                        ReadUInt16(modelStream)};
-                }
+                ReadVector(modelStream, newNode.triangles);
 
                 newNode.materialID = ReadInt32(modelStream);
                 modelStream.seekg(29, std::ios::cur);
@@ -176,28 +155,12 @@ static void readNodes(
                     modelStream.seekg(64, std::ios::cur); //transformation matrix
                 }
 
-                newNode.vertexCount = ReadUInt32(modelStream);
-                newNode.position.resize(newNode.vertexCount);
-                newNode.normal.resize(newNode.vertexCount);
-                newNode.uv.resize(newNode.vertexCount);
+                uint32_t vertexCount = ReadUInt32(modelStream);
+                newNode.animatedVertices.resize(vertexCount);
 
-                for (size_t v = 0; v < newNode.vertexCount; v++)
-                {
-                    newNode.position[v] = {
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream)};
-
-                    newNode.normal[v] = {
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream),
-                        ReadSingle(modelStream)};
-
-                    newNode.uv[v] = {
-                        ReadSingle(modelStream),
-                        1 - ReadSingle(modelStream)};
-
-                    modelStream.seekg(44, std::ios::cur); //tangents & weights
+                ReadVector(modelStream, newNode.animatedVertices);
+                for (auto& vertex : newNode.animatedVertices) {
+                    vertex.uv(1) = 1 - vertex.uv(1);
                 }
 
                 size_t indexCount = ReadUInt32(modelStream);
@@ -205,12 +168,7 @@ static void readNodes(
                     THROW_OR_ABORT("Index-count not divisible by 3");
                 }
                 newNode.triangles.resize(indexCount / 3);
-                for (size_t i = 0; i < indexCount / 3; i++) {
-                    newNode.triangles[i] = {
-                        ReadUInt16(modelStream),
-                        ReadUInt16(modelStream),
-                        ReadUInt16(modelStream)};
-                }
+                ReadVector(modelStream, newNode.triangles);
 
                 newNode.materialID = ReadInt32(modelStream);
                 modelStream.seekg(12,  std::ios::cur);
