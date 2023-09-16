@@ -52,8 +52,11 @@ Render2::Render2(
     }
     GLFW_CHK(glfwSetErrorCallback(error_callback));
 
-    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, render_config.opengl_major_version));
-    GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, render_config.opengl_minor_version));
+	// From: https://stackoverflow.com/questions/46510889
+	// Not specifying GLFW_CONTEXT_VERSION_MAJOR/MINOR will select the highest supported version.
+	// The actual version can then be obtained using "glGetIntegerv(GL_MAJOR_VERSION/MINOR...)
+    // GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, render_config.opengl_major_version));
+    // GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, render_config.opengl_minor_version));
     if (render_results != nullptr && (render_results->output != nullptr || !render_results->outputs.empty())) {
         GLFW_CHK(glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE));
     }

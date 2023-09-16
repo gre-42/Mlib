@@ -34,8 +34,11 @@ struct RenderConfig {
         const Material& material) const;
     void unapply_material() const;
 
-    int opengl_major_version = 4;
-    int opengl_minor_version = 4;
+	// From: https://stackoverflow.com/questions/46510889
+	// Not specifying GLFW_CONTEXT_VERSION_MAJOR/MINOR will select the highest supported version.
+	// The actual version can then be obtained using "glGetIntegerv(GL_MAJOR_VERSION/MINOR...)
+    // int opengl_major_version = 4;
+    // int opengl_minor_version = 4;
     int nsamples_msaa = 1;
     int lightmap_nsamples_msaa = 4;
     int imposter_nsamples_msaa = 4;

@@ -7,6 +7,17 @@
 
 using namespace Mlib;
 
+static bool buffer_data_supported() {
+#ifdef __ANDROID__
+	return false;
+#else
+	GLint major, minor;
+	CHK(glGetIntegerv(GL_MAJOR_VERSION, &major));
+	CHK(glGetIntegerv(GL_MINOR_VERSION, &minor));
+	return std::make_pair(major, minor) >= std::make_pair(4, 4);
+#endif
+}
+
 BufferBackgroundCopy::BufferBackgroundCopy()
 : is_mapped_{false},
   state_{BackgroundCopyState::UNINITIALIZED},
@@ -24,28 +35,28 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-#ifdef __ANDROID__
-    CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
-    is_mapped_ = false;
-    std::promise<void> p;
-    p.set_value();
-    future_ = p.get_future();
-#else
-    if (begin == nullptr) {
-        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_STATIC_DRAW));
-        is_mapped_ = false;
-        std::promise<void> p;
-        p.set_value();
-        future_ = p.get_future();
-    } else {
-        CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
-        CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-        is_mapped_ = true;
-        future_ = std::async(std::launch::async, [dest, begin, end](){
-            std::copy(begin, end, dest);
-        });
-    }
-#endif
+	if (!buffer_data_supported()) {
+		CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
+		is_mapped_ = false;
+		std::promise<void> p;
+		p.set_value();
+		future_ = p.get_future();
+	} else {
+		if (begin == nullptr) {
+			CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_STATIC_DRAW));
+			is_mapped_ = false;
+			std::promise<void> p;
+			p.set_value();
+			future_ = p.get_future();
+		} else {
+			CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
+			CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+			is_mapped_ = true;
+			future_ = std::async(std::launch::async, [dest, begin, end]() {
+				std::copy(begin, end, dest);
+			});
+		}
+	}
     state_ = BackgroundCopyState::COPY_IN_PROGRESS;
 }
 
