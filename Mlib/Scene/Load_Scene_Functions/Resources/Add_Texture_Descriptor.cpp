@@ -23,6 +23,8 @@ DECLARE_ARGUMENT(multiply_color);
 DECLARE_ARGUMENT(average_normal);
 DECLARE_ARGUMENT(mean_color);
 DECLARE_ARGUMENT(lighten);
+DECLARE_ARGUMENT(lighten_left);
+DECLARE_ARGUMENT(lighten_right);
 DECLARE_ARGUMENT(lighten_top);
 DECLARE_ARGUMENT(lighten_bottom);
 DECLARE_ARGUMENT(mipmap_mode);
@@ -53,6 +55,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
                 .mean_color = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
                 .lighten = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
+                .lighten_left = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),
+                .lighten_right = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_right, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_top = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_top, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_bottom = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f))},
             .specular = args.arguments.try_path_or_variable(KnownArgs::specular).path,

@@ -37,6 +37,28 @@ void stb_lighten(
     }
 }
 
+void stb_lighten_horizontal_gradient(
+    unsigned char* data,
+    int width,
+    int height,
+    int nrChannels,
+    short color_left[3],
+    short color_right[3])
+{
+    if (nrChannels != 3 && nrChannels != 4) {
+        THROW_OR_ABORT("nrChannels is not 3 or 4");
+    }
+    for (int r = 0; r < height; ++r) {
+        for (int c = 0; c < width; ++c) {
+            float t = float(c) / (float)width;
+            for (int d = 0; d < 3; ++d) {
+                int i = (r * width + c) * nrChannels + d;
+                lighten(data[i], (short)std::round((1 - t) * color_left[d] + t * color_right[d]));
+            }
+        }
+    }
+}
+
 void stb_lighten_vertical_gradient(
     unsigned char* data,
     int width,

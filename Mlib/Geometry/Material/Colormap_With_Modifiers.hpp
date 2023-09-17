@@ -16,6 +16,8 @@ struct ColormapWithModifiers {
     std::string multiply = "";
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
+    OrderableFixedArray<float, 3> lighten_left = {0.f, 0.f, 0.f};
+    OrderableFixedArray<float, 3> lighten_right = {0.f, 0.f, 0.f};
     OrderableFixedArray<float, 3> lighten_top = {0.f, 0.f, 0.f};
     OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
     std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;

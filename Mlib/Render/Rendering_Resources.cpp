@@ -221,20 +221,45 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.nrChannels,
             (desc.color.lighten * 255.f).casted<short>().flat_begin());
     }
+    if (!desc.color.lighten_left.all_equal(0.f) ||
+        !desc.color.lighten_right.all_equal(0.f))
+    {
+        const FixedArray<float, 3>& lighten_left = desc.color.lighten_left;
+        const FixedArray<float, 3>& lighten_right = desc.color.lighten_right;
+        if (!all(Mlib::isfinite(lighten_left)) ||
+            any(lighten_left > 1.f) ||
+            any(lighten_left < -1.f))
+        {
+            THROW_OR_ABORT("Lighten top value out of bounds");
+        }
+        if (!all(Mlib::isfinite(lighten_right)) ||
+            any(lighten_right > 1.f) ||
+            any(lighten_right < -1.f))
+        {
+            THROW_OR_ABORT("Lighten bottom value out of bounds");
+        }
+        stb_lighten_horizontal_gradient(
+            si0.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.color.lighten_left * 255.f).casted<short>().flat_begin(),
+            (desc.color.lighten_right * 255.f).casted<short>().flat_begin());
+    }
     if (!desc.color.lighten_top.all_equal(0.f) ||
         !desc.color.lighten_bottom.all_equal(0.f))
     {
         const FixedArray<float, 3>& lighten_top = desc.color.lighten_top;
         const FixedArray<float, 3>& lighten_bottom = desc.color.lighten_bottom;
-        if (any(lighten_top > 1.f) ||
-            any(lighten_top < -1.f) ||
-            !all(Mlib::isfinite(lighten_top)))
+        if (!all(Mlib::isfinite(lighten_top)) ||
+            any(lighten_top > 1.f) ||
+            any(lighten_top < -1.f))
         {
             THROW_OR_ABORT("Lighten top value out of bounds");
         }
-        if (any(lighten_bottom > 1.f) ||
-            any(lighten_bottom < -1.f) ||
-            !all(Mlib::isfinite(lighten_bottom)))
+        if (!all(Mlib::isfinite(lighten_bottom)) ||
+            any(lighten_bottom > 1.f) ||
+            any(lighten_bottom < -1.f))
         {
             THROW_OR_ABORT("Lighten bottom value out of bounds");
         }
