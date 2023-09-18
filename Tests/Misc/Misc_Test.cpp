@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
+#include <Mlib/Threads/Parallel_Block.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -106,6 +107,28 @@ void test_template_regex() {
     // }
 }
 
+void test_parallel_block() {
+    std::atomic_int ctr = 0;
+    Barrier barrier{std::chrono::milliseconds{1000}};
+    std::thread t0{[&](){
+        BarrierParticipant participant{barrier};
+        for (size_t i = 0; i < 10; ++i) {
+            ParallelBlock block{barrier};
+            ++ctr;
+        }
+    }};
+    std::thread t1{[&](){
+        BarrierParticipant participant{barrier};
+        for (size_t i = 0; i < 5; ++i) {
+            ParallelBlock block{barrier};
+            ++ctr;
+        }
+    }};
+    t0.join();
+    t1.join();
+    assert_true(ctr == 15);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -113,5 +136,6 @@ int main(int argc, const char** argv) {
     test_substitute();
     test_dangling_unique();
     test_template_regex();
+    test_parallel_block();
     return 0;
 }
