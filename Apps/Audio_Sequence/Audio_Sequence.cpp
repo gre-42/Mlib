@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
             auto& bf = buffer_seq.get_buffer_and_frequency(
                 f,
                 pitch_adjustment_strategy_from_string(
-                    args.named_value("--pitch_adjustment", "rounding")));
+                    args.named_value("--pitch_adjustment", "up_sampling")));
             if (args.has_named("--verbose")) {
                 linfo() << "Requested frequency: " << f << "Hz. Template frequency: " << bf.frequency;
             }
