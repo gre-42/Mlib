@@ -208,7 +208,7 @@ void main_func(
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        EventHandler(*renderer, &button_states, &cursor_states, &scroll_wheel_states);
+        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -411,7 +411,9 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--render_dt", "0.01667")),
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             !args.has_named("--no_control_render_fps"),
-            args.has_named("--print_render_residual_time")};
+            args.has_named("--print_render_residual_time"),
+            0.005,
+            UINT_MAX};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{
             render_config,

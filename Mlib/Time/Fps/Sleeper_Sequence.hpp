@@ -1,17 +1,17 @@
 #pragma once
 #include <Mlib/Time/Fps/ISleeper.hpp>
+#include <vector>
 
 namespace Mlib {
 
 class SleeperSequence: public ISleeper {
 public:
-    SleeperSequence(ISleeper& a, ISleeper& b);
+    explicit SleeperSequence(std::vector<ISleeper*> sleepers);
     virtual void tick() override;
     virtual void reset() override;
     virtual bool is_up_to_date() const override;
 private:
-    ISleeper& a_;
-    ISleeper& b_;
+    std::vector<ISleeper*> sleepers_;
 };
 
 }

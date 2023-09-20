@@ -15,12 +15,15 @@ class ButtonStates;
 class CursorStates;
 struct SceneGraphConfig;
 struct RenderConfig;
-class EventHandler;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
 class Renderer {
-    friend EventHandler;
+    friend void handle_events(
+        Renderer &renderer,
+        ButtonStates *button_states,
+        CursorStates *cursor_states,
+        CursorStates *scroll_wheel_states);
 public:
     Renderer(
         Window& window,
@@ -47,20 +50,11 @@ private:
     SetFps& set_fps_;
 };
 
-class EventHandler {
-public:
-    EventHandler(
-        Renderer& renderer,
-        ButtonStates* button_states,
-        CursorStates* cursor_states,
-        CursorStates* scroll_wheel_states);
-    ~EventHandler();
-private:
-    Renderer& renderer_;
-    ButtonStates* button_states_;
-    CursorStates* cursor_states_;
-    CursorStates* scroll_wheel_states_;
-};
+void handle_events(
+    Renderer& renderer,
+    ButtonStates* button_states,
+    CursorStates* cursor_states,
+    CursorStates* scroll_wheel_states);
 
 }
 
