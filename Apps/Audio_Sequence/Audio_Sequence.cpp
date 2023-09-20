@@ -8,6 +8,7 @@
 #include <Mlib/Audio/List_Audio_Devices.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -15,12 +16,14 @@
 using namespace Mlib;
 
 int main(int argc, char** argv) {
+    reserve_realtime_threads(0);
     const ArgParser parser(
         "Usage: audio_sequence filename.json "
+        "--f0 <Hz> "
+        "--f1 <Hz> "
         "[--dgain <value>] "
-        "[--dt_fade <ms>] "
-        "[--f0 <Hz>] "
-        "[--f1 <Hz>] "
+        "[--dt_fade <s>] "
+        "[--dt_append <s>] "
         "[--niter <value>] "
         "[--gain <value>] "
         "[--pitch <value>] "
@@ -53,9 +56,9 @@ int main(int argc, char** argv) {
                 .frequency = i.frequency});
         }
         AudioBufferSequence buffer_seq{std::vector(buffers.begin(), buffers.end())};
-        float dgain = safe_stof(args.named_value("--dgain"));
-        float dt_fade = safe_stof(args.named_value("--dt_fade"));
-        float dt_append = safe_stof(args.named_value("--dt_append"));
+        float dgain = safe_stof(args.named_value("--dgain", "0.02"));
+        float dt_fade = safe_stof(args.named_value("--dt_fade", "0.01"));
+        float dt_append = safe_stof(args.named_value("--dt_append", "0.1"));
         float pitch = safe_stof(args.named_value("--pitch", "1"));
         float gain_factor = safe_stof(args.named_value("--gain", "1"));
         auto paused = [](){return false;};
@@ -63,7 +66,7 @@ int main(int argc, char** argv) {
         for (float f : Linspace<float>{
             safe_stof(args.named_value("--f0")),
             safe_stof(args.named_value("--f1")),
-            safe_stoz(args.named_value("--niter"))})
+            safe_stoz(args.named_value("--niter", "100"))})
         {
             auto& bf = buffer_seq.get_buffer_and_frequency(
                 f,

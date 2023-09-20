@@ -1,4 +1,5 @@
 #include "Cross_Fade.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 
@@ -13,40 +14,44 @@ CrossFade::CrossFade(
     std::function<bool()> paused,
     float dgain,
     float dt)
-: position_requirement_{position_requirement},
-  paused_{std::move(paused)},
-  fader_{[this, dgain, dt](){
-    ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
-    while (!fader_.get_stop_token().stop_requested()) {
-        {
-            bool pause = paused_();
-            std::scoped_lock lock{ mutex_ };
-            if (pause) {
-                for (auto& s : sources_) {
-                    s.source->mute();
-                }
-            } else {
-                for (auto& s : sources_) {
-                    s.source->unmute();
-                }
-                float total_gain = 0;
-                sources_.remove_if([&](AudioSourceAndGain& sg){
-                    if (&sg == &sources_.back()) {
-                        sg.gain = std::min(1.f - total_gain, sg.gain + dgain);
-                    } else {
-                        sg.gain = std::min(1.f - total_gain, sg.gain - dgain);
-                        if (sg.gain <= 0) {
-                            return true;
+: position_requirement_{position_requirement}, paused_{std::move(paused)}
+    , fader_{[this, dgain, dt]() {
+        try {
+            ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
+            while (!fader_.get_stop_token().stop_requested()) {
+                {
+                    bool pause = paused_();
+                    std::scoped_lock lock{mutex_};
+                    if (pause) {
+                        for (auto &s : sources_) {
+                            s.source->mute();
                         }
-                        total_gain += sg.gain;
+                    } else {
+                        for (auto &s : sources_) {
+                            s.source->unmute();
+                        }
+                        float total_gain = 0;
+                        sources_.remove_if([&](AudioSourceAndGain &sg) {
+                            if (&sg == &sources_.back()) {
+                                sg.gain = std::min(1.f - total_gain, sg.gain + dgain);
+                            } else {
+                                sg.gain = std::min(1.f - total_gain, sg.gain - dgain);
+                                if (sg.gain <= 0) {
+                                    return true;
+                                }
+                                total_gain += sg.gain;
+                            }
+                            sg.apply_gain();
+                            return false;
+                        });
                     }
-                    sg.apply_gain();
-                    return false;
-                });
+                }
+                std::this_thread::sleep_for(std::chrono::duration<float>(dt));
             }
+        } catch (const std::exception& e) {
+            verbose_abort("Exception in cross-fade: " + std::string(e.what()));
         }
-        std::this_thread::sleep_for(std::chrono::duration<float>(dt));
-    }}}
+    }}
 {}
 
 CrossFade::~CrossFade()

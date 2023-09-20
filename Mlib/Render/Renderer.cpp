@@ -235,8 +235,8 @@ void Mlib::handle_events(
         .cursor_states = cursor_states,
         .scroll_wheel_states = scroll_wheel_states};
     try {
-        GLFW_CHK(glfwSetWindowUserPointer(&renderer.window_.glfw_window(), &user_object));
         DestructionGuards dgs;
+        GLFW_CHK(glfwSetWindowUserPointer(&renderer.window_.glfw_window(), &user_object));
         dgs.add([&renderer]() {GLFW_ABORT(glfwSetWindowUserPointer(&renderer.window_.glfw_window(), nullptr));});
         if (button_states != nullptr) {
             GLFW_CHK(glfwSetKeyCallback(&renderer.window_.glfw_window(), key_callback));
