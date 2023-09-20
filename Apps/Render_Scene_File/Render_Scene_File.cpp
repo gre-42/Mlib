@@ -393,8 +393,8 @@ int main(int argc, char** argv) {
                           ? BoolRenderOption::ON
                           : BoolRenderOption::UNCHANGED,
             .window_title = main_scene_filename,
-            .windowed_width = safe_stoi(args.named_value("--windowed_width", "640")),
-            .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
+            .windowed_width = safe_stoi(args.named_value("--windowed_width", "800")),
+            .windowed_height = safe_stoi(args.named_value("--windowed_height", "600")),
             .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
