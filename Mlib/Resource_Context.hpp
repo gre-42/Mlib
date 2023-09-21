@@ -8,20 +8,24 @@ namespace Mlib {
 
 template <class TResourceContext>
 class ResourceContextGuard {
-    ResourceContextGuard(const ResourceContextGuard&) = delete;
-    ResourceContextGuard& operator = (const ResourceContextGuard&) = delete;
+    ResourceContextGuard(const ResourceContextGuard &) = delete;
+    ResourceContextGuard &operator=(const ResourceContextGuard &) = delete;
+
 public:
-    explicit ResourceContextGuard(TResourceContext& resource_context);
+    explicit ResourceContextGuard(TResourceContext &resource_context);
     ~ResourceContextGuard();
+
 private:
     TResourceContext resource_context_;
-    TResourceContext* old_primary_resource_context_;
-    TResourceContext* old_secondary_resource_context_;
+    TResourceContext *old_primary_resource_context_;
+    TResourceContext *old_secondary_resource_context_;
 };
 
 template <class TResourceContext>
 class ResourceContextStack {
     friend ResourceContextGuard<TResourceContext>;
+    ResourceContextStack() = delete;
+
 public:
     static TResourceContext& primary_resource_context();
     static TResourceContext& resource_context();

@@ -6,4 +6,4 @@ my_add_library(MlibAudio "1" "" "${mlib_excluded_files}")
 
 target_include_directories(MlibAudio PUBLIC ${Mlib_INCLUDE_DIR} ${ALUT_INCLUDE_DIRS})
 
-target_link_libraries(MlibAudio Mlib MlibThreads ${ALUT_LIBRARIES})
+target_link_libraries(MlibAudio Mlib MlibThreads MlibMemory ${ALUT_LIBRARIES})

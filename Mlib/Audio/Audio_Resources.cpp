@@ -8,6 +8,10 @@
 
 using namespace Mlib;
 
+AudioResources::AudioResources() = default;
+
+AudioResources::~AudioResources() = default;
+
 void AudioResources::add_buffer(const std::string& name, const std::string& filename, float gain) {
     std::unique_lock lock{ mutex_ };
     if (!buffer_filenames_.insert({name, {filename, gain}}).second) {

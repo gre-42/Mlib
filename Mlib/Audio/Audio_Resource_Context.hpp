@@ -15,9 +15,11 @@ public:
     std::shared_ptr<AudioResources> audio_resources;
 };
 
-using AudioResourceContextGuard = ResourceContextGuard<AudioResourceContext>;
+using AudioResourceContextGuard = ResourceContextGuard<const AudioResourceContext>;
 
-class AudioResourceContextStack: public ResourceContextStack<AudioResourceContext> {
+class AudioResourceContextStack: public ResourceContextStack<const AudioResourceContext> {
+    AudioResourceContextStack() = delete;
+
 public:
     static std::shared_ptr<AudioResources> primary_audio_resources();
     static std::shared_ptr<AudioResources> audio_resources();

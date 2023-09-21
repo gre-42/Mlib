@@ -14,22 +14,22 @@ enum class PositionRequirement {
 };
 
 class AudioSource {
-    AudioSource(const AudioSource&) = delete;
-    AudioSource& operator = (const AudioSource&) = delete;
+    AudioSource(const AudioSource &) = delete;
+    AudioSource &operator=(const AudioSource &) = delete;
     explicit AudioSource(PositionRequirement position_requirement);
+
 public:
-    AudioSource(
-        const AudioBuffer& buffer,
-        PositionRequirement position_requirement);
+    AudioSource(const AudioBuffer &buffer, PositionRequirement position_requirement);
     ~AudioSource();
     void set_loop(bool value);
     void set_gain(float f);
     void set_pitch(float f);
-    void set_position(const FixedArray<double, 3>& position);
+    void set_position(const FixedArray<double, 3> &position);
     void play();
     void join();
     void mute();
     void unmute();
+
 private:
     ALuint source_;
     PositionRequirement position_requirement_;

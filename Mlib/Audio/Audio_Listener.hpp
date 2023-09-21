@@ -11,14 +11,17 @@ class TransformationMatrix;
 
 class AudioListener {
     AudioListener() = delete;
-    AudioListener(const AudioListener&) = delete;
-    AudioListener& operator = (const AudioListener&) = delete;
+    AudioListener(const AudioListener &) = delete;
+    AudioListener &operator=(const AudioListener &) = delete;
+
 public:
-    static void set_transformation(const TransformationMatrix<float, double, 3>& trafo);
-    static std::optional<FixedArray<float, 3>> get_relative_position(const FixedArray<double, 3>& position);
+    static void set_transformation(const TransformationMatrix<float, double, 3> &trafo);
+    static std::optional<FixedArray<float, 3>>
+    get_relative_position(const FixedArray<double, 3> &position);
     static void set_gain(float f);
     static void mute();
     static void unmute();
+
 private:
     static bool muted_;
     static float gain_;

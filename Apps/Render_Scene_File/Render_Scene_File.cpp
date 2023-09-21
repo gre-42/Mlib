@@ -412,7 +412,7 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             !args.has_named("--no_control_render_fps"),
             args.has_named("--print_render_residual_time"),
-            0.005,
+            0.005f,
             UINT_MAX};
         // Declared as first class to let destructors of other classes succeed.
         Render2 render2{

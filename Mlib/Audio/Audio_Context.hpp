@@ -1,19 +1,21 @@
 #pragma once
-#include <Mlib/Audio/OpenAL_alc.h>
+#include <Mlib/Memory/Destruction_Guards.hpp>
 #include <memory>
-#include <string>
 
 namespace Mlib {
 
 class AudioDevice;
 
 class AudioContext {
+    AudioContext(const AudioContext &) = delete;
+    AudioContext &operator=(const AudioContext &) = delete;
+
 public:
-    explicit AudioContext(AudioDevice& device);
+    explicit AudioContext(AudioDevice &device);
     ~AudioContext();
+
 private:
-    ALCdevice* device_;
-    ALCcontext* context_;
+    DestructionGuards dgs_;
 };
 
 }
