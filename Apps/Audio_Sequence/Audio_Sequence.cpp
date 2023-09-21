@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
         "[--gain <value>] "
         "[--pitch <value>] "
         "[--pitch_adjustment {rounding,up_sampling,down_sampling}] "
+        "[--audio_frequency <value>]"
         "[--verbose]",
         {"--verbose"},
         {"--dgain",
@@ -38,14 +39,15 @@ int main(int argc, char** argv) {
          "--f0",
          "--f1",
          "--niter",
-         "--pitch_adjustment"});
+         "--pitch_adjustment",
+         "--audio_frequency"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(1);
 
         list_audio_devices();
         AudioDevice device;
-        AudioContext context{ device };
+        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "48000"))};
         std::string meta_filename = args.unnamed_value(0);
 
         auto items = load_audio_file_sequence(meta_filename);

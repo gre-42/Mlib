@@ -2,6 +2,7 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/OpenAL_al.h>
 #include <Mlib/Audio/OpenAL_alc.h>
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
@@ -9,8 +10,9 @@
 
 using namespace Mlib;
 
-AudioContext::AudioContext(AudioDevice &device) {
-    auto *context = alcCreateContext(device.device_, nullptr);
+AudioContext::AudioContext(AudioDevice &device, unsigned int frequency) {
+    ALCint attrlist[] = {ALC_FREQUENCY, integral_cast<ALCint>(frequency), 0};
+    auto *context = alcCreateContext(device.device_, frequency == 0 ? nullptr : attrlist);
     if (context == nullptr) {
         THROW_OR_ABORT("Could not create audio context, code: " +
                        std::to_string(alcGetError(device.device_)));
@@ -22,15 +24,6 @@ AudioContext::AudioContext(AudioDevice &device) {
             verbose_abort("Could not destroy context, code: " + std::to_string(error));
         }
     });
-    {
-        ALCint rate;
-        alcGetIntegerv(device.device_, ALC_FREQUENCY, 1, &rate);
-        ALCenum error = alcGetError(device.device_);
-        if (error != ALC_NO_ERROR) {
-            verbose_abort("Could not get audio frequency: " + std::to_string(error));
-        }
-        linfo() << "Audio frequency: " << rate;
-    }
     if (!alcMakeContextCurrent(context)) {
         THROW_OR_ABORT("Could not make context current, code: " +
                        std::to_string(alcGetError(device.device_)));

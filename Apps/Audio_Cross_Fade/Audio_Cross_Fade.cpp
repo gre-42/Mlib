@@ -13,16 +13,16 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: audio_cross_fade filename ... [--dgain <value>] [--dt_fade <ms>] [--dt_append <ms>] [--gain <value>] [--pitch <value>]",
+        "Usage: audio_cross_fade filename ... [--dgain <value>] [--dt_fade <ms>] [--dt_append <ms>] [--gain <value>] [--pitch <value>] [--audio_frequency <value>]",
         {},
-        {"--dgain", "--dt_fade", "--dt_append", "--gain", "--pitch"});
+        {"--dgain", "--dt_fade", "--dt_append", "--gain", "--pitch", "--audio_frequency"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
 
         list_audio_devices();
         AudioDevice device;
-        AudioContext context{ device };
+        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "48000"))};
         std::list<AudioBuffer> buffers;
         for (const auto& l : args.unnamed_values()) {
             buffers.emplace_back(AudioBuffer::from_wave(l));

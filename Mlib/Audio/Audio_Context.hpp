@@ -11,7 +11,7 @@ class AudioContext {
     AudioContext &operator=(const AudioContext &) = delete;
 
 public:
-    explicit AudioContext(AudioDevice &device);
+    AudioContext(AudioDevice &device, unsigned int frequency);
     ~AudioContext();
 
 private:

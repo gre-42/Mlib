@@ -295,6 +295,7 @@ int main(int argc, char** argv) {
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
+        "    [--audio_frequency <value>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -362,7 +363,8 @@ int main(int argc, char** argv) {
          "--num_renderings",
          "--audio_gain",
          "--show_debug_wheels",
-         "--write_loaded_resources"});
+         "--write_loaded_resources",
+         "--audio_frequency"});
     try {
         const auto args = parser.parsed(argc, argv);
         if (args.has_named_value("--app_reldir")) {
@@ -376,7 +378,7 @@ int main(int argc, char** argv) {
 
 #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
-        AudioContext audio_context{audio_device};
+        AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "48000"))};
 #endif
 
         std::atomic_size_t num_renderings;

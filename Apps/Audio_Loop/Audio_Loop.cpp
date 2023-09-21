@@ -11,16 +11,16 @@ using namespace Mlib;
 
 int main(int argc, char** argv) {
     const ArgParser parser(
-        "Usage: audio_loop filename [--loop] [--pitch <value>] [--gain <value>]",
+        "Usage: audio_loop filename [--loop] [--pitch <value>] [--gain <value>] [--audio_frequency <value>]",
         {"--loop"},
-        {"--pitch", "--gain"});
+        {"--pitch", "--gain", "--audio_frequency"});
     try {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed(1);
 
         list_audio_devices();
         AudioDevice device;
-        AudioContext context{ device };
+        AudioContext context{ device, safe_stou(args.named_value("--audio_frequency", "48000")) };
         auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
         AudioSource source{buffer, PositionRequirement::POSITION_NOT_REQUIRED};
         source.set_loop(args.has_named("--loop"));
