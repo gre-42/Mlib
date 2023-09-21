@@ -20,7 +20,7 @@ AudioBuffer::AudioBuffer(AudioBuffer&& other) noexcept {
 
 AudioBuffer::~AudioBuffer() {
     if (buffer_.has_value()) {
-        AL_WARN(alDeleteBuffers((ALuint)1, &buffer_.value()));
+        AL_ABORT(alDeleteBuffers((ALuint)1, &buffer_.value()));
     }
 }
 

@@ -29,7 +29,7 @@ AudioSource::AudioSource(
 }
 
 AudioSource::~AudioSource() {
-    AL_WARN(alDeleteSources(1, &source_));
+    AL_ABORT(alDeleteSources(1, &source_));
 }
 
 void AudioSource::set_loop(bool value) {

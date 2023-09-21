@@ -33,9 +33,9 @@ CrossFade::CrossFade(
                         float total_gain = 0;
                         sources_.remove_if([&](AudioSourceAndGain &sg) {
                             if (&sg == &sources_.back()) {
-                                sg.gain = std::min(1.f - total_gain, sg.gain + dgain);
+                                sg.gain = std::min(sg.gain + dgain, 1.f - total_gain);
                             } else {
-                                sg.gain = std::min(1.f - total_gain, sg.gain - dgain);
+                                sg.gain -= dgain;
                                 if (sg.gain <= 0) {
                                     return true;
                                 }
@@ -44,6 +44,9 @@ CrossFade::CrossFade(
                             sg.apply_gain();
                             return false;
                         });
+                        if (total_gain > 1.f) {
+                            verbose_abort("Cross-fade internal error");
+                        }
                     }
                 }
                 std::this_thread::sleep_for(std::chrono::duration<float>(dt));
