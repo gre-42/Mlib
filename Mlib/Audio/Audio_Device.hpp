@@ -14,6 +14,8 @@ public:
     explicit AudioDevice();
     ~AudioDevice();
 
+    unsigned int get_frequency() const;
+
 private:
     ALCdevice *device_;
 };
