@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
         list_audio_devices();
         AudioDevice device;
-        AudioContext context{ device, safe_stou(args.named_value("--audio_frequency", "48000")) };
+        AudioContext context{ device, safe_stou(args.named_value("--audio_frequency", "0")) };
         auto buffer = AudioBuffer::from_wave(args.unnamed_value(0));
         AudioSource source{buffer, PositionRequirement::POSITION_NOT_REQUIRED};
         source.set_loop(args.has_named("--loop"));

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
         list_audio_devices();
         AudioDevice device;
-        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "48000"))};
+        AudioContext context{device, safe_stou(args.named_value("--audio_frequency", "0"))};
         std::list<AudioBuffer> buffers;
         for (const auto& l : args.unnamed_values()) {
             buffers.emplace_back(AudioBuffer::from_wave(l));

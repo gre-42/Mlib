@@ -378,7 +378,7 @@ int main(int argc, char** argv) {
 
 #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
-        AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "48000"))};
+        AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
 #endif
 
