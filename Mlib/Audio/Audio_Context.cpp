@@ -22,6 +22,15 @@ AudioContext::AudioContext(AudioDevice &device) {
             verbose_abort("Could not destroy context, code: " + std::to_string(error));
         }
     });
+    {
+        ALCint rate;
+        alcGetIntegerv(device.device_, ALC_FREQUENCY, 1, &rate);
+        ALCenum error = alcGetError(device.device_);
+        if (error != ALC_NO_ERROR) {
+            verbose_abort("Could not get audio frequency: " + std::to_string(error));
+        }
+        linfo() << "Audio frequency: " << rate;
+    }
     if (!alcMakeContextCurrent(context)) {
         THROW_OR_ABORT("Could not make context current, code: " +
                        std::to_string(alcGetError(device.device_)));
