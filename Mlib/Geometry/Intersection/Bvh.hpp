@@ -189,6 +189,26 @@ public:
             {return visitor(aabb, const_cast<TPayload&>(payload));});
     }
 
+    template <class TLeafVisitor, class TNodeVisitor>
+    void modify_bottom_up(
+        const TNodeVisitor &node_visitor,
+        const TLeafVisitor &leaf_visitor)
+    {
+        for (auto &[_, c] : children_) {
+            c.modify_bottom_up(node_visitor, leaf_visitor);
+        }
+        node_visitor(children_);
+        leaf_visitor(data_);
+    }
+
+    size_t num_leaves() const {
+        size_t res = data_.size();
+        for (const auto &[_, c] : children_) {
+            res += c.num_leaves();
+        }
+        return res;
+    }
+
     template <class TComputeDistance>
     TData min_distance(
         const FixedArray<TData, tndim>& p,
