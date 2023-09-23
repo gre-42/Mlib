@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
@@ -550,9 +551,18 @@ void Scene::render(
                         any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
                     {
                         auto small_instances_renderer_update_func = [&](TaskLocation task_location){
+                            std::set<ExternalRenderPassType> black_render_passes;
+                            if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+                                for (const auto &[_, l] : lights) {
+                                    if (any(l->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_LOCAL_MASK)) {
+                                        black_render_passes.insert(l->shadow_render_pass);
+                                    }
+                                }
+                            }
                             // copy "vp" and "scene_graph_config"
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
-                                                      small_sorted_instances_renderers, task_location]()
+                                                      small_sorted_instances_renderers, task_location,
+                                                      black_render_passes]()
                             {
                                 std::list<DanglingPtr<const SceneNode>> nodes;
                                 {
@@ -565,11 +575,6 @@ void Scene::render(
                                     }
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
-                                std::set<ExternalRenderPassType> black_render_passes;
-                                if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-                                    black_render_passes.insert(ExternalRenderPassType::LIGHTMAP_BLOBS);
-                                    black_render_passes.insert(ExternalRenderPassType::LIGHTMAP_BLACK_LOCAL_INSTANCES);
-                                }
                                 SmallInstancesQueues instances_queues{
                                     external_render_pass.pass,
                                     black_render_passes};
