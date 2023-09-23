@@ -5,7 +5,6 @@ using namespace Mlib;
 std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers& t) {
     ostr <<
         "filename: " << t.filename << '\n' <<
-        "color_mode: " << (int)t.color_mode << '\n' <<
         "desaturate: " << (int)t.desaturate << '\n' <<
         "alpha: " << t.alpha << '\n' <<
         "histogram: " << t.histogram << '\n' <<

@@ -18,18 +18,18 @@ public:
     ~ParticleResources();
 
     void insert_instantiator_to_instance(
-        const std::string& instantiator,
-        const std::string& instance);
+        std::string instantiator,
+        std::string instance);
     std::string get_instance_for_instantiator(const std::string& instantiator) const;
 
     void insert_instance_creator(
-        const std::string& name,
-        const std::function<std::shared_ptr<ParticlesInstance>()>& instance_creator);
+        std::string name,
+        std::function<std::shared_ptr<ParticlesInstance>()> instance_creator);
     std::shared_ptr<ParticlesInstance> instantiate_particles_instance(const std::string& name) const;
 
     void insert_instantiator_creator(
-        const std::string& name,
-        const std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>& instantiator_creator);
+        std::string name,
+        std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)> instantiator_creator);
     std::unique_ptr<IParticleInstantiator> instantiate_particle_instantiator(
         const std::string& name,
         ParticlesInstance& particles_instance) const;

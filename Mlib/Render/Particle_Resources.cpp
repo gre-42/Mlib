@@ -14,11 +14,11 @@ ParticleResources::ParticleResources()
 ParticleResources::~ParticleResources() = default;
 
 void ParticleResources::insert_instantiator_to_instance(
-    const std::string& instantiator,
-    const std::string& instance)
+    std::string instantiator,
+    std::string instance)
 {
     std::scoped_lock lock{mutex_};
-    if (!instantiator_to_instance_.insert({instantiator, instance}).second) {
+    if (!instantiator_to_instance_.try_emplace(std::move(instantiator), std::move(instance)).second) {
         THROW_OR_ABORT("Instantiator \"" + instantiator + "\" already registered");
     }
 }
@@ -33,10 +33,10 @@ std::string ParticleResources::get_instance_for_instantiator(const std::string& 
 }
 
 void ParticleResources::insert_instance_creator(
-    const std::string& name,
-    const std::function<std::shared_ptr<ParticlesInstance>()>& instance_creator)
+    std::string name,
+    std::function<std::shared_ptr<ParticlesInstance>()> instance_creator)
 {
-    instance_creators_.insert(name, instance_creator);
+    instance_creators_.insert(std::move(name), std::move(instance_creator));
 }
 
 std::shared_ptr<ParticlesInstance> ParticleResources::instantiate_particles_instance(
@@ -46,10 +46,10 @@ std::shared_ptr<ParticlesInstance> ParticleResources::instantiate_particles_inst
 }
 
 void ParticleResources::insert_instantiator_creator(
-    const std::string& name,
-    const std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>& instantiator_creator)
+    std::string name,
+    std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)> instantiator_creator)
 {
-    instantiators_.insert(name, instantiator_creator);
+    instantiators_.insert(std::move(name), std::move(instantiator_creator));
 }
 
 std::unique_ptr<IParticleInstantiator> ParticleResources::instantiate_particle_instantiator(

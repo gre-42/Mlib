@@ -14,9 +14,9 @@ public:
     : mutex_{mutex}
     {}
 
-    void insert(const std::string& name, const T& value) {
+    void insert(std::string name, T&& value) {
         std::scoped_lock lock{mutex_};
-        if (!elements_.insert({name, value}).second) {
+        if (!elements_.try_emplace(std::move(name), std::move(value)).second) {
             THROW_OR_ABORT("Element with name \"" + name + "\" already exists");
         }
     }

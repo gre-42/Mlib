@@ -8,7 +8,6 @@ namespace Mlib {
 
 struct ColormapWithModifiers {
     std::string filename;
-    ColorMode color_mode = ColorMode::UNDEFINED;
     bool desaturate = false;
     std::string alpha = "";
     std::string histogram = "";
@@ -24,7 +23,6 @@ struct ColormapWithModifiers {
     template <class Archive>
     void serialize(Archive& archive) {
         archive(filename);
-        archive(color_mode);
         archive(desaturate);
         archive(alpha);
         archive(histogram);
