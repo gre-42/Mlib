@@ -1,7 +1,7 @@
 #pragma once
-#include <AL/alut.h>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <AL/alut.h>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
