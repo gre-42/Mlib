@@ -21,6 +21,8 @@ public:
         uint32_t num_billboard_atlas_components,
         const std::string& name);
     virtual ~StaticInstanceBuffers() override;
+    virtual bool copy_in_progress() const override;
+    virtual void wait() const override;
     virtual void update() override;
     virtual void bind(
         GLuint instance_attribute_index,

@@ -7,6 +7,8 @@ namespace Mlib {
 class IInstanceBuffers {
 public:
     virtual ~IInstanceBuffers() = default;
+    virtual bool copy_in_progress() const = 0;
+    virtual void wait() const = 0;
     virtual void update() = 0;
     virtual void bind(
         GLuint instance_attribute_index,

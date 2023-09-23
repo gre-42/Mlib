@@ -19,15 +19,19 @@ static bool buffer_data_supported() {
 }
 
 BufferBackgroundCopy::BufferBackgroundCopy()
-: is_mapped_{false},
-  state_{BackgroundCopyState::UNINITIALIZED},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
-{}
+    : buffer_{(GLuint)-1}
+    , is_mapped_{false}
+    , state_{BackgroundCopyState::UNINITIALIZED}
+    , deallocation_token_{render_deallocator.insert([this]() { deallocate(); })} {
+}
 
 void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 {
     if (state_ != BackgroundCopyState::UNINITIALIZED) {
         THROW_OR_ABORT("Buffer already set");
+    }
+    if (buffer_ != (GLuint)-1) {
+        verbose_abort("Buffer already set (2)");
     }
     CHK(glGenBuffers(1, &buffer_));
     state_ = BackgroundCopyState::BUFFER_CREATED;
@@ -88,6 +92,14 @@ void BufferBackgroundCopy::wait() const {
         CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }
+}
+
+GLuint BufferBackgroundCopy::handle() const {
+    wait();
+    if (state_ != BackgroundCopyState::AWAITED) {
+        verbose_abort("Invalid buffer handle");
+    }
+    return buffer_;
 }
 
 // From: https://stackoverflow.com/questions/10890242/get-the-status-of-a-stdfuture

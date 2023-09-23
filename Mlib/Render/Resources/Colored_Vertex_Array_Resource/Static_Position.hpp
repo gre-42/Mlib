@@ -1,24 +1,30 @@
 #pragma once
-#include <Mlib/Memory/Deallocation_Token.hpp>
-#include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace Mlib {
 
 struct TransformationAndBillboardId;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class StaticPosition {
-    StaticPosition(const StaticPosition&) = delete;
-    StaticPosition& operator = (const StaticPosition&) = delete;
+    StaticPosition(const StaticPosition &) = delete;
+    StaticPosition &operator=(const StaticPosition &) = delete;
+
 public:
-    explicit StaticPosition(const std::vector<TransformationAndBillboardId>& instances);
+    explicit StaticPosition(const std::vector<TransformationAndBillboardId> &instances);
     ~StaticPosition();
+    bool copy_in_progress() const;
+    void wait() const;
     void bind(GLuint attribute_index) const;
+
 private:
-    void deallocate();
-    const std::vector<TransformationAndBillboardId>& instances_;
-    mutable GLuint buffer_;
-    DeallocationToken deallocation_token_;
+    using Position = FixedArray<float, 3>;
+    const std::vector<TransformationAndBillboardId> &instances_;
+    mutable BufferBackgroundCopy buffer_;
+    std::vector<Position> positions_;
 };
 
 }

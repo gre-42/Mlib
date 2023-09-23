@@ -7,6 +7,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Instance_Buffers.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <unordered_map>
@@ -14,15 +15,17 @@
 using namespace Mlib;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer()
-: is_initialized_{false}
-{}
+    : offset_(NAN)
+    , is_initialized_{false} {
+}
 
 ArrayInstancesRenderer::~ArrayInstancesRenderer()
 {}
 
 void ArrayInstancesRenderer::update_instances(
     const FixedArray<double, 3>& offset,
-    const std::list<TransformedColoredVertexArray>& instances_queue)
+    const std::list<TransformedColoredVertexArray>& instances_queue,
+    TaskLocation task_location)
 {
     // size_t ntris = 0;
     // for (const auto& a : instances_queue) {
@@ -57,11 +60,18 @@ void ArrayInstancesRenderer::update_instances(
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
         std::move(cva_instances));
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
+    if (task_location == TaskLocation::FOREGROUND) {
+        rcva->wait();
+    }
     {
         std::scoped_lock lock_guard{mutex_};
-        std::swap(rcva_, rcva);
-        std::swap(rcvai_, rcvai);
-        offset_ = offset;
+        if (next_rcva_ != nullptr) {
+            lwarn() << "Could not aggregate instances in time";
+            return;
+        }
+        std::swap(next_rcva_, rcva);
+        std::swap(next_rcvai_, rcvai);
+        next_offset_ = offset;
         is_initialized_ = true;
     }
 }
@@ -76,6 +86,17 @@ void ArrayInstancesRenderer::render_instances(
 {
     std::scoped_lock lock_guard{mutex_};
     if (is_initialized_) {
+        if ((next_rcva_ != nullptr) && (!next_rcva_->copy_in_progress())) {
+            next_rcva_ = nullptr;
+            rcvai_ = std::move(next_rcvai_);
+            offset_ = next_offset_;
+        }
+        if (rcvai_ == nullptr) {
+            return;
+        }
+        if (any(isnan(offset_))) {
+            verbose_abort("Offset is NAN");
+        }
         TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
             dot2d(vp, m.affine()),
@@ -85,8 +106,8 @@ void ArrayInstancesRenderer::render_instances(
             scene_graph_config,
             render_config,
             {external_render_pass, InternalRenderPass::AGGREGATE},
-            nullptr,
-            {});
+            nullptr,    // animation_state
+            {});        // color_style
     }
 }
 
@@ -98,4 +119,7 @@ bool ArrayInstancesRenderer::is_initialized() const {
 void ArrayInstancesRenderer::invalidate() {
     std::scoped_lock lock_guard{mutex_};
     is_initialized_ = false;
+    next_rcva_ = nullptr;
+    rcvai_ = nullptr;
+    next_rcvai_ = nullptr;
 }

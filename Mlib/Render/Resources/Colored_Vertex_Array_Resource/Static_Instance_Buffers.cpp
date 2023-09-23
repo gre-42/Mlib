@@ -26,8 +26,43 @@ StaticInstanceBuffers::StaticInstanceBuffers(
 
 StaticInstanceBuffers::~StaticInstanceBuffers() = default;
 
-void StaticInstanceBuffers::update()
-{}
+bool StaticInstanceBuffers::copy_in_progress() const {
+    if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
+        if (position_yangles_.copy_in_progress()) {
+            return true;
+        }
+    } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT)) {
+        if (position_.copy_in_progress()) {
+            return true;
+        }
+    } else {
+        THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (num_billboard_atlas_components_ != 0) {
+        if (billboard_ids_.copy_in_progress()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void StaticInstanceBuffers::wait() const {
+    if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
+        position_yangles_.wait();
+    } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT)) {
+        position_.wait();
+    } else {
+        THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (num_billboard_atlas_components_ != 0) {
+        billboard_ids_.wait();
+    }
+}
+
+void StaticInstanceBuffers::update() {
+}
 
 void StaticInstanceBuffers::bind(
     GLuint instance_attribute_index,

@@ -107,6 +107,13 @@ bool DynamicInstanceBuffers::tmp_empty() const {
     return tmp_num_instances_ == 0;
 }
 
+bool DynamicInstanceBuffers::copy_in_progress() const {
+    return false;
+}
+
+void DynamicInstanceBuffers::wait() const {
+}
+
 void DynamicInstanceBuffers::update()
 {
     std::scoped_lock lock{mutex_};

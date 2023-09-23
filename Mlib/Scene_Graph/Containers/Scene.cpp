@@ -466,9 +466,11 @@ void Scene::render(
                 std::shared_ptr<IInstancesRenderer> large_instances_renderer = IInstancesRenderer::large_instances_renderer();
                 if (large_instances_renderer != nullptr) {
                     LOG_INFO("Scene::render large_instances_renderer");
-                    auto large_instances_renderer_update_func = [&](){
+                    auto large_instances_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
-                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, large_instances_renderer](){
+                        return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
+                                                  large_instances_renderer, task_location]()
+                        {
                             std::list<DanglingPtr<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
@@ -483,15 +485,16 @@ void Scene::render(
                             for (const auto& node : nodes) {
                                 node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                             }
-                            large_instances_renderer->update_instances(iv.t(), instances_queue.queue());
+                            large_instances_renderer->update_instances(iv.t(), instances_queue.queue(), task_location);
                         });
                     };
                     if (is_foreground_task || (is_background_task && !large_instances_renderer->is_initialized())) {
-                        large_instances_renderer_update_func()();
+                        large_instances_renderer_update_func(TaskLocation::FOREGROUND)();
                     } else if (is_background_task && large_instances_bg_worker_.done()) {
                         WorkerStatus status = large_instances_bg_worker_.tick(scene_graph_config.large_aggregate_update_interval);
                         if (status == WorkerStatus::IDLE) {
-                            large_instances_bg_worker_.run(large_instances_renderer_update_func());
+                            large_instances_bg_worker_.run(
+                                large_instances_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
                     // GuardedLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{10}};
@@ -546,10 +549,10 @@ void Scene::render(
                     if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
                         any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
                     {
-                        auto small_instances_renderer_update_func = [&](){
+                        auto small_instances_renderer_update_func = [&](TaskLocation task_location){
                             // copy "vp" and "scene_graph_config"
                             return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
-                                                      small_sorted_instances_renderers]()
+                                                      small_sorted_instances_renderers, task_location]()
                             {
                                 std::list<DanglingPtr<const SceneNode>> nodes;
                                 {
@@ -576,21 +579,24 @@ void Scene::render(
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
                                     iv.t(),
-                                    sorted_instances.at(external_render_pass.pass));
+                                    sorted_instances.at(external_render_pass.pass),
+                                    task_location);
                                 for (auto rp : black_render_passes) {
                                     small_sorted_instances_renderers->get_instances_renderer(rp)->update_instances(
                                         iv.t(),
-                                        sorted_instances.at(rp));
+                                        sorted_instances.at(rp),
+                                        task_location);
                                 }
                                 // std::cerr << this << " " << external_render_pass.pass << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s" << std::endl;
                             });
                         };
                         if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {
-                            small_instances_renderer_update_func()();
+                            small_instances_renderer_update_func(TaskLocation::FOREGROUND)();
                         } else if (is_background_task && small_instances_bg_worker_.done()) {
                             WorkerStatus status = small_instances_bg_worker_.tick(scene_graph_config.small_aggregate_update_interval);
                             if (status == WorkerStatus::IDLE) {
-                                small_instances_bg_worker_.run(small_instances_renderer_update_func());
+                                small_instances_bg_worker_.run(
+                                    small_instances_renderer_update_func(TaskLocation::BACKGROUND));
                             }
                         }
                     }

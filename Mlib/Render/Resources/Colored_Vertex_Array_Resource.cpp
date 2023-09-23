@@ -1587,7 +1587,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                 if (sum_weights > 1.1) {
                     THROW_OR_ABORT("Sum of weights too large");
                 }
-                for (float & weight : vs.weights) {
+                for (float& weight : vs.weights) {
                     weight /= sum_weights;
                 }
             }
@@ -1617,7 +1617,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
                 shader_interior_mapped_facade.push_back(ShaderInteriorMappedFacade{
                     .bottom_left = t(0).position,
                     .multiplier = FixedArray<float, 2>{1.f, 1.f}
-                });
+                    });
             }
         }
         va.interior_mapping_buffer.set(shader_interior_mapped_facade);
@@ -1664,6 +1664,9 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
         if (get_vertex_array(cva).va_.copy_in_progress()) {
             return true;
         }
+        if ((instances_ != nullptr) && (instances_->at(cva.get())->copy_in_progress())) {
+            return true;
+        }
     }
     return false;
 }
@@ -1671,5 +1674,8 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
 void ColoredVertexArrayResource::wait() const {
     for (const auto& cva : triangles_res_->scvas) {
         get_vertex_array(cva).va_.wait();
+        if (instances_ != nullptr) {
+            instances_->at(cva.get())->wait();
+        }
     }
 }

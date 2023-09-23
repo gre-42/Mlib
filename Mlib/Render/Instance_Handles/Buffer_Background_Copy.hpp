@@ -42,10 +42,7 @@ public:
     void deallocate();
     void gc_deallocate();
     void wait() const;
-    inline GLuint handle() {
-        wait();
-        return buffer_;
-    }
+    GLuint handle() const;
     inline bool is_good() const {
         return (state_ >= BackgroundCopyState::COPY_IN_PROGRESS);
     }

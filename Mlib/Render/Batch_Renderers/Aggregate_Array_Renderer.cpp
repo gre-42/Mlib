@@ -38,8 +38,9 @@ struct AggregateTriangles {
 };
 
 AggregateArrayRenderer::AggregateArrayRenderer()
-: is_initialized_{false}
-{}
+    : offset_(NAN)
+    , is_initialized_{false} {
+}
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
@@ -156,7 +157,7 @@ void AggregateArrayRenderer::update_aggregates(
     {
         std::scoped_lock lock_guard{mutex_};
         if (next_rcva_ != nullptr) {
-            lwarn() << "Could not aggregate in time";
+            lwarn() << "Could not aggregate arrays in time";
             return;
         }
         std::swap(next_rcva_, rcva);
@@ -195,6 +196,9 @@ void AggregateArrayRenderer::render_aggregates(
             if (Mlib::re::regex_search(AAR_NAME, style->selector)) {
                 r_style.insert(*style);
             }
+        }
+        if (any(isnan(offset_))) {
+            verbose_abort("Offset is NAN");
         }
         TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
