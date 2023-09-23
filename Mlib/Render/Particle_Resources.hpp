@@ -24,6 +24,7 @@ public:
 
     void insert_instance_creator(
         std::string name,
+        std::function<void()> instance_creator_preloader,
         std::function<std::shared_ptr<ParticlesInstance>()> instance_creator);
     std::shared_ptr<ParticlesInstance> instantiate_particles_instance(const std::string& name) const;
 
@@ -33,8 +34,12 @@ public:
     std::unique_ptr<IParticleInstantiator> instantiate_particle_instantiator(
         const std::string& name,
         ParticlesInstance& particles_instance) const;
+
+    void preload_instantiator(const std::string &instantiator) const;
+
 private:
     mutable SafeRecursiveSharedMutex mutex_;
+    ThreadsafeMap<std::function<void()>> instance_creators_preloaders_;
     ThreadsafeMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
     ThreadsafeMap<std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>> instantiators_;
     std::map<std::string, std::string> instantiator_to_instance_;

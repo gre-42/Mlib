@@ -18,29 +18,30 @@ struct Light;
 struct SceneGraphConfig;
 struct RenderConfig;
 struct ExternalRenderPass;
+struct RenderableResourceFilter;
 
 class ParticlesInstance {
-    ParticlesInstance(const ParticlesInstance&) = delete;
-    ParticlesInstance& operator = (const ParticlesInstance&) = delete;
+    ParticlesInstance(const ParticlesInstance &) = delete;
+    ParticlesInstance &operator=(const ParticlesInstance &) = delete;
+
 public:
-    explicit ParticlesInstance(
-        const std::shared_ptr<ColoredVertexArray<float>>& triangles,
-        size_t max_num_instances);
+    explicit ParticlesInstance(const std::shared_ptr<ColoredVertexArray<float>> &triangles,
+                               size_t max_num_instances,
+                               const RenderableResourceFilter &filter);
     ~ParticlesInstance();
 
-    void add_particle(
-        const TransformationMatrix<float, double, 3>& transformation_matrix,
-        const BillboardSequence& sequence);
+    void add_particle(const TransformationMatrix<float, double, 3> &transformation_matrix,
+                      const BillboardSequence &sequence);
 
     void move(float dt);
 
-    void render(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const SceneGraphConfig& scene_graph_config,
-        const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const;
+    void render(const FixedArray<double, 4, 4> &vp,
+                const TransformationMatrix<float, double, 3> &iv,
+                const std::list<std::pair<TransformationMatrix<float, double, 3>, Light *>> &lights,
+                const SceneGraphConfig &scene_graph_config,
+                const RenderConfig &render_config,
+                const ExternalRenderPass &external_render_pass) const;
+
 private:
     FixedArray<double, 3> offset_;
     std::shared_ptr<DynamicInstanceBuffers> dynamic_instance_buffers_;

@@ -7,9 +7,10 @@
 using namespace Mlib;
 
 ParticleResources::ParticleResources()
-: instance_creators_{mutex_},
-  instantiators_{mutex_}
-{}
+    : instance_creators_preloaders_{mutex_}
+    , instance_creators_{mutex_}
+    , instantiators_{mutex_} {
+}
 
 ParticleResources::~ParticleResources() = default;
 
@@ -34,8 +35,10 @@ std::string ParticleResources::get_instance_for_instantiator(const std::string& 
 
 void ParticleResources::insert_instance_creator(
     std::string name,
+    std::function<void()> instance_creator_preloader,
     std::function<std::shared_ptr<ParticlesInstance>()> instance_creator)
 {
+    instance_creators_preloaders_.insert(name, std::move(instance_creator_preloader));
     instance_creators_.insert(std::move(name), std::move(instance_creator));
 }
 
@@ -57,4 +60,8 @@ std::unique_ptr<IParticleInstantiator> ParticleResources::instantiate_particle_i
     ParticlesInstance& particles_instance) const
 {
     return instantiators_.get(name)(particles_instance);
+}
+
+void ParticleResources::preload_instantiator(const std::string &name) const {
+    instance_creators_preloaders_.get(get_instance_for_instantiator(name))();
 }

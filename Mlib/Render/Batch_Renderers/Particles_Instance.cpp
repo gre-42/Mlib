@@ -5,22 +5,20 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
-#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 
 using namespace Mlib;
 
-ParticlesInstance::ParticlesInstance(
-    const std::shared_ptr<ColoredVertexArray<float>>& triangles,
-    size_t max_num_instances)
-: dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
-    triangles->material.transformation_mode,
-    max_num_instances,
-    integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))},
-  cvar_{std::make_shared<ColoredVertexArrayResource>(
-    triangles,
-    dynamic_instance_buffers_)},
-  rcva_{std::make_unique<RenderableColoredVertexArray>(cvar_, RenderableResourceFilter{})}
-{}
+ParticlesInstance::ParticlesInstance(const std::shared_ptr<ColoredVertexArray<float>> &triangles,
+                                     size_t max_num_instances,
+                                     const RenderableResourceFilter &filter)
+    : offset_(NAN)
+    , dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
+          triangles->material.transformation_mode,
+          max_num_instances,
+          integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))}
+    , cvar_{std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_)}
+    , rcva_{std::make_unique<RenderableColoredVertexArray>(cvar_, filter)} {
+}
 
 ParticlesInstance::~ParticlesInstance() = default;
 
@@ -51,6 +49,12 @@ void ParticlesInstance::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
+    if (dynamic_instance_buffers_->tmp_num_instances() == 0) {
+        return;
+    }
+    if (any(isnan(offset_))) {
+        THROW_OR_ABORT("ParticlesInstance::render internal error");
+    }
     TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
     rcva_->render(
         dot2d(vp, m.affine()),

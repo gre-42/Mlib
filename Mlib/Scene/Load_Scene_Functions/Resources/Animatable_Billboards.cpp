@@ -7,6 +7,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
@@ -28,12 +29,21 @@ LoadSceneJsonUserFunction AnimatableBillboards::json_user_function = [](const Lo
     auto billboards = args.arguments.at<std::string>(KnownArgs::billboards);
     auto max_num_instances = args.arguments.at<size_t>(KnownArgs::max_num_instances);
 
+    RenderableResourceFilter filter{};
+
     RenderingContextStack::primary_particle_resources().insert_instance_creator(
         args.arguments.at<std::string>(KnownArgs::name),
+        [&snr = RenderingContextStack::primary_scene_node_resources(),
+         billboards,
+         filter]()
+        {
+            snr.preload_single(billboards, filter);
+        },
         [&snr=RenderingContextStack::primary_scene_node_resources(),
          billboards,
-         max_num_instances](){
+         max_num_instances,
+         filter](){
             auto scva = snr.get_single_precision_array(billboards);
-            return std::make_shared<ParticlesInstance>(scva, max_num_instances);
+            return std::make_shared<ParticlesInstance>(scva, max_num_instances, filter);
         });
 };
