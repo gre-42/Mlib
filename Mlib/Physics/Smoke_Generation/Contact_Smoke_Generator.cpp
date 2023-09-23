@@ -31,7 +31,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     if (c.history.burn_in) {
         return nullptr;
     }
-    SurfaceContactInfo* surface_contact_info = surface_contact_db_.get_contact_info(intersection_point, c);
+    SurfaceContactInfo* surface_contact_info = surface_contact_db_.get_contact_info(c);
     if (surface_contact_info == nullptr) {
         return nullptr;
     }

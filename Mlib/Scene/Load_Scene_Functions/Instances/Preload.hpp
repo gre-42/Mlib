@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class PreloadSingle: public LoadSceneInstanceFunction {
+class Preload: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit PreloadSingle(RenderableScene& renderable_scene);
+    explicit Preload(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
