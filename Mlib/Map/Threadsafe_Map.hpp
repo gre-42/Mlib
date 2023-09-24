@@ -78,7 +78,7 @@ public:
         return elements_.extract(key);
     }
 
-    TValue& get(const TKey& key) {
+    TValue &get(const TKey &key) {
         std::shared_lock lock{mutex_};
         auto it = elements_.find(key);
         if (it == elements_.end()) {
@@ -88,8 +88,8 @@ public:
         return it->second;
     }
 
-    const TValue& get(const std::string& name) const {
-        return const_cast<ThreadsafeMap*>(this)->get(name);
+    const TValue &get(const TKey &key) const {
+        return const_cast<ThreadsafeMap *>(this)->get(key);
     }
 
     auto begin() { return elements_.begin(); }
