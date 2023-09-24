@@ -1,5 +1,6 @@
 #include "Buffer_Background_Copy.hpp"
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
