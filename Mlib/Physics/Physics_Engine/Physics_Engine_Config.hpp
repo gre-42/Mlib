@@ -12,8 +12,8 @@ struct PhysicsEngineConfig {
 
     // BVH
     float static_radius = 200.f * meters;
-    float bvh_max_size = 50.f * meters;
-    size_t bvh_levels = 10;
+    float bvh_max_size = 2.f * meters;
+    size_t bvh_levels = 15;
     float supply_depot_attraction_radius = 10.0 * meters;
 
     // Collision/Friction misc.

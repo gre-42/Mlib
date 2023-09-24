@@ -52,7 +52,7 @@ public:
             AxisAlignedBoundingBox<TData, tndim> bb = c.first;
             bb.extend(aabb);
             // if (all(bb.size() <= TData(level_) * max_size_)) {
-            if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_)))) {
+            if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_ - 1)))) {
                 c.first = bb;
                 return c.second.insert(aabb, data);
             }

@@ -137,7 +137,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {
-            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.3 * scale_, 0.3 * scale_, 0.3 * scale_}, 16);
+            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.3 * scale_, 0.3 * scale_, 0.3 * scale_}, 17);
             if (!ins.second) {
                 verbose_abort("Internal error, could not insert BVH");
             }
