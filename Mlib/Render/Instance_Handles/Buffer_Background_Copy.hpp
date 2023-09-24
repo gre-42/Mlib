@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <future>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -9,6 +10,7 @@ namespace Mlib {
 
 enum class BackgroundCopyState {
     UNINITIALIZED,
+    UNUSED,
     BUFFER_CREATED,
     COPY_IN_PROGRESS,
     AWAITED
@@ -53,6 +55,7 @@ private:
     mutable std::future<void> future_;
     bool is_mapped_;
     mutable BackgroundCopyState state_;
+    std::thread::id render_thread_id_;
     DeallocationToken deallocation_token_;
 };
 

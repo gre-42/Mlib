@@ -34,6 +34,7 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
     if (buffer_ != (GLuint)-1) {
         verbose_abort("Buffer already set (2)");
     }
+    render_thread_id_ = std::this_thread::get_id();
     CHK(glGenBuffers(1, &buffer_));
     state_ = BackgroundCopyState::BUFFER_CREATED;
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
@@ -78,10 +79,16 @@ BufferBackgroundCopy::~BufferBackgroundCopy() {
 }
 
 void BufferBackgroundCopy::wait() const {
+    if ((render_thread_id_ != std::thread::id()) && (std::this_thread::get_id() != render_thread_id_)) {
+        THROW_OR_ABORT("BufferBackgroundCopy::wait called from the wrong thread");
+    }
     if (state_ == BackgroundCopyState::AWAITED) {
         return;
     }
     if (state_ == BackgroundCopyState::UNINITIALIZED) {
+        return;
+    }
+    if (state_ == BackgroundCopyState::UNUSED) {
         return;
     }
     if (state_ != BackgroundCopyState::COPY_IN_PROGRESS) {
@@ -110,10 +117,17 @@ static bool is_ready(std::future<R> const& f) {
 }
 
 bool BufferBackgroundCopy::copy_in_progress() const {
+    if ((render_thread_id_ != std::thread::id()) && (std::this_thread::get_id() != render_thread_id_)) {
+        THROW_OR_ABORT("BufferBackgroundCopy::copy_in_progress called from the wrong thread");
+    }
     if (state_ == BackgroundCopyState::AWAITED) {
         return false;
     }
     if (state_ == BackgroundCopyState::UNINITIALIZED) {
+        state_ = BackgroundCopyState::UNUSED;
+        return false;
+    }
+    if (state_ == BackgroundCopyState::UNUSED) {
         return false;
     }
     if (state_ != BackgroundCopyState::COPY_IN_PROGRESS) {
