@@ -340,14 +340,29 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     }
 }
 
-RenderingResources::RenderingResources(
-    std::string name,
-    unsigned int max_anisotropic_filtering_level)
-: name_{ std::move(name) },
-  max_anisotropic_filtering_level_{ max_anisotropic_filtering_level },
-  preloader_background_loop_{"Preload_BG"},
-  deallocation_token_{ render_deallocator.insert([this](){deallocate();}) }
-{}
+RenderingResources::RenderingResources(std::string name,
+                                       unsigned int max_anisotropic_filtering_level)
+    : preloaded_texture_data_{"Preloaded texture dataa",
+                              [](const ColormapWithModifiers &e) { return e.filename; }}
+    , preloaded_texture_dds_data_{"Preloaded texture DDS data"}
+    , texture_descriptors_{"Texture descriptors"}
+    , textures_{"Textures", [](const ColormapWithModifiers &e) { return e.filename; }}
+    , manual_atlas_tile_descriptors_{"Manual atlas tile descriptors"}
+    , auto_atlas_tile_descriptors_{"Auto atlas tile descriptor"}
+    , cubemap_descriptors_{"Cubemap descriptor"}
+    , font_textures_{"Font", [](const auto &e) { return e.first; }}
+    , vps_{"VP"}
+    , offsets_{"Offset"}
+    , discreteness_{"Discreteness"}
+    , scales_{"Scale"}
+    , texture_wrap_{"Texture wrap"}
+    , blend_map_textures_{"Blend-map texture"}
+    , render_programs_{"Render program", [](const RenderProgramIdentifier &e) { return "<RPI>"; }}
+    , name_{std::move(name)}
+    , max_anisotropic_filtering_level_{max_anisotropic_filtering_level}
+    , preloader_background_loop_{"Preload_BG"}
+    , deallocation_token_{render_deallocator.insert([this]() { deallocate(); })} {
+}
 
 RenderingResources::~RenderingResources() {
     deallocate();
@@ -356,26 +371,23 @@ RenderingResources::~RenderingResources() {
 void RenderingResources::deallocate() {
     std::scoped_lock lock{mutex_};
     render_programs_.clear();
-    {
-        std::scoped_lock lock{map_mutex_};
-        std::erase_if(textures_, [](auto& item){
-            auto& [_, texture] = item;
-            if (texture.needs_gc) {
-                try_delete_texture(const_cast<GLuint&>(texture.handle));
-                return true;
-            }
-            return false;
-        });
-    }
+    textures_.erase_if([](auto &item) {
+        auto &[_, texture] = item;
+        if (texture.needs_gc) {
+            try_delete_texture(const_cast<GLuint &>(texture.handle));
+            return true;
+        }
+        return false;
+    });
     font_textures_.clear();
 }
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     LOG_FUNCTION("RenderingResources::preload, color=" + descriptor.color);
     std::scoped_lock lock{ mutex_ };
-    auto dit = texture_descriptors_.find(descriptor.color.filename);
-    const TextureDescriptor& desc = dit != texture_descriptors_.end()
-        ? dit->second
+    auto dit = texture_descriptors_.try_get(descriptor.color.filename);
+    const TextureDescriptor& desc = dit != nullptr
+        ? *dit
         : descriptor;
     if (ContextQuery::is_initialized()) {
         if (!desc.color.filename.empty()) {
@@ -392,10 +404,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
             !auto_atlas_tile_descriptors_.contains(descriptor.color.filename))
         {
             auto data = get_texture_data(desc, FlipMode::VERTICAL);
-            std::scoped_lock lock{map_mutex_};
-            if (!preloaded_texture_data_.try_emplace(descriptor.color, std::move(data)).second) {
-                THROW_OR_ABORT("Could not preload color");
-            } else if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            preloaded_texture_data_.emplace(descriptor.color, std::move(data));
+            if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded color texture: " << descriptor.color;
             }
         }
@@ -410,10 +420,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
                     .color = {.filename = desc.normal.filename, .average = desc.normal.average},
                     .color_mode = ColorMode::RGB},
                 FlipMode::VERTICAL);
-            std::scoped_lock lock{map_mutex_};
-            if (!preloaded_texture_data_.try_emplace({.filename = desc.normal.filename, .average = desc.normal.average}, std::move(data)).second) {
-                THROW_OR_ABORT("Could not preload normal");
-            } if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            preloaded_texture_data_.emplace({.filename = desc.normal.filename, .average = desc.normal.average}, std::move(data));
+            if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                 linfo() << this << " Preloaded normal texture: " << desc.normal;
             }
         }
@@ -421,11 +429,8 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
 }
 
 bool RenderingResources::texture_is_loaded_and_try_preload(const TextureDescriptor& descriptor) {
-    {
-        std::scoped_lock lock{map_mutex_};
-        if (texture_is_loaded_unsafe(descriptor.color)) {
-            return true;
-        }
+    if (texture_is_loaded_unsafe(descriptor.color)) {
+        return true;
     }
     if (!preloader_background_loop_.done()) {
         return false;
@@ -468,9 +473,9 @@ std::string RenderingResources::get_texture_filename(
     const std::string& default_filename) const
 {
     std::shared_lock lock{mutex_};
-    auto dit = texture_descriptors_.find(descriptor.color.filename);
-    const TextureDescriptor& desc = dit != texture_descriptors_.end()
-        ? dit->second
+    auto dit = texture_descriptors_.try_get(descriptor.color.filename);
+    const TextureDescriptor &desc = dit != nullptr
+        ? *dit
         : descriptor;
     
     if (manual_atlas_tile_descriptors_.contains(desc.color.filename) ||
@@ -567,16 +572,18 @@ GLuint RenderingResources::get_texture(
     CallerType caller_type) const
 {
     LOG_FUNCTION("RenderingResources::get_texture " + name.filename);
+    if (auto it = textures_.try_get(name); it != nullptr) {
+        return it->handle;
+    }
     std::scoped_lock lock{mutex_};
-    if (auto it = textures_.find(name); it != textures_.end())
-    {
-        return it->second.handle;
+    if (auto it = textures_.try_get(name); it != nullptr) {
+        return it->handle;
     }
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
-    auto dit = texture_descriptors_.find(name.filename);
-    const TextureDescriptor& desc = dit != texture_descriptors_.end()
-        ? dit->second
+    auto dit = texture_descriptors_.try_get(name.filename);
+    const TextureDescriptor &desc = dit != nullptr
+        ? *dit
         : descriptor;
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
         linfo() << this << " Loading texture: " << desc.color;
@@ -594,11 +601,11 @@ GLuint RenderingResources::get_texture(
 
     GLuint texture;
 
-    if (auto ait = auto_atlas_tile_descriptors_.find(descriptor.color.filename); ait != auto_atlas_tile_descriptors_.end()) {
+    if (auto ait = auto_atlas_tile_descriptors_.try_extract(descriptor.color.filename); !ait.empty()) {
         if (caller_type != CallerType::PRELOAD) {
             THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color.filename + '"');
         }
-        const auto& adesc = ait->second;
+        const auto &adesc = ait.mapped();
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
         CHK(glTexStorage3D(
@@ -630,7 +637,6 @@ GLuint RenderingResources::get_texture(
                 //     integral_cast<size_t>(adesc.height / (1 << level)));
             }
         }
-        auto_atlas_tile_descriptors_.erase(ait);
     } else {
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D, texture));
@@ -648,33 +654,32 @@ GLuint RenderingResources::get_texture(
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
 
-    std::scoped_lock map_lock{map_mutex_};
-    textures_.try_emplace(name, TextureHandleAndNeedsGc{texture, true});
+    textures_.emplace(name, TextureHandleAndNeedsGc{texture, true});
     return texture;
 }
 
 GLuint RenderingResources::get_cubemap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
+    if (auto it = textures_.try_get({.filename = name}); it != nullptr) {
+        return it->handle;
+    }
     std::scoped_lock lock{mutex_};
-    if (auto it = textures_.find({.filename = name}); it != textures_.end()) {
-        return it->second.handle;
+    if (auto it = textures_.try_get({.filename = name}); it != nullptr) {
+        return it->handle;
     }
-    auto it = cubemap_descriptors_.find(name);
-    if (it == cubemap_descriptors_.end()) {
-        THROW_OR_ABORT("Could not find cubemap \"" + name + '"');
-    }
-    if (it->second.filenames.size() != 6) {
+    auto it = cubemap_descriptors_.get(name);
+    if (it.filenames.size() != 6) {
         THROW_OR_ABORT("Cubemap does not have 6 filenames");
     }
     GLuint textureID;
     CHK(glGenTextures(1, &textureID));
     CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
 
-    for (GLuint i = 0; i < it->second.filenames.size(); i++) {
-        auto color = it->second.filenames[i];
-        auto dit = texture_descriptors_.find(color);
-        const TextureDescriptor& desc = dit != texture_descriptors_.end()
-            ? dit->second
+    for (GLuint i = 0; i < it.filenames.size(); i++) {
+        auto color = it.filenames[i];
+        auto dit = texture_descriptors_.try_get(color);
+        const TextureDescriptor& desc = dit != nullptr
+            ? *dit
             : TextureDescriptor{
                 .color = {.filename = color},
                 .color_mode = ColorMode::RGB};
@@ -697,40 +702,32 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    std::scoped_lock map_lock{map_mutex_};
-    if (auto it2 = textures_.try_emplace({.filename = name}, TextureHandleAndNeedsGc{textureID, true}); !it2.second) {
-        THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
-    }
+    textures_.emplace({.filename = name}, TextureHandleAndNeedsGc{textureID, true});
     return textureID;
 }
 
 void RenderingResources::set_texture(const std::string& name, GLuint id) {
     LOG_FUNCTION("RenderingResources::set_texture " + name);
-    std::scoped_lock lock{mutex_};
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
         THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
     }
-    textures_[{.filename = name}] = TextureHandleAndNeedsGc{id, false};
+    auto it = textures_.try_extract({.filename = name});
+    if (!it.empty() && it.mapped().needs_gc) {
+        THROW_OR_ABORT("Overwriting texture that needs garbabe-collection");
+    }
+    textures_.emplace({.filename = name}, TextureHandleAndNeedsGc{id, false});
 }
 
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
-    std::scoped_lock lock{mutex_};
-    if (auto it = texture_descriptors_.insert({name, descriptor}); !it.second) {
-        THROW_OR_ABORT("Texture descriptor with name \"" + name + "\" already exists");
-    }
+    texture_descriptors_.emplace(name, descriptor);
 }
 
 TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_existing_texture_descriptor " + name);
-    std::shared_lock lock{mutex_};
-    auto it = texture_descriptors_.find(name);
-    if (it == texture_descriptors_.end()) {
-        THROW_OR_ABORT("Could not find texture descriptor: \"" + name + '"');
-    }
-    return it->second;
+    return texture_descriptors_.get(name);
 }
 
 void RenderingResources::add_manual_texture_atlas(
@@ -739,9 +736,7 @@ void RenderingResources::add_manual_texture_atlas(
 {
     LOG_FUNCTION("RenderingResources::add_manual_texture_atlas " + name);
     std::scoped_lock lock{mutex_};
-    if (auto it = manual_atlas_tile_descriptors_.insert({name, texture_atlas_descriptor}); !it.second) {
-        THROW_OR_ABORT("Manual atlas descriptor with name \"" + name + "\" already exists");
-    } 
+    manual_atlas_tile_descriptors_.emplace(name, texture_atlas_descriptor);
 }
 
 void RenderingResources::add_auto_texture_atlas(
@@ -753,38 +748,30 @@ void RenderingResources::add_auto_texture_atlas(
     append_render_allocator(
         [this, name, texture_atlas_descriptor]()
         {preload({.color = {.filename = name}, .color_mode = texture_atlas_descriptor.color_mode});});
-    if (auto it = auto_atlas_tile_descriptors_.try_emplace(name, texture_atlas_descriptor); !it.second) {
-        THROW_OR_ABORT("Auto atlas descriptor with name \"" + name + "\" already exists");
-    } 
+    auto_atlas_tile_descriptors_.emplace(name, texture_atlas_descriptor);
 }
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + name);
     std::scoped_lock lock{mutex_};
-    auto it = textures_.find({.filename = name});
-    if (it != textures_.end()) {
+    if (textures_.contains({.filename = name})) {
         THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
     }
-    if (!cubemap_descriptors_.insert({
-        name,
-        CubemapDescriptor{.filenames = filenames}}).second)
-    {
-        THROW_OR_ABORT("Cubemap with name \"" + name + "\" already exists");
-    }
+    cubemap_descriptors_.emplace(name, CubemapDescriptor{.filenames = filenames});
 }
 
 StbInfo<uint8_t> RenderingResources::get_texture_data(
     const TextureDescriptor& descriptor,
     FlipMode flip_mode) const
 {
-    if (auto it = manual_atlas_tile_descriptors_.find(descriptor.color.filename); it != manual_atlas_tile_descriptors_.end()) {
-        auto si = stb_create<uint8_t>(it->second.width, it->second.height, (int)it->second.color_mode);
+    if (auto it = manual_atlas_tile_descriptors_.try_get(descriptor.color.filename); it != nullptr) {
+        auto si = stb_create<uint8_t>(it->width, it->height, (int)it->color_mode);
         std::vector<AtlasTile> atlas_tiles;
-        atlas_tiles.reserve(it->second.tiles.size());
-        for (const auto& atd : it->second.tiles) {
-            auto dit = texture_descriptors_.find(atd.filename);
-            TextureDescriptor desc = dit != texture_descriptors_.end()
-                ? dit->second
+        atlas_tiles.reserve(it->tiles.size());
+        for (const auto& atd : it->tiles) {
+            auto dit = texture_descriptors_.try_get(atd.filename);
+            TextureDescriptor desc = dit != nullptr
+                ? *dit
                 : TextureDescriptor{
                     .color = {.filename = atd.filename},
                     .color_mode = descriptor.color_mode};
@@ -876,10 +863,10 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     for (const auto& filename : filenames) {
         FixedArray<int, 2> image_size;
         if (preloaded_texture_data_.contains({.filename = filename})) {
-            const auto& img = preloaded_texture_data_.at({.filename = filename});
+            const auto& img = preloaded_texture_data_.get({.filename = filename});
             image_size = {img.width, img.height};
         } else if (preloaded_texture_dds_data_.contains(filename)) {
-            auto info = ImageInfo::load(filename, &preloaded_texture_dds_data_.at(filename));
+            auto info = ImageInfo::load(filename, &preloaded_texture_dds_data_.get(filename));
             image_size = {integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1))};
         } else {
             auto info = ImageInfo::load(filename, nullptr);
@@ -940,116 +927,86 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     return result;
 }
 
-BlendMapTexture RenderingResources::get_blend_map_texture(const std::string& name) const {
+BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &name) const {
     LOG_FUNCTION("RenderingResources::get_blend_map_texture " + name);
-    std::shared_lock lock{mutex_};
-    if (auto bit = blend_map_textures_.find(name); bit == blend_map_textures_.end()) {
-        if (auto tit = texture_descriptors_.find(name); tit != texture_descriptors_.end()) {
-            return BlendMapTexture{ .texture_descriptor = tit->second };
-        } else {
-            return BlendMapTexture{ .texture_descriptor = {
-                .color = {.filename = name},
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS } };
-        }
-    } else {
-        return bit->second;
+    if (auto bit = blend_map_textures_.try_get(name); bit != nullptr) {
+        return *bit;
     }
+    std::shared_lock lock{mutex_};
+    if (auto bit = blend_map_textures_.try_get(name); bit != nullptr) {
+        return *bit;
+    }
+    if (auto tit = texture_descriptors_.try_get(name); tit != nullptr) {
+        return BlendMapTexture{.texture_descriptor = *tit};
+    }
+    return BlendMapTexture{.texture_descriptor = {.color = {.filename = name},
+                                                  .mipmap_mode = MipmapMode::WITH_MIPMAPS}};
 }
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
-    std::scoped_lock lock{mutex_};
-    if (!blend_map_textures_.try_emplace(name, bmt).second) {
-        THROW_OR_ABORT("Blend map texture with name \"" + name + "\" already exists");
-    }
+    blend_map_textures_.emplace(name, bmt);
 }
 
 const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_vp " + name);
-    std::shared_lock lock{mutex_};
-    auto it = vps_.find(name);
-    if (it == vps_.end()) {
+    auto it = vps_.try_get(name);
+    if (it == nullptr) {
         THROW_OR_ABORT(
             "Could not find vp with name " + name + "."
             " Forgot to add a LightmapLogic for the light?"
             " Are dirtmaps enabled for the current scene?");
     }
-    return it->second;
+    return *it;
 }
 
 void RenderingResources::set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp) {
     LOG_FUNCTION("RenderingResources::set_vp " + name);
-    std::scoped_lock lock{mutex_};
-    vps_[name] = vp;
+    vps_.set(name, vp);
 }
 
 float RenderingResources::get_offset(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_discreteness " + name);
-    std::shared_lock lock{mutex_};
-    auto it = offsets_.find(name);
-    if (it == offsets_.end()) {
-        THROW_OR_ABORT("Could not find offset with name " + name);
-    }
-    return it->second;
+    return offsets_.get(name);
 }
 
 void RenderingResources::set_offset(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_offset " + name);
-    std::scoped_lock lock{mutex_};
-    offsets_[name] = value;
+    offsets_.set(name, value);
 }
 
 float RenderingResources::get_discreteness(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_discreteness " + name);
-    std::shared_lock lock{mutex_};
-    auto it = discreteness_.find(name);
-    if (it == discreteness_.end()) {
-        THROW_OR_ABORT("Could not find discreteness with name " + name);
-    }
-    return it->second;
+    return discreteness_.get(name);
 }
 
 void RenderingResources::set_discreteness(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_discreteness " + name);
-    std::scoped_lock lock{mutex_};
-    discreteness_[name] = value;
+    discreteness_.set(name, value);
 }
 
 float RenderingResources::get_scale(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_scale " + name);
-    std::shared_lock lock{mutex_};
-    auto it = scales_.find(name);
-    if (it == scales_.end()) {
-        THROW_OR_ABORT("Could not find scale with name " + name);
-    }
-    return it->second;
+    return scales_.get(name);
 }
 
 void RenderingResources::set_scale(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_scale " + name);
-    std::scoped_lock lock{mutex_};
-    scales_[name] = value;
+    scales_.set(name, value);
 }
 
 WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_texture_wrap " + name);
-    std::shared_lock lock{mutex_};
-    auto it = texture_wrap_.find(name);
-    if (it == texture_wrap_.end()) {
-        THROW_OR_ABORT("Could not find texture_wrap with name " + name);
-    }
-    return it->second;
+    return texture_wrap_.get(name);
 }
 
 void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode) {
     LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
-    std::scoped_lock lock{mutex_};
-    texture_wrap_[name] = mode;
+    texture_wrap_.set(name, mode);
 }
 
 void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_vp " + name);
-    std::scoped_lock lock{mutex_};
     if (vps_.erase(name) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete VP " << name;
@@ -1060,7 +1017,6 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
 }
 void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_texture " + name);
-    std::scoped_lock lock{mutex_};
     if (textures_.erase({.filename = name}) != 1) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete texture " << name;
@@ -1070,7 +1026,7 @@ void RenderingResources::delete_texture(const std::string& name, DeletionFailure
     }
 }
 
-std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& RenderingResources::render_programs() {
+ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& RenderingResources::render_programs() {
     std::shared_lock lock{mutex_};
     return render_programs_;
 }
@@ -1089,42 +1045,31 @@ const LoadedFont& RenderingResources::get_font_texture(
     const std::string& ttf_filename,
     float font_height_pixels) const
 {
-    {
-        std::shared_lock lock{mutex_};
-        auto it = font_textures_.find({ttf_filename, font_height_pixels});
-        if (it != font_textures_.end()) {
-            return it->second;
-        }
+    if (auto it = font_textures_.try_get({ttf_filename, font_height_pixels}); it != nullptr) {
+        return *it;
     }
     std::scoped_lock lock{mutex_};
-    {
-        auto it = font_textures_.find({ttf_filename, font_height_pixels});
-        if (it != font_textures_.end()) {
-            return it->second;
-        }
+    if (auto it = font_textures_.try_get({ttf_filename, font_height_pixels}); it != nullptr) {
+        return *it;
     }
-    auto ins = font_textures_.try_emplace({ttf_filename, font_height_pixels}, LoadedFont());
-    if (!ins.second) {
-        THROW_OR_ABORT("Could not insert font texture");
-    }
-    auto& result = ins.first->second;
+    LoadedFont font;
     {
         const size_t TEXTURE_SIZE = 1024;
         std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
         {
             std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename);
             // ASCII 32..126 is 95 glyphs
-            result.cdata.resize(96);
-            result.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, result.cdata.data()); // no guarantee this fits!
+            font.cdata.resize(96);
+            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, font.cdata.data()); // no guarantee this fits!
             // can free ttf_buffer at this point
         }
-        CHK(glGenTextures(1, &result.texture_handle));
-        CHK(glBindTexture(GL_TEXTURE_2D, result.texture_handle));
+        CHK(glGenTextures(1, &font.texture_handle));
+        CHK(glBindTexture(GL_TEXTURE_2D, font.texture_handle));
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RED, GL_UNSIGNED_BYTE, temp_bitmap.data()));
         // can free temp_bitmap at this point
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    return result;
+    return font_textures_.emplace({ttf_filename, font_height_pixels}, std::move(font));
 }
 
 void RenderingResources::save_to_file(const std::string& filename, const TextureDescriptor& desc) const {
@@ -1188,15 +1133,9 @@ void RenderingResources::insert_texture(
     {
         auto d = std::move(data);
         auto image = stb_load8(name, FlipMode::NONE, &d, IncorrectDatasizeBehavior::CONVERT);
-        std::scoped_lock lock{map_mutex_};
-        if (!preloaded_texture_data_.try_emplace({.filename = name}, std::move(image)).second) {
-            THROW_OR_ABORT("Internal error: Preloaded STB-texture with name \"" + name + "\" already exists");
-        }
+        preloaded_texture_data_.emplace({.filename = name}, std::move(image));
     } else if (extension == ".dds") {
-        std::scoped_lock lock{map_mutex_};
-        if (!preloaded_texture_dds_data_.try_emplace(name, std::move(data)).second) {
-            THROW_OR_ABORT("Internal error: Preloaded DDS-texture with name \"" + name + "\" already exists");
-        }
+        preloaded_texture_dds_data_.emplace(name, std::move(data));
     } else {
         THROW_OR_ABORT("Unknown file extension: \"" + name + '"');
     }
@@ -1207,13 +1146,11 @@ void RenderingResources::initialize_non_dds_texture(
     const TextureDescriptor& descriptor) const
 {
     StbInfo<uint8_t> si;
-    if (preloaded_texture_data_.contains(name)) {
+    if (auto it = preloaded_texture_data_.try_extract(name); !it.empty()) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << name;
         }
-        si = std::move(preloaded_texture_data_.at(name));
-        std::scoped_lock lock{map_mutex_};
-        preloaded_texture_data_.erase(name);
+        si = std::move(it.mapped());
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Could not find preloaded texture: " << name;
@@ -1242,15 +1179,12 @@ void RenderingResources::initialize_non_dds_texture(
 
 void RenderingResources::initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const
 {
-    auto it = preloaded_texture_dds_data_.find(name);
-    if (it == preloaded_texture_dds_data_.end()) {
-        THROW_OR_ABORT("Could not find preloaded DDS-texture with name \"" + name + '"');
-    }
+    auto it = preloaded_texture_dds_data_.extract(name);
 
     nv_dds::CDDSImage image;
     {
         std::stringstream sstr;
-        for (uint8_t c : it->second) {
+        for (uint8_t c : it.mapped()) {
             sstr << c;
         }
         image.load(sstr);
@@ -1339,5 +1273,4 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
             }
         }
     }
-    preloaded_texture_dds_data_.erase(it);
 }

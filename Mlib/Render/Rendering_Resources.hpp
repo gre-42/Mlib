@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
+#include <Mlib/Map/Threadsafe_Map.hpp>
+#include <Mlib/Map/Threadsafe_String_Map.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
@@ -136,7 +138,7 @@ public:
     void delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode);
     void delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode);
 
-    std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
+    ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
@@ -158,23 +160,22 @@ private:
     void initialize_non_dds_texture(const ColormapWithModifiers& name, const TextureDescriptor& descriptor) const;
     void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
-    mutable std::map<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
-    mutable std::map<std::string, std::vector<uint8_t>> preloaded_texture_dds_data_;
-    mutable std::map<std::string, TextureDescriptor> texture_descriptors_;
-    mutable std::map<ColormapWithModifiers, TextureHandleAndNeedsGc> textures_;
-    mutable std::map<std::string, ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
-    mutable std::map<std::string, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
-    mutable std::map<std::string, CubemapDescriptor> cubemap_descriptors_;
-    mutable std::map<std::pair<std::string, float>, LoadedFont> font_textures_;
     mutable SafeRecursiveSharedMutex mutex_;
-    mutable std::mutex map_mutex_;
-    std::map<std::string, FixedArray<double, 4, 4>> vps_;
-    std::map<std::string, float> offsets_;
-    std::map<std::string, float> discreteness_;
-    std::map<std::string, float> scales_;
-    std::map<std::string, WrapMode> texture_wrap_;
-    std::map<std::string, BlendMapTexture> blend_map_textures_;
-    mutable std::map<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
+    mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
+    mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
+    mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndNeedsGc> textures_;
+    mutable ThreadsafeStringMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
+    mutable ThreadsafeStringMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
+    mutable ThreadsafeStringMap<CubemapDescriptor> cubemap_descriptors_;
+    mutable ThreadsafeMap<std::pair<std::string, float>, LoadedFont> font_textures_;
+    ThreadsafeStringMap<FixedArray<double, 4, 4>> vps_;
+    ThreadsafeStringMap<float> offsets_;
+    ThreadsafeStringMap<float> discreteness_;
+    ThreadsafeStringMap<float> scales_;
+    ThreadsafeStringMap<WrapMode> texture_wrap_;
+    ThreadsafeStringMap<BlendMapTexture> blend_map_textures_;
+    mutable ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
     BackgroundLoop preloader_background_loop_;

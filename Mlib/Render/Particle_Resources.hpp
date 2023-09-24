@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Map/Threadsafe_Map.hpp>
+#include <Mlib/Map/Threadsafe_String_Map.hpp>
 #include <functional>
 #include <map>
 #include <memory>
@@ -38,11 +38,10 @@ public:
     void preload_instantiator(const std::string &instantiator) const;
 
 private:
-    mutable SafeRecursiveSharedMutex mutex_;
-    ThreadsafeMap<std::function<void()>> instance_creators_preloaders_;
-    ThreadsafeMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
-    ThreadsafeMap<std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>> instantiators_;
-    std::map<std::string, std::string> instantiator_to_instance_;
+    ThreadsafeStringMap<std::function<void()>> instance_creators_preloaders_;
+    ThreadsafeStringMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
+    ThreadsafeStringMap<std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>> instantiators_;
+    ThreadsafeStringMap<std::string> instantiator_to_instance_;
 };
 
 }

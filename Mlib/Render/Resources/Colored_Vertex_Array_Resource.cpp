@@ -1248,15 +1248,12 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const std::vector<BlendMapTexture*>& textures) const
 {
     auto& rps = rendering_resources_->render_programs();
-    {
-        std::shared_lock lock{mutex_};
-        if (auto it = rps.find(id); it != rps.end()) {
-            return *it->second;
-        }
+    if (auto it = rps.try_get(id); it != nullptr) {
+        return **it;
     }
     std::scoped_lock lock{mutex_};
-    if (auto it = rps.find(id); it != rps.end()) {
-        return *it->second;
+    if (auto it = rps.try_get(id); it != nullptr) {
+        return **it;
     }
     auto rp = std::make_unique<ColoredRenderProgram>();
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
@@ -1484,7 +1481,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
 
         auto& result = *rp;
-        rps.insert(std::make_pair(id, std::move(rp)));
+        rps.emplace(id, std::move(rp));
         return result;
     } catch (const std::runtime_error& e) {
         std::string identifier;
