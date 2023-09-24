@@ -837,14 +837,14 @@ void RenderableColoredVertexArray::render_cva(
             if ((render_pass.internal == InternalRenderPass::AGGREGATE) &&
                 instances->copy_in_progress())
             {
-                verbose_abort("Aggregate render pass has incomplete instances");
+                verbose_abort("Aggregate render pass has incomplete instances (" + cva->name + ')');
             }
             instances->wait();
         }
         if ((render_pass.internal == InternalRenderPass::AGGREGATE) &&
             (si.va_.copy_in_progress()))
         {
-            verbose_abort("Aggregate render pass has incomplete triangles");
+            verbose_abort("Aggregate render pass has incomplete triangles (" + cva->name + ')');
         }
         CHK(glBindVertexArray(si.va_.vertex_array()));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
