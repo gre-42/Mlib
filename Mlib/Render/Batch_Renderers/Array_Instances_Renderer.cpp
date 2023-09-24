@@ -86,7 +86,7 @@ void ArrayInstancesRenderer::render_instances(
 {
     std::scoped_lock lock_guard{mutex_};
     if (is_initialized_) {
-        if ((next_rcva_ != nullptr) && (!next_rcva_->copy_in_progress())) {
+        if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
             next_rcva_ = nullptr;
             rcvai_ = std::move(next_rcvai_);
             offset_ = next_offset_;
