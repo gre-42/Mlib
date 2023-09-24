@@ -201,6 +201,19 @@ public:
         leaf_visitor(data_);
     }
 
+    template <class TVisitor>
+    bool visit_bvhs(const TVisitor &visitor) const {
+        if (!visitor(*this)) {
+            return false;
+        }
+        for (const auto &c : children_) {
+            if (!c.second.visit_bvhs(visitor)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     size_t num_leaves() const {
         size_t res = data_.size();
         for (const auto &[_, c] : children_) {
