@@ -8,6 +8,25 @@
 
 using namespace Mlib;
 
+std::string Mlib::background_copy_state_to_string(BackgroundCopyState s) {
+    switch (s) {
+    case BackgroundCopyState::UNINITIALIZED:
+        return "uninitialized";
+    case BackgroundCopyState::UNUSED:
+        return "unused";
+    case BackgroundCopyState::BUFFER_CREATED:
+        return "buffer_created";
+    case BackgroundCopyState::COPY_IN_PROGRESS:
+        return "copy_in_progress";
+    case BackgroundCopyState::READY:
+        return "ready";
+    case BackgroundCopyState::AWAITED:
+        return "awaited";
+    default:
+        THROW_OR_ABORT("Unknown background copy state");
+    }
+}
+
 static bool buffer_data_supported() {
 #ifdef __ANDROID__
 	return false;
@@ -79,7 +98,9 @@ BufferBackgroundCopy::~BufferBackgroundCopy() {
 }
 
 void BufferBackgroundCopy::wait() const {
-    if ((render_thread_id_ != std::thread::id()) && (std::this_thread::get_id() != render_thread_id_)) {
+    if ((render_thread_id_ != std::thread::id()) &&
+        (std::this_thread::get_id() != render_thread_id_))
+    {
         THROW_OR_ABORT("BufferBackgroundCopy::wait called from the wrong thread");
     }
     if (state_ == BackgroundCopyState::AWAITED) {
@@ -91,7 +112,9 @@ void BufferBackgroundCopy::wait() const {
     if (state_ == BackgroundCopyState::UNUSED) {
         return;
     }
-    if (state_ != BackgroundCopyState::COPY_IN_PROGRESS) {
+    if ((state_ != BackgroundCopyState::COPY_IN_PROGRESS) &&
+        (state_ != BackgroundCopyState::READY))
+    {
         THROW_OR_ABORT("Waiting for an incomplete buffer");
     }
     future_.get();
@@ -117,10 +140,15 @@ static bool is_ready(std::future<R> const& f) {
 }
 
 bool BufferBackgroundCopy::copy_in_progress() const {
-    if ((render_thread_id_ != std::thread::id()) && (std::this_thread::get_id() != render_thread_id_)) {
+    if ((render_thread_id_ != std::thread::id()) &&
+        (std::this_thread::get_id() != render_thread_id_))
+    {
         THROW_OR_ABORT("BufferBackgroundCopy::copy_in_progress called from the wrong thread");
     }
     if (state_ == BackgroundCopyState::AWAITED) {
+        return false;
+    }
+    if (state_ == BackgroundCopyState::READY) {
         return false;
     }
     if (state_ == BackgroundCopyState::UNINITIALIZED) {
@@ -133,7 +161,14 @@ bool BufferBackgroundCopy::copy_in_progress() const {
     if (state_ != BackgroundCopyState::COPY_IN_PROGRESS) {
         THROW_OR_ABORT("Checking copy_in_progress on broken buffer");
     }
-    return !is_ready(future_);
+    if (!future_.valid()) {
+        verbose_abort("BufferBackgroundCopy::copy_in_progress future not valid");
+    }
+    if (is_ready(future_)) {
+        state_ = BackgroundCopyState::READY;
+        return false;
+    }
+    return true;
 }
 
 void BufferBackgroundCopy::deallocate() {

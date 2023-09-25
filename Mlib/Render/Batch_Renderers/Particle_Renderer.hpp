@@ -9,23 +9,26 @@ namespace Mlib {
 class ParticleResources;
 class ParticlesInstance;
 
-class ParticleRenderer: public IParticleRenderer {
+class ParticleRenderer : public IParticleRenderer {
 public:
-    explicit ParticleRenderer(ParticleResources& resources);
+    explicit ParticleRenderer(ParticleResources &resources);
     virtual ~ParticleRenderer() override;
 
     // IParticleRenderer
-    virtual IParticleInstantiator& get_instantiator(const std::string& name) override;
+    virtual IParticleInstantiator &get_instantiator(const std::string &name) override;
+    virtual void preload(const std::string &name) override;
     virtual void move(float dt) override;
-    virtual void render(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const SceneGraphConfig& scene_graph_config,
-        const RenderConfig& render_config,
-        const ExternalRenderPass& external_render_pass) const override;
+    virtual void
+    render(const FixedArray<double, 4, 4> &vp,
+           const TransformationMatrix<float, double, 3> &iv,
+           const std::list<std::pair<TransformationMatrix<float, double, 3>, Light *>> &lights,
+           const SceneGraphConfig &scene_graph_config,
+           const RenderConfig &render_config,
+           const ExternalRenderPass &external_render_pass) const override;
+
 private:
     mutable SafeRecursiveSharedMutex mutex_;
+    ParticleResources &resources_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleInstantiator>> instantiators_;
 };

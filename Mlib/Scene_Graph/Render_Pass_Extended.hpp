@@ -16,10 +16,21 @@ struct ExternalRenderPass {
 };
 
 enum class InternalRenderPass {
-    INITIAL,
-    BLENDED,
-    AGGREGATE
+    NONE = 0,
+    INITIAL = 1 << 0,
+    BLENDED = 1 << 1,
+    AGGREGATE = 1 << 2,
+    PARTICLES = 1 << 3,
+    PRELOADED = AGGREGATE | PARTICLES
 };
+
+inline InternalRenderPass operator&(InternalRenderPass a, InternalRenderPass b) {
+    return InternalRenderPass((int)a & (int)b);
+}
+
+inline bool any(InternalRenderPass a) {
+    return a != InternalRenderPass::NONE;
+}
 
 struct RenderPass {
     const ExternalRenderPass external;

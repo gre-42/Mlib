@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <list>
 #include <memory>
 
@@ -18,7 +19,6 @@ struct Light;
 struct SceneGraphConfig;
 struct RenderConfig;
 struct ExternalRenderPass;
-struct RenderableResourceFilter;
 
 class ParticlesInstance {
     ParticlesInstance(const ParticlesInstance &) = delete;
@@ -35,6 +35,8 @@ public:
 
     void move(float dt);
 
+    void preload() const;
+
     void render(const FixedArray<double, 4, 4> &vp,
                 const TransformationMatrix<float, double, 3> &iv,
                 const std::list<std::pair<TransformationMatrix<float, double, 3>, Light *>> &lights,
@@ -47,6 +49,7 @@ private:
     std::shared_ptr<DynamicInstanceBuffers> dynamic_instance_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
     std::unique_ptr<RenderableColoredVertexArray> rcva_;
+    RenderableResourceFilter filter_;
 };
 
 }

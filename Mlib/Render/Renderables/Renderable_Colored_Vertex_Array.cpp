@@ -834,17 +834,17 @@ void RenderableColoredVertexArray::render_cva(
     {
         MaterialRenderConfigGuard mrcf{ cva->material };
         if (has_instances) {
-            if ((render_pass.internal == InternalRenderPass::AGGREGATE) &&
+            if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
                 instances->copy_in_progress())
             {
-                verbose_abort("Aggregate render pass has incomplete instances (" + cva->name + ')');
+                verbose_abort("Preloaded render pass has incomplete instances (" + cva->name + ')');
             }
             instances->wait();
         }
-        if ((render_pass.internal == InternalRenderPass::AGGREGATE) &&
+        if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
             si.va_.copy_in_progress())
         {
-            verbose_abort("Aggregate render pass has incomplete triangles (" + cva->name + ')');
+            verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
         }
         CHK(glBindVertexArray(si.va_.vertex_array()));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");

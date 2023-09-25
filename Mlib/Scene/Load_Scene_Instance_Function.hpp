@@ -10,6 +10,7 @@ struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
 class ParticleResources;
+class ParticleRenderer;
 class SmokeParticleGenerator;
 class VehicleSpawners;
 class Players;
@@ -36,37 +37,40 @@ class SupplyDepots;
 
 class LoadSceneInstanceFunction {
 public:
-    explicit LoadSceneInstanceFunction(RenderableScene& renderable_scene);
+    explicit LoadSceneInstanceFunction(RenderableScene &renderable_scene);
     ~LoadSceneInstanceFunction();
+
 protected:
-    RenderableScene& renderable_scene;
-    SceneNodeResources& scene_node_resources;
-    ParticleResources& particle_resources;
-    SmokeParticleGenerator& smoke_particle_generator;
-    VehicleSpawners& vehicle_spawners;
-    Players& players;
-    Scene& scene;
-    PhysicsEngine& physics_engine;
-    Imposters& imposters;
-    SupplyDepots& supply_depots;
-    ButtonPress& button_press;
-    KeyBindings& key_bindings;
-    SelectedCameras& selected_cameras;
-    const SceneConfig& scene_config;
-    RenderLogics& render_logics;
-    std::function<bool()>& paused;
-    SetFps& physics_set_fps;
-    RenderLogic& scene_logic;
-    RenderLogic& read_pixels_logic;
-    DirtmapLogic& dirtmap_logic;
-    StandardRenderLogic& standard_render_logic;
-    PostProcessingLogic& post_processing_logic;
-    SkyboxLogic& skybox_logic;
-    GameLogic& game_logic;
-    BaseLog& base_log;
-    DeleteNodeMutex& delete_node_mutex;
-    RenderingContext& primary_rendering_context;
-    RenderingContext& secondary_rendering_context;
+    RenderableScene &renderable_scene;
+    SceneNodeResources &scene_node_resources;
+    ParticleResources &particle_resources;
+    ParticleRenderer &particle_renderer;
+    SmokeParticleGenerator &smoke_particle_generator;
+    VehicleSpawners &vehicle_spawners;
+    Players &players;
+    Scene &scene;
+    PhysicsEngine &physics_engine;
+    Imposters &imposters;
+    SupplyDepots &supply_depots;
+    ButtonPress &button_press;
+    KeyBindings &key_bindings;
+    SelectedCameras &selected_cameras;
+    const SceneConfig &scene_config;
+    RenderLogics &render_logics;
+    std::function<bool()> &paused;
+    SetFps &physics_set_fps;
+    RenderLogic &scene_logic;
+    RenderLogic &read_pixels_logic;
+    DirtmapLogic &dirtmap_logic;
+    StandardRenderLogic &standard_render_logic;
+    PostProcessingLogic &post_processing_logic;
+    SkyboxLogic &skybox_logic;
+    GameLogic &game_logic;
+    BaseLog &base_log;
+    DeleteNodeMutex &delete_node_mutex;
+    RenderingContext &primary_rendering_context;
+    RenderingContext &secondary_rendering_context;
+
 private:
     RenderingContextGuard rrg0_;
     RenderingContextGuard rrg1_;

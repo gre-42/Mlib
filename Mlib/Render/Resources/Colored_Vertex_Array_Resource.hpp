@@ -110,8 +110,7 @@ private:
         const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures) const;
     void deallocate();
-    // std::shared_ptr<ISceneNodeResource> extract_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
-    // std::shared_ptr<ISceneNodeResource> copy_by_predicate(const std::function<bool(const ColoredVertexArray& cva)>& predicate);
+    bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;

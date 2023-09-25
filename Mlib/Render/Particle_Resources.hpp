@@ -24,7 +24,6 @@ public:
 
     void insert_instance_creator(
         std::string name,
-        std::function<void()> instance_creator_preloader,
         std::function<std::shared_ptr<ParticlesInstance>()> instance_creator);
     std::shared_ptr<ParticlesInstance> instantiate_particles_instance(const std::string& name) const;
 
@@ -35,10 +34,7 @@ public:
         const std::string& name,
         ParticlesInstance& particles_instance) const;
 
-    void preload_instantiator(const std::string &instantiator) const;
-
 private:
-    ThreadsafeStringMap<std::function<void()>> instance_creators_preloaders_;
     ThreadsafeStringMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
     ThreadsafeStringMap<std::function<std::unique_ptr<IParticleInstantiator>(ParticlesInstance&)>> instantiators_;
     ThreadsafeStringMap<std::string> instantiator_to_instance_;

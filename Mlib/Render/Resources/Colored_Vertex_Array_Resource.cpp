@@ -17,6 +17,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
@@ -1057,6 +1058,17 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
     };
     preload_textures(triangles_res_->scvas);
     preload_textures(triangles_res_->dcvas);
+    if (ContextQuery::is_initialized()) {
+        for (const auto &cva : triangles_res_->scvas) {
+            if (requires_aggregation(*cva)) {
+                continue;
+            }
+            get_vertex_array(cva).va_.wait();
+            if (instances_ != nullptr) {
+                instances_->at(cva.get())->wait();
+            }
+        }
+    }
 }
 
 void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptions& options) const
@@ -1501,9 +1513,13 @@ void ColoredVertexArrayResource::deallocate() {
     vertex_arrays_.clear();
 }
 
+bool ColoredVertexArrayResource::requires_aggregation(const ColoredVertexArray<float> &cva) const {
+    return (cva.material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr);
+}
+
 const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
 {
-    if ((cva->material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr)) {
+    if (requires_aggregation(*cva)) {
         THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     {

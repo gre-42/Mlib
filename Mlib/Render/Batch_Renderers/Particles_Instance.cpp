@@ -17,7 +17,8 @@ ParticlesInstance::ParticlesInstance(const std::shared_ptr<ColoredVertexArray<fl
           max_num_instances,
           integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))}
     , cvar_{std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_)}
-    , rcva_{std::make_unique<RenderableColoredVertexArray>(cvar_, filter)} {
+    , rcva_{std::make_unique<RenderableColoredVertexArray>(cvar_, filter)}
+    , filter_{filter} {
 }
 
 ParticlesInstance::~ParticlesInstance() = default;
@@ -39,6 +40,10 @@ void ParticlesInstance::add_particle(
 
 void ParticlesInstance::move(float dt) {
     dynamic_instance_buffers_->move(dt);
+}
+
+void ParticlesInstance::preload() const {
+    cvar_->preload(filter_);
 }
 
 void ParticlesInstance::render(
@@ -63,7 +68,7 @@ void ParticlesInstance::render(
         lights,
         scene_graph_config,
         render_config,
-        {external_render_pass, InternalRenderPass::AGGREGATE},
+        {external_render_pass, InternalRenderPass::PARTICLES},
         nullptr,        // animation_state,
         nullptr);       // color_style
 }

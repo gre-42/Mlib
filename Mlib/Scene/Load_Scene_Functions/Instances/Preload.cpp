@@ -5,8 +5,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
-#include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -61,7 +60,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         a->physics_material,
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
-                        particle_resources.preload_instantiator(c->smoke_particle_resource_name);
+                        particle_renderer.preload(c->smoke_particle_resource_name);
                         // primary_rendering_context.scene_node_resources.preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});
                     }
