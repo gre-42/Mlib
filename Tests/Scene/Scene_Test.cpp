@@ -173,7 +173,6 @@ void test_physics_engine(unsigned int seed) {
         standard_camera_logic,
         {1.f, 0.f, 1.f},
         ClearMode::COLOR_AND_DEPTH};
-    Focuses focuses = {Focus::SCENE};
     ButtonStates button_states;
     CursorStates cursor_states;
     CursorStates scroll_wheel_states;
@@ -182,7 +181,6 @@ void test_physics_engine(unsigned int seed) {
         .cursor_states = cursor_states,
         .scroll_wheel_states = scroll_wheel_states,
         .cameras = selected_cameras,
-        .focuses = focuses,
         .wire_frame = render_config.wire_frame,
         .depth_test = render_config.depth_test,
         .cull_faces = render_config.cull_faces,
@@ -191,12 +189,10 @@ void test_physics_engine(unsigned int seed) {
     UiFocus ui_focus;
     RenderLogics render_logics{ui_focus};
     auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
-        render2.glfw_window(),
-        button_states,
         scene,
         user_object,
-        false,
-        false); // false = fly, false = rotate
+        false,  // false = fly
+        false); // false = rotate
     auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
     auto append_lightmap_logic = [&](){
         std::scoped_lock lock{delete_node_mutex};
@@ -232,6 +228,7 @@ void test_physics_engine(unsigned int seed) {
 
     render2.render(
         lrl,
+        []() {},
         SceneGraphConfig());
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();

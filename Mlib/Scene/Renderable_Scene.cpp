@@ -53,17 +53,10 @@ RenderableScene::RenderableScene(
       particle_renderer_.get()},
   selected_cameras_{scene_},
   user_object_{
-#ifndef __ANDROID__
-      .window_position{
-          .fullscreen_width = scene_config.render_config.fullscreen_width,
-          .fullscreen_height = scene_config.render_config.fullscreen_height,
-      },
-#endif
       .button_states = button_states,
       .cursor_states = cursor_states,
       .scroll_wheel_states = scroll_wheel_states,
       .cameras = selected_cameras_,
-      .focuses = ui_focus.focuses,
       .wire_frame = scene_config.render_config.wire_frame,
       .depth_test = scene_config.render_config.depth_test,
       .cull_faces = scene_config.render_config.cull_faces,
@@ -105,10 +98,6 @@ RenderableScene::RenderableScene(
       config.clear_mode)},
   flying_camera_logic_{config.with_flying_logic
       ? std::make_shared<FlyingCameraLogic>(
-#ifndef __ANDROID__
-        glfw_window,
-#endif
-        button_states,
         scene_,
         user_object_,
         config.fly,

@@ -1,10 +1,3 @@
-#ifdef __ANDROID__
-#else
-#include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#endif
-
 #include "Flying_Camera_Logic.hpp"
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Log.hpp>
@@ -20,7 +13,6 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -28,13 +20,10 @@
 
 namespace Mlib {
 struct FlyingCameraLogicKeys {
-    BaseKeyCombination esc{{{.key = "ESCAPE"}}};
     BaseKeyCombination L{{{.key = "L"}}};
     BaseKeyCombination W{{{.key = "W"}}};
     BaseKeyCombination D{{{.key = "D"}}};
     BaseKeyCombination C{{{.key = "C"}}};
-    BaseKeyCombination start{{{.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"}}};
-    BaseKeyCombination F11{{{.key = "F11"}}};
 };
 }
 
@@ -42,14 +31,10 @@ using namespace Mlib;
 
 static void flying_key_callback(
 #ifndef __ANDROID__
-    GLFWwindow& window,
     ButtonPress& button_press,
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
-    if (button_press.keys_pressed(keys.esc)) {
-        GLFW_CHK(glfwSetWindowShouldClose(&window, GLFW_TRUE));
-    }
 #else
     ButtonPress& button_press,
     FlyingCameraUserClass& user_object)
@@ -140,23 +125,16 @@ static void nofly_key_callback(
 }
 
 FlyingCameraLogic::FlyingCameraLogic(
-#ifndef __ANDROID__
-    GLFWwindow& window,
-#endif
-    const ButtonStates& button_states,
-    const Scene& scene,
-    FlyingCameraUserClass& user_object,
-    bool fly,
-    bool rotate)
-: scene_{scene},
-  user_object_{user_object},
-  button_press_{button_states},
-  fly_{fly},
-  rotate_{rotate},
-#ifndef __ANDROID__
-  window_{window},
-#endif
-  keys_{std::make_unique<FlyingCameraLogicKeys>()}
+        const Scene &scene,
+        FlyingCameraUserClass &user_object,
+        bool fly,
+        bool rotate)
+    : scene_{scene}
+    , user_object_{user_object}
+    , button_press_{user_object.button_states}
+    , fly_{fly}
+    , rotate_{rotate}
+    , keys_{std::make_unique<FlyingCameraLogicKeys>()}
 {
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
@@ -183,32 +161,12 @@ void FlyingCameraLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("FlyingCameraLogic::render");
-    if (button_press_.keys_pressed(keys_->start)) {
-        std::scoped_lock lock{user_object_.focuses.mutex};
-        Focus focus = user_object_.focuses.focus();
-        if (focus == Focus::MENU) {
-            if (user_object_.focuses.size() > 1) {
-                user_object_.focuses.pop_back();
-            }
-        } else if (user_object_.focuses.countdown_active() || any(focus & (Focus::LOADING | Focus::SCENE | Focus::GAME_OVER))) {
-            user_object_.focuses.push_back(Focus::MENU);
-        } else if (user_object_.focuses.game_over_countdown_active()) {
-            // Do nothing, menu will show automatically after the countdown is finished
-        } else if (focus != Focus::BASE) {
-            THROW_OR_ABORT("Unknown focus value: " + std::to_string((int)focus));
-        }
-    }
-#ifndef __ANDROID__
-    if (button_press_.keys_pressed(keys_->F11)) {
-        toggle_fullscreen(window_, user_object_.window_position);
-    }
-#endif
     DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name(), DP_LOC);
     if (fly_) {
 #ifdef __ANDROID__
         flying_key_callback(button_press_, user_object_);
 #else
-        flying_key_callback(window_, button_press_, user_object_, *keys_);
+        flying_key_callback(button_press_, user_object_, *keys_);
 #endif
         cn->set_position(user_object_.position);
         cn->set_rotation(user_object_.angles);

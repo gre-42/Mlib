@@ -33,6 +33,7 @@
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Move_Scene_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -939,22 +940,32 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--background_g", "0")),
                 safe_stof(args.named_value("--background_b", "1"))},
             ClearMode::COLOR_AND_DEPTH};
-        FlyingCameraUserClass user_object{
+        MenuUserClass menu_user_object{
+            .window_position{
+                .fullscreen_width = render_config.fullscreen_width,
+                .fullscreen_height = render_config.fullscreen_height,
+            },
+            .button_states = button_states,
+            .cursor_states = cursor_states,
+            .scroll_wheel_states = scroll_wheel_states,
+            .focuses = focuses,
+            .exit_on_escape = true};
+        auto menu_logic = std::make_shared<MenuLogic>(
+            render2.glfw_window(),
+            menu_user_object);
+        FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,
             .cursor_states = cursor_states,
             .scroll_wheel_states = scroll_wheel_states,
             .cameras = selected_cameras,
-            .focuses = focuses,
             .wire_frame = render_config.wire_frame,
             .depth_test = render_config.depth_test,
             .cull_faces = render_config.cull_faces,
             .delete_node_mutex = delete_node_mutex,
             .physics_set_fps = nullptr};
         auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
-            render2.glfw_window(),
-            button_states,
             scene,
-            user_object,
+            flying_camera_user_object,
             true,                                       // fly
             !args.has_named("--large_object_mode"));    // rotate
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
@@ -975,6 +986,7 @@ int main(int argc, char** argv) {
 
         UiFocus ui_focus;
         RenderLogics render_logics{ui_focus};
+        render_logics.append(nullptr, menu_logic);
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);
@@ -1000,6 +1012,7 @@ int main(int argc, char** argv) {
         };
         render2.render(
             lrl,
+            []() {},
             SceneGraphConfig(),
             &button_states);
         if (unhandled_exceptions_occured()) {

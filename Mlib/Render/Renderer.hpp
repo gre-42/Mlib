@@ -1,9 +1,11 @@
 #pragma once
+
+#ifndef __ANDROID__
+
 #include <atomic>
 #include <cstddef>
 #include <exception>
-
-#ifndef __ANDROID__
+#include <functional>
 
 namespace Mlib {
 
@@ -23,7 +25,8 @@ class Renderer {
         Renderer &renderer,
         ButtonStates *button_states,
         CursorStates *cursor_states,
-        CursorStates *scroll_wheel_states);
+        CursorStates *scroll_wheel_states,
+        const std::function<void()>& callback);
 public:
     Renderer(
         Window& window,
@@ -37,6 +40,7 @@ public:
         const SceneGraphConfig& scene_graph_config) const;
     void render_and_handle_events(
         RenderLogic& logic,
+        const std::function<void()>& event_callback,
         const SceneGraphConfig& scene_graph_config,
         ButtonStates* button_states,
         CursorStates* cursor_states,
@@ -54,7 +58,8 @@ void handle_events(
     Renderer& renderer,
     ButtonStates* button_states,
     CursorStates* cursor_states,
-    CursorStates* scroll_wheel_states);
+    CursorStates* scroll_wheel_states,
+    const std::function<void()>& callback);
 
 }
 

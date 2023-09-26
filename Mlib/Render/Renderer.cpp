@@ -202,6 +202,7 @@ static void scroll_wheel_callback(GLFWwindow* window, double xoffset, double yof
 
 void Renderer::render_and_handle_events(
     RenderLogic& logic,
+    const std::function<void()>& event_handler,
     const SceneGraphConfig& scene_graph_config,
     ButtonStates* button_states,
     CursorStates* cursor_states,
@@ -212,7 +213,7 @@ void Renderer::render_and_handle_events(
             ThreadInitializer ti{"render", ThreadAffinity::POOL};
             render(logic, scene_graph_config);
         })};
-    handle_events(*this, button_states, cursor_states, scroll_wheel_states);
+    handle_events(*this, button_states, cursor_states, scroll_wheel_states, event_handler);
 }
 
 bool Renderer::continue_rendering() const {
@@ -228,7 +229,8 @@ void Mlib::handle_events(
     Renderer& renderer,
     ButtonStates* button_states,
     CursorStates* cursor_states,
-    CursorStates* scroll_wheel_states)
+    CursorStates* scroll_wheel_states,
+    const std::function<void()>& callback)
 {
     RendererUserClass user_object{
         .button_states = button_states,
@@ -260,6 +262,9 @@ void Mlib::handle_events(
                 button_states->update_gamepad_state();
             }
             // lag_finder.stop();
+            if (callback) {
+                callback();
+            }
         }
     } catch (...) {
         GLFW_ABORT(glfwSetWindowShouldClose(&renderer.window_.glfw_window(), GLFW_TRUE));

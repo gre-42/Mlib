@@ -48,6 +48,7 @@ public:
 
     void render(
         RenderLogic& logic,
+        const std::function<void()>& event_handler,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
         ButtonStates* button_states = nullptr,
         CursorStates* cursor_states = nullptr,

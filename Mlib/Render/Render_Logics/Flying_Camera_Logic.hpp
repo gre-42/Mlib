@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 
@@ -11,24 +10,18 @@ namespace Mlib {
 class Scene;
 class SelectedCameras;
 class SetFps;
-struct WindowPosition;
 class ButtonStates;
 class CursorStates;
 enum class BoolRenderOption;
 class DeleteNodeMutex;
-class Focuses;
 struct FlyingCameraLogicKeys;
 
 class FlyingCameraUserClass {
 public:
-#ifndef __ANDROID__
-    WindowPosition window_position;
-#endif
     ButtonStates& button_states;
     CursorStates& cursor_states;
     CursorStates& scroll_wheel_states;
     SelectedCameras& cameras;
-    Focuses& focuses;
     BoolRenderOption& wire_frame;
     BoolRenderOption& depth_test;
     BoolRenderOption& cull_faces;
@@ -44,10 +37,6 @@ public:
 class FlyingCameraLogic: public RenderLogic {
 public:
     explicit FlyingCameraLogic(
-#ifndef __ANDROID__
-        GLFWwindow& window,
-#endif
-        const ButtonStates& button_states,
         const Scene& scene,
         FlyingCameraUserClass& user_object,
         bool fly,
@@ -69,9 +58,6 @@ private:
     ButtonPress button_press_;
     bool fly_;
     bool rotate_;
-#ifndef __ANDROID__
-    GLFWwindow& window_;
-#endif
     std::unique_ptr<FlyingCameraLogicKeys> keys_;
 };
 

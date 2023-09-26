@@ -15,6 +15,7 @@
 #include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -203,12 +204,13 @@ void main_func(
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     size_t args_num_renderings,
-    Renderer* renderer)
+    Renderer* renderer,
+    const std::function<void()>& event_callback)
 {
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states);
+        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states, event_callback);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -432,6 +434,20 @@ int main(int argc, char** argv) {
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
+        MenuUserClass menu_user_object{
+            .window_position{
+                .fullscreen_width = render_config.fullscreen_width,
+                .fullscreen_height = render_config.fullscreen_height,
+            },
+            .button_states = button_states,
+            .cursor_states = cursor_states,
+            .scroll_wheel_states = scroll_wheel_states,
+            .focuses = ui_focus.focuses,
+            .exit_on_escape = false};
+        MenuLogic menu_logic{
+            render2.glfw_window(),
+            menu_user_object};
+
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
             JsonMacroArgumentsObserverGuard smog{external_json_macro_arguments};
@@ -558,7 +574,8 @@ int main(int argc, char** argv) {
                         cursor_states,
                         scroll_wheel_states,
                         args_num_renderings,
-                        renderer.get());
+                        renderer.get(),
+                        [&menu_logic](){ menu_logic.handle_events(); });
                 } catch (...) {
                     add_unhandled_exception(std::current_exception());
                 }

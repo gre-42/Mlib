@@ -204,6 +204,7 @@ int main(int argc, char** argv) {
 
         render2.render(
             *read_pixels_logic,
+            []() {},
             SceneGraphConfig());
         if (args.has_named_value("--output")) {
             const Array<float>& array = render_results.outputs.at(rsd).rgb;

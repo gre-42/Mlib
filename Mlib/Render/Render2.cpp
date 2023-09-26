@@ -113,6 +113,7 @@ Renderer Render2::generate_renderer() const
 
 void Render2::render(
     RenderLogic& logic,
+    const std::function<void()>& event_callback,
     const SceneGraphConfig& scene_graph_config,
     ButtonStates* button_states,
     CursorStates* cursor_states,
@@ -120,6 +121,7 @@ void Render2::render(
 {
     generate_renderer().render_and_handle_events(
         logic,
+        event_callback,
         scene_graph_config,
         button_states,
         cursor_states,
@@ -146,7 +148,7 @@ void Render2::render_scene(
         background_color,
         beacon_locations};
     ReadPixelsLogic read_pixels_logic{ rotating_logic };
-    render(read_pixels_logic, scene_graph_config, &button_states);
+    render(read_pixels_logic, []() {}, scene_graph_config, &button_states);
 }
 
 void Render2::render_node(
