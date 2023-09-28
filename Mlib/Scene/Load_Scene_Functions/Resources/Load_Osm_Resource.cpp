@@ -202,6 +202,7 @@ DECLARE_ARGUMENT(terrain_edge_smoothness);
 DECLARE_ARGUMENT(bump_height);
 DECLARE_ARGUMENT(driving_direction);
 DECLARE_ARGUMENT(blend_street);
+DECLARE_ARGUMENT(blend_path);
 DECLARE_ARGUMENT(emissivity_factor);
 DECLARE_ARGUMENT(ambience_factor);
 DECLARE_ARGUMENT(diffusivity_factor);
@@ -821,7 +822,10 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.driving_direction = driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction));
         }
         if (args.arguments.contains(KnownArgs::blend_street)) {
-            config.blend_street = args.arguments.at<bool>(KnownArgs::blend_street);
+            config.blend_street[RoadType::STREET] = args.arguments.at<bool>(KnownArgs::blend_street);
+        }
+        if (args.arguments.contains(KnownArgs::blend_path)) {
+            config.blend_street[RoadType::PATH] = args.arguments.at<bool>(KnownArgs::blend_path);
         }
         if (args.arguments.contains(KnownArgs::emissivity_factor)) {
             config.emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor);

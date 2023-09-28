@@ -1097,10 +1097,12 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.with_terrain) {
-        if (config.blend_street) {
-            draw_terrain_triangles(
-                *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type],
-                osm_triangle_lists.street_triangles());
+        for (const auto& [road_type, blend] : config.blend_street) {
+            if (blend) {
+                draw_terrain_triangles(
+                    *osm_triangle_lists.tl_terrain_visuals[config.default_terrain_type],
+                    osm_triangle_lists.street_triangles(road_type));
+            }
         }
     }
 

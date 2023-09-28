@@ -161,7 +161,7 @@ struct OsmResourceConfig {
     FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
     DrivingDirection driving_direction = DrivingDirection::CENTER;
-    bool blend_street = false;
+    std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{std::vector<double>{}, std::vector<double>{}};
     std::string game_level;
     std::string base_osm_map_resource;

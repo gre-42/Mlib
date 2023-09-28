@@ -252,7 +252,7 @@ OsmTriangleLists::OsmTriangleLists(
         if (pmit == config.street_materials.end()) {
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
         }
-        bool blend = config.blend_street && (road_properties.type != RoadType::WALL);
+        bool blend = config.blend_street.contains(road_properties.type) && config.blend_street.at(road_properties.type) && (road_properties.type != RoadType::WALL);
         std::vector<BlendMapTexture> textures;
         textures.reserve(road_style.textures.size());
         for (const std::string& texture : road_style.textures) {
@@ -680,7 +680,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_crossing_
         e.styled_road.triangle_list->triangles.begin(), \
         e.styled_road.triangle_list->triangles.end()); \
 }
-#define INSERT4(a) for (const auto& e : (a)) { \
+#define INSERT4(a) for (const auto& e : a) { \
     result.insert( \
         result.end(), \
         e->triangles.begin(), \
@@ -734,6 +734,16 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::ocean_ground_t
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
     INSERT3(tl_street)
+    return result;
+}
+
+std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_triangles(RoadType road_type) const {
+    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+    for (const auto& [p, l] : tl_street.list()) {
+        if (p.type == road_type) {
+            INSERT(l.triangle_list);
+        }
+    }
     return result;
 }
 
