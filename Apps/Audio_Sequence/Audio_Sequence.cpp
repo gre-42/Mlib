@@ -9,6 +9,7 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -78,7 +79,7 @@ int main(int argc, char** argv) {
                 linfo() << "Requested frequency: " << f << "Hz. Template frequency: " << bf.frequency;
             }
             cross_fade.play(*bf.buffer, gain_factor, f * pitch, bf.frequency);
-            std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
+            Mlib::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

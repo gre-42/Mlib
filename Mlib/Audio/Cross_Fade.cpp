@@ -2,6 +2,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
+#include <Mlib/Time/Sleep.hpp>
 
 using namespace Mlib;
 
@@ -49,7 +50,7 @@ CrossFade::CrossFade(
                         }
                     }
                 }
-                std::this_thread::sleep_for(std::chrono::duration<float>(dt));
+                Mlib::sleep_for(std::chrono::duration<float>(dt));
             }
         } catch (const std::exception& e) {
             verbose_abort("Exception in cross-fade: " + std::string(e.what()));

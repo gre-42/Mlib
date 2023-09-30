@@ -1,6 +1,4 @@
 #include "Flying_Camera_Logic.hpp"
-#include <Mlib/Time/Fps/Set_Fps.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -16,7 +14,7 @@
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Log.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 
 namespace Mlib {
 struct FlyingCameraLogicKeys {

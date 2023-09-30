@@ -1,6 +1,7 @@
 #include "Set_Fps.hpp"
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Time/Fps/ISleeper.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <thread>
 
 using namespace Mlib;
@@ -22,7 +23,7 @@ void SetFps::tick()
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
             while (execute_oldest_func());
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
+            Mlib::sleep_for(std::chrono::microseconds(100));
         }
         sleeper_.reset();
     }

@@ -5,6 +5,7 @@
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <chrono>
 #include <thread>
 
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
         bs.print(
             false,  // physical
             true);  // only_pressed
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        Mlib::sleep_for(std::chrono::milliseconds(100));
     }
 
     GLFW_CHK(glfwDestroyWindow(window));

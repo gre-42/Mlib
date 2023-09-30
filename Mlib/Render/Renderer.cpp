@@ -24,6 +24,7 @@
 #include <Mlib/Time/Fps/Fps.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <future>
 
 #ifndef __ANDROID__
@@ -73,7 +74,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 
             // Check if window is minimized.
             if ((width == 0) && (height == 0)) {
-                std::this_thread::sleep_for(std::chrono::milliseconds{ 100 });
+                Mlib::sleep_for(std::chrono::milliseconds{ 100 });
                 continue;
             }
             if ((width == 0) || (height == 0)) {
@@ -217,7 +218,7 @@ void Renderer::render_and_handle_events(
 }
 
 bool Renderer::continue_rendering() const {
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // Mlib::sleep_for(std::chrono::milliseconds(500));
     // From: https://www.glfw.org/docs/latest/context_guide.html#context_current
     return
         !glfwWindowShouldClose(&window_.glfw_window()) &&

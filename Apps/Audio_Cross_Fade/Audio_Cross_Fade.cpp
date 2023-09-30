@@ -5,6 +5,7 @@
 #include <Mlib/Audio/Cross_Fade.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Time/Sleep.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -36,7 +37,7 @@ int main(int argc, char** argv) {
         CrossFade cross_fade{ PositionRequirement::POSITION_NOT_REQUIRED, paused, dgain, dt_fade };
         for (const auto& b : buffers) {
             cross_fade.play(b, gain_factor, pitch);
-            std::this_thread::sleep_for(std::chrono::duration<float>(dt_append));
+            Mlib::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

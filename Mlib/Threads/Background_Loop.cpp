@@ -3,6 +3,7 @@
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Time/Sleep.hpp>
 
 using namespace Mlib;
 
@@ -75,6 +76,6 @@ bool BackgroundLoop::done() const {
 
 void BackgroundLoop::wait_until_done() const {
     while (!done_) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        Mlib::sleep_for(std::chrono::milliseconds(100));
     }
 }
