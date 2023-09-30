@@ -36,7 +36,7 @@ HudImageLogic::HudImageLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-: FillWithTextureLogic{ image_resource_name, update_cycle, ColorMode::RGBA },
+: FillWithTextureLogic{ image_resource_name, update_cycle, ColorMode::RGBA, CullFaceMode::CULL, nullptr },
   scene_logic_{ scene_logic },
   collision_query_{ collision_query },
   gun_node_{ gun_node },
