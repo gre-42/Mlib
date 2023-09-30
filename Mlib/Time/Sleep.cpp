@@ -1,4 +1,4 @@
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #include "Sleep.hpp"
 #include <Mlib/Memory/Integral_Cast.hpp>

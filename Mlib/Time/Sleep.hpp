@@ -6,7 +6,7 @@
 
 #include <chrono>
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #include <cstdint>
 
