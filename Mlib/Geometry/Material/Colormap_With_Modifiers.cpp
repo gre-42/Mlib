@@ -10,6 +10,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers
         "histogram: " << t.histogram << '\n' <<
         "average: " << t.average << '\n' <<
         "multiply: " << t.multiply << '\n' <<
+        "alpha_blend: " << t.alpha_blend << '\n' <<
         "mean_color: " << t.mean_color << '\n' <<
         "lighten: " << t.lighten << '\n' <<
         "lighten_top: " << t.lighten_top << '\n' <<

@@ -13,6 +13,7 @@ struct ColormapWithModifiers {
     std::string histogram = "";
     std::string average = "";
     std::string multiply = "";
+    std::string alpha_blend = "";
     OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
     OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
     OrderableFixedArray<float, 3> lighten_left = {0.f, 0.f, 0.f};
@@ -28,6 +29,7 @@ struct ColormapWithModifiers {
         archive(histogram);
         archive(average);
         archive(multiply);
+        archive(alpha_blend);
         archive(mean_color);
         archive(lighten);
         archive(lighten_top);

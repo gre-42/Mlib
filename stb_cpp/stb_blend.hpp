@@ -47,3 +47,15 @@ void stb_multiply_color(
     int nrChannels0,
     int nrChannels1,
     int nrChannelsDest);
+
+void stb_alpha_blend(
+    const unsigned char* data0,
+    const unsigned char* data1,
+    unsigned char* dest,
+    int width,
+    int height,
+    int width1,
+    int height1,
+    int nrChannels0,
+    int nrChannels1,
+    int nrChannelsDest);

@@ -4,7 +4,7 @@
 namespace Mlib {
 
 enum class ColorMode {
-    UNDEFINED,
+    UNDEFINED = 0,
     GRAYSCALE = 1,
     RGB = 3,
     RGBA = 4

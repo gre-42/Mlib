@@ -20,6 +20,7 @@ DECLARE_ARGUMENT(alpha_fac);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(multiply_color);
+DECLARE_ARGUMENT(alpha_blend);
 DECLARE_ARGUMENT(average_normal);
 DECLARE_ARGUMENT(mean_color);
 DECLARE_ARGUMENT(lighten);
@@ -53,6 +54,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
                 .average = "",
                 .multiply = args.arguments.try_path_or_variable(KnownArgs::multiply_color).path,
+                .alpha_blend = args.arguments.try_path_or_variable(KnownArgs::alpha_blend).path,
                 .mean_color = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::mean_color, OrderableFixedArray<float, 3>(-1.f)),
                 .lighten = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten, OrderableFixedArray<float, 3>(0.f)),
                 .lighten_left = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_left, OrderableFixedArray<float, 3>(0.f)),
