@@ -36,10 +36,10 @@ void stb_average(
         nrChannels0,
         nrChannels1,
         nrChannelsDest,
-        [](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
+        [](const unsigned char* s0, const unsigned char* s1, unsigned char* d)
         {
             for (size_t i = 0; i < 3; ++i) {
-                dest[i] = (unsigned char)std::clamp(std::round(((float)s0[i] + (float)s1[i]) / 2.f), 0.f, 255.f);
+                d[i] = (unsigned char)std::clamp(std::round(((float)s0[i] + (float)s1[i]) / 2.f), 0.f, 255.f);
             }
         });
 }
@@ -76,13 +76,13 @@ void stb_multiply_color(
         nrChannels0,
         nrChannels1,
         nrChannelsDest,
-        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
+        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* d)
         {
             for (size_t i = 0; i < 3; ++i) {
-                dest[i] = (unsigned char)std::clamp(std::round(((float)s0[i] * (float)s1[i]) / 255.f), 0.f, 255.f);
+                d[i] = (unsigned char)std::clamp(std::round(((float)s0[i] * (float)s1[i]) / 255.f), 0.f, 255.f);
             }
             if ((nrChannels0 == 4) && (dest != src0)) {
-                dest[3] = s0[3];
+                d[3] = s0[3];
             }
         });
 }
@@ -119,15 +119,15 @@ void stb_alpha_blend(
         nrChannels0,
         nrChannels1,
         nrChannelsDest,
-        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
+        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* d)
         {
             float w1 = s1[3] / 255.f;
             float w0 = 1 - w1;
             for (size_t i = 0; i < nrChannels0; ++i) {
-                dest[i] = (unsigned char)std::clamp(std::round((float)s0[i] * w0 + (float)s1[i] * w1), 0.f, 255.f);
+                d[i] = (unsigned char)std::clamp(std::round((float)s0[i] * w0 + (float)s1[i] * w1), 0.f, 255.f);
             }
             if ((nrChannels0 == 4) && (dest != src0)) {
-                dest[3] = s0[3];
+                d[3] = s0[3];
             }
         });
 }
