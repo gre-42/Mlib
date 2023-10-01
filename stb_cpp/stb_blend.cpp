@@ -123,7 +123,7 @@ void stb_alpha_blend(
         {
             float w1 = s1[3] / 255.f;
             float w0 = 1 - w1;
-            for (size_t i = 0; i < nrChannels0; ++i) {
+            for (size_t i = 0; i < 3; ++i) {
                 d[i] = (unsigned char)std::clamp(std::round((float)s0[i] * w0 + (float)s1[i] * w1), 0.f, 255.f);
             }
             if ((nrChannels0 == 4) && (dest != src0)) {
