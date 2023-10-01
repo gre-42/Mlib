@@ -13,7 +13,7 @@ Array<TData> gaussian_filter_1d_NWE(
     size_t axis,
     const TData& boundary_value,
     const TData& truncate = 4,
-    bool nwe = true,
+    FilterExtension fc = FilterExtension::NWE,
     size_t poly_degree = 0)
 {
     if (sigma == 0) {
@@ -34,7 +34,7 @@ Array<TData> gaussian_filter_1d_NWE(
         A[0] = linspace<TSigma>(-1, 1, coeffs.length());
         coeffs = polynomial_contrast(A, coeffs, contrast, poly_degree);
     }
-    return lowpass_filter_1d_NWE(image, coeffs, boundary_value, axis, nwe);
+    return lowpass_filter_1d_NWE(image, coeffs, boundary_value, axis, fc);
 }
 
 template <class TData, class TSigma>
@@ -43,7 +43,7 @@ Array<TData> gaussian_filter_NWE(
     const TSigma& sigma,
     const TData& boundary_value,
     const TData& truncate = 4,
-    bool nwe = true,
+    FilterExtension fc = FilterExtension::NWE,
     size_t poly_degree = 0)
 {
     if (image.ndim() == 0) {
@@ -51,7 +51,7 @@ Array<TData> gaussian_filter_NWE(
     }
     Array<TData> result;
     for (size_t axis = 0; axis < image.ndim(); ++axis) {
-        result.move() = gaussian_filter_1d_NWE(axis == 0 ? image : result, sigma, axis, boundary_value, truncate, nwe, poly_degree);
+        result.move() = gaussian_filter_1d_NWE(axis == 0 ? image : result, sigma, axis, boundary_value, truncate, fc, poly_degree);
     }
     return result;
 }
@@ -62,7 +62,7 @@ Array<TData> multichannel_gaussian_filter_NWE(
     const TData& sigma,
     const TData& boundary_value,
     const TData& truncate = 4,
-    bool nwe = true,
+    FilterExtension fc = FilterExtension::NWE,
     size_t poly_degree = 0)
 {
     if (image.ndim() == 0) {
@@ -70,7 +70,7 @@ Array<TData> multichannel_gaussian_filter_NWE(
     }
     Array<TData> result{ image.shape() };
     for (size_t h = 0; h < image.shape(0); ++h) {
-        result[h] = std::move(gaussian_filter_NWE(image[h], sigma, boundary_value, truncate, nwe, poly_degree));
+        result[h] = std::move(gaussian_filter_NWE(image[h], sigma, boundary_value, truncate, fc, poly_degree));
     }
     return result;
 }

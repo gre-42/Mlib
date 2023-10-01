@@ -1,10 +1,29 @@
 #pragma once
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Math/Positive_Modulo.hpp>
 
 namespace Mlib {
 
+enum class FilterExtension {
+    NONE = 0,
+    NWE = (1 << 0),
+    PERIODIC = (1 << 1)
+};
+
+inline FilterExtension operator | (FilterExtension a, FilterExtension b) {
+    return FilterExtension((int)a | (int)b);
+}
+
+inline FilterExtension operator & (FilterExtension a, FilterExtension b) {
+    return FilterExtension((int)a & (int)b);
+}
+
+inline bool any(FilterExtension c) {
+    return c != FilterExtension::NONE;
+}
+
 template <class TData, class TCoeffs>
-Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeffs>& coeffs, const TData& boundary_value, size_t axis, bool nwe = true) {
+Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeffs>& coeffs, const TData& boundary_value, size_t axis, FilterExtension fc = FilterExtension::NWE) {
     assert(coeffs.ndim() == 1);
 
     if (coeffs.length() <= 1) {
@@ -20,7 +39,9 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
             TCoeffs v = 0;
             TCoeffs sc = 0;
             for (size_t d = 0; d < coeffs.length(); ++d) {
-                size_t idi = i + d - cdist;
+                size_t idi = any(fc & FilterExtension::PERIODIC)
+                    ? (size_t)positive_modulo((int)(i + d - cdist), (int)result_axis.length())
+                    : i + d - cdist;
                 if (idi < result_axis.length()) {
                     TData ic = image_axis(idi);
                     if (!scalar_isnan(ic)) {
@@ -38,7 +59,7 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
             };
             if (sc == 0) {
                 result_axis(i) = boundary_value;
-            } else if (nwe) {
+            } else if (any(fc & FilterExtension::NWE)) {
                 result_axis(i) = convert(v / sc);
             } else {
                 result_axis(i) = convert(v);

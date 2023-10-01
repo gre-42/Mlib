@@ -5,15 +5,10 @@
 #include <Mlib/Geography/Season.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Positive_Modulo.hpp>
 #include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
-
-// From: https://stackoverflow.com/questions/14997165/fastest-way-to-get-a-positive-modulo-in-c-c
-template <typename TData>
-TData positive_modulo(TData i, TData n) {
-    return std::fmod(std::fmod(i, n) + n, n);
-}
 
 // constexpr auto jdiff()
 // {
