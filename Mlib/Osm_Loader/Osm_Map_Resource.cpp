@@ -438,8 +438,8 @@ OsmMapResource::OsmMapResource(
         //     }
         // }
         // save_obj("/tmp/tl_tunnel_bdry.obj", IndexedFaceSet<float, size_t>{air_triangle_lists.tl_tunnel_bdry->triangles_});
-        if (const char* prefix = getenv("MESH_AROUND_PREFIX"); prefix != nullptr) {
-            std::vector<float> coords = string_to_vector(getenv("MESH_AROUND_POS"), safe_stof);
+        if (auto prefix = try_getenv("MESH_AROUND_PREFIX"); prefix.has_value()) {
+            std::vector<float> coords = string_to_vector(str_getenv("MESH_AROUND_POS"), safe_stof);
             if (coords.size() != 2) {
                 THROW_OR_ABORT("MESH_AROUND_POS does not have length 2");
             }
@@ -449,7 +449,7 @@ OsmMapResource::OsmMapResource(
                 std::cerr.precision(15);
                 std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
             }
-            for (float r : string_to_vector(getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
+            for (float r : string_to_vector(str_getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
                 plot_mesh(                         
                     ArrayShape{2000, 2000},         // image_size
                     1,                              // line_thickness
@@ -461,7 +461,7 @@ OsmMapResource::OsmMapResource(
                     {},                             // contour
                     {{coords[0], coords[1], 0.f}},  // highlighted_nodes
                     {}                              // crossed_nodes
-                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".png");
+                    ).T().reversed(0).save_to_file(prefix.value() + "_r_" + std::to_string(r) + ".png");
             }
         }
         // {
@@ -570,14 +570,14 @@ OsmMapResource::OsmMapResource(
     }
     if (config.remove_backfacing_triangles) {
         LOG_INFO("remove_backfacing_triangles");
-        const char* prefix = getenv("BACKFACING_TRIANGLES_PREFIX");
+        auto prefix = try_getenv("BACKFACING_TRIANGLES_PREFIX");
         size_t i = 0;
         for (auto& l : std::list{&osm_triangle_lists, &air_triangle_lists}) {
             delete_backfacing_triangles(
                 l->tls_no_backfaces(),
-                prefix == nullptr
+                !prefix.has_value()
                     ? ""
-                    : prefix + std::to_string(i) + ".png");
+                    : prefix.value() + std::to_string(i) + ".png");
             ++i;
         }
     }
@@ -907,7 +907,7 @@ OsmMapResource::OsmMapResource(
                 config.scale,
                 config.game_level);
         } catch (const TriangleException<double>& e) {
-            if (const char* prefix = getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix != nullptr) {
+            if (auto prefix = try_getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix.has_value()) {
                 auto coords = (e.a + e.b + e.c) / 3.;
                 {
                     FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
@@ -931,7 +931,7 @@ OsmMapResource::OsmMapResource(
                             {e.c(0), e.c(1), 0.f}
                         },
                         {}                                // crossed_nodes
-                    ).T().reversed(0).save_to_file(std::string(prefix) + "_r_" + std::to_string(r) + ".png");
+                    ).T().reversed(0).save_to_file(prefix.value() + "_r_" + std::to_string(r) + ".png");
                 }
                 handle_triangle_exception(e, "add models failed, debug image saved");
             } else {
@@ -1611,12 +1611,12 @@ void plot_way_points_and_obstacles(
 }
 
 void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefix) const {
-    if (const char* wf = getenv("OSM_WAYPOINT_PREFIX"); (wf != nullptr)) {
-        const char* rs = getenv("OSM_WAYPOINT_BBOX_RADIUS");
-        if (rs == nullptr) {
+    if (auto wf = try_getenv("OSM_WAYPOINT_PREFIX"); wf.has_value()) {
+        auto rs = try_getenv("OSM_WAYPOINT_BBOX_RADIUS");
+        if (!rs.has_value()) {
             THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be in the range 1 - 2)");
         }
-        double r = safe_stod(rs);
+        double r = safe_stod(rs.value());
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::SIDEWALK).plot(wf + debug_prefix + "sidewalk.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::EXPLICIT).plot(wf + debug_prefix + "explicit.svg", 600, 600, 0.1f);
@@ -1629,27 +1629,27 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<double, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         if (way_points_.contains(WayPointLocation::STREET)) {
-            plot_way_points_and_obstacles(wf + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
         }
         if (way_points_.contains(WayPointLocation::SIDEWALK)) {
-            plot_way_points_and_obstacles(wf + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
         }
         if (way_points_.contains(WayPointLocation::EXPLICIT)) {
-            plot_way_points_and_obstacles(wf + debug_prefix + "explicit.svg", way_points_.at(WayPointLocation::EXPLICIT), bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "explicit.svg", way_points_.at(WayPointLocation::EXPLICIT), bounding_contour, hitbox_positions);
         }
     }
 }
 
 void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const
 {
-    if (const char* wp = getenv("OSM_OBJ_PREFIX"); (wp != nullptr)) {
-        save_to_obj_file(wp + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
+    if (auto wp = try_getenv("OSM_OBJ_PREFIX"); wp.has_value()) {
+        save_to_obj_file(wp.value() + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
     }
 }
 
 void OsmMapResource::save_bad_triangles_to_obj_file_if_requested(const std::string& debug_prefix) const {
-    if (const char* wp = getenv("OSM_BAD_OBJ_PREFIX"); (wp != nullptr)) {
-        save_bad_triangles_to_obj_file(wp + debug_prefix + ".obj");
+    if (auto wp = try_getenv("OSM_BAD_OBJ_PREFIX"); wp.has_value()) {
+        save_bad_triangles_to_obj_file(wp.value() + debug_prefix + ".obj");
     }
 }
 

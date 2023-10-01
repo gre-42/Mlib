@@ -1,4 +1,5 @@
 #include "Contour.hpp"
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -20,9 +21,9 @@ std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
             auto edge = std::make_pair(O((*t)(a).position), O((*t)(b).position));
             if (!edges.insert(edge).second) {
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
-                const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                if (debug_filename != nullptr) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(debug_filename);
+                auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                if (debug_filename.has_value()) {
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(debug_filename.value());
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, debug image saved");
                 } else {
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");

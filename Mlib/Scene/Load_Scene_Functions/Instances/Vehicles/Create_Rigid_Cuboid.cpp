@@ -1,5 +1,6 @@
 #include "Create_Rigid_Cuboid.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
@@ -94,13 +95,13 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             d_hitboxes,
             collidable_mode);
     } catch (const TriangleException<double>& e) {
-        if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
-            save_triangle_to_obj(filename, {e.a, e.b, e.c});
+        if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
+            save_triangle_to_obj(filename.value(), {e.a, e.b, e.c});
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     } catch (const TriangleEdgeException<double>& e) {
-        if (const char* filename = getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename != nullptr) {
-            save_triangle_to_obj(filename, {e.a, e.b, e.c});
+        if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
+            save_triangle_to_obj(filename.value(), {e.a, e.b, e.c});
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }

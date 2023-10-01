@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
@@ -106,9 +107,9 @@ void extract_triangles_inside_contours(
                         if (contour_id != it->second) {
                             if (true) {
                                 const auto& c = t((i + 2) % 3);
-                                const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                                if (debug_filename != nullptr) {
-                                    std::string dbf{ debug_filename };
+                                auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                                if (debug_filename.has_value()) {
+                                    std::string dbf{ debug_filename.value() };
                                     if (dbf.ends_with(".png")) {
                                         plot_mesh(ArrayShape{ 8000, 8000 }, 1, 4, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} }, {}).T().reversed(0).save_to_file(dbf);
                                     } else if (dbf.ends_with(".svg")) {

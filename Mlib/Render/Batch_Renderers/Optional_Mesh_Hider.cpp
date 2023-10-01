@@ -6,10 +6,10 @@ using namespace Mlib;
 
 OptionalMeshHider::OptionalMeshHider() {
     print_names_ = getenv_default_bool("PRINT_MESHES", false);
-    const char* fn = getenv("HIDDEN_MESHES");
-    if (fn != nullptr) {
+    auto fn = try_getenv("HIDDEN_MESHES");
+    if (fn.has_value()) {
         hidden_names_.emplace();
-        auto f = create_ifstream(fn);
+        auto f = create_ifstream(fn.value());
         for (std::string line; std::getline(*f, line); )
         {
             hidden_names_.value().insert(line);
