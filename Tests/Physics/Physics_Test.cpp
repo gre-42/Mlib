@@ -99,7 +99,7 @@ void test_power_to_force_stiction_normal() {
 //     FixedArray<float, 3> n3{1, 0, 0};
 //     float P = 51484.9; // Watt, 70 hp
 //     FixedArray<float, 3> v3{0, 0, 0};
-//     float dt = 0.016667;
+//     float dt = 0.01667;
 //     float m = 1000;
 //     for (float t = 0; t < 10; t += dt) {
 //         auto F = power_to_force_infinite_mass(10, 1e-1, INFINITY, 1e3, INFINITY, n3, P, m / 20, v3, dt, true);
@@ -113,7 +113,7 @@ void test_power_to_force_stiction_normal() {
 //     FixedArray<float, 3> n3{1, 0, 0};
 //     float P = 0;
 //     float g = 9.8;
-//     float dt = 0.016667;
+//     float dt = 0.01667;
 //     float m = 1000;
 //     float stiction_coefficient = 1;
 //     auto get_force = [&](float v){

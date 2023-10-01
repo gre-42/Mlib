@@ -15,6 +15,7 @@
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
@@ -35,6 +36,8 @@ int main(int argc, char** argv) {
 
         args.assert_num_unnamed(0);
 
+        reserve_realtime_threads(0);
+
         Array<float> height = load_heightmap_from_file<float>(args.named_value("--height"));
         Array<float> color = args.has_named_value("--rgb")
             ? StbImage3::load_from_file(args.named_value("--rgb")).to_float_rgb()
@@ -52,7 +55,7 @@ int main(int argc, char** argv) {
 
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
-        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.16667")) };
+        FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{ sleeper };
         Render2 render{ render_config, num_renderings, set_fps };
         SceneNodeResources scene_node_resources;
