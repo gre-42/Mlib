@@ -65,47 +65,26 @@ void stb_multiply_color(
     if (nrChannels0 != nrChannelsDest) {
         THROW_OR_ABORT("nrChannels0 differst from nrChannelsDest");
     }
-    if (nrChannelsDest == 3) {
-        stb_blend(
-            src0,
-            src1,
-            dest,
-            width,
-            height,
-            width1,
-            height1,
-            nrChannels0,
-            nrChannels1,
-            nrChannelsDest,
-            [](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
-            {
-                for (size_t i = 0; i < 3; ++i) {
-                    dest[i] = (unsigned char)std::clamp(std::round(((float)s0[i] * (float)s1[i]) / 255.f), 0.f, 255.f);
-                }
-            });
-    } else if (nrChannelsDest == 4) {
-        assert_true(nrChannels0 == 4);
-        stb_blend(
-            src0,
-            src1,
-            dest,
-            width,
-            height,
-            width1,
-            height1,
-            nrChannels0,
-            nrChannels1,
-            nrChannelsDest,
-            [](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
-            {
-                for (size_t i = 0; i < 3; ++i) {
-                    dest[i] = (unsigned char)std::clamp(std::round(((float)s0[i] * (float)s1[i]) / 255.f), 0.f, 255.f);
-                }
+    stb_blend(
+        src0,
+        src1,
+        dest,
+        width,
+        height,
+        width1,
+        height1,
+        nrChannels0,
+        nrChannels1,
+        nrChannelsDest,
+        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
+        {
+            for (size_t i = 0; i < 3; ++i) {
+                dest[i] = (unsigned char)std::clamp(std::round(((float)s0[i] * (float)s1[i]) / 255.f), 0.f, 255.f);
+            }
+            if ((nrChannels0 == 4) && (dest != src0)) {
                 dest[3] = s0[3];
-            });
-    } else {
-        THROW_OR_ABORT("nrChannelsDest is not 3 or 4");
-    }
+            }
+        });
 }
 
 void stb_alpha_blend(
@@ -126,7 +105,7 @@ void stb_alpha_blend(
     if (nrChannels1 != 4) {
         THROW_OR_ABORT("nrChannels1 is not 4");
     }
-    if (nrChannelsDest != nrChannels0) {
+    if (nrChannels0 != nrChannelsDest) {
         THROW_OR_ABORT("nrChannels0 differst from nrChannelsDest");
     }
     stb_blend(
@@ -140,12 +119,15 @@ void stb_alpha_blend(
         nrChannels0,
         nrChannels1,
         nrChannelsDest,
-        [nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
+        [dest, src0, nrChannels0](const unsigned char* s0, const unsigned char* s1, unsigned char* dest)
         {
             float w1 = s1[3] / 255.f;
             float w0 = 1 - w1;
             for (size_t i = 0; i < nrChannels0; ++i) {
                 dest[i] = (unsigned char)std::clamp(std::round((float)s0[i] * w0 + (float)s1[i] * w1), 0.f, 255.f);
+            }
+            if ((nrChannels0 == 4) && (dest != src0)) {
+                dest[3] = s0[3];
             }
         });
 }
