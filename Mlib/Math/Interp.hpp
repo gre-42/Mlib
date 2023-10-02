@@ -80,6 +80,12 @@ public:
         }
         return (vx >= x_[0]) && (vx <= x_[x_.size() - 1]);
     }
+    const TDataX& xmax() const {
+        if (x_.empty()) {
+            THROW_OR_ABORT("x is empty");
+        }
+        return x_.back();
+    }
 private:
     std::vector<TDataX> x_;
     std::vector<TDataY> y_;
