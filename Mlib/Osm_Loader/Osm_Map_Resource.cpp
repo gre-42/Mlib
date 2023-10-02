@@ -17,8 +17,8 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
-#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Images/StbImage1.hpp>
+#include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
