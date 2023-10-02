@@ -1,11 +1,11 @@
 #include <Mlib/Arg_Parser.hpp>
+#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.cpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
-#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.cpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <iostream>
 
