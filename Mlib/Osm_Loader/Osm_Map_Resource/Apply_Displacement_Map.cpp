@@ -10,6 +10,7 @@ void Mlib::apply_displacement_map(
     const StreetBvh& ground_bvh,
     const std::list<std::shared_ptr<TriangleList<double>>>& triangles,
     const Array<double>& displacementmap,
+    double min_displacement,
     double uv_scale,
     const Interp<float, float>& distance_2_z_scale,
     double scale)
@@ -26,7 +27,7 @@ void Mlib::apply_displacement_map(
                     THROW_OR_ABORT("Unexpected bilinear interpolation failure");
                 }
                 auto dist = ground_bvh.min_dist({v.position(0), v.position(1)}, scale * distance_2_z_scale.xmax());
-                v.position += scale * displacement * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>();
+                v.position += scale * (min_displacement + displacement) * (v.normal * distance_2_z_scale(float(dist / scale))).casted<double>();
             }
         }
     }

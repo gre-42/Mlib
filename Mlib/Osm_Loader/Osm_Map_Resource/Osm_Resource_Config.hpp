@@ -44,6 +44,7 @@ struct OsmResourceConfig {
     std::string heightmap_mask;
     size_t heightmap_extension = 0;
     std::string displacementmap;
+    double displacementmap_min = 0;
     double displacementmap_uv_scale = 1;
     Interp<float> displacementmap_distance_2_z_scale{std::vector<float>{}, std::vector<float>{}};
     PhysicsMaterial terrain_undefined_material = PhysicsMaterial::NONE;

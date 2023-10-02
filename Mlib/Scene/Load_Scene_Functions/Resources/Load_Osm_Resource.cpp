@@ -215,6 +215,7 @@ DECLARE_ARGUMENT(navmesh_resource);
 DECLARE_ARGUMENT(agent_radius);
 DECLARE_ARGUMENT(refine_explicit_waypoints);
 DECLARE_ARGUMENT(displacementmap);
+DECLARE_ARGUMENT(displacementmap_min);
 DECLARE_ARGUMENT(displacementmap_uv_scale);
 DECLARE_ARGUMENT(displacementmap_distances);
 DECLARE_ARGUMENT(displacementmap_heights);
@@ -845,6 +846,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);
+        }
+        if (args.arguments.contains(KnownArgs::displacementmap_min)) {
+            config.displacementmap_min = args.arguments.at<double>(KnownArgs::displacementmap_min);
         }
         if (args.arguments.contains(KnownArgs::displacementmap_uv_scale)) {
             config.displacementmap_uv_scale = args.arguments.at<double>(KnownArgs::displacementmap_uv_scale);

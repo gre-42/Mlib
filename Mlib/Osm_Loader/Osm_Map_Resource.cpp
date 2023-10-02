@@ -617,6 +617,7 @@ OsmMapResource::OsmMapResource(
             ground_street_bvh,
             osm_triangle_lists.tls_smoothed(),
             StbImage1::load_from_file(config.displacementmap).to_float_grayscale().casted<double>(),
+            config.displacementmap_min,
             config.displacementmap_uv_scale,
             config.displacementmap_distance_2_z_scale,
             config.scale);
