@@ -214,6 +214,10 @@ DECLARE_ARGUMENT(base_osm_map_resource);
 DECLARE_ARGUMENT(navmesh_resource);
 DECLARE_ARGUMENT(agent_radius);
 DECLARE_ARGUMENT(refine_explicit_waypoints);
+DECLARE_ARGUMENT(displacementmap);
+DECLARE_ARGUMENT(displacementmap_uv_scale);
+DECLARE_ARGUMENT(displacementmap_distances);
+DECLARE_ARGUMENT(displacementmap_heights);
 }
 
 namespace ST {
@@ -838,6 +842,20 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::specularity_factor)) {
             config.specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor);
+        }
+        if (args.arguments.contains(KnownArgs::displacementmap)) {
+            config.displacementmap = args.arguments.path(KnownArgs::displacementmap);
+        }
+        if (args.arguments.contains(KnownArgs::displacementmap_uv_scale)) {
+            config.displacementmap_uv_scale = args.arguments.at<double>(KnownArgs::displacementmap_uv_scale);
+        }
+        if (args.arguments.contains(KnownArgs::displacementmap_distances) ||
+            args.arguments.contains(KnownArgs::displacementmap_heights))
+        {
+            config.displacementmap_distance_2_z_scale = Interp<float>{
+                args.arguments.at<std::vector<float>>(KnownArgs::displacementmap_distances),
+                args.arguments.at<std::vector<float>>(KnownArgs::displacementmap_heights),
+                OutOfRangeBehavior::CLAMP};
         }
         if (args.arguments.contains(KnownArgs::layer_heights_layer)) {
             layer_heights_layer = args.arguments.at<std::vector<double>>(KnownArgs::layer_heights_layer);

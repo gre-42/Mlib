@@ -18,6 +18,7 @@
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -28,6 +29,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Forest_Outlines.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Displacement_Map.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Calculate_Spawn_Points.hpp>
@@ -608,6 +610,16 @@ OsmMapResource::OsmMapResource(
             way_point_edge_descriptors);
     } catch (const PointException<double, 2>& e) {
         handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
+    }
+
+    if (!config.displacementmap.empty()) {
+        apply_displacement_map(
+            ground_street_bvh,
+            osm_triangle_lists.tls_smoothed(),
+            StbImage1::load_from_file(config.displacementmap).to_float_grayscale().casted<double>(),
+            config.displacementmap_uv_scale,
+            config.displacementmap_distance_2_z_scale,
+            config.scale);
     }
 
     // save_obj("/tmp/tl_terrain1.obj", IndexedFaceSet<float, size_t>{tl_terrain_->triangles_});
