@@ -10,7 +10,7 @@ using namespace Mlib;
 template <class TData>
 Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
     if (filename.ends_with(".pgm")) {
-        return PgmImage::load_from_file(filename).to01<TData>() / TData(64.f) * TData(UINT16_MAX);
+        return cities_skylines_to_meters<TData>(PgmImage::load_from_file(filename));
     }
     auto imX = stb_load(filename, FlipMode::NONE);
     if (auto* im8 = std::get_if<StbInfo<uint8_t>>(&imX); im8 != nullptr) {

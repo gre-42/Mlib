@@ -36,7 +36,7 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
         ArrayAxisView<TData> result_axis(result, index0, axis);
         size_t cdist = coeffs.length() / 2;
         for (size_t i = 0; i < result_axis.length(); i++) {
-            TCoeffs v = 0;
+            decltype(TCoeffs() * TData()) v = 0;
             TCoeffs sc = 0;
             for (size_t d = 0; d < coeffs.length(); ++d) {
                 size_t idi = any(fc & FilterExtension::PERIODIC)
@@ -50,7 +50,7 @@ Array<TData> lowpass_filter_1d_NWE(const Array<TData>& image, const Array<TCoeff
                     }
                 }
             }
-            auto convert = [](const TCoeffs& f){
+            auto convert = [](const auto& f){
                 if constexpr (std::is_integral<TData>::value) {
                     return (TData)std::round(f);
                 } else {
