@@ -1,9 +1,13 @@
+#include "stb_set_alpha.hpp"
+
 void stb_set_alpha(
     const unsigned char* rgb,
     const unsigned char* alpha,
     unsigned char* rgba,
     int width,
-    int height)
+    int height,
+    int alpha_width,
+    int alpha_height)
 {
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
@@ -13,7 +17,7 @@ void stb_set_alpha(
                 rgba[i4] = rgb[i3];
             }
             {
-                int i1 = (r * width + c) * 1;
+                int i1 = ((r % alpha_height) * alpha_width + (c % alpha_width)) * 1;
                 int i4 = (r * width + c) * 4 + 3;
                 rgba[i4] = alpha[i1];
             }

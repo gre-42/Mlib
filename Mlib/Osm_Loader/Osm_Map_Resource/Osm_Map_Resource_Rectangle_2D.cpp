@@ -54,6 +54,8 @@ void OsmRectangle2D::draw_z0(
     float uv1_sx,
     float uv0_dx,
     float uv1_dx,
+    float racing_line_uv0_y,
+    float racing_line_uv1_y,
     bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
@@ -146,10 +148,10 @@ void OsmRectangle2D::draw_z0(
             racing_line_color0,
             racing_line_color1,
             racing_line_color1,
-            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv0_dx, uv0_y}),
-            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, uv0_y}),
-            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, uv1_y}),
-            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, uv1_y}),
+            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv0_dx, racing_line_uv0_y}),
+            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv0_dx, racing_line_uv0_y}),
+            swp(FixedArray<float, 2>{rl_uv1_x * uv1_sx + uv1_dx, racing_line_uv1_y}),
+            swp(FixedArray<float, 2>{rl_uv0_x * uv0_sx + uv1_dx, racing_line_uv1_y}),
             {},  // bone weights
             {},  // bone weights
             {},  // bone weights
@@ -264,6 +266,8 @@ void OsmRectangle2D::draw(
     float racing_line_uv1_sx,
     float racing_line_uv0_dx,
     float racing_line_uv1_dx,
+    float racing_line_uv0_y,
+    float racing_line_uv1_y,
     bool flip_racing_line,
     const FixedArray<float, 3>& racing_line_color0,
     const FixedArray<float, 3>& racing_line_color1,
@@ -354,8 +358,8 @@ void OsmRectangle2D::draw(
                 uv(2));
         }
         if (tl_racing_line != nullptr) {
-            if (std::isnan(uv0_y) ||
-                std::isnan(uv1_y) ||
+            if (std::isnan(racing_line_uv0_y) ||
+                std::isnan(racing_line_uv1_y) ||
                 std::isnan(racing_line_uv0_sx) ||
                 std::isnan(racing_line_uv1_sx) ||
                 std::isnan(racing_line_uv0_dx) ||
@@ -375,7 +379,7 @@ void OsmRectangle2D::draw(
                 uv(i)(0) = float(
                     ((1. - x) / 2.) * (0.5 * (1. + t(i).position(0)) * racing_line_uv0_sx + racing_line_uv0_dx) +
                     ((x + 1.) / 2.) * (0.5 * (1. + t(i).position(0)) * racing_line_uv1_sx + racing_line_uv1_dx));
-                uv(i)(1) = float((1. - x) / 2.) * uv0_y + float((x + 1.) / 2.) * uv1_y;
+                uv(i)(1) = float((1. - x) / 2.) * racing_line_uv0_y + float((x + 1.) / 2.) * racing_line_uv1_y;
                 color(i) = float((1. - x) / 2.) * racing_line_color0 +
                            float((x + 1.) / 2.) * racing_line_color1;
                 // if (t(i).position(1) == -1) {

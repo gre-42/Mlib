@@ -135,11 +135,6 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
         if (si_alpha.nrChannels != 1) {
             THROW_OR_ABORT("#channels not 1: \"" + desc.color.alpha + '"');
         }
-        if ((si_alpha.width != si0.width) ||
-            (si_alpha.height != si0.height))
-        {
-            THROW_OR_ABORT("Size mismatch between files \"" + desc.color.filename + "\" and \"" + desc.color.alpha + '"');
-        }
         StbInfo<uint8_t> si0_rgb = std::move(si0);
         si0 = stb_create<uint8_t>(si0_rgb.width, si0_rgb.height, 4);
         stb_set_alpha(
@@ -147,7 +142,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si_alpha.data.get(),
             si0.data.get(),
             si0.width,
-            si0.height);
+            si0.height,
+            si_alpha.width,
+            si_alpha.height);
     } else {
         si0 = stb_load_texture(
             desc.color.filename, (int)desc.color_mode, flip_mode);

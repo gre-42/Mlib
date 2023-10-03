@@ -60,7 +60,7 @@ struct OsmResourceConfig {
     std::map<RoadType, std::string> curb2_street_texture;
     std::map<RoadType, std::string> air_curb_street_texture;
     float racing_line_width_x = 3.0f;
-    float racing_line_scale_y = 0.5f;
+    float racing_line_scale_y = 0.1f;
     std::string racing_line_texture;
     std::string racing_line_track;
     std::string racing_line_playback;

@@ -962,11 +962,11 @@ void DrawStreets::draw_streets_draw_ways(
     if (!std::isnan(node_way_info0->second.way_length) &&
         !std::isnan(node_way_info1->second.way_length))
     {
-        uv_len0 = node_way_info0->second.way_length / scale * uv_scale;
-        uv_len1 = node_way_info1->second.way_length / scale * uv_scale;
+        uv_len0 = node_way_info0->second.way_length / scale;
+        uv_len1 = node_way_info1->second.way_length / scale;
     } else {
         uv_len0 = 0;
-        uv_len1 = std::sqrt(sum(squared(node0.position - node1.position))) / scale * uv_scale;
+        uv_len1 = std::sqrt(sum(squared(node0.position - node1.position))) / scale;
     }
     if ((street_surface_central_resource_names.empty() != street_surface_endpoint0_resource_names.empty()) ||
         (street_surface_central_resource_names.empty() != street_surface_endpoint1_resource_names.empty())) {
@@ -997,7 +997,8 @@ void DrawStreets::draw_streets_draw_ways(
             }
             assert_true(angle_way.neighbor_is_second);
             try {
-                double uv_len_central = std::floor(uv_sy * (uv_len0 + uv_len1) / 2.);
+                double uv_len_central = std::floor(uv_sy * uv_scale * (uv_len0 + uv_len1) / 2.);
+                double racing_line_uv_len_central = std::floor(racing_line_scale_y * (uv_len0 + uv_len1) / 2.);
                 rect.draw(
                     *destination_triangles,
                     !std::isnan(racing_line_dx0) && (cva->name == "street")
@@ -1007,6 +1008,8 @@ void DrawStreets::draw_streets_draw_ways(
                     racing_line_segment_scale_x1,
                     racing_line_dx0,
                     racing_line_dx1,
+                    (float)(racing_line_scale_y * uv_len0 - racing_line_uv_len_central),
+                    (float)(racing_line_scale_y * uv_len1 - racing_line_uv_len_central),
                     flip_racing_line,
                     !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
                     !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
@@ -1018,15 +1021,16 @@ void DrawStreets::draw_streets_draw_ways(
                     wi.curb_alpha,
                     1.f,
                     uv_sx,
-                    (float)(uv_sy * uv_len0 - uv_len_central),
-                    (float)(uv_sy * uv_len1 - uv_len_central));
+                    (float)(uv_sy * uv_scale * uv_len0 - uv_len_central),
+                    (float)(uv_sy * uv_scale * uv_len1 - uv_len_central));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not draw street model \"" + model_name + "\": " + e.what());
             }
         }
     };
     auto draw_procedural_street = [&](){
-        double uv_len_central = std::round((uv_len0 + uv_len1) / 2.);
+        double uv_len_central = std::round(uv_scale * (uv_len0 + uv_len1) / 2.);
+        double racing_line_uv_len_central = std::round(racing_line_scale_y * (uv_len0 + uv_len1) / 2.);
         rect.draw_z0(
             *street_lst.triangle_list,
             std::isnan(racing_line_dx0)
@@ -1036,6 +1040,8 @@ void DrawStreets::draw_streets_draw_ways(
             racing_line_segment_scale_x1,
             racing_line_dx0,
             racing_line_dx1,
+            (float)(racing_line_scale_y * uv_len0 - racing_line_uv_len_central),
+            (float)(racing_line_scale_y * uv_len1 - racing_line_uv_len_central),
             flip_racing_line,
             !std::isnan(racing_line_dx0) ? racing_line_segment0->color : fixed_nans<float, 3>(),
             !std::isnan(racing_line_dx1) ? racing_line_segment1->color : fixed_nans<float, 3>(),
@@ -1048,8 +1054,8 @@ void DrawStreets::draw_streets_draw_ways(
             wi.colors(0),
             0,
             street_lst.uvx,
-            (float)(uv_len0 - uv_len_central),
-            (float)(uv_len1 - uv_len_central),
+            (float)(uv_scale * uv_len0 - uv_len_central),
+            (float)(uv_scale * uv_len1 - uv_len_central),
             -wi.curb_alpha,
             wi.curb_alpha,
             RectangleOrientation::CENTER,
@@ -1077,10 +1083,12 @@ void DrawStreets::draw_streets_draw_ways(
         draw_street_with_ditch(scene_node_resources.get_physics_arrays(wi.model)->scvas, wi.model);
     }
     if (angle_way.layer > 0) {
-        double uv_len_central = std::round((uv_len0 + uv_len1) / 2.);
+        double uv_len_central = std::round(uv_scale * (uv_len0 + uv_len1) / 2.);
         rect.draw_z0(
             *air_triangles.tl_air_support,
             nullptr,
+            NAN,
+            NAN,
             NAN,
             NAN,
             NAN,
@@ -1097,8 +1105,8 @@ void DrawStreets::draw_streets_draw_ways(
             wi.colors(0),
             0,
             1,
-            (float)(uv_len0 - uv_len_central),
-            (float)(uv_len1 - uv_len_central),
+            (float)(uv_scale * uv_len0 - uv_len_central),
+            (float)(uv_scale * uv_len1 - uv_len_central),
             -1,
             1,
             RectangleOrientation::CENTER,
@@ -1112,6 +1120,8 @@ void DrawStreets::draw_streets_draw_ways(
         auto draw = [&](auto& lst, auto& mesh){rect.draw(
             lst,
             nullptr,
+            NAN,
+            NAN,
             NAN,
             NAN,
             NAN,
@@ -1133,10 +1143,12 @@ void DrawStreets::draw_streets_draw_ways(
     }
     if ((wi.curb_alpha != 1) && !wi.roads_delete(1)) {
         if (!wi.roads_delete_side(angle_way.neighbor_is_second)(1)) {
-            double uv_len_central = std::round(curb_uv(1) * (uv_len0 + uv_len1) / 2.);
+            double uv_len_central = std::round(curb_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb[angle_way.road_type],
                 nullptr,
+                NAN,
+                NAN,
                 NAN,
                 NAN,
                 NAN,
@@ -1153,8 +1165,8 @@ void DrawStreets::draw_streets_draw_ways(
                 wi.colors(1),
                 0,
                 curb_uv(0),
-                (float)(curb_uv(1) * uv_len0 - uv_len_central),
-                (float)(curb_uv(1) * uv_len1 - uv_len_central),
+                (float)(curb_uv(1) * uv_scale * uv_len0 - uv_len_central),
+                (float)(curb_uv(1) * uv_scale * uv_len1 - uv_len_central),
                 -wi.curb2_alpha,
                 -wi.curb_alpha,
                 RectangleOrientation::RIGHT,
@@ -1165,10 +1177,12 @@ void DrawStreets::draw_streets_draw_ways(
                 angle_way.road_type);
         }
         if (!wi.roads_delete_side(!angle_way.neighbor_is_second)(1)) {
-            double uv_len_central = std::round(curb_uv(1) * (uv_len0 + uv_len1) / 2.);
+            double uv_len_central = std::round(curb_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb[angle_way.road_type],
                 nullptr,
+                NAN,
+                NAN,
                 NAN,
                 NAN,
                 NAN,
@@ -1185,8 +1199,8 @@ void DrawStreets::draw_streets_draw_ways(
                 wi.colors(1),
                 0,
                 curb_uv(0),
-                (float)(curb_uv(1) * uv_len0 - uv_len_central),
-                (float)(curb_uv(1) * uv_len1 - uv_len_central),
+                (float)(curb_uv(1) * uv_scale * uv_len0 - uv_len_central),
+                (float)(curb_uv(1) * uv_scale * uv_len1 - uv_len_central),
                 wi.curb_alpha,
                 wi.curb2_alpha,
                 RectangleOrientation::LEFT,
@@ -1199,10 +1213,12 @@ void DrawStreets::draw_streets_draw_ways(
     }
     if ((wi.curb2_alpha != 1) && !wi.roads_delete(2)) {
         if (!wi.roads_delete_side(angle_way.neighbor_is_second)(2)) {
-            double uv_len_central = std::round(curb2_uv(1) * (uv_len0 + uv_len1) / 2.);
+            double uv_len_central = std::round(curb2_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
                 *tlists.tl_street_curb2[angle_way.road_type],
                 nullptr,
+                NAN,
+                NAN,
                 NAN,
                 NAN,
                 NAN,
@@ -1219,8 +1235,8 @@ void DrawStreets::draw_streets_draw_ways(
                 wi.colors(2),
                 0,
                 curb2_uv(0),
-                (float)(curb2_uv(1) * uv_len0 - uv_len_central),
-                (float)(curb2_uv(1) * uv_len1 - uv_len_central),
+                (float)(curb2_uv(1) * uv_scale * uv_len0 - uv_len_central),
+                (float)(curb2_uv(1) * uv_scale * uv_len1 - uv_len_central),
                 -1,
                 -wi.curb2_alpha,
                 RectangleOrientation::RIGHT,
@@ -1239,6 +1255,8 @@ void DrawStreets::draw_streets_draw_ways(
                 NAN,
                 NAN,
                 NAN,
+                NAN,
+                NAN,
                 false,
                 fixed_nans<float, 3>(),
                 fixed_nans<float, 3>(),
@@ -1251,8 +1269,8 @@ void DrawStreets::draw_streets_draw_ways(
                 wi.colors(2),
                 0,
                 curb2_uv(0),
-                (float)(curb2_uv(1) * uv_len0 - uv_len_central),
-                (float)(curb2_uv(1) * uv_len1 - uv_len_central),
+                (float)(curb2_uv(1) * uv_scale * uv_len0 - uv_len_central),
+                (float)(curb2_uv(1) * uv_scale * uv_len1 - uv_len_central),
                 wi.curb2_alpha,
                 1,
                 RectangleOrientation::LEFT,
