@@ -14,12 +14,12 @@ public:
     : key_bindings{std::move(key_bindings)},
       not_key_binding{std::move(not_key_binding)}
     {}
-    BaseKeyCombination(BaseKeyCombination&& other)
+    BaseKeyCombination(BaseKeyCombination&& other) noexcept
     : key_bindings{std::move(other.key_bindings)},
       not_key_binding{std::move(other.not_key_binding)},
       destruction_observers{std::move(other.destruction_observers)}
     {}
-    BaseKeyCombination& operator = (BaseKeyCombination&& other) {
+    BaseKeyCombination& operator = (BaseKeyCombination&& other) noexcept {
         key_bindings = std::move(other.key_bindings);
         not_key_binding = std::move(other.not_key_binding);
         destruction_observers = std::move(other.destruction_observers);
