@@ -1,6 +1,7 @@
 #include "Yaw_Pitch_Look_At_Nodes.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -45,11 +46,6 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     if (followed_node_ != nullptr) {
         followed_node_->clearing_observers.remove(*this);
     }
-}
-
-template <class TData>
-static float z_to_yaw(const FixedArray<TData, 3>& z) {
-    return float(-std::atan2(-z(0), z(2)));
 }
 
 void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {

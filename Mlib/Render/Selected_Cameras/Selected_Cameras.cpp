@@ -1,4 +1,5 @@
 #include "Selected_Cameras.hpp"
+#include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -18,6 +19,19 @@ SelectedCameras::SelectedCameras(Scene& scene)
 
 SelectedCameras::~SelectedCameras()
 {}
+
+std::optional<CameraCycleType> SelectedCameras::cycle(const std::string& name) const {
+    if (camera_cycle_near_.contains(name)) {
+        return CameraCycleType::NEAR;
+    }
+    if (camera_cycle_far_.contains(name)) {
+        return CameraCycleType::FAR;
+    }
+    if (camera_cycle_tripod_.contains(name)) {
+        return CameraCycleType::TRIPOD;
+    }
+    return std::nullopt;
+}
 
 void SelectedCameras::set_camera_node_name(const std::string& name) {
     std::scoped_lock lock{camera_mutex_};
@@ -44,22 +58,30 @@ std::string SelectedCameras::camera_node_name() const {
     }
 }
 
-void SelectedCameras::set_camera_cycle_near(const std::vector<std::string>& cameras) {
-    camera_cycle_near_.set_camera_names(cameras);
-}
-
-void SelectedCameras::set_camera_cycle_far(const std::vector<std::string>& cameras) {
-    camera_cycle_far_.set_camera_names(cameras);
+void SelectedCameras::set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras) {
+    if (tpe == CameraCycleType::NEAR) {
+        camera_cycle_near_.set_camera_names(cameras);
+    } else if (tpe == CameraCycleType::FAR) {
+        camera_cycle_far_.set_camera_names(cameras);
+    } else if (tpe == CameraCycleType::TRIPOD) {
+        camera_cycle_tripod_.set_camera_names(cameras);
+    } else {
+        THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));
+    }
 }
 
 std::string SelectedCameras::dirtmap_node_name() const {
     return dirtmap_node_name_;
 }
 
-void SelectedCameras::cycle_near_camera() {
-    camera_cycle_near_.cycle_camera();
-}
-
-void SelectedCameras::cycle_far_camera() {
-    camera_cycle_far_.cycle_camera();
+void SelectedCameras::cycle_camera(CameraCycleType tpe) {
+    if (tpe == CameraCycleType::NEAR) {
+        camera_cycle_near_.cycle_camera();
+    } else if (tpe == CameraCycleType::FAR) {
+        camera_cycle_far_.cycle_camera();
+    } else if (tpe == CameraCycleType::TRIPOD) {
+        camera_cycle_tripod_.cycle_camera();
+    } else {
+        THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));
+    }
 }

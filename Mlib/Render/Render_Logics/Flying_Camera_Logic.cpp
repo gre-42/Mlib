@@ -5,7 +5,8 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -102,7 +103,7 @@ static void nofly_key_callback(
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
     if (button_press.keys_pressed(keys.L)) {
-        user_object.cameras.cycle_far_camera();
+        user_object.cameras.cycle_camera(CameraCycleType::FAR);
     }
     // if (button_press.key_pressed({.key = "P"})) {
     //     if (user_object.physics_set_fps != nullptr) {

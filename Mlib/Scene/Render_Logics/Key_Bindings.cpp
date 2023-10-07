@@ -1,5 +1,6 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -34,7 +35,8 @@
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -137,7 +139,7 @@ KeyBindings::~KeyBindings() {
     std::set<DanglingPtr<SceneNode>> nodes;
     for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : relative_movable_key_bindings_) { nodes.insert(b.node); }
+    for (auto& b : relative_movable_key_bindings_) { if (b.fixed_node != nullptr) nodes.insert(b.fixed_node); }
     for (auto& b : car_controller_idle_bindings_) { nodes.insert(b.node); }
     for (auto& b : car_controller_key_bindings_) { nodes.insert(b.node); }
     for (auto& b : plane_controller_idle_bindings_) { nodes.insert(b.node); }
@@ -156,7 +158,7 @@ void KeyBindings::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
     auto dop = destroyed_object.ptr();
     absolute_movable_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
     absolute_movable_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    relative_movable_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
+    relative_movable_key_bindings_.remove_if([&dop](const auto& b){return b.fixed_node == dop;});
     car_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
     car_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
     plane_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
@@ -274,7 +276,9 @@ const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(c
 }
 
 const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    if (b.fixed_node != nullptr) {
+        b.fixed_node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    }
     relative_movable_key_bindings_.push_back(b);
     return relative_movable_key_bindings_.back();
 }
@@ -529,49 +533,49 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Relative movable
-    for (const auto& k : relative_movable_key_bindings_) {
-        auto& m = k.node->get_relative_movable();
-        auto rt = dynamic_cast<RelativeTransformer*>(&m);
-        auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
-        if (rt != nullptr) {
-            rt->w_ = 0.f;
-        } else if (ypln != nullptr) {
-            // Do nothing (yet)
-        } else {
-            THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+    {
+        std::vector<std::pair<const RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> v;
+        v.reserve(relative_movable_key_bindings_.size());
+        for (auto& k : relative_movable_key_bindings_) {
+            auto node = k.dynamic_node();
+            if (node == nullptr) {
+                continue;
+            }
+            v.emplace_back(k, *node);
         }
-    }
-    for (auto& k : relative_movable_key_bindings_) {
-        auto& m = k.node->get_relative_movable();
-        auto rt = dynamic_cast<RelativeTransformer*>(&m);
-        auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
-        const auto& key_config = key_configurations_.get(k.id);
-        float alpha = button_press_.keys_alpha(key_config.base_combo, k.role);
-        if (!std::isnan(alpha)) {
-            float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
+        for (const auto& [k, node] : v) {
+            auto& m = node->get_relative_movable();
+            auto rt = dynamic_cast<RelativeTransformer*>(&m);
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
+
+            // Reset to defaults
             if (rt != nullptr) {
-                rt->w_ = w * k.rotation_axis;
+                rt->w_ = 0.f;
             } else if (ypln != nullptr) {
-                if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
-                    ypln->increment_yaw(w * cfg.dt);
-                } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
-                    ypln->pitch_look_at_node().increment_pitch(w * cfg.dt);
-                } else {
-                    THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
-                }
+                // Do nothing (yet)
             } else {
                 THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
             }
         }
-        if (key_config.cursor_movement != nullptr) {
-            float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
-            if (!std::isnan(beta)) {
-                float dangle = beta * k.speed_cursor;
+        for (const auto& [k, node] : v) {
+            auto& m = node->get_relative_movable();
+            auto rt = dynamic_cast<RelativeTransformer*>(&m);
+            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
+
+            auto rotate_by = [&k, &node, &rt, &ypln](float dangle){
                 if (rt != nullptr) {
-                    // rt->w_ = beta * k.angular_velocity_repeat;
-                    rt->transformation_matrix_.R() = dot2d(
-                        rodrigues2(k.rotation_axis, dangle),
-                        rt->transformation_matrix_.R());
+                    // rt->w_ = w * k.rotation_axis;
+                    // auto r = node->rotation();
+                    auto z = rt->transformation_matrix_.R().column(2);
+                    auto r = FixedArray<float, 3>{z_to_pitch(z), z_to_yaw(z), 0.f};
+                    if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
+                        r(1) += dangle;
+                    } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
+                        r(0) += dangle;
+                    } else {
+                        THROW_OR_ABORT("Unsupported rotation axis for relative transformer");
+                    }
+                    rt->transformation_matrix_.R() = tait_bryan_angles_2_matrix(r);
                 } else if (ypln != nullptr) {
                     if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
                         ypln->increment_yaw(dangle);
@@ -582,6 +586,20 @@ void KeyBindings::increment_external_forces(
                     }
                 } else {
                     THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                }
+            };
+
+            // Apply key binding
+            const auto& key_config = key_configurations_.get(k.id);
+            float alpha = button_press_.keys_alpha(key_config.base_combo, k.role);
+            if (!std::isnan(alpha)) {
+                float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
+                rotate_by(w * cfg.dt);
+            }
+            if (key_config.cursor_movement != nullptr) {
+                float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+                if (!std::isnan(beta)) {
+                    rotate_by(beta * k.speed_cursor);
                 }
             }
         }
@@ -782,11 +800,14 @@ void KeyBindings::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("KeyBindings::render");
-    // Camera
+    // Near camera
     for (const auto& k : camera_key_bindings_) {
+        if (k.tpe == CameraCycleType::FAR) {
+            continue;
+        }
         const auto& key_config = key_configurations_.get(k.id);
         if (button_press_.keys_pressed(key_config.base_combo, k.role)) {
-            selected_cameras_.cycle_near_camera();
+            selected_cameras_.cycle_camera(k.tpe);
         }
     }
 }

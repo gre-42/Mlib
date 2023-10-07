@@ -1,6 +1,7 @@
 #include "Pitch_Look_At_Node.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -49,11 +50,6 @@ PitchLookAtNode::~PitchLookAtNode() {
     if (followed_node_ != nullptr) {
         followed_node_->clearing_observers.remove(*this);
     }
-}
-
-template <class TData>
-static float z_to_pitch(const FixedArray<TData, 3>& z) {
-    return (float)std::atan2(-z(1), std::sqrt(squared(z(2)) + squared(z(0))));
 }
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {

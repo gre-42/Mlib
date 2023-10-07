@@ -45,7 +45,7 @@
 #include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>

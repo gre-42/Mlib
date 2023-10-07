@@ -10,7 +10,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

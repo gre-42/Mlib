@@ -1,25 +1,26 @@
 #pragma once
+#include <Mlib/Render/Selected_Cameras/Camera_Cycle.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
-#include <Mlib/Render/Camera_Cycle.hpp>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace Mlib {
 
 class Scene;
+enum class CameraCycleType;
 
 class SelectedCameras {
 public:
     explicit SelectedCameras(Scene& scene);
     ~SelectedCameras();
-    void set_camera_node_name(const std::string& name);
     std::string camera_node_name() const;
-    void set_camera_cycle_near(const std::vector<std::string>& cameras);
-    void set_camera_cycle_far(const std::vector<std::string>& cameras);
     std::string dirtmap_node_name() const;
-    void cycle_near_camera();
-    void cycle_far_camera();
+    void set_camera_node_name(const std::string& name);
+    void set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras);
+    void cycle_camera(CameraCycleType tpe);
+    std::optional<CameraCycleType> cycle(const std::string& name) const;
 private:
     Scene& scene_;
     std::string dirtmap_node_name_;

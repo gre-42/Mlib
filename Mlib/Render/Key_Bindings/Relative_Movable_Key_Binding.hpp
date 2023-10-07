@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <functional>
 #include <string>
 
 namespace Mlib {
@@ -10,7 +11,8 @@ class SceneNode;
 struct RelativeMovableKeyBinding {
     std::string id;
     std::string role;
-    DanglingPtr<SceneNode> node;
+    DanglingPtr<SceneNode> fixed_node;
+    std::function<DanglingPtr<SceneNode>()> dynamic_node;
     FixedArray<float, 3> rotation_axis;
     float angular_velocity_press;
     float angular_velocity_repeat;

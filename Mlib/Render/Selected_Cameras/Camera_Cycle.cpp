@@ -1,6 +1,6 @@
 #include "Camera_Cycle.hpp"
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -14,9 +14,9 @@ CameraCycle::CameraCycle(
 
 CameraCycle::~CameraCycle() = default;
 
-std::vector<std::string> CameraCycle::camera_names() const {
+bool CameraCycle::contains(const std::string& name) const {
     std::shared_lock lock{mutex_};
-    return camera_names_;
+    return std::find(camera_names_.begin(), camera_names_.end(), name) != camera_names_.end();
 }
 
 void CameraCycle::set_camera_names(const std::vector<std::string>& cameras) {

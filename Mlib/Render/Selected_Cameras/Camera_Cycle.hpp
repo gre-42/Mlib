@@ -13,7 +13,7 @@ public:
         SelectedCameras& selected_cameras,
         std::vector<std::string> camera_names);
     ~CameraCycle();
-    std::vector<std::string> camera_names() const;
+    bool contains(const std::string& name) const;
     void set_camera_names(const std::vector<std::string>& cameras);
     void cycle_camera();
 private:
