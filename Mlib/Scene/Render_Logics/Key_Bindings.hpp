@@ -14,6 +14,7 @@ struct CarControllerIdleBinding;
 struct CarControllerKeyBinding;
 struct PlaneControllerIdleBinding;
 struct PlaneControllerKeyBinding;
+struct PrintNodeInfoKeyBinding;
 struct AvatarControllerIdleBinding;
 struct AvatarControllerKeyBinding;
 struct WeaponCycleKeyBinding;
@@ -75,6 +76,7 @@ public:
     const WeaponCycleKeyBinding& add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b);
     const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
     const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
+    const PrintNodeInfoKeyBinding& add_print_node_info_key_binding(const PrintNodeInfoKeyBinding& b);
 
     void delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding);
     void delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding);
@@ -88,6 +90,7 @@ public:
     void delete_weapon_cycle_key_binding(const WeaponCycleKeyBinding& deleted_key_binding);
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
+    void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
 private:
     float get_alpha(const KeyConfiguration& key_config, const std::string& role);
 
@@ -104,6 +107,7 @@ private:
     std::list<WeaponCycleKeyBinding> weapon_cycle_key_bindings_;
     std::list<GunKeyBinding> gun_key_bindings_;
     std::list<PlayerKeyBinding> player_key_bindings_;
+    std::list<PrintNodeInfoKeyBinding> print_node_info_key_bindings_;
 
     Map<std::string, KeyConfiguration> key_configurations_;
 

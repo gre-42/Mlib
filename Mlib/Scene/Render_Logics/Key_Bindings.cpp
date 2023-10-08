@@ -33,6 +33,7 @@
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Print_Node_Info_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
@@ -265,76 +266,71 @@ void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
 
 const AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    absolute_movable_idle_bindings_.push_back(b);
-    return absolute_movable_idle_bindings_.back();
+    return absolute_movable_idle_bindings_.emplace_back(b);
 }
 
 const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    absolute_movable_key_bindings_.push_back(b);
-    return absolute_movable_key_bindings_.back();
+    return absolute_movable_key_bindings_.emplace_back(b);
 }
 
 const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
     if (b.fixed_node != nullptr) {
         b.fixed_node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     }
-    relative_movable_key_bindings_.push_back(b);
-    return relative_movable_key_bindings_.back();
+    return relative_movable_key_bindings_.emplace_back(b);
 }
 
 const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    car_controller_idle_bindings_.push_back(b);
-    return car_controller_idle_bindings_.back();
+    return car_controller_idle_bindings_.emplace_back(b);
 }
 
 const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    car_controller_key_bindings_.push_back(b);
-    return car_controller_key_bindings_.back();
+    return car_controller_key_bindings_.emplace_back(b);
 }
 
 const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    plane_controller_idle_bindings_.push_back(b);
-    return plane_controller_idle_bindings_.back();
+    return plane_controller_idle_bindings_.emplace_back(b);
 }
 
 const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    plane_controller_key_bindings_.push_back(b);
-    return plane_controller_key_bindings_.back();
+    return plane_controller_key_bindings_.emplace_back(b);
 }
 
 const AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    avatar_controller_idle_bindings_.push_back(b);
-    return avatar_controller_idle_bindings_.back();
+    return avatar_controller_idle_bindings_.emplace_back(b);
 }
 
 const AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    avatar_controller_key_bindings_.push_back(b);
-    return avatar_controller_key_bindings_.back();
+    return avatar_controller_key_bindings_.emplace_back(b);
 }
 
 const WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    weapon_cycle_key_bindings_.push_back(b);
-    return weapon_cycle_key_bindings_.back();
+    return weapon_cycle_key_bindings_.emplace_back(b);
 }
 
 const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
     b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    gun_key_bindings_.push_back(b);
-    return gun_key_bindings_.back();
+    return gun_key_bindings_.emplace_back(b);
 }
 
 const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
     b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    player_key_bindings_.push_back(b);
-    return player_key_bindings_.back();
+    return player_key_bindings_.emplace_back(b);
+}
+
+const PrintNodeInfoKeyBinding& KeyBindings::add_print_node_info_key_binding(const PrintNodeInfoKeyBinding& b) {
+    if (b.fixed_node != nullptr) {
+        b.fixed_node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    }
+    return print_node_info_key_bindings_.emplace_back(b);
 }
 
 void KeyBindings::delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding) {
@@ -617,6 +613,22 @@ void KeyBindings::increment_external_forces(
                     translate(beta * k.speed_cursor);
                 }
             }
+        }
+    }
+    // Node info
+    for (const auto& k : print_node_info_key_bindings_) {
+        auto node = k.dynamic_node();
+        if (node == nullptr) {
+            continue;
+        }
+        const auto& key_config = key_configurations_.get(k.id);
+        if (button_press_.keys_pressed(key_config.base_combo, k.role)) {
+            linfo() << "Key ID: " << k.id;
+            auto trafo = node->absolute_model_matrix();
+            auto z = trafo.R().column(2);
+            linfo() << "Position: " << trafo.t() / (double)meters;
+            linfo() << "Pitch: " << z_to_pitch(z) / degrees;
+            linfo() << "Yaw: " << z_to_yaw(z) / degrees;
         }
     }
     // Avatar controller
