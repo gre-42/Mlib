@@ -56,7 +56,7 @@ class FastUniformIntRandomNumberGenerator {
 public:
     explicit FastUniformIntRandomNumberGenerator(unsigned int seed, const TData& low, const TData& high)
     : e_(seed),
-      d_(integral_cast<int>(low), integral_cast<int>(high + 1))
+      d_(integral_cast<int>(low), double(integral_cast<int>(high)) + 1.)
     {
         std::ignore = e_();
     }
