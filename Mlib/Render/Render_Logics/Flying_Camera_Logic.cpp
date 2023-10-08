@@ -19,7 +19,7 @@
 
 namespace Mlib {
 struct FlyingCameraLogicKeys {
-    BaseKeyCombination L{{{.key = "L"}}};
+    BaseKeyCombination V{{{.key = "V"}}};
     BaseKeyCombination W{{{.key = "W"}}};
     BaseKeyCombination D{{{.key = "D"}}};
     BaseKeyCombination C{{{.key = "C"}}};
@@ -102,7 +102,7 @@ static void nofly_key_callback(
     // if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     //     GLFW_CHK(glfwSetWindowShouldClose(window, GLFW_TRUE));
     // }
-    if (button_press.keys_pressed(keys.L)) {
+    if (button_press.keys_pressed(keys.V)) {
         user_object.cameras.cycle_camera(CameraCycleType::FAR);
     }
     // if (button_press.key_pressed({.key = "P"})) {

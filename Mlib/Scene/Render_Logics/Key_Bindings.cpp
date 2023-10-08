@@ -562,7 +562,10 @@ void KeyBindings::increment_external_forces(
             auto rt = dynamic_cast<RelativeTransformer*>(&m);
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
 
-            auto rotate_by = [&k, &node, &rt, &ypln](float dangle){
+            auto rotate = [&k, &node, &rt, &ypln](float dangle){
+                if (dangle == 0.f) {
+                    return;
+                }
                 if (rt != nullptr) {
                     // rt->w_ = w * k.rotation_axis;
                     // auto r = node->rotation();
@@ -589,17 +592,29 @@ void KeyBindings::increment_external_forces(
                 }
             };
 
+            auto translate = [&k, &rt](double dx){
+                if (dx == 0.) {
+                    return;
+                }
+                if (rt != nullptr) {
+                    rt->transformation_matrix_.t() += dx * dot1d(rt->transformation_matrix_.R().casted<double>(), k.translation);
+                }
+            };
+
             // Apply key binding
             const auto& key_config = key_configurations_.get(k.id);
             float alpha = button_press_.keys_alpha(key_config.base_combo, k.role);
             if (!std::isnan(alpha)) {
+                double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
-                rotate_by(w * cfg.dt);
+                translate(v * cfg.dt);
+                rotate(w * cfg.dt);
             }
             if (key_config.cursor_movement != nullptr) {
                 float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
                 if (!std::isnan(beta)) {
-                    rotate_by(beta * k.speed_cursor);
+                    rotate(beta * k.speed_cursor);
+                    translate(beta * k.speed_cursor);
                 }
             }
         }

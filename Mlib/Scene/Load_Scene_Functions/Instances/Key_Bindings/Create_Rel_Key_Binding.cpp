@@ -1,6 +1,7 @@
 #include "Create_Rel_Key_Binding.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -21,7 +22,10 @@ DECLARE_ARGUMENT(role);
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 
+DECLARE_ARGUMENT(translation);
 DECLARE_ARGUMENT(rotation_axis);
+DECLARE_ARGUMENT(velocity_press);
+DECLARE_ARGUMENT(velocity_repeat);
 DECLARE_ARGUMENT(angular_velocity_press);
 DECLARE_ARGUMENT(angular_velocity_repeat);
 DECLARE_ARGUMENT(speed_cursor);
@@ -47,9 +51,12 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .role = args.arguments.at<std::string>(KnownArgs::role),
         .fixed_node = node.ptr(),
         .dynamic_node= [node]() {return node.ptr();},
-        .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis),
-        .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press) * radians / s,
-        .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat) * radians / s,
+        .translation = args.arguments.at<FixedArray<double, 3>>(KnownArgs::translation, fixed_zeros<double, 3>()),
+        .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
+        .velocity_press = args.arguments.at<double>(KnownArgs::velocity_press, 0.) * kph,
+        .velocity_repeat = args.arguments.at<double>(KnownArgs::velocity_repeat, 0.) * kph,
+        .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / s,
+        .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat, 0.f) * radians / s,
         .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
