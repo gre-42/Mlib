@@ -25,7 +25,7 @@ PlaneNd<double, 3> Triangle3D::plane() const {
     return PlaneNd<double, 3>{vertices_};
 }
 
-BoundingSphere<double, 3> Triangle3D::bounding_sphere(FastUniformIntRandomNumberGenerator<size_t>& rng) const {
+BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) const {
     return circumscribed_sphere<double, 3>(vertices_, rng);
 }
 

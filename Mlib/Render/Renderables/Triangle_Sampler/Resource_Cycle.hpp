@@ -10,7 +10,7 @@ template <class TResource>
 class ResourceCycle {
 public:
     ResourceCycle(const std::vector<TResource>& resources)
-    : index_{1, 0, resources.size() - 1},
+    : index_{1, 0, std::max((size_t)1, resources.size()) - 1},
       resources_{resources}
     {}
     ~ResourceCycle()

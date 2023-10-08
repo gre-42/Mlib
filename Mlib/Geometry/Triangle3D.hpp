@@ -1,12 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <random>
 
 namespace Mlib {
 
 template <class TData, size_t tndim>
 class PlaneNd;
-template <class TData>
-class FastUniformIntRandomNumberGenerator;
 template <class TData, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
@@ -24,7 +23,7 @@ public:
         const TransformationMatrix<float, double, 3>& transformation);
     const FixedArray<FixedArray<double, 3>, 3>& vertices() const;
     PlaneNd<double, 3> plane() const;
-    BoundingSphere<double, 3> bounding_sphere(FastUniformIntRandomNumberGenerator<size_t>& rng) const;
+    BoundingSphere<double, 3> bounding_sphere(std::minstd_rand& rng) const;
     AxisAlignedBoundingBox<double, 3> aabb() const;
 private:
     const FixedArray<FixedArray<double, 3>, 3> vertices_;

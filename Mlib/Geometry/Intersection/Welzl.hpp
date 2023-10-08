@@ -2,16 +2,18 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
-#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <random>
 #include <set>
 #include <stdexcept>
 #include <vector>
 
 namespace Mlib {
 
-inline FastUniformIntRandomNumberGenerator<size_t> welzl_rng() {
-    return FastUniformIntRandomNumberGenerator<size_t>{43, 0, SIZE_MAX};
+inline std::minstd_rand welzl_rng() {
+    std::minstd_rand e;
+    std::ignore = e();
+    return e;
 }
 
 template <class TData, size_t tndim>
@@ -122,7 +124,7 @@ BoundingSphere<TData, tndim> welzl(
     if (P.empty() || (R.size() == tndim + 1 - rank_deficiency)) {
         return circumscribed_sphere(R, rng);
     }
-    size_t p_i = rng() % P.size();
+    size_t p_i = std::uniform_int_distribution<size_t>(0, P.size() - 1)(rng);
     const auto* p_c = P[p_i];
     P[p_i] = P[P.size() - 1];
     P.resize(P.size() - 1);
