@@ -14,6 +14,7 @@ class Interp;
 
 void apply_displacement_map(
     const StreetBvh& ground_bvh,
+    const StreetBvh& air_bvh,
     const std::list<std::shared_ptr<TriangleList<double>>>& triangles,
     const Array<double>& displacementmap,
     double min_displacement,

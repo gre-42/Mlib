@@ -321,6 +321,7 @@ OsmMapResource::OsmMapResource(
     auto ocean_ground_triangles = osm_triangle_lists.ocean_ground_triangles();
     StreetBvh all_holes_bvh{all_hole_triangles};
     StreetBvh ground_street_bvh{street_hole_triangles};
+    StreetBvh air_bvh{air_triangle_lists.street_hole_triangles()};
 
     // if (forest_outline_tree_distance != INFINITY) {
     //     add_grass_outlines(
@@ -534,7 +535,7 @@ OsmMapResource::OsmMapResource(
                 *hri_.bri,
                 rnc,
                 StreetBvh{ osm_triangle_lists.no_trees_triangles() },
-                StreetBvh{ air_triangle_lists.street_hole_triangles() },
+                air_bvh,
                 steiner_points,
                 config.scale,
                 ws.min_dist,
@@ -616,6 +617,7 @@ OsmMapResource::OsmMapResource(
     if (!config.displacementmap.empty()) {
         apply_displacement_map(
             ground_street_bvh,
+            air_bvh,
             osm_triangle_lists.tls_smoothed(),
             StbImage1::load_from_file(config.displacementmap).to_float_grayscale().casted<double>(),
             config.displacementmap_min,
