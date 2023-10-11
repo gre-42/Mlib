@@ -42,19 +42,19 @@ Render2::Render2(
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
     RenderResults* render_results)
-: num_renderings_{num_renderings},
-  set_fps_{set_fps},
-  render_results_{render_results},
-  render_config_{render_config}
+    : num_renderings_{ num_renderings }
+    , set_fps_{ set_fps }
+    , render_results_{ render_results }
+    , render_config_{ render_config }
 {
     if (glfwInit() == GLFW_FALSE) {
         THROW_OR_ABORT("glfwInit failed");
     }
     GLFW_CHK(glfwSetErrorCallback(error_callback));
 
-	// From: https://stackoverflow.com/questions/46510889
-	// Not specifying GLFW_CONTEXT_VERSION_MAJOR/MINOR will select the highest supported version.
-	// The actual version can then be obtained using "glGetIntegerv(GL_MAJOR_VERSION/MINOR...)
+    // From: https://stackoverflow.com/questions/46510889
+    // Not specifying GLFW_CONTEXT_VERSION_MAJOR/MINOR will select the highest supported version.
+    // The actual version can then be obtained using "glGetIntegerv(GL_MAJOR_VERSION/MINOR...)
     // GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, render_config.opengl_major_version));
     // GLFW_CHK(glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, render_config.opengl_minor_version));
     if (render_results != nullptr && (render_results->output != nullptr || !render_results->outputs.empty())) {
@@ -84,7 +84,7 @@ Render2::Render2(
         GLFW_CHK(glfwSetInputMode(&window_->glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED));
     }
     {
-        GlContextGuard gcg{*window_};
+        GlContextGuard gcg{ *window_ };
         CHK(int version = gladLoadGL(glfwGetProcAddress));
         if (version == 0) {
             THROW_OR_ABORT("gladLoadGL failed");

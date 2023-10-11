@@ -1,10 +1,10 @@
 #pragma once
+#ifndef __ANDROID__
+
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <atomic>
 #include <memory>
 #include <vector>
-
-#ifndef __ANDROID__
 
 struct GLFWwindow;
 
