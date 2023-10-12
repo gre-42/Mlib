@@ -36,8 +36,7 @@ SceneToPercentageRegion::SceneToPercentageRegion(RenderableScene& renderable_sce
 void SceneToPercentageRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& rs = args.renderable_scenes[args.arguments.at<std::string>(KnownArgs::target_scene)];
-    std::shared_ptr<RenderToPercentageRegionLogic> render_scene_to_pixel_region_logic_;
-    render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPercentageRegionLogic>(
+    auto render_scene_to_pixel_region_logic_ = std::make_shared<RenderToPercentageRegionLogic>(
         renderable_scene,
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),

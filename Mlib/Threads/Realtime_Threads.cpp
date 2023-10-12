@@ -119,7 +119,7 @@ static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
 	for (uint32_t i = min; i < max; ++i) {
 		affinity_mask |= (DWORD_PTR(1) << i);
 	}
-	if (int rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
+	if (DWORD_PTR rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
 		THROW_OR_ABORT("Could not set thread affinity mask: " + GetLastErrorAsString());
 	}
 }
