@@ -183,8 +183,8 @@ int main(int argc, char** argv)
 
     last_time = glfwGetTime();
     frame_rate = 0.0;
-    swap_tear = (glfwExtensionSupported("WGL_EXT_swap_control_tear") ||
-                 glfwExtensionSupported("GLX_EXT_swap_control_tear"));
+    swap_tear = ((glfwExtensionSupported("WGL_EXT_swap_control_tear") == GLFW_TRUE) ||
+                 (glfwExtensionSupported("GLX_EXT_swap_control_tear") == GLFW_TRUE));
 
     glfwSetKeyCallback(window, key_callback);
 
