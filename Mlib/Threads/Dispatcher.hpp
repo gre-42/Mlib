@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 
@@ -13,11 +14,9 @@ public:
     void produce();
     void wait_for_data();
     void consume();
-    void register_participant();
-    void deregister_participant();
 private:
     unsigned int nparticipants_;
-    unsigned int nwaiting_;
+    std::atomic_int nwaiting_;
     unsigned int nproduced_;
     std::mutex mutex_;
     std::condition_variable cv_;
