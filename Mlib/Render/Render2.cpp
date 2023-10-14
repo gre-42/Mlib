@@ -103,8 +103,13 @@ Render2::~Render2() {
 }
 
 void Render2::print_hardware_info() const {
-    GlContextGuard gcg{ *window_ };
-    print_gl_version_info();
+    {
+        GlContextGuard gcg{ *window_ };
+        print_gl_version_info();
+    }
+// #ifndef __ANDROID__
+//     print_monitor_info();
+// #endif
 }
 
 Renderer Render2::generate_renderer() const
