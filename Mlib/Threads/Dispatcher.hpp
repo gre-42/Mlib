@@ -16,7 +16,7 @@ public:
     void consume();
 private:
     unsigned int nparticipants_;
-    std::atomic_int nwaiting_;
+    std::atomic_uint nwaiting_;
     unsigned int nproduced_;
     std::mutex mutex_;
     std::condition_variable cv_;
