@@ -16,11 +16,15 @@ Window::Window(
     GLFWmonitor* monitor,
     GLFWwindow* share,
     bool use_double_buffering,
-    int swap_interval)
+    int swap_interval,
+    int fullscreen_refresh_rate)
 : use_double_buffering_{ use_double_buffering }
 {
     if (!use_double_buffering_) {
         GLFW_CHK(glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE));
+    }
+    if (fullscreen_refresh_rate != 0) {
+        GLFW_CHK(glfwWindowHint(GLFW_REFRESH_RATE, fullscreen_refresh_rate));
     }
     window_ = GLFW_CHK(glfwCreateWindow(
         width,

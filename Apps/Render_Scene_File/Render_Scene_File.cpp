@@ -263,6 +263,7 @@ int main(int argc, char** argv) {
         "    [--render_max_residual_time <dt> ]\n"
         "    [--no_control_physics_fps ]\n"
         "    [--no_control_render_fps ]\n"
+        "    [--fullscreen_refresh_rate <Hz> ]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -332,6 +333,7 @@ int main(int argc, char** argv) {
          "--verbose"},
         {"--app_reldir",
          "--swap_interval",
+         "--fullscreen_refresh_rate",
          "--nsamples_msaa",
          "--lightmap_nsamples_msaa",
          "--min_sample_shading",
@@ -409,6 +411,7 @@ int main(int argc, char** argv) {
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
+            .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .print_fps = args.has_named("--print_render_fps"),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         RealtimeDependentFps render_set_fps{

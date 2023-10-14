@@ -25,7 +25,8 @@ public:
         GLFWmonitor* monitor,
         GLFWwindow* share,
         bool use_double_buffering,
-        int swap_interval);
+        int swap_interval,
+        int fullscreen_refresh_rate);
     ~Window();
     GLFWwindow& glfw_window() const;
     FixedArray<float, 2> dpi() const;

@@ -43,10 +43,11 @@ int main(int argc, char** argv)
             800,
             600,
             "LearnOpenGL",
-            nullptr,
-            nullptr,
-            true,
-            1};
+            nullptr,    // monitor
+            nullptr,    // share
+            true,       // use_double_buffering
+            1,          // swap_interval
+            0};         // fullscreen_refresh_rate
         GlContextGuard gcg{ window };
         CHK(int version = gladLoadGL(glfwGetProcAddress));
         if (version == 0) {
