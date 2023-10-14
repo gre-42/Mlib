@@ -148,6 +148,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
                                      0, 0, mode->width, mode->height,
                                      mode->refreshRate);
             }
+            // Deviation from the original code, seems to be necessary.
+            set_swap_interval(window, swap_interval);
 
             break;
         }

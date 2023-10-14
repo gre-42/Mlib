@@ -37,6 +37,7 @@ public:
 private:
     GLFWwindow* window_;
     bool use_double_buffering_;
+    int swap_interval_;
     std::unique_ptr<ContextQueryGuard> context_query_guard_;
 };
 

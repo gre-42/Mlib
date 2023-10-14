@@ -18,7 +18,8 @@ Window::Window(
     bool use_double_buffering,
     int swap_interval,
     int fullscreen_refresh_rate)
-: use_double_buffering_{ use_double_buffering }
+    : use_double_buffering_{ use_double_buffering }
+    , swap_interval_{ swap_interval }
 {
     if (!use_double_buffering_) {
         GLFW_CHK(glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE));
@@ -64,6 +65,9 @@ FixedArray<float, 2> Window::dpi() const {
 
 void Window::draw() const {
     if (use_double_buffering_) {
+        // Re-apply swap interval in case window was changed from
+        // window-mode to full-screen or vice versa.
+        GLFW_CHK(glfwSwapInterval(swap_interval_));
         GLFW_CHK(glfwSwapBuffers(window_));
     } else {
         CHK(glFlush());
