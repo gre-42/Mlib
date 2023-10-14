@@ -16,6 +16,7 @@ public:
         const std::function<bool()>& paused = [](){return false;});
     ~SetFps();
     void tick();
+    void execute_oldest_funcs();
     bool paused() const;
     void execute(const std::function<void()>& func);
     void request_stop();

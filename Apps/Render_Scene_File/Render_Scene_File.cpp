@@ -72,9 +72,11 @@ std::future<void> render_thread(
                             frame_id);
                         if (args.has_named("--single_threaded")) {
                             for (auto& [_, r] : renderable_scenes.guarded_iterable()) {
+                                SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
                                     r.physics_iteration_();
                                 }
+                                r.physics_set_fps_.execute_oldest_funcs();
                             }
                         }
                     } else if (renderable_scenes.contains("loading")) {
@@ -178,6 +180,11 @@ std::future<void> loader_thread(
                     gallery,
                     asset_references,
                     renderable_scenes);
+                if (args.has_named("--single_threaded")) {
+                    for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                        r.scene_.delete_node_mutex().clear_deleter_thread();
+                    }
+                }
                 load_scene_finished = true;
                 renderable_scenes["primary_scene"].instantiate_audio_listener();
             }

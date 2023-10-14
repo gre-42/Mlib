@@ -19,7 +19,7 @@ SetFps::~SetFps() = default;
 void SetFps::tick()
 {
     sleeper_.tick();
-    while (execute_oldest_func());
+    execute_oldest_funcs();
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
             while (execute_oldest_func());
@@ -27,6 +27,10 @@ void SetFps::tick()
         }
         sleeper_.reset();
     }
+}
+
+void SetFps::execute_oldest_funcs() {
+    while (execute_oldest_func());
 }
 
 bool SetFps::execute_oldest_func() {
