@@ -33,14 +33,14 @@ class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class Render2 {
+class Render {
 public:
-    explicit Render2(
+    explicit Render(
         const RenderConfig& render_config,
         std::atomic_size_t& num_renderings,
         SetFps& set_fps,
         RenderResults* render_results = nullptr);
-    ~Render2();
+    ~Render();
 
     void print_hardware_info() const;
 

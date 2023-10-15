@@ -24,7 +24,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -81,7 +81,7 @@ void test_physics_engine(unsigned int seed) {
         .show_mouse_cursor = true};
     FixedTimeSleeper render_sleeper{ 1.f / 60.f };
     SetFps set_fps{render_sleeper};
-    Render2 render2{
+    Render render{
         render_config,
         num_renderings,
         set_fps,
@@ -226,7 +226,7 @@ void test_physics_engine(unsigned int seed) {
         }
     };
 
-    render2.render(
+    render.render(
         lrl,
         []() {},
         SceneGraphConfig());

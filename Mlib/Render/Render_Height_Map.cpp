@@ -1,6 +1,6 @@
 #include "Render_Height_Map.hpp"
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -13,7 +13,7 @@ using namespace Mlib;
 #ifndef __ANDROID__
 
 void Mlib::render_height_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, float, 2>& normalization_matrix,

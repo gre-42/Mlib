@@ -11,7 +11,7 @@
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
@@ -146,7 +146,7 @@ std::future<void> loader_thread(
     LoadScene& load_scene,
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
-    const Render2& render2)
+    const Render& render)
 {
     return std::async(std::launch::async, [&](){
         try {
@@ -176,7 +176,7 @@ std::future<void> loader_thread(
                     scroll_wheel_states,
                     ui_focus,
                     layout_constraints,
-                    render2.glfw_window(),
+                    render.glfw_window(),
                     gallery,
                     asset_references,
                     renderable_scenes);
@@ -430,12 +430,12 @@ int main(int argc, char** argv) {
             0.005f,
             UINT_MAX};
         // Declared as first class to let destructors of other classes succeed.
-        Render2 render2{
+        Render render{
             render_config,
             num_renderings,
             render_set_fps.set_fps,
             nullptr};
-        render2.print_hardware_info();
+        render.print_hardware_info();
 
         ButtonStates button_states;
         CursorStates cursor_states;
@@ -455,11 +455,11 @@ int main(int argc, char** argv) {
             .focuses = ui_focus.focuses,
             .exit_on_escape = false};
         MenuLogic menu_logic{
-            render2.glfw_window(),
+            render.glfw_window(),
             menu_user_object};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
-        while (!render2.window_should_close() && !unhandled_exceptions_occured()) {
+        while (!render.window_should_close() && !unhandled_exceptions_occured()) {
             JsonMacroArgumentsObserverGuard smog{external_json_macro_arguments};
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
@@ -545,7 +545,7 @@ int main(int argc, char** argv) {
                 std::future<void> render_future;
                 std::unique_ptr<Renderer> renderer;
                 if (!args.has_named("--no_render")) {
-                    renderer = std::make_unique<Renderer>(render2.generate_renderer());
+                    renderer = std::make_unique<Renderer>(render.generate_renderer());
                     render_future = render_thread(
                         args,
                         renderable_scenes,
@@ -576,7 +576,7 @@ int main(int argc, char** argv) {
                     load_scene,
                     primary_rendering_context,
                     load_scene_finished,
-                    render2)};
+                    render)};
                 try {
                     main_func(
                         args,

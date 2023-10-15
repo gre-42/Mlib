@@ -27,7 +27,7 @@
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -463,13 +463,13 @@ int main(int argc, char** argv) {
             .print_fps = args.has_named("--print_render_fps")};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{sleeper};
-        Render2 render2{
+        Render render{
             render_config,
             num_renderings,
             set_fps,
             &render_results};
 
-        render2.print_hardware_info();
+        render.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
@@ -951,7 +951,7 @@ int main(int argc, char** argv) {
             .focuses = focuses,
             .exit_on_escape = true};
         auto menu_logic = std::make_shared<MenuLogic>(
-            render2.glfw_window(),
+            render.glfw_window(),
             menu_user_object);
         FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,
@@ -1010,7 +1010,7 @@ int main(int argc, char** argv) {
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };
-        render2.render(
+        render.render(
             lrl,
             []() {},
             SceneGraphConfig(),

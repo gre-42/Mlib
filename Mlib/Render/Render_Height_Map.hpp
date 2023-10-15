@@ -8,12 +8,12 @@ template <class TData>
 class Array;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-class Render2;
+class Render;
 enum class NormalType;
 
 #ifndef __ANDROID__
 void render_height_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, float, 2>& normalization_matrix,

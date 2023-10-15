@@ -1,4 +1,4 @@
-#include "Render2.hpp"
+#include "Render.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -28,7 +28,7 @@ static void error_callback(int error, const char* description)
     lerr() << "GLFW: " << description;
 }
 
-Render2::Render2(
+Render::Render(
     const RenderConfig& render_config,
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
@@ -84,7 +84,7 @@ Render2::Render2(
     }
 }
 
-Render2::~Render2() {
+Render::~Render() {
     {
         // This internally calls "execute_render_gc"
         GlContextGuard gcg{ *window_ };
@@ -93,7 +93,7 @@ Render2::~Render2() {
     GLFW_WARN(glfwTerminate());
 }
 
-void Render2::print_hardware_info() const {
+void Render::print_hardware_info() const {
     {
         GlContextGuard gcg{ *window_ };
         print_gl_version_info();
@@ -103,12 +103,12 @@ void Render2::print_hardware_info() const {
 // #endif
 }
 
-Renderer Render2::generate_renderer() const
+Renderer Render::generate_renderer() const
 {
     return Renderer{*window_, render_config_, num_renderings_, set_fps_, render_results_};
 }
 
-void Render2::render(
+void Render::render(
     RenderLogic& logic,
     const std::function<void()>& event_callback,
     const SceneGraphConfig& scene_graph_config,
@@ -125,7 +125,7 @@ void Render2::render(
         scroll_wheel_states);
 }
 
-void Render2::render_scene(
+void Render::render_scene(
     const Scene& scene,
     const FixedArray<float, 3>& background_color,
     bool rotate,
@@ -148,7 +148,7 @@ void Render2::render_scene(
     render(read_pixels_logic, []() {}, scene_graph_config, &button_states);
 }
 
-void Render2::render_node(
+void Render::render_node(
     DanglingUniquePtr<SceneNode>&& node,
     const FixedArray<float, 3>& background_color,
     bool rotate,
@@ -177,17 +177,17 @@ void Render2::render_node(
     render_scene(scene, background_color, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }
 
-GLFWwindow& Render2::glfw_window() const {
+GLFWwindow& Render::glfw_window() const {
     assert_true(window_.get());
     return window_->glfw_window();
 }
 
-IWindow& Render2::window() const {
+IWindow& Render::window() const {
     assert_true(window_.get());
     return *window_;
 }
 
-bool Render2::window_should_close() const {
+bool Render::window_should_close() const {
     return (window_ != nullptr) && GLFW_CHK(glfwWindowShouldClose(&window_->glfw_window()));
 }
 

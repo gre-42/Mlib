@@ -7,7 +7,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -82,13 +82,13 @@ int main(int argc, char** argv) {
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{sleeper};
-        Render2 render2{
+        Render render{
             render_config,
             num_renderings,
             set_fps,
             &render_results};
 
-        render2.print_hardware_info();
+        render.print_hardware_info();
 
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
             ClearMode::COLOR_AND_DEPTH};
         auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
 
-        render2.render(
+        render.render(
             *read_pixels_logic,
             []() {},
             SceneGraphConfig());

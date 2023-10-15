@@ -8,7 +8,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Height_Map.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config;
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{ sleeper };
-        Render2 render{ render_config, num_renderings, set_fps };
+        Render render{ render_config, num_renderings, set_fps };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(
