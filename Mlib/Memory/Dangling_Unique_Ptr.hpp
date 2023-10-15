@@ -536,7 +536,7 @@ public:
     DanglingPtr(std::nullptr_t): u_{nullptr} {}
     explicit DanglingPtr(T* u): u_{u} {}
     DanglingPtr(const DanglingPtr& other) : u_{other.u_} {}
-    DanglingPtr(DanglingPtr&& other) : u_{other.u_} {}
+    DanglingPtr(DanglingPtr&& other) noexcept : u_{other.u_} {}
     void set_loc(SOURCE_LOCATION) {}
     T& release() {
         T& res = *u_;
