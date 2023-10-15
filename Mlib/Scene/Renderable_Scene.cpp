@@ -72,9 +72,12 @@ RenderableScene::RenderableScene(
       "Physics FPS: ",
       scene_config_.physics_engine_config.dt / s,
       scene_config_.physics_engine_config.max_residual_time / s,
-      scene_config_.physics_engine_config.control_fps,
       scene_config_.physics_engine_config.print_residual_time},
-  physics_set_fps_{physics_sleeper_, paused_},
+  physics_set_fps_{
+      scene_config_.physics_engine_config.control_fps
+          ? &physics_sleeper_
+          : nullptr,
+      paused_},
   busy_state_provider_guard_{dependent_sleeper, physics_set_fps_},
   gefp_{gravity_vector},
   physics_iteration_{

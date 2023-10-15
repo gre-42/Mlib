@@ -12,7 +12,7 @@ class ISleeper;
 class SetFps {
 public:
     explicit SetFps(
-        ISleeper& sleeper,
+        ISleeper* sleeper,
         const std::function<bool()>& paused = [](){return false;});
     ~SetFps();
     void tick();
@@ -27,7 +27,7 @@ private:
     std::atomic_bool stop_requested_;
     std::function<bool()> paused_;
     std::mutex execute_mutex_;
-    ISleeper& sleeper_;
+    ISleeper* sleeper_;
 };
 
 }

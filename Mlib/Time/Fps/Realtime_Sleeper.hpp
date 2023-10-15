@@ -13,7 +13,6 @@ public:
         std::string prefix,
         float dt,
         float max_residual_time,
-        bool control_fps,
         bool print_residual_time);
     ~RealtimeSleeper();
     virtual void tick() override;
@@ -24,7 +23,6 @@ public:
 private:
     float dt_;
     float max_residual_time_;
-    bool control_fps_;
     bool print_residual_time_;
     std::chrono::steady_clock::time_point sim_time_;
     std::string prefix_;

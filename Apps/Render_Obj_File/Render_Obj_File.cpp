@@ -462,12 +462,12 @@ int main(int argc, char** argv) {
             .show_mouse_cursor = true,
             .print_fps = args.has_named("--print_render_fps")};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
-        SetFps set_fps{sleeper};
+        SetFps set_fps{ &sleeper };
         Render render{
             render_config,
             num_renderings,
             set_fps,
-            &render_results};
+            &render_results };
 
         render.print_hardware_info();
 

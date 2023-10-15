@@ -81,12 +81,12 @@ int main(int argc, char** argv) {
             .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
-        SetFps set_fps{sleeper};
+        SetFps set_fps{ &sleeper };
         Render render{
             render_config,
             num_renderings,
             set_fps,
-            &render_results};
+            &render_results };
 
         render.print_hardware_info();
 

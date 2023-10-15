@@ -80,12 +80,12 @@ void test_physics_engine(unsigned int seed) {
         .window_title = "Physics test",
         .show_mouse_cursor = true};
     FixedTimeSleeper render_sleeper{ 1.f / 60.f };
-    SetFps set_fps{render_sleeper};
+    SetFps set_fps{ &render_sleeper };
     Render render{
         render_config,
         num_renderings,
         set_fps,
-        &render_results};
+        &render_results };
 
     PhysicsEngineConfig physics_cfg{
         .dt = getenv_default_float("DT", 0.01667f) * s,
@@ -140,15 +140,17 @@ void test_physics_engine(unsigned int seed) {
         "Physics FPS: ",
         physics_cfg.dt / s,
         physics_cfg.max_residual_time / s,
-        physics_cfg.control_fps,
         physics_cfg.print_residual_time};
-    SetFps physics_set_fps{physics_sleeper};
+    SetFps physics_set_fps{
+        physics_cfg.control_fps
+            ? &physics_sleeper
+            : nullptr};
     PhysicsIteration pi{
         scene_node_resources,
         scene,
         pe,
         delete_node_mutex,
-        physics_cfg};
+        physics_cfg };
     delete_node_mutex.clear_deleter_thread();
     PhysicsLoop pl{
         "Physics",

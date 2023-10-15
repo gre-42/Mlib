@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 SetFps::SetFps(
-    ISleeper& sleeper,
+    ISleeper* sleeper,
     const std::function<bool()>& paused)
 : stop_requested_{false},
   paused_{paused},
@@ -18,14 +18,18 @@ SetFps::~SetFps() = default;
 
 void SetFps::tick()
 {
-    sleeper_.tick();
+    if (sleeper_ != nullptr) {
+        sleeper_->tick();
+    }
     execute_oldest_funcs();
     if (paused() && !stop_requested_) {
         while (paused() && !stop_requested_) {
             while (execute_oldest_func());
             Mlib::sleep_for(std::chrono::microseconds(100));
         }
-        sleeper_.reset();
+        if (sleeper_ != nullptr) {
+            sleeper_->reset();
+        }
     }
 }
 
@@ -61,5 +65,5 @@ void SetFps::request_stop() {
 }
 
 bool SetFps::is_up_to_date() const {
-    return sleeper_.is_up_to_date() || paused();
+    return (sleeper_ == nullptr) || sleeper_->is_up_to_date() || paused();
 }
