@@ -21,7 +21,6 @@
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Time/Fps/Fps.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Time/Sleep.hpp>
@@ -56,9 +55,6 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 {
     try {
         GlContextGuard gcg{ window_ };
-        Fps fps;
-        size_t fps_i = 0;
-        size_t fps_i_max = 500;
         size_t time_id = 0;
         // LagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
         while (continue_rendering())
@@ -122,17 +118,6 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             {
                 TIME_GUARD_DECLARE(time_guard, "window_.draw", "window_.draw");
                 window_.draw();
-            }
-            // Compute FPS, including the time that "window_->draw();" took.
-            if (render_config_.print_fps) {
-                fps_i = (fps_i + 1) % fps_i_max;
-                fps.tick();
-                if (fps_i == 0) {
-                    std::cerr << "Render FPS: Mean = " << fps.mean_fps() << ", MAD = " << fps.mad_fps() << std::endl;
-                }
-                // if (fps.last_fps() < 55) {
-                //     std::cerr << "FPS < 55" << std::endl;
-                // }
             }
             {
                 TIME_GUARD_DECLARE(time_guard, "execute_render_gc", "execute_render_gc");

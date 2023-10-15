@@ -61,7 +61,6 @@ struct RenderConfig {
     bool show_mouse_cursor = true;
     int swap_interval = 1;
     int fullscreen_refresh_rate = 0;
-    bool print_fps = false;
     float draw_distance_add = INFINITY;
     float draw_distance_slop = 10.f;
 };

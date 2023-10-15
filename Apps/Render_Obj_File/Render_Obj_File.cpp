@@ -66,6 +66,8 @@
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
+#include <Mlib/Time/Fps/Sleeper_Sequence.hpp>
+#include <Mlib/Time/Fps/Steadiness_Measurement_Sleeper.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -459,10 +461,13 @@ int main(int argc, char** argv) {
             .windowed_height = safe_stoi(args.named_value("--height", "480")),
             .double_buffer = args.has_named("--double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
-            .show_mouse_cursor = true,
-            .print_fps = args.has_named("--print_render_fps")};
+            .show_mouse_cursor = true};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
-        SetFps set_fps{ &sleeper };
+        SteadinessMeasurementSleeper sms{
+            0.005f,
+            safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
+        SleeperSequence sls{{ &sms, &sleeper }};
+        SetFps set_fps{ &sls };
         Render render{
             render_config,
             num_renderings,

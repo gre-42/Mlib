@@ -286,7 +286,6 @@ int main(int argc, char** argv) {
         "    [--no_slip <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
-        "    [--print_render_fps]\n"
         "    [--no_vfx]\n"
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
@@ -317,7 +316,6 @@ int main(int argc, char** argv) {
          "--no_normalmaps",
          "--print_physics_residual_time",
          "--print_render_residual_time",
-         "--print_render_fps",
          "--single_threaded",
          "--no_vfx",
          "--no_depth_fog",
@@ -348,6 +346,7 @@ int main(int argc, char** argv) {
          "--max_distance_black",
          "--small_aggregate_update_interval",
          "--large_aggregate_update_interval",
+         "--print_render_fps_interval",
          "--windowed_width",
          "--windowed_height",
          "--fullscreen_width",
@@ -419,7 +418,6 @@ int main(int argc, char** argv) {
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
-            .print_fps = args.has_named("--print_render_fps"),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
@@ -427,8 +425,8 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             !args.has_named("--no_control_render_fps"),
             args.has_named("--print_render_residual_time"),
-            0.005f,
-            UINT_MAX};
+            0.05f,
+            safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
         // Declared as first class to let destructors of other classes succeed.
         Render render{
             render_config,
