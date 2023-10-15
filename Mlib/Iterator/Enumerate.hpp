@@ -36,7 +36,7 @@ class enumerate_object
         }
 
         auto operator*() const
-            -> std::pair<std::size_t, decltype(*begin_)>
+            -> std::pair<std::size_t, decltype(*begin_)&>
         {
             return { size_, *begin_ };
         }
