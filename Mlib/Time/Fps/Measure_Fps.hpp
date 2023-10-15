@@ -1,13 +1,18 @@
 #pragma once
+#include <Mlib/Time/Fps/ISleeper.hpp>
 #include <chrono>
 
 namespace Mlib {
 
-class MeasureFps {
+class MeasureFps: public ISleeper {
 public:
     MeasureFps(float alpha = 0.005f, unsigned int print_interval = UINT_MAX);
-    void tick();
-    void reset();
+    ~MeasureFps();
+
+    virtual void tick() override;
+    virtual void reset() override;
+    virtual bool is_up_to_date() const override;
+
     float last_fps() const;
     float mean_fps() const;
     float mad_fps() const;

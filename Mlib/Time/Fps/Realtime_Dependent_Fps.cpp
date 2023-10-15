@@ -10,9 +10,9 @@ RealtimeDependentFps::RealtimeDependentFps(std::string prefix,
                                            float alpha,
                                            unsigned int print_interval)
     : rts{std::move(prefix), dt, max_residual_time, print_residual_time}
-    , sms{alpha, print_interval}
+    , mf{alpha, print_interval}
     , sls{control_fps
-        ? std::vector<ISleeper*>{&rts, &ds, &sms}
-        : std::vector<ISleeper*>{&sms}}
+        ? std::vector<ISleeper*>{&rts, &ds, &mf}
+        : std::vector<ISleeper*>{&mf}}
     , set_fps{&sls}
 {}

@@ -13,6 +13,8 @@ MeasureFps::MeasureFps(float alpha, unsigned int print_interval)
     , print_interval_{ print_interval }
 {}
 
+MeasureFps::~MeasureFps() = default;
+
 void MeasureFps::tick() {
     auto current_time = std::chrono::steady_clock::now();
     if (last_time_ != std::chrono::steady_clock::time_point()) {
@@ -28,6 +30,10 @@ void MeasureFps::tick() {
         }
     }
     last_time_ = current_time;
+}
+
+bool MeasureFps::is_up_to_date() const {
+    return true;
 }
 
 void MeasureFps::reset() {

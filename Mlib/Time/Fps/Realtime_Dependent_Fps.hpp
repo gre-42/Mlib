@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
+#include <Mlib/Time/Fps/Measure_Fps.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <Mlib/Time/Fps/Sleeper_Sequence.hpp>
-#include <Mlib/Time/Fps/Steadiness_Measurement_Sleeper.hpp>
 
 namespace Mlib {
 
@@ -18,7 +18,7 @@ struct RealtimeDependentFps {
         unsigned int print_interval);
     RealtimeSleeper rts;
     DependentSleeper ds;
-    SteadinessMeasurementSleeper sms;
+    MeasureFps mf;
     SleeperSequence sls;
     SetFps set_fps;
 };
