@@ -20,6 +20,7 @@
 #include <Mlib/Math/Sort_Svd.hpp>
 #include <Mlib/Math/Svd4.hpp>
 #include <Mlib/Math/Svd_Jacobi.hpp>
+#include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Random_Arrays.hpp>
@@ -446,6 +447,27 @@ void test_least_common_multiple() {
     assert_isclose(least_common_multiple(data.begin(), data.end(), 1e-6f, 10'000), 2.6f);
 }
 
+void test_quaternion_series() {
+    auto now = std::chrono::steady_clock::now();
+    auto d0 = std::chrono::steady_clock::duration{ std::chrono::nanoseconds{100} };
+    auto d1 = std::chrono::steady_clock::duration{ std::chrono::nanoseconds{110} };
+    auto d2 = std::chrono::steady_clock::duration{ std::chrono::nanoseconds{150} };
+    auto d3 = std::chrono::steady_clock::duration{ std::chrono::nanoseconds{170} };
+    {
+        QuaternionSeries<float, double, 3> qs;
+        // linfo() << qs.get(now);
+        qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.1, 0.2, 0.3}, Quaternion<float>::identity()}, now + d0);
+        linfo() << qs.get(now);
+        linfo() << qs.get(now + d1);
+        qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.5, 0.6, 0.7}, Quaternion<float>::identity()}, now + d2);
+        linfo() << qs.get(now);
+        linfo() << qs.get(now + d0);
+        linfo() << qs.get(now + d1);
+        linfo() << qs.get(now + d2);
+        linfo() << qs.get(now + d3);
+    }
+}
+
 int main(int argc, const char** argv) {
     try {
         test_blocking_transposed();
@@ -485,8 +507,9 @@ int main(int argc, const char** argv) {
         test_projection();
         test_eigen_jacobi();
         test_least_common_multiple();
+        test_quaternion_series();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;
