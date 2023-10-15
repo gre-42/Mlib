@@ -75,7 +75,7 @@ void LightmapLogic::render(
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{
-            .external_render_pass = {render_pass_type_, std::chrono::steady_clock::now(), black_node_name_, nullptr, light_node_.ptr()},
+            .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0,
             .light_resource_suffix = resource_suffix_};
 #pragma GCC diagnostic pop
@@ -116,7 +116,8 @@ void LightmapLogic::render(
                     .max_pixel = (float)lightmap_width_ - 1.f},
                 render_config,
                 scene_graph_config,
-                render_results, light_rsd);
+                render_results,
+                light_rsd);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
