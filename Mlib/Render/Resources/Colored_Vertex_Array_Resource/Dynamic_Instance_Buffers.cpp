@@ -65,7 +65,7 @@ void DynamicInstanceBuffers::move(float dt) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
         ai += dt;
-        if (ai <= bi->duration) {
+        if (ai < bi->duration) {
             auto frame_index = (size_t)frame_index_from_animation_state(
                 ai,
                 bi->duration,

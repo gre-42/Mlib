@@ -183,6 +183,6 @@ void Mlib::create_scene_flat(
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
     assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
-    scene.move(physics_cfg.dt);
+    scene.move(physics_cfg.dt, std::chrono::steady_clock::now());
     assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
 }

@@ -28,13 +28,14 @@ void MoveSceneLogic::render(
 {
     LOG_FUNCTION("MoveSceneLogic::render");
 
+    auto time = std::chrono::steady_clock::now();
     if (first_render_) {
-        last_time_ = std::chrono::steady_clock::now();
+        last_time_ = time;
         delete_node_mutex_.clear_deleter_thread();
         delete_node_mutex_.set_deleter_thread();
         first_render_ = false;
     } else {
-        scene_.move(std::chrono::duration<float>(std::chrono::steady_clock::now() - last_time_).count() * speed_);
+        scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, time);
     }
 }
 

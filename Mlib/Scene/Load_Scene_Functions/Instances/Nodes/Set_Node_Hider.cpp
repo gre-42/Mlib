@@ -182,7 +182,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
                 local_args.insert_json(capture.value());
             }
             if (punch_angle_node != nullptr) {
-                const auto& rotation = punch_angle_node->rotation();
+                auto rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
             }

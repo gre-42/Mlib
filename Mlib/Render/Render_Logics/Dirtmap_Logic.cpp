@@ -58,7 +58,7 @@ void DirtmapLogic::render(
                 render_config,
                 scene_graph_config,
                 render_results,
-                {.external_render_pass = {ExternalRenderPassType::DIRTMAP, ""},
+                {.external_render_pass = {ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()},
                  .time_id = 0,
                  .light_resource_suffix = ""});
         }

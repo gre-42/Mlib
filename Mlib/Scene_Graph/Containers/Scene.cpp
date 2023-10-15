@@ -640,7 +640,7 @@ void Scene::render(
     }
 }
 
-void Scene::move(float dt) {
+void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     LOG_FUNCTION("Scene::move");
     std::scoped_lock lock{mutex_};
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -651,6 +651,7 @@ void Scene::move(float dt) {
         it->second->move(
             TransformationMatrix<float, double, 3>::identity(),
             dt,
+            time,
             scene_node_resources_,
             nullptr);  // style
         if (it->second->to_be_deleted()) {

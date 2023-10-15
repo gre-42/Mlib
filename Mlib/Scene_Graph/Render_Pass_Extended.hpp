@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <chrono>
 #include <compare>
 
 namespace Mlib {
@@ -9,6 +10,7 @@ class SceneNode;
 
 struct ExternalRenderPass {
     ExternalRenderPassType pass;
+    std::chrono::steady_clock::time_point time;
     std::string black_node_name;
     DanglingPtr<SceneNode> singular_node = nullptr;
     DanglingPtr<SceneNode> camera_node = nullptr;

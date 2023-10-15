@@ -85,6 +85,7 @@ void test_physics_engine(unsigned int seed) {
         render_config,
         num_renderings,
         set_fps,
+        []() { return std::chrono::steady_clock::now(); },
         &render_results };
 
     PhysicsEngineConfig physics_cfg{

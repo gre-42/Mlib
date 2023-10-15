@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         RenderConfig render_config;
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{ &sleeper };
-        Render render{ render_config, num_renderings, set_fps };
+        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         auto rrg = RenderingContextGuard::root(

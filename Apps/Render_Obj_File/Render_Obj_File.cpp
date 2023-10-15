@@ -472,6 +472,7 @@ int main(int argc, char** argv) {
             render_config,
             num_renderings,
             set_fps,
+            []() { return std::chrono::steady_clock::now(); },
             &render_results };
 
         render.print_hardware_info();

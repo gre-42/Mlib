@@ -74,7 +74,7 @@ std::future<void> render_thread(
                             for (auto& [_, r] : renderable_scenes.guarded_iterable()) {
                                 SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                                 if (!r.physics_set_fps_.paused()) {
-                                    r.physics_iteration_();
+                                    r.physics_iteration_(std::chrono::steady_clock::now());
                                 }
                                 r.physics_set_fps_.execute_oldest_funcs();
                             }
@@ -419,9 +419,11 @@ int main(int argc, char** argv) {
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
+        auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
             safe_stof(args.named_value("--render_dt", "0.01667")),
+            physics_dt,
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             !args.has_named("--no_control_render_fps"),
             args.has_named("--print_render_residual_time"),
@@ -432,7 +434,7 @@ int main(int argc, char** argv) {
             render_config,
             num_renderings,
             render_set_fps.set_fps,
-            nullptr};
+            [&render_set_fps]() { return render_set_fps.ft.frame_time(); } };
         render.print_hardware_info();
 
         ButtonStates button_states;
@@ -469,7 +471,7 @@ int main(int argc, char** argv) {
                 .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
             PhysicsEngineConfig physics_engine_config{
-                .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
+                .dt = physics_dt * s,
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH

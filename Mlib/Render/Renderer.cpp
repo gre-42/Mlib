@@ -35,16 +35,21 @@ Renderer::Renderer(
     const RenderConfig& render_config,
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
+    std::function<std::chrono::steady_clock::time_point()> frame_time,
     RenderResults* render_results)
 : window_{window},
   render_config_{render_config},
   num_renderings_{num_renderings},
   render_results_{render_results},
-  set_fps_{set_fps}
+  set_fps_{set_fps},
+  frame_time_{std::move(frame_time)}
 {
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();
         THROW_OR_ABORT("Renderer created despite unhandled exception");
+    }
+    if (!frame_time_) {
+        THROW_OR_ABORT("frame_time not set");
     }
 }
 
@@ -57,6 +62,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
         GlContextGuard gcg{ window_ };
         size_t time_id = 0;
         // LagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
+        set_fps_.tick();
         while (continue_rendering())
         {
             // lag_finder.start();
@@ -82,7 +88,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             {
                 auto dpi = window_.dpi();
                 // TimeGuard time_guard("logic.render", "logic.render");
-                RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, ""}, .time_id = time_id };
+                RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, frame_time_()}, .time_id = time_id };
                 // std::cerr << "-------------------------------" << std::endl;
                 // logic.print(std::cerr, 0);
                 // std::cerr << "+++++++++++++++++++++++++++++++" << std::endl;

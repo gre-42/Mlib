@@ -32,12 +32,17 @@ Render::Render(
     const RenderConfig& render_config,
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
+    std::function<std::chrono::steady_clock::time_point()> frame_time,
     RenderResults* render_results)
     : num_renderings_{ num_renderings }
     , set_fps_{ set_fps }
+    , frame_time_{ std::move(frame_time) }
     , render_results_{ render_results }
     , render_config_{ render_config }
 {
+    if (!frame_time_) {
+        THROW_OR_ABORT("frame_time not set");
+    }
     if (glfwInit() == GLFW_FALSE) {
         THROW_OR_ABORT("glfwInit failed");
     }
@@ -105,7 +110,7 @@ void Render::print_hardware_info() const {
 
 Renderer Render::generate_renderer() const
 {
-    return Renderer{*window_, render_config_, num_renderings_, set_fps_, render_results_};
+    return Renderer{*window_, render_config_, num_renderings_, set_fps_, frame_time_, render_results_};
 }
 
 void Render::render(

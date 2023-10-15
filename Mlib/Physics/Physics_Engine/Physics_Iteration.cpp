@@ -34,7 +34,7 @@ PhysicsIteration::PhysicsIteration(
 
 PhysicsIteration::~PhysicsIteration() = default;
 
-void PhysicsIteration::operator()() {
+void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
     // Note that g_beacons is delayed by one frame.
 #ifndef WITHOUT_THREAD_LOCAL
     std::list<Beacon> beacons = std::move(g_beacons);
@@ -81,7 +81,7 @@ void PhysicsIteration::operator()() {
         }
         // TimeGuard tg1{"scene.move"};
         scene_.delete_scheduled_root_nodes();
-        scene_.move(physics_cfg_.dt);
+        scene_.move(physics_cfg_.dt, time);
     }
     physics_engine_.move_advance_times();
     physics_engine_.advance_times_.delete_scheduled_advance_times(CURRENT_SOURCE_LOCATION);

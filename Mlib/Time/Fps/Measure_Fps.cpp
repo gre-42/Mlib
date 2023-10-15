@@ -40,6 +40,10 @@ void MeasureFps::reset() {
     *this = MeasureFps{ alpha_, print_counter_ };
 }
 
+float MeasureFps::mean_dt() const {
+    return mean_dt_;
+}
+
 float MeasureFps::last_fps() const {
     return 1 / last_dt_;
 }

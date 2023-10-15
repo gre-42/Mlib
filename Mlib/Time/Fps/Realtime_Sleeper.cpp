@@ -66,3 +66,7 @@ bool RealtimeSleeper::is_up_to_date() const {
 void RealtimeSleeper::set_dt(float dt) {
     dt_ = dt;
 }
+
+std::chrono::steady_clock::time_point RealtimeSleeper::simulated_time() const {
+    return sim_time_;
+}

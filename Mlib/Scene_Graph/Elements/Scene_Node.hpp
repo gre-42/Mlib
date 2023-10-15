@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
@@ -167,6 +168,7 @@ public:
     void move(
         const TransformationMatrix<float, double, 3>& v,
         float dt,
+        std::chrono::steady_clock::time_point time,
         SceneNodeResources* scene_node_resources,
         const AnimationState* animation_state);
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
@@ -214,7 +216,7 @@ public:
         const TransformationMatrix<float, double, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const;
     const FixedArray<double, 3>& position() const;
-    const FixedArray<float, 3>& rotation() const;
+    FixedArray<float, 3> rotation() const;
     float scale() const;
     void set_position(const FixedArray<double, 3>& position);
     void set_rotation(const FixedArray<float, 3>& rotation);
@@ -228,9 +230,9 @@ public:
         const FixedArray<float, 3>& rotation,
         float scale);
     TransformationMatrix<float, double, 3> relative_model_matrix() const;
-    TransformationMatrix<float, double, 3> absolute_model_matrix() const;
+    TransformationMatrix<float, double, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, double, 3> relative_view_matrix() const;
-    TransformationMatrix<float, double, 3> absolute_view_matrix() const;
+    TransformationMatrix<float, double, 3> absolute_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     std::optional<AxisAlignedBoundingBox<float, 3>> relative_aabb() const;
     double max_center_distance(uint32_t billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
@@ -261,8 +263,8 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe() const;
-    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe() const;
+    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     Scene* scene_;
     DanglingPtr<SceneNode> parent_;
     AbsoluteMovable* absolute_movable_;
@@ -277,8 +279,8 @@ private:
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
-    FixedArray<double, 3> position_;
-    FixedArray<float, 3> rotation_;
+    QuaternionSeries<float, double, 3> trafo_history_;
+    OffsetAndQuaternion<float, double> trafo_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
     std::unique_ptr<AnimationState> animation_state_;

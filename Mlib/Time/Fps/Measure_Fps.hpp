@@ -13,6 +13,8 @@ public:
     virtual void reset() override;
     virtual bool is_up_to_date() const override;
 
+    float mean_dt() const;
+
     float last_fps() const;
     float mean_fps() const;
     float mad_fps() const;

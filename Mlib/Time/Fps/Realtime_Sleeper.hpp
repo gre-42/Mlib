@@ -20,6 +20,7 @@ public:
     virtual bool is_up_to_date() const override;
 
     void set_dt(float dt);
+    std::chrono::steady_clock::time_point simulated_time() const;
 private:
     float dt_;
     float max_residual_time_;

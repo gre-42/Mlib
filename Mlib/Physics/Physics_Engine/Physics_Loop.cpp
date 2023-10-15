@@ -34,7 +34,7 @@ PhysicsLoop::PhysicsLoop(
                         break;
                     }
                 }
-                physics_iteration();
+                physics_iteration(set_fps.simulated_time());
                 // std::cerr << rb0->get_new_absolute_model_matrix() << std::endl;
                 // TimeGuard tg2{"physics tick"};
             }

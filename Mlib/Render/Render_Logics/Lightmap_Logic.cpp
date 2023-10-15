@@ -75,7 +75,7 @@ void LightmapLogic::render(
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{
-            .external_render_pass = {render_pass_type_, black_node_name_, nullptr, light_node_.ptr()},
+            .external_render_pass = {render_pass_type_, std::chrono::steady_clock::now(), black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0,
             .light_resource_suffix = resource_suffix_};
 #pragma GCC diagnostic pop

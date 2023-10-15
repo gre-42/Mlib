@@ -68,8 +68,8 @@ void StandardCameraLogic::render(
     camera_object->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
         camera_object->projection_matrix().casted<double>(),
-        camera_node_->absolute_view_matrix().affine());
-    iv_ = camera_node_->absolute_model_matrix();
+        camera_node_->absolute_view_matrix(frame_id.external_render_pass.time).affine());
+    iv_ = camera_node_->absolute_model_matrix(frame_id.external_render_pass.time);
 }
 
 float StandardCameraLogic::near_plane() const {

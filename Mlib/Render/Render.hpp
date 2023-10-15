@@ -3,6 +3,7 @@
 
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <vector>
 
@@ -39,6 +40,7 @@ public:
         const RenderConfig& render_config,
         std::atomic_size_t& num_renderings,
         SetFps& set_fps,
+        std::function<std::chrono::steady_clock::time_point()> frame_time,
         RenderResults* render_results = nullptr);
     ~Render();
 
@@ -81,6 +83,7 @@ public:
 private:
     std::atomic_size_t& num_renderings_;
     SetFps& set_fps_;
+    std::function<std::chrono::steady_clock::time_point()> frame_time_;
     RenderResults* render_results_;
     const RenderConfig& render_config_;
     std::unique_ptr<Window> window_;

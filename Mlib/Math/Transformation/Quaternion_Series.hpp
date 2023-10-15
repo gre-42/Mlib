@@ -45,6 +45,9 @@ public:
 		if (last_ == SIZE_MAX) {
 			THROW_OR_ABORT("QuaternionSeries::interpolator called on empty sequence");
 		}
+		if (time == std::chrono::steady_clock::time_point()) {
+			THROW_OR_ABORT("QuaternionSeries::interpolator received uninitialized time");
+		}
 		for (size_t i = 0; i < length; ++i) {
 			size_t j0 = (size_t)positive_modulo((int)last_ - (int)i - 1, length);
 			size_t j1 = (size_t)positive_modulo((int)last_ - (int)i, length);

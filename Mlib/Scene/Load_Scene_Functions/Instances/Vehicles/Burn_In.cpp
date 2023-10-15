@@ -27,5 +27,5 @@ BurnIn::BurnIn(RenderableScene& renderable_scene)
 void BurnIn::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     physics_engine.burn_in(args.arguments.at<float>(KnownArgs::seconds) * s);
-    scene.move(0.f); // dt
+    scene.move(0.f, std::chrono::steady_clock::now()); // dt
 }
