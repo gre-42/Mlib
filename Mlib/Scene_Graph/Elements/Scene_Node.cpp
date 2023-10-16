@@ -44,7 +44,7 @@ SceneNode::SceneNode(
   trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) },
   trafo_history_{ trafo_, std::chrono::steady_clock::now() },
   scale_{ scale },
-  rotation_matrix_{ trafo_.quaternion().to_rotation_matrix() },
+  rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) },
   state_{ SceneNodeState::DETACHED },
   shutting_down_{ false }
 {}
