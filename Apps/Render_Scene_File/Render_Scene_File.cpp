@@ -261,7 +261,7 @@ int main(int argc, char** argv) {
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
         "    [--fullscreen]\n"
-        "    [--double_buffer]\n"
+        "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
         "    [--no_normalmaps]\n"
         "    [--no_physics ]\n"
@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
         "    [--render_dt <dt> ]\n"
         "    [--render_max_residual_time <dt> ]\n"
         "    [--no_control_physics_fps ]\n"
-        "    [--no_control_render_fps ]\n"
+        "    [--control_render_fps ]\n"
         "    [--fullscreen_refresh_rate <Hz> ]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
          "--rotate",
          "--no_physics",
          "--fullscreen",
-         "--double_buffer",
+         "--no_double_buffer",
          "--no_normalmaps",
          "--print_physics_residual_time",
          "--print_render_residual_time",
@@ -333,7 +333,7 @@ int main(int argc, char** argv) {
          "--no_avoid_burnout",
          "--print_search_time",
          "--no_control_physics_fps",
-         "--no_control_render_fps",
+         "--control_render_fps",
          "--fxaa",
          "--verbose"},
         {"--app_reldir",
@@ -412,7 +412,7 @@ int main(int argc, char** argv) {
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
-            .double_buffer = args.has_named("--double_buffer"),
+            .double_buffer = !args.has_named("--no_double_buffer"),
             .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "8")),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
@@ -425,7 +425,7 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--render_dt", "0.01667")),
             physics_dt,
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
-            !args.has_named("--no_control_render_fps"),
+            args.has_named("--control_render_fps"),
             args.has_named("--print_render_residual_time"),
             0.05f,
             safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
