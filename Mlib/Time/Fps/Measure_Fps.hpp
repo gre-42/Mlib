@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Time/Fps/ISleeper.hpp>
 #include <chrono>
+#include <climits>
 
 namespace Mlib {
 

@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
+#include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
@@ -28,7 +29,10 @@
 
 using namespace Mlib;
 
-SceneNode::SceneNode()
+SceneNode::SceneNode(
+    const FixedArray<double, 3>& position,
+    const FixedArray<float, 3>& rotation,
+    float scale)
 : clearing_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
   destruction_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
   scene_{ nullptr },
@@ -37,12 +41,19 @@ SceneNode::SceneNode()
   relative_movable_{ nullptr },
   absolute_observer_{ nullptr },
   absolute_destruction_observer_{ nullptr },
-  trafo_history_{ OffsetAndQuaternion<float, double>::identity(), std::chrono::steady_clock::now() },
-  trafo_{ OffsetAndQuaternion<float, double>::identity() },
-  scale_{ 1.f },
-  rotation_matrix_{ fixed_identity_array<float, 3>() },
+  trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) },
+  trafo_history_{ trafo_, std::chrono::steady_clock::now() },
+  scale_{ scale },
+  rotation_matrix_{ trafo_.quaternion().to_rotation_matrix() },
   state_{ SceneNodeState::DETACHED },
   shutting_down_{ false }
+{}
+
+SceneNode::SceneNode()
+: SceneNode{
+    fixed_zeros<double, 3>(),
+    fixed_zeros<float, 3>(),
+    1.f}
 {}
 
 SceneNode::~SceneNode() {

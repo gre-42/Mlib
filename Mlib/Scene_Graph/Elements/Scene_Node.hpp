@@ -109,6 +109,10 @@ class SceneNode: public Object {
     SceneNode& operator = (const SceneNode& other) = delete;
 public:
     explicit SceneNode();
+    SceneNode(
+        const FixedArray<double, 3>& position,
+        const FixedArray<float, 3>& rotation,
+        float scale);
     ~SceneNode();
     bool shutting_down() const;
     AbsoluteMovable& get_absolute_movable() const;
@@ -279,8 +283,8 @@ private:
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
-    QuaternionSeries<float, double, 3> trafo_history_;
     OffsetAndQuaternion<float, double> trafo_;
+    QuaternionSeries<float, double, 3> trafo_history_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
     std::unique_ptr<AnimationState> animation_state_;
