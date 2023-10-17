@@ -70,7 +70,7 @@ public:
 					};
 				}
 				auto d = times_(j1) - times_(j0);
-				auto alpha = float((time - times_(j0)).count() / double(d.count()));
+				auto alpha = float(double((time - times_(j0)).count()) / double(d.count()));
 				return Interpolator{
 					.i0 = j0,
 					.i1 = j1,

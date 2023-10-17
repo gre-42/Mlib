@@ -27,9 +27,25 @@ void Mlib::print_unhandled_exceptions() {
 			try {
 				std::rethrow_exception(e);
 			} catch (const std::exception& ex) {
-                lerr() << "Unhandled exception: " << ex.what() << std::endl;
+                lerr() << "Unhandled exception: " << ex.what();
 			} catch (...) {
-                lerr() << "Unhandled exception of unknown type" << std::endl;
+                lerr() << "Unhandled exception of unknown type";
+			}
+		}
+	}
+}
+
+void Mlib::print_unhandled_exceptions(std::ostream& ostr) {
+	std::shared_lock lock{mutex};
+	if (!unhandled_exceptions.empty()) {
+		ostr << unhandled_exceptions.size() << " unhandled exception(s)" << std::endl;
+		for (const auto& e : unhandled_exceptions) {
+			try {
+				std::rethrow_exception(e);
+			} catch (const std::exception& ex) {
+				ostr << "Unhandled exception: " << ex.what() << std::endl;
+			} catch (...) {
+				ostr << "Unhandled exception of unknown type" << std::endl;
 			}
 		}
 	}

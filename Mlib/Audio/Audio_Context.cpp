@@ -17,7 +17,7 @@ AudioContext::AudioContext(AudioDevice &device, unsigned int frequency) {
         THROW_OR_ABORT("Could not create audio context, code: " +
                        std::to_string(alcGetError(device.device_)));
     }
-    dgs_.add([this, context, d = device.device_]() {
+    dgs_.add([context, d = device.device_]() {
         alcDestroyContext(context);
         ALCenum error = alcGetError(d);
         if (error != ALC_NO_ERROR) {
@@ -28,7 +28,7 @@ AudioContext::AudioContext(AudioDevice &device, unsigned int frequency) {
         THROW_OR_ABORT("Could not make context current, code: " +
                        std::to_string(alcGetError(device.device_)));
     }
-    dgs_.add([this, d = device.device_]() {
+    dgs_.add([d = device.device_]() {
         if (!alcMakeContextCurrent(nullptr)) {
             verbose_abort("Could not remove current context, code: " +
                           std::to_string(alcGetError(d)));

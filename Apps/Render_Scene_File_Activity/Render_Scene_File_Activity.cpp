@@ -107,7 +107,7 @@ public:
             if (args_.has_named("--single_threaded")) {
                 for (auto& [_, r]: renderable_scenes->guarded_iterable()) {
                     if (!r.physics_set_fps_.paused()) {
-                        r.physics_iteration_();
+                        r.physics_iteration_(std::chrono::steady_clock::now());
                     }
                 }
             }
@@ -285,7 +285,7 @@ void android_main(android_app* app) {
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
         "    [--fullscreen]\n"
-        "    [--double_buffer]\n"
+        "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
         "    [--no_normalmaps]\n"
         "    [--no_physics ]\n"
@@ -309,7 +309,6 @@ void android_main(android_app* app) {
         "    [--no_slip <x>]\n"
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
-        "    [--print_render_fps]\n"
         "    [--vfx]\n"
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
@@ -328,6 +327,7 @@ void android_main(android_app* app) {
         "    [--audio_gain <f>]\n"
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
+        "    [--audio_frequency <value>]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -335,11 +335,10 @@ void android_main(android_app* app) {
          "--rotate",
          "--no_physics",
          "--fullscreen",
-         "--double_buffer",
+         "--no_double_buffer",
          "--no_normalmaps",
          "--print_physics_residual_time",
          "--print_render_residual_time",
-         "--print_render_fps",
          "--single_threaded",
          "--vfx",
          "--no_depth_fog",
@@ -368,6 +367,7 @@ void android_main(android_app* app) {
          "--max_distance_black",
          "--small_aggregate_update_interval",
          "--large_aggregate_update_interval",
+         "--print_render_fps_interval",
          "--windowed_width",
          "--windowed_height",
          "--fullscreen_width",
@@ -394,7 +394,8 @@ void android_main(android_app* app) {
          "--num_renderings",
          "--audio_gain",
          "--show_debug_wheels",
-         "--write_loaded_resources"});
+         "--write_loaded_resources",
+         "--audio_frequency"});
     try {
         const char* argv[] = {"appname", "/", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(3, argv);
@@ -405,7 +406,8 @@ void android_main(android_app* app) {
 
 #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
-        AudioContext audio_context{audio_device};
+        AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
+        linfo() << "Audio frequency: " << audio_device.get_frequency();
 #endif
 
         std::atomic_size_t num_renderings;
@@ -428,20 +430,23 @@ void android_main(android_app* app) {
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
             .fullscreen = args.has_named("--fullscreen"),
-            .double_buffer = args.has_named("--double_buffer"),
+            .double_buffer = !args.has_named("--no_double_buffer"),
             .anisotropic_filtering_level = safe_stou(args.named_value("--anisotropic_filtering_level", "0")),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = args.has_named("--show_mouse_cursor"),
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
-            .print_fps = args.has_named("--print_render_fps"),
+            .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
-
+        auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
             safe_stof(args.named_value("--render_dt", "0.01667")),
+            physics_dt,
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             args.has_named("--control_render_fps"),
-            args.has_named("--print_render_residual_time")};
+            args.has_named("--print_render_residual_time"),
+            0.05f,
+            safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
 
         SceneGraphConfig scene_graph_config{
             .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
@@ -479,12 +484,12 @@ void android_main(android_app* app) {
             button_states.tap_buttons_.clear();
 
             PhysicsEngineConfig physics_engine_config{
-                .dt = safe_stof(args.named_value("--physics_dt", "0.01667")) * s,
+                .dt = physics_dt * s,
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH
-                .static_radius = safe_stof(args.named_value("--static_radius", "200")),
-                .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "50")),
+                .static_radius = safe_stof(args.named_value("--static_radius", "200")) * meters,
+                .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "2")) * meters,
                 // Collision/Friction misc.
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
                 .max_extra_w = safe_stof(args.named_value("--max_extra_w", "0")),

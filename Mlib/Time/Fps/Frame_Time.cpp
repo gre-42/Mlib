@@ -21,7 +21,7 @@ void FrameTime::tick() {
         smooth_time_ += dt_();
         smooth_time_ -= std::chrono::steady_clock::duration{
             (std::chrono::steady_clock::rep)
-            (double(alpha_) * (smooth_time_ - std::chrono::steady_clock::now()).count()) };
+            std::round(double(alpha_) * double((smooth_time_ - std::chrono::steady_clock::now()).count())) };
     }
 }
 
