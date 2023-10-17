@@ -29,6 +29,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -63,12 +64,14 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const ParsedArgs &args,
-        RealtimeDependentFps& render_set_fps)
+        RealtimeDependentFps& render_set_fps,
+        MenuLogic& menu_logic)
     : render_config_{render_config},
       scene_graph_config_{scene_graph_config},
       render_results_{render_results},
       args_{args},
-      render_set_fps_{render_set_fps}
+      render_set_fps_{render_set_fps},
+      menu_logic_{menu_logic}
     {}
 
     void load_resources() override {
@@ -83,6 +86,7 @@ public:
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly) override
     {
+        menu_logic_.handle_events();
         execute_render_gc();
         if (event != RenderEvent::LOOP) {
             return;
@@ -143,6 +147,7 @@ private:
     RenderResults* render_results_;
     const ParsedArgs &args_;
     RealtimeDependentFps& render_set_fps_;
+    MenuLogic& menu_logic_;
     std::weak_ptr<RenderableScenes> renderable_scenes_;
     std::weak_ptr<std::atomic_bool> load_scene_finished_;
     RootRenderedSceneDescriptor rrsd_;
@@ -453,17 +458,23 @@ void android_main(android_app* app) {
             .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
             .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
 
+        UiFocus ui_focus;
+        ButtonStates button_states;
+        CursorStates cursor_states;
+        CursorStates scroll_wheel_states;
         // AWindow window{*app};
+        MenuUserClass menu_user_object{
+                .button_states = button_states,
+                .focuses = ui_focus.focuses};
+        MenuLogic menu_logic{menu_user_object};
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
             render_config,
             scene_graph_config,
             nullptr,    // render_results
             args,
-            render_set_fps};
-        ButtonStates button_states;
-        CursorStates cursor_states;
-        CursorStates scroll_wheel_states;
+            render_set_fps,
+            menu_logic};
         AEngine a_engine{scene_renderer, button_states.tap_buttons_};
         AContext context;
         ContextQueryGuard context_query_guard{context};
@@ -471,7 +482,6 @@ void android_main(android_app* app) {
         ARenderLoop render_loop{*app, a_engine};
         // AUi::RequestReadExternalStoragePermission();
 
-        UiFocus ui_focus;
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 

@@ -39,6 +39,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
@@ -946,19 +947,18 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--background_g", "0")),
                 safe_stof(args.named_value("--background_b", "1"))},
             ClearMode::COLOR_AND_DEPTH};
-        MenuUserClass menu_user_object{
+        WindowUserClass window_user_object{
             .window_position{
                 .fullscreen_width = render_config.fullscreen_width,
                 .fullscreen_height = render_config.fullscreen_height,
             },
             .button_states = button_states,
-            .cursor_states = cursor_states,
-            .scroll_wheel_states = scroll_wheel_states,
-            .focuses = focuses,
             .exit_on_escape = true};
-        auto menu_logic = std::make_shared<MenuLogic>(
-            render.glfw_window(),
-            menu_user_object);
+        MenuUserClass menu_user_object{
+            .button_states = button_states,
+            .focuses = focuses};
+        WindowLogic window_logic{render.glfw_window(), window_user_object};
+        MenuLogic menu_logic(menu_user_object);
         FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,
             .cursor_states = cursor_states,
@@ -992,7 +992,6 @@ int main(int argc, char** argv) {
 
         UiFocus ui_focus;
         RenderLogics render_logics{ui_focus};
-        render_logics.append(nullptr, menu_logic);
         render_logics.append(nullptr, flying_camera_logic);
         for (const auto& l : lightmap_logics) {
             render_logics.append(nullptr, l);
@@ -1004,7 +1003,7 @@ int main(int argc, char** argv) {
             delete_node_mutex,
             safe_stof(args.named_value("--speed", "1"))));
         LambdaRenderLogic lrl{
-            [&delete_node_mutex, &render_logics](
+            [&delete_node_mutex, &render_logics, &menu_logic](
                 const LayoutConstraintParameters& lx,
                 const LayoutConstraintParameters& ly,
                 const RenderConfig& render_config,
@@ -1013,12 +1012,13 @@ int main(int argc, char** argv) {
                 const RenderedSceneDescriptor& frame_id)
             {
                 std::scoped_lock lock{delete_node_mutex};
+                menu_logic.handle_events();
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };
         render.render(
             lrl,
-            []() {},
+            [&window_logic]() { window_logic.handle_events(); },
             SceneGraphConfig(),
             &button_states);
         if (unhandled_exceptions_occured()) {

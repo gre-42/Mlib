@@ -16,6 +16,7 @@
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -48,7 +49,8 @@ std::future<void> render_thread(
     std::atomic_bool& load_scene_finished,
     const RenderingContext& primary_rendering_context,
     Renderer& renderer,
-    const SceneConfig& scene_config)
+    const SceneConfig& scene_config,
+    MenuLogic& menu_logic)
 {
     return std::async(std::launch::async, [&](){
         try {
@@ -61,6 +63,7 @@ std::future<void> render_thread(
                     RenderResults* render_results,
                     const RenderedSceneDescriptor& frame_id)
                 {
+                    menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
                         renderable_scenes["primary_scene"].render(
@@ -444,19 +447,20 @@ int main(int argc, char** argv) {
         NotifyingJsonMacroArguments external_json_macro_arguments;
         // FifoLog fifo_log{10 * 1000};
 
-        MenuUserClass menu_user_object{
+        WindowUserClass window_user_object{
             .window_position{
                 .fullscreen_width = render_config.fullscreen_width,
                 .fullscreen_height = render_config.fullscreen_height,
             },
             .button_states = button_states,
-            .cursor_states = cursor_states,
-            .scroll_wheel_states = scroll_wheel_states,
-            .focuses = ui_focus.focuses,
             .exit_on_escape = false};
-        MenuLogic menu_logic{
+        MenuUserClass menu_user_object{
+            .button_states = button_states,
+            .focuses = ui_focus.focuses};
+        WindowLogic window_logic{
             render.glfw_window(),
-            menu_user_object};
+            window_user_object};
+        MenuLogic menu_logic{menu_user_object};
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render.window_should_close() && !unhandled_exceptions_occured()) {
@@ -552,7 +556,8 @@ int main(int argc, char** argv) {
                         load_scene_finished,
                         primary_rendering_context,
                         *renderer,
-                        scene_config);
+                        scene_config,
+                        menu_logic);
                 }
                 FutureGuard render_future_guard{std::move(render_future)};
                 FutureGuard loader_future_guard{loader_thread(
@@ -585,7 +590,7 @@ int main(int argc, char** argv) {
                         scroll_wheel_states,
                         args_num_renderings,
                         renderer.get(),
-                        [&menu_logic](){ menu_logic.handle_events(); });
+                        [&window_logic](){ window_logic.handle_events(); });
                 } catch (...) {
                     add_unhandled_exception(std::current_exception());
                 }
