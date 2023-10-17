@@ -68,7 +68,7 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 		future_ = p.get_future();
 	} else {
 #ifdef __ANDROID__
-        verbose_abort("internal error: buffer_data_supported not supported on Android");
+        verbose_abort("Internal error: buffer-data not supported on Android");
 #else
         CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
         CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
