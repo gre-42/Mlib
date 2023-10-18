@@ -82,10 +82,6 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 }
 
 BufferBackgroundCopy::~BufferBackgroundCopy() {
-    if (state_ == BackgroundCopyState::COPY_IN_PROGRESS) {
-        future_.get();
-        state_ = BackgroundCopyState::AWAITED;
-    }
     if (ContextQuery::is_initialized()) {
         deallocate();
     } else {
@@ -169,7 +165,9 @@ bool BufferBackgroundCopy::copy_in_progress() const {
 }
 
 void BufferBackgroundCopy::deallocate() {
-    wait();
+    if (state_ == BackgroundCopyState::COPY_IN_PROGRESS) {
+        future_.get();
+    }
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
         ABORT(glDeleteBuffers(1, &buffer_));
         buffer_ = (GLuint)-1;
@@ -178,7 +176,9 @@ void BufferBackgroundCopy::deallocate() {
 }
 
 void BufferBackgroundCopy::gc_deallocate() {
-    wait();
+    if (state_ == BackgroundCopyState::COPY_IN_PROGRESS) {
+        future_.get();
+    }
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
         render_gc_append_to_buffers(buffer_);
         buffer_ = (GLuint)-1;
