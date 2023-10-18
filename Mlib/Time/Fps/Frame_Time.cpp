@@ -1,5 +1,6 @@
 #include "Frame_Time.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <cmath>
 
 using namespace Mlib;
 
