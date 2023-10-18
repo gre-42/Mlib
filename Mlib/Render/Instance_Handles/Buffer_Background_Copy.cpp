@@ -48,7 +48,7 @@ BufferBackgroundCopy::BufferBackgroundCopy()
 void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 {
     if (state_ != BackgroundCopyState::UNINITIALIZED) {
-        THROW_OR_ABORT("Buffer already set");
+        THROW_OR_ABORT("Buffer already set, state: " + std::to_string((int)state_));
     }
     if (buffer_ != (GLuint)-1) {
         verbose_abort("Buffer already set (2)");
@@ -118,6 +118,7 @@ void BufferBackgroundCopy::wait() const {
     if (is_mapped_) {
         CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+        is_mapped_ = false;
     }
 }
 
@@ -168,13 +169,19 @@ bool BufferBackgroundCopy::copy_in_progress() const {
 }
 
 void BufferBackgroundCopy::deallocate() {
+    wait();
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
         ABORT(glDeleteBuffers(1, &buffer_));
+        buffer_ = (GLuint)-1;
     }
+    state_ = BackgroundCopyState::UNINITIALIZED;
 }
 
 void BufferBackgroundCopy::gc_deallocate() {
+    wait();
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
         render_gc_append_to_buffers(buffer_);
+        buffer_ = (GLuint)-1;
     }
+    state_ = BackgroundCopyState::UNINITIALIZED;
 }

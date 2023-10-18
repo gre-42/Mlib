@@ -58,7 +58,7 @@ private:
     void set_type_erased(const char *begin, const char *end);
     GLuint buffer_;
     mutable std::future<void> future_;
-    bool is_mapped_;
+    mutable bool is_mapped_;
     mutable BackgroundCopyState state_;
     std::thread::id render_thread_id_;
     DeallocationToken deallocation_token_;
