@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Deallocation_Mode.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 
@@ -42,7 +43,7 @@ BufferBackgroundCopy::BufferBackgroundCopy()
     : buffer_{(GLuint)-1}
     , is_mapped_{false}
     , state_{BackgroundCopyState::UNINITIALIZED}
-    , deallocation_token_{render_deallocator.insert([this]() { deallocate(); })} {
+    , deallocation_token_{render_deallocator.insert([this]() { deallocate(DeallocationMode::DIRECT); })} {
 }
 
 void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
@@ -83,9 +84,9 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 
 BufferBackgroundCopy::~BufferBackgroundCopy() {
     if (ContextQuery::is_initialized()) {
-        deallocate();
+        deallocate(DeallocationMode::DIRECT);
     } else {
-        gc_deallocate();
+        deallocate(DeallocationMode::GARBAGE_COLLECTION);
     }
 }
 
@@ -164,23 +165,18 @@ bool BufferBackgroundCopy::copy_in_progress() const {
     return true;
 }
 
-void BufferBackgroundCopy::deallocate() {
+void BufferBackgroundCopy::deallocate(DeallocationMode mode) {
     if (state_ == BackgroundCopyState::COPY_IN_PROGRESS) {
         future_.get();
     }
     if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
-        ABORT(glDeleteBuffers(1, &buffer_));
-        buffer_ = (GLuint)-1;
-    }
-    state_ = BackgroundCopyState::UNINITIALIZED;
-}
-
-void BufferBackgroundCopy::gc_deallocate() {
-    if (state_ == BackgroundCopyState::COPY_IN_PROGRESS) {
-        future_.get();
-    }
-    if (state_ >= BackgroundCopyState::BUFFER_CREATED) {
-        render_gc_append_to_buffers(buffer_);
+        if (mode == DeallocationMode::DIRECT) {
+            ABORT(glDeleteBuffers(1, &buffer_));
+        } else if (mode == DeallocationMode::GARBAGE_COLLECTION) {
+            render_gc_append_to_buffers(buffer_);
+        } else {
+            verbose_abort("Unknown deallocation mode");
+        }
         buffer_ = (GLuint)-1;
     }
     state_ = BackgroundCopyState::UNINITIALIZED;

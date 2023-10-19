@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+enum class DeallocationMode;
+
 class VertexArray {
     VertexArray(const VertexArray&) = delete;
     VertexArray& operator = (const VertexArray&) = delete;
@@ -20,8 +22,7 @@ public:
     BufferBackgroundCopy bone_weight_buffer;
     BufferBackgroundCopy texture_layer_buffer;
     BufferBackgroundCopy interior_mapping_buffer;
-    void deallocate();
-    void gc_deallocate();
+    void deallocate(DeallocationMode mode);
 private:
     GLuint vertex_array_;
     DeallocationToken deallocation_token_;

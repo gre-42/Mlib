@@ -1,6 +1,7 @@
 #include "Vertex_Array.hpp"
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Deallocation_Mode.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 
@@ -8,14 +9,14 @@ using namespace Mlib;
 
 VertexArray::VertexArray()
 : vertex_array_{(GLuint)-1},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+  deallocation_token_{render_deallocator.insert([this](){deallocate(DeallocationMode::DIRECT);})}
 {}
 
 VertexArray::~VertexArray() {
     if (ContextQuery::is_initialized()) {
-        deallocate();
+        deallocate(DeallocationMode::DIRECT);
     } else {
-        gc_deallocate();
+        deallocate(DeallocationMode::GARBAGE_COLLECTION);
     }
 }
 
@@ -54,23 +55,19 @@ void VertexArray::wait() const {
     interior_mapping_buffer.wait();
 }
 
-void VertexArray::deallocate() {
+void VertexArray::deallocate(DeallocationMode mode) {
     if (vertex_array_ != (GLuint)-1) {
-        ABORT(glDeleteVertexArrays(1, &vertex_array_));
+        if (mode == DeallocationMode::DIRECT) {
+            ABORT(glDeleteVertexArrays(1, &vertex_array_));
+        } else if (mode == DeallocationMode::GARBAGE_COLLECTION) {
+            render_gc_append_to_vertex_arrays(vertex_array_);
+        } else {
+            verbose_abort("Unknown deallocation mode");
+        }
         vertex_array_ = (GLuint)-1;
     }
-    vertex_buffer.deallocate();
-    bone_weight_buffer.deallocate();
-    texture_layer_buffer.deallocate();
-    interior_mapping_buffer.deallocate();
-}
-
-void VertexArray::gc_deallocate() {
-    if (vertex_array_ != (GLuint)-1) {
-        render_gc_append_to_vertex_arrays(vertex_array_);
-    }
-    vertex_buffer.gc_deallocate();
-    bone_weight_buffer.gc_deallocate();
-    texture_layer_buffer.gc_deallocate();
-    interior_mapping_buffer.gc_deallocate();
+    vertex_buffer.deallocate(mode);
+    bone_weight_buffer.deallocate(mode);
+    texture_layer_buffer.deallocate(mode);
+    interior_mapping_buffer.deallocate(mode);
 }

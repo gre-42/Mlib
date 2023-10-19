@@ -9,6 +9,8 @@
 
 namespace Mlib {
 
+enum class DeallocationMode;
+
 enum class BackgroundCopyState {
     UNINITIALIZED,
     UNUSED,
@@ -45,8 +47,7 @@ public:
         set(array + 0, array + size);
     }
     ~BufferBackgroundCopy();
-    void deallocate();
-    void gc_deallocate();
+    void deallocate(DeallocationMode mode);
     void wait() const;
     GLuint handle() const;
     bool copy_in_progress() const;
