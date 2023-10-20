@@ -1,4 +1,5 @@
 #include "Vertex_Array.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Deallocation_Mode.hpp>
