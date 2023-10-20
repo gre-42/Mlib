@@ -9,22 +9,30 @@ using namespace Mlib;
 
 template <class TPos>
 void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
-    if (cva.material.textures.empty()) {
+    if (cva.material.textures_color.empty() && cva.material.textures_alpha.empty()) {
         return;
+    }
+    std::vector<const BlendMapTexture*> textures;
+    textures.reserve(cva.material.textures_color.size() + cva.material.textures_alpha.size());
+    for (const auto& t : cva.material.textures_color) {
+        textures.push_back(&t);
+    }
+    for (const auto& t : cva.material.textures_alpha) {
+        textures.push_back(&t);
     }
     std::vector<float> lcm_world_args;
     FixedArray<std::vector<float>, 2> lcm_local_args;
     FixedArray<bool, 2> detected_non_repeat{false};
-    lcm_world_args.reserve(cva.material.textures.size());
-    lcm_local_args(0).reserve(cva.material.textures.size());
-    lcm_local_args(1).reserve(cva.material.textures.size());
-    for (const auto& t : cva.material.textures) {
-        if (t.role == BlendMapRole::DETAIL_COLOR_HORIZONTAL) {
-            lcm_world_args.push_back(1.f / t.scale);
+    lcm_world_args.reserve(textures.size());
+    lcm_local_args(0).reserve(textures.size());
+    lcm_local_args(1).reserve(textures.size());
+    for (const auto& t : textures) {
+        if (t->role == BlendMapRole::DETAIL_COLOR_HORIZONTAL) {
+            lcm_world_args.push_back(1.f / t->scale);
         } else {
             for (size_t i = 0; i < 2; ++i) {
-                if (t.texture_descriptor.wrap_modes(i) == WrapMode::REPEAT) {
-                    lcm_local_args(i).push_back(1.f / t.scale);
+                if (t->texture_descriptor.wrap_modes(i) == WrapMode::REPEAT) {
+                    lcm_local_args(i).push_back(1.f / t->scale);
                 } else {
                     detected_non_repeat(i) = true;
                 }

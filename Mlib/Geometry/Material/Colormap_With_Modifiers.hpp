@@ -20,6 +20,9 @@ struct ColormapWithModifiers {
     OrderableFixedArray<float, 3> lighten_right = {0.f, 0.f, 0.f};
     OrderableFixedArray<float, 3> lighten_top = {0.f, 0.f, 0.f};
     OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
+    OrderableFixedArray<float, 3> selected_color = {-1.f, -1.f, -1.f};
+    float selected_color_near = 0;
+    float selected_color_far = INFINITY;
     std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -34,6 +37,9 @@ struct ColormapWithModifiers {
         archive(lighten);
         archive(lighten_top);
         archive(lighten_bottom);
+        archive(selected_color);
+        archive(selected_color_near);
+        archive(selected_color_far);
     }
 };
 

@@ -36,10 +36,10 @@ void Mlib::replace_terrain_material(
                     if (!cva->modifier_backlog.convert_to_terrain) {
                         continue;
                     }
-                    cva->material.textures.clear();
+                    cva->material.textures_color.clear();
                     for (auto& t : textures) {
                         BlendMapTexture bt = rendering_resources.get_blend_map_texture(t);
-                        cva->material.textures.push_back(bt);
+                        cva->material.textures_color.push_back(bt);
                     }
                     cva->material.blend_mode = BlendMode::OFF;
                     for (auto& t : cva->triangles) {

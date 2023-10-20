@@ -40,7 +40,8 @@ struct Material {
     // Third element to support sorting.
     DepthFunc depth_func = DepthFunc::LESS;
     bool depth_test = true;
-    std::vector<BlendMapTexture> textures;
+    std::vector<BlendMapTexture> textures_color;
+    std::vector<BlendMapTexture> textures_alpha;
     float period_world = 0.f;
     std::string reflection_map;
     std::string dirt_texture;
@@ -85,7 +86,8 @@ struct Material {
         archive(continuous_blending_z_order);
         archive(depth_func);
         archive(depth_test);
-        archive(textures);
+        archive(textures_color);
+        archive(textures_alpha);
         archive(period_world);
         archive(reflection_map);
         archive(dirt_texture);

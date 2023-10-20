@@ -25,6 +25,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> light_diffusivities;
     std::map<size_t, GLint> light_specularities;
     std::map<size_t, GLint> texture_color_locations;
+    std::map<size_t, GLint> texture_alpha_locations;
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
     std::map<size_t, GLint> texture_normalmap_locations;
@@ -47,6 +48,7 @@ struct RenderProgramIdentifier {
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;
     size_t ntextures_color;
+    size_t ntextures_alpha;
     size_t ntextures_normal;
     std::vector<size_t> lightmap_indices_color;
     std::vector<size_t> lightmap_indices_depth;

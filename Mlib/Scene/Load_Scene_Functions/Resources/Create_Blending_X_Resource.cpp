@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
     auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,
-        .textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
+        .textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
         .occluder_pass = ExternalRenderPassType::NONE,
         // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
         // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,

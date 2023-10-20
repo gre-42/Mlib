@@ -191,7 +191,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         // "viewPortColor" : [0.75089,0.57281,0.45185],
         // "viewPortAlpha" : 1
         if (!materials.insert({material.at("name"), Material{
-            .textures{
+            .textures_color{
                 BlendMapTexture{.texture_descriptor = {
                     .color = ColormapWithModifiers{
                         .filename = gen_filename(filename, material.at("diffuse_texture")),
@@ -219,7 +219,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         TriangleList<float> tl{
             filename,
             Material{
-                .textures = m.textures,
+                .textures_color = m.textures_color,
                 .occluded_pass = cfg.occluded_pass,
                 .occluder_pass = cfg.occluder_pass,
                 .alpha_distances = OrderableFixedArray{cfg.alpha_distances},

@@ -40,6 +40,7 @@
 #include <stb_cpp/stb_blend.hpp>
 #include <stb_cpp/stb_colorize.hpp>
 #include <stb_cpp/stb_desaturate.hpp>
+#include <stb_cpp/stb_generate_color_mask.hpp>
 #include <stb_cpp/stb_image_atlas.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <stb_cpp/stb_lighten.hpp>
@@ -293,6 +294,41 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.nrChannels,
             si1.nrChannels,
             si0.nrChannels);
+    }
+    if ((desc.color.selected_color_near != 0.f) ||
+        (desc.color.selected_color_far != INFINITY))
+    {
+        if (si0.nrChannels != 3) {
+            THROW_OR_ABORT("Only 3 channels are supported for selected_color");;
+        }
+        const FixedArray<float, 3>& selected_color = desc.color.selected_color;
+        if (any(selected_color < 0.f) || any(selected_color > 1.f)) {
+            THROW_OR_ABORT("selected_color out of bounds");
+        }
+        if (!std::isfinite(desc.color.selected_color_near) ||
+            (desc.color.selected_color_near < 0.f) ||
+            (desc.color.selected_color_near > 1.f))
+        {
+            THROW_OR_ABORT("selected_color_near out of bounds");
+        }
+        if (!std::isfinite(desc.color.selected_color_far) ||
+            (desc.color.selected_color_far < 0.f) ||
+            (desc.color.selected_color_far > 1.f))
+        {
+            THROW_OR_ABORT("selected_color_far out of bounds");
+        }
+        auto si1 = stb_create<uint8_t>(si0.width, si0.height, 1);
+        assert_isequal(si0.nrChannels, integral_cast<int>(desc.color.selected_color.length()));
+        stb_generate_color_mask(
+            si0.data.get(),
+            si1.data.get(),
+            si0.width,
+            si0.height,
+            si0.nrChannels,
+            (desc.color.selected_color * 255.f).casted<short>().flat_begin(),
+            (short)(desc.color.selected_color_near * 255.f),
+            (short)(desc.color.selected_color_far * 255.f));
+        si0 = std::move(si1);
     }
     return si0;
 }

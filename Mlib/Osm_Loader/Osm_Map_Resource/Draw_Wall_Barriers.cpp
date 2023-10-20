@@ -55,7 +55,7 @@ void Mlib::draw_wall_barriers(
                 }
             };
             const BarrierStyle& bs = get_style();
-            tl->material.textures = { primary_rendering_resources->get_blend_map_texture(bs.texture) };
+            tl->material.textures_color = { primary_rendering_resources->get_blend_map_texture(bs.texture) };
             tl->material.blend_mode = bs.blend_mode;
             // tl->material.wrap_mode_t = bs.wrap_mode_t;
             tl->material.reorient_uv0 = bs.reorient_uv0;

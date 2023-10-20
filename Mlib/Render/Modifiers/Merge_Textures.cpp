@@ -139,7 +139,7 @@ void Mlib::merge_textures(
                     Material{
                         .blend_mode = merged_materials_config.blend_mode,
                         .continuous_blending_z_order = merged_materials_config.continuous_blending_z_order,
-                        .textures = {{.texture_descriptor = {
+                        .textures_color = {{.texture_descriptor = {
                             .color = {.filename = merged_materials_config.texture_name},
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},

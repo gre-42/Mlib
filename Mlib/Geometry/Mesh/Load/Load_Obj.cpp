@@ -50,7 +50,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     TriangleList<TPos> tl{
         filename,
         Material{
-            .textures = cfg.textures,
+            .textures_color = cfg.textures,
             .period_world = cfg.period_world,
             .reflection_map = cfg.reflection_map,
             .occluded_pass = cfg.occluded_pass,
@@ -346,9 +346,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     td.normal = {.filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string()};
                 }
                 if (!td.color.filename.empty() || !td.specular.empty() || !td.normal.filename.empty()) {
-                    tl.material.textures = { {.texture_descriptor = td } };
+                    tl.material.textures_color = { {.texture_descriptor = td } };
                 } else {
-                    tl.material.textures = cfg.textures;
+                    tl.material.textures_color = cfg.textures;
                 }
                 if (current_mtl.has_alpha_texture || (current_mtl.alpha != 1.f)) {
                     tl.material.blend_mode = cfg.blend_mode;

@@ -434,7 +434,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
 
 template <class TPos>
 std::string ColoredVertexArray<TPos>::identifier() const {
-    if (material.textures.size() > 0) {
+    if (material.textures_color.size() > 0) {
         return name + ", " + material.identifier() + ", #tris: " + std::to_string(triangles.size());
     } else {
         return name + ", #tris: " + std::to_string(triangles.size());

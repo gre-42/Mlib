@@ -42,7 +42,7 @@ void Mlib::draw_building_walls(
             } else {
                 bottom_ambient_occlusion = 0.f;
             }
-            tls.back()->material.textures = { { primary_rendering_resources->get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
+            tls.back()->material.textures_color = { { primary_rendering_resources->get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
             tls.back()->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tls.back()->material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);

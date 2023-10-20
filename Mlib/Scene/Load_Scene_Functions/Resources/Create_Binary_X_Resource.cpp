@@ -61,8 +61,8 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
         .specularity = {0.f, 0.f, 0.f}};
     Material material_0{material};
     Material material_90{material};
-    material_0.textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
-    material_90.textures = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
+    material_0.textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
+    material_90.textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(

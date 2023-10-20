@@ -108,7 +108,8 @@ private:
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,
         const std::vector<size_t>& black_shadow_indices,
-        const std::vector<BlendMapTexture*>& textures) const;
+        const std::vector<BlendMapTexture*>& textures_color,
+        const std::vector<BlendMapTexture*>& textures_alpha) const;
     void deallocate();
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
     const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;

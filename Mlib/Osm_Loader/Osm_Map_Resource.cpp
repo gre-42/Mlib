@@ -553,7 +553,7 @@ OsmMapResource::OsmMapResource(
         draw_roofs(
             tls_buildings,
             Material{
-                .textures = { primary_rendering_resources->get_blend_map_texture(config.roof_texture) },
+                .textures_color = { primary_rendering_resources->get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .emissivity = OrderableFixedArray{ROOF_EMISSIVITY * config.emissivity_factor},
@@ -1450,8 +1450,8 @@ void OsmMapResource::save_to_obj_file(
                 .ambience = m.ambience,
                 .diffusivity = m.diffusivity,
                 .specularity = m.specularity};
-            if (!m.textures.empty()) {
-                const auto& desc = m.textures[0].texture_descriptor;
+            if (!m.textures_color.empty()) {
+                const auto& desc = m.textures_color[0].texture_descriptor;
                 result.color_texture = get_filename(desc);
                 result.bump_texture = get_filename(TextureDescriptor{
                     .color = {.filename = desc.normal.filename, .average = desc.normal.average},

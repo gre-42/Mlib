@@ -22,6 +22,12 @@ enum class BlendMapRole {
     DETAIL_COLOR_VERTICAL   = 8 | ANY_DETAIL_COLOR
 };
 
+enum class BlendMapReductionType {
+    ADD,
+    SUBTRACT,
+    MULTIPLY
+};
+
 inline bool any(BlendMapRole a) {
     return a != BlendMapRole::NONE;
 }
@@ -47,6 +53,7 @@ struct BlendMapTexture {
     float scale = 1.f;
     float weight = 1.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
+    BlendMapReductionType reduction = BlendMapReductionType::ADD;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -60,6 +67,7 @@ struct BlendMapTexture {
         archive(scale);
         archive(weight);
         archive(role);
+        archive(reduction);
     }
 };
 

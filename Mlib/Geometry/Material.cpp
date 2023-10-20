@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 Material& Material::compute_color_mode() {
-    for (auto& t : textures) {
+    for (auto& t : textures_color) {
         if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
             t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
                 ? ColorMode::RGB
@@ -15,7 +15,7 @@ Material& Material::compute_color_mode() {
 }
 
 bool Material::has_normalmap() const {
-    for (const auto& t : textures) {
+    for (const auto& t : textures_color) {
         if (!t.texture_descriptor.normal.filename.empty()) {
             return true;
         }
@@ -27,7 +27,7 @@ bool Material::fragments_depend_on_distance() const {
     if (alpha_distances != default_linear_distances) {
         return true;
     }
-    for (const auto& t : textures) {
+    for (const auto& t : textures_color) {
         if (t.distances != default_linear_distances) {
             return true;
         }
@@ -36,7 +36,7 @@ bool Material::fragments_depend_on_distance() const {
 }
 
 bool Material::fragments_depend_on_normal() const {
-    for (const auto& t : textures) {
+    for (const auto& t : textures_color) {
         if (t.cosines != default_linear_cosines) {
             return true;
         }
@@ -45,8 +45,8 @@ bool Material::fragments_depend_on_normal() const {
 }
 
 std::string Material::identifier() const {
-    if (textures.size() > 0) {
-        return "color: " + textures.front().texture_descriptor.color.filename;
+    if (textures_color.size() > 0) {
+        return "color: " + textures_color.front().texture_descriptor.color.filename;
     } else {
         return "<no texture>";
     }

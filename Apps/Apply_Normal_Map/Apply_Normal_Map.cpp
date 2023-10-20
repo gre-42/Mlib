@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
             TriangleList<float> tl{
                 "tl",
                 Material{
-                    .textures{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
+                    .textures_color{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
                         .color = ColormapWithModifiers{
                             .filename = args.named_value("--color"),
                             .histogram = args.named_value("--histogram", "")},

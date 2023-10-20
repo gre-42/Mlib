@@ -20,7 +20,7 @@ void Mlib::draw_ceilings(
     draw_buildings_ceiling_or_ground(
         tls_buildings,
         Material{
-            .textures = { { primary_rendering_resources->get_existing_texture_descriptor(config.ceiling_texture) } },
+            .textures_color = { { primary_rendering_resources->get_existing_texture_descriptor(config.ceiling_texture) } },
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = AggregateMode::ONCE,
             .emissivity = OrderableFixedArray{CEILING_EMISSIVITY * config.emissivity_factor},

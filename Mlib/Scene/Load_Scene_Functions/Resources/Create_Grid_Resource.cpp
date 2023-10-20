@@ -79,7 +79,7 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             .depth_func = args.arguments.contains(KnownArgs::depth_func)
                 ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
                 : DepthFunc::LESS,
-            .textures = {primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path)},
+            .textures_color = {primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path)},
             .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
             .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
             .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
