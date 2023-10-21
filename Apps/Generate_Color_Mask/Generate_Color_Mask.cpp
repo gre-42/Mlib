@@ -4,7 +4,7 @@
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <stb_cpp/stb_generate_color_mask.hpp>
-#include <stb_cpp/stb_invert.hpp>
+#include <stb_cpp/stb_transform.hpp>
 
 using namespace Mlib;
 
@@ -37,11 +37,13 @@ int main(int argc, char** argv) {
             safe_stox<unsigned short>(args.named_value("--near")),
             safe_stox<unsigned short>(args.named_value("--far")));
         if (args.has_named("--invert")) {
-            stb_invert(
+            stb_transform(
                 im_out.flat_begin(),
                 integral_cast<int>(im_out.shape(1)),
                 integral_cast<int>(im_out.shape(0)),
-                1);
+                1,
+                -1.f,
+                1.f);
         }
         im_out.save_to_file(args.unnamed_value(1));
     } catch (const std::runtime_error& e) {
