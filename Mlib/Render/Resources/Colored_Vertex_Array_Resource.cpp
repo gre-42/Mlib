@@ -786,21 +786,21 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                     if (target == ReductionTarget::COLOR) {
                         sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= weight * bcolor.rgb;" << std::endl;
                     } else if (target == ReductionTarget::ALPHA) {
-                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= weight * intensity;" << std::endl;
+                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= weight * intensity + " << t->plus << ";" << std::endl;
                     } else {
                         THROW_OR_ABORT("Unknown reduction target (1)");
                     }
                 } else if (!any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                     THROW_OR_ABORT("Unknown blend map role");
                 }
-                if (has_normalmap && (target == ReductionTarget::COLOR)) {
-                    if (t->texture_descriptor.normal.filename.empty()) {
-                        sstr << "            tnorm.z += weight;" << std::endl;
-                    } else {
-                        sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
-                    }
-                }
                 if (target == ReductionTarget::COLOR) {
+                    if (has_normalmap) {
+                        if (t->texture_descriptor.normal.filename.empty()) {
+                            sstr << "            tnorm.z += weight;" << std::endl;
+                        } else {
+                            sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
+                        }
+                    }
                     sstr << "            sum_weights += weight;" << std::endl;
                 }
             }

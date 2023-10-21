@@ -19,7 +19,7 @@ def plot_2d(args):
     # ramp = iio.imread(args.ramp)
     # blend = iio.imread(args.blend)
     # blend = gaussian_filter
-    detail = args.detail_fac * iio.imread(args.detail) / 255
+    detail = args.detail_fac * iio.imread(args.detail) / 255 - args.detail_offset
     if args.flip_horizontally:
         details = detail[:, ::-1]
     foreground = iio.imread(args.foreground)
@@ -31,7 +31,7 @@ def plot_2d(args):
     ramp = np.cumsum(blend, axis=1)
     ramp /= np.max(ramp)
 
-    alpha = (detail - ramp) * blend + ramp
+    alpha = detail * blend + ramp
     res = alpha[:, :, None] * foreground + (1 - alpha)[:, :, None] * background
     iio.imwrite(args.result, res.clip(0, 255).astype(np.uint8))
 
@@ -47,6 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('--background', required=True)
     parser.add_argument('--result', required=True)
     parser.add_argument('--detail_fac', type=float, required=True)
+    parser.add_argument('--detail_offset', type=float, required=True)
     parser.add_argument('--flip_horizontally', action='store_true')
 
     args = parser.parse_args()

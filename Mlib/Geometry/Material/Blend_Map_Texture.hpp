@@ -59,6 +59,7 @@ struct BlendMapTexture {
     float discreteness = 2.f;
     float scale = 1.f;
     float weight = 1.f;
+    float plus = 0.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
     BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
     BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
@@ -74,6 +75,7 @@ struct BlendMapTexture {
         archive(discreteness);
         archive(scale);
         archive(weight);
+        archive(plus);
         archive(role);
         archive(uv_source);
         archive(reduction);
