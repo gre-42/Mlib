@@ -267,13 +267,13 @@ int main(int argc, char** argv) {
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
         "    [--no_normalmaps]\n"
-        "    [--no_physics ]\n"
-        "    [--physics_dt <dt> ]\n"
-        "    [--render_dt <dt> ]\n"
-        "    [--render_max_residual_time <dt> ]\n"
+        "    [--no_physics]\n"
+        "    [--physics_dt <dt>]\n"
+        "    [--render_dt <dt>]\n"
+        "    [--render_max_residual_time <dt>]\n"
         "    [--no_control_physics_fps ]\n"
-        "    [--control_render_fps ]\n"
-        "    [--fullscreen_refresh_rate <Hz> ]\n"
+        "    [--print_render_fps_interval <n>]\n"
+        "    [--fullscreen_refresh_rate <Hz>]\n"
         "    [--print_physics_residual_time]\n"
         "    [--print_render_residual_time]\n"
         "    [--draw_distance_add <value>]\n"
@@ -336,7 +336,6 @@ int main(int argc, char** argv) {
          "--no_avoid_burnout",
          "--print_search_time",
          "--no_control_physics_fps",
-         "--control_render_fps",
          "--fxaa",
          "--verbose"},
         {"--app_reldir",

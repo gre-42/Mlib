@@ -251,7 +251,7 @@ int main(int argc, char** argv) {
         "    [--cull_faces_alpha]\n"
         "    [--wire_frame]\n"
         "    [--render_sleep_dt <dt>]\n"
-        "    [--print_render_fps]\n"
+        "    [--print_render_fps_interval <n>]\n"
         "    [--width <width>]\n"
         "    [--height <height>]\n"
         "    [--output_width <width>]\n"
@@ -319,7 +319,6 @@ int main(int argc, char** argv) {
          "--double_buffer",
          "--large_object_mode",
          "--no_normalmaps",
-         "--print_render_fps",
          "--no_werror",
          "--apply_static_lighting",
          "--no_shadows",
@@ -330,6 +329,7 @@ int main(int argc, char** argv) {
          "--bvh_rotation_1",
          "--bvh_rotation_2",
          "--bvh_trafo",
+         "--print_render_fps_interval",
          "--loop_begin",
          "--loop_end",
          "--loop_time",
