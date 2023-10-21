@@ -13,10 +13,10 @@ void stb_transform(
         for (int c = 0; c < width; ++c) {
             for (int d = 0; d < nrChannels; ++d) {
                 int i = (r * width + c) * nrChannels + d;
-                data[i] = std::clamp(
-                    (unsigned char)std::round(data[i] * times + plus * 255.f),
-                    (unsigned char)0,
-                    (unsigned char)255);
+                data[i] = (unsigned char)std::clamp(
+                    std::round(data[i] * times + plus * 255.f),
+                    0.f,
+                    255.f);
             }
         }
     }
