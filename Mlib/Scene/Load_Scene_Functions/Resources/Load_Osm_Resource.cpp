@@ -62,6 +62,8 @@ DECLARE_ARGUMENT(street_dirt_texture);
 DECLARE_ARGUMENT(street_reflection_map);
 DECLARE_ARGUMENT(path_reflection_map);
 DECLARE_ARGUMENT(street_crossing_textures);
+DECLARE_ARGUMENT(street_alpha_textures);
+DECLARE_ARGUMENT(path_alpha_textures);
 DECLARE_ARGUMENT(street_texture);
 DECLARE_ARGUMENT(street_textures);
 DECLARE_ARGUMENT(path_crossing_textures);
@@ -396,6 +398,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::street_crossing_textures)) {
             config.street_crossing_textures[RoadType::STREET] = fpathps(KnownArgs::street_crossing_textures);
+        }
+        if (args.arguments.contains(KnownArgs::street_alpha_textures)) {
+            config.street_alpha_textures[RoadType::STREET] = fpathps(KnownArgs::street_alpha_textures);
+        }
+        if (args.arguments.contains(KnownArgs::path_alpha_textures)) {
+            config.street_alpha_textures[RoadType::PATH] = fpathps(KnownArgs::path_alpha_textures);
         }
         if (args.arguments.contains(KnownArgs::street_texture)) {
             RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};

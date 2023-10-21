@@ -357,12 +357,12 @@ void RenderableColoredVertexArray::render_cva(
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (t.texture_descriptor.color_mode != ColorMode::RGB) {
-                THROW_OR_ABORT("Color-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGBA, but an alpha-texture was set");
+                THROW_OR_ABORT("Color-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGB, but an alpha-texture was set");
             }
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_alpha)) {
-            if (t.texture_descriptor.color_mode == ColorMode::RGBA) {
-                THROW_OR_ABORT("Alpha-texture \"" + t.texture_descriptor.color.filename + "\" was loaded as RGBA");
+            if (t.texture_descriptor.color_mode != ColorMode::GRAYSCALE) {
+                THROW_OR_ABORT("Alpha-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as grayscale");
             }
         }
     }
@@ -403,7 +403,7 @@ void RenderableColoredVertexArray::render_cva(
     bool has_horizontal_detailmap = false;
     auto compute_has_horizontal_detailmap = [&has_horizontal_detailmap](const std::vector<BlendMapTexture>& textures) {
         for (const auto& t : textures) {
-            if (t.role == BlendMapRole::DETAIL_COLOR_HORIZONTAL) {
+            if (t.uv_source == BlendMapUvSource::HORIZONTAL) {
                 has_horizontal_detailmap = true;
                 break;
             }
@@ -591,6 +591,9 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < tic.ntextures_color; ++i) {
         CHK(glUniform1i(rp.texture_color_locations.at(i), (GLint)tic.id_color(i)));
+    }
+    for (size_t i = 0; i < tic.ntextures_alpha; ++i) {
+        CHK(glUniform1i(rp.texture_alpha_locations.at(i), (GLint)tic.id_alpha(i)));
     }
     assert_true(lightmap_indices_color.empty() || lightmap_indices_depth.empty());
     if (!lightmap_indices_color.empty()) {

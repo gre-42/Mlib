@@ -27,7 +27,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     lcm_local_args(0).reserve(textures.size());
     lcm_local_args(1).reserve(textures.size());
     for (const auto& t : textures) {
-        if (t->role == BlendMapRole::DETAIL_COLOR_HORIZONTAL) {
+        if (t->uv_source == BlendMapUvSource::HORIZONTAL) {
             lcm_world_args.push_back(1.f / t->scale);
         } else {
             for (size_t i = 0; i < 2; ++i) {

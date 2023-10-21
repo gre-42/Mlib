@@ -43,6 +43,7 @@
 #include <stb_cpp/stb_generate_color_mask.hpp>
 #include <stb_cpp/stb_image_atlas.hpp>
 #include <stb_cpp/stb_image_load.hpp>
+#include <stb_cpp/stb_invert.hpp>
 #include <stb_cpp/stb_lighten.hpp>
 #include <stb_cpp/stb_mipmaps.hpp>
 #include <stb_cpp/stb_set_alpha.hpp>
@@ -85,9 +86,11 @@ int log2(int n) {
     return result;
 }
 
-static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
-                                int nchannels,
-                                FlipMode flip_mode) {
+static StbInfo<uint8_t> stb_load_texture(
+    const std::string& filename,
+    int nchannels,
+    FlipMode flip_mode)
+{
     auto result = stb_load8(filename, flip_mode, nullptr, IncorrectDatasizeBehavior::CONVERT);
     if (result.nrChannels < std::abs(nchannels)) {
         THROW_OR_ABORT(filename + " does not have at least " + std::to_string(nchannels) + " channels");
@@ -96,14 +99,23 @@ static StbInfo<uint8_t> stb_load_texture(const std::string& filename,
         lwarn() << filename << " size: " << result.width << 'x' << result.height;
     }
     if ((nchannels > 0) && (result.nrChannels != nchannels)) {
-        lwarn() << filename << " #channels: " << result.nrChannels;
+        lwarn() << filename << " channels: " << result.nrChannels << ", expected: " << nchannels;
     }
     return result;
 }
 
 static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc, FlipMode flip_mode) {
     std::string touch_file = desc.color.filename + ".xpltd";
-    if ((desc.color_mode == ColorMode::RGBA) &&
+    bool has_color_selector =
+        (desc.color.selected_color_near != 0.f) ||
+        (desc.color.selected_color_far != INFINITY);
+    auto source_color_mode = has_color_selector
+        ? ColorMode::RGB
+        : desc.color_mode;
+    if (has_color_selector && (desc.color_mode != ColorMode::GRAYSCALE)) {
+        THROW_OR_ABORT("Color-selector requires grayscale");
+    }
+    if ((source_color_mode == ColorMode::RGBA) &&
         desc.color.alpha.empty() &&
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
         !fs::exists(touch_file))
@@ -123,7 +135,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
     }
     StbInfo<uint8_t> si0;
     if (!desc.color.alpha.empty()) {
-        if (desc.color_mode != ColorMode::RGBA) {
+        if (source_color_mode != ColorMode::RGBA) {
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color.filename + '"');
         }
         si0 = stb_load_texture(
@@ -148,11 +160,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            desc.color.filename, (int)desc.color_mode, flip_mode);
+            desc.color.filename, (int)source_color_mode, flip_mode);
     }
     if (!desc.color.average.empty()) {
         auto si1 = stb_load_texture(
-            desc.color.average, (int)desc.color_mode, flip_mode);
+            desc.color.average, (int)source_color_mode, flip_mode);
         stb_average(
             si0.data.get(),
             si1.data.get(),
@@ -167,7 +179,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
     }
     if (!desc.color.multiply.empty()) {
         auto si1 = stb_load_texture(
-            desc.color.multiply, (int)desc.color_mode, flip_mode);
+            desc.color.multiply, (int)source_color_mode, flip_mode);
         stb_multiply_color(
             si0.data.get(),
             si1.data.get(),
@@ -295,11 +307,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si1.nrChannels,
             si0.nrChannels);
     }
-    if ((desc.color.selected_color_near != 0.f) ||
-        (desc.color.selected_color_far != INFINITY))
+    if (has_color_selector)
     {
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("Only 3 channels are supported for selected_color");;
+        }
+        if (desc.color_mode != ColorMode::GRAYSCALE) {
+            THROW_OR_ABORT("Color-selector requires grayscale");
         }
         const FixedArray<float, 3>& selected_color = desc.color.selected_color;
         if (any(selected_color < 0.f) || any(selected_color > 1.f)) {
@@ -329,6 +343,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             (short)(desc.color.selected_color_near * 255.f),
             (short)(desc.color.selected_color_far * 255.f));
         si0 = std::move(si1);
+    }
+    if (desc.color.invert) {
+        stb_invert(si0.data.get(), si0.width, si0.height, si0.nrChannels);
     }
     return si0;
 }

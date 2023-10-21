@@ -9,7 +9,6 @@ namespace Mlib {
 
 enum class BlendMapRole {
     ANY_DETAIL_MASK = (1 << 6),
-    ANY_DETAIL_COLOR = (1 << 7),
     
     NONE                    = 0,
     SUMMAND                 = 1,
@@ -18,14 +17,7 @@ enum class BlendMapRole {
     DETAIL_MASK_G           = 4 | ANY_DETAIL_MASK,
     DETAIL_MASK_B           = 5 | ANY_DETAIL_MASK,
     DETAIL_MASK_A           = 6 | ANY_DETAIL_MASK,
-    DETAIL_COLOR_HORIZONTAL = 7 | ANY_DETAIL_COLOR,
-    DETAIL_COLOR_VERTICAL   = 8 | ANY_DETAIL_COLOR
-};
-
-enum class BlendMapReductionType {
-    ADD,
-    SUBTRACT,
-    MULTIPLY
+    DETAIL_COLOR            = 7
 };
 
 inline bool any(BlendMapRole a) {
@@ -42,6 +34,21 @@ inline BlendMapRole operator + (BlendMapRole a, uint32_t b) {
 
 BlendMapRole blend_map_role_from_string(std::string_view s);
 
+enum class BlendMapUvSource {
+    VERTICAL,
+    HORIZONTAL
+};
+
+BlendMapUvSource blend_map_uv_source_from_string(std::string_view s);
+
+enum class BlendMapReductionOperation {
+    PLUS,
+    MINUS,
+    TIMES
+};
+
+BlendMapReductionOperation blend_map_reduction_operation_from_string(std::string_view s);
+
 struct BlendMapTexture {
     TextureDescriptor texture_descriptor;
     float min_height = -float(INFINITY);
@@ -53,7 +60,8 @@ struct BlendMapTexture {
     float scale = 1.f;
     float weight = 1.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
-    BlendMapReductionType reduction = BlendMapReductionType::ADD;
+    BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
+    BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -67,6 +75,7 @@ struct BlendMapTexture {
         archive(scale);
         archive(weight);
         archive(role);
+        archive(uv_source);
         archive(reduction);
     }
 };

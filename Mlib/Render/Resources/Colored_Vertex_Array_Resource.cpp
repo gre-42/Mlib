@@ -332,7 +332,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float reflection_strength,
     bool reflect_only_y,
     bool has_dirtmap,
-    bool has_texture_layer,
+    bool has_texture_layer_color,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
     const OrderableFixedArray<float, 2>& facade_inner_size,
@@ -361,10 +361,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
-    const char* sampler_type = has_texture_layer
+    const char* sampler_type_color = has_texture_layer_color
         ? "sampler2DArray"
         : "sampler2D";
-    auto sample = [has_texture_layer](const std::string& sampler, const std::string& coordinates) {
+    auto sample = [](const std::string& sampler, const std::string& coordinates, bool has_texture_layer) {
         return has_texture_layer
             ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs))"
             : "texture(" + sampler + ", " + coordinates + ')';
@@ -384,7 +384,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "uniform " << sampler_type << " textures_color[" << ntextures_color << "];" << std::endl;
+        sstr << "uniform " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
+    }
+    if (ntextures_alpha != 0) {
+        sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
         if (lights.empty()) {
@@ -414,7 +417,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
-    if (has_texture_layer) {
+    if (has_texture_layer_color) {
         sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
@@ -628,7 +631,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         compute_normal_and_reorient_uv0();
     }
     if (ntextures_color == 1) {
-        sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", "tex_coord_flipped") << ';' << std::endl;
+        sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", "tex_coord_flipped", has_texture_layer_color) << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
         if (textures_color[0]->role == BlendMapRole::SUMMAND) {
@@ -707,7 +710,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
             }
             sstr << "            float weight = " << t->weight << ';' << std::endl;
-            if (any(t->role & BlendMapRole::ANY_DETAIL_COLOR)) {
+            if (t->role == BlendMapRole::DETAIL_COLOR) {
                 sstr << "            weight *= mask;" << std::endl;
                 sstr << "            weight = max(weight, " << MIN_DETAIL_WEIGHT << ");" << std::endl;
             }
@@ -732,7 +735,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "                weight *= (" << t->cosines(3) << " - cosine) / " << (t->cosines(3) - t->cosines(2)) << ';' << std::endl;
                 sstr << "            }" << std::endl;
             }
-            auto tex_coords = (t->role == BlendMapRole::DETAIL_COLOR_HORIZONTAL)
+            auto tex_coords = (t->uv_source == BlendMapUvSource::HORIZONTAL)
                 ? "(FragPos.xz + horizontal_detailmap_remainder)"
                 : "tex_coord_flipped";
             if (t->role == BlendMapRole::DETAIL_MASK_R) {
@@ -752,33 +755,38 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 ((t->texture_descriptor.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
             {
                 sstr << "            vec3 bcolor = texture(textures_color[" << i << "], " << tex_coords << " * scale).rgb;" << std::endl;
+            } else if (target == ReductionTarget::ALPHA) {
+                if (t->texture_descriptor.color_mode != ColorMode::GRAYSCALE) {
+                    THROW_OR_ABORT("Alpha-texture not loaded as grayscale");
+                }
+                sstr << "            float intensity = texture(textures_alpha[" << i << "], " << tex_coords << " * scale).r;" << std::endl;
             } else {
-                THROW_OR_ABORT("Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
+                THROW_OR_ABORT("Texture: \"" + t->texture_descriptor.color.filename + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color_mode) + '"');
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                 sstr << "            mask = weight;" << std::endl;
             } else {
-                char sgn;
+                char rop;
                 switch (t->reduction) {
-                case BlendMapReductionType::ADD:
-                    sgn = '+';
+                case BlendMapReductionOperation::PLUS:
+                    rop = '+';
                     break;
-                case BlendMapReductionType::SUBTRACT:
-                    sgn = '-';
+                case BlendMapReductionOperation::MINUS:
+                    rop = '-';
                     break;
-                case BlendMapReductionType::MULTIPLY:
-                    sgn = '*';
+                case BlendMapReductionOperation::TIMES:
+                    rop = '*';
                     break;
                 default:
                     THROW_OR_ABORT("Unknown blendmap reduction type");
                 }
-                if (any(t->role & BlendMapRole::ANY_DETAIL_COLOR)) {
-                    sstr << "            sum_of_details " << sgn << "= weight * bcolor.rgb;" << std::endl;
+                if (t->role == BlendMapRole::DETAIL_COLOR) {
+                    sstr << "            sum_of_details " << rop << "= weight * bcolor.rgb;" << std::endl;
                 } else if (t->role == BlendMapRole::SUMMAND) {
                     if (target == ReductionTarget::COLOR) {
-                        sstr << "            texture_color_ambient_diffuse.rgb " << sgn << "= weight * bcolor.rgb;" << std::endl;
+                        sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= weight * bcolor.rgb;" << std::endl;
                     } else if (target == ReductionTarget::ALPHA) {
-                        sstr << "            texture_color_ambient_diffuse.a " << sgn << "= weight * bcolor.r;" << std::endl;
+                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= weight * intensity;" << std::endl;
                     } else {
                         THROW_OR_ABORT("Unknown reduction target (1)");
                     }
@@ -812,7 +820,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (target == ReductionTarget::COLOR) {
                 sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
             } else if (target == ReductionTarget::ALPHA) {
-                sstr << "        texture_color_ambient_diffuse.a *= sum_of_details;" << std::endl;
+                // Do nothing
             } else {
                 THROW_OR_ABORT("Unknown reduction target");
             }

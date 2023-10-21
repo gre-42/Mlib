@@ -163,7 +163,8 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
                     .normal = {.filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .scale = multilayer_mult,
-                .role = BlendMapRole::DETAIL_COLOR_HORIZONTAL});
+                .role = BlendMapRole::DETAIL_COLOR,
+                .uv_source = BlendMapUvSource::HORIZONTAL});
             lcm_world_args.push_back(multilayer_mult);
         }
         period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);

@@ -253,10 +253,18 @@ OsmTriangleLists::OsmTriangleLists(
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
         }
         bool blend = config.blend_street.contains(road_properties.type) && config.blend_street.at(road_properties.type) && (road_properties.type != RoadType::WALL);
-        std::vector<BlendMapTexture> textures;
-        textures.reserve(road_style.textures.size());
+        auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
+            ? config.street_alpha_textures.at(road_properties.type)
+            : std::vector<std::string>{};
+        std::vector<BlendMapTexture> textures_color;
+        textures_color.reserve(road_style.textures.size());
         for (const std::string& texture : road_style.textures) {
-            textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+            textures_color.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+        }
+        std::vector<BlendMapTexture> textures_alpha;
+        textures_alpha.reserve( alpha_texture_names.size());
+        for (const std::string& texture : alpha_texture_names) {
+            textures_alpha.push_back(primary_rendering_resources->get_blend_map_texture(texture));
         }
         auto rit = config.street_reflection_map.find(road_properties.type);
         tl_street.append(StyledRoadEntry{
@@ -267,7 +275,8 @@ OsmTriangleLists::OsmTriangleLists(
                     Material{
                         .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
                         .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
-                        .textures_color = textures,
+                        .textures_color = textures_color,
+                        .textures_alpha = textures_alpha,
                         .reflection_map = (rit != config.street_reflection_map.end())
                             ? rit->second
                             : "",

@@ -22,6 +22,8 @@ DECLARE_ARGUMENT(discreteness);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(weight);
 DECLARE_ARGUMENT(role);
+DECLARE_ARGUMENT(uv_source);
+DECLARE_ARGUMENT(reduction);
 }
 
 const std::string AddBlendMapTexture::key = "add_blend_map_texture";
@@ -50,5 +52,7 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
             .discreteness = args.arguments.at<float>(KnownArgs::discreteness, 2.f),
             .scale = args.arguments.at<float>(KnownArgs::scale),
             .weight = args.arguments.at<float>(KnownArgs::weight),
-            .role = blend_map_role_from_string(args.arguments.at<std::string>(KnownArgs::role, "summand")) });
+            .role = blend_map_role_from_string(args.arguments.at<std::string>(KnownArgs::role, "summand")),
+            .uv_source = blend_map_uv_source_from_string(args.arguments.at<std::string>(KnownArgs::uv_source, "vertical")),
+            .reduction = blend_map_reduction_operation_from_string(args.arguments.at<std::string>(KnownArgs::reduction, "plus"))});
 }

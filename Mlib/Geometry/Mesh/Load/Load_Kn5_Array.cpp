@@ -331,7 +331,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {.filename = material.txDetail1},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .scale = material.detailUVMultiplier,
-                        .role = BlendMapRole::DETAIL_COLOR_VERTICAL});
+                        .role = BlendMapRole::DETAIL_COLOR,
+                        .uv_source = BlendMapUvSource::VERTICAL});
                     tl.material.compute_color_mode();
                 } else if (
                     !material.txDiffuse.empty() &&
@@ -363,9 +364,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .color = {.filename = material.txDetail4(i)},
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.mult(i),
-                            .role = any(attrs & MetaAttributes::VERTICAL)
-                                ? BlendMapRole::DETAIL_COLOR_VERTICAL
-                                : BlendMapRole::DETAIL_COLOR_HORIZONTAL});
+                            .role = BlendMapRole::DETAIL_COLOR,
+                            .uv_source = any(attrs & MetaAttributes::VERTICAL)
+                                ? BlendMapUvSource::VERTICAL
+                                : BlendMapUvSource::HORIZONTAL});
                     }
                     tl.material.compute_color_mode();
                 } else {

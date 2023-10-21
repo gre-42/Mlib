@@ -31,6 +31,7 @@ DECLARE_ARGUMENT(lighten_bottom);
 DECLARE_ARGUMENT(selected_color);
 DECLARE_ARGUMENT(selected_color_near);
 DECLARE_ARGUMENT(selected_color_far);
+DECLARE_ARGUMENT(invert);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
@@ -66,7 +67,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .lighten_bottom = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::lighten_bottom, OrderableFixedArray<float, 3>(0.f)),
                 .selected_color = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::selected_color, OrderableFixedArray<float, 3>(0.f)),
                 .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
-                .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY)},
+                .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
+                .invert = args.arguments.at<bool>(KnownArgs::invert, false)},
             .specular = args.arguments.try_path_or_variable(KnownArgs::specular).path,
             .normal = {
                 .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
