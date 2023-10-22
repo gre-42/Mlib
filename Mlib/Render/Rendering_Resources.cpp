@@ -340,8 +340,8 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.height,
             si0.nrChannels,
             (desc.color.selected_color * 255.f).casted<short>().flat_begin(),
-            (short)(desc.color.selected_color_near * 255.f),
-            (short)(desc.color.selected_color_far * 255.f));
+            (unsigned short)std::round(desc.color.selected_color_near * 255.f),
+            (unsigned short)std::round(desc.color.selected_color_far * 255.f));
         si0 = std::move(si1);
     }
     if ((desc.color.times != 0.f) || (desc.color.plus != 1.f)) {
