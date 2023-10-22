@@ -1705,6 +1705,8 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
         }
         va.interior_mapping_buffer.set(shader_interior_mapped_facade);
+        // The "shader_interior_mapped_facade" array is temporary, so wait until it is transferred.
+        va.interior_mapping_buffer.wait();
 
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));
