@@ -46,7 +46,7 @@ static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
 
 static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
 {
-    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t()};
+    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t() + FixedArray<double, 3>{0., 2., 0.}};
 }
 
 static TransformationMatrix<float, double, 3> ac_center(
@@ -87,8 +87,9 @@ enum class MetaAttributes {
     ROAD = (1 << 3),
     GRAVEL = (1 << 4),
     SIDE = (1 << 5),
-    TREE = (1 << 6),
-    VERTICAL = (1 << 7)
+    FOLIAGE = (1 << 6),
+    TREE = (1 << 7),
+    VERTICAL = (1 << 8)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -97,6 +98,10 @@ MetaAttributes operator ~ (MetaAttributes a) {
 
 MetaAttributes operator & (MetaAttributes a, MetaAttributes b) {
     return (MetaAttributes)(int(a) & int(b));
+}
+
+MetaAttributes operator | (MetaAttributes a, MetaAttributes b) {
+    return (MetaAttributes)(int(a) | int(b));
 }
 
 MetaAttributes& operator &= (MetaAttributes& a, MetaAttributes b) {
@@ -261,9 +266,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 const auto& material = kn5.materials.at(node.materialID.value());
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
-                if ((material.shader == "ksGrass") ||
-                    (material.shader == "ksTree"))
-                {
+                if (material.shader == "ksGrass") {
+                    attrs |= MetaAttributes::FOLIAGE;
+                }
+                if (material.shader == "ksTree") {
                     attrs |= MetaAttributes::TREE;
                 }
                 if (grass_materials.contains(material.name) &&
@@ -274,12 +280,16 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     //     tl.modifier_backlog.convert_to_terrain = true;
                     // }
                 }
-                if (any(attrs & MetaAttributes::TREE)) {
+                if (any(attrs & (MetaAttributes::FOLIAGE | MetaAttributes::TREE))) {
                     tl.modifier_backlog.merge_textures = true;
                     // tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
                     // tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
-                    tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+                    if (any(attrs & MetaAttributes::FOLIAGE)) {
+                        tl.material.occluder_pass = ExternalRenderPassType::NONE;
+                    } else {
+                        tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
+                    }
                     tl.material.blend_mode = cfg.blend_mode;
                 } else {
                     if ((material.ksAlphaRef != 0.f) && (material.ksAlphaRef != 1.f)) {
