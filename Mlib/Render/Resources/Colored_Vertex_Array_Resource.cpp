@@ -1675,6 +1675,8 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
             }
         }
         va.bone_weight_buffer.set(triangle_bone_weights);
+        // The "triangle_bone_weights" array is temporary, so wait until it is transferred.
+        va.bone_weight_buffer.wait();
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));

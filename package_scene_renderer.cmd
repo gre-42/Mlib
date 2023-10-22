@@ -9,4 +9,4 @@ for %%I in ( ^
     VSRecastBuild\DebugUtils\%CMAKE_BUILD_TYPE%\DebugUtils.dll ^
     VSRecastBuild\Recast\%CMAKE_BUILD_TYPE%\Recast.dll ^
     glfw_vc2022\lib\glfw3.dll ^
-    ) do copy %%I GVS\Bin\%CMAKE_BUILD_TYPE%\ || exit /b
+    ) do copy %%I %BUILD_PREFIX%GVS\Bin\%CMAKE_BUILD_TYPE%\ || exit /b
