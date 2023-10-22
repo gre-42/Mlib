@@ -336,6 +336,7 @@ void Scene::render(
     const ExternalRenderPass& external_render_pass,
     const std::function<std::function<void()>(std::function<void()>)>& run_in_background) const
 {
+    // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("Scene::render");
     delete_node_mutex_.notify_reading();
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
@@ -460,7 +461,7 @@ void Scene::render(
                             large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // GuardedLagFinder lag_finder{"Large aggregates: ", std::chrono::milliseconds{10}};
+                    // AperiodicLagFinder lag_finder{"Large aggregates: ", std::chrono::milliseconds{5}};
                     large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -498,7 +499,7 @@ void Scene::render(
                                 large_instances_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // GuardedLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{10}};
+                    // AperiodicLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{5}};
                     large_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }
 
@@ -539,7 +540,7 @@ void Scene::render(
                             small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // GuardedLagFinder lag_finder{"Small sorted aggregates: ", std::chrono::milliseconds{10}};
+                    // AperiodicLagFinder lag_finder{"Small sorted aggregates: ", std::chrono::milliseconds{5}};
                     small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -605,7 +606,7 @@ void Scene::render(
                             }
                         }
                     }
-                    // GuardedLagFinder lag_finder{"Small sorted instances: ", std::chrono::milliseconds{10}};
+                    // AperiodicLagFinder lag_finder{"Small sorted instances: ", std::chrono::milliseconds{5}};
                     small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->render_instances(
                         vp, iv, lights, scene_graph_config, render_config, external_render_pass);
                 }
@@ -615,6 +616,7 @@ void Scene::render(
     if ((particle_renderer_ != nullptr) &&
         (external_render_pass.pass == ExternalRenderPassType::STANDARD))
     {
+        // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
         particle_renderer_->render(
             vp,
             iv,
@@ -623,20 +625,23 @@ void Scene::render(
             render_config,
             external_render_pass);
     }
-    // Contains continuous alpha and must therefore be rendered late.
-    LOG_INFO("Scene::render blended");
-    blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
-    for (const auto& b : blended) {
-        b.renderable->render(
-            b.mvp,
-            b.m,
-            iv,
-            lights,
-            scene_graph_config,
-            render_config,
-            { external_render_pass, InternalRenderPass::BLENDED },
-            b.animation_state,
-            &b.color_style);
+    {
+        // AperiodicLagFinder lag_finder{"blended: ", std::chrono::milliseconds{5}};
+        // Contains continuous alpha and must therefore be rendered late.
+        LOG_INFO("Scene::render blended");
+        blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
+        for (const auto& b : blended) {
+            b.renderable->render(
+                b.mvp,
+                b.m,
+                iv,
+                lights,
+                scene_graph_config,
+                render_config,
+                { external_render_pass, InternalRenderPass::BLENDED },
+                b.animation_state,
+                &b.color_style);
+        }
     }
 }
 

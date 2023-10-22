@@ -81,13 +81,14 @@ void DynamicBase<tvalue_type>::update() {
         THROW_OR_ABORT("Number of instances is zero");
     }
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
-    // CHK(auto* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
-    CHK(auto* instances_gpu = (value_type*)glMapBufferRange(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(num_instances_ * sizeof(value_type)), GL_MAP_WRITE_BIT));
-    std::copy(
-        instances_.data(),
-        instances_.data() + num_instances_,
-        instances_gpu);
-    CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+    // // CHK(auto* instances_gpu = (value_type*)glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE));
+    // CHK(auto* instances_gpu = (value_type*)glMapBufferRange(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(num_instances_ * sizeof(value_type)), GL_MAP_WRITE_BIT));
+    // std::copy(
+    //     instances_.data(),
+    //     instances_.data() + num_instances_,
+    //     instances_gpu);
+    // CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
+    CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(num_instances_ * sizeof(value_type)), instances_.data()));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 

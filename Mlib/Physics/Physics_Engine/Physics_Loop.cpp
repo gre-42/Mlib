@@ -24,7 +24,7 @@ PhysicsLoop::PhysicsLoop(
         ThreadInitializer ti{thread_name, thread_affinity};
         SetDeleterThreadGuard set_deleter_thread_guard{ physics_iteration.delete_node_mutex_ };
         size_t nframes2 = nframes;
-        // LagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
+        // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
         while (!physics_thread_.get_stop_token().stop_requested()) {
             if (!set_fps.paused()) {
                 // lag_finder.start();

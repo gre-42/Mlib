@@ -4,9 +4,9 @@
 
 namespace Mlib {
 
-class LagFinder {
+class PeriodicLagFinder {
 public:
-    LagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration);
+    PeriodicLagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration);
     void start();
     void stop();
 private:
@@ -16,18 +16,14 @@ private:
     std::chrono::steady_clock::time_point end_time_;
 };
 
-class GuardedLagFinder {
+class AperiodicLagFinder {
 public:
-    inline GuardedLagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration)
-    : lag_finder_{std::move(prefix), lag_duration}
-    {
-        lag_finder_.start();
-    }
-    ~GuardedLagFinder() {
-        lag_finder_.stop();
-    }
+    AperiodicLagFinder(std::string prefix, const std::chrono::milliseconds& lag_duration);
+    ~AperiodicLagFinder();
 private:
-    LagFinder lag_finder_;
+    std::string prefix_;
+    std::chrono::milliseconds lag_duration_;
+    std::chrono::steady_clock::time_point start_time_;
 };
 
 }

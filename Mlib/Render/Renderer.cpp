@@ -61,7 +61,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
     try {
         GlContextGuard gcg{ window_ };
         size_t time_id = 0;
-        // LagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
+        // PeriodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
         set_fps_.tick();
         while (continue_rendering())
         {
@@ -246,7 +246,7 @@ void Mlib::handle_events(
             GLFW_CHK(glfwSetScrollCallback(&renderer.window_.glfw_window(), scroll_wheel_callback));
             dgs.add([&renderer]() {GLFW_ABORT(glfwSetScrollCallback(&renderer.window_.glfw_window(), nullptr));});
         }
-        // LagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
+        // PeriodicLagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
         while (renderer.continue_rendering()) {
             // lag_finder.start();
             GLFW_CHK(glfwPollEvents());

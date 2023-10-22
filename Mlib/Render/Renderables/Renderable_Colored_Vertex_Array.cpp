@@ -225,6 +225,7 @@ void RenderableColoredVertexArray::render_cva(
     const AnimationState* animation_state,
     const ColorStyle* color_style) const
 {
+    // AperiodicLagFinder lag_finder{ "render_cva " + cva->name + ": ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("render_cva");
     LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
     TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());
@@ -891,6 +892,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva glBindVertexArray");
     {
+        // AperiodicLagFinder lag_finder{ "draw " + cva->name + ": ", std::chrono::milliseconds{5} };
         MaterialRenderConfigGuard mrcf{ cva->material };
         if (has_instances) {
             if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
@@ -908,7 +910,10 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glBindVertexArray(si.va_.vertex_array()));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
-            instances->update();
+            {
+                // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
+                instances->update();
+            }
             CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), instances->num_instances()));
         } else {
             CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_)));
