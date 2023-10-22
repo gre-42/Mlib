@@ -26,7 +26,7 @@ release_dbg:
 	make build CMAKE_BUILD_TYPE=RelWithDebInfo
 
 build_clang:
-	CC=/usr/bin/clang CXX=/usr/bin/clang++ BUILD_PREFIX=L${BUILD_PREFIX} \
+	CC=clang CXX=clang++ BUILD_PREFIX=L${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_asan:
@@ -38,12 +38,12 @@ build_tsan:
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_asan_clang:
-	CC=/usr/bin/clang CXX=/usr/bin/clang++ \
+	CC=clang CXX=clang++ \
 	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=LA${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
 build_tsan_clang:
-	CC=/usr/bin/clang CXX=/usr/bin/clang++ \
+	CC=clang CXX=clang++ \
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
