@@ -55,6 +55,12 @@ void AggregateArrayRenderer::update_aggregates(
     const ExternalRenderPass& external_render_pass,
     TaskLocation task_location)
 {
+    {
+        std::scoped_lock lock_guard{mutex_};
+        if (next_rcva_ != nullptr) {
+            return;
+        }
+    }
     // size_t ntris = 0;
     // for (const auto& a : aggregate_queue) {
     //     ntris += a->triangles.size();
@@ -157,8 +163,9 @@ void AggregateArrayRenderer::update_aggregates(
     {
         std::scoped_lock lock_guard{mutex_};
         if (next_rcva_ != nullptr) {
-            lwarn() << "Could not aggregate arrays in time";
-            return;
+            // lwarn() << "Aggregated arrays were not drawn at all (transfer to GPU too slow, can happen for small scenes)";
+            // return;
+            verbose_abort("AggregateArrayRenderer::update_aggregates called in parallel");
         }
         std::swap(next_rcva_, rcva);
         std::swap(next_rcvai_, rcvai);
