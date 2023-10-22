@@ -127,6 +127,20 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         verbose_};
 }
 
+MacroLineExecutor MacroLineExecutor::changed_context(
+    std::string context) const
+{
+    return MacroLineExecutor{
+        macro_recorder_,
+        script_filename_,
+        search_path_,
+        json_user_function_,
+        std::move(context),
+        global_json_macro_arguments_,
+        asset_references_,
+        verbose_};
+}
+
 MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
     std::string script_filename,
     std::string context) const
@@ -249,7 +263,8 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (jv.contains(MacroKeys::execute)) {
-                (*this)(j_subst.at(MacroKeys::execute), &args, nullptr);
+                auto mle2 = changed_context(context);
+                mle2(j_subst.at(MacroKeys::execute), &args, nullptr);
             } else if (jv.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
