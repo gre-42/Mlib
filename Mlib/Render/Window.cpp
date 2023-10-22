@@ -27,6 +27,18 @@ Window::Window(
     if (fullscreen_refresh_rate != 0) {
         GLFW_CHK(glfwWindowHint(GLFW_REFRESH_RATE, fullscreen_refresh_rate));
     }
+    if ((monitor != nullptr) && ((width == 0) || (height == 0))) {
+        GLFW_CHK(const GLFWvidmode* mode = glfwGetVideoMode(monitor));
+        if (mode == nullptr) {
+            THROW_OR_ABORT("Could not get video mode");
+        }
+        if (width == 0) {
+            width = mode->width;
+        }
+        if (height == 0) {
+            height = mode->height;
+        }
+    }
     window_ = GLFW_CHK(glfwCreateWindow(
         width,
         height,

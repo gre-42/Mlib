@@ -13,8 +13,8 @@
 using namespace Mlib;
 
 void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position) {
-    GLFW_CHK(GLFWmonitor* monitor = glfwGetWindowMonitor(&window));
-    if (monitor != nullptr) {
+    GLFW_CHK(GLFWmonitor* window_monitor = glfwGetWindowMonitor(&window));
+    if (window_monitor != nullptr) {
         if (window_position.windowed_width == 0) {
             THROW_OR_ABORT("window width is zero");
         }
@@ -40,11 +40,11 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
         GLFW_CHK(glfwGetWindowSize(&window, &window_position.windowed_width, &window_position.windowed_height));
         
         // Go to fullscreen.
-        GLFW_CHK(GLFWmonitor* monitor = glfwGetPrimaryMonitor());
-        if (monitor == nullptr) {
+        GLFW_CHK(GLFWmonitor* primary_monitor = glfwGetPrimaryMonitor());
+        if (primary_monitor == nullptr) {
             THROW_OR_ABORT("Could not get primary monitor");
         }
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        GLFW_CHK(const GLFWvidmode* mode = glfwGetVideoMode(primary_monitor));
         if (mode == nullptr) {
             THROW_OR_ABORT("Could not get video mode");
         }
@@ -55,7 +55,7 @@ void Mlib::toggle_fullscreen(GLFWwindow& window, WindowPosition& window_position
             ", height: " << height << ')';
         GLFW_CHK(glfwSetWindowMonitor(
             &window,
-            monitor,
+            primary_monitor,
             0,
             0,
             width,
