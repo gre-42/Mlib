@@ -402,7 +402,7 @@ void android_main(android_app* app) {
          "--write_loaded_resources",
          "--audio_frequency"});
     try {
-        const char* argv[] = {"appname", "/", "/levels/main/main.scn.json"};
+        const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(3, argv);
 
         args.assert_num_unnamed(2);

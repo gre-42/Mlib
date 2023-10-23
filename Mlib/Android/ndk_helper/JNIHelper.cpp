@@ -357,16 +357,16 @@ DirectoryEntry DirectoryIterator::operator *() const {
     Mlib::verbose_abort("Derefenciation of end() or a move source");
   }
   if (subdir_iterator_not_at_end()) {
-    return DirectoryEntry(fs::path{dir_name_} / *subdir_it_, true);
+    return {fs::path{dir_name_} / *subdir_it_, true};
   } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)) {
     std::error_code ec;
     bool is_directory = filesystem_directory_iterator_->is_directory(ec);
     if (ec) {
         THROW_OR_ABORT("Could not check if path \"" + filesystem_directory_iterator_->path().string() + "\" is a directory. " + ec.message());
     }
-    return DirectoryEntry(*filesystem_directory_iterator_, is_directory);
+    return {fs::relative(*filesystem_directory_iterator_, JNIHelper::GetInstance()->GetExternalFilesDir()), is_directory};
   } else if (current_asset_filename_ != nullptr) {
-    return DirectoryEntry(fs::path{dir_name_} / current_asset_filename_, false);
+    return {fs::path{dir_name_} / current_asset_filename_, false};
   } else {
     Mlib::verbose_abort("Derefenciation past the end");
   }
