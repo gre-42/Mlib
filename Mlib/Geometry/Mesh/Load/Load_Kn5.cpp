@@ -1,4 +1,5 @@
 #include "Load_Kn5.hpp"
+#include <Mlib/Geometry/Mesh/Load/Kn5_Elements.hpp>
 #include <Mlib/Images/Image_Info.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -12,60 +13,43 @@ using namespace Mlib;
 // From: https://github.com/RaduMC/kn5-converter/blob/master/kn5%20converter/Program.cs
 
 template <class T>
-T ReadBinary(std::istream& str) {
+T ReadBinary(std::istream& str, const char* msg) {
     T result;
     str.read(reinterpret_cast<char*>(&result), sizeof(result));
-    return result;
-}
-
-static std::string ReadStr(std::istream& str, uint32_t len) {
-    //int len = str.ReadInt32();
-    std::vector<uint8_t> stringData(len);
-    str.read((char*)stringData.data(), integral_cast<std::streamsize>(len));
     if (str.fail()) {
-        THROW_OR_ABORT("Could not read string from stream");
-    }
-    return { stringData.begin(), stringData.end() };
-}
-
-static int32_t ReadInt32(std::istream& str) {
-    auto result = ReadBinary<int32_t>(str);
-    if (str.fail()) {
-        THROW_OR_ABORT("Could not read int32 from stream");
+        THROW_OR_ABORT("Could not read " + std::string(msg) + " from stream");
     }
     return result;
 }
 
-static float ReadSingle(std::istream& str) {
-    auto result = ReadBinary<float>(str);
-    if (str.fail()) {
-        THROW_OR_ABORT("Could not read float from stream");
-    }
-    return result;
-}
-
-static uint8_t ReadByte(std::istream& str) {
-    auto result = ReadBinary<uint8_t>(str);
-    if (str.fail()) {
-        THROW_OR_ABORT("Could not read byte from stream");
-    }
-    return result;
-}
-
-static uint32_t ReadUInt32(std::istream& str) {
-    auto result = ReadBinary<uint32_t>(str);
-    if (str.fail()) {
-        THROW_OR_ABORT("Could not read uint32 from stream");
-    }
-    return result;
-}
-
-template <class T>
-static void ReadVector(std::istream& str, std::vector<T>& vec) {
-    str.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(T) * vec.size()));
+template <class TVec>
+static void ReadVector(std::istream& str, TVec& vec) {
+    str.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(typename TVec::value_type) * vec.size()));
     if (str.fail()) {
         THROW_OR_ABORT("Could not read vector from stream");
     }
+}
+
+static std::string ReadStr(std::istream& str, uint32_t len) {
+    std::string result(len, '?');
+    ReadVector(str, result);
+    return result;
+}
+
+static int32_t ReadInt32(std::istream& str) {
+    return ReadBinary<int32_t>(str, "int32");
+}
+
+static float ReadSingle(std::istream& str) {
+    return ReadBinary<float>(str, "float");
+}
+
+static uint8_t ReadByte(std::istream& str) {
+    return ReadBinary<uint8_t>(str, "byte");
+}
+
+static uint32_t ReadUInt32(std::istream& str) {
+    return ReadBinary<uint32_t>(str, "uint32");
 }
 
 static void readNodes(
@@ -189,7 +173,7 @@ static void readNodes(
                 " shader: " << material.shader;
             if (!material.txDiffuse.empty()) {
                 matInfo << " diffuse: " << material.txDiffuse;
-                auto info = ImageInfo::load(material.txDiffuse, &model.textures.at(material.txDiffuse));
+                auto info = ImageInfo::load(material.txDiffuse, &model.textures.at(material.txDiffuse).data);
                 matInfo << ' ' << info.size(0) << 'x' << info.size(1);
             }
             if (!material.txNormal.empty()) {
@@ -252,30 +236,47 @@ static void readNodes(
     }
 }
 
-kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
+kn5Model Mlib::load_kn5(
+    const std::string& filename,
+    bool verbose,
+    kn5LoadOptions opts)
+{
     auto binStream = create_ifstream(filename, std::ios::binary);
     if (binStream->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
-    std::string magicNumber = ReadStr(*binStream, 6);
+    return load_kn5(*binStream, verbose, opts);
+}
+
+kn5Model Mlib::load_kn5(
+    std::istream& binStream,
+    bool verbose,
+    kn5LoadOptions opts)
+{
+    std::string magicNumber = ReadStr(binStream, 6);
     if (magicNumber != "sc6969") {
         THROW_OR_ABORT("Magic number mismatch");
     }
     kn5Model newModel;
-    newModel.version = ReadInt32(*binStream);
-    if (newModel.version > 5) { ReadInt32(*binStream); /* unknownNo */ } //673425
+    newModel.version = ReadInt32(binStream);
+    if (newModel.version > 5) {
+        newModel.unknownNo = ReadInt32(binStream);  //673425
+    }
 
     // extract textures
-    int texCount = ReadInt32(*binStream);
+    if (opts < kn5LoadOptions::TEXTURES) {
+        return newModel;
+    }
+    int texCount = ReadInt32(binStream);
     for (int t = 0; t < texCount; t++)
     {
-        int texType = ReadInt32(*binStream);
-        std::string texName = ReadStr(*binStream, ReadUInt32(*binStream));
-        int texSize = ReadInt32(*binStream);
-        auto tex = newModel.textures.try_emplace(texName, texSize);
+        int texType = ReadInt32(binStream);
+        std::string texName = ReadStr(binStream, ReadUInt32(binStream));
+        int texSize = ReadInt32(binStream);
+        auto tex = newModel.textures.try_emplace(texName, kn5Texture{.texType = texType});
         if (!tex.second) {
             lwarn() << "Found multiple textures with name \"" << texName << "\", keeping the first one";
-            binStream->ignore(texSize);
+            binStream.ignore(texSize);
             continue;
         }
 
@@ -283,23 +284,26 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
             linfo() << "Texture: " << texName << " type: " << texType;
         }
 
-        tex.first->second.resize(texSize);
-        ReadVector(*binStream, tex.first->second);
+        tex.first->second.data.resize(texSize);
+        ReadVector(binStream, tex.first->second.data);
     }
 
     // read materials
-    size_t matCount = ReadUInt32(*binStream);
+    if (opts < kn5LoadOptions::MATERIALS) {
+        return newModel;
+    }
+    size_t matCount = ReadUInt32(binStream);
     for (size_t m = 0; m < matCount; m++)
     {
         kn5Material newMaterial;
 
-        newMaterial.name = ReadStr(*binStream, ReadUInt32(*binStream));
-        newMaterial.shader = ReadStr(*binStream, ReadUInt32(*binStream));
-        newMaterial.blendMode = (kn5BlendMode)ReadByte(*binStream);
-        newMaterial.alphaTested = (bool)ReadByte(*binStream);
+        newMaterial.name = ReadStr(binStream, ReadUInt32(binStream));
+        newMaterial.shader = ReadStr(binStream, ReadUInt32(binStream));
+        newMaterial.blendMode = (kn5BlendMode)ReadByte(binStream);
+        newMaterial.alphaTested = (bool)ReadByte(binStream);
         if (newModel.version > 4) {
-            newMaterial.depthMode = (kn5MaterialDepthMode)ReadByte(*binStream);
-            binStream->seekg(3, std::ios::cur);
+            newMaterial.depthMode = (kn5MaterialDepthMode)ReadByte(binStream);
+            binStream.seekg(3, std::ios::cur);
         } else {
             newMaterial.depthMode = kn5MaterialDepthMode::DEPTH_NORMAL;
         }
@@ -312,11 +316,11 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 ", depth-mode " << (uint32_t)newMaterial.depthMode;
         }
 
-        size_t propCount = ReadUInt32(*binStream);
+        size_t propCount = ReadUInt32(binStream);
         for (size_t p = 0; p < propCount; p++)
         {
-            std::string propName = ReadStr(*binStream, ReadUInt32(*binStream));
-            float propValue = ReadSingle(*binStream);
+            std::string propName = ReadStr(binStream, ReadUInt32(binStream));
+            float propValue = ReadSingle(binStream);
             newMaterial.shaderProps += propName + " = " + std::to_string(propValue) + '\n';
 
             if (propName == "ksEmissive") {
@@ -357,15 +361,15 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
                 lwarn() << "Unknown material property: " << propName << " = " << propValue;
             }
 
-            binStream->seekg(36, std::ios::cur);
+            binStream.seekg(36, std::ios::cur);
         }
 
-        size_t textures = ReadUInt32(*binStream);
+        size_t textures = ReadUInt32(binStream);
         for (size_t t = 0; t < textures; t++)
         {
-            std::string samplerName = ReadStr(*binStream, ReadUInt32(*binStream));
-            int samplerSlot = ReadInt32(*binStream);
-            std::string texName = ReadStr(*binStream, ReadUInt32(*binStream));
+            std::string samplerName = ReadStr(binStream, ReadUInt32(binStream));
+            int samplerSlot = ReadInt32(binStream);
+            std::string texName = ReadStr(binStream, ReadUInt32(binStream));
 
             newMaterial.shaderProps += samplerName + " = " + texName + '\n';
 
@@ -396,7 +400,10 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
         newModel.materials[newModel.materials.size()] = std::move(newMaterial);
     }
 
-    readNodes(*binStream, newModel.nodes, std::nullopt, newModel, verbose); //recursive
+    if (opts < kn5LoadOptions::NODES) {
+        return newModel;
+    }
+    readNodes(binStream, newModel.nodes, std::nullopt, newModel, verbose); //recursive
 
     return newModel;
 }

@@ -89,7 +89,7 @@ int main(int argc, char** argv)
                 names.push_back(name);
                 RenderingContextStack::primary_rendering_resources()->insert_texture(
                     name,
-                    std::move(data),
+                    std::move(data.data),
                     TextureAlreadyExistsBehavior::RAISE);
             }
             if (names.empty()) {
