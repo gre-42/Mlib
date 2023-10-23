@@ -283,7 +283,8 @@ kn5Model Mlib::load_kn5(const std::string& filename, bool verbose) {
             linfo() << "Texture: " << texName << " type: " << texType;
         }
 
-        binStream->read((char*)tex.first->second.data(), texSize);
+        tex.first->second.resize(texSize);
+        ReadVector(*binStream, tex.first->second);
     }
 
     // read materials
