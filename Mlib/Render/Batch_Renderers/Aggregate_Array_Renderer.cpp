@@ -58,6 +58,7 @@ void AggregateArrayRenderer::update_aggregates(
     {
         std::scoped_lock lock_guard{mutex_};
         if (next_rcva_ != nullptr) {
+            // lwarn() << "Aggregated arrays were not drawn at all (transfer to GPU too slow, can happen for small scenes)";
             return;
         }
     }
@@ -163,8 +164,6 @@ void AggregateArrayRenderer::update_aggregates(
     {
         std::scoped_lock lock_guard{mutex_};
         if (next_rcva_ != nullptr) {
-            // lwarn() << "Aggregated arrays were not drawn at all (transfer to GPU too slow, can happen for small scenes)";
-            // return;
             verbose_abort("AggregateArrayRenderer::update_aggregates called in parallel");
         }
         std::swap(next_rcva_, rcva);
