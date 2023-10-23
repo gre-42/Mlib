@@ -120,7 +120,7 @@ enum class kn5LoadOptions {
 };
 
 struct kn5Texture {
-    int32_t texType;
+    int32_t type;
     std::vector<uint8_t> data;
 };
 

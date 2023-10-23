@@ -46,7 +46,7 @@ void Mlib::save_kn5(
     }
     WriteBinary<int32_t>(*f, integral_cast<int32_t>(textures.size()), "#textures");
     for (const auto& [n, t] : textures) {
-        WriteBinary<int32_t>(*f, t.texType, "texture type");
+        WriteBinary<int32_t>(*f, t.type, "texture type");
         WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.size()), "texture name size");
         WriteVector(*f, n);
         WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(t.data.size()), "texture size");

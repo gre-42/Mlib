@@ -273,7 +273,7 @@ kn5Model Mlib::load_kn5(
         int texType = ReadInt32(binStream);
         std::string texName = ReadStr(binStream, ReadUInt32(binStream));
         int texSize = ReadInt32(binStream);
-        auto tex = newModel.textures.try_emplace(texName, kn5Texture{.texType = texType});
+        auto tex = newModel.textures.try_emplace(texName, kn5Texture{.type = texType});
         if (!tex.second) {
             lwarn() << "Found multiple textures with name \"" << texName << "\", keeping the first one";
             binStream.ignore(texSize);
