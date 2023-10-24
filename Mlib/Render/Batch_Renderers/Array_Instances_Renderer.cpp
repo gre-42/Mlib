@@ -14,8 +14,9 @@
 
 using namespace Mlib;
 
-ArrayInstancesRenderer::ArrayInstancesRenderer()
-    : offset_(NAN)
+ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_resources)
+    : rendering_resources_{ rendering_resources }
+    , offset_(NAN)
     , is_initialized_{false} {
 }
 
@@ -59,7 +60,7 @@ void ArrayInstancesRenderer::update_instances(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
         std::move(cva_instances));
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {
         rcva->wait();
     }

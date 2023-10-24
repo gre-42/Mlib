@@ -1,6 +1,9 @@
 #include "Standard_Render_Logic.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Optional.hpp>
+#include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
@@ -17,6 +20,7 @@
 using namespace Mlib;
 
 StandardRenderLogic::StandardRenderLogic(
+    RenderingResources& rendering_resources,
     const Scene& scene,
     RenderLogic& child_logic,
     const FixedArray<float, 3>& background_color,
@@ -25,11 +29,10 @@ StandardRenderLogic::StandardRenderLogic(
   child_logic_{child_logic},
   background_color_{background_color},
   clear_mode_{clear_mode},
-  rendering_context_{RenderingContextStack::resource_context()},
-  small_sorted_aggregate_renderer_{IAggregateRenderer::small_sorted_aggregate_renderer()},
-  small_sorted_instances_renderers_{IInstancesRenderer::small_sorted_instances_renderers()},
-  large_aggregate_renderer_{IAggregateRenderer::large_aggregate_renderer()},
-  large_instances_renderer_{IInstancesRenderer::large_instances_renderer()}
+  small_sorted_aggregate_renderer_{std::make_shared<AggregateArrayRenderer>(rendering_resources)},
+  small_sorted_instances_renderers_{std::make_shared<ArrayInstancesRenderers>(rendering_resources)},
+  large_aggregate_renderer_{std::make_shared<AggregateArrayRenderer>(rendering_resources)},
+  large_instances_renderer_{std::make_shared<ArrayInstancesRenderer>(rendering_resources)}
 {}
 
 StandardRenderLogic::~StandardRenderLogic() = default;
@@ -80,7 +83,6 @@ void StandardRenderLogic::render(
     }
 
     {
-        RenderingContextGuard rrg{ rendering_context_ };
         bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
         Optional<AggregateRendererGuard> arg(
             create_render_guards ? OptionalState::SOME : OptionalState::NONE,
@@ -102,19 +104,13 @@ void StandardRenderLogic::render(
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 
-        {
-            auto primary_rendering_context = RenderingContextStack::primary_resource_context();
-            scene_.render(
-                child_logic_.vp(),
-                child_logic_.iv(),
-                child_logic_.camera_node(),
-                render_config,
-                scene_graph_config,
-                frame_id.external_render_pass,
-                RenderingContextStack::generate_thread_runner(
-                    primary_rendering_context,
-                    rendering_context_));
-        }
+        scene_.render(
+            child_logic_.vp(),
+            child_logic_.iv(),
+            child_logic_.camera_node(),
+            render_config,
+            scene_graph_config,
+            frame_id.external_render_pass);
     }
 
     // if (frame_id.external_render_pass.pass == ExternalRenderPassType::Pass::STANDARD_WO_POSTPROCESSING ||

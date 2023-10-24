@@ -3,7 +3,6 @@
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -41,7 +40,7 @@ public:
 private:
     void deallocate();
     RenderLogic& child_logic_;
-    RenderingContext rendering_context_;
+    RenderingResources& rendering_resources_;
     SRenderProgram rp_;
     VertexArray va_;
     std::string alias_;

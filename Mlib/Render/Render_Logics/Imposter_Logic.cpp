@@ -63,6 +63,7 @@ bool ImposterNodeHider::node_shall_be_hidden(
 }
 
 ImposterLogic::ImposterLogic(
+    RenderingResources& rendering_resources,
     RenderLogic& child_logic,
     Scene& scene,
     DanglingRef<SceneNode> orig_node,
@@ -72,18 +73,18 @@ ImposterLogic::ImposterLogic(
     float down_sampling,
     float max_deviation,
     float min_distance)
-: child_logic_{child_logic},
-  scene_{scene},
-  orig_node_{orig_node},
-  cameras_{cameras},
-  rendering_context_{RenderingContextStack::resource_context()},
-  orig_hider{*this},
-  imposter_node_{nullptr},
-  debug_prefix_{debug_prefix},
-  max_texture_size_{max_texture_size},
-  down_sampling_{down_sampling},
-  max_deviation_{max_deviation},
-  min_distance_{min_distance}
+    : rendering_resources_{ rendering_resources }
+    , child_logic_{ child_logic }
+    , scene_{ scene }
+    , orig_node_{ orig_node }
+    , cameras_{ cameras }
+    , orig_hider{ *this }
+    , imposter_node_{ nullptr }
+    , debug_prefix_{ debug_prefix }
+    , max_texture_size_{ max_texture_size }
+    , down_sampling_{ down_sampling }
+    , max_deviation_{ max_deviation }
+    , min_distance_{ min_distance }
 {
     if ((max_texture_size_ < 1) || (max_texture_size_ > 4096)) {
         THROW_OR_ABORT("Imposter texture size out of bounds");
@@ -100,7 +101,7 @@ ImposterLogic::ImposterLogic(
 ImposterLogic::~ImposterLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_context_.rendering_resources->delete_texture(texture_id_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture(texture_id_, DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
 }
@@ -112,7 +113,6 @@ void ImposterLogic::add_imposter(
     float angle_y)
 {
     assert_true(imposter_node_ == nullptr);
-    RenderingContextGuard rrg{rendering_context_};
     Material material{
         // .blend_mode = BlendMode::SEMI_CONTINUOUS_08,  // does not work with vegetation
         .blend_mode = BlendMode::BINARY_08,
@@ -132,6 +132,7 @@ void ImposterLogic::add_imposter(
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
     res.instantiate_renderable(InstantiationOptions{
+        .rendering_resources = &rendering_resources_,
         .instance_name = "imposter",
         .scene_node = new_imposter_node.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
@@ -274,13 +275,12 @@ void ImposterLogic::render(
             .nsamples_msaa = render_config.imposter_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
-            RenderingContextGuard rrg{rendering_context_};
             AggregateRendererGuard arg{
-                std::make_shared<AggregateArrayRenderer>(),
-                std::make_shared<AggregateArrayRenderer>()};
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_),
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_)};
             InstancesRendererGuard irg{
-                std::make_shared<ArrayInstancesRenderers>(),
-                std::make_shared<ArrayInstancesRenderer>()};
+                std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
+                std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
             // RenderToScreenGuard rsg;
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
@@ -303,7 +303,7 @@ void ImposterLogic::render(
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
-        rendering_context_.rendering_resources->set_texture(texture_id_, fbs_->texture_color());
+        rendering_resources_.set_texture(texture_id_, fbs_->texture_color());
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{

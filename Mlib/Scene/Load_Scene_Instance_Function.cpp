@@ -5,6 +5,7 @@ using namespace Mlib;
 
 LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene &renderable_scene)
     : renderable_scene{renderable_scene}
+    , rendering_resources{renderable_scene.rendering_resources_}
     , scene_node_resources{renderable_scene.scene_node_resources_}
     , particle_resources{renderable_scene.particle_resources_}
     , particle_renderer{*renderable_scene.particle_renderer_}
@@ -31,10 +32,6 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene &renderable
     , game_logic{renderable_scene.game_logic_}
     , base_log{renderable_scene.fifo_log_}
     , delete_node_mutex{renderable_scene.delete_node_mutex_}
-    , primary_rendering_context{renderable_scene.primary_rendering_context_}
-    , secondary_rendering_context{renderable_scene.secondary_rendering_context_}
-    , rrg0_{renderable_scene.primary_rendering_context_}
-    , rrg1_{renderable_scene.secondary_rendering_context_}
 #ifndef WITHOUT_ALUT
     , arg0_{renderable_scene.primary_audio_resource_context_}
     , arg1_{renderable_scene.secondary_audio_resource_context_}

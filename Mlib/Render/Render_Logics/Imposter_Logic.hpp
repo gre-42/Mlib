@@ -3,11 +3,11 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 
 namespace Mlib {
 
+class RenderingResources;
 class Scene;
 class SceneNode;
 class SceneNodeResources;
@@ -41,6 +41,7 @@ class ImposterLogic: public RenderLogic {
     friend OriginalNodeHider;
 public:
     explicit ImposterLogic(
+        RenderingResources& rendering_resources,
         RenderLogic& child_logic,
         Scene& scene,
         DanglingRef<SceneNode> orig_node,
@@ -74,11 +75,11 @@ private:
         double camera_y,
         float angle_y);
 
+    RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
     Scene& scene_;
     DanglingRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
-    RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
     FixedArray<FixedArray<double, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;

@@ -45,13 +45,9 @@ UiBackground::UiBackground(RenderableScene& renderable_scene)
 
 void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .particle_resources = primary_rendering_context.particle_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                           // read by RenderLogics
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         std::make_shared<FillWithTextureLogic>(
+            RenderingContextStack::primary_rendering_resources(),
             args.arguments.path(KnownArgs::texture),
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
             ColorMode::RGBA),
@@ -62,5 +58,5 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{ .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)) });
-    render_logics.append(nullptr, bg);
+    render_logics.append(nullptr, bg, args.arguments.at<int>(KnownArgs::z_order));
 }

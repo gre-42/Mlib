@@ -8,8 +8,8 @@
 using namespace Mlib;
 
 void Mlib::render_texture_atlas(
+    RenderingResources& rendering_resources,
     const std::vector<AutoAtlasTileDescriptor>& tiles,
-    const RenderingResources& rendering_resources,
     int level)
 {
     for (const auto& tile : tiles) {
@@ -18,7 +18,11 @@ void Mlib::render_texture_atlas(
             (float)tile.bottom / (float)(1 << level),
             (float)tile.width / (float)(1 << level),
             (float)tile.height / (float)(1 << level)};
-        FillWithTextureLogic logic{tile.filename, ResourceUpdateCycle::ONCE, ColorMode::RGBA};
+        FillWithTextureLogic logic{
+            rendering_resources,
+            tile.filename,
+            ResourceUpdateCycle::ONCE,
+            ColorMode::RGBA};
         logic.render();
     }
 }

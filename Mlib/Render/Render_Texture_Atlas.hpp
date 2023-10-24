@@ -3,12 +3,12 @@
 
 namespace Mlib {
 
-class RenderingResources;
 struct AutoAtlasTileDescriptor;
+class RenderingResources;
 
 void render_texture_atlas(
+    RenderingResources& rendering_resources,
     const std::vector<AutoAtlasTileDescriptor>& tiles,
-    const RenderingResources& rendering_resources,
     int level);
 
 }

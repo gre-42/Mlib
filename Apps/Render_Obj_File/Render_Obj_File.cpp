@@ -41,6 +41,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
 #include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
@@ -481,18 +482,20 @@ int main(int argc, char** argv) {
 
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            render_config.anisotropic_filtering_level };
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            render_config.anisotropic_filtering_level,
+            rendering_resources,
             0);
         AggregateRendererGuard aggregate_renderer_guard{
-            std::make_shared<AggregateArrayRenderer>(),
-            std::make_shared<AggregateArrayRenderer>()};
+            std::make_shared<AggregateArrayRenderer>(rendering_resources),
+            std::make_shared<AggregateArrayRenderer>(rendering_resources)};
         InstancesRendererGuard instances_renderer_guard{
-            std::make_shared<ArrayInstancesRenderers>(),
-            std::make_shared<ArrayInstancesRenderer>()};
+            std::make_shared<ArrayInstancesRenderers>(rendering_resources),
+            std::make_shared<ArrayInstancesRenderer>(rendering_resources)};
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex };
         DestructionGuard scene_destruction_guard{[&](){
@@ -544,14 +547,14 @@ int main(int argc, char** argv) {
                             filename,
                             cfg<float>(args, light_configuration),
                             scene_node_resources,
-                            RenderingContextStack::primary_rendering_resources().get(),
+                            &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
                             cfg<double>(args, light_configuration),
                             scene_node_resources,
-                            RenderingContextStack::primary_rendering_resources().get(),
+                            &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
                     }
                 } else if (filename.ends_with(".mhx2")) {
@@ -638,7 +641,7 @@ int main(int argc, char** argv) {
                     .ambience = {1.f, 1.f, 1.f}
                 },
                 scene_node_resources,
-                *RenderingContextStack::primary_rendering_resources());
+                RenderingContextStack::primary_rendering_resources());
             {
                 scene_node->set_position({
                     safe_stof(args.named_value("--x", "0")),
@@ -765,7 +768,7 @@ int main(int argc, char** argv) {
         }
 
         size_t light_beacon_index = 0;
-        auto add_light_beacon_if_set = [&args, &light_beacon_index, &scene_node_resources](DanglingRef<SceneNode> scene_node){
+        auto add_light_beacon_if_set = [&](DanglingRef<SceneNode> scene_node){
             if (!args.has_named_value("--light_beacon")) {
                 return;
             }
@@ -941,6 +944,7 @@ int main(int argc, char** argv) {
             selected_cameras,
             delete_node_mutex};
         StandardRenderLogic standard_render_logic{
+            rendering_resources,
             scene,
             standard_camera_logic,
             {
@@ -980,6 +984,7 @@ int main(int argc, char** argv) {
         for (const auto& l : lights) {
             if (any(l.light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
                 lightmap_logics.push_back(std::make_shared<LightmapLogic>(
+                    rendering_resources,
                     *read_pixels_logic,
                     l.light.shadow_render_pass,
                     l.node,
@@ -993,16 +998,19 @@ int main(int argc, char** argv) {
 
         UiFocus ui_focus;
         RenderLogics render_logics{ui_focus};
-        render_logics.append(nullptr, flying_camera_logic);
+        render_logics.append(nullptr, flying_camera_logic, 0 /* z_order */);
         for (const auto& l : lightmap_logics) {
-            render_logics.append(nullptr, l);
+            render_logics.append(nullptr, l, 0 /* z_order */);
         }
-        render_logics.append(nullptr, read_pixels_logic);
+        render_logics.append(nullptr, read_pixels_logic, 0 /* z_order */);
         // The following is required for animations.
-        render_logics.append(nullptr, std::make_shared<MoveSceneLogic>(
-            scene,
-            delete_node_mutex,
-            safe_stof(args.named_value("--speed", "1"))));
+        render_logics.append(
+            nullptr,
+            std::make_shared<MoveSceneLogic>(
+                scene,
+                delete_node_mutex,
+                safe_stof(args.named_value("--speed", "1"))),
+            0 /* z_order */);
         LambdaRenderLogic lrl{
             [&delete_node_mutex, &render_logics, &menu_logic](
                 const LayoutConstraintParameters& lx,

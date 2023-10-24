@@ -37,20 +37,20 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
     if (args.arguments.contains(KnownArgs::resources)) {
         for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::resources))
         {
-            primary_rendering_context.scene_node_resources.preload_single(
+            RenderingContextStack::primary_scene_node_resources().preload_single(
                 r,
                 RenderableResourceFilter{});
         }
     }
     if (args.arguments.contains(KnownArgs::file)) {
-        primary_rendering_context.scene_node_resources.preload_many(
+        RenderingContextStack::primary_scene_node_resources().preload_many(
             args.arguments.at(KnownArgs::file),
             RenderableResourceFilter{});
     }
     if (args.arguments.contains(KnownArgs::tire_contacts)) {
         for (const auto &r : args.arguments.at<std::vector<std::string>>(KnownArgs::tire_contacts))
         {
-            auto res = primary_rendering_context.scene_node_resources.get_physics_arrays(r);
+            auto res = RenderingContextStack::primary_scene_node_resources().get_physics_arrays(r);
             auto preload_cvas = [&](const auto &cvas) {
                 for (const auto &a : cvas) {
                     if (!any(a->physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
@@ -61,7 +61,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         particle_renderer.preload(c->smoke_particle_resource_name);
-                        // primary_rendering_context.scene_node_resources.preload_single(
+                        // RenderingContextStack::primary_scene_node_resources().preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});
                     }
                 }

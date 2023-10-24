@@ -3,6 +3,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
 using namespace Mlib;
@@ -13,7 +14,11 @@ ControlsLogic::ControlsLogic(
     DelayLoadPolicy delay_load_policy,
     FocusFilter focus_filter)
 : gamepad_texture_{
-    std::make_shared<FillWithTextureLogic>(gamepad_texture, ResourceUpdateCycle::ONCE, ColorMode::RGBA),
+    std::make_shared<FillWithTextureLogic>(
+        RenderingContextStack::primary_rendering_resources(),
+        gamepad_texture,
+        ResourceUpdateCycle::ONCE,
+        ColorMode::RGBA),
     std::move(widget),
     delay_load_policy,
     {.focus_mask = Focus::ALWAYS} },

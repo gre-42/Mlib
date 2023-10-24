@@ -13,10 +13,11 @@
 using namespace Mlib;
 
 DirtmapLogic::DirtmapLogic(
+    RenderingResources& rendering_resources,
     RenderLogic& child_logic)
-: child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::resource_context()},
-  generated_{false}
+    : rendering_resources_{ rendering_resources }
+    , child_logic_{ child_logic }
+    , generated_{false}
 {}
 
 DirtmapLogic::~DirtmapLogic() = default;
@@ -39,13 +40,12 @@ void DirtmapLogic::render(
     if (!generated_) {
         // Calculate camera position
         {
-            RenderingContextGuard rrg{rendering_context_};
             AggregateRendererGuard arg{
-                std::make_shared<AggregateArrayRenderer>(),
-                std::make_shared<AggregateArrayRenderer>()};
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_),
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_)};
             InstancesRendererGuard irg{
-                std::make_shared<ArrayInstancesRenderers>(),
-                std::make_shared<ArrayInstancesRenderer>()};
+                std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
+                std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
             child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = 96.f,
@@ -63,14 +63,14 @@ void DirtmapLogic::render(
                  .light_resource_suffix = ""});
         }
         // Load texture and set alias
-        rendering_context_.rendering_resources->add_texture_descriptor(
+        rendering_resources_.add_texture_descriptor(
             "dirtmap",
             TextureDescriptor{
                 .color = {.filename = filename_},
                 .color_mode = ColorMode::GRAYSCALE,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                 .anisotropic_filtering_level = 8});
-        rendering_context_.rendering_resources->set_vp("dirtmap", vp());
+        rendering_resources_.set_vp("dirtmap", vp());
         generated_ = true;
     }
 }

@@ -2,22 +2,24 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Buffers.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 
 using namespace Mlib;
 
-ParticlesInstance::ParticlesInstance(const std::shared_ptr<ColoredVertexArray<float>> &triangles,
-                                     size_t max_num_instances,
-                                     const RenderableResourceFilter &filter)
+ParticlesInstance::ParticlesInstance(
+    const std::shared_ptr<ColoredVertexArray<float>> &triangles,
+    size_t max_num_instances,
+    const RenderableResourceFilter &filter)
     : offset_(NAN)
     , dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
           triangles->material.transformation_mode,
           max_num_instances,
           integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))}
     , cvar_{std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_)}
-    , rcva_{std::make_unique<RenderableColoredVertexArray>(cvar_, filter)}
+    , rcva_{std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter)}
     , filter_{filter} {
 }
 

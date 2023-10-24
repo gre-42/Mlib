@@ -49,7 +49,7 @@ void Mlib::draw_boundary_barriers(
     float barrier_height,
     const BarrierStyle& barrier_style)
 {
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto contours = find_contours(inner_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
     const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
         "boundary_barriers",
@@ -63,7 +63,7 @@ void Mlib::draw_boundary_barriers(
     //     contours,
     //     {});
 
-    tl->material.textures_color = { primary_rendering_resources->get_blend_map_texture(barrier_style.texture) };
+    tl->material.textures_color = { primary_rendering_resources.get_blend_map_texture(barrier_style.texture) };
     tl->material.blend_mode = barrier_style.blend_mode;
     // tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
     tl->material.reorient_uv0 = barrier_style.reorient_uv0;

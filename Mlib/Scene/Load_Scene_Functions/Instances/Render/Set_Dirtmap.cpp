@@ -34,8 +34,8 @@ SetDirtmap::SetDirtmap(RenderableScene& renderable_scene)
 void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     dirtmap_logic.set_filename(args.arguments.path(KnownArgs::filename));
-    secondary_rendering_context.rendering_resources->set_offset("dirtmap", args.arguments.at<float>(KnownArgs::offset));
-    secondary_rendering_context.rendering_resources->set_discreteness("dirtmap", args.arguments.at<float>(KnownArgs::discreteness));
-    secondary_rendering_context.rendering_resources->set_scale("dirtmap", args.arguments.at<float>(KnownArgs::scale));
-    secondary_rendering_context.rendering_resources->set_texture_wrap("dirtmap", wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
+    rendering_resources.set_offset("dirtmap", args.arguments.at<float>(KnownArgs::offset));
+    rendering_resources.set_discreteness("dirtmap", args.arguments.at<float>(KnownArgs::discreteness));
+    rendering_resources.set_scale("dirtmap", args.arguments.at<float>(KnownArgs::scale));
+    rendering_resources.set_texture_wrap("dirtmap", wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
 }

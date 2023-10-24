@@ -37,7 +37,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
     args.arguments.validate(KnownArgs::options);
 
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-    auto rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
     scene_node_resources.add_modifier(
         args.arguments.at<std::string>(KnownArgs::resource_name),
         [mesh_resource_name = args.arguments.at<std::string>(KnownArgs::resource_name),
@@ -55,13 +55,13 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::merged_ambience)
          },
          &scene_node_resources = scene_node_resources,
-         rendering_resources = rendering_resources]
+         &rendering_resources = rendering_resources]
         (ISceneNodeResource& resource)
         {
             merge_textures(
                 mesh_resource_name,
                 mcfg,
                 scene_node_resources,
-                *rendering_resources);
+                rendering_resources);
         });
 };

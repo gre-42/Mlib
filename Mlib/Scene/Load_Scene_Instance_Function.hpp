@@ -34,6 +34,7 @@ class StandardRenderLogic;
 class PostProcessingLogic;
 class Imposters;
 class SupplyDepots;
+class RenderingResources;
 
 class LoadSceneInstanceFunction {
 public:
@@ -42,6 +43,7 @@ public:
 
 protected:
     RenderableScene &renderable_scene;
+    RenderingResources& rendering_resources;
     SceneNodeResources &scene_node_resources;
     ParticleResources &particle_resources;
     ParticleRenderer &particle_renderer;
@@ -68,12 +70,8 @@ protected:
     GameLogic &game_logic;
     BaseLog &base_log;
     DeleteNodeMutex &delete_node_mutex;
-    RenderingContext &primary_rendering_context;
-    RenderingContext &secondary_rendering_context;
 
 private:
-    RenderingContextGuard rrg0_;
-    RenderingContextGuard rrg1_;
 #ifndef WITHOUT_ALUT
     AudioResourceContextGuard arg0_;
     AudioResourceContextGuard arg1_;

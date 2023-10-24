@@ -45,11 +45,6 @@ UiExhibit::UiExhibit(RenderableScene& renderable_scene)
 
 void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,     // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .particle_resources = primary_rendering_context.particle_resources,         // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,       // read by FillPixelRegionWithTextureLogic/FillWithTextureLogic
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                   // read by RenderLogics
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         args.gallery[args.arguments.at<std::string>(KnownArgs::id_in_gallery)],
         std::make_unique<Widget>(
@@ -61,5 +56,5 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
-    render_logics.append(nullptr, bg);
+    render_logics.append(nullptr, bg, args.arguments.at<int>(KnownArgs::z_order));
 }

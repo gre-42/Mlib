@@ -549,11 +549,11 @@ OsmMapResource::OsmMapResource(
     }
     if (config.with_roofs) {
         LOG_INFO("draw_roofs");
-        auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+        auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
         draw_roofs(
             tls_buildings,
             Material{
-                .textures_color = { primary_rendering_resources->get_blend_map_texture(config.roof_texture) },
+                .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
                 .emissivity = OrderableFixedArray{ROOF_EMISSIVITY * config.emissivity_factor},
@@ -1424,12 +1424,12 @@ void OsmMapResource::save_to_obj_file(
     const TransformationMatrix<float, double, 3>& tm) const
 {
     auto filename = prefix + "_osm_map.obj";
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<TextureDescriptor, std::string> autogen_textures;
     auto get_filename = [&](const TextureDescriptor& desc){
         auto it = autogen_textures.find(desc);
         if (it == autogen_textures.end()) {
-            std::string result = primary_rendering_resources->get_texture_filename(
+            std::string result = primary_rendering_resources.get_texture_filename(
                 desc,
                 filename + ".tex." + std::to_string(autogen_textures.size()) + ".png");
             autogen_textures.insert({ desc, result });

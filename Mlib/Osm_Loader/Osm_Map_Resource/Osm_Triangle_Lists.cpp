@@ -132,7 +132,7 @@ OsmTriangleLists::OsmTriangleLists(
     const OsmResourceConfig& config,
     const std::string& name_suffix)
 {
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     tl_terrain = std::make_shared<TerrainTypeTriangleList>();
     // Specify auxiliary triangle lists that are hidden from the results.
     // The mechanism that excludes these lists from the results is that they have
@@ -207,8 +207,8 @@ OsmTriangleLists::OsmTriangleLists(
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
         for (auto& t : ttt) {
-            // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources->get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
-            BlendMapTexture bt = primary_rendering_resources->get_blend_map_texture(t);
+            // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
+            BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
             (*tl_terrain)[tt]->material.textures_color.push_back(bt);
             tl_terrain_visuals[tt]->material.textures_color.push_back(bt);
             tl_terrain_extrusion[tt]->material.textures_color.push_back(bt);
@@ -226,7 +226,7 @@ OsmTriangleLists::OsmTriangleLists(
         std::vector<BlendMapTexture> blend_textures;
         blend_textures.reserve(textures.size());
         for (const std::string& texture : textures) {
-            blend_textures.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+            blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
             "crossing_" + road_type_to_string(tpe) + name_suffix,
@@ -259,12 +259,12 @@ OsmTriangleLists::OsmTriangleLists(
         std::vector<BlendMapTexture> textures_color;
         textures_color.reserve(road_style.textures.size());
         for (const std::string& texture : road_style.textures) {
-            textures_color.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+            textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         std::vector<BlendMapTexture> textures_alpha;
         textures_alpha.reserve( alpha_texture_names.size());
         for (const std::string& texture : alpha_texture_names) {
-            textures_alpha.push_back(primary_rendering_resources->get_blend_map_texture(texture));
+            textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         auto rit = config.street_reflection_map.find(road_properties.type);
         tl_street.append(StyledRoadEntry{
@@ -308,7 +308,7 @@ OsmTriangleLists::OsmTriangleLists(
         tl_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
             "curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures_color = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : "",
@@ -332,7 +332,7 @@ OsmTriangleLists::OsmTriangleLists(
         tl_street_curb2.insert(tpe, std::make_shared<TriangleList<double>>(
             "curb2_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures_color = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : "",
@@ -355,7 +355,7 @@ OsmTriangleLists::OsmTriangleLists(
         tl_air_street_curb.insert(tpe, std::make_shared<TriangleList<double>>(
             "air_curb_" + road_type_to_string(tpe) + name_suffix,
             Material{
-                .textures_color = {primary_rendering_resources->get_blend_map_texture(texture)},
+                .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
                     : "",
@@ -376,7 +376,7 @@ OsmTriangleLists::OsmTriangleLists(
             .blend_mode = BlendMode::CONTINUOUS,
             .continuous_blending_z_order = 1,
             .depth_func = DepthFunc::EQUAL,
-            .textures_color = {primary_rendering_resources->get_blend_map_texture(config.racing_line_texture)},
+            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
             // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
             // .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
@@ -394,7 +394,7 @@ OsmTriangleLists::OsmTriangleLists(
     tl_air_support = std::make_shared<TriangleList<double>>(
         "air_support" + name_suffix,
         Material{
-            .textures_color = {primary_rendering_resources->get_blend_map_texture(config.air_support_texture)},
+            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.air_support_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
@@ -407,7 +407,7 @@ OsmTriangleLists::OsmTriangleLists(
     tl_tunnel_crossing = std::make_shared<TriangleList<double>>(
         "tunnel_crossing" + name_suffix,
         Material{
-            .textures_color = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
+            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
@@ -420,7 +420,7 @@ OsmTriangleLists::OsmTriangleLists(
     tl_tunnel_pipe = std::make_shared<TriangleList<double>>(
         "tunnel_pipe" + name_suffix,
         Material{
-            .textures_color = {primary_rendering_resources->get_blend_map_texture(config.tunnel_pipe_texture)},
+            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.tunnel_pipe_texture)},
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
@@ -459,7 +459,7 @@ OsmTriangleLists::OsmTriangleLists(
     tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<double>>(
         "water" + name_suffix,
         Material{
-            .textures_color = {primary_rendering_resources->get_blend_map_texture(config.water_texture)},
+            .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water_texture)},
             .aggregate_mode = AggregateMode::ONCE,
             .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
             .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},

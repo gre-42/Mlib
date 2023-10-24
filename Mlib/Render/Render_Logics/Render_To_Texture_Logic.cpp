@@ -9,6 +9,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
@@ -16,6 +17,7 @@ using namespace Mlib;
 
 RenderToTextureLogic::RenderToTextureLogic(
     RenderLogic& child_logic,
+    RenderingResources& rendering_resources,
     ResourceUpdateCycle update_cycle,
     FrameBufferChannelKind depth_kind,
     std::string color_texture_name,
@@ -23,7 +25,7 @@ RenderToTextureLogic::RenderToTextureLogic(
     const FixedArray<int, 2>& texture_size,
     FocusFilter focus_filter)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::resource_context()},
+  rendering_resources_{rendering_resources},
   update_cycle_{update_cycle},
   depth_kind_{depth_kind},
   color_texture_name_{std::move(color_texture_name)},
@@ -35,9 +37,9 @@ RenderToTextureLogic::RenderToTextureLogic(
 RenderToTextureLogic::~RenderToTextureLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_context_.rendering_resources->delete_texture(color_texture_name_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture(color_texture_name_, DeletionFailureMode::WARN);
         if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
-            rendering_context_.rendering_resources->delete_texture(depth_texture_name_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_texture(depth_texture_name_, DeletionFailureMode::WARN);
         }
     }
 }
@@ -64,7 +66,6 @@ void RenderToTextureLogic::render(
             .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard fbg(*fbs_);
-            RenderingContextGuard rrg{rendering_context_};
             child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = lx.dpi,
@@ -82,9 +83,9 @@ void RenderToTextureLogic::render(
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
-        rendering_context_.rendering_resources->set_texture(color_texture_name_, fbs_->texture_color());
+        rendering_resources_.set_texture(color_texture_name_, fbs_->texture_color());
         if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
-            rendering_context_.rendering_resources->set_texture(depth_texture_name_, fbs_->texture_depth());
+            rendering_resources_.set_texture(depth_texture_name_, fbs_->texture_depth());
         }
     }
 }

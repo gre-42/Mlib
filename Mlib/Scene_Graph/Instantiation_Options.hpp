@@ -8,8 +8,10 @@ class IImposters;
 class ISupplyDepots;
 class SceneNode;
 struct RenderableResourceFilter;
+class RenderingResources;
 
 struct InstantiationOptions {
+    RenderingResources* rendering_resources = nullptr;
     IImposters* imposters = nullptr;
     ISupplyDepots* supply_depots = nullptr;
     const std::string& instance_name;

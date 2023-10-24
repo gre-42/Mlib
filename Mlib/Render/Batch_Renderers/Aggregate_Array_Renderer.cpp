@@ -37,8 +37,9 @@ struct AggregateTriangles {
     bool has_texture_layers;
 };
 
-AggregateArrayRenderer::AggregateArrayRenderer()
-    : offset_(NAN)
+AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
+    : rendering_resources_{ rendering_resources }
+    , offset_(NAN)
     , is_initialized_{false} {
 }
 
@@ -157,7 +158,7 @@ void AggregateArrayRenderer::update_aggregates(
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{});
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rcva, RenderableResourceFilter{});
+    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {
         rcva->wait();
     }

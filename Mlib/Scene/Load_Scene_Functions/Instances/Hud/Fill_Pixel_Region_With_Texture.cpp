@@ -9,7 +9,6 @@
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -48,23 +47,20 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
 {
     std::string source_scene = args.arguments.at<std::string>(KnownArgs::source_scene);
     auto& rs = args.renderable_scenes[source_scene];
-    std::shared_ptr<FillPixelRegionWithTextureLogic> scene_window_logic;
-    {
-        RenderingContextGuard rcg{rs.secondary_rendering_context_};
-        scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
-            std::make_shared<FillWithTextureLogic>(
-                args.arguments.at<std::string>(KnownArgs::texture),
-                resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
-                ColorMode::RGBA),
-            std::make_unique<Widget>(
-                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
-                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
-                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
-                args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
-            delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
-            FocusFilter{
-                .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
-                .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
-    }
-    render_logics.append(nullptr, scene_window_logic);
+    auto scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
+        std::make_shared<FillWithTextureLogic>(
+            rs.rendering_resources_,
+            args.arguments.at<std::string>(KnownArgs::texture),
+            resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
+            ColorMode::RGBA),
+        std::make_unique<Widget>(
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
+            args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
+        delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
+        FocusFilter{
+            .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
+            .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
+    render_logics.append(nullptr, scene_window_logic, 0 /* z_order */);
 }

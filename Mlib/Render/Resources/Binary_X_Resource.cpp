@@ -93,6 +93,7 @@ void BinaryXResource::instantiate_renderable(const InstantiationOptions& options
     node90->set_rotation({0.f, -90.f * degrees, 0.f });
     rva_90_->instantiate_renderable(
         InstantiationOptions{
+            .rendering_resources = options.rendering_resources,
             .instance_name = options.instance_name,
             .scene_node = node90.ref(DP_LOC),
             .renderable_resource_filter = options.renderable_resource_filter});

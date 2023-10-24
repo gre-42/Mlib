@@ -2,10 +2,10 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 
 namespace Mlib {
 
+class RenderingResources;
 enum class ExternalRenderPassType;
 class FrameBuffer;
 class SceneNode;
@@ -13,6 +13,7 @@ class SceneNode;
 class LightmapLogic: public RenderLogic {
 public:
     explicit LightmapLogic(
+        RenderingResources& rendering_resources,
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
         DanglingRef<SceneNode> light_node,
@@ -39,8 +40,8 @@ public:
 
 private:
     void deallocate();
+    RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
-    RenderingContext rendering_context_;
     std::unique_ptr<FrameBuffer> fbs_;
     ExternalRenderPassType render_pass_type_;
     DanglingRef<SceneNode> light_node_;

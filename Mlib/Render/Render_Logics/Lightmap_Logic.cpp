@@ -18,6 +18,7 @@
 using namespace Mlib;
 
 LightmapLogic::LightmapLogic(
+    RenderingResources& rendering_resources,
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
     DanglingRef<SceneNode> light_node,
@@ -26,8 +27,8 @@ LightmapLogic::LightmapLogic(
     bool with_depth_texture,
     int lightmap_width,
     int lightmap_height)
-: child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::resource_context()},
+: rendering_resources_{rendering_resources},
+  child_logic_{child_logic},
   render_pass_type_{render_pass_type},
   light_node_{light_node},
   resource_suffix_{std::move(resource_suffix)},
@@ -45,11 +46,11 @@ LightmapLogic::LightmapLogic(
 LightmapLogic::~LightmapLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_context_.rendering_resources->delete_texture("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
-        rendering_context_.rendering_resources->delete_vp("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_vp("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->delete_texture("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
-            rendering_context_.rendering_resources->delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_texture("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
         }
     }
 }
@@ -91,7 +92,6 @@ void LightmapLogic::render(
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{*fbs_};
-            RenderingContextGuard rrg{rendering_context_};
             // Non-static lights are not aggregated at all due to the following lines
             // in Scene::render:
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
@@ -99,12 +99,12 @@ void LightmapLogic::render(
             bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             Optional<AggregateRendererGuard> arg{
                 create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-                std::make_shared<AggregateArrayRenderer>(),
-                std::make_shared<AggregateArrayRenderer>()};
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_),
+                std::make_shared<AggregateArrayRenderer>(rendering_resources_)};
             Optional<InstancesRendererGuard> irg{
                 create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-                std::make_shared<ArrayInstancesRenderers>(),
-                std::make_shared<ArrayInstancesRenderer>()};
+                std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
+                std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
             child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
@@ -123,11 +123,11 @@ void LightmapLogic::render(
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
         }
 
-        rendering_context_.rendering_resources->set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color());
-        rendering_context_.rendering_resources->set_vp("lightmap_color." + resource_suffix_, vp());
+        rendering_resources_.set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color());
+        rendering_resources_.set_vp("lightmap_color." + resource_suffix_, vp());
         if (with_depth_texture_) {
-            rendering_context_.rendering_resources->set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth());
-            rendering_context_.rendering_resources->set_vp("lightmap_depth." + resource_suffix_, vp());
+            rendering_resources_.set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth());
+            rendering_resources_.set_vp("lightmap_depth." + resource_suffix_, vp());
         }
     }
 }

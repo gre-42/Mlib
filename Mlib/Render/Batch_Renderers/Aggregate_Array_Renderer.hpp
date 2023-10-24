@@ -14,7 +14,7 @@ class AggregateArrayRenderer: public IAggregateRenderer {
     AggregateArrayRenderer(const AggregateArrayRenderer& other) = delete;
     AggregateArrayRenderer& operator = (const AggregateArrayRenderer& other) = delete;
 public:
-    explicit AggregateArrayRenderer();
+    explicit AggregateArrayRenderer(RenderingResources& rendering_resources);
     virtual ~AggregateArrayRenderer() override;
     virtual bool is_initialized() const override;
     virtual void invalidate() override;
@@ -32,6 +32,7 @@ public:
         const ExternalRenderPass& external_render_pass,
         const std::list<const ColorStyle*>& color_styles) const override;
 private:
+    RenderingResources& rendering_resources_;
     mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;
     mutable std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;

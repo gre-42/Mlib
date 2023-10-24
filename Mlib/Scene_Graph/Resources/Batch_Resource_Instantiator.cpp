@@ -100,6 +100,7 @@ void BatchResourceInstantiator::instantiate_renderables(
             scene_node_resources.instantiate_renderable(
                 p.name,
                 InstantiationOptions{
+                    .rendering_resources = options.rendering_resources,
                     .supply_depots = options.supply_depots,
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
@@ -153,6 +154,7 @@ void BatchResourceInstantiator::instantiate_renderables(
         scene_node_resources.instantiate_renderable(
             name,
             InstantiationOptions{
+                .rendering_resources = options.rendering_resources,
                 .supply_depots = options.supply_depots,
                 .instance_name = name,
                 .scene_node = node.ref(DP_LOC),

@@ -16,11 +16,11 @@ void Mlib::draw_ceilings(
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes)
 {
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     draw_buildings_ceiling_or_ground(
         tls_buildings,
         Material{
-            .textures_color = { { primary_rendering_resources->get_existing_texture_descriptor(config.ceiling_texture) } },
+            .textures_color = { { primary_rendering_resources.get_existing_texture_descriptor(config.ceiling_texture) } },
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
             .aggregate_mode = AggregateMode::ONCE,
             .emissivity = OrderableFixedArray{CEILING_EMISSIVITY * config.emissivity_factor},

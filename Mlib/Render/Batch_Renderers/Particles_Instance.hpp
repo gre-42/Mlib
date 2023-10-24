@@ -25,9 +25,10 @@ class ParticlesInstance {
     ParticlesInstance &operator=(const ParticlesInstance &) = delete;
 
 public:
-    explicit ParticlesInstance(const std::shared_ptr<ColoredVertexArray<float>> &triangles,
-                               size_t max_num_instances,
-                               const RenderableResourceFilter &filter);
+    explicit ParticlesInstance(
+        const std::shared_ptr<ColoredVertexArray<float>> &triangles,
+        size_t max_num_instances,
+        const RenderableResourceFilter &filter);
     ~ParticlesInstance();
 
     void add_particle(const TransformationMatrix<float, double, 3> &transformation_matrix,

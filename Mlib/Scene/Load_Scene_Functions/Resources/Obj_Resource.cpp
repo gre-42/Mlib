@@ -169,7 +169,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-    auto rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
     if (filename.ends_with(".obj")) {
         scene_node_resources.add_resource_loader(
             name,
@@ -185,7 +185,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             [filename,
              load_mesh_config,
              &scene_node_resources,
-             rendering_resources,
+             &rendering_resources,
              &asset_references=args.asset_references,
              name]()
             {
@@ -194,7 +194,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
                     filename,
                     load_mesh_config,
                     scene_node_resources,
-                    rendering_resources.get(),
+                    &rendering_resources,
                     &race_logic);
             });
     } else if (filename.ends_with(".mhx2")) {

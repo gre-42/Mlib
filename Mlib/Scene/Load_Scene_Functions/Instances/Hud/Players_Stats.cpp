@@ -38,11 +38,6 @@ PlayersStats::PlayersStats(RenderableScene& renderable_scene)
 
 void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,
-        .particle_resources = primary_rendering_context.particle_resources,
-        .rendering_resources = primary_rendering_context.rendering_resources,
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} }; 
     auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
         players,
         args.arguments.path(KnownArgs::ttf_file),
@@ -54,5 +49,5 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         score_board_configuration_from_string(args.arguments.at<std::string>(KnownArgs::score_board)));
-    render_logics.append(nullptr, players_stats_logic);
+    render_logics.append(nullptr, players_stats_logic, args.arguments.at<int>(KnownArgs::z_order));
 }

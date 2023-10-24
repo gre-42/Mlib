@@ -56,6 +56,6 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
-    render_logics.append(node.ptr(), logger);
+    render_logics.append(node.ptr(), logger, 0 /* z_order */);
     physics_engine.advance_times_.add_advance_time(*logger);
 }

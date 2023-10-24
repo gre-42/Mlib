@@ -64,5 +64,5 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
             rl.remove(*l);
         }
     );
-    render_logics.append(nullptr, logger);
+    render_logics.append(nullptr, logger, 0 /* z_order */);
 }

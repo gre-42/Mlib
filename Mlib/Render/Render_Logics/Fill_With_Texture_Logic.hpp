@@ -3,7 +3,6 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
-#include <memory>
 #include <string>
 
 namespace Mlib {
@@ -29,6 +28,7 @@ private:
 class FillWithTextureLogic: public GenericPostProcessingLogic {
 public:
     FillWithTextureLogic(
+        RenderingResources& rendering_resources,
         std::string image_resource_name,
         ResourceUpdateCycle update_cycle,
         ColorMode color_mode,
@@ -45,7 +45,7 @@ public:
 
 private:
     FillWithTextureRenderProgram rp_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingResources& rendering_resources_;
     std::string image_resource_name_;
     ResourceUpdateCycle update_cycle_;
     ColorMode color_mode_;

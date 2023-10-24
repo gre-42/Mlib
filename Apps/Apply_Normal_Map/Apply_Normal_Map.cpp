@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -93,11 +94,14 @@ int main(int argc, char** argv) {
 
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            render_config.anisotropic_filtering_level
+        };
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            render_config.anisotropic_filtering_level,
+            rendering_resources,
             0);
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex, nullptr };
@@ -197,14 +201,15 @@ int main(int argc, char** argv) {
             selected_cameras,
             delete_node_mutex};
         StandardRenderLogic standard_render_logic{
+            rendering_resources,
             scene,
             standard_camera_logic,
             {1.f, 0.f, 1.f},
             ClearMode::COLOR_AND_DEPTH};
-        auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
+        ReadPixelsLogic read_pixels_logic{ standard_render_logic };
 
         render.render(
-            *read_pixels_logic,
+            read_pixels_logic,
             []() {},
             SceneGraphConfig());
         if (args.has_named_value("--output")) {

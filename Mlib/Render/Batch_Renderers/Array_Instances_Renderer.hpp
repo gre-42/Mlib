@@ -11,10 +11,10 @@ class ColoredVertexArrayResource;
 class RenderableColoredVertexArray;
 
 class ArrayInstancesRenderer : public IInstancesRenderer {
-public:
     ArrayInstancesRenderer(const ArrayInstancesRenderer &other) = delete;
     ArrayInstancesRenderer &operator=(const ArrayInstancesRenderer &other) = delete;
-    explicit ArrayInstancesRenderer();
+public:
+    explicit ArrayInstancesRenderer(RenderingResources& rendering_resources);
     virtual ~ArrayInstancesRenderer() override;
     virtual bool is_initialized() const override;
     virtual void invalidate() override;
@@ -30,6 +30,7 @@ public:
         const ExternalRenderPass &external_render_pass) const override;
 
 private:
+    RenderingResources& rendering_resources_;
     mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;
     mutable std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;

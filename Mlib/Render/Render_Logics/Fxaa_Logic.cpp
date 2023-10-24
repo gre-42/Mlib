@@ -3,7 +3,6 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Log.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
@@ -118,7 +117,6 @@ SHADER_VER FRAGMENT_PRECISION
 
 FxaaLogic::FxaaLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::resource_context()},
   initialized_{false}
 {}
 

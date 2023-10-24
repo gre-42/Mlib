@@ -34,11 +34,6 @@ FocusedText::FocusedText(RenderableScene& renderable_scene)
 
 void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by FocusedTextLogic
-        .particle_resources = primary_rendering_context.particle_resources,    // read by FocusedTextLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // read by FocusedTextLogic
-        .z_order = 1} };                                                         // read by render_logics
     auto loading_logic = std::make_shared<FocusedTextLogic>(
         args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
@@ -47,5 +42,8 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         args.arguments.at<std::string>(KnownArgs::text));
-    render_logics.append(nullptr, loading_logic);
+    render_logics.append(
+        nullptr,        // scene_node
+        loading_logic,
+        1);             // z_order
 }

@@ -39,10 +39,10 @@ void HeterogeneousResource::preload(const RenderableResourceFilter& filter) cons
                 continue;
             }
             for (const auto& tex : cva->material.textures_color) {
-                RenderingContextStack::primary_rendering_resources()->preload(tex.texture_descriptor);
+                RenderingContextStack::primary_rendering_resources().preload(tex.texture_descriptor);
             }
             for (const auto& tex : cva->material.textures_alpha) {
-                RenderingContextStack::primary_rendering_resources()->preload(tex.texture_descriptor);
+                RenderingContextStack::primary_rendering_resources().preload(tex.texture_descriptor);
             }
         }
     };

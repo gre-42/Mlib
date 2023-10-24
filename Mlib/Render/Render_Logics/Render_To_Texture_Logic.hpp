@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 
 namespace Mlib {
@@ -9,11 +8,13 @@ namespace Mlib {
 enum class ResourceUpdateCycle;
 enum class FrameBufferChannelKind;
 class FrameBuffer;
+class RenderingResources;
 
 class RenderToTextureLogic: public RenderLogic {
 public:
     explicit RenderToTextureLogic(
         RenderLogic& child_logic,
+        RenderingResources& rendering_resources,
         ResourceUpdateCycle update_cycle,
         FrameBufferChannelKind depth_kind,
         std::string color_texture_name,
@@ -34,7 +35,7 @@ public:
 
 private:
     RenderLogic& child_logic_;
-    RenderingContext rendering_context_;
+    RenderingResources& rendering_resources_;
     std::unique_ptr<FrameBuffer> fbs_;
     ResourceUpdateCycle update_cycle_;
     FrameBufferChannelKind depth_kind_;

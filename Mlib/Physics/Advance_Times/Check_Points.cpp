@@ -35,6 +35,7 @@ CheckPoints::CheckPoints(
     float distance,
     size_t nahead,
     float radius,
+    RenderingResources* rendering_resources,
     SceneNodeResources& scene_node_resources,
     Scene& scene,
     DeleteNodeMutex& delete_node_mutex,
@@ -56,6 +57,7 @@ CheckPoints::CheckPoints(
   i01_{0},
   lap_index_{0},
   progress_{0.},
+  rendering_resources_{rendering_resources},
   scene_node_resources_{scene_node_resources},
   scene_{scene},
   delete_node_mutex_{delete_node_mutex},
@@ -143,6 +145,7 @@ void CheckPoints::advance_time(float dt) {
                 scene_node_resources_.instantiate_renderable(
                     resource_name_,
                     InstantiationOptions{
+                        .rendering_resources = rendering_resources_,
                         .instance_name = "beacon",
                         .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});

@@ -3,6 +3,7 @@
 
 namespace Mlib {
 
+class RenderingResources;
 class RenderLogics;
 class RenderLogic;
 class Scene;
@@ -11,6 +12,7 @@ class SelectedCameras;
 class Imposters: public IImposters {
 public:
     explicit Imposters(
+        RenderingResources& rendering_resources,
         RenderLogics& render_logics,
         RenderLogic& child_logic,
         Scene& scene,
@@ -20,6 +22,7 @@ public:
         const std::string& debug_prefix,
         uint32_t max_texture_size) override;
 private:
+    RenderingResources& rendering_resources_;
     RenderLogics& render_logics_;
     RenderLogic& child_logic_;
     Scene& scene_;

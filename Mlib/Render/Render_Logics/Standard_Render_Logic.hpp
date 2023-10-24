@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <memory>
 
@@ -17,6 +16,7 @@ enum class ClearMode;
 class StandardRenderLogic: public RenderLogic {
 public:
     StandardRenderLogic(
+        RenderingResources& rendering_resources,
         const Scene& scene,
         RenderLogic& child_logic,
         const FixedArray<float, 3>& background_color,
@@ -45,7 +45,6 @@ private:
     RenderLogic& child_logic_;
     FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
-    RenderingContext rendering_context_;
     std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
     std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;

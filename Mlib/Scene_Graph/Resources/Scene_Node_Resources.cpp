@@ -121,6 +121,7 @@ void SceneNodeResources::instantiate_renderable(
                 instantiate_renderable(
                     resource_name,
                     InstantiationOptions{
+                        .rendering_resources = options.rendering_resources,
                         .supply_depots = options.supply_depots,
                         .instance_name = options.instance_name + "/" + resource_name,
                         .scene_node = options.scene_node,

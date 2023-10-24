@@ -76,11 +76,6 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             .requires_ = args.arguments.at<std::vector<std::string>>(KnownArgs::required, std::vector<std::string>{})
         },
         args.arguments.at<size_t>(KnownArgs::deflt));
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,   // read by ParameterSetterLogic
-        .particle_resources = primary_rendering_context.particle_resources,     // read by ParameterSetterLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,     // read by ParameterSetterLogic
-        .z_order = 1} };                                                          // read by render_logics
     auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
         "",
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
@@ -103,5 +98,5 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
                 mle(on_change.value(), nullptr, nullptr);
             }
         });
-    render_logics.append(nullptr, parameter_setter_logic);
+    render_logics.append(nullptr, parameter_setter_logic, 1 /* z_order */);
 }

@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction SaveTextureAtlasPng::json_user_function = [](const Loa
 
 void SaveTextureAtlasPng::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextStack::primary_rendering_resources()->save_to_file(
+    RenderingContextStack::primary_rendering_resources().save_to_file(
         args.arguments.at<std::string>(KnownArgs::filename),
         TextureDescriptor{
             .color = {.filename = args.arguments.at<std::string>(KnownArgs::name)},

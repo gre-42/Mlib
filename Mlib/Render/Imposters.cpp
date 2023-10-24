@@ -5,11 +5,13 @@
 using namespace Mlib;
 
 Imposters::Imposters(
+    RenderingResources& rendering_resources,
     RenderLogics& render_logics,
     RenderLogic& child_logic,
     Scene& scene,
     SelectedCameras& cameras)
-: render_logics_{render_logics},
+: rendering_resources_{rendering_resources},
+  render_logics_{render_logics},
   child_logic_{child_logic},
   scene_{scene},
   cameras_{cameras}
@@ -20,11 +22,15 @@ void Imposters::create_imposter(
     const std::string& debug_prefix,
     uint32_t max_texture_size)
 {
-    render_logics_.prepend(scene_node.ptr(), std::make_shared<ImposterLogic>(
-        child_logic_,
-        scene_,
-        scene_node,
-        cameras_,
-        debug_prefix,
-        max_texture_size));
+    render_logics_.prepend(
+        scene_node.ptr(),
+        std::make_shared<ImposterLogic>(
+            rendering_resources_,
+            child_logic_,
+            scene_,
+            scene_node,
+            cameras_,
+            debug_prefix,
+            max_texture_size),
+        0);                     // z_order
 }

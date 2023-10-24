@@ -75,11 +75,6 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
             .title=args.arguments.at<std::string>(KnownArgs::title),
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
         0);
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources,  // read by SceneSelectorLogic
-        .particle_resources = primary_rendering_context.particle_resources,      // read by SceneSelectorLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,    // read by SceneSelectorLogic
-        .z_order = 1} };                                                         // read by render_logics
     auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
@@ -104,5 +99,5 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
                 mle(on_change.value(), nullptr, nullptr);
             }
         });
-    render_logics.append(nullptr, scene_selector_logic);
+    render_logics.append(nullptr, scene_selector_logic, 1 /* z_order */);
 }

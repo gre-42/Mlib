@@ -96,5 +96,5 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     physics_engine.advance_times_.add_advance_time(*logger);
     node->clearing_observers.add(*logger);
-    render_logics.append(node.ptr(), logger);
+    render_logics.append(node.ptr(), logger, 0 /* z_order */);
 }

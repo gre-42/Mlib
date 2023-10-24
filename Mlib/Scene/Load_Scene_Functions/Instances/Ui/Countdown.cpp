@@ -42,11 +42,6 @@ Countdown::Countdown(RenderableScene& renderable_scene)
 
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextGuard rcg{ RenderingContext {
-        .scene_node_resources = primary_rendering_context.scene_node_resources,     // read by CountDownLogic
-        .particle_resources = primary_rendering_context.particle_resources,         // read by CountDownLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,       // read by CountDownLogic
-        .z_order = args.arguments.at<int>(KnownArgs::z_order)} };                   // read by render_logics
     auto countdown_logic = std::make_shared<CountDownLogic>(
         physics_engine.advance_times_,
         args.arguments.path(KnownArgs::ttf_file),
@@ -62,6 +57,6 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node = make_dunique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
     node->clearing_observers.add(*countdown_logic);
-    render_logics.append(node.get(DP_LOC), countdown_logic);
+    render_logics.append(node.get(DP_LOC), countdown_logic, args.arguments.at<int>(KnownArgs::z_order));
     scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
 }

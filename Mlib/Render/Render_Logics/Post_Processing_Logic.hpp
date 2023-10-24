@@ -5,9 +5,10 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 
 namespace Mlib {
+
+class RenderingResources;
 
 struct PPRenderProgram: public RenderProgram {
     GLint screen_texture_color_location = -1;
@@ -49,7 +50,7 @@ private:
 
     RenderLogic& child_logic_;
     FixedArray<float, 3> background_color_;
-    RenderingContext rendering_context_;
+    RenderingResources& rendering_resources_;
     bool initialized_;
     PPRenderProgram rp_;
     bool depth_fog_;

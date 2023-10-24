@@ -18,6 +18,7 @@ class RenderableColoredVertexArray final: public Renderable
 {
 public:
     RenderableColoredVertexArray(
+        RenderingResources& rendering_resources,
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
@@ -92,7 +93,7 @@ private:
     std::unordered_set<ExternalRenderPassType> required_occluder_passes_;
     bool requires_blending_pass_;
     int continuous_blending_z_order_;
-    std::shared_ptr<RenderingResources> secondary_rendering_resources_;
+    RenderingResources& secondary_rendering_resources_;
     AxisAlignedBoundingBox<float, 3> aabb_;
 };
 

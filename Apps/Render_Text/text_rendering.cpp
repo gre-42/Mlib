@@ -12,6 +12,7 @@
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -58,11 +59,13 @@ int main(int argc, char** argv)
         // ---------
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            8 };    // anisotropic_filtering_level
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            8,      // anisotropic_filtering_level
+            rendering_resources,
             0);     // z_order
 
         // OpenGL state
@@ -82,7 +85,10 @@ int main(int argc, char** argv)
                 .value = (float)f,
                 .text = std::to_string(f)});
         }
-        PointerImageLogic pointer_image_logic{argv[2]};
+        PointerImageLogic pointer_image_logic{
+            rendering_resources,
+            argv[2]
+        };
         CircularDataDisplay circular_data_display{
             circular_renderable_text,
             pointer_image_logic,

@@ -73,7 +73,7 @@ void TextResource::ensure_initialized(float font_height) const
     if (loaded_font_ != nullptr) {
         THROW_OR_ABORT("loaded_font is not null");
     }
-    loaded_font_ = &RenderingContextStack::primary_rendering_resources()->get_font_texture(ttf_filename_, font_height);
+    loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(ttf_filename_, font_height);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.color_location = checked_glGetUniformLocation(rp_.program, "color3");
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");

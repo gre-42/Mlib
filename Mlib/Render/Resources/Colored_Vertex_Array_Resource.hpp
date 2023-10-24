@@ -116,7 +116,7 @@ private:
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     SceneNodeResources& scene_node_resources_;
-    std::shared_ptr<RenderingResources> rendering_resources_;
+    RenderingResources& rendering_resources_;
     mutable SafeSharedMutex mutex_;
     std::unique_ptr<Instances> instances_;
     DeallocationToken deallocation_token_;

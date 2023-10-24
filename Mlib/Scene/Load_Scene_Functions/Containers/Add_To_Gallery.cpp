@@ -5,6 +5,7 @@
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
 using namespace Mlib;
@@ -25,6 +26,7 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
     args.gallery.insert(
         args.arguments.at<std::string>(KnownArgs::instance),
         std::make_unique<FillWithTextureLogic>(
+            RenderingContextStack::primary_rendering_resources(),
             args.arguments.path(KnownArgs::resource),
             ResourceUpdateCycle::ONCE,
             color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),

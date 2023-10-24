@@ -1112,10 +1112,10 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
                 continue;
             }
             for (auto& t : cva->material.textures_color) {
-                rendering_resources_->preload(t.texture_descriptor);
+                rendering_resources_.preload(t.texture_descriptor);
             }
             for (auto& t : cva->material.textures_alpha) {
-                rendering_resources_->preload(t.texture_descriptor);
+                rendering_resources_.preload(t.texture_descriptor);
             }
         }
     };
@@ -1139,7 +1139,11 @@ void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptio
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
+    if (options.rendering_resources == nullptr) {
+        THROW_OR_ABORT("ColoredVertexArrayResource::instantiate_renderable: rendering-resources is null");
+    }
     options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
+        *options.rendering_resources,
         shared_from_this(),
         options.renderable_resource_filter));
 }
@@ -1323,7 +1327,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const std::vector<BlendMapTexture*>& textures_color,
     const std::vector<BlendMapTexture*>& textures_alpha) const
 {
-    auto& rps = rendering_resources_->render_programs();
+    auto& rps = rendering_resources_.render_programs();
     if (auto it = rps.try_get(id); it != nullptr) {
         return **it;
     }

@@ -95,6 +95,9 @@ void test_physics_engine(unsigned int seed) {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
+    RenderingResources rendering_resources{
+        "primary_rendering_resources",
+        16 };
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
     DeleteNodeMutex delete_node_mutex;
@@ -110,9 +113,8 @@ void test_physics_engine(unsigned int seed) {
     auto rrg = RenderingContextGuard::root(
         scene_node_resources,
         particle_resources,
-        "primary_rendering_resources",
-        16,
-        0);
+        rendering_resources,
+        0 /* z_order */);
 
     SelectedCameras selected_cameras{scene};
     auto scene_name = std::string{getenv_default("SCENE", "flat")};
@@ -172,6 +174,7 @@ void test_physics_engine(unsigned int seed) {
         selected_cameras,
         delete_node_mutex};
     StandardRenderLogic standard_render_logic{
+        rendering_resources,
         scene,
         standard_camera_logic,
         {1.f, 0.f, 1.f},
@@ -201,6 +204,7 @@ void test_physics_engine(unsigned int seed) {
         std::scoped_lock lock{delete_node_mutex};
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
         auto lightmap_logic = std::make_shared<LightmapLogic>(
+            rendering_resources,
             *read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
@@ -209,12 +213,12 @@ void test_physics_engine(unsigned int seed) {
             true,   // with_depth_texture
             2048,   // lightmap_width
             2048);  // lightmap_height
-        render_logics.append(light_node.ptr(), lightmap_logic);
+        render_logics.append(light_node.ptr(), lightmap_logic, 0 /* z_order */);
     };
 
-    render_logics.append(nullptr, flying_camera_logic);
+    render_logics.append(nullptr, flying_camera_logic, 0 /* z_order */);
     append_lightmap_logic();
-    render_logics.append(nullptr, read_pixels_logic);
+    render_logics.append(nullptr, read_pixels_logic, 0 /* z_order */);
     LambdaRenderLogic lrl{
         [&delete_node_mutex, &render_logics](
             const LayoutConstraintParameters& lx,

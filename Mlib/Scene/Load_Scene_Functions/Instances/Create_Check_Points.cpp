@@ -121,6 +121,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::distance),
         args.arguments.at<size_t>(KnownArgs::nahead),
         args.arguments.at<float>(KnownArgs::radius),
+        &rendering_resources,
         scene_node_resources,
         scene,
         delete_node_mutex,
@@ -162,7 +163,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             render_logics,
             physics_engine.advance_times_,
             **moving_nodes.begin());
-        render_logics.append(nullptr, renderable_pace_notes);
+        render_logics.append(nullptr, renderable_pace_notes, 0 /* z_order */);
         physics_engine.advance_times_.add_advance_time(*renderable_pace_notes);
     }
     physics_engine.advance_times_.add_advance_time(std::move(check_points));

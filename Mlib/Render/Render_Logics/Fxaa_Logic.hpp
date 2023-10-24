@@ -4,7 +4,6 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
-#include <Mlib/Render/Rendering_Context.hpp>
 
 namespace Mlib {
 
@@ -32,7 +31,6 @@ private:
     void ensure_initialized();
 
     RenderLogic& child_logic_;
-    RenderingContext rendering_context_;
     bool initialized_;
     FxaaRenderProgram rp_;
     std::string soft_light_filename_;

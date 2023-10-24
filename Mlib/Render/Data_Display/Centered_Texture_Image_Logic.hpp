@@ -10,6 +10,7 @@ enum class ColorMode;
 class CenteredTextureImageLogic: public FillWithTextureLogic {
 public:
     explicit CenteredTextureImageLogic(
+        RenderingResources& rendering_resources,
         const std::string& image_resource_name,
         ColorMode color_mode);
     ~CenteredTextureImageLogic();

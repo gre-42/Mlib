@@ -79,12 +79,12 @@ void RenderLogics::print(std::ostream& ostr, size_t depth) const {
     }
 }
 
-void RenderLogics::prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    insert(scene_node, render_logic, true);
+void RenderLogics::prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order) {
+    insert(scene_node, render_logic, true, z_order);
 }
 
-void RenderLogics::append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic) {
-    insert(scene_node, render_logic, false);
+void RenderLogics::append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order) {
+    insert(scene_node, render_logic, false, z_order);
 }
 
 void RenderLogics::remove(const RenderLogic& render_logic) {
@@ -100,7 +100,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     }
 }
 
-void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend) {
+void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend, int z_order) {
     std::scoped_lock lock{mutex_};
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
@@ -108,7 +108,7 @@ void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_p
         scene_node->clearing_observers.add(*this);
     }
     ZorderAndId zi{
-        .z = RenderingContextStack::z_order(),
+        .z = z_order,
         .id = prepend
             ? next_smallest_id_--
             : next_largest_id_++

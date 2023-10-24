@@ -158,7 +158,6 @@ std::future<void> loader_thread(
             AudioResourceContext arc;
 #endif
             {
-                RenderingContextGuard rrg{primary_rendering_context};
 #ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
@@ -535,12 +534,13 @@ int main(int argc, char** argv) {
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 RenderableScenes renderable_scenes;
+                RenderingResources rendering_resources{
+                    "primary_rendering_resources",
+                    render_config.anisotropic_filtering_level };
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
-                    .rendering_resources = std::make_shared<RenderingResources>(
-                        "primary_rendering_resources",
-                        render_config.anisotropic_filtering_level),
+                    .rendering_resources = rendering_resources,
                     .z_order = 0
                 };
 

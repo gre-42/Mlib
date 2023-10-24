@@ -113,5 +113,5 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             rl.remove(*l);
         }
     );
-    render_logics.append(nullptr, logger);
+    render_logics.append(nullptr, logger, 0 /* z_order */);
 }

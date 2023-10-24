@@ -38,10 +38,10 @@ SceneToTexture::SceneToTexture(RenderableScene& renderable_scene)
 
 void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    
     auto& rs = args.renderable_scenes["primary_scene"];
     auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
         render_logics,                                             // child_logic
+        rendering_resources,                                       // rendering_resources
         resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
         FrameBufferChannelKind::ATTACHMENT,                        // depth_kind
         args.arguments.at<std::string>(KnownArgs::texture_name),   // color_texture_name
@@ -50,5 +50,5 @@ void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
-    rs.render_logics_.prepend(nullptr, scene_window_logic);
+    rs.render_logics_.prepend(nullptr, scene_window_logic, 0 /* z_order */);
 }

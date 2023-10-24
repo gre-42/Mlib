@@ -5,6 +5,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -89,7 +90,7 @@ float skybox_vertices[] = {
 
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
 : child_logic_{child_logic},
-  rendering_context_{RenderingContextStack::primary_resource_context()},
+  rendering_resources_{RenderingContextStack::primary_rendering_resources()},
   loaded_{false},
   deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {}
@@ -124,16 +125,13 @@ void SkyboxLogic::render(
             CHK(glBindVertexArray(0));
         }
     }
-    {
-        RenderingContextGuard rrg{rendering_context_};
-        child_logic_.render(
-            lx,
-            ly,
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
-    }
+    child_logic_.render(
+        lx,
+        ly,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id);
     if (!alias_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -148,7 +146,7 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_context_.rendering_resources->get_cubemap(alias_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_cubemap(alias_)));
 
         CHK(glBindVertexArray(va_.vertex_array()));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));

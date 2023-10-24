@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
     FixedArray<float, 2, 2> square{
         min(0), min(1),
         max(0), max(1)};
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
@@ -61,8 +61,8 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
         .specularity = {0.f, 0.f, 0.f}};
     Material material_0{material};
     Material material_90{material};
-    material_0.textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
-    material_90.textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
+    material_0.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
+    material_90.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_90).path) };
     material_0.compute_color_mode();
     material_90.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(

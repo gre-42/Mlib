@@ -47,11 +47,6 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
             .title = args.arguments.at<std::string>(KnownArgs::title),
             .icon = args.arguments.at<std::string>(KnownArgs::icon)},
         0);
-    RenderingContextGuard rcg{ RenderingContext{
-        .scene_node_resources = primary_rendering_context.scene_node_resources, // read by ControlsLogic
-        .particle_resources = primary_rendering_context.particle_resources,   // read by ControlsLogic
-        .rendering_resources = primary_rendering_context.rendering_resources,   // read by ControlsLogic
-        .z_order = 1} };                                                        // read by render_logics
     controls_logic = std::make_shared<ControlsLogic>(
         args.arguments.path(KnownArgs::gamepad_texture),
         std::make_unique<Widget>(
@@ -63,5 +58,5 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } });
-    render_logics.append(nullptr, controls_logic);
+    render_logics.append(nullptr, controls_logic, 1 /* z_order */);
 }

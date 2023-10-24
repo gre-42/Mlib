@@ -52,5 +52,5 @@ void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         args.arguments.at<size_t>(KnownArgs::nentries),
         log_entry_severity_from_string(args.arguments.at<std::string>(KnownArgs::severity)));
-    render_logics.append(nullptr, logger);
+    render_logics.append(nullptr, logger, 0 /* z_order */);
 }

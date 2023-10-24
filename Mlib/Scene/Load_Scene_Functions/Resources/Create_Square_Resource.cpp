@@ -81,14 +81,14 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         tait_bryan_angles_2_matrix(
             args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::translation, fixed_zeros<float, 3>()) * meters);
-    auto primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
         .continuous_blending_z_order = args.arguments.at<int>(KnownArgs::z_order, 0),
         .depth_func = args.arguments.contains(KnownArgs::depth_func)
             ? depth_func_from_string(args.arguments.at<std::string>(KnownArgs::depth_func))
             : DepthFunc::LESS,
-        .textures_color = { primary_rendering_resources->get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
+        .textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path) },
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
         .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
         .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),

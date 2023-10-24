@@ -68,7 +68,7 @@ void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
     physics_engine.advance_times_.add_advance_time(*hud_image);
     camera_node->insert_node_hider(*hud_image);
-    render_logics.append(camera_node.ptr(), hud_image);
+    render_logics.append(camera_node.ptr(), hud_image, 0 /* z_order */);
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         camera_node.ptr(),

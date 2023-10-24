@@ -30,7 +30,7 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
     args.arguments.validate(KnownArgs::options);
 
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
-    auto rendering_resources = RenderingContextStack::primary_rendering_resources();
+    auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
     auto fpathps = [&args](const std::string& name){
         return args.arguments.pathes_or_variables(name, [](const FPath& v){return v.path;});
     };
@@ -43,7 +43,7 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
          uv_period = args.arguments.at<double>(KnownArgs::uv_period),
          up_axis = up_axis_from_string(args.arguments.at<std::string>(KnownArgs::up_axis, "y")),
          &scene_node_resources = scene_node_resources,
-         rendering_resources = rendering_resources]
+         &rendering_resources = rendering_resources]
         (ISceneNodeResource& resource)
         {
             replace_terrain_material(
@@ -54,6 +54,6 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
                 uv_period,
                 up_axis,
                 scene_node_resources,
-                *rendering_resources);
+                rendering_resources);
         });
 };

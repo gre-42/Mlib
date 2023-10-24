@@ -19,6 +19,7 @@ class Scene;
 class DeleteNodeMutex;
 struct BeaconNode;
 enum class RaceState;
+class RenderingResources;
 
 struct CheckPointPose {
     TrackElementExtended track_element;
@@ -47,6 +48,7 @@ public:
         float distance,
         size_t nahead,
         float radius,
+        RenderingResources* rendering_resources,
         SceneNodeResources& scene_node_resources,
         Scene& scene,
         DeleteNodeMutex& delete_node_mutex,
@@ -77,6 +79,7 @@ private:
     size_t i01_;
     size_t lap_index_;
     double progress_;
+    RenderingResources* rendering_resources_;
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;
     DeleteNodeMutex& delete_node_mutex_;

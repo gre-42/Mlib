@@ -36,8 +36,6 @@ SetPreferredCarSpawner::SetPreferredCarSpawner(RenderableScene& renderable_scene
 
 void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto primary_rendering_context = RenderingContextStack::primary_resource_context();
-    auto secondary_rendering_context = RenderingContextStack::resource_context();
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     auto macro = args.arguments.at(KnownArgs::macro);
     auto capture = args.arguments.at(KnownArgs::capture);
@@ -46,11 +44,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
          spawner_name,
          macro,
          capture,
-         primary_rendering_context,
-         secondary_rendering_context,
          &scene = scene](const SpawnPoint& p){
-            RenderingContextGuard rrg0{primary_rendering_context};
-            RenderingContextGuard rrg1{secondary_rendering_context};
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
             JsonMacroArguments a{capture};
             a.insert_json(nlohmann::json{

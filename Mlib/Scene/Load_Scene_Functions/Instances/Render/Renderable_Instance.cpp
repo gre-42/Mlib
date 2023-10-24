@@ -38,6 +38,7 @@ void RenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     scene_node_resources.instantiate_renderable(
         args.arguments.at<std::string>(KnownArgs::resource),
         InstantiationOptions{
+            .rendering_resources = &rendering_resources,
             .imposters = &imposters,
             .supply_depots = &supply_depots,
             .instance_name = args.arguments.at<std::string>(KnownArgs::name),

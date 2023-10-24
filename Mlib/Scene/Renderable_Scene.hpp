@@ -78,6 +78,8 @@ struct SceneConfigResource {
 class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
+        std::string rendering_resources_name,
+        unsigned int max_anisotropic_filtering_level,
         SceneNodeResources& scene_node_resources,
         ParticleResources& particle_resources,
         SurfaceContactDb& surface_contact_db,
@@ -124,6 +126,7 @@ public:
 
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
+    RenderingResources rendering_resources_;
     std::unique_ptr<ParticleRenderer> particle_renderer_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
@@ -165,8 +168,6 @@ public:
     GameLogic game_logic_;
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;
 
-    RenderingContext primary_rendering_context_;
-    RenderingContext secondary_rendering_context_;
 #ifndef WITHOUT_ALUT
     AudioResourceContext primary_audio_resource_context_;
     AudioResourceContext secondary_audio_resource_context_;

@@ -49,7 +49,7 @@ LoadSceneJsonUserFunction AddTextureDescriptor::json_user_function = [](const Lo
 
 void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
+    RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
         args.arguments.at<std::string>(KnownArgs::name),
         TextureDescriptor{
             .color = {

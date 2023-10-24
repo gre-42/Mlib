@@ -42,11 +42,11 @@ public:
 
     virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
-    void prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic);
-    void append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic);
+    void prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);
+    void append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);
     void remove(const RenderLogic& render_logic);
 private:
-    void insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend);
+    void insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend, int z_order);
     std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;
     UiFocus& ui_focus_;
     int next_smallest_id_;

@@ -24,6 +24,7 @@
 #include <Mlib/Render/Instance_Handles/Array_Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
@@ -698,7 +699,7 @@ GLuint RenderingResources::get_texture(
                 ArrayFrameBufferStorage afbs{texture, level, integral_cast<int>(layer)};
                 clear_color({0.f, 0.f, 0.f, 0.f});
                 CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-                render_texture_atlas(tiles, *this, level);
+                render_texture_atlas(*const_cast<RenderingResources*>(this), tiles, level);
                 // // Disable the ArrayFrameBufferStorage above for the following code to work.
                 // static SaveMovie save_movie;
                 // save_movie.save(

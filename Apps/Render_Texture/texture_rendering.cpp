@@ -67,11 +67,14 @@ int main(int argc, char** argv)
         // ---------
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            8      // anisotropic_filtering_level
+        };
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            8,      // anisotropic_filtering_level
+            rendering_resources,
             0);     // z_order
 
         // OpenGL state
@@ -87,7 +90,7 @@ int main(int argc, char** argv)
                     continue;
                 }
                 names.push_back(name);
-                RenderingContextStack::primary_rendering_resources()->insert_texture(
+                rendering_resources.insert_texture(
                     name,
                     std::move(data.data),
                     TextureAlreadyExistsBehavior::RAISE);
@@ -95,18 +98,18 @@ int main(int argc, char** argv)
             if (names.empty()) {
                 THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.unnamed_value(0) + '"');
             }
-            RenderingContextStack::primary_rendering_resources()->generate_auto_texture_atlas(
+            rendering_resources.generate_auto_texture_atlas(
                 "__texture__",
                 std::vector(names.begin(), names.end()),
                 &atlas);
         } else {
-            RenderingContextStack::primary_rendering_resources()->add_texture_descriptor(
+            rendering_resources.add_texture_descriptor(
                 "__texture__",
                 TextureDescriptor{
                     .color = {.filename = parsed.unnamed_value(0)},
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS});
-            ftl.emplace("__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
+            ftl.emplace(rendering_resources, "__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
         }
 
         // render loop
@@ -126,10 +129,7 @@ int main(int argc, char** argv)
             if (ftl.has_value()) {
                 ftl.value().render();
             } else if (!atlas.tiles.empty()) {
-                render_texture_atlas(
-                    atlas.tiles.front(),
-                    *RenderingContextStack::primary_rendering_resources(),
-                    0);
+                render_texture_atlas(rendering_resources, atlas.tiles.front(), 0);
             }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

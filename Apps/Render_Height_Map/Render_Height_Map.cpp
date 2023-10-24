@@ -60,11 +60,13 @@ int main(int argc, char** argv) {
         Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            16 };
         auto rrg = RenderingContextGuard::root(
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            16,
+            rendering_resources,
             0);
         render_height_map(
             render,

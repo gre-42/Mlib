@@ -52,10 +52,5 @@ void SceneToPixelRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
-    RenderingContextGuard rcg{ RenderingContext {
-        .scene_node_resources = secondary_rendering_context.scene_node_resources,
-        .particle_resources = secondary_rendering_context.particle_resources,
-        .rendering_resources = secondary_rendering_context.rendering_resources,
-        .z_order = args.arguments.at<int>(KnownArgs::z_order) }};
-    rs.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_);
+    rs.render_logics_.append(nullptr, render_scene_to_pixel_region_logic_, args.arguments.at<int>(KnownArgs::z_order));
 }

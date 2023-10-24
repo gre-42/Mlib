@@ -8,6 +8,7 @@
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -36,7 +37,13 @@ HudImageLogic::HudImageLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-: FillWithTextureLogic{ image_resource_name, update_cycle, ColorMode::RGBA, CullFaceMode::CULL, nullptr },
+: FillWithTextureLogic{
+    RenderingContextStack::primary_rendering_resources(),
+    image_resource_name,
+    update_cycle,
+    ColorMode::RGBA,
+    CullFaceMode::CULL,
+    nullptr },
   scene_logic_{ scene_logic },
   collision_query_{ collision_query },
   gun_node_{ gun_node },

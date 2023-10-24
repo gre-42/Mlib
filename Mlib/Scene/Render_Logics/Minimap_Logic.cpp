@@ -7,6 +7,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -25,8 +26,15 @@ MinimapLogic::MinimapLogic(
     const FixedArray<float, 2>& size,
     const FixedArray<double, 2>& offset)
 : node_{node},
-  centered_texture_image_logic_{map_image_resource_name, ColorMode::RGBA},
-  locator_logic_{locator_image_resource_name, ResourceUpdateCycle::ONCE, ColorMode::RGBA},
+  centered_texture_image_logic_{
+    RenderingContextStack::primary_rendering_resources(),
+    map_image_resource_name,
+    ColorMode::RGBA },
+  locator_logic_{
+    RenderingContextStack::primary_rendering_resources(),
+    locator_image_resource_name,
+    ResourceUpdateCycle::ONCE,
+    ColorMode::RGBA},
   widget_{std::move(widget)},
   locator_size_{locator_size},
   pointer_reference_length_{pointer_reference_length},

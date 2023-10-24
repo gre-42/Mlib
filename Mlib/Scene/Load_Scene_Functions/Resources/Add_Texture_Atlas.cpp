@@ -44,7 +44,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
             .bottom = texture_pos(1),
             .filename = a.path_or_variable(AtlasTileArgs::texture).path};
     });
-    RenderingContextStack::primary_rendering_resources()->add_manual_texture_atlas(
+    RenderingContextStack::primary_rendering_resources().add_manual_texture_atlas(
         args.arguments.at(KnownArgs::name),
         ManualTextureAtlasDescriptor{
             .width = args.arguments.at<int>(KnownArgs::width),

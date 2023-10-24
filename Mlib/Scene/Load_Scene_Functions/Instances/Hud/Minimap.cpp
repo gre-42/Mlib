@@ -71,5 +71,5 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
             rl.remove(*l);
         }
     );
-    render_logics.append(nullptr, c);
+    render_logics.append(nullptr, c, 0 /* z_order */);
 }

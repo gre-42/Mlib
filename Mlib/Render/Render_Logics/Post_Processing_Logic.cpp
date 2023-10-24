@@ -10,6 +10,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -129,7 +130,7 @@ PostProcessingLogic::PostProcessingLogic(
     bool high_pass)
 : child_logic_{child_logic},
   background_color_{background_color},
-  rendering_context_{RenderingContextStack::resource_context()},
+  rendering_resources_{RenderingContextStack::primary_rendering_resources()},
   initialized_{false},
   depth_fog_{depth_fog},
   low_pass_{low_pass},
@@ -243,7 +244,7 @@ void PostProcessingLogic::render(
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
                 CHK(glBindTexture(
                     GL_TEXTURE_2D,
-                    rendering_context_.rendering_resources->get_texture(
+                    rendering_resources_.get_texture(
                         {.filename = "soft_light"},
                         TextureDescriptor{
                             .color = {.filename = soft_light_filename_},
