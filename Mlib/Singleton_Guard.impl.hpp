@@ -23,6 +23,9 @@ SingletonGuard<TSingleton>::SingletonGuard(TSingleton& instance)
 
 template <class TSingleton>
 SingletonGuard<TSingleton>::~SingletonGuard() {
+    if (Singleton<TSingleton>::instance_ == nullptr) {
+        verbose_abort("Singleton not set in dtor");
+    }
     Singleton<TSingleton>::instance_ = nullptr;
 }
 

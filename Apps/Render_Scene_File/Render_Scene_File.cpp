@@ -47,7 +47,6 @@ std::future<void> render_thread(
     const ParsedArgs& args,
     RenderableScenes& renderable_scenes,
     std::atomic_bool& load_scene_finished,
-    const RenderingContext& primary_rendering_context,
     Renderer& renderer,
     const SceneConfig& scene_config,
     MenuLogic& menu_logic)
@@ -96,7 +95,6 @@ std::future<void> render_thread(
                         }
                     }
                 }};
-            RenderingContextGuard rrg{primary_rendering_context};
             renderer.render(lrl, scene_config.scene_graph_config);
         } catch (...) {
             add_unhandled_exception(std::current_exception());
@@ -531,9 +529,6 @@ int main(int argc, char** argv) {
             LoadScene load_scene;
             ThreadSafeString next_scene_filename;
             {
-                RenderLogicGallery gallery;
-                AssetReferences asset_references;
-                RenderableScenes renderable_scenes;
                 RenderingResources rendering_resources{
                     "primary_rendering_resources",
                     render_config.anisotropic_filtering_level };
@@ -543,6 +538,11 @@ int main(int argc, char** argv) {
                     .rendering_resources = rendering_resources,
                     .z_order = 0
                 };
+                RenderingContextGuard rrg{primary_rendering_context};
+
+                RenderLogicGallery gallery;
+                AssetReferences asset_references;
+                RenderableScenes renderable_scenes;
 
                 std::atomic_bool load_scene_finished = false;
                 std::future<void> render_future;
@@ -553,7 +553,6 @@ int main(int argc, char** argv) {
                         args,
                         renderable_scenes,
                         load_scene_finished,
-                        primary_rendering_context,
                         *renderer,
                         scene_config,
                         menu_logic);
