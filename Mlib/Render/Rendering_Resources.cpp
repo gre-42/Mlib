@@ -23,9 +23,14 @@
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/Render/Instance_Handles/Array_Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -854,6 +859,33 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         }
         build_image_atlas(si, atlas_tiles);
         return si;
+    }
+    if (preloaded_texture_dds_data_.contains(descriptor.color.filename)) {
+        auto info = ImageInfo::load(descriptor.color.filename, &preloaded_texture_dds_data_.get(descriptor.color.filename));
+        FrameBuffer fb;
+        fb.configure(FrameBufferConfig{
+            .width = integral_cast<int>(info.size(0)),
+            .height = integral_cast<int>(info.size(1)),
+            .color_internal_format = GL_RGBA,
+            .color_format = GL_RGBA,
+            .color_filter_type = GL_NEAREST,
+            .depth_kind = FrameBufferChannelKind::NONE});
+        ViewportGuard vg{
+            (float)0,
+            (float)0,
+            (float)info.size(0),
+            (float)info.size(1)};
+        FillWithTextureLogic logic{
+            *const_cast<RenderingResources*>(this),
+            descriptor.color.filename,
+            ResourceUpdateCycle::ONCE,
+            ColorMode::RGBA};
+        {
+            RenderToFrameBufferGuard rfg{fb};
+            RenderToScreenGuard rsg;
+            logic.render();
+        }
+        return fb.color_to_stb_image();
     }
     auto si = stb_load_and_transform_texture(descriptor, flip_mode);
     if ((descriptor.color_mode == ColorMode::RGB) &&

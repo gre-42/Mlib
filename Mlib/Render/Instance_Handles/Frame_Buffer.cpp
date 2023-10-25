@@ -4,7 +4,9 @@
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Download/Download_As_Stb_Image.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
 
@@ -274,6 +276,10 @@ GLuint FrameBuffer::texture_color() const {
 
 GLuint FrameBuffer::texture_depth() const {
     return fb_.texture_depth();
+}
+
+StbInfo<uint8_t> FrameBuffer::color_to_stb_image() const {
+    return download_as_stb_image(fb_.frame_buffer_, config_.width, config_.height, 4);
 }
 
 void FrameBuffer::deallocate() {

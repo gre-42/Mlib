@@ -11,20 +11,24 @@ BackgroundLoop::BackgroundLoop(std::string thread_name)
 : i_{SIZE_MAX},
   done_{true},
   thread_{[this, tn = std::move(thread_name)](){
-        ThreadInitializer ti{tn, ThreadAffinity::POOL};
-        while (true) {
-            std::unique_lock lck{ mutex_ };
-            task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });
-            if (thread_.get_stop_token().stop_requested()) {
+        try {
+            ThreadInitializer ti{tn, ThreadAffinity::POOL};
+            while (true) {
+                std::unique_lock lck{ mutex_ };
+                task_ready_cv_.wait(lck, [this]() { return !done_ || thread_.get_stop_token().stop_requested(); });
+                if (thread_.get_stop_token().stop_requested()) {
+                    task_ = std::function<void()>();
+                    return;
+                }
+                if (!task_) {
+                    verbose_abort("Task not set");
+                }
+                task_();
                 task_ = std::function<void()>();
-                return;
+                done_ = true;
             }
-            if (!task_) {
-                verbose_abort("Task not set");
-            }
-            task_();
-            task_ = std::function<void()>();
-            done_ = true;
+        } catch (const std::exception& e) {
+            verbose_abort("Unhandled exception in background-loop: " + std::string{e.what()});
         }
     }}
 {}

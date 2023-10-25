@@ -3,6 +3,10 @@
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <compare>
+#include <cstdint>
+
+template <class TData>
+struct StbInfo;
 
 namespace Mlib {
 
@@ -71,6 +75,7 @@ public:
     void deallocate();
     GLuint texture_color() const;
     GLuint texture_depth() const;
+    StbInfo<uint8_t> color_to_stb_image() const;
 private:
     FrameBufferStorage fb_;
     FrameBufferStorage ms_fb_;

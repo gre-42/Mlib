@@ -18,7 +18,7 @@ void SaveMovie::save(
     //     PpmImage::from_float_rgb(reverted_axis(vp.to_array(), 1)).save_to_file(file_prefix + std::to_string(index_) + file_suffix + ".ppm");
     // }
     StbImage3 im3{ArrayShape{size_t(height), size_t(width)}};
-    CHK(glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_RGB, GL_UNSIGNED_BYTE, im3->flat_begin()));
+    CHK(glReadPixels(0, 0, (GLsizei)width, (GLsizei)height, GL_RGB, GL_UNSIGNED_BYTE, im3.flat_begin()));
     im3.save_to_file(file_prefix + std::to_string(index_) + file_suffix + ".png");
     ++index_;
 }
