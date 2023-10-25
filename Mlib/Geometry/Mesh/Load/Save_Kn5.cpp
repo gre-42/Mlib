@@ -102,9 +102,11 @@ void Mlib::save_kn5(
         for (const auto& [n, v] : floats) {
             WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "float name");
             WriteString(*f, n);
+
             WriteBinary<float>(*f, v, "float value");
+
+            WriteVector(*f, std::vector<uint8_t>(36, (uint8_t)42));
         }
-        WriteVector(*f, std::vector<uint8_t>(36, (uint8_t)42));
 
         std::map<std::string, std::string> strings{
             { "txDiffuse",m.txDiffuse },
@@ -117,16 +119,23 @@ void Mlib::save_kn5(
             { "txDetail", m.txDetail1 },
             { "txDetailNM",m.txDetailNM} };
 
+        for (auto it = strings.begin(); it != strings.end();) {
+            if (it->second.empty()) {
+                strings.erase(it++);
+            } else {
+                ++it;
+            }
+        }
+
         WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(strings.size()), "#strings");
         for (const auto& [n, v] : strings) {
-            if (v.empty()) {
-                continue;
-            }
-            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "string name");
+            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "string name length");
             WriteString(*f, n);
 
-            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "string value");
-            WriteString(*f, n);
+            WriteBinary<int32_t>(*f, 42, "sampler-slot");
+
+            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(v.length()), "string value length");
+            WriteString(*f, v);
         }
     }
 
