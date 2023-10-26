@@ -9,6 +9,7 @@
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <stb/stb_image_write.h>
+#include <stb_cpp/stb_encode.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 
 using namespace Mlib;
@@ -73,8 +74,7 @@ int main(int argc, char** argv) {
             auto tex = rendering_resources.get_texture_data({.color = {.filename = dds_name}}, FlipMode::NONE);
             auto& dest = destination_textures[png_name];
             dest.type = t.type;
-            dest.data.resize(tex.width * tex.height * tex.nrChannels);
-            std::copy(tex.data.get(), tex.data.get() + dest.data.size(), dest.data.data());
+            dest.data = stb_encode_png(tex.data.get(), tex.width, tex.height, tex.nrChannels);
             if (args.has_named("--explode")) {
                 auto o = create_ofstream(png_name, std::ios::binary);
                 if (o->fail()) {
