@@ -384,7 +384,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "uniform " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
+        sstr << "lowp uniform " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (ntextures_alpha != 0) {
         sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;

@@ -20,6 +20,7 @@
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Context_Query.hpp>
+#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
@@ -101,6 +102,7 @@ public:
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
         if (*load_scene_finished) {
+            execute_render_allocators();
             (*renderable_scenes)["primary_scene"].render(
                 lx,
                 ly,

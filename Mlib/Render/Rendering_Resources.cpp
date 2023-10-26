@@ -1264,7 +1264,11 @@ void RenderingResources::initialize_non_dds_texture(
     CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
     CHK(glTexImage2D(GL_TEXTURE_2D,
                      0,
+#ifdef __ANDROID__
+                     nchannels2internal_format((GLenum)si.nrChannels),
+#else
                      nchannels2internal_format((GLenum)descriptor.color_mode),
+#endif
                      si.width,
                      si.height,
                      0,

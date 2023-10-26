@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
         }
         save_kn5(args.unnamed_value(1), kn5.version, kn5.unknownNo, destination_textures, destination_materials, *source);
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;
