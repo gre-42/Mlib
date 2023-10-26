@@ -10,22 +10,9 @@ template const RenderingContext& Singleton<const RenderingContext>::instance();
 template const RenderingContext* Singleton<const RenderingContext>::instance_;
 template std::shared_mutex Singleton<const RenderingContext>::mutex_;
 
-RenderingContextGuard::RenderingContextGuard(const RenderingContext& context)
-: SingletonGuard<const RenderingContext>{ context }
+RenderingContextGuard::RenderingContextGuard(RenderingContext& context)
+: SingletonGuard<RenderingContext>{ context }
 {}
-
-RenderingContextGuard RenderingContextGuard::root(
-    SceneNodeResources& scene_node_resources,
-    ParticleResources& particle_resources,
-    RenderingResources& rendering_resources,
-    int z_order)
-{
-    return RenderingContextGuard{RenderingContext{
-        .scene_node_resources = scene_node_resources,
-        .particle_resources = particle_resources,
-        .rendering_resources = rendering_resources,
-        .z_order = z_order}};
-}
 
 RenderingContextGuard::~RenderingContextGuard() = default;
 

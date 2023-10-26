@@ -554,11 +554,13 @@ void android_main(android_app* app) {
                     "primary_rendering_resources",
                     render_config.anisotropic_filtering_level
                 };
-                auto rrg = RenderingContextGuard::root(
-                    scene_node_resources,
-                    particle_resources,
-                    rendering_resources,
-                    0);  // z_order
+                RenderingContext primary_rendering_context{
+                    .scene_node_resources = scene_node_resources,
+                    .particle_resources = particle_resources,
+                    .rendering_resources = rendering_resources,
+                    .z_order = 0
+                };
+                RenderingContextGuard rcg{primary_rendering_context};
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;

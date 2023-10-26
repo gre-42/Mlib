@@ -16,20 +16,15 @@ struct RenderingContext {
     int z_order;
 };
 
-class RenderingContextGuard: public SingletonGuard<const RenderingContext> {
+class RenderingContextGuard: public SingletonGuard<RenderingContext> {
     RenderingContextGuard(const RenderingContextGuard&) = delete;
     RenderingContextGuard& operator = (const RenderingContextGuard&) = delete;
 public:
-    explicit RenderingContextGuard(const RenderingContext& context);
+    explicit RenderingContextGuard(RenderingContext& context);
     ~RenderingContextGuard();
-    static RenderingContextGuard root(
-        SceneNodeResources& scene_node_resources,
-        ParticleResources& particle_resources,
-        RenderingResources& rendering_resources,
-        int z_order);
 };
 
-class RenderingContextStack: public Singleton<const RenderingContext> {
+class RenderingContextStack: public Singleton<RenderingContext> {
     friend RenderingContextGuard;
 public:
     static SceneNodeResources& primary_scene_node_resources();
