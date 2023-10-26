@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <iosfwd>
+#include <map>
 #include <optional>
 #include <string>
 

@@ -284,7 +284,7 @@ kn5Model Mlib::load_kn5(
             linfo() << "Texture: " << texName << " type: " << texType;
         }
 
-        tex.first->second.data.resize(texSize);
+        tex.first->second.data.resize(integral_cast<size_t>(texSize));
         ReadVector(binStream, tex.first->second.data);
     }
 

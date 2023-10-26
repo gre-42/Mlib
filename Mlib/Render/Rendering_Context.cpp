@@ -8,6 +8,7 @@ template SingletonGuard<const RenderingContext>::~SingletonGuard();
 
 template const RenderingContext& Singleton<const RenderingContext>::instance();
 template const RenderingContext* Singleton<const RenderingContext>::instance_;
+template std::shared_mutex Singleton<const RenderingContext>::mutex_;
 
 RenderingContextGuard::RenderingContextGuard(const RenderingContext& context)
 : SingletonGuard<const RenderingContext>{ context }

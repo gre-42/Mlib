@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <string>
 
 namespace Mlib {
 

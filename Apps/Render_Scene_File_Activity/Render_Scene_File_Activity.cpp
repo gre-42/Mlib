@@ -196,7 +196,6 @@ std::future<void> loader_thread(
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
-    const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished)
 {
     return std::async(std::launch::async, [&](){
@@ -206,7 +205,6 @@ std::future<void> loader_thread(
             AudioResourceContext arc;
             #endif
             {
-                RenderingContextGuard rrg{primary_rendering_context};
                 #ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
@@ -552,17 +550,19 @@ void android_main(android_app* app) {
             LoadScene load_scene;
             ThreadSafeString next_scene_filename;
             {
+                RenderingResources rendering_resources{
+                    "primary_rendering_resources",
+                    render_config.anisotropic_filtering_level
+                };
+                auto rrg = RenderingContextGuard::root(
+                    scene_node_resources,
+                    particle_resources,
+                    rendering_resources,
+                    0);  // z_order
+
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 auto renderable_scenes = std::make_shared<RenderableScenes>();
-                RenderingContext primary_rendering_context{
-                    .scene_node_resources = scene_node_resources,
-                    .particle_resources = particle_resources,
-                    .rendering_resources = std::make_shared<RenderingResources>(
-                        "primary_rendering_resources",
-                        render_config.anisotropic_filtering_level),
-                    .z_order = 0
-                };
 
                 auto load_scene_finished = std::make_shared<std::atomic_bool>(false);
                 scene_renderer.set_scene(renderable_scenes, load_scene_finished);
@@ -587,12 +587,8 @@ void android_main(android_app* app) {
                     ui_focus,
                     layout_constraints,
                     load_scene,
-                    primary_rendering_context,
                     *load_scene_finished)};
-                {
-                    RenderingContextGuard rrg{primary_rendering_context};
-                    render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
-                }
+                render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
                 }

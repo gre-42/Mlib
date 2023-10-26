@@ -1,11 +1,14 @@
 #include "stb_encode.hpp"
+#include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb/stb_image_write.h>
+
+using namespace Mlib;
 
 void my_stbi_write_func(void* context, void* data, int size) {
     auto* op = reinterpret_cast<std::vector<uint8_t>*>(context);
     auto* ip = reinterpret_cast<uint8_t*>(data);
-    op->resize(size);
+    op->resize(integral_cast<size_t>(size));
     std::copy(ip, ip + size, op->data());
 }
 
