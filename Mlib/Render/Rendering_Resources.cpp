@@ -1262,19 +1262,22 @@ void RenderingResources::initialize_non_dds_texture(
         si = get_texture_data(descriptor, FlipMode::VERTICAL);
     }
     CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
-    CHK(glTexImage2D(GL_TEXTURE_2D,
-                     0,
+    {
 #ifdef __ANDROID__
-                     nchannels2internal_format((GLenum)si.nrChannels),
+        size_t nchannels = (size_t)si.nrChannels;
 #else
-                     nchannels2internal_format((GLenum)descriptor.color_mode),
+        size_t nchannels = (size_t)descriptor.color_mode;
 #endif
-                     si.width,
-                     si.height,
-                     0,
-                     nchannels2format((size_t)si.nrChannels),
-                     GL_UNSIGNED_BYTE,
-                     si.data.get()));
+        CHK(glTexImage2D(GL_TEXTURE_2D,
+            0,
+            nchannels2internal_format(nchannels),
+            si.width,
+            si.height,
+            0,
+            nchannels2format((size_t)si.nrChannels),
+            GL_UNSIGNED_BYTE,
+            si.data.get()));
+    }
     // if (si.nrChannels == 4) {
     //     generate_rgba_mipmaps_inplace(si);
     // } else {
