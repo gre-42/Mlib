@@ -3,9 +3,10 @@
 #include <stb/stb_image_write.h>
 
 void my_stbi_write_func(void* context, void* data, int size) {
-    auto* op = reinterpret_cast<uint8_t*>(context);
+    auto* op = reinterpret_cast<std::vector<uint8_t>*>(context);
     auto* ip = reinterpret_cast<uint8_t*>(data);
-    std::copy(ip, ip + size, op);
+    op->resize(size);
+    std::copy(ip, ip + size, op->data());
 }
 
 std::vector<uint8_t> stb_encode_png(
@@ -14,10 +15,10 @@ std::vector<uint8_t> stb_encode_png(
     int height,
     int nchannels)
 {
-    std::vector<uint8_t> result(width * height * nchannels);
+    std::vector<uint8_t> result;
     if (stbi_write_png_to_func(
         my_stbi_write_func,
-        result.data(),
+        &result,
         width,
         height,
         nchannels,
