@@ -484,12 +484,13 @@ int main(int argc, char** argv) {
         ParticleResources particle_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
-            render_config.anisotropic_filtering_level };
-        auto rrg = RenderingContextGuard::root(
-            scene_node_resources,
-            particle_resources,
-            rendering_resources,
-            0);
+            16 };
+        RenderingContext primary_rendering_context{
+            .scene_node_resources = scene_node_resources,
+            .particle_resources = particle_resources,
+            .rendering_resources = rendering_resources,
+            .z_order = 0 };
+        RenderingContextGuard rcg{ primary_rendering_context };
         AggregateRendererGuard aggregate_renderer_guard{
             std::make_shared<AggregateArrayRenderer>(rendering_resources),
             std::make_shared<AggregateArrayRenderer>(rendering_resources)};

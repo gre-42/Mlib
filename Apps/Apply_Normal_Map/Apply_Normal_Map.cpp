@@ -96,13 +96,13 @@ int main(int argc, char** argv) {
         ParticleResources particle_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
-            render_config.anisotropic_filtering_level
-        };
-        auto rrg = RenderingContextGuard::root(
-            scene_node_resources,
-            particle_resources,
-            rendering_resources,
-            0);
+            16 };
+        RenderingContext primary_rendering_context{
+            .scene_node_resources = scene_node_resources,
+            .particle_resources = particle_resources,
+            .rendering_resources = rendering_resources,
+            .z_order = 0 };
+        RenderingContextGuard rcg{ primary_rendering_context };
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ delete_node_mutex, nullptr };
         std::string light_configuration = args.named_value("--light_configuration", "one");

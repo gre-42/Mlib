@@ -95,9 +95,6 @@ void test_physics_engine(unsigned int seed) {
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{physics_cfg};
 
-    RenderingResources rendering_resources{
-        "primary_rendering_resources",
-        16 };
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
     DeleteNodeMutex delete_node_mutex;
@@ -110,11 +107,15 @@ void test_physics_engine(unsigned int seed) {
     SmokeParticleGenerator smoke_particle_generator{scene, scene_node_resources};
     ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
     pe.set_contact_smoke_generator(contact_smoke_generator);
-    auto rrg = RenderingContextGuard::root(
-        scene_node_resources,
-        particle_resources,
-        rendering_resources,
-        0 /* z_order */);
+    RenderingResources rendering_resources{
+        "primary_rendering_resources",
+        16 };
+    RenderingContext primary_rendering_context{
+        .scene_node_resources = scene_node_resources,
+        .particle_resources = particle_resources,
+        .rendering_resources = rendering_resources,
+        .z_order = 0};
+    RenderingContextGuard rcg{ primary_rendering_context };
 
     SelectedCameras selected_cameras{scene};
     auto scene_name = std::string{getenv_default("SCENE", "flat")};

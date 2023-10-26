@@ -63,11 +63,12 @@ int main(int argc, char** argv) {
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
-        auto rrg = RenderingContextGuard::root(
-            scene_node_resources,
-            particle_resources,
-            rendering_resources,
-            0);
+        RenderingContext primary_rendering_context{
+            .scene_node_resources = scene_node_resources,
+            .particle_resources = particle_resources,
+            .rendering_resources = rendering_resources,
+            .z_order = 0 };
+        RenderingContextGuard rcg{ primary_rendering_context };
         render_height_map(
             render,
             color,
