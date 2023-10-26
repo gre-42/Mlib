@@ -1264,9 +1264,9 @@ void RenderingResources::initialize_non_dds_texture(
     CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
     {
 #ifdef __ANDROID__
-        size_t nchannels = (size_t)si.nrChannels;
+        auto nchannels = (size_t)si.nrChannels;
 #else
-        size_t nchannels = (size_t)descriptor.color_mode;
+        auto nchannels = (size_t)descriptor.color_mode;
 #endif
         CHK(glTexImage2D(GL_TEXTURE_2D,
             0,
