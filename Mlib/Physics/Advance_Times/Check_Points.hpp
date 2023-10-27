@@ -67,6 +67,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     TrackReader track_reader_;
+    size_t nlaps_;
     std::string asset_id_;
     std::vector<DanglingPtr<SceneNode>> moving_nodes_;
     std::vector<AbsoluteMovable*> movings_;

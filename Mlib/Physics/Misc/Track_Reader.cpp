@@ -52,10 +52,8 @@ bool TrackReader::read(double& progress) {
                 if (finished()) {
                     return false;
                 } else {
-                    if (nlaps_remaining_ > 1) {
-                        ++lap_id_;
-                    }
                     if ((nlaps_remaining_ != SIZE_MAX) && (nlaps_remaining_ > 0)) {
+                        ++lap_id_;
                         --nlaps_remaining_;
                     }
                     if (finished()) {

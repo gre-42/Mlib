@@ -54,6 +54,7 @@ CheckPoints::CheckPoints(
     TrackElementInterpolationKey::METERS_TO_START,
     TrackReaderInterpolationMode::NEAREST_NEIGHBOR,
     1},
+  nlaps_{nlaps},
   asset_id_{std::move(asset_id)},
   moving_nodes_{std::move(moving_nodes)},
   resource_name_{resource_name},
@@ -194,8 +195,8 @@ void CheckPoints::advance_time(float dt) {
     }
 
     if (!checkpoints_ahead_.empty()) {
-        lap_index_ = checkpoints_ahead_.front().lap_index;
         if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
+            lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
                 checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
@@ -203,7 +204,7 @@ void CheckPoints::advance_time(float dt) {
             checkpoints_ahead_.pop_front();
         }
         if ((!checkpoints_ahead_.empty() && (lap_index_ == lap_times_seconds_.size() + 1)) ||
-            (checkpoints_ahead_.empty() && (lap_index_ == lap_times_seconds_.size())))
+            (checkpoints_ahead_.empty() && (lap_index_ == nlaps_)))
         {
             linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
