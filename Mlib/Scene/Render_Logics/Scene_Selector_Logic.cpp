@@ -14,9 +14,11 @@ using namespace Mlib;
 
 SceneEntryContents::SceneEntryContents(
     const std::vector<SceneEntry>& scene_entries,
-    const NotifyingJsonMacroArguments& substitutions)
+    const NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references)
 : scene_entries_{scene_entries},
-  substitutions_{substitutions}
+  substitutions_{substitutions},
+  asset_references_{asset_references}
 {}
 
 size_t SceneEntryContents::num_entries() const {
@@ -26,7 +28,7 @@ size_t SceneEntryContents::num_entries() const {
 bool SceneEntryContents::is_visible(size_t index) const {
     auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : scene_entries_[index].requires_) {
-        if (!eval<bool>(r, variables)) {
+        if (!eval<bool>(r, variables, asset_references_)) {
             return false;
         }
     }
@@ -42,6 +44,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
     NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references,
     ThreadSafeString& next_scene_filename,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
@@ -50,7 +53,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     ttf_filename,
     FixedArray<float, 3>{1.f, 1.f, 1.f})},
   scene_files_{ std::move(scene_files) },
-  contents_{scene_files_, substitutions},
+  contents_{scene_files_, substitutions, asset_references},
   widget_{std::move(widget)},
   font_height_{font_height},
   line_distance_{line_distance},

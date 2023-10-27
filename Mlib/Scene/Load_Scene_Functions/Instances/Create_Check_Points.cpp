@@ -39,6 +39,7 @@ DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(height_changed);
 DECLARE_ARGUMENT(track_filename);
 DECLARE_ARGUMENT(track);
+DECLARE_ARGUMENT(circular);
 DECLARE_ARGUMENT(laps);
 DECLARE_ARGUMENT(pacenotes_filename);
 DECLARE_ARGUMENT(pacenotes_meters_ahead);
@@ -95,6 +96,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         moving_nodes.push_back(scene.get_node(p + suffix, DP_LOC).ptr());
     }
     auto on_finish = args.arguments.at(KnownArgs::on_finish);
+    size_t nframes = args.arguments.at<bool>(KnownArgs::circular) ? 1 : 0;
     size_t nlaps = args.arguments.at<size_t>(KnownArgs::laps);
     if (args.arguments.contains_non_null(KnownArgs::track_filename) ==
         args.arguments.contains_non_null(KnownArgs::track))
@@ -110,6 +112,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto check_points = std::make_unique<CheckPoints>(
         std::move(sequence),
+        nframes,
         nlaps,
         scene_node_resources.get_geographic_mapping("world.inverse"),
         physics_engine.advance_times_,

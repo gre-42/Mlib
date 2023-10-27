@@ -2,7 +2,6 @@
 #include <Mlib/Json/Json_View.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
-#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Regex/Match_Counter.hpp>
 #include <Mlib/Regex/Misc.hpp>
@@ -242,9 +241,9 @@ bool Mlib::eval<bool>(
 template <>
 bool Mlib::eval<bool>(
     const std::string& expression,
-    const JsonView& variables)
+    const JsonView& variables,
+    const AssetReferences& asset_references)
 {
-    AssetReferences asset_references;
     return eval<bool>(
         expression,
         variables,

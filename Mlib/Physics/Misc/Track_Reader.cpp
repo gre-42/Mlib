@@ -9,22 +9,26 @@ using namespace Mlib;
 
 TrackReader::TrackReader(
     std::unique_ptr<ITrackElementSequence>&& sequence,
+    size_t nframes,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     TrackElementInterpolationKey interpolation_key,
+    TrackReaderInterpolationMode interpolation_mode,
     size_t ntransformations)
 : sequence_{std::move(sequence)},
   frame_id_{0},
   lap_id_{0},
+  nframes_remaining_{nframes},
   nlaps_remaining_{nlaps},
   inverse_geographic_mapping_{inverse_geographic_mapping},
   interpolation_key_{interpolation_key},
+  interpolation_mode_{interpolation_mode},
   ntransformations_{ntransformations},
   track_element0_{std::nullopt},
   track_element1_{std::nullopt}
 {
-    if (nlaps == 0) {
-        THROW_OR_ABORT("Number of laps must be at least 1");
+    if (finished()) {
+        THROW_OR_ABORT("Number of frames or number of laps must be at least 1");
     }
 }
 
@@ -35,21 +39,26 @@ bool TrackReader::read(double& progress) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
     if (!sequence_->eof()) {
-        while(!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress))
+        while (!finished() && (!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress)))
         {
             if (track_element1_.has_value()) {
                 track_element0_ = track_element1_;
             }
             track_element1_ = sequence_->read(track_element1_, *inverse_geographic_mapping_, ntransformations_);
+            if ((nframes_remaining_ != SIZE_MAX) && (nlaps_remaining_ == 0)) {
+                --nframes_remaining_;
+            }
             if (sequence_->eof()) {
-                if (nlaps_remaining_ == 0) {
+                if (finished()) {
                     return false;
                 } else {
-                    ++lap_id_;
-                    if (nlaps_remaining_ != SIZE_MAX) {
+                    if (nlaps_remaining_ > 1) {
+                        ++lap_id_;
+                    }
+                    if ((nlaps_remaining_ != SIZE_MAX) && (nlaps_remaining_ > 0)) {
                         --nlaps_remaining_;
                     }
-                    if (nlaps_remaining_ == 0) {
+                    if (finished()) {
                         return false;
                     }
                     if (!track_element1_.has_value()) {
@@ -80,6 +89,11 @@ bool TrackReader::read(double& progress) {
                 (track_element1_.value().progress(interpolation_key_) - track_element0_.value().progress(interpolation_key_)));
             assert_true(alpha >= 0);
             assert_true(alpha <= 1);
+            if (interpolation_mode_ == TrackReaderInterpolationMode::NEAREST_NEIGHBOR) {
+                alpha = std::round(alpha);
+            } else if (interpolation_mode_ != TrackReaderInterpolationMode::LINEAR) {
+                THROW_OR_ABORT("Unknown track-reader interpolation-mode");
+            }
             track_element_ = interpolated(track_element0_.value(), track_element1_.value(), alpha);
         }
         return true;
@@ -87,6 +101,6 @@ bool TrackReader::read(double& progress) {
     return false;
 }
 
-bool TrackReader::eof() const {
-    return (nlaps_remaining_ == 0) && sequence_->eof();
+bool TrackReader::finished() const {
+    return (nframes_remaining_ == 0) && (nlaps_remaining_ == 0);
 }

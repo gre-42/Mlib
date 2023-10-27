@@ -56,9 +56,24 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         FixedArray<float, 2> minimap_offset{
             ini_parser.get<float>("PARAMETERS", "X_OFFSET"),
             ini_parser.get<float>("PARAMETERS", "Z_OFFSET")};
+        bool circular;
+        auto run = jv.at<std::string>("run");
+        std::transform(run.begin(), run.end(), run.begin(),
+            [](unsigned char c){ return std::tolower(c); });
+        if ((run == "point to point") ||
+            (run == "point-to-point") ||
+            (run == "drift!") ||
+            (run == "drift") ||
+            (run == "downhill"))
+        {
+            circular = false;
+        } else if (run == "clockwise") {
+            circular = true;
+        } else {
+            THROW_OR_ABORT("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
+        }
         auto globals = JsonMacroArguments({
             {"LEVEL_ICON_FILE", preview_filename.string()},
-            {"IF_RACEWAY_CIRCULAR", false},
             {"STAGE_INI_FILENAME", stage_filename.string()},
             {"MINIMAP_FILE", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
                 ? nlohmann::json(minimap_filename.string())
@@ -66,12 +81,15 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"MINIMAP_SIZE", minimap_size},
             {"MINIMAP_OFFSET", minimap_offset}});
+        auto database = JsonMacroArguments(nlohmann::json{
+            {"IF_RACEWAY_CIRCULAR", circular}});
         auto required = std::vector<std::string>({"%GAME_MODE == 'rally'"});
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
                 .id = level_id,
                 .title = jv.at<std::string>("name"),
                 .globals = std::move(globals),
+                .database = std::move(database),
                 .required = std::move(required)
             },
             .filename = script_filename_});

@@ -14,6 +14,7 @@ struct SubmenuHeader;
 class ButtonPress;
 class ThreadSafeString;
 class NotifyingJsonMacroArguments;
+class AssetReferences;
 class IWidget;
 class ILayoutPixels;
 class RenderLogicGallery;
@@ -25,6 +26,7 @@ public:
     explicit SubmenuHeaderContents(
         const std::vector<SubmenuHeader>& options,
         const NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references,
         UiFocus& ui_focus);
 
     // IListViewContents
@@ -33,6 +35,7 @@ public:
 private:
     const std::vector<SubmenuHeader>& options_;
     const NotifyingJsonMacroArguments& substitutions_;
+    const AssetReferences& asset_references_;
     UiFocus& ui_focus_;
 };
 
@@ -50,6 +53,7 @@ public:
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
         ButtonPress& button_press,

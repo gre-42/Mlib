@@ -144,6 +144,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             for (const auto& [_, node] : kn5.nodes) {
                 nodes[node.name] = &node;
             }
+            // No periodic extension by default.
             {
                 auto it = nodes.find("AC_PIT_0");
                 if (it != nodes.end()) {
@@ -167,6 +168,26 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 finish_l->second->hmatrix.casted<float, double>(),
                                 finish_r->second->hmatrix.casted<float, double>())});
                     }
+                }
+            }
+            {
+                // https://assettocorsamods.net/threads/build-your-first-track-basic-guide.12/
+                std::list<TransformationMatrix<float, double, 3>> checkpoints;
+                for (size_t i = 0; ; ++i) {
+                    auto time_l = nodes.find("AC_TIME_" + std::to_string(i) + "_L");
+                    auto time_r = nodes.find("AC_TIME_" + std::to_string(i) + "_R");
+                    if ((time_l == nodes.end()) || (time_r == nodes.end())) {
+                        break;
+                    }
+                    checkpoints.push_back(ac_waypoint(
+                        time_l->second->hmatrix.casted<float, double>(),
+                        time_r->second->hmatrix.casted<float, double>()));
+                }
+                if (checkpoints.empty()) {
+                    race_logic->set_circularity(false);
+                } else {
+                    race_logic->set_checkpoints(std::vector(checkpoints.begin(), checkpoints.end()));
+                    race_logic->set_circularity(true);
                 }
             }
             {

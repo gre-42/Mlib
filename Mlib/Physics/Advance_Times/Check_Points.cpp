@@ -24,6 +24,7 @@ using namespace Mlib;
 
 CheckPoints::CheckPoints(
     std::unique_ptr<ITrackElementSequence>&& sequence,
+    size_t nframes,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
     AdvanceTimes& advance_times,
@@ -45,7 +46,14 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& deselection_emissivity,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
-  track_reader_{std::move(sequence), nlaps, inverse_geographic_mapping, TrackElementInterpolationKey::METERS_TO_START, 1},
+  track_reader_{
+    std::move(sequence),
+    nframes,
+    nlaps,
+    inverse_geographic_mapping,
+    TrackElementInterpolationKey::METERS_TO_START,
+    TrackReaderInterpolationMode::NEAREST_NEIGHBOR,
+    1},
   asset_id_{std::move(asset_id)},
   moving_nodes_{std::move(moving_nodes)},
   resource_name_{resource_name},
@@ -130,40 +138,47 @@ void CheckPoints::advance_time(float dt) {
         te.transformations.push_back(OffsetAndTaitBryanAngles<float, double, 3>{am.R(), am.t()});;
     }
     movable_track_.push_back(te);
-    while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.eof())) {
-        if (track_reader_.read(progress_)) {
-            progress_ += distance_ / meters;
-            checkpoints_ahead_.push_back(CheckPointPose{
-                .track_element = track_reader_.track_element(),
-                .lap_index = track_reader_.lap_id()});
-            if (i01_ == beacon_nodes_.size()) {
-                auto node = make_dunique<SceneNode>();
-                node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
-                auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
-                    .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
-                    .beacon_node = node.get(DP_LOC)});
-                scene_node_resources_.instantiate_renderable(
-                    resource_name_,
-                    InstantiationOptions{
-                        .rendering_resources = rendering_resources_,
-                        .instance_name = "beacon",
-                        .scene_node = node.ref(DP_LOC),
-                        .renderable_resource_filter = RenderableResourceFilter{}});
-                node->clearing_observers.add(*this);
-                scene_.add_root_node(beacon_info.beacon_node_name, std::move(node));
-            } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
-                beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
-            }
-            beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
-            checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
-            beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
-            const auto& t = track_reader_.track_element().transformation();
-            beacon_nodes_[i01_].beacon_node->set_relative_pose(
-                t.position(),
-                t.rotation(),
-                1);
-            i01_ = (i01_ + 1) % nbeacons_;
+    while ((checkpoints_ahead_.size() < nahead_) && (!track_reader_.finished())) {
+        auto old_progress = track_reader_.has_value()
+            ? track_reader_.progress()
+            : NAN;
+        if (!track_reader_.read(progress_)) {
+            break;
         }
+        progress_ += distance_ / meters;
+        if (!std::isnan(old_progress) && (track_reader_.progress() == old_progress)) {
+            continue;
+        }
+        checkpoints_ahead_.push_back(CheckPointPose{
+            .track_element = track_reader_.track_element(),
+            .lap_index = track_reader_.lap_id()});
+        if (i01_ == beacon_nodes_.size()) {
+            auto node = make_dunique<SceneNode>();
+            node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
+            auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
+                .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
+                .beacon_node = node.get(DP_LOC)});
+            scene_node_resources_.instantiate_renderable(
+                resource_name_,
+                InstantiationOptions{
+                    .rendering_resources = rendering_resources_,
+                    .instance_name = "beacon",
+                    .scene_node = node.ref(DP_LOC),
+                    .renderable_resource_filter = RenderableResourceFilter{}});
+            node->clearing_observers.add(*this);
+            scene_.add_root_node(beacon_info.beacon_node_name, std::move(node));
+        } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
+            beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
+        }
+        beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
+        checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
+        beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
+        const auto& t = track_reader_.track_element().transformation();
+        beacon_nodes_[i01_].beacon_node->set_relative_pose(
+            t.position(),
+            t.rotation(),
+            1);
+        i01_ = (i01_ + 1) % nbeacons_;
     }
 
     if (enable_height_changed_mode_) {

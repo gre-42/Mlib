@@ -16,12 +16,14 @@ class IWidget;
 class ILayoutPixels;
 struct ReplacementParameter;
 class NotifyingJsonMacroArguments;
+class AssetReferences;
 
 class ReplacementParameterContents: public IListViewContents {
 public:
     explicit ReplacementParameterContents(
         const std::vector<ReplacementParameter>& options,
-        const NotifyingJsonMacroArguments& substitutions);
+        const NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references);
 
     // IListViewContents
     virtual size_t num_entries() const override;
@@ -29,6 +31,7 @@ public:
 private:
     const std::vector<ReplacementParameter>& options_;
     const NotifyingJsonMacroArguments& substitutions_;
+    const AssetReferences& asset_references_;
 };
 
 class ParameterSetterLogic: public RenderLogic {
@@ -42,6 +45,7 @@ public:
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
         NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,
         const std::function<void()>& on_change = [](){});

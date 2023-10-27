@@ -90,6 +90,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
         args.external_json_macro_arguments,
+        args.asset_references,
         args.next_scene_filename,
         button_press,
         args.ui_focus.selection_ids.at(id),

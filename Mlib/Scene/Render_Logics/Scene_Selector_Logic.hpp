@@ -17,6 +17,7 @@ class JsonMacroArguments;
 class IWidget;
 class ILayoutPixels;
 class NotifyingJsonMacroArguments;
+class AssetReferences;
 
 struct SceneEntry {
     std::string name;
@@ -32,7 +33,8 @@ class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
         const std::vector<SceneEntry>& scene_entries,
-        const NotifyingJsonMacroArguments& substitutions);
+        const NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references);
 
     // IListViewContents
     virtual size_t num_entries() const override;
@@ -40,6 +42,7 @@ public:
 private:
     const std::vector<SceneEntry>& scene_entries_;
     const NotifyingJsonMacroArguments& substitutions_;
+    const AssetReferences& asset_references_;
 };
 
 class SceneSelectorLogic: public RenderLogic {
@@ -53,6 +56,7 @@ public:
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
         NotifyingJsonMacroArguments& substitutions,
+        const AssetReferences& asset_references,
         ThreadSafeString& next_scene_filename,
         ButtonPress& button_press,
         std::atomic_size_t& selection_index,

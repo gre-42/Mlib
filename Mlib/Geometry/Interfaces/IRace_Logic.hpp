@@ -13,6 +13,7 @@ public:
         unsigned int rank) = 0;
     virtual void set_checkpoints(
         const std::vector<TransformationMatrix<float, double, 3>>& checkpoints) = 0;
+    virtual void set_circularity(bool is_circular) = 0;
 };
 
 }

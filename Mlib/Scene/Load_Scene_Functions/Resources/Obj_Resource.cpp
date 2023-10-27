@@ -125,6 +125,11 @@ public:
             asset_id_,
             JsonMacroArguments{{{"CHECKPOINTS", std::move(global_checkpoints)}}});
     }
+    virtual void set_circularity(bool is_circular) {
+        if (asset_references_["levels"].at(asset_id_).rp.database.at<bool>("IF_RACEWAY_CIRCULAR") != is_circular) {
+            THROW_OR_ABORT("Inconsistent raceway circularity in level \"" + asset_id_ + '"');
+        }
+    }
 private:
     AssetReferences& asset_references_;
     std::string asset_id_;

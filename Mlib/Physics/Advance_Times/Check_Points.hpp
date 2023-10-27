@@ -37,6 +37,7 @@ class CheckPoints: public DestructionObserver<DanglingRef<const SceneNode>>, pub
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,
+        size_t nframes,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
         AdvanceTimes& advance_times,

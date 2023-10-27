@@ -21,9 +21,11 @@ using namespace Mlib;
 SubmenuHeaderContents::SubmenuHeaderContents(
     const std::vector<SubmenuHeader>& options,
     const NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references,
     UiFocus& ui_focus)
 : options_{options},
   substitutions_{substitutions},
+  asset_references_{asset_references},
   ui_focus_{ui_focus}
 {}
     
@@ -35,7 +37,7 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
     auto variables = substitutions_.json_macro_arguments();
     const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
     for (const auto& r : requires_) {
-        if (!eval<bool>(r, variables)) {
+        if (!eval<bool>(r, variables, asset_references_)) {
             return false;
         }
     }
@@ -54,6 +56,7 @@ TabMenuLogic::TabMenuLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
     ButtonPress& button_press,
@@ -65,7 +68,7 @@ TabMenuLogic::TabMenuLogic(
     ttf_filename,
     FixedArray<float, 3>{1.f, 1.f, 1.f})},
   options_{options},
-  contents_{options, substitutions, ui_focus},
+  contents_{options, substitutions, asset_references, ui_focus},
   gallery_{gallery},
   list_view_style_{list_view_style},
   selection_marker_{selection_marker},

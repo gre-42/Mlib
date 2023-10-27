@@ -12,6 +12,9 @@ class MacroLineExecutor;
 class AssetGroupReplacementParameters;
 
 class AssetReferences {
+    AssetReferences(const AssetReferences&) = delete;
+    AssetReferences& operator = (const AssetReferences&) = delete;
+
 public:
     AssetReferences();
     ~AssetReferences();

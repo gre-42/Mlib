@@ -27,6 +27,7 @@ T eval(
 template <class T>
 T eval(
     const std::string& expression,
-    const JsonView& variables);
+    const JsonView& variables,
+    const AssetReferences& asset_references);
 
 }

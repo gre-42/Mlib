@@ -14,9 +14,11 @@ using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const NotifyingJsonMacroArguments& substitutions)
+    const NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references)
 : options_{options},
-  substitutions_{substitutions}
+  substitutions_{substitutions},
+  asset_references_{asset_references}
 {}
 
 size_t ReplacementParameterContents::num_entries() const {
@@ -26,7 +28,7 @@ size_t ReplacementParameterContents::num_entries() const {
 bool ReplacementParameterContents::is_visible(size_t index) const {
     auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : options_[index].required) {
-        if (!eval<bool>(r, variables)) {
+        if (!eval<bool>(r, variables, asset_references_)) {
             return false;
         }
     }
@@ -42,11 +44,12 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
     NotifyingJsonMacroArguments& substitutions,
+    const AssetReferences& asset_references,
     ButtonPress& button_press,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
-  contents_{options_, substitutions},
+  contents_{options_, substitutions, asset_references},
   renderable_text_{std::make_unique<TextResource>(
     ttf_filename,
     FixedArray<float, 3>{1.f, 1.f, 1.f})},

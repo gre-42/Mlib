@@ -19,7 +19,7 @@ RigidBodyPlayback::RigidBodyPlayback(
   focuses_{focuses},
   speedup_{speedup},
   progress_{0.},
-  track_reader_{std::move(sequence), 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, ntransformations}  // 1 = nlaps
+  track_reader_{std::move(sequence), 0, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, TrackReaderInterpolationMode::LINEAR, ntransformations}  // 1 = nlaps
 {
     playback_objects_.resize(ntransformations);
 }

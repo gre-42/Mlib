@@ -91,6 +91,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
         args.external_json_macro_arguments,
+        args.asset_references,
         button_press,
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {
