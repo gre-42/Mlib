@@ -292,7 +292,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                     tl.material.blend_mode = cfg.blend_mode;
                 } else {
-                    if ((material.ksAlphaRef != 0.f) && (material.ksAlphaRef != 1.f)) {
+                    if ((material.ksAlphaRef.value_or_default() != 0.f) && (material.ksAlphaRef.value_or_default() != 1.f)) {
                         tl.material.occluded_pass = ExternalRenderPassType::NONE;
                         tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
                     } else {
@@ -320,13 +320,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
                     }
                 }
-                tl.material.emissivity = OrderableFixedArray{cfg.emissivity_factor * material.ksEmissive};
-                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient * lit_mult};
-                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse * lit_mult};
-                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular * lit_mult * specular_mult};
-                tl.material.specular_exponent = material.ksSpecularEXP;
-                if ((material.useDetail != 0.f) &&
-                    (material.detailUVMultiplier != 0.f) &&
+                tl.material.emissivity = OrderableFixedArray{cfg.emissivity_factor * material.ksEmissive.value_or_default()};
+                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient.value_or_default() * lit_mult};
+                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse.value_or_default() * lit_mult};
+                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular.value_or_default() * lit_mult * specular_mult};
+                tl.material.specular_exponent = material.ksSpecularEXP.value_or_default();
+                if ((material.useDetail.value_or_default() != 0.f) &&
+                    (material.detailUVMultiplier.value_or_default() != 0.f) &&
                     !material.txDiffuse.empty() &&
                     !material.txDetail1.empty())
                 {
@@ -340,14 +340,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .texture_descriptor = {
                             .color = {.filename = material.txDetail1},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                        .scale = material.detailUVMultiplier,
+                        .scale = material.detailUVMultiplier.value_or_default(),
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL});
                     tl.material.compute_color_mode();
                 } else if (
                     !material.txDiffuse.empty() &&
                     !material.txMask.empty() &&
-                    (material.detailUVMultiplier != 0.f) &&
+                    (material.detailUVMultiplier.value_or_default() != 0.f) &&
                     ((material.shader == "ksMultilayer") ||
                      (material.shader == "ksMultilayer_fresnel_nm")))
                 {
@@ -356,7 +356,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {.filename = material.txDiffuse},
                             .normal = {.filename = material.txNormal},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                        .weight = material.magicMult,
+                        .weight = material.magicMult.value_or_default(),
                         .role = BlendMapRole::DETAIL_BASE}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail4(i).empty() ||

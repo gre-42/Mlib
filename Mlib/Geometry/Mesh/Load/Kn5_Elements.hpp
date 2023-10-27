@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Optional.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <cstdint>
@@ -33,20 +34,24 @@ struct kn5Material
     kn5BlendMode blendMode;
     bool alphaTested;
     kn5MaterialDepthMode depthMode;
-    float ksEmissive = 0.f;
-    float ksAmbient = 0.6f;
-    float ksDiffuse = 0.6f;
-    float ksSpecular = 0.5f;
-    float ksSpecularEXP = 50.0f;
-    float ksAlphaRef = 0.f;
-    float diffuseMult = 1.0f;
-    float normalMult = 1.0f;
-    float useDetail = 0.0f;
-    float detailUVMultiplier = 1.f;
-    FixedArray<float, 4> mult = {1.f, 1.f, 1.f, 1.f};
-    float detailNMMult = 1.f;
-    float magicMult = 1.f;
-    float fresnelMaxLevel = 0.f;
+    DefaultOptional<float> ksEmissive         = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> ksAmbient          = DefaultOptional<float>::from_default(0.6f);
+    DefaultOptional<float> ksDiffuse          = DefaultOptional<float>::from_default(0.6f);
+    DefaultOptional<float> ksSpecular         = DefaultOptional<float>::from_default(0.5f);
+    DefaultOptional<float> ksSpecularEXP      = DefaultOptional<float>::from_default(50.0f);
+    DefaultOptional<float> ksAlphaRef         = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> diffuseMult        = DefaultOptional<float>::from_default(1.0f);
+    DefaultOptional<float> normalMult         = DefaultOptional<float>::from_default(1.0f);
+    DefaultOptional<float> useDetail          = DefaultOptional<float>::from_default(0.0f);
+    DefaultOptional<float> detailUVMultiplier = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> multR              = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> multG              = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> multB              = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> multA              = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> detailNMMult       = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> magicMult          = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> fresnelMaxLevel    = DefaultOptional<float>::from_default(0.f);
+    float mult(size_t i) const;
 
     std::string txDiffuse;
     std::string txNormal;

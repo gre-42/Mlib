@@ -78,64 +78,77 @@ void Mlib::save_kn5(
             WriteBinary<uint8_t>(*f, (uint8_t)44, "unknown 2");
         }
 
-        std::map<std::string, float> floats{
-            { "ksEmissive", m.ksEmissive },
-            { "ksAmbient", m.ksAmbient },
-            { "ksDiffuse", m.ksDiffuse },
-            { "ksSpecular", m.ksSpecular },
-            { "ksSpecularEXP", m.ksSpecularEXP },
-            { "ksAlphaRef", m.ksAlphaRef },
-            { "diffuseMult", m.diffuseMult },
-            { "normalMult", m.normalMult },
-            { "useDetail", m.useDetail },
-            { "detailUVMultiplier", m.detailUVMultiplier },
-            { "multR", m.mult(0) },
-            { "multG", m.mult(1) },
-            { "multB", m.mult(2) },
-            { "multA", m.mult(3) },
-            { "detailNMMult", m.detailNMMult },
-            { "magicMult", m.magicMult },
-            { "fresnelMaxLevel", m.fresnelMaxLevel } };
+        {
+            std::map<std::string, DefaultOptional<float>> floats{
+                { "ksEmissive", m.ksEmissive },
+                { "ksAmbient", m.ksAmbient },
+                { "ksDiffuse", m.ksDiffuse },
+                { "ksSpecular", m.ksSpecular },
+                { "ksSpecularEXP", m.ksSpecularEXP },
+                { "ksAlphaRef", m.ksAlphaRef },
+                { "diffuseMult", m.diffuseMult },
+                { "normalMult", m.normalMult },
+                { "useDetail", m.useDetail },
+                { "detailUVMultiplier", m.detailUVMultiplier },
+                { "multR", m.multR },
+                { "multG", m.multG },
+                { "multB", m.multB },
+                { "multA", m.multA },
+                { "detailNMMult", m.detailNMMult },
+                { "magicMult", m.magicMult },
+                { "fresnelMaxLevel", m.fresnelMaxLevel } };
 
-        WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(floats.size()), "#floats material");
+            for (auto it = floats.begin(); it != floats.end();) {
+                if (!it->second.has_value()) {
+                    floats.erase(it++);
+                }
+                else {
+                    ++it;
+                }
+            }
 
-        for (const auto& [n, v] : floats) {
-            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "float name");
-            WriteString(*f, n);
+            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(floats.size()), "#floats material");
 
-            WriteBinary<float>(*f, v, "float value");
+            for (const auto& [n, v] : floats) {
+                WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "float name");
+                WriteString(*f, n);
 
-            WriteVector(*f, std::vector<uint8_t>(36, (uint8_t)42));
-        }
+                WriteBinary<float>(*f, v.value(), "float value");
 
-        std::map<std::string, std::string> strings{
-            { "txDiffuse",m.txDiffuse },
-            { "txNormal",m.txNormal },
-            { "txMask",m.txMask},
-            { "txDetailR", m.txDetail4(0) },
-            { "txDetailG", m.txDetail4(1) },
-            { "txDetailB", m.txDetail4(2) },
-            { "txDetailA", m.txDetail4(3) },
-            { "txDetail", m.txDetail1 },
-            { "txDetailNM",m.txDetailNM} };
-
-        for (auto it = strings.begin(); it != strings.end();) {
-            if (it->second.empty()) {
-                strings.erase(it++);
-            } else {
-                ++it;
+                WriteVector(*f, std::vector<uint8_t>(36, (uint8_t)42));
             }
         }
 
-        WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(strings.size()), "#strings");
-        for (const auto& [n, v] : strings) {
-            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "string name length");
-            WriteString(*f, n);
+        {
+            std::map<std::string, std::string> strings{
+                { "txDiffuse",m.txDiffuse },
+                { "txNormal",m.txNormal },
+                { "txMask",m.txMask},
+                { "txDetailR", m.txDetail4(0) },
+                { "txDetailG", m.txDetail4(1) },
+                { "txDetailB", m.txDetail4(2) },
+                { "txDetailA", m.txDetail4(3) },
+                { "txDetail", m.txDetail1 },
+                { "txDetailNM",m.txDetailNM} };
 
-            WriteBinary<int32_t>(*f, 42, "sampler-slot");
+            for (auto it = strings.begin(); it != strings.end();) {
+                if (it->second.empty()) {
+                    strings.erase(it++);
+                } else {
+                    ++it;
+                }
+            }
 
-            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(v.length()), "string value length");
-            WriteString(*f, v);
+            WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(strings.size()), "#strings");
+            for (const auto& [n, v] : strings) {
+                WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(n.length()), "string name length");
+                WriteString(*f, n);
+
+                WriteBinary<int32_t>(*f, 42, "sampler-slot");
+
+                WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(v.length()), "string value length");
+                WriteString(*f, v);
+            }
         }
     }
 
