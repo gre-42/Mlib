@@ -403,13 +403,13 @@ void flip_blocks_dxtc5(DXTColBlock *line, unsigned int numBlocks) {
 ///////////////////////////////////////////////////////////////////////////////
 // default constructor
 CDDSImage::CDDSImage() :
-        m_format(0), m_components(0), m_type(TextureNone), m_valid(false) {
+        m_format(0), m_word_type(0), m_components(0), m_type(TextureNone), m_valid(false) {
 }
 
 CDDSImage::~CDDSImage() {
 }
 
-void CDDSImage::create_textureFlat(unsigned int format, unsigned int components, const CTexture &baseImage) {
+void CDDSImage::create_textureFlat(unsigned int format, unsigned int word_type, unsigned int components, const CTexture &baseImage) {
     assert(format != 0);
     assert(components != 0);
     assert(baseImage.get_depth() == 1);
@@ -418,6 +418,7 @@ void CDDSImage::create_textureFlat(unsigned int format, unsigned int components,
     clear();
 
     m_format = format;
+    m_word_type = word_type;
     m_components = components;
     m_type = TextureFlat;
 
@@ -426,7 +427,7 @@ void CDDSImage::create_textureFlat(unsigned int format, unsigned int components,
     m_valid = true;
 }
 
-void CDDSImage::create_texture3D(unsigned int format, unsigned int components, const CTexture &baseImage) {
+void CDDSImage::create_texture3D(unsigned int format, unsigned int word_type, unsigned int components, const CTexture &baseImage) {
     assert(format != 0);
     assert(components != 0);
     assert(baseImage.get_depth() > 1);
@@ -435,6 +436,7 @@ void CDDSImage::create_texture3D(unsigned int format, unsigned int components, c
     clear();
 
     m_format = format;
+    m_word_type = word_type;
     m_components = components;
     m_type = Texture3D;
 
@@ -454,7 +456,7 @@ inline bool same_size(const CTexture &a, const CTexture &b) {
     return true;
 }
 
-void CDDSImage::create_textureCubemap(unsigned int format, unsigned int components, const CTexture &positiveX, const CTexture &negativeX,
+void CDDSImage::create_textureCubemap(unsigned int format, unsigned int word_type, unsigned int components, const CTexture &positiveX, const CTexture &negativeX,
         const CTexture &positiveY, const CTexture &negativeY, const CTexture &positiveZ, const CTexture &negativeZ) {
     assert(format != 0);
     assert(components != 0);
@@ -471,6 +473,7 @@ void CDDSImage::create_textureCubemap(unsigned int format, unsigned int componen
     clear();
 
     m_format = format;
+    m_word_type = word_type;
     m_components = components;
     m_type = TextureCubemap;
 
@@ -532,14 +535,17 @@ void CDDSImage::load(istream& is, bool flipImage) {
         switch (ddsh.ddspf.dwFourCC) {
         case FOURCC_DXT1:
             m_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+            m_word_type = GL_UNSIGNED_BYTE;
             m_components = 3;
             break;
         case FOURCC_DXT3:
             m_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            m_word_type = GL_UNSIGNED_BYTE;
             m_components = 4;
             break;
         case FOURCC_DXT5:
             m_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            m_word_type = GL_UNSIGNED_BYTE;
             m_components = 4;
             break;
         default:
@@ -551,6 +557,7 @@ void CDDSImage::load(istream& is, bool flipImage) {
                ddsh.ddspf.dwBBitMask == 0x000000FF &&
                ddsh.ddspf.dwABitMask == 0xFF000000) {
         m_format = GL_BGRA_EXT;
+        m_word_type = GL_UNSIGNED_BYTE;
         m_components = 4;
     } else if (ddsh.ddspf.dwRGBBitCount == 32 &&
                ddsh.ddspf.dwRBitMask == 0x000000FF &&
@@ -558,22 +565,34 @@ void CDDSImage::load(istream& is, bool flipImage) {
                ddsh.ddspf.dwBBitMask == 0x00FF0000 &&
                ddsh.ddspf.dwABitMask == 0xFF000000) {
         m_format = GL_RGBA;
+        m_word_type = GL_UNSIGNED_BYTE;
         m_components = 4;
     } else if (ddsh.ddspf.dwRGBBitCount == 24 &&
                ddsh.ddspf.dwRBitMask == 0x000000FF &&
                ddsh.ddspf.dwGBitMask == 0x0000FF00 &&
                ddsh.ddspf.dwBBitMask == 0x00FF0000) {
         m_format = GL_RGB;
+        m_word_type = GL_UNSIGNED_BYTE;
         m_components = 3;
     } else if (ddsh.ddspf.dwRGBBitCount == 24 &&
                ddsh.ddspf.dwRBitMask == 0x00FF0000 &&
                ddsh.ddspf.dwGBitMask == 0x0000FF00 &&
                ddsh.ddspf.dwBBitMask == 0x000000FF) {
         m_format = GL_BGR_EXT;
+        m_word_type = GL_UNSIGNED_BYTE;
         m_components = 3;
     } else if (ddsh.ddspf.dwRGBBitCount == 8) {
         m_format = GL_RED;
+        m_word_type = GL_UNSIGNED_BYTE;
         m_components = 1;
+    } else if (ddsh.ddspf.dwRGBBitCount == 16 &&
+               ddsh.ddspf.dwRBitMask == 0x00007C00 &&
+               ddsh.ddspf.dwGBitMask == 0x000003E0 &&
+               ddsh.ddspf.dwBBitMask == 0x0000001F &&
+               ddsh.ddspf.dwABitMask == 0x00008000) {
+        m_format = GL_BGRA_EXT;
+        m_word_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+        m_components = 4;
     } else {
         throw runtime_error("unknow texture format");
     }
@@ -716,6 +735,9 @@ void CDDSImage::save(const std::string& filename, bool flipImage) {
             ddsh.ddspf.dwFourCC = FOURCC_DXT5;
     } else {
         ddsh.ddspf.dwFlags = (m_components == 4) ? DDSF_RGBA : DDSF_RGB;
+        if (m_word_type == GL_UNSIGNED_SHORT_1_5_5_5_REV) {
+            throw runtime_error("Saving GL_UNSIGNED_SHORT_1_5_5_5_REV not yet supported");
+        }
         ddsh.ddspf.dwRGBBitCount = m_components * 8;
         ddsh.ddspf.dwRBitMask = 0x00ff0000;
         ddsh.ddspf.dwGBitMask = 0x0000ff00;
@@ -782,6 +804,7 @@ void CDDSImage::save(const std::string& filename, bool flipImage) {
 // free image memory
 void CDDSImage::clear() {
     m_components = 0;
+    m_word_type = 0;
     m_format = 0;
     m_type = TextureNone;
     m_valid = false;
@@ -817,13 +840,13 @@ void CDDSImage::upload_texture1D() {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         }
 
-        glTexImage1D(GL_TEXTURE_1D, 0, m_components, baseImage.get_width(), 0, m_format, GL_UNSIGNED_BYTE, baseImage);
+        glTexImage1D(GL_TEXTURE_1D, 0, m_components, baseImage.get_width(), 0, m_format, word_type(), baseImage);
 
         // load all mipmaps
         for (unsigned int i = 0; i < baseImage.get_num_mipmaps(); i++) {
             const CSurface &mipmap = baseImage.get_mipmap(i);
 
-            glTexImage1D(GL_TEXTURE_1D, i + 1, m_components, mipmap.get_width(), 0, m_format, GL_UNSIGNED_BYTE, mipmap);
+            glTexImage1D(GL_TEXTURE_1D, i + 1, m_components, mipmap.get_width(), 0, m_format, word_type(), mipmap);
         }
 
         if (alignment != -1)
@@ -981,7 +1004,11 @@ inline unsigned int CDDSImage::size_dxtc(unsigned int width, unsigned int height
 ///////////////////////////////////////////////////////////////////////////////
 // calculates size of uncompressed RGB texture in bytes
 inline unsigned int CDDSImage::size_rgb(unsigned int width, unsigned int height) {
-    return width * height * m_components;
+    if (m_word_type == GL_UNSIGNED_SHORT_1_5_5_5_REV) {
+        return width * height * 2;
+    } else {
+        return width * height * m_components;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

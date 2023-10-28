@@ -17,12 +17,14 @@ enum TextureType {
 };
 
 #ifdef NV_DDS_NO_GL_SUPPORT
+    #define GL_UNSIGNED_BYTE                  0x1401
     #define GL_RED                            0x1903
     #define GL_RGB                            0x1907
     #define GL_RGBA                           0x1908
     #define GL_LUMINANCE                      0x1909
     #define GL_BGR_EXT                        0x80E0
     #define GL_BGRA_EXT                       0x80E1
+    #define GL_UNSIGNED_SHORT_1_5_5_5_REV     0x8366
 #endif
 
 class CSurface {
@@ -105,9 +107,9 @@ public:
     CDDSImage();
     ~CDDSImage();
 
-    void create_textureFlat(unsigned int format, unsigned int components, const CTexture &baseImage);
-    void create_texture3D(unsigned int format, unsigned int components, const CTexture &baseImage);
-    void create_textureCubemap(unsigned int format, unsigned int components, const CTexture &positiveX, const CTexture &negativeX, const CTexture &positiveY,
+    void create_textureFlat(unsigned int format, unsigned int components, unsigned int word_size, const CTexture &baseImage);
+    void create_texture3D(unsigned int format, unsigned int components, unsigned int word_size, const CTexture &baseImage);
+    void create_textureCubemap(unsigned int format, unsigned int components, unsigned int word_size, const CTexture &positiveX, const CTexture &negativeX, const CTexture &positiveY,
             const CTexture &negativeY, const CTexture &positiveZ, const CTexture &negativeZ);
 
     void clear();
@@ -196,6 +198,9 @@ public:
         return m_images[layer];
     }
 
+    unsigned int word_type() const {
+        return m_word_type;
+    }
     unsigned int get_components() {
         return m_components;
     }
@@ -243,6 +248,7 @@ private:
     void write_texture(const CTexture &texture, std::ostream& os);
 
     unsigned int m_format;
+    unsigned int m_word_type;
     unsigned int m_components;
     TextureType m_type;
     bool m_valid;

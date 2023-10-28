@@ -1324,7 +1324,7 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
                 integral_cast<GLsizei>(image.get_height()),
                 0,
                 image.get_format(),
-                GL_UNSIGNED_BYTE,
+                image.word_type(),
                 image));
         }
         if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
@@ -1366,7 +1366,7 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
                 integral_cast<GLsizei>(image.get_height()),
                 0,
                 image.get_format(),
-                GL_UNSIGNED_BYTE,
+                image.word_type(),
                 image));
             
             for (unsigned int i = 0; i < image.get_num_mipmaps(); i++) {
@@ -1379,7 +1379,7 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
                     integral_cast<GLsizei>(mipmap.get_height()),
                     0,
                     image.get_format(),
-                    GL_UNSIGNED_BYTE,
+                    image.word_type(),
                     mipmap));
             }
         }
