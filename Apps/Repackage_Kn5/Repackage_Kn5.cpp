@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
         GlContextGuard gcg{ window };
         CHK(int version = gladLoadGL(glfwGetProcAddress));
         if (version == 0) {
-            throw std::runtime_error("gladLoadGL failed");
+            THROW_OR_ABORT("gladLoadGL failed");
         }
 
         // Resources
@@ -65,13 +65,20 @@ int main(int argc, char** argv) {
 
         auto gen_png_name = [](const std::string& dds_name) { return dds_name + ".png"; };
         auto gen_optional_png_name = [&gen_png_name](const std::string& dds_name) { return dds_name.empty() ? "" : gen_png_name(dds_name); };
-        auto source = create_ifstream(args.unnamed_value(0), std::ios::binary);
+        auto source_filename = args.unnamed_value(0);
+        auto source = create_ifstream(source_filename, std::ios::binary);
+        if (source->fail()) {
+            THROW_OR_ABORT("Could not open file for read: \"" + source_filename + '"');
+        }
         auto kn5 = load_kn5(*source, false /* verbose */, kn5LoadOptions::MATERIALS);
         std::map<std::string, kn5Texture> destination_textures;
         for (auto& [dds_name, t] : kn5.textures) {
             auto png_name = gen_png_name(dds_name);
             rendering_resources.insert_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
-            auto tex = rendering_resources.get_texture_data({.color = {.filename = dds_name}}, FlipMode::NONE);
+            auto tex = rendering_resources.get_texture_data(
+                {.color = {.filename = dds_name}},
+                FlipMode::NONE,
+                CopyBehavior::COPY);
             auto& dest = destination_textures[png_name];
             dest.type = t.type;
             dest.data = stb_encode_png(tex.data.get(), tex.width, tex.height, tex.nrChannels);

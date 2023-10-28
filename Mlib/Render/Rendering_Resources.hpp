@@ -84,6 +84,11 @@ enum class CallerType {
     RENDER
 };
 
+enum class CopyBehavior {
+    RAISE,
+    COPY
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -143,7 +148,10 @@ public:
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
-    StbInfo<uint8_t> get_texture_data(const TextureDescriptor& descriptor, FlipMode flip_mode) const;
+    StbInfo<uint8_t> get_texture_data(
+        const TextureDescriptor& descriptor,
+        FlipMode flip_mode,
+        CopyBehavior copy_behavior = CopyBehavior::RAISE) const;
 
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 

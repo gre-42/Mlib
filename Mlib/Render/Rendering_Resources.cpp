@@ -839,7 +839,8 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
 
 StbInfo<uint8_t> RenderingResources::get_texture_data(
     const TextureDescriptor& descriptor,
-    FlipMode flip_mode) const
+    FlipMode flip_mode,
+    CopyBehavior copy_behavior) const
 {
     if (auto it = manual_atlas_tile_descriptors_.try_get(descriptor.color.filename); it != nullptr) {
         auto si = stb_create<uint8_t>(it->width, it->height, (int)it->color_mode);
@@ -860,8 +861,8 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         build_image_atlas(si, atlas_tiles);
         return si;
     }
-    if (preloaded_texture_dds_data_.contains(descriptor.color.filename)) {
-        auto info = ImageInfo::load(descriptor.color.filename, &preloaded_texture_dds_data_.get(descriptor.color.filename));
+    if (auto it = preloaded_texture_dds_data_.try_get(descriptor.color.filename); it != nullptr) {
+        auto info = ImageInfo::load(descriptor.color.filename, it);
         FrameBuffer fb;
         fb.configure(FrameBufferConfig{
             .width = integral_cast<int>(info.size(0)),
@@ -886,6 +887,14 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             logic.render();
         }
         return fb.color_to_stb_image();
+    }
+    if (auto it = preloaded_texture_data_.try_get(descriptor.color); it != nullptr) {
+        if (copy_behavior == CopyBehavior::RAISE) {
+            THROW_OR_ABORT("Refusing to copy \"" + descriptor.color.filename + '"');
+        }
+        auto result = stb_create<uint8_t>(it->width, it->height, it->nrChannels);
+        std::copy(it->data.get(), it->data.get() + it->width * it->height * it->nrChannels, result.data.get());
+        return result;
     }
     auto si = stb_load_and_transform_texture(descriptor, flip_mode);
     if ((descriptor.color_mode == ColorMode::RGB) &&
