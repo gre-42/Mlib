@@ -131,6 +131,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     std::vector<unsigned int> texture_grid;
     float lit_mult = 1.f;
     float specular_mult = 1.f;
+    bool raceway_is_circular = true;
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
         auto kn5 = load_kn5(kn5_filename);
@@ -143,6 +144,19 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             std::map<std::string, const kn5Node*> nodes;
             for (const auto& [_, node] : kn5.nodes) {
                 nodes[node.name] = &node;
+            }
+            // https://assettocorsamods.net/threads/build-your-first-track-basic-guide.12/
+            // Read checkpoints
+            std::list<TransformationMatrix<float, double, 3>> checkpoints;
+            for (size_t i = 0; ; ++i) {
+                auto time_l = nodes.find("AC_TIME_" + std::to_string(i) + "_L");
+                auto time_r = nodes.find("AC_TIME_" + std::to_string(i) + "_R");
+                if ((time_l == nodes.end()) || (time_r == nodes.end())) {
+                    break;
+                }
+                checkpoints.push_back(ac_waypoint(
+                    time_l->second->hmatrix.casted<float, double>(),
+                    time_r->second->hmatrix.casted<float, double>()));
             }
             // No periodic extension by default.
             {
@@ -163,31 +177,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     auto finish_l = nodes.find("AC_AB_FINISH_L");
                     auto finish_r = nodes.find("AC_AB_FINISH_R");
                     if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
-                        race_logic->set_checkpoints({
-                            ac_waypoint(
-                                finish_l->second->hmatrix.casted<float, double>(),
-                                finish_r->second->hmatrix.casted<float, double>())});
+                        checkpoints.push_back(ac_waypoint(
+                            finish_l->second->hmatrix.casted<float, double>(),
+                            finish_r->second->hmatrix.casted<float, double>()));
                     }
-                }
-            }
-            {
-                // https://assettocorsamods.net/threads/build-your-first-track-basic-guide.12/
-                std::list<TransformationMatrix<float, double, 3>> checkpoints;
-                for (size_t i = 0; ; ++i) {
-                    auto time_l = nodes.find("AC_TIME_" + std::to_string(i) + "_L");
-                    auto time_r = nodes.find("AC_TIME_" + std::to_string(i) + "_R");
-                    if ((time_l == nodes.end()) || (time_r == nodes.end())) {
-                        break;
-                    }
-                    checkpoints.push_back(ac_waypoint(
-                        time_l->second->hmatrix.casted<float, double>(),
-                        time_r->second->hmatrix.casted<float, double>()));
-                }
-                if (checkpoints.empty()) {
-                    race_logic->set_circularity(false);
-                } else {
-                    race_logic->set_checkpoints(std::vector(checkpoints.begin(), checkpoints.end()));
-                    race_logic->set_circularity(true);
+                    raceway_is_circular = false;
                 }
             }
             {
@@ -195,6 +189,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (it != nodes.end()) {
                     race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
                 }
+            }
+            // for (const auto& c : checkpoints) {
+            //     linfo() << "Checkpoint: " << c.t();
+            // }
+            if (!checkpoints.empty()) {
+                race_logic->set_checkpoints(std::vector(checkpoints.begin(), checkpoints.end()));
             }
             // AC_AB_START_L/R
             // AC_PIT_(\\d+)
@@ -215,7 +215,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
             auto attrs = MetaAttributes::VISIBLE;
-            static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
+            static const DECLARE_REGEX(name_reg, "^(0+)?(\\d+)?(\\w+)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
                 static const DECLARE_REGEX(grass_reg, "^(?:GR|GRASS)(?:\\b|_|\\d)");
@@ -224,31 +224,28 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
-                if (match[1].matched) {
-                    size_t id = safe_stoz(match[1].str());
-                    if (id > 0) {
-                        attrs |= MetaAttributes::COLLIDABLE;
-                    }
-                }
-                if (match[2].str().starts_with("WALL_col")) {
+                if (match[1].matched || match[3].str().starts_with("WALL_col")) {
                     attrs &= ~MetaAttributes::VISIBLE;
                 }
-                if (Mlib::re::regex_search(match[2].str(), grass_reg)) {
+                if (match[2].matched) {
+                    attrs |= MetaAttributes::COLLIDABLE;
+                }
+                if (Mlib::re::regex_search(match[3].str(), grass_reg)) {
                     attrs |= MetaAttributes::GRASS;
                 }
-                if (Mlib::re::regex_search(match[2].str(), tree_reg)) {
+                if (Mlib::re::regex_search(match[3].str(), tree_reg)) {
                     attrs |= MetaAttributes::TREE;
                 }
-                if (Mlib::re::regex_search(match[2].str(), road_reg)) {
+                if (Mlib::re::regex_search(match[3].str(), road_reg)) {
                     attrs |= MetaAttributes::ROAD;
                 }
-                if (Mlib::re::regex_search(match[2].str(), gravel_reg)) {
+                if (Mlib::re::regex_search(match[3].str(), gravel_reg)) {
                     attrs |= MetaAttributes::GRAVEL;
                 }
-                if (Mlib::re::regex_search(match[2].str(), side_reg)) {
+                if (Mlib::re::regex_search(match[3].str(), side_reg)) {
                     attrs |= MetaAttributes::SIDE;
                 }
-                if (Mlib::re::regex_search(match[2].str(), vertical_reg)) {
+                if (Mlib::re::regex_search(match[3].str(), vertical_reg)) {
                     attrs |= MetaAttributes::VERTICAL;
                 }
             }
@@ -483,6 +480,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     } else {
         append_kn5(filename);
     }
+    race_logic->set_circularity(raceway_is_circular);
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {

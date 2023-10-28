@@ -86,6 +86,7 @@ void Mlib::merge_textures(
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }
+                    cva->material.max_triangle_distance = merged_materials_config.max_triangle_distance;
                 }
             }
             if (merged_filenames.empty()) {
