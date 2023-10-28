@@ -20,20 +20,22 @@ enum class DdsPixelFormatFlags: uint32_t {
 };
 
 std::string dds_pixel_format_flags_to_string(DdsPixelFormatFlags size) {
-    if (size == DdsPixelFormatFlags::ALPHAPIXELS) {
+    switch (size) {
+    case DdsPixelFormatFlags::ALPHAPIXELS:
         return "alpha_pixels";
-    } else if (size == DdsPixelFormatFlags::ALPHA) {
+    case DdsPixelFormatFlags::ALPHA:
         return "alpha";
-    } else if (size == DdsPixelFormatFlags::FOURCC) {
+    case DdsPixelFormatFlags::FOURCC:
         return "fourcc";
-    } else if (size == DdsPixelFormatFlags::RGB) {
+    case DdsPixelFormatFlags::RGB:
         return "rgb";
-    } else if (size == DdsPixelFormatFlags::YUV) {
+    case DdsPixelFormatFlags::YUV:
         return "yuv";
-    } else if (size == DdsPixelFormatFlags::LUMINANCE) {
+    case DdsPixelFormatFlags::LUMINANCE:
         return "luminance";
+    default:
+        THROW_OR_ABORT("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
     }
-    THROW_OR_ABORT("Unknown DDS pixel format size: " + std::to_string((uint32_t)size));
 }
 
 struct DdsPixelFormat {
