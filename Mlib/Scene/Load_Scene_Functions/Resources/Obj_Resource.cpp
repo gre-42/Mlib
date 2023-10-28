@@ -92,7 +92,7 @@ public:
                 JsonMacroArguments{{{"CHECKPOINTS", nlohmann::json()}}});
         }
     }
-    virtual void set_start_pose(
+    void set_start_pose(
         const TransformationMatrix<float, double, 3>& pose,
         unsigned int rank) override
     {
@@ -105,7 +105,7 @@ public:
                 }});
         }
     }
-    virtual void set_checkpoints(
+    void set_checkpoints(
         const std::vector<TransformationMatrix<float, double, 3>>& checkpoints) override
     {
         if (checkpoints.empty()) {
@@ -125,7 +125,7 @@ public:
             asset_id_,
             JsonMacroArguments{{{"CHECKPOINTS", std::move(global_checkpoints)}}});
     }
-    virtual void set_circularity(bool is_circular) {
+    void set_circularity(bool is_circular) override {
         if (asset_references_["levels"].at(asset_id_).rp.database.at<bool>("IF_RACEWAY_CIRCULAR") != is_circular) {
             THROW_OR_ABORT("Inconsistent raceway circularity in level \"" + asset_id_ + '"');
         }
