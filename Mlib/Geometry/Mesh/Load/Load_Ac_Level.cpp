@@ -64,6 +64,8 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             (run == "point-to-point") ||
             (run == "drift!") ||
             (run == "drift") ||
+            (run == "downhill") ||
+            (run == "uphill") ||
             (run == "downhill"))
         {
             circular = false;
