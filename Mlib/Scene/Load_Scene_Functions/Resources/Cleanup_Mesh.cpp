@@ -63,7 +63,7 @@ LoadSceneJsonUserFunction CleanupMesh::json_user_function = [](const LoadSceneJs
             };
             Bvh<float, FixedArray<float, 3>, 3> sbvh{FixedArray<float, 3>{0.1f, 0.1f, 0.1f}, 17};
             Bvh<double, FixedArray<double, 3>, 3> dbvh{FixedArray<double, 3>{0.1, 0.1, 0.1}, 17};
-            for (auto acva : resource.get_rendering_arrays()) {
+            for (const auto& acva : resource.get_rendering_arrays()) {
                 cleanup(sbvh, acva->scvas);
                 cleanup(dbvh, acva->dcvas);
             }

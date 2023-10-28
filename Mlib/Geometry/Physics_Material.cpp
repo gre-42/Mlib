@@ -57,6 +57,9 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
     if (s == "obj_distancebox") {
         return PhysicsMaterial::OBJ_DISTANCEBOX;
     }
+    if (s == "obj_grass") {
+        return PhysicsMaterial::OBJ_GRASS;
+    }
     if (s == "surface_base_tarmac") {
         return PhysicsMaterial::SURFACE_BASE_TARMAC;
     }

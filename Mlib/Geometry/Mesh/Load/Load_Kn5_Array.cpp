@@ -81,15 +81,15 @@ static TransformationMatrix<float, double, 3> ac_waypoint(
 
 enum class MetaAttributes {
     NONE = 0,
-    VISIBLE = (1 << 0),
-    COLLIDABLE = (1 << 1),
-    GRASS = (1 << 2),
-    ROAD = (1 << 3),
-    GRAVEL = (1 << 4),
-    SIDE = (1 << 5),
-    FOLIAGE = (1 << 6),
-    TREE = (1 << 7),
-    VERTICAL = (1 << 8)
+    ATTR_VISIBLE = (1 << 0),
+    ATTR_COLLIDABLE = (1 << 1),
+    SURFACE_GRASS = (1 << 2),
+    SURFACE_ROAD = (1 << 3),
+    SURFACE_GRAVEL = (1 << 4),
+    SURFACE_SIDE = (1 << 5),
+    OBJ_GRASS = (1 << 6),
+    OBJ_TREE = (1 << 7),
+    ATTR_VERTICAL = (1 << 8)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -214,7 +214,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
-            auto attrs = MetaAttributes::VISIBLE;
+            auto attrs = MetaAttributes::ATTR_VISIBLE;
             static const DECLARE_REGEX(name_reg, "^(0+)?(\\d+)?(\\w+)");
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
@@ -225,59 +225,59 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 if (match[1].matched || match[3].str().starts_with("WALL_col")) {
-                    attrs &= ~MetaAttributes::VISIBLE;
+                    attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
                 if (match[2].matched) {
-                    attrs |= MetaAttributes::COLLIDABLE;
+                    attrs |= MetaAttributes::ATTR_COLLIDABLE;
                 }
                 if (Mlib::re::regex_search(match[3].str(), grass_reg)) {
-                    attrs |= MetaAttributes::GRASS;
+                    attrs |= MetaAttributes::SURFACE_GRASS;
                 }
                 if (Mlib::re::regex_search(match[3].str(), tree_reg)) {
-                    attrs |= MetaAttributes::TREE;
+                    attrs |= MetaAttributes::OBJ_TREE;
                 }
                 if (Mlib::re::regex_search(match[3].str(), road_reg)) {
-                    attrs |= MetaAttributes::ROAD;
+                    attrs |= MetaAttributes::SURFACE_ROAD;
                 }
                 if (Mlib::re::regex_search(match[3].str(), gravel_reg)) {
-                    attrs |= MetaAttributes::GRAVEL;
+                    attrs |= MetaAttributes::SURFACE_GRAVEL;
                 }
                 if (Mlib::re::regex_search(match[3].str(), side_reg)) {
-                    attrs |= MetaAttributes::SIDE;
+                    attrs |= MetaAttributes::SURFACE_SIDE;
                 }
                 if (Mlib::re::regex_search(match[3].str(), vertical_reg)) {
-                    attrs |= MetaAttributes::VERTICAL;
+                    attrs |= MetaAttributes::ATTR_VERTICAL;
                 }
             }
-            if (any(attrs & MetaAttributes::COLLIDABLE)) {
+            if (any(attrs & MetaAttributes::ATTR_COLLIDABLE)) {
                 tl.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
                 tl.physics_material |= PhysicsMaterial::ATTR_CONCAVE;
             }
-            if (any(attrs & MetaAttributes::ROAD)) {
+            if (any(attrs & MetaAttributes::SURFACE_ROAD)) {
                 if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.physics_material |= PhysicsMaterial::SURFACE_BASE_TARMAC;
             }
-            if (any(attrs & MetaAttributes::GRAVEL)) {
+            if (any(attrs & MetaAttributes::SURFACE_GRAVEL)) {
                 if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRAVEL;
             }
-            if (any(attrs & MetaAttributes::GRASS)) {
+            if (any(attrs & MetaAttributes::SURFACE_GRASS)) {
                 if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRASS;
             }
-            if (any(attrs & MetaAttributes::SIDE)) {
+            if (any(attrs & MetaAttributes::SURFACE_SIDE)) {
                 if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
                 tl.physics_material |= PhysicsMaterial::SURFACE_BASE_DIRT;
             }
-            if (!node.isRenderable || !any(attrs & MetaAttributes::VISIBLE)) {
+            if (!node.isRenderable || !any(attrs & MetaAttributes::ATTR_VISIBLE)) {
                 tl.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
             if (node.materialID.has_value()) {
@@ -285,10 +285,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
                 if (material.shader == "ksGrass") {
-                    attrs |= MetaAttributes::FOLIAGE;
+                    attrs |= MetaAttributes::OBJ_GRASS;
                 }
                 if (material.shader == "ksTree") {
-                    attrs |= MetaAttributes::TREE;
+                    attrs |= MetaAttributes::OBJ_TREE;
+                }
+                if (any(attrs & MetaAttributes::OBJ_GRASS)) {
+                    tl.physics_material |= PhysicsMaterial::OBJ_GRASS;
                 }
                 if (grass_materials.contains(material.name) &&
                     !occluding_meshes.contains(node.name))
@@ -298,12 +301,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     //     tl.modifier_backlog.convert_to_terrain = true;
                     // }
                 }
-                if (any(attrs & (MetaAttributes::FOLIAGE | MetaAttributes::TREE))) {
+                if (any(attrs & (MetaAttributes::OBJ_GRASS | MetaAttributes::OBJ_TREE))) {
                     tl.modifier_backlog.merge_textures = true;
                     // tl.material.wrap_mode_s = WrapMode::CLAMP_TO_EDGE;
                     // tl.material.wrap_mode_t = WrapMode::CLAMP_TO_EDGE;
                     tl.material.occluded_pass = ExternalRenderPassType::NONE;
-                    if (any(attrs & MetaAttributes::FOLIAGE)) {
+                    if (any(attrs & MetaAttributes::OBJ_GRASS)) {
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     } else {
                         tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
@@ -393,7 +396,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                             .scale = material.mult(i),
                             .role = BlendMapRole::DETAIL_COLOR,
-                            .uv_source = any(attrs & MetaAttributes::VERTICAL)
+                            .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
                                 ? BlendMapUvSource::VERTICAL
                                 : BlendMapUvSource::HORIZONTAL});
                     }

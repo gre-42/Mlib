@@ -186,6 +186,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Blending_X_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Grid_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Create_Square_Resource.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Delete_Mesh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Downsample.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Compound_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Contour_Edges.hpp>
@@ -402,6 +403,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
     register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);
     register_json_user_function(ConvexDecomposeTerrain::key, ConvexDecomposeTerrain::json_user_function);
+    register_json_user_function(DeleteMesh::key, DeleteMesh::json_user_function);
     register_json_user_function(Downsample::key, Downsample::json_user_function);
     register_json_user_function(GenRay::key, GenRay::json_user_function);
     register_json_user_function(GenTriangleRays::key, GenTriangleRays::json_user_function);

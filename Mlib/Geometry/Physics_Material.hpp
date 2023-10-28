@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-static const size_t SURFACE_BASE_OFFSET = 17;
+static const size_t SURFACE_BASE_OFFSET = 18;
 static const size_t SURFACE_BASE_NBITS = 4;
 
 enum class PhysicsMaterial {
@@ -24,6 +24,7 @@ enum class PhysicsMaterial {
     OBJ_BULLET_MESH = (1 << 14),
     OBJ_HITBOX = (1 << 15),
     OBJ_DISTANCEBOX = (1 << 16),
+    OBJ_GRASS = (1 << 17),
     SURFACE_BASE_TARMAC = (1 << SURFACE_BASE_OFFSET),  //    1
     SURFACE_BASE_GRAVEL = (2 << SURFACE_BASE_OFFSET),  //   10
     SURFACE_BASE_SNOW = (3 << SURFACE_BASE_OFFSET),    //   11
