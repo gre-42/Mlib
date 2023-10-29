@@ -181,17 +181,22 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
                 }
             }
+            auto find_ab = [&](
+                const std::string& name_start_l,
+                const std::string& name_start_r,
+                const std::string& name_finish_l,
+                const std::string& name_finish_r)
             {
-                auto start_l = nodes.find("AC_AB_START_L");
-                auto start_r = nodes.find("AC_AB_START_R");
+                auto start_l = nodes.find(name_start_l);
+                auto start_r = nodes.find(name_start_r);
                 if ((start_l != nodes.end()) && (start_r != nodes.end())) {
                     race_logic->set_start_pose(
                         ac_start_to_car(
                             start_l->second->hmatrix.casted<float, double>(),
                             start_r->second->hmatrix.casted<float, double>()),
                         0);
-                    auto finish_l = nodes.find("AC_AB_FINISH_L");
-                    auto finish_r = nodes.find("AC_AB_FINISH_R");
+                    auto finish_l = nodes.find(name_finish_l);
+                    auto finish_r = nodes.find(name_finish_r);
                     if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
                         checkpoints.push_back(ac_waypoint(
                             finish_l->second->hmatrix.casted<float, double>(),
@@ -199,7 +204,17 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                     raceway_is_circular = false;
                 }
-            }
+            };
+            find_ab(
+                "AC_AB_START_L",
+                "AC_AB_START_R",
+                "AC_AB_FINISH_L",
+                "AC_AB_FINISH_R");
+            find_ab(
+                "AC_OPEN_START_L",
+                "AC_OPEN_START_R",
+                "AC_OPEN_FINISH_L",
+                "AC_OPEN_FINISH_R");
             {
                 auto it = nodes.find("AC_START_0");
                 if (it != nodes.end()) {

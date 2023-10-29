@@ -57,6 +57,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             ini_parser.get<float>("PARAMETERS", "X_OFFSET"),
             ini_parser.get<float>("PARAMETERS", "Z_OFFSET")};
         bool circular;
+        auto tags = jv.at<std::set<std::string>>("tags");
         auto run = jv.at<std::string>("run");
         std::transform(run.begin(), run.end(), run.begin(),
             [](unsigned char c){ return std::tolower(c); });
@@ -66,7 +67,9 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             (run == "drift") ||
             (run == "downhill") ||
             (run == "uphill") ||
-            (run == "downhill"))
+            (run == "downhill") ||
+            tags.contains("Drift track") ||
+            tags.contains("hill climb"))
         {
             circular = false;
         } else if (run == "clockwise") {
