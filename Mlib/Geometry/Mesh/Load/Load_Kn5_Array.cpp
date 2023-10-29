@@ -24,6 +24,8 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
+static const FixedArray<double, 3> SPAWN_OFFSET = {0., 2., 0.};
+
 static const FixedArray<float, 3, 3> M = {
     -1.f, 0.f, 0.f,
     0.f, 1.f, 0.f,
@@ -46,23 +48,23 @@ static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
 
 static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
 {
-    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t() + FixedArray<double, 3>{0., 2., 0.}};
+    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t() + SPAWN_OFFSET};
 }
+ 
+// static TransformationMatrix<float, double, 3> ac_center(
+//     const TransformationMatrix<float, double, 3>& left,
+//     const TransformationMatrix<float, double, 3>& right)
+// {
+//     // Semetin
+//     auto d = dot0d((right.t() - left.t()).casted<float>(), left.R().column(0));
+//     return TransformationMatrix<float, double, 3>{
+//         d > 0.f
+//             ? left.R()
+//             : dot2d(left.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 180.f * degrees)),
+//         (left.t() + right.t()) / 2.};
+// }
 
-static TransformationMatrix<float, double, 3> ac_center(
-    const TransformationMatrix<float, double, 3>& left,
-    const TransformationMatrix<float, double, 3>& right)
-{
-    // Semetin
-    auto d = dot0d((right.t() - left.t()).casted<float>(), left.R().column(0));
-    return TransformationMatrix<float, double, 3>{
-        d > 0.f
-            ? left.R()
-            : dot2d(left.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 180.f * degrees)),
-        (left.t() + right.t()) / 2.};
-}
-
-static TransformationMatrix<float, double, 3> ac_waypoint(
+static TransformationMatrix<float, double, 3> ac_portal(
     const TransformationMatrix<float, double, 3>& left,
     const TransformationMatrix<float, double, 3>& right)
 {
@@ -77,6 +79,20 @@ static TransformationMatrix<float, double, 3> ac_waypoint(
             x(1), y(1), z(1),
             x(2), y(2), z(2)},
         (left.t() + right.t()) / 2.};
+}
+
+static TransformationMatrix<float, double, 3> ac_start_to_car(
+    const TransformationMatrix<float, double, 3>& left,
+    const TransformationMatrix<float, double, 3>& right)
+{
+    return ac_portal(left, right);
+}
+
+static TransformationMatrix<float, double, 3> ac_waypoint(
+    const TransformationMatrix<float, double, 3>& left,
+    const TransformationMatrix<float, double, 3>& right)
+{
+    return ac_portal(left, right);
 }
 
 enum class MetaAttributes {
@@ -170,7 +186,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 auto start_r = nodes.find("AC_AB_START_R");
                 if ((start_l != nodes.end()) && (start_r != nodes.end())) {
                     race_logic->set_start_pose(
-                        ac_center(
+                        ac_start_to_car(
                             start_l->second->hmatrix.casted<float, double>(),
                             start_r->second->hmatrix.casted<float, double>()),
                         0);
