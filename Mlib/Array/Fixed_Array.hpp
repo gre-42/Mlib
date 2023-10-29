@@ -377,9 +377,11 @@ private:
         set_values<i + 1>(values...);
     }
     inline FixedArray<TData, tshape...>* data() {
+        static_assert(sizeof(FixedArray<TData, tshape...>) == sizeof(FixedArray<char[sizeof(TData)], tshape...>));
         return reinterpret_cast<FixedArray<TData, tshape...>*>(data_);
     }
     inline const FixedArray<TData, tshape...>* data() const {
+        static_assert(sizeof(FixedArray<TData, tshape...>) == sizeof(FixedArray<char[sizeof(TData)], tshape...>));
         return reinterpret_cast<const FixedArray<TData, tshape...>*>(data_);
     }
     FixedArray<char[sizeof(TData)], tshape...> data_[tshape0];
@@ -391,7 +393,7 @@ class FixedArray<TData>: public BaseDenseFixedArray<FixedArray<TData>, TData>
 public:
     typedef TData value_type;
 
-    FixedArray() = default;
+    FixedArray() {}
     explicit FixedArray(const TData& v)
     : value_(v)
     {}
