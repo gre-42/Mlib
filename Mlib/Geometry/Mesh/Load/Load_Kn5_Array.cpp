@@ -251,7 +251,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 if (match[1].matched ||
                     match[3].str().starts_with("WALL_col") ||
-                    match[3].str().starts_with("INVISIBLEWALL"))
+                    match[3].str().starts_with("INVISIBLE"))
                 {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
@@ -312,7 +312,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 const auto& material = kn5.materials.at(node.materialID.value());
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
-                if (material.shader == "ksGrass") {
+                if (!any(attrs & MetaAttributes::SURFACE_GRASS) &&
+                    (material.shader == "ksGrass"))
+                {
                     attrs |= MetaAttributes::OBJ_GRASS;
                 }
                 if (material.shader == "ksTree") {
@@ -358,7 +360,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     } else if (material.shader == "ksPerPixelAlpha")
                     {
                         tl.material.blend_mode = cfg.blend_mode;
-                    } else if ((material.shader == "ksFlags") ||
+                    } else if ((material.shader == "ksGrass") ||
+                               (material.shader == "ksFlags") ||
                                (material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
                                (material.shader == "ksPerPixelMultiMap_NMDetail") ||
@@ -394,7 +397,27 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     lit_mult *
                     specular_mult};
                 tl.material.specular_exponent = material.ksSpecularEXP.value_or_default();
-                if ((material.useDetail.value_or_default() != 0.f) &&
+                if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
+                    (material.shader == "ksGrass") &&
+                    !material.txDiffuse.empty() &&
+                    !material.txVariation.empty())
+                {
+                    tl.material.textures_color = {BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = {.filename = material.txDiffuse},
+                            .normal = {.filename = material.txNormal},
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                            .role = BlendMapRole::DETAIL_BASE,
+                            .reweight_mode = BlendMapReweightMode::DISABLED}};
+                    tl.material.textures_color.push_back(BlendMapTexture{
+                        .texture_descriptor = {
+                            .color = {.filename = material.txVariation},
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                            .scale = 0.5f,
+                            .role = BlendMapRole::DETAIL_COLOR,
+                            .uv_source = BlendMapUvSource::HORIZONTAL});
+                    tl.material.compute_color_mode();
+                } else if ((material.useDetail.value_or_default() != 0.f) &&
                     (material.detailUVMultiplier.value_or_default() != 0.f) &&
                     !material.txDiffuse.empty() &&
                     !material.txDetail1.empty())

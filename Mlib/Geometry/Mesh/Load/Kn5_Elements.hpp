@@ -60,6 +60,7 @@ struct kn5Material
     FixedArray<std::string, 4> txDetail4;
     std::string txDetail1;
     std::string txDetailNM;
+    std::string txVariation;
 
     std::string shaderProps = "";
 };

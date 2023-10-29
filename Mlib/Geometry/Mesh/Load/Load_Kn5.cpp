@@ -404,6 +404,8 @@ kn5Model Mlib::load_kn5(
                 newMaterial.txDetailNM = texName;
             } else if (samplerName == "txDetail") {
                 newMaterial.txDetail1 = texName;
+            } else if (samplerName == "txVariation") {
+                newMaterial.txVariation = texName;
             } else {
                 lwarn() << "Unknown sampler name: " << samplerName;
             }
