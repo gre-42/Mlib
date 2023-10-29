@@ -40,6 +40,7 @@ struct kn5Material
     DefaultOptional<float> ksSpecular         = DefaultOptional<float>::from_default(0.5f);
     DefaultOptional<float> ksSpecularEXP      = DefaultOptional<float>::from_default(50.0f);
     DefaultOptional<float> ksAlphaRef         = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> gain               = DefaultOptional<float>::from_default(1.0f);
     DefaultOptional<float> diffuseMult        = DefaultOptional<float>::from_default(1.0f);
     DefaultOptional<float> normalMult         = DefaultOptional<float>::from_default(1.0f);
     DefaultOptional<float> useDetail          = DefaultOptional<float>::from_default(0.0f);

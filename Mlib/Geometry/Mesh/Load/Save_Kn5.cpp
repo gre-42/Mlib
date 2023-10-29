@@ -86,6 +86,7 @@ void Mlib::save_kn5(
                 { "ksSpecular", m.ksSpecular },
                 { "ksSpecularEXP", m.ksSpecularEXP },
                 { "ksAlphaRef", m.ksAlphaRef },
+                { "gain", m.gain },
                 { "diffuseMult", m.diffuseMult },
                 { "normalMult", m.normalMult },
                 { "useDetail", m.useDetail },

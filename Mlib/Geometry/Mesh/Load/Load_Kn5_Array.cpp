@@ -357,10 +357,27 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
                     }
                 }
-                tl.material.emissivity = OrderableFixedArray{cfg.emissivity_factor * material.ksEmissive.value_or_default()};
-                tl.material.ambience = OrderableFixedArray{cfg.ambience_factor * material.ksAmbient.value_or_default() * lit_mult};
-                tl.material.diffusivity = OrderableFixedArray{cfg.diffusivity_factor * material.ksDiffuse.value_or_default() * lit_mult};
-                tl.material.specularity = OrderableFixedArray{cfg.specularity_factor * material.ksSpecular.value_or_default() * lit_mult * specular_mult};
+                tl.material.emissivity = OrderableFixedArray{
+                    cfg.emissivity_factor *
+                    material.gain.value_or_default() *
+                    material.ksEmissive.value_or_default()};
+                tl.material.ambience = OrderableFixedArray{
+                    cfg.ambience_factor *
+                    material.gain.value_or_default() *
+                    material.ksAmbient.value_or_default() *
+                    lit_mult};
+                tl.material.diffusivity = OrderableFixedArray{
+                    cfg.diffusivity_factor *
+                    material.gain.value_or_default() *
+                    material.diffuseMult.value_or_default() *
+                    material.ksDiffuse.value_or_default() *
+                    lit_mult};
+                tl.material.specularity = OrderableFixedArray{
+                    cfg.specularity_factor *
+                    material.gain.value_or_default() *
+                    material.ksSpecular.value_or_default() *
+                    lit_mult *
+                    specular_mult};
                 tl.material.specular_exponent = material.ksSpecularEXP.value_or_default();
                 if ((material.useDetail.value_or_default() != 0.f) &&
                     (material.detailUVMultiplier.value_or_default() != 0.f) &&

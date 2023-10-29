@@ -346,6 +346,8 @@ kn5Model Mlib::load_kn5(
                 newMaterial.ksSpecularEXP = propValue;
             } else if (propName == "ksAlphaRef") {
                 newMaterial.ksAlphaRef = propValue;
+            } else if (propName == "gain") {
+                newMaterial.gain = propValue;
             } else if (propName == "diffuseMult") {
                 newMaterial.diffuseMult = propValue;
             } else if (propName == "normalMult") {
