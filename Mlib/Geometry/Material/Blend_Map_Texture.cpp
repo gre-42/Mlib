@@ -43,3 +43,15 @@ BlendMapReductionOperation Mlib::blend_map_reduction_operation_from_string(std::
         THROW_OR_ABORT("Unknown blend map reduction operation: \"" + std::string{ s } + '"');
     }
 }
+
+BlendMapReweightMode Mlib::blend_map_reweight_mode_from_string(std::string_view s) {
+    if (s == "undefined"sv) {
+        return BlendMapReweightMode::UNDEFINED;
+    } else if (s == "enabled"sv) {
+        return BlendMapReweightMode::ENABLED;
+    } else if (s == "disabled"sv) {
+        return BlendMapReweightMode::DISABLED;
+    } else {
+        THROW_OR_ABORT("Unknown blend map reweight mode: \"" + std::string{ s } + '"');
+    }
+}

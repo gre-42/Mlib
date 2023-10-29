@@ -809,23 +809,24 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
             sstr << "    }" << std::endl;
         }
-        if (target == ReductionTarget::COLOR) {
+        if ((target == ReductionTarget::ALPHA) && (textures[0]->reweight_mode != BlendMapReweightMode::UNDEFINED)) {
+            THROW_OR_ABORT("Target is alpha and reweighting is not undefined in texture \"" + textures[0]->texture_descriptor.color.filename + '"');
+        }
+        if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::UNDEFINED)) {
+            THROW_OR_ABORT("Target is color and reweighting is undefined in texture \"" + textures[0]->texture_descriptor.color.filename + '"');
+        }
+        if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::ENABLED)) {
             sstr << "    if (sum_weights < 1e-3) {" << std::endl;
             sstr << "        texture_color_ambient_diffuse.rgb = vec3(1.0, 0.0, 1.0);" << std::endl;
             sstr << "    } else {" << std::endl;
+            sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
         } else {
             sstr << "    {" << std::endl;
         }
         if (textures[0]->role == BlendMapRole::SUMMAND) {
-            if (target == ReductionTarget::COLOR) {
-                sstr << "        texture_color_ambient_diffuse.rgb /= sum_weights;" << std::endl;
-            } else if (target == ReductionTarget::ALPHA) {
-                // Do nothing
-            } else {
-                THROW_OR_ABORT("Unknown reduction target");
-            }
+            // Do nothing
         } else if (textures[0]->role == BlendMapRole::DETAIL_BASE) {
-            sstr << "        texture_color_ambient_diffuse.rgb *= " << textures[0]->weight << " * sum_of_details / sum_weights;" << std::endl;
+            sstr << "        texture_color_ambient_diffuse.rgb *= " << textures[0]->weight << " * sum_of_details;" << std::endl;
         } else {
             THROW_OR_ABORT("Unsupported base blend map role (1)");
         }

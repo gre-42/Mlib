@@ -389,7 +389,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .color = {.filename = material.txDiffuse},
                             .normal = {.filename = material.txNormal},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                        .role = BlendMapRole::DETAIL_BASE}};
+                        .role = BlendMapRole::DETAIL_BASE,
+                        .reweight_mode = BlendMapReweightMode::DISABLED}};
                     tl.material.textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = {
                             .color = {.filename = material.txDetail1},
@@ -411,7 +412,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .normal = {.filename = material.txNormal},
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                         .weight = material.magicMult.value_or_default(),
-                        .role = BlendMapRole::DETAIL_BASE}};
+                        .role = BlendMapRole::DETAIL_BASE,
+                        .reweight_mode = BlendMapReweightMode::DISABLED}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail4(i).empty() ||
                             (material.mult(i) == 0.f))

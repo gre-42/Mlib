@@ -49,6 +49,14 @@ enum class BlendMapReductionOperation {
 
 BlendMapReductionOperation blend_map_reduction_operation_from_string(std::string_view s);
 
+enum class BlendMapReweightMode {
+    UNDEFINED,
+    ENABLED,
+    DISABLED
+};
+
+BlendMapReweightMode blend_map_reweight_mode_from_string(std::string_view s);
+
 struct BlendMapTexture {
     TextureDescriptor texture_descriptor;
     float min_height = -float(INFINITY);
@@ -63,6 +71,7 @@ struct BlendMapTexture {
     BlendMapRole role = BlendMapRole::SUMMAND;
     BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
     BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
+    BlendMapReweightMode reweight_mode = BlendMapReweightMode::UNDEFINED;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -79,6 +88,7 @@ struct BlendMapTexture {
         archive(role);
         archive(uv_source);
         archive(reduction);
+        archive(reweight_mode);
     }
 };
 

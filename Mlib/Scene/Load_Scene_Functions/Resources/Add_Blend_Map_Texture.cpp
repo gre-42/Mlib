@@ -25,6 +25,7 @@ DECLARE_ARGUMENT(plus);
 DECLARE_ARGUMENT(role);
 DECLARE_ARGUMENT(uv_source);
 DECLARE_ARGUMENT(reduction);
+DECLARE_ARGUMENT(reweight);
 }
 
 const std::string AddBlendMapTexture::key = "add_blend_map_texture";
@@ -56,5 +57,6 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
             .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
             .role = blend_map_role_from_string(args.arguments.at<std::string>(KnownArgs::role, "summand")),
             .uv_source = blend_map_uv_source_from_string(args.arguments.at<std::string>(KnownArgs::uv_source, "vertical")),
-            .reduction = blend_map_reduction_operation_from_string(args.arguments.at<std::string>(KnownArgs::reduction, "plus"))});
+            .reduction = blend_map_reduction_operation_from_string(args.arguments.at<std::string>(KnownArgs::reduction, "plus")),
+            .reweight_mode = blend_map_reweight_mode_from_string(args.arguments.at<std::string>(KnownArgs::reweight, "undefined"))});
 }
