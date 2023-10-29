@@ -175,11 +175,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     time_r->second->hmatrix.casted<float, double>()));
             }
             // No periodic extension by default.
-            {
-                auto it = nodes.find("AC_PIT_0");
-                if (it != nodes.end()) {
-                    race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
-                }
+            if (auto it = nodes.find("AC_PIT_0"); it != nodes.end()) {
+                race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
             }
             auto find_ab = [&](
                 const std::string& name_start_l,
@@ -215,11 +212,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 "AC_OPEN_START_R",
                 "AC_OPEN_FINISH_L",
                 "AC_OPEN_FINISH_R");
-            {
-                auto it = nodes.find("AC_START_0");
-                if (it != nodes.end()) {
-                    race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
-                }
+            if (auto it = nodes.find("AC_START_0"); it != nodes.end()) {
+                race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
             }
             // for (const auto& c : checkpoints) {
             //     linfo() << "Checkpoint: " << c.t();
