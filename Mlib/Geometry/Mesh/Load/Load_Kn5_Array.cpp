@@ -240,7 +240,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
-                if (match[1].matched || match[3].str().starts_with("WALL_col")) {
+                if (match[1].matched ||
+                    match[3].str().starts_with("WALL_col") ||
+                    match[3].str().starts_with("INVISIBLEWALL"))
+                {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
                 if (match[2].matched) {
@@ -351,6 +354,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                (material.shader == "ksPerPixelMultiMap") ||
                                (material.shader == "ksPerPixelMultiMap_NMDetail") ||
                                (material.shader == "ksPerPixelReflection") ||
+                               (material.shader == "ksPerPixelSimpleRefl") ||
                                (material.shader == "ksMultilayer") ||
                                (material.shader == "ksMultilayer_fresnel_nm"))
                     {

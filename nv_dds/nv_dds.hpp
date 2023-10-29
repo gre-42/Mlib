@@ -24,6 +24,7 @@ enum TextureType {
     #define GL_LUMINANCE                      0x1909
     #define GL_BGR_EXT                        0x80E0
     #define GL_BGRA_EXT                       0x80E1
+    #define GL_UNSIGNED_SHORT_5_6_5_REV       0x8364
     #define GL_UNSIGNED_SHORT_1_5_5_5_REV     0x8366
 #endif
 

@@ -593,6 +593,23 @@ void CDDSImage::load(istream& is, bool flipImage) {
         m_format = GL_BGRA_EXT;
         m_word_type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
         m_components = 4;
+    } else if (ddsh.ddspf.dwRGBBitCount == 16 &&
+               ddsh.ddspf.dwRBitMask == 0x0000F800 &&
+               ddsh.ddspf.dwGBitMask == 0x000007E0 &&
+               ddsh.ddspf.dwBBitMask == 0x0000001F &&
+               ddsh.ddspf.dwABitMask == 0x00000000) {
+               m_format = GL_RGB;
+               m_word_type = GL_UNSIGNED_SHORT_5_6_5_REV;
+               m_components = 3;
+    } else if (ddsh.ddspf.dwRGBBitCount == 32 &&
+               ddsh.ddspf.dwRBitMask == 0x00FF0000 &&
+               ddsh.ddspf.dwGBitMask == 0x0000FF00 &&
+               ddsh.ddspf.dwBBitMask == 0x000000FF &&
+               ddsh.ddspf.dwABitMask == 0x00000000) {
+        // This code assumes that the alpha bit-mask was set incorrectly.
+        m_format = GL_BGRA_EXT;
+        m_word_type = GL_UNSIGNED_BYTE;
+        m_components = 4;
     } else {
         throw runtime_error("unknow texture format");
     }
@@ -735,6 +752,9 @@ void CDDSImage::save(const std::string& filename, bool flipImage) {
             ddsh.ddspf.dwFourCC = FOURCC_DXT5;
     } else {
         ddsh.ddspf.dwFlags = (m_components == 4) ? DDSF_RGBA : DDSF_RGB;
+        if (m_word_type == GL_UNSIGNED_SHORT_5_6_5_REV) {
+            throw runtime_error("Saving GL_UNSIGNED_SHORT_5_6_5_REV not yet supported");
+        }
         if (m_word_type == GL_UNSIGNED_SHORT_1_5_5_5_REV) {
             throw runtime_error("Saving GL_UNSIGNED_SHORT_1_5_5_5_REV not yet supported");
         }
@@ -1004,7 +1024,8 @@ inline unsigned int CDDSImage::size_dxtc(unsigned int width, unsigned int height
 ///////////////////////////////////////////////////////////////////////////////
 // calculates size of uncompressed RGB texture in bytes
 inline unsigned int CDDSImage::size_rgb(unsigned int width, unsigned int height) {
-    if (m_word_type == GL_UNSIGNED_SHORT_1_5_5_5_REV) {
+    if ((m_word_type == GL_UNSIGNED_SHORT_5_6_5_REV) ||
+        (m_word_type == GL_UNSIGNED_SHORT_1_5_5_5_REV)) {
         return width * height * 2;
     } else {
         return width * height * m_components;
