@@ -182,17 +182,17 @@ static void readNodes(
             if (!material.txMask.empty()) {
                 matInfo << " mask: " << material.txMask;
             }
-            if (material.multR.has_value()) {
-                matInfo << " multR: " << material.multR.value();
+            if (material.mult(0).has_value()) {
+                matInfo << " multR: " << material.mult(0).value();
             }
-            if (material.multG.has_value()) {
-                matInfo << " multG: " << material.multG.value();
+            if (material.mult(1).has_value()) {
+                matInfo << " multG: " << material.mult(1).value();
             }
-            if (material.multB.has_value()) {
-                matInfo << " multB: " << material.multB.value();
+            if (material.mult(2).has_value()) {
+                matInfo << " multB: " << material.mult(2).value();
             }
-            if (material.multA.has_value()) {
-                matInfo << " multA: " << material.multA.value();
+            if (material.mult(3).has_value()) {
+                matInfo << " multA: " << material.mult(3).value();
             }
             if (material.detailUVMultiplier.has_value()) {
                 matInfo << " detailUVMultiplier: " << material.detailUVMultiplier.value();
@@ -357,13 +357,13 @@ kn5Model Mlib::load_kn5(
             } else if (propName == "detailUVMultiplier") {
                 newMaterial.detailUVMultiplier = propValue;
             } else if (propName == "multR") {
-                newMaterial.multR = propValue;
+                newMaterial.mult(0) = propValue;
             } else if (propName == "multG") {
-                newMaterial.multG = propValue;
+                newMaterial.mult(1) = propValue;
             } else if (propName == "multB") {
-                newMaterial.multB = propValue;
+                newMaterial.mult(2) = propValue;
             } else if (propName == "multA") {
-                newMaterial.multA = propValue;
+                newMaterial.mult(3) = propValue;
             } else if (propName == "detailNMMult") {
                 newMaterial.detailNMMult = propValue;
             } else if (propName == "magicMult") {

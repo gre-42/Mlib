@@ -339,6 +339,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     if ((material.shader == "ksPerPixel") ||                    // required for Akina track
                         (material.shader == "ksPerPixelAT") ||                  // required for Hondarribia and Akagi tracks
                         (material.shader == "ksPerPixelAT_NM") ||               // required for Semetin track
+                        (material.shader == "ksPerPixelMultiMap_AT") ||
                         (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
                         tl.material.blend_mode = BlendMode::BINARY_05;
@@ -417,7 +418,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     for (uint32_t i = 0; i < 4; ++i) {
                         if (material.txDetail4(i).empty() ||
-                            (material.mult(i) == 0.f))
+                            (material.mult(i).value_or_default() == 0.f))
                         {
                             continue;
                         }
@@ -430,7 +431,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .texture_descriptor = {
                                 .color = {.filename = material.txDetail4(i)},
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                            .scale = material.mult(i),
+                            .scale = material.mult(i).value_or_default(),
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
                                 ? BlendMapUvSource::VERTICAL

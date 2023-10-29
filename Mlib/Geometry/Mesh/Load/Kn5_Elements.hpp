@@ -34,25 +34,25 @@ struct kn5Material
     kn5BlendMode blendMode;
     bool alphaTested;
     kn5MaterialDepthMode depthMode;
-    DefaultOptional<float> ksEmissive         = DefaultOptional<float>::from_default(0.f);
-    DefaultOptional<float> ksAmbient          = DefaultOptional<float>::from_default(0.6f);
-    DefaultOptional<float> ksDiffuse          = DefaultOptional<float>::from_default(0.6f);
-    DefaultOptional<float> ksSpecular         = DefaultOptional<float>::from_default(0.5f);
-    DefaultOptional<float> ksSpecularEXP      = DefaultOptional<float>::from_default(50.0f);
-    DefaultOptional<float> ksAlphaRef         = DefaultOptional<float>::from_default(0.f);
-    DefaultOptional<float> gain               = DefaultOptional<float>::from_default(1.0f);
-    DefaultOptional<float> diffuseMult        = DefaultOptional<float>::from_default(1.0f);
-    DefaultOptional<float> normalMult         = DefaultOptional<float>::from_default(1.0f);
-    DefaultOptional<float> useDetail          = DefaultOptional<float>::from_default(0.0f);
-    DefaultOptional<float> detailUVMultiplier = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> multR              = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> multG              = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> multB              = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> multA              = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> detailNMMult       = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> magicMult          = DefaultOptional<float>::from_default(1.f);
-    DefaultOptional<float> fresnelMaxLevel    = DefaultOptional<float>::from_default(0.f);
-    float mult(size_t i) const;
+    DefaultOptional<float> ksEmissive          = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> ksAmbient           = DefaultOptional<float>::from_default(0.6f);
+    DefaultOptional<float> ksDiffuse           = DefaultOptional<float>::from_default(0.6f);
+    DefaultOptional<float> ksSpecular          = DefaultOptional<float>::from_default(0.5f);
+    DefaultOptional<float> ksSpecularEXP       = DefaultOptional<float>::from_default(50.0f);
+    DefaultOptional<float> ksAlphaRef          = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> gain                = DefaultOptional<float>::from_default(1.0f);
+    DefaultOptional<float> diffuseMult         = DefaultOptional<float>::from_default(1.0f);
+    DefaultOptional<float> normalMult          = DefaultOptional<float>::from_default(1.0f);
+    DefaultOptional<float> useDetail           = DefaultOptional<float>::from_default(0.0f);
+    DefaultOptional<float> detailUVMultiplier  = DefaultOptional<float>::from_default(1.f);
+    FixedArray<DefaultOptional<float>, 4> mult = {
+        DefaultOptional<float>::from_default(1.f),
+        DefaultOptional<float>::from_default(1.f),
+        DefaultOptional<float>::from_default(1.f),
+        DefaultOptional<float>::from_default(1.f) };
+    DefaultOptional<float> detailNMMult        = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> magicMult           = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> fresnelMaxLevel     = DefaultOptional<float>::from_default(0.f);
 
     std::string txDiffuse;
     std::string txNormal;
