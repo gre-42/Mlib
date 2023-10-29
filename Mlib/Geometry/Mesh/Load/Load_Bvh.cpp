@@ -143,13 +143,13 @@ BvhLoader::BvhLoader(
             if (raw_frames.size() == nframes) {
                 THROW_OR_ABORT("Too many frames in BVH file");
             }
-            raw_frames.emplace_back();
+            auto& frame = raw_frames.emplace_back();
             for (const auto& o : offsets_) {
-                raw_frames.back()[o.first][0] = o.second;
+                frame[o.first][0] = o.second;
             }
             size_t i = 0;
             for (const auto& c : columns_) {
-                raw_frames.back()[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
+                frame[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
                 //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
