@@ -345,7 +345,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     } else if (material.shader == "ksPerPixelAlpha")
                     {
                         tl.material.blend_mode = cfg.blend_mode;
-                    } else if ((material.shader == "ksPerPixelNM") ||
+                    } else if ((material.shader == "ksFlags") ||
+                               (material.shader == "ksPerPixelNM") ||
                                (material.shader == "ksPerPixelMultiMap") ||
                                (material.shader == "ksPerPixelMultiMap_NMDetail") ||
                                (material.shader == "ksPerPixelReflection") ||
