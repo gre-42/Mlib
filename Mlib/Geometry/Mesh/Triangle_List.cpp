@@ -485,11 +485,17 @@ void TriangleList<TPos>::smoothen_edges(
                         TPos n0n1 = dot0d(n0, n1);
                         if (n0n1 >=0 && n0n1 < 1) {
                             TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
-                            if (!excluded_vertices.contains(Vertex2{ei(0), ei(1)})) {
-                                vertex_movement[Vertex2{ei(0), ei(1)}] += TPos(smoothness) * n01 * shift;
+                            if (auto e = Vertex2{ei(0), ei(1)}; !excluded_vertices.contains(e)) {
+                                if (!vertex_movement.contains(e)) {
+                                    vertex_movement[e] = 0.f;
+                                }
+                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
                             }
-                            if (!excluded_vertices.contains(Vertex2{ej(0), ej(1)})) {
-                                vertex_movement[Vertex2{ej(0), ej(1)}] += TPos(smoothness) * n01 * shift;
+                            if (auto e = Vertex2{ej(0), ej(1)}; !excluded_vertices.contains(e)) {
+                                if (!vertex_movement.contains(e)) {
+                                    vertex_movement[e] = 0.f;
+                                }
+                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
                             }
                         }
                     }

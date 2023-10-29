@@ -204,7 +204,7 @@ void CheckPoints::advance_time(float dt) {
             checkpoints_ahead_.pop_front();
         }
         if ((!checkpoints_ahead_.empty() && (lap_index_ == lap_times_seconds_.size() + 1)) ||
-            (checkpoints_ahead_.empty() && (lap_index_ == nlaps_)))
+            checkpoints_ahead_.empty())
         {
             linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);

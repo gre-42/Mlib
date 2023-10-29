@@ -612,6 +612,8 @@ OsmMapResource::OsmMapResource(
             way_point_edge_descriptors);
     } catch (const PointException<double, 2>& e) {
         handle_point_exception2(e, "Could not smoothen and apply heighmap. Forgot to set map outer contour?");
+    } catch (const TriangleException<double>& e) {
+        handle_triangle_exception(e, "Could not smoothen and apply heighmap.");
     }
 
     if (!config.displacementmap.empty()) {
