@@ -243,6 +243,12 @@ void test_semi_fix() {
     std::cerr << ar << std::endl;
 }
 
+void test_fixed_array_of_string() {
+    FixedArray<std::string, 3, 4> a;
+    FixedArray<std::string, 2, 3> b{ "1", "2", "3", "4", "5", "6" };
+    std::cerr << a(1, 2) << " " << b(1, 2) << std::endl;
+}
+
 int main(int argc, char **argv) {
     enable_floating_point_exceptions();
     test_array_index();
@@ -262,5 +268,6 @@ int main(int argc, char **argv) {
     test_append();
     test_copy();
     test_semi_fix();
+    test_fixed_array_of_string();
     return 0;
 }
