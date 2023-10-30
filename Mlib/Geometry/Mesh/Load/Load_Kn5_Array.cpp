@@ -103,9 +103,10 @@ enum class MetaAttributes {
     SURFACE_ROAD = (1 << 3),
     SURFACE_GRAVEL = (1 << 4),
     SURFACE_SIDE = (1 << 5),
-    OBJ_GRASS = (1 << 6),
-    OBJ_TREE = (1 << 7),
-    ATTR_VERTICAL = (1 << 8)
+    SURFACE_SKIDS = (1 << 6),
+    OBJ_GRASS = (1 << 7),
+    OBJ_TREE = (1 << 8),
+    ATTR_VERTICAL = (1 << 9)
 };
 
 MetaAttributes operator ~ (MetaAttributes a) {
@@ -247,6 +248,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(road_reg, "^ROAD(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(gravel_reg, "^GRAVEL(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(skids_reg, "^SKIDS(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 if (match[1].matched ||
@@ -272,6 +274,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (Mlib::re::regex_search(match[3].str(), side_reg)) {
                     attrs |= MetaAttributes::SURFACE_SIDE;
+                }
+                if (Mlib::re::regex_search(match[3].str(), skids_reg)) {
+                    attrs |= MetaAttributes::SURFACE_SKIDS;
                 }
                 if (Mlib::re::regex_search(match[3].str(), vertical_reg)) {
                     attrs |= MetaAttributes::ATTR_VERTICAL;
@@ -356,7 +361,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         (material.shader == "ksPerPixelMultiMap_AT") ||
                         (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
-                        tl.material.blend_mode = BlendMode::BINARY_05;
+                        if (any(attrs & MetaAttributes::SURFACE_SKIDS)) {
+                            tl.material.blend_mode = cfg.blend_mode;
+                        } else {
+                            tl.material.blend_mode = BlendMode::BINARY_05;
+                        }
                     } else if (material.shader == "ksPerPixelAlpha")
                     {
                         tl.material.blend_mode = cfg.blend_mode;
