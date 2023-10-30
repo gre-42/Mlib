@@ -76,10 +76,12 @@ public:
     explicit FixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& v) {
         std::copy(v.begin(), v.end(), flat_begin());
     }
-    explicit FixedArray(const TData* data, size_t nelements)
+    static FixedArray<TData, tshape0, tshape...> from_buffer(const TData* data, size_t nelements)
     {
-        assert(nelements == this->nelements());
-        std::copy(data, data + nelements, flat_begin());
+        FixedArray<TData, tshape0, tshape...> result;
+        assert(nelements == result.nelements());
+        std::copy(data, data + nelements, result.flat_begin());
+        return result;
     }
     template<typename... Values>
     FixedArray(const FixedArray<TData, tshape...>& v0, const Values&... values)
