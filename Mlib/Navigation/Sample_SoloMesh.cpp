@@ -698,7 +698,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
 
     std::list<FixedArray<float, 3>> smoothPath;
 
-    smoothPath.push_back(FixedArray<float, 3>(iterPos, 3));
+    smoothPath.push_back(FixedArray<float, 3>::from_buffer(iterPos, 3));
 
     // Move towards target a small advancement at a time until target reached or
     // when ran out of memory to store the path.
@@ -753,7 +753,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
             dtVcopy(iterPos, targetPos);
             if (smoothPath.size() < MAX_SMOOTH)
             {
-                smoothPath.push_back(FixedArray<float, 3>(iterPos, 3));
+                smoothPath.push_back(FixedArray<float, 3>::from_buffer(iterPos, 3));
             }
             break;
         }
@@ -781,7 +781,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
             {
                 if (smoothPath.size() < MAX_SMOOTH)
                 {
-                    smoothPath.push_back(FixedArray<float, 3>(startPos, 3));
+                    smoothPath.push_back(FixedArray<float, 3>::from_buffer(startPos, 3));
                     // Hack to make the dotted path not visible during off-mesh connection.
                     // if (nsmoothPath & 1)
                     // {
@@ -800,7 +800,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
         // Store results.
         if (smoothPath.size() < MAX_SMOOTH)
         {
-            smoothPath.push_back(FixedArray<float, 3>(iterPos, 3));
+            smoothPath.push_back(FixedArray<float, 3>::from_buffer(iterPos, 3));
         }
     }
     return smoothPath;
