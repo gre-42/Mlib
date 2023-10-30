@@ -39,52 +39,69 @@ HeightMapResource::HeightMapResource(
             FixedArray<size_t, 2> id1{r + 1, c + 1};
             FixedArray<float, 2> pos0 = normalization_matrix.transform(i2a(id0));
             FixedArray<float, 2> pos1 = normalization_matrix.transform(i2a(id1));
-            ColoredVertex<float> v00{
-                FixedArray<float, 3>{
-                    pos0(0),
-                    -pos0(1),
-                    Z(r, c)},
-                FixedArray<float, 3>{
-                    R(r, c),
-                    G(r, c),
-                    B(r, c)}};
-            ColoredVertex<float> v01{
-                FixedArray<float, 3>{
-                    pos1(0),
-                    -pos0(1),
-                    Z(r, c + 1)},
-                FixedArray<float, 3>{
-                    R(r, c + 1),
-                    G(r, c + 1),
-                    B(r, c + 1)}};
-            ColoredVertex<float> v10{
-                FixedArray<float, 3>{
-                    pos0(0),
-                    -pos1(1),
-                    Z(r + 1, c)},
-                FixedArray<float, 3>{
-                    R(r + 1, c),
-                    G(r + 1, c),
-                    B(r + 1, c)}};
-            ColoredVertex<float> v11{
-                FixedArray<float, 3>{
-                    pos1(0),
-                    -pos1(1),
-                    Z(r + 1, c + 1)},
-                FixedArray<float, 3>{
-                    R(r + 1, c + 1),
-                    G(r + 1, c + 1),
-                    B(r + 1, c + 1)}};
+            FixedArray<float, 3> p00{
+                pos0(0),
+                -pos0(1),
+                Z(r, c)};
+            FixedArray<float, 3> c00{
+                R(r, c),
+                G(r, c),
+                B(r, c)};
+            FixedArray<float, 3> p01{
+                pos1(0),
+                -pos0(1),
+                Z(r, c + 1)};
+            FixedArray<float, 3> c01{
+                R(r, c + 1),
+                G(r, c + 1),
+                B(r, c + 1)};
+            FixedArray<float, 3> p10{
+                pos0(0),
+                -pos1(1),
+                Z(r + 1, c)};
+            FixedArray<float, 3> c10{
+                R(r + 1, c),
+                G(r + 1, c),
+                B(r + 1, c)};
+            FixedArray<float, 3> p11{
+                pos1(0),
+                -pos1(1),
+                Z(r + 1, c + 1)};
+            FixedArray<float, 3> c11{
+                R(r + 1, c + 1),
+                G(r + 1, c + 1),
+                B(r + 1, c + 1)};
 
-            auto add_triangle = [&triangles](const ColoredVertex<float>& a, const ColoredVertex<float>& b, const ColoredVertex<float>& c) {
-                triangles.push_back(FixedArray<ColoredVertex<float>, 3>{a, b, c});
-                FixedArray<float, 3> normal = triangle_normal<float>({a.position, b.position, c.position});
-                triangles.back()(0).normal = normal;
-                triangles.back()(1).normal = normal;
-                triangles.back()(2).normal = normal;
+            auto add_triangle = [&triangles](
+                const FixedArray<float, 3>& p0,
+                const FixedArray<float, 3>& c0,
+                const FixedArray<float, 3>& p1,
+                const FixedArray<float, 3>& c1,
+                const FixedArray<float, 3>& p2,
+                const FixedArray<float, 3>& c2) {
+                FixedArray<float, 3> normal = triangle_normal<float>({p0, p1, p2});
+                triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
+                    ColoredVertex<float>{
+                        .position = p0,
+                        .color = c0,
+                        .uv = fixed_zeros<float, 2>(),
+                        .normal = normal,
+                        .tangent = fixed_zeros<float, 3>()},
+                    ColoredVertex<float>{
+                        .position = p1,
+                        .color = c1,
+                        .uv = fixed_zeros<float, 2>(),
+                        .normal = normal,
+                        .tangent = fixed_zeros<float, 3>()},
+                    ColoredVertex<float>{
+                        .position = p2,
+                        .color = c2,
+                        .uv = fixed_zeros<float, 2>(),
+                        .normal = normal,
+                        .tangent = fixed_zeros<float, 3>()}});
             };
-            add_triangle(v00, v11, v01);
-            add_triangle(v11, v00, v10);
+            add_triangle(p00, c00, p11, c11, p01, c01);
+            add_triangle(p11, c11, p00, c00, p10, c10);
         }
     }
     if (normal_type == NormalType::VERTEX) {
