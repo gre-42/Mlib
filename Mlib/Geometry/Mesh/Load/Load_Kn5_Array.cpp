@@ -104,6 +104,7 @@ enum class MetaAttributes {
     SURFACE_GRAVEL = (1 << 4),
     SURFACE_SIDE = (1 << 5),
     SURFACE_SKIDS = (1 << 6),
+    SURFACE_ANY = SURFACE_GRASS | SURFACE_ROAD | SURFACE_GRAVEL | SURFACE_SIDE | SURFACE_SKIDS,
     OBJ_GRASS = (1 << 7),
     OBJ_TREE = (1 << 8),
     ATTR_VERTICAL = (1 << 9)
@@ -317,7 +318,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 const auto& material = kn5.materials.at(node.materialID.value());
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
-                if (!any(attrs & MetaAttributes::SURFACE_GRASS) &&
+                if (!any(attrs & MetaAttributes::SURFACE_ANY) &&
                     (material.shader == "ksGrass"))
                 {
                     attrs |= MetaAttributes::OBJ_GRASS;
@@ -402,6 +403,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     lit_mult *
                     specular_mult};
                 tl.material.specular_exponent = material.ksSpecularEXP.value_or_default();
+                if (tl.material.specular_exponent == 0.f) {
+                    tl.material.specularity = 0.f;
+                }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material.shader == "ksGrass") &&
                     !material.txDiffuse.empty() &&
