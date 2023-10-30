@@ -90,11 +90,11 @@ void MinimapLogic::render(
             centered_texture_image_logic_.render(
                 canvas_size,
                 -angle,
-                FixedArray<float, 2, 2, 2>{
+                FixedArray<float, 2, 2, 2>::init(
                     p00(0), p01(0),
                     p10(0), p11(0),
                     p00(1), p01(1),
-                    p10(1), p11(1)});
+                    p10(1), p11(1)));
         }
     }
     {

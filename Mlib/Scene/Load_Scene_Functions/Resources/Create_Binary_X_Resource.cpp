@@ -38,9 +38,9 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
 
     auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min) * meters;
     auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max) * meters;
-    FixedArray<float, 2, 2> square{
+    auto square = FixedArray<float, 2, 2>::init(
         min(0), min(1),
-        max(0), max(1)};
+        max(0), max(1));
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),

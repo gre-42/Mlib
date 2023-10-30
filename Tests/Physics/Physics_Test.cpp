@@ -17,8 +17,8 @@ using namespace Mlib;
 
 void test_aim() {
     {
-        FixedArray<double, 3> gun_pos{1, 2, 3};
-        FixedArray<double, 3> target_pos{4, 2, 2};
+        FixedArray<double, 3> gun_pos{1., 2., 3.};
+        FixedArray<double, 3> target_pos{4., 2., 2.};
         {
             double velocity = 20;
             double gravity = 9.8;
@@ -36,8 +36,8 @@ void test_aim() {
     }
     {
         {
-            FixedArray<double, 3> gun_pos{1, 2, 3};
-            FixedArray<double, 3> target_pos{4, 2, 3};
+            FixedArray<double, 3> gun_pos{1., 2., 3.};
+            FixedArray<double, 3> target_pos{4., 2., 3.};
             double velocity = 10;
             double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 0, velocity, gravity, 1e-7, 10};
@@ -45,8 +45,8 @@ void test_aim() {
             assert_isclose(aim.aim_offset, 0.450965);
         }
         {
-            FixedArray<double, 3> gun_pos{1, 2, 3};
-            FixedArray<double, 3> target_pos{5, 2, 3};
+            FixedArray<double, 3> gun_pos{1., 2., 3.};
+            FixedArray<double, 3> target_pos{5., 2., 3.};
             double velocity = 10;
             double gravity = 9.8;
             Aim aim{gun_pos, target_pos, 1, velocity, gravity, 1e-7, 10};

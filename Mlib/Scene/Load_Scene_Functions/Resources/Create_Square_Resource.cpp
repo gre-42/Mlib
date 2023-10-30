@@ -74,9 +74,9 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
     auto billboard_atlas_instances = args.arguments.at<std::vector<BillboardAtlasInstance>>(KnownArgs::billboards, {});
     auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min) * meters;
     auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max) * meters;
-    FixedArray<float, 2, 2> square{
+    auto square = FixedArray<float, 2, 2>::init(
         min(0), min(1),
-        max(0), max(1)};
+        max(0), max(1));
     TransformationMatrix<float, float, 3> transformation(
         tait_bryan_angles_2_matrix(
             args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees),
@@ -113,7 +113,7 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         [square, transformation, material](){
             return std::make_shared<SquareResource>(
                 square,
-                FixedArray<float, 2, 2>{0.f, 0.f, 1.f, 1.f},
+                FixedArray<float, 2, 2>::init(0.f, 0.f, 1.f, 1.f),
                 transformation,
                 material);});
 };

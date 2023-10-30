@@ -178,9 +178,9 @@ void SingleWaypoint::move_to_waypoint() {
         z /= std::sqrt(zl2);
         auto p = player_rb.rbi_.rbp_.abs_position();
         auto wpt = FixedArray<double, 2>{waypoint_(0), waypoint_(2)} - FixedArray<double, 2>{p(0), p(2)};
-        FixedArray<double, 2, 2> m{
+        auto m = FixedArray<double, 2, 2>::init(
             z(1), -z(0),
-            z(0), z(1)};
+            z(0), z(1));
         wpt = dot1d(m, wpt);
         wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) * double(d_wpt);
         double wpt2 = sum(squared(wpt));

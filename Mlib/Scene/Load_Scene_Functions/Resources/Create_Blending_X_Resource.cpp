@@ -30,9 +30,9 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
 
     auto min = args.arguments.at<FixedArray<float, 2>>(KnownArgs::min);
     auto max = args.arguments.at<FixedArray<float, 2>>(KnownArgs::max);
-    FixedArray<float, 2, 2> square{
+    auto square = FixedArray<float, 2, 2>::init(
         min(0), min(1),
-        max(0), max(1)};
+        max(0), max(1));
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     Material material{
         .blend_mode = BlendMode::CONTINUOUS,

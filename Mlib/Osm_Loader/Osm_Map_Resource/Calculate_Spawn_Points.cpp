@@ -35,10 +35,10 @@ void Mlib::calculate_spawn_points(
             x /= std::sqrt(sum(squared(x)));
         }
         FixedArray<double, 3> z = cross(x, y);
-        FixedArray<double, 3, 3> R0{
+        auto R0 = FixedArray<double, 3, 3>::init(
             x(0), y(0), z(0),
             x(1), y(1), z(1),
-            x(2), y(2), z(2)};
+            x(2), y(2), z(2));
         auto r0 = matrix_2_tait_bryan_angles(R0).casted<float>();
         auto r1 = matrix_2_tait_bryan_angles(dot2d(rodrigues2(z, M_PI), R0)).casted<float>();
         auto create_spawn_point = [&spawn_points, &r, &ly, &scale](

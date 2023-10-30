@@ -708,10 +708,12 @@ void DrawStreets::draw_streets_add_waypoints(
                 },
                 .bumps_model = bumps_model,
                 .rectangle = FixedArray<FixedArray<double, 3>, 2, 2>{
-                    FixedArray<double, 3>{c1.s00(0), c1.s00(1), 0.f},
-                    FixedArray<double, 3>{c1.s01(0), c1.s01(1), 0.f},
-                    FixedArray<double, 3>{c1.s10(0), c1.s10(1), 0.f},
-                    FixedArray<double, 3>{c1.s11(0), c1.s11(1), 0.f}}});
+                    FixedArray<FixedArray<double, 3>, 2>{
+                        FixedArray<double, 3>{c1.s00(0), c1.s00(1), 0.f},
+                        FixedArray<double, 3>{c1.s01(0), c1.s01(1), 0.f}},
+                    FixedArray<FixedArray<double, 3>, 2>{
+                        FixedArray<double, 3>{c1.s10(0), c1.s10(1), 0.f},
+                        FixedArray<double, 3>{c1.s11(0), c1.s11(1), 0.f}}}});
         };
         std::string bumps_model = auto_model_name(
             node_id,
