@@ -286,10 +286,10 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
                 auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, gravity_direction);
                 x /= std::sqrt(sum(squared(x)));
                 auto z = cross(x, gravity_direction);
-                auto r1 = FixedArray<float, 3, 3>{
+                auto r1 = FixedArray<float, 3, 3>::init(
                     -z(0), -gravity_direction(0), -x(0),
                     -z(1), -gravity_direction(1), -x(1),
-                    -z(2), -gravity_direction(2), -x(2)};
+                    -z(2), -gravity_direction(2), -x(2));
                 rbi_.rbp_.rotation_ =
                     Quaternion<float>{ rbi_.rbp_.rotation_ }
                     .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)

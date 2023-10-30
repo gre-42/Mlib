@@ -69,10 +69,10 @@ Bush generate_bush(unsigned int nplanes, unsigned int seed) {
         n /= std::sqrt(sum(squared(n)));
         float angle = UniformRandomNumberGenerator<float>{(unsigned int)(seed + i + 1), 0.f, 2.f * float(M_PI)}();
         FixedArray<float, 3, 3> r = rodrigues2(n, angle);
-        FixedArray<float, 3, 4> face{
+        auto face = FixedArray<float, 3, 4>::init(
             -1.f, +1.f, +1.f, -1.f,
             -1.f, -1.f, +1.f, +1.f,
-             0.f,  0.f,  0.f,  0.f};
+             0.f,  0.f,  0.f,  0.f);
         FixedArray<float, 3, 4> tf = dot2d(r, face);
         for (unsigned int v = 0; v < 4; ++v) {
             result.vertices.push_back(Vertex{

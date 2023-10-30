@@ -245,8 +245,8 @@ void test_semi_fix() {
 
 void test_fixed_array_of_string() {
     FixedArray<std::string, 3, 4> a;
-    FixedArray<std::string, 2, 3> b{ "1", "2", "3", "4", "5", "6" };
-    std::cerr << a(1, 2) << " " << b(1, 2) << std::endl;
+    auto b = FixedArray<std::string, 3>{ std::string{"1"}, std::string{"2"}, std::string{"3"} };
+    std::cerr << a(1, 2) << " " << b(2) << std::endl;
 }
 
 int main(int argc, char **argv) {

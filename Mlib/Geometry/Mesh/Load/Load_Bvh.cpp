@@ -11,11 +11,11 @@ using namespace Mlib;
 
 FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& name) {
     if (name == "xz-y") {
-        return FixedArray<float, 4, 4>{
+        return FixedArray<float, 4, 4>::init(
             1.f,  0.f, 0.f, 0.f,
             0.f,  0.f, 1.f, 0.f,
             0.f, -1.f, 0.f, 0.f,
-            0.f,  0.f, 0.f, 1.f};
+            0.f,  0.f, 0.f, 1.f);
     } else {
         THROW_OR_ABORT("Unknown parameter transformation: " + name);
     }

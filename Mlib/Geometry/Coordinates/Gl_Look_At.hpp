@@ -12,10 +12,10 @@ FixedArray<TData, 3, 3> gl_lookat_relative(
     auto dx = cross(dy0, -dz);
     dx /= std::sqrt(sum(squared(dx)));
     FixedArray<TData, 3> dy = cross(-dz, dx);
-    return FixedArray<TData, 3, 3>{
+    return FixedArray<TData, 3, 3>::init(
         dx(0), dy(0), -dz(0),
         dx(1), dy(1), -dz(1),
-        dx(2), dy(2), -dz(2)};
+        dx(2), dy(2), -dz(2));
 }
 
 template <class TData>

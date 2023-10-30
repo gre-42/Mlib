@@ -122,8 +122,8 @@ void ImposterLogic::add_imposter(
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
     material.compute_color_mode();
     SquareResource res{
-        FixedArray<float, 2, 2>{ips.pos.min()(0), ips.pos.min()(1), ips.pos.max()(0), ips.pos.max()(1)},
-        FixedArray<float, 2, 2>{ips.uv.min()(0), ips.uv.min()(1), ips.uv.max()(0), ips.uv.max()(1)},
+        FixedArray<float, 2, 2>::init(ips.pos.min()(0), ips.pos.min()(1), ips.pos.max()(0), ips.pos.max()(1)),
+        FixedArray<float, 2, 2>::init(ips.uv.min()(0), ips.uv.min()(1), ips.uv.max()(0), ips.uv.max()(1)),
         TransformationMatrix<float, float, 3>::identity(),
         material};
     auto new_imposter_node = make_dunique<SceneNode>();

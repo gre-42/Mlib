@@ -57,11 +57,11 @@ void CircularDataDisplay::render(
                 canvas_size,
                 indicator_angle(std::clamp(value, minimum_value_, maximum_value_)),
                 canvas_size / 2.f,
-                FixedArray<float, 2, 2, 2>{
+                FixedArray<float, 2, 2, 2>::init(
                     p00(0), p01(0),
                     p10(0), p11(0),
                     p00(1), p01(1),
-                    p10(1), p11(1)});
+                    p10(1), p11(1)));
         }
     }
 }

@@ -58,54 +58,40 @@ public:
         return shape().ndim();
     }
 
-    FixedArray() {
-        if constexpr (!std::is_fundamental_v<TData>) {
-            for (TData& v : flat_iterable()) {
-                new(&v) TData();
-            }
-        }
-    }
+    FixedArray() {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
-            new(&v) TData(rhs);
+            v = rhs;
         }
     }
     explicit FixedArray(const Array<TData>& a) {
         assert(all(a.shape() == ArrayShape{tshape0, tshape...}));
-        const TData* s = a.flat_begin();
-        TData* d = flat_begin();
-        for (size_t i = 0; i < nelements(); ++i) {
-            new(d + i) TData(s[i]);
-        }
+        std::copy(a.flat_begin(), a.flat_end(), flat_begin());
     }
     explicit FixedArray(const std::vector<TData>& v) {
         assert(v.size() == nelements());
-        const TData* s = v.data();
-        TData* d = flat_begin();
-        for (size_t i = 0; i < nelements(); ++i) {
-            new(d + i) TData(s[i]);
-        }
+        std::copy(v.begin(), v.end(), flat_begin());
     }
     explicit FixedArray(const ArrayShape& shape);
-    explicit FixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& a) {
-        const TData* s = a.data();
-        TData* d = flat_begin();
-        for (size_t i = 0; i < nelements(); ++i) {
-            new(d + i) TData(s[i]);
-        }
+    explicit FixedArray(const std::array<TData, FixedArray<TData, tshape0, tshape...>::nelements()>& v) {
+        std::copy(v.begin(), v.end(), flat_begin());
     }
-    explicit FixedArray(const TData* src, size_t nelements)
+    explicit FixedArray(const TData* data, size_t nelements)
     {
         assert(nelements == this->nelements());
-        TData* d = flat_begin();
-        for (size_t i = 0; i < this->nelements(); ++i) {
-            new(d + i) TData(src[i]);
-        }
+        std::copy(data, data + nelements, flat_begin());
     }
     template<typename... Values>
-    FixedArray(const TData& v0, const Values&... values) {
+    FixedArray(const TData& v0, const Values&... values)
+    : data_{v0, values...}
+    {}
+    template<typename... Values>
+    static FixedArray<TData, tshape0, tshape...> init(const TData& v0, const Values&... values) {
+        static_assert(std::is_trivially_constructible_v<TData>);
         static_assert(1 + sizeof...(values) == nelements());
-        set_values<0>(v0, values...);
+        FixedArray<TData, tshape0, tshape...> result;
+        result.set_values<0>(v0, values...);
+        return result;
     }
     FixedArray& operator = (const TData& rhs) {
         for (TData& v : flat_iterable()) {
@@ -116,20 +102,20 @@ public:
     template <typename... Ids>
     const TData& operator() (size_t id0, Ids... ids) const {
         assert(id0 < tshape0);
-        return data()[id0](ids...);
+        return data_[id0](ids...);
     }
     template <typename... Ids>
     TData& operator() (size_t id0, Ids... ids) {
         assert(id0 < tshape0);
-        return data()[id0](ids...);
+        return data_[id0](ids...);
     }
     const FixedArray<TData, tshape...>& operator [] (size_t id) const {
         assert(id < tshape0);
-        return data()[id];
+        return data_[id];
     }
     FixedArray<TData, tshape...>& operator [] (size_t id) {
         assert(id < tshape0);
-        return data()[id];
+        return data_[id];
     }
     constexpr PointerIterable<const TData> flat_iterable() const {
         return PointerIterable<const TData>{flat_begin(), flat_end()};
@@ -141,14 +127,14 @@ public:
         if (tshape0 == 0) {
             return nullptr;
         } else {
-            return data()[0].flat_begin();
+            return data_[0].flat_begin();
         }
     }
     constexpr TData* flat_end() {
         if (tshape0 == 0) {
             return nullptr;
         } else {
-            return data()[tshape0 - 1].flat_end();
+            return data_[tshape0 - 1].flat_end();
         }
     }
     constexpr const TData* flat_begin() const {
@@ -372,19 +358,12 @@ private:
     template<size_t i, typename... Values>
     void set_values(const TData& v, const Values&... values) {
         static_assert(i < nelements());
-        new(flat_begin() + i) TData(v);
+        static_assert(std::is_fundamental_v<TData>);
+        *(flat_begin() + i) = v;
         // (*this)(i) = v;
         set_values<i + 1>(values...);
     }
-    inline FixedArray<TData, tshape...>* data() {
-        static_assert(sizeof(FixedArray<TData, tshape...>) == sizeof(FixedArray<char[sizeof(TData)], tshape...>));
-        return reinterpret_cast<FixedArray<TData, tshape...>*>(data_);
-    }
-    inline const FixedArray<TData, tshape...>* data() const {
-        static_assert(sizeof(FixedArray<TData, tshape...>) == sizeof(FixedArray<char[sizeof(TData)], tshape...>));
-        return reinterpret_cast<const FixedArray<TData, tshape...>*>(data_);
-    }
-    FixedArray<char[sizeof(TData)], tshape...> data_[tshape0];
+    FixedArray<TData, tshape...> data_[tshape0];
 };
 
 template <typename TData>
@@ -394,7 +373,7 @@ public:
     typedef TData value_type;
 
     FixedArray() {}
-    explicit FixedArray(const TData& v)
+    FixedArray(const TData& v)
     : value_(v)
     {}
     template <typename... Ids>

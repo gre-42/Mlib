@@ -91,18 +91,18 @@ inline FixedArray<TData, 3> t3_from_4x4(const FixedArray<TData, 4, 4>& a) {
 template <class TData>
 inline FixedArray<TData, 2, 2> R2_from_3x3(const FixedArray<TData, 3, 3>& a)
 {
-    return FixedArray<TData, 2, 2>{
+    return FixedArray<TData, 2, 2>::init(
         a(0u, 0u), a(0u, 1u),
-        a(1u, 0u), a(1u, 1u)};
+        a(1u, 0u), a(1u, 1u));
 }
 
 template <class TData>
 inline FixedArray<TData, 3, 3> R3_from_4x4(const FixedArray<TData, 4, 4>& a)
 {
-    return FixedArray<TData, 3, 3>{
+    return FixedArray<TData, 3, 3>::init(
         a(0u, 0u), a(0u, 1u), a(0u, 2u),
         a(1u, 0u), a(1u, 1u), a(1u, 2u),
-        a(2u, 0u), a(2u, 1u), a(2u, 2u)};
+        a(2u, 0u), a(2u, 1u), a(2u, 2u));
 }
 
 Array<float> inverted_homogeneous_3x4(const Array<float>& ke);
@@ -116,9 +116,9 @@ inline FixedArray<TData, 2, 3> assemble_homogeneous_2x3(
     const FixedArray<TData, 2, 2>& R,
     const FixedArray<TData, 2>& t)
 {
-    return FixedArray<TData, 2, 3>{
+    return FixedArray<TData, 2, 3>::init(
         R(0u, 0u), R(0u, 1u), t(0u),
-        R(1u, 0u), R(1u, 1u), t(1u)};
+        R(1u, 0u), R(1u, 1u), t(1u));
 }
 
 template <class TData>
@@ -126,10 +126,10 @@ inline FixedArray<TData, 3, 4> assemble_homogeneous_3x4(
     const FixedArray<TData, 3, 3>& R,
     const FixedArray<TData, 3>& t)
 {
-    return FixedArray<TData, 3, 4>{
+    return FixedArray<TData, 3, 4>::init(
         R(0u, 0u), R(0u, 1u), R(0u, 2u), t(0u),
         R(1u, 0u), R(1u, 1u), R(1u, 2u), t(1u),
-        R(2u, 0u), R(2u, 1u), R(2u, 2u), t(2u)};
+        R(2u, 0u), R(2u, 1u), R(2u, 2u), t(2u));
 }
 
 template <class TData>
@@ -137,10 +137,10 @@ inline FixedArray<TData, 3, 3> assemble_homogeneous_3x3(
     const FixedArray<TData, 2, 2>& R,
     const FixedArray<TData, 2>& t)
 {
-    return FixedArray<TData, 3, 3>{
+    return FixedArray<TData, 3, 3>::init(
             R(0u, 0u), R(0u, 1u), t(0u),
             R(1u, 0u), R(1u, 1u), t(1u),
-            TData{0}, TData{0}, TData{1}};
+            TData{0}, TData{0}, TData{1});
 }
 
 template <class TData>
@@ -148,11 +148,11 @@ inline FixedArray<TData, 4, 4> assemble_homogeneous_4x4(
     const FixedArray<TData, 3, 3>& R,
     const FixedArray<TData, 3>& t)
 {
-    return FixedArray<TData, 4, 4>{
+    return FixedArray<TData, 4, 4>::init(
             R(0u, 0u), R(0u, 1u), R(0u, 2u), t(0u),
             R(1u, 0u), R(1u, 1u), R(1u, 2u), t(1u),
             R(2u, 0u), R(2u, 1u), R(2u, 2u), t(2u),
-            TData{0}, TData{0}, TData{0}, TData{1}};
+            TData{0}, TData{0}, TData{0}, TData{1});
 }
 
 Array<float> assemble_inverse_homogeneous_3x4(const Array<float>& R, const Array<float>& t);
@@ -252,17 +252,17 @@ FixedArray<TData, n - 1> t_from_NxN1(const FixedArray<TData, n - 1, n>& a);
 
 template <>
 inline FixedArray<float, 2, 2> R_from_NxN1(const FixedArray<float, 2, 3>& a) {
-    return FixedArray<float, 2, 2>{
+    return FixedArray<float, 2, 2>::init(
         a(0u, 0u), a(0u, 1u),
-        a(1u, 0u), a(1u, 1u)};
+        a(1u, 0u), a(1u, 1u));
 }
 
 template <>
 inline FixedArray<float, 3, 3> R_from_NxN1(const FixedArray<float, 3, 4>& a) {
-    return FixedArray<float, 3, 3>{
+    return FixedArray<float, 3, 3>::init(
         a(0u, 0u), a(0u, 1u), a(0u, 2u),
         a(1u, 0u), a(1u, 1u), a(1u, 2u),
-        a(2u, 0u), a(2u, 1u), a(2u, 2u)};
+        a(2u, 0u), a(2u, 1u), a(2u, 2u));
 }
 
 template <>

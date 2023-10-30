@@ -40,8 +40,8 @@ FixedArray<float, 3, 3> NormalizedPoints::normalization_matrix() const {
     if (preserve_aspect_ratio_) {
         dx = dy = std::max(dx, dy);
     }
-    return FixedArray<float, 3, 3>{
+    return FixedArray<float, 3, 3>::init(
         1 / dx, 0.f, -sx / dx, // (p - sx) / dx = p/dx - sx/dx
         0.f, 1 / dy, -sy / dy, // (p - sy) / dy = p/dy - sy/dy
-        0.f, 0.f, 1.f};
+        0.f, 0.f, 1.f);
 }

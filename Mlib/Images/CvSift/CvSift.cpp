@@ -370,10 +370,10 @@ static bool adjustLocalExtrema( const std::vector<Mat<int16_t>>& dog_pyr, KeyPoi
         float dys = (next.array((size_t)r+1, (size_t)c) - next.array((size_t)r-1, (size_t)c) -
                      prev.array((size_t)r+1, (size_t)c) + prev.array((size_t)r-1, (size_t)c))*cross_deriv_scale;
 
-        FixedArray<float, 3, 3> H{
+        auto H = FixedArray<float, 3, 3>::init(
             dxx, dxy, dxs,
             dxy, dyy, dys,
-            dxs, dys, dss};
+            dxs, dys, dss);
 
         FixedArray<float, 3> X = lstsq_chol_1d(H, dD).value();
         if (any(Mlib::isnan(X))) {

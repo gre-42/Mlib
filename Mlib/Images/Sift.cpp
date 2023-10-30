@@ -206,10 +206,10 @@ FixedArray<float, 3, 3> computeHessianAtCenterPixel(const FixedArray<float, 3, 3
     float dxy = 0.25f * (pixel_array(1u, 2u, 2u) - pixel_array(1u, 2u, 0u) - pixel_array(1u, 0u, 2u) + pixel_array(1u, 0u, 0u));
     float dxs = 0.25f * (pixel_array(2u, 1u, 2u) - pixel_array(2u, 1u, 0u) - pixel_array(0u, 1u, 2u) + pixel_array(0u, 1u, 0u));
     float dys = 0.25f * (pixel_array(2u, 2u, 1u) - pixel_array(2u, 0u, 1u) - pixel_array(0u, 2u, 1u) + pixel_array(0u, 0u, 1u));
-    return FixedArray<float, 3, 3>{
+    return FixedArray<float, 3, 3>::init(
         dxx, dxy, dxs,
         dxy, dyy, dys,
-        dxs, dys, dss};
+        dxs, dys, dss);
 }
 
 bool localizeExtremumViaQuadraticFit(
@@ -280,9 +280,9 @@ bool localizeExtremumViaQuadraticFit(
     }
     float functionValueAtUpdatedExtremum = pixel_cube(1u, 1u, 1u) + 0.5f * dot0d(gradient, extremum_update);
     if (std::abs(functionValueAtUpdatedExtremum) * float(num_intervals) >= contrast_threshold) {
-        FixedArray<float, 2, 2> xy_hessian{
+        auto xy_hessian = FixedArray<float, 2, 2>::init(
             hessian(0u, 0u), hessian(0u, 1u),
-            hessian(1u, 0u), hessian(1u, 1u)};
+            hessian(1u, 0u), hessian(1u, 1u));
         float xy_hessian_trace = trace2x2(xy_hessian);
         float xy_hessian_det = det2x2(xy_hessian);
         if (xy_hessian_det > 0 and eigenvalue_ratio * squared(xy_hessian_trace) < squared((eigenvalue_ratio + 1)) * xy_hessian_det) {

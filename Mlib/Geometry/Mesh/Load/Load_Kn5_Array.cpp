@@ -26,10 +26,10 @@ using namespace Mlib;
 
 static const FixedArray<double, 3> SPAWN_OFFSET = {0., 2., 0.};
 
-static const FixedArray<float, 3, 3> M = {
+static const auto M = FixedArray<float, 3, 3>::init(
     -1.f, 0.f, 0.f,
     0.f, 1.f, 0.f,
-    0.f, 0.f, -1.f};
+    0.f, 0.f, -1.f);
 
 FixedArray<float, 3, 3> trafo(const FixedArray<float, 3, 3>& R) {
     return dot2d(dot2d(M.T(), R), M);
@@ -74,10 +74,10 @@ static TransformationMatrix<float, double, 3> ac_portal(
     x /= std::sqrt(sum(squared(x)));
     auto z = cross(x, y);
     return TransformationMatrix<float, double, 3>{
-        FixedArray<float, 3, 3>{
+        FixedArray<float, 3, 3>::init(
             x(0), y(0), z(0),
             x(1), y(1), z(1),
-            x(2), y(2), z(2)},
+            x(2), y(2), z(2)),
         (left.t() + right.t()) / 2.};
 }
 

@@ -36,10 +36,10 @@
 using namespace Mlib;
 
 void test_special_tait_bryan_angles() {
-    FixedArray<float, 3, 3> R{
+    auto R = FixedArray<float, 3, 3>::init(
         (float)1.60828e-07, (float)0.207579, (float)0.978218,
         (float)0, (float)0.978218, (float)-0.207579,
-        (float)-1, (float)3.33845e-08, (float)1.57325e-07};
+        (float)-1, (float)3.33845e-08, (float)1.57325e-07);
     Quaternion<float> q{ R };
     assert_allclose(
         tait_bryan_angles_2_matrix(q.to_tait_bryan_angles()),
@@ -201,12 +201,12 @@ void test_lines_to_rectangles() {
     FixedArray<double, 2> p01;
     FixedArray<double, 2> p10;
     FixedArray<double, 2> p11;
-    FixedArray<double, 2> aL{-1, 1};
-    FixedArray<double, 2> aR{-2, -2};
-    FixedArray<double, 2> b{0, 0};
-    FixedArray<double, 2> c{1, 0};
-    FixedArray<double, 2> dL{2, 1};
-    FixedArray<double, 2> dR{2, -1};
+    FixedArray<double, 2> aL{-1., 1.};
+    FixedArray<double, 2> aR{-2., -2.};
+    FixedArray<double, 2> b{0., 0.};
+    FixedArray<double, 2> c{1., 0.};
+    FixedArray<double, 2> dL{2., 1.};
+    FixedArray<double, 2> dR{2., -1.};
     float width_aLb = 0.2f;
     float width_aRb = 0.2f;
     float width_bcL = 0.2f;
@@ -482,23 +482,23 @@ void test_smallest_angle_in_triangle() {
 }
 
 void test_rotate_intrinsic_matrix() {
-    TransformationMatrix<float, float, 2> intrinsic_matrix{FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{FixedArray<float, 3, 3>::init(
         100.f, 0.f, 51.f,
         0.f, 200.f, 107.f,
-        0.f, 0.f, 1.f}};
+        0.f, 0.f, 1.f)};
     FixedArray<size_t, 2> sensor_size{ 100u, 200u };
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 1).affine(),
-        FixedArray<float, 3, 3>{
+        FixedArray<float, 3, 3>::init(
             200.f, 0.f, 107.f,
             0.f, 100.f, 49.f,
-            0.f, 0.f, 1.f});
+            0.f, 0.f, 1.f));
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
-        FixedArray<float, 3, 3>{
+        FixedArray<float, 3, 3>::init(
             200.f, 0.f, 93.f,
             0.f, 100.f, 51.f,
-            0.f, 0.f, 1.f});
+            0.f, 0.f, 1.f));
     assert_allclose(
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, -1).affine(),
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 3).affine());

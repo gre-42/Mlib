@@ -22,11 +22,7 @@ struct BvhConfig {
     // https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/BVH.html
     // v*R = v*YXZ
     FixedArray<size_t, 3> rotation_order = {1u, 0u, 2u};
-    FixedArray<float, 4, 4> parameter_transformation = {
-        1.f, 0.f, 0.f, 0.f,
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 1.f, 0.f,
-        0.f, 0.f, 0.f, 1.f };
+    FixedArray<float, 4, 4> parameter_transformation = fixed_identity_array<float, 4>();
 };
 
 static const BvhConfig blender_bvh_config{
@@ -36,11 +32,11 @@ static const BvhConfig blender_bvh_config{
     .demean = false,
     .scale = 1,
     .rotation_order = {2u, 1u, 0u},
-    .parameter_transformation = {
+    .parameter_transformation = FixedArray<float, 4, 4>::init(
         1.f,  0.f, 0.f, 0.f,
         0.f,  0.f, 1.f, 0.f,
         0.f, -1.f, 0.f, 0.f,
-        0.f,  0.f, 0.f, 1.f}};
+        0.f,  0.f, 0.f, 1.f)};
 
 FixedArray<float, 4, 4> get_parameter_transformation(const std::string& name);
 
