@@ -25,9 +25,9 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>}",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>} [--mip_level_count]",
         {},
-        {"--kn5"});
+        {"--kn5", "--mip_level_count"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
@@ -101,6 +101,7 @@ int main(int argc, char** argv)
             rendering_resources.generate_auto_texture_atlas(
                 "__texture__",
                 std::vector(names.begin(), names.end()),
+                safe_stoi(parsed.named_value("--mip_level_count")),
                 &atlas);
         } else {
             rendering_resources.add_texture_descriptor(

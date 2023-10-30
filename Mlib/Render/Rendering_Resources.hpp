@@ -119,6 +119,7 @@ public:
     std::map<std::string, AutoUvTile> generate_auto_texture_atlas(
         const std::string& name,
         const std::vector<std::string>& filenames,
+        int mip_level_count,
         AutoTextureAtlasDescriptor* atlas = nullptr);
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);
 

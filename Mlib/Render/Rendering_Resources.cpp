@@ -970,6 +970,7 @@ std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_
 std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atlas(
     const std::string& name,
     const std::vector<std::string>& filenames,
+    int mip_level_count,
     AutoTextureAtlasDescriptor* atlas)
 {
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
@@ -994,7 +995,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     AutoTextureAtlasDescriptor tad{
         .width = atlas_size_2d(0),
         .height = atlas_size_2d(1),
-        .mip_level_count = 3,
+        .mip_level_count = mip_level_count,
         .color_mode = ColorMode::RGBA,
         .tiles = {}
     };

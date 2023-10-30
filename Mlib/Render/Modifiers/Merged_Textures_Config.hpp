@@ -21,6 +21,7 @@ struct MergedTexturesConfig {
     float max_triangle_distance;
     bool cull_faces;
     FixedArray<float, 3> ambience;
+    int mip_level_count;
 };
 
 }
