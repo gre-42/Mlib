@@ -82,7 +82,7 @@ public:
         std::copy(data, data + nelements, flat_begin());
     }
     template<typename... Values>
-    FixedArray(const TData& v0, const Values&... values)
+    FixedArray(const FixedArray<TData, tshape...>& v0, const Values&... values)
     : data_{v0, values...}
     {}
     template<typename... Values>

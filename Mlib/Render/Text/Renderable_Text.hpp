@@ -17,7 +17,7 @@ struct TextRenderProgram: public RenderProgram {
 };
 
 struct VData {
-    VData() = default;
+    VData() {}
     VData(float x, float y, float s, float t)
     : pos{ x, y },
       uv{ s, t }

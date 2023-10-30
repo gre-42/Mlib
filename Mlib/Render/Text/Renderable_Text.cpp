@@ -114,14 +114,17 @@ void TextResource::set_contents(
                 stbtt_aligned_quad q;
                 stbtt_GetBakedQuad(loaded_font_->cdata.data(), TEXTURE_SIZE, TEXTURE_SIZE, c - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
                 // update VBO for each character
-                vdata_.push_back(Letter::init(
-                    VData{ q.x0, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s0, q.t0 },
-                    VData{ q.x0, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s0, q.t1 },
-                    VData{ q.x1, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s1, q.t1 },
-
-                    VData{ q.x0, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s0, q.t0 },
-                    VData{ q.x1, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s1, q.t1 },
-                    VData{ q.x1, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s1, q.t0 }));
+                vdata_.push_back(Letter{
+                    FixedArray<VData, 3>{
+                        VData{ q.x0, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s0, q.t0 },
+                        VData{ q.x0, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s0, q.t1 },
+                        VData{ q.x1, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s1, q.t1 }
+                    },
+                    FixedArray<VData, 3>{
+                        VData{ q.x0, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s0, q.t0 },
+                        VData{ q.x1, canvas_size(1) - q.y1 - loaded_font_->bottom_y, q.s1, q.t1 },
+                        VData{ q.x1, canvas_size(1) - q.y0 - loaded_font_->bottom_y, q.s1, q.t0 }
+                    }});
             } else if (c == '\n') {
                 x = center(0) ? 0.f : tp.position(0);
                 y = center(1) ? 0.f : tp.position(1) + float(++line_number) * tp.line_distance + font_height * float(tp.align == AlignText::TOP);
