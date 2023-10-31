@@ -18,6 +18,7 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -25,14 +26,16 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>} [--mip_level_count]",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>} [--mip_level_count] [--mip_level]",
         {},
-        {"--kn5", "--mip_level_count"});
+        {"--kn5", "--mip_level_count", "--mip_level"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
 
         parsed.assert_num_unnamed(1);
+
+        reserve_realtime_threads(0);
 
         // glfw: initialize and configure
         // ------------------------------
@@ -130,7 +133,10 @@ int main(int argc, char** argv)
             if (ftl.has_value()) {
                 ftl.value().render();
             } else if (!atlas.tiles.empty()) {
-                render_texture_atlas(rendering_resources, atlas.tiles.front(), 0);
+                render_texture_atlas(
+                    rendering_resources,
+                    atlas.tiles.front(),
+                    safe_stoi(parsed.named_value("--mip_level")));
             }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

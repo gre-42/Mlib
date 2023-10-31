@@ -16,6 +16,7 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -26,6 +27,9 @@ int main(int argc, char** argv)
         if (argc != 3) {
             throw std::runtime_error("Usage: render_text filename.ttf texture.{png,jpg}");
         }
+
+        reserve_realtime_threads(0);
+
         // glfw: initialize and configure
         // ------------------------------
         GLFW_CHK(glfwInit());
