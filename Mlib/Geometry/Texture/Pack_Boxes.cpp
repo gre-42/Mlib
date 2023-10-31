@@ -31,7 +31,7 @@ std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
         if (size(1) > container_size(1)) {
             THROW_OR_ABORT("Height of box is too large");
         }
-        if (left + size(0) >= container_size(0)) {
+        if (left + size(0) > container_size(0)) {
             left = 0;
             bottom += height;
             height = size(1);

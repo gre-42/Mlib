@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -26,9 +27,9 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex>} [--mip_level_count] [--mip_level]",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> --mip_level_count <n> --mip_level <n> --atlas_layer <n>}",
         {},
-        {"--kn5", "--mip_level_count", "--mip_level"});
+        {"--kn5", "--mip_level_count", "--mip_level", "--atlas_layer"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
@@ -92,6 +93,7 @@ int main(int argc, char** argv)
                 if (!Mlib::re::regex_search(name, re)) {
                     continue;
                 }
+                linfo() << "Matched: " << name;
                 names.push_back(name);
                 rendering_resources.insert_texture(
                     name,
@@ -106,6 +108,12 @@ int main(int argc, char** argv)
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
                 &atlas);
+            for (const auto& [i, t] : enumerate(atlas.tiles)) {
+                linfo() << "Layer: " << i;
+                for (const auto& d : t) {
+                    linfo() << "  Filename: " << d.filename << ' ' << d.width << 'x' << d.height;
+                }
+            }
         } else {
             rendering_resources.add_texture_descriptor(
                 "__texture__",
@@ -116,6 +124,7 @@ int main(int argc, char** argv)
             ftl.emplace(rendering_resources, "__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
         }
 
+        auto atlas_tiles = std::vector(atlas.tiles.begin(), atlas.tiles.end());
         // render loop
         // -----------
         while (!glfwWindowShouldClose(&window.glfw_window()))
@@ -132,10 +141,14 @@ int main(int argc, char** argv)
 
             if (ftl.has_value()) {
                 ftl.value().render();
-            } else if (!atlas.tiles.empty()) {
+            } else if (!atlas_tiles.empty()) {
+                auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
+                if (layer >= atlas_tiles.size()) {
+                    THROW_OR_ABORT("Layer index out of bounds");
+                }
                 render_texture_atlas(
                     rendering_resources,
-                    atlas.tiles.front(),
+                    atlas_tiles.at(safe_stoz(parsed.named_value("--atlas_layer"))),
                     safe_stoi(parsed.named_value("--mip_level")));
             }
 
@@ -144,8 +157,8 @@ int main(int argc, char** argv)
             window.draw();
             GLFW_CHK(glfwPollEvents());
         }
-    } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        lerr() << e.what();
         return 1;
     }
 }
