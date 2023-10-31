@@ -10,14 +10,15 @@ using namespace Mlib;
 void Mlib::render_texture_atlas(
     RenderingResources& rendering_resources,
     const std::vector<AutoAtlasTileDescriptor>& tiles,
-    int level)
+    float scale_width,
+    float scale_height)
 {
     for (const auto& tile : tiles) {
         ViewportGuard vg{
-            (float)tile.left / (float)(1 << level),
-            (float)tile.bottom / (float)(1 << level),
-            (float)tile.width / (float)(1 << level),
-            (float)tile.height / (float)(1 << level)};
+            (float)tile.left * scale_width,
+            (float)tile.bottom * scale_height,
+            (float)tile.width * scale_width,
+            (float)tile.height * scale_height};
         FillWithTextureLogic logic{
             rendering_resources,
             tile.filename,

@@ -124,7 +124,6 @@ int main(int argc, char** argv)
             ftl.emplace(rendering_resources, "__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
         }
 
-        auto atlas_tiles = std::vector(atlas.tiles.begin(), atlas.tiles.end());
         // render loop
         // -----------
         while (!glfwWindowShouldClose(&window.glfw_window()))
@@ -141,15 +140,20 @@ int main(int argc, char** argv)
 
             if (ftl.has_value()) {
                 ftl.value().render();
-            } else if (!atlas_tiles.empty()) {
+            } else if (!atlas.tiles.empty()) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
-                if (layer >= atlas_tiles.size()) {
+                if (layer >= atlas.tiles.size()) {
                     THROW_OR_ABORT("Layer index out of bounds");
+                }
+                float scale = std::pow(2.f, -safe_stof(parsed.named_value("--mip_level")));
+                if (std::isnan(scale)) {
+                    THROW_OR_ABORT("Scale is NAN");
                 }
                 render_texture_atlas(
                     rendering_resources,
-                    atlas_tiles.at(safe_stoz(parsed.named_value("--atlas_layer"))),
-                    safe_stoi(parsed.named_value("--mip_level")));
+                    atlas.tiles.at(safe_stoz(parsed.named_value("--atlas_layer"))),
+                    scale,
+                    scale);
             }
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

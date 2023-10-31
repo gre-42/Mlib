@@ -11,7 +11,6 @@
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
 #include <functional>
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -65,7 +64,7 @@ struct AutoTextureAtlasDescriptor {
     int height;
     int mip_level_count;
     ColorMode color_mode;
-    std::list<std::vector<AutoAtlasTileDescriptor>> tiles;
+    std::vector<std::vector<AutoAtlasTileDescriptor>> tiles;
 };
 
 std::ostream& operator << (std::ostream& ostr, const AutoTextureAtlasDescriptor& atad);

@@ -15,19 +15,19 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
-#include <Mlib/Render/Instance_Handles/Array_Frame_Buffer.hpp>
+#include <Mlib/Render/Gl_Extensions.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
+#include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -639,10 +639,6 @@ static GLenum nchannels2format(size_t nchannels) {
     };
 }
 
-// From: https://gamedev.stackexchange.com/questions/70829/why-is-gl-texture-max-anisotropy-ext-undefined/75816#75816?newreg=a7ddca6a76bf40b794c36dbe189c64b6
-#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
-#define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
-
 GLuint RenderingResources::get_texture(
     const ColormapWithModifiers& name,
     const TextureDescriptor& descriptor,
@@ -683,44 +679,25 @@ GLuint RenderingResources::get_texture(
             THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color.filename + '"');
         }
         const auto &adesc = ait.mapped();
-        CHK(glGenTextures(1, &texture));
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
-        CHK(glTexStorage3D(
-            GL_TEXTURE_2D_ARRAY,
-            adesc.mip_level_count,
-            nchannels2sized_internal_format((GLenum)adesc.color_mode),
+        texture = render_to_texture_2d_array(
             adesc.width,
             adesc.height,
-            integral_cast<GLsizei>(adesc.tiles.size())));
-        if ((desc.anisotropic_filtering_level != 0) &&
-            (max_anisotropic_filtering_level_ != 0) &&
-            (aniso != 0))
-        {
-            CHK(glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
-        }
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
-        for (const auto& [layer, tiles] : enumerate(adesc.tiles)) {
-            for (int level = 0; level < adesc.mip_level_count; ++level) {
-                ArrayFrameBufferStorage afbs{texture, level, integral_cast<int>(layer)};
-                clear_color({0.f, 0.f, 0.f, 0.f});
-                CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-                render_texture_atlas(*const_cast<RenderingResources*>(this), tiles, level);
-                // // Disable the ArrayFrameBufferStorage above for the following code to work.
-                // static SaveMovie save_movie;
-                // save_movie.save(
-                //     "/tmp/atlas_",
-                //     "_layer",
-                //     integral_cast<size_t>(adesc.width / (1 << level)),
-                //     integral_cast<size_t>(adesc.height / (1 << level)));
-            }
-        }
+            integral_cast<GLsizei>(adesc.tiles.size()),
+            adesc.mip_level_count,
+            aniso,
+            nchannels2sized_internal_format((GLenum)adesc.color_mode),
+            [this, &adesc](GLsizei width, GLsizei height, GLsizei layer, GLsizei level)
+            {
+                render_texture_atlas(
+                    *const_cast<RenderingResources*>(this),
+                    adesc.tiles.at(layer),
+                    width / (float)adesc.width,
+                    height / (float)adesc.height);
+            });
     } else {
         CHK(glGenTextures(1, &texture));
         CHK(glBindTexture(GL_TEXTURE_2D, texture));
-        if ((desc.anisotropic_filtering_level != 0) &&
-            (max_anisotropic_filtering_level_ != 0) &&
-            (aniso != 0))
-        {
+        if (aniso != 0) {
             CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
         if (preloaded_texture_dds_data_.contains(name.filename)) {
@@ -1003,6 +980,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
         THROW_OR_ABORT("Atlas too large");
     }
     std::map<std::string, AutoUvTile> result;
+    tad.tiles.reserve(packed_boxes.size());
     for (const auto& [layer, nbs] : enumerate(packed_boxes)) {
         auto& tiles = tad.tiles.emplace_back();
         for (const auto& nb : nbs) {
