@@ -704,9 +704,11 @@ GLuint RenderingResources::get_texture(
             CHK(glGenTextures(1, &original_texture));
             const_cast<RenderingResources*>(this)->set_texture("__original_texture__", original_texture, ResourceOwner::CONTAINER);
             DestructionGuard dg0{ [this]() { const_cast<RenderingResources*>(this)->delete_texture("__original_texture__", DeletionFailureMode::ABORT); } };
-            CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
-            DestructionGuard dg1{ [this]() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
-            auto sinfo = initialize_dds_texture(name.filename, desc);
+            auto sinfo = [&](){
+                CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
+                DestructionGuard dg1{ [this]() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
+                return initialize_dds_texture(name.filename, desc);
+            }();
 
             FillWithTextureLogic logic{
                 *const_cast<RenderingResources*>(this),
