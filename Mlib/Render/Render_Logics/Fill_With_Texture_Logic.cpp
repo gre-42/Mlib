@@ -40,7 +40,7 @@ FillWithTextureLogic::FillWithTextureLogic(
     ResourceUpdateCycle update_cycle,
     ColorMode color_mode,
     CullFaceMode cull_face_mode,
-    BlendModeSource blend_mode_source,
+    RenderTarget render_target,
     const float* quad_vertices)
 : GenericPostProcessingLogic{quad_vertices},
   rendering_resources_{rendering_resources},
@@ -48,7 +48,7 @@ FillWithTextureLogic::FillWithTextureLogic(
   update_cycle_{update_cycle},
   color_mode_{color_mode},
   cull_face_mode_{cull_face_mode},
-  blend_mode_source_{blend_mode_source}
+  render_target_{render_target}
 {}
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
@@ -84,13 +84,21 @@ void FillWithTextureLogic::render()
         CHK(glEnable(GL_CULL_FACE));
     }
     bool enable_blend =
-        (blend_mode_source_ == BlendModeSource::COLOR_MODE) &&
+        (render_target_ != RenderTarget::NO_BLEND) &&
         (color_mode_ == ColorMode::RGBA);
     if (enable_blend) {
+        if (color_mode_ != ColorMode::RGBA) {
+            THROW_OR_ABORT("Blend render-target is not disabled but texture is RGBA");
+        }
         CHK(glEnable(GL_BLEND));
-        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        if (render_target_ == RenderTarget::CANVAS) {
+            CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        } else if (render_target_ == RenderTarget::TEXTURE) {
+            CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+        } else {
+            THROW_OR_ABORT("Unknown render-target");
+        }
     }
-
     CHK(glUseProgram(rp_.program));
 
     CHK(glUniform1i(rp_.texture_location, 0));
@@ -107,6 +115,7 @@ void FillWithTextureLogic::render()
     }
     if (enable_blend) {
         CHK(glDisable(GL_BLEND));
+        CHK(glBlendFunc(GL_ONE, GL_ZERO));
     }
 }
 

@@ -683,6 +683,12 @@ GLuint RenderingResources::get_texture(
             THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color.filename + '"');
         }
         const auto &adesc = ait.mapped();
+        for (const auto& [i, layers] : enumerate(adesc.tiles)) {
+            linfo() << "Layer: " << i;
+            for (const auto& tile : layers) {
+                linfo() << "  Filename: " << tile.filename;
+            }
+        }
         texture = render_to_texture_2d_array(
             adesc.width,
             adesc.height,
@@ -716,7 +722,7 @@ GLuint RenderingResources::get_texture(
                 ResourceUpdateCycle::ONCE,
                 (ColorMode)sinfo.nchannels,
                 CullFaceMode::CULL,
-                BlendModeSource::CALLER,
+                RenderTarget::TEXTURE,
                 vertically_flipped_quad_vertices };
             texture = render_to_texture_2d(
                 sinfo.width,

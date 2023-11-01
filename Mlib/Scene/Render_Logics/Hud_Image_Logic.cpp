@@ -43,7 +43,7 @@ HudImageLogic::HudImageLogic(
     update_cycle,
     ColorMode::RGBA,
     CullFaceMode::CULL,
-    BlendModeSource::COLOR_MODE,
+    RenderTarget::CANVAS,
     nullptr },
   scene_logic_{ scene_logic },
   collision_query_{ collision_query },

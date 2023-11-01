@@ -12,9 +12,10 @@ enum class ResourceUpdateCycle;
 struct LayoutConstraintParameters;
 enum class ColorMode;
 
-enum class BlendModeSource {
-    COLOR_MODE,
-    CALLER
+enum class RenderTarget {
+    NO_BLEND,
+    CANVAS,
+    TEXTURE
 };
 
 class FillWithTextureRenderProgram: public RenderProgram {
@@ -38,7 +39,7 @@ public:
         ResourceUpdateCycle update_cycle,
         ColorMode color_mode,
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
-        BlendModeSource blend_mode_source = BlendModeSource::COLOR_MODE,
+        RenderTarget render_target = RenderTarget::CANVAS,
         const float* quad_vertices = standard_quad_vertices);
     ~FillWithTextureLogic();
     void set_image_resource_name(const std::string& image_resource_name);
@@ -56,7 +57,7 @@ private:
     ResourceUpdateCycle update_cycle_;
     ColorMode color_mode_;
     CullFaceMode cull_face_mode_;
-    BlendModeSource blend_mode_source_;
+    RenderTarget render_target_;
 };
 
 }

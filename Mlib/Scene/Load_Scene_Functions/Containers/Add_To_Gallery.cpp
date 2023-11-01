@@ -31,7 +31,7 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
             ResourceUpdateCycle::ONCE,
             color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             CullFaceMode::CULL,
-            BlendModeSource::COLOR_MODE,
+            RenderTarget::CANVAS,
             args.arguments.at<bool>(KnownArgs::flip_horizontally, false)
                 ? horizontally_flipped_quad_vertices
                 : standard_quad_vertices));

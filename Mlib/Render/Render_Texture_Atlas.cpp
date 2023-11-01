@@ -17,7 +17,9 @@ void Mlib::render_texture_atlas(
         rendering_resources,
         "",
         ResourceUpdateCycle::ONCE,
-        ColorMode::RGBA};
+        ColorMode::RGBA,
+        CullFaceMode::CULL,
+        RenderTarget::TEXTURE};
     for (const auto& tile : tiles) {
         ViewportGuard vg{
             (float)tile.left * scale_width,
