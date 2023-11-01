@@ -1001,6 +1001,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     const std::string& name,
     const std::vector<std::string>& filenames,
     int mip_level_count,
+    int size,
     AutoTextureAtlasDescriptor* atlas)
 {
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
@@ -1020,7 +1021,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
             THROW_OR_ABORT("Found duplicate name \"" + filename + '"');
         }
     }
-    FixedArray<int, 2> atlas_size_2d{4096, 4096};
+    FixedArray<int, 2> atlas_size_2d{size, size};
     auto packed_boxes = pack_boxes(packed_sizes, atlas_size_2d);
     AutoTextureAtlasDescriptor tad{
         .width = atlas_size_2d(0),

@@ -27,9 +27,9 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> --mip_level_count <n> --mip_level <n> --atlas_layer <n>}",
-        {},
-        {"--kn5", "--mip_level_count", "--mip_level", "--atlas_layer"});
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas]}",
+        {"--rerender_atlas"},
+        {"--kn5", "--size", "--mip_level_count", "--mip_level", "--atlas_layer"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
@@ -107,12 +107,29 @@ int main(int argc, char** argv)
                 "__texture__",
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
+                safe_stoi(parsed.named_value("--size", "4096")),
                 &atlas);
             for (const auto& [i, t] : enumerate(atlas.tiles)) {
                 linfo() << "Layer: " << i;
                 for (const auto& d : t) {
                     linfo() << "  Filename: " << d.filename << ' ' << d.width << 'x' << d.height;
                 }
+            }
+            if (!parsed.has_named("--rerender_atlas")) {
+                auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
+                if (layer >= atlas.tiles.size()) {
+                    THROW_OR_ABORT("Layer index out of bounds");
+                }
+                ftl.emplace(
+                    rendering_resources,
+                    "__texture__",
+                    ResourceUpdateCycle::ONCE,
+                    ColorMode::RGBA,
+                    CullFaceMode::CULL,
+                    RenderTarget::CANVAS,
+                    standard_quad_vertices,
+                    layer);
+                rendering_resources.preload({ .color = "__texture__" });
             }
         } else {
             rendering_resources.add_texture_descriptor(
@@ -151,7 +168,7 @@ int main(int argc, char** argv)
                 }
                 render_texture_atlas(
                     rendering_resources,
-                    atlas.tiles.at(safe_stoz(parsed.named_value("--atlas_layer"))),
+                    atlas.tiles.at(layer),
                     scale,
                     scale);
             }
