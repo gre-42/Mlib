@@ -7,7 +7,7 @@ namespace Mlib {
 
 template <std::integral TDest, std::floating_point TSource>
 TDest float_to_integral(TSource source) {
-	if (std::isfinite(source)) {
+	if (!std::isfinite(source)) {
 		THROW_OR_ABORT("float_to_integral: Floating-point number is not finite");
 	}
 	auto result = (TDest)source;
