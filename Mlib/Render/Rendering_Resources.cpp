@@ -721,7 +721,7 @@ GLuint RenderingResources::get_texture(
                 sinfo.height,
                 // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
                 (sinfo.mip_level_count == 0)
-                    ? 1 + float_to_integral<GLsizei>(std::floor(std::log2(std::max(sinfo.width, sinfo.height))))
+                    ? float_to_integral<GLsizei>(std::floor(std::log2(std::max(sinfo.width, sinfo.height))))
                     : sinfo.mip_level_count,
                 aniso,
                 nchannels2sized_internal_format(integral_cast<size_t>(sinfo.nchannels)),
