@@ -3,6 +3,7 @@
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Gl_Extensions.hpp>
 #include <Mlib/Render/Instance_Handles/Array_Frame_Buffer.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 
 using namespace Mlib;
 
@@ -33,7 +34,8 @@ GLuint Mlib::render_to_texture_2d_array(
         auto w = width;
         auto h = height;
         for (auto level = 0; level <= mip_level_count; ++level) {
-            ArrayFrameBufferStorage afbs{texture, level, integral_cast<int>(layer)};
+            ArrayFrameBufferStorage afbs{ texture, level, integral_cast<int>(layer) };
+            RenderToFrameBufferGuard rfg{ afbs };
             clear_color({0.f, 0.f, 0.f, 0.f});
             render(w, h, layer);
             w = std::max(1, w / 2);

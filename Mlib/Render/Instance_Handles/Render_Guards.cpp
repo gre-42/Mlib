@@ -1,12 +1,12 @@
 #include "Render_Guards.hpp"
 #include <Mlib/Render/CHK.hpp>
-#include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
+#include <Mlib/Render/Instance_Handles/IFrame_Buffer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
 using namespace Mlib;
 
-const FrameBuffer* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
+const IFrameBuffer* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
 bool RenderToScreenGuard::is_active_ = false;
 
 // use cases:
@@ -36,7 +36,7 @@ bool RenderToScreenGuard::is_active_ = false;
 //     glReadPixels();
 // }
 
-RenderToFrameBufferGuard::RenderToFrameBufferGuard(const FrameBuffer& fb)
+RenderToFrameBufferGuard::RenderToFrameBufferGuard(const IFrameBuffer& fb)
 : previous_frame_buffer_{last_frame_buffer_}
  {
     if (!fb.is_configured()) {

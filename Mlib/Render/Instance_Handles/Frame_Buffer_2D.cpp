@@ -9,11 +9,9 @@ FrameBufferStorage2D::FrameBufferStorage2D(GLuint texture_color, GLint level)
 : deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     allocate(texture_color, level);
-    bind();
 }
 
 FrameBufferStorage2D::~FrameBufferStorage2D() {
-    unbind();
     deallocate();
 }
 
@@ -38,6 +36,10 @@ void FrameBufferStorage2D::deallocate() {
         ABORT(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
     }
+}
+
+bool FrameBufferStorage2D::is_configured() const {
+    return true;
 }
 
 void FrameBufferStorage2D::bind() const {

@@ -3,18 +3,18 @@
 
 namespace Mlib {
 
-class FrameBuffer;
+class IFrameBuffer;
 
 class RenderToFrameBufferGuard {
     friend class RenderToScreenGuard;
     RenderToFrameBufferGuard(const RenderToFrameBufferGuard&) = delete;
     RenderToFrameBufferGuard& operator = (const RenderToFrameBufferGuard&) = delete;
 public:
-    explicit RenderToFrameBufferGuard(const FrameBuffer& fb);
+    explicit RenderToFrameBufferGuard(const IFrameBuffer& fb);
     ~RenderToFrameBufferGuard();
 private:
-    const FrameBuffer* previous_frame_buffer_;
-    static const FrameBuffer* last_frame_buffer_;
+    const IFrameBuffer* previous_frame_buffer_;
+    static const IFrameBuffer* last_frame_buffer_;
 };
 
 class RenderToScreenGuard {

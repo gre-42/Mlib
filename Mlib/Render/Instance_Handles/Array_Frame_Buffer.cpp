@@ -9,11 +9,9 @@ ArrayFrameBufferStorage::ArrayFrameBufferStorage(GLuint texture_color, GLint lev
 : deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
     allocate(texture_color, level, layer);
-    bind();
 }
 
 ArrayFrameBufferStorage::~ArrayFrameBufferStorage() {
-    unbind();
     deallocate();
 }
 
@@ -38,6 +36,10 @@ void ArrayFrameBufferStorage::deallocate() {
         ABORT(glDeleteFramebuffers(1, &frame_buffer_));
         frame_buffer_ = (GLuint)-1;
     }
+}
+
+bool ArrayFrameBufferStorage::is_configured() const {
+    return true;
 }
 
 void ArrayFrameBufferStorage::bind() const {

@@ -3,6 +3,7 @@
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Gl_Extensions.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_2D.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 
 using namespace Mlib;
 
@@ -28,7 +29,8 @@ GLuint Mlib::render_to_texture_2d(
     }
     CHK(glBindTexture(GL_TEXTURE_2D, 0));
     for (auto level = 0; level <= mip_level_count; ++level) {
-        FrameBufferStorage2D afbs{texture, level};
+        FrameBufferStorage2D afbs{ texture, level };
+        RenderToFrameBufferGuard rfg{ afbs };
         clear_color({0.f, 0.f, 0.f, 0.f});
         render(width, height);
         width = std::max(1, width / 2);

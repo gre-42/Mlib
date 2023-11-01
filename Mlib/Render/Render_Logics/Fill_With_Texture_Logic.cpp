@@ -4,6 +4,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -102,6 +103,7 @@ void FillWithTextureLogic::render()
     LOG_FUNCTION("FillWithTextureLogic::render");
     update_texture_id();
 
+    RenderToScreenGuard rsg;
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }

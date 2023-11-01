@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
+#include <Mlib/Render/Instance_Handles/IFrame_Buffer.hpp>
 #include <compare>
 #include <cstdint>
 
@@ -62,16 +63,16 @@ private:
     DeallocationToken deallocation_token_;
 };
 
-class FrameBuffer {
+class FrameBuffer: public IFrameBuffer {
     FrameBuffer(const FrameBuffer&) = delete;
     FrameBuffer& operator = (const FrameBuffer&) = delete;
 public:
     FrameBuffer() = default;
     ~FrameBuffer() = default;
     void configure(const FrameBufferConfig& config);
-    bool is_configured() const;
-    void bind() const;
-    void unbind() const;
+    bool is_configured() const override;
+    void bind() const override;
+    void unbind() const override;
     void deallocate();
     GLuint texture_color() const;
     GLuint texture_depth() const;
