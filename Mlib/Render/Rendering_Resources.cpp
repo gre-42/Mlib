@@ -687,6 +687,9 @@ GLuint RenderingResources::get_texture(
             linfo() << "Layer: " << i;
             for (const auto& tile : layers) {
                 linfo() << "  Filename: " << tile.filename;
+                // Load textures outside of the "render_to_texture_2d_array" function to avoid
+                // recursive calls to glBindTexture etc.
+                get_texture({ .color = {.filename = tile.filename } }, caller_type);
             }
         }
         texture = render_to_texture_2d_array(

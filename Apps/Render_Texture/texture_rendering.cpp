@@ -27,9 +27,9 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas]}",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas] [--texname]}",
         {"--rerender_atlas"},
-        {"--kn5", "--size", "--mip_level_count", "--mip_level", "--atlas_layer"});
+        {"--kn5", "--size", "--mip_level_count", "--mip_level", "--atlas_layer", "--texname"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
@@ -115,7 +115,13 @@ int main(int argc, char** argv)
                     linfo() << "  Filename: " << d.filename << ' ' << d.width << 'x' << d.height;
                 }
             }
-            if (!parsed.has_named("--rerender_atlas")) {
+            if (parsed.has_named_value("--texname")) {
+                ftl.emplace(
+                    rendering_resources,
+                    parsed.named_value("--texname"),
+                    ResourceUpdateCycle::ONCE,
+                    ColorMode::RGBA);
+            } else if (!parsed.has_named("--rerender_atlas")) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
                     THROW_OR_ABORT("Layer index out of bounds");
@@ -156,6 +162,7 @@ int main(int argc, char** argv)
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (ftl.has_value()) {
+                // CHK(glViewport(0, 0, 1024, 1024));
                 ftl.value().render();
             } else if (!atlas.tiles.empty()) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
