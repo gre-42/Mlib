@@ -303,7 +303,7 @@ void ImposterLogic::render(
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
-        rendering_resources_.set_texture(texture_id_, fbs_->texture_color());
+        rendering_resources_.set_texture(texture_id_, fbs_->texture_color(), ResourceOwner::CALLER);
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{

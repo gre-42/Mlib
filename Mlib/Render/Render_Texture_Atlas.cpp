@@ -13,17 +13,18 @@ void Mlib::render_texture_atlas(
     float scale_width,
     float scale_height)
 {
+    FillWithTextureLogic logic{
+        rendering_resources,
+        "",
+        ResourceUpdateCycle::ONCE,
+        ColorMode::RGBA};
     for (const auto& tile : tiles) {
         ViewportGuard vg{
             (float)tile.left * scale_width,
             (float)tile.bottom * scale_height,
             (float)tile.width * scale_width,
             (float)tile.height * scale_height};
-        FillWithTextureLogic logic{
-            rendering_resources,
-            tile.filename,
-            ResourceUpdateCycle::ONCE,
-            ColorMode::RGBA};
+        logic.set_image_resource_name(tile.filename);
         logic.render();
     }
 }

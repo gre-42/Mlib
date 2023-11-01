@@ -13,14 +13,14 @@ GLuint Mlib::render_to_texture_2d_array(
     GLsizei mip_level_count,
     float anisotropic_filtering_level,
     GLenum internalformat,
-    const std::function<void(GLsizei width, GLsizei height, GLsizei layer, GLsizei level)>& render)
+    const std::function<void(GLsizei width, GLsizei height, GLsizei layer)>& render)
 {
     GLuint texture;
     CHK(glGenTextures(1, &texture));
     CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
     CHK(glTexStorage3D(
         GL_TEXTURE_2D_ARRAY,
-        mip_level_count,
+        mip_level_count + 1,
         internalformat,
         width,
         height,
@@ -32,11 +32,11 @@ GLuint Mlib::render_to_texture_2d_array(
     for (auto layer = 0; layer < depth; ++layer) {
         auto w = width;
         auto h = height;
-        for (auto level = 0; level < mip_level_count; ++level) {
+        for (auto level = 0; level <= mip_level_count; ++level) {
             ArrayFrameBufferStorage afbs{texture, level, integral_cast<int>(layer)};
             clear_color({0.f, 0.f, 0.f, 0.f});
             CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-            render(w, h, layer, level);
+            render(w, h, layer);
             w = std::max(1, w / 2);
             h = std::max(1, h / 2);
             // // Disable the ArrayFrameBufferStorage above for the following code to work.

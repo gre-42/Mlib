@@ -1,11 +1,11 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
 #include <memory>
 
 namespace Mlib {
 
+class FillWithTextureLogic;
 class IWidget;
 enum class DelayLoadPolicy;
 
@@ -16,6 +16,7 @@ public:
         std::unique_ptr<IWidget>&& widget,
         DelayLoadPolicy delay_load_policy,
         FocusFilter focus_filter);
+    ~FillPixelRegionWithTextureLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,

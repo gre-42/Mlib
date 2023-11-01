@@ -17,6 +17,7 @@ PointerImageLogic::PointerImageLogic(
     ResourceUpdateCycle::ONCE,
     ColorMode::RGBA,
     CullFaceMode::CULL,
+    BlendModeSource::COLOR_MODE,
     nullptr }
 {}
 

@@ -536,7 +536,7 @@ void CDDSImage::load(istream& is, bool flipImage) {
         case FOURCC_DXT1:
             m_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
             m_word_type = GL_UNSIGNED_BYTE;
-            m_components = 3;
+            m_components = 4;
             break;
         case FOURCC_DXT3:
             m_format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;

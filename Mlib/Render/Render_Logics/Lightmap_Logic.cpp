@@ -123,10 +123,10 @@ void LightmapLogic::render(
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
         }
 
-        rendering_resources_.set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color());
+        rendering_resources_.set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color(), ResourceOwner::CALLER);
         rendering_resources_.set_vp("lightmap_color." + resource_suffix_, vp());
         if (with_depth_texture_) {
-            rendering_resources_.set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth());
+            rendering_resources_.set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth(), ResourceOwner::CALLER);
             rendering_resources_.set_vp("lightmap_depth." + resource_suffix_, vp());
         }
     }

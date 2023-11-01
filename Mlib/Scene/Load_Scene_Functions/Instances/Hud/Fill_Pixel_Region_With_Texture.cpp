@@ -8,6 +8,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
@@ -52,7 +53,9 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
             rs.rendering_resources_,
             args.arguments.at<std::string>(KnownArgs::texture),
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
-            ColorMode::RGBA),
+            ColorMode::RGBA,
+            CullFaceMode::CULL,
+            BlendModeSource::COLOR_MODE),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

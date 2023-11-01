@@ -31,9 +31,21 @@ struct BlendMapTexture;
 enum class ColorMode;
 struct LoadedFont;
 
-struct TextureHandleAndNeedsGc {
+struct TextureSizeAndMipmaps {
+    GLsizei width;
+    GLsizei height;
+    GLsizei nchannels;
+    GLsizei mip_level_count;
+};
+
+enum class ResourceOwner {
+    CALLER,
+    CONTAINER
+};
+
+struct TextureHandleAndOwner {
     GLuint handle;
-    bool needs_gc;
+    ResourceOwner owner;
 };
 
 struct ManualAtlasTileDescriptor {
@@ -75,7 +87,7 @@ struct CubemapDescriptor {
 
 enum class DeletionFailureMode {
     WARN,
-    ERROR
+    ABORT
 };
 
 enum class CallerType {
@@ -108,7 +120,7 @@ public:
     GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
-    void set_texture(const std::string& name, GLuint id);
+    void set_texture(const std::string& name, GLuint id, ResourceOwner resource_owner);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
@@ -166,13 +178,13 @@ private:
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
     void initialize_non_dds_texture(const ColormapWithModifiers& name, const TextureDescriptor& descriptor) const;
-    void initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    TextureSizeAndMipmaps initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
     mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
-    mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndNeedsGc> textures_;
+    mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeStringMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringMap<CubemapDescriptor> cubemap_descriptors_;

@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
+#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <ostream>
 #include <string>
@@ -18,6 +19,8 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
   delay_load_policy_{delay_load_policy},
   focus_filter_{std::move(focus_filter)}
 {}
+
+FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() = default;
 
 void FillPixelRegionWithTextureLogic::render(
     const LayoutConstraintParameters& lx,

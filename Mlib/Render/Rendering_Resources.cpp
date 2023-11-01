@@ -13,6 +13,8 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
@@ -25,8 +27,10 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
+#include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D.hpp>
 #include <Mlib/Render/Render_To_Texture/Render_To_Texture_2D_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Text/Loaded_Font.hpp>
@@ -450,8 +454,8 @@ void RenderingResources::deallocate() {
     render_programs_.clear();
     textures_.erase_if([](auto &item) {
         auto &[_, texture] = item;
-        if (texture.needs_gc) {
-            try_delete_texture(const_cast<GLuint &>(texture.handle));
+        if (texture.owner == ResourceOwner::CONTAINER) {
+            try_delete_texture(texture.handle);
             return true;
         }
         return false;
@@ -685,8 +689,8 @@ GLuint RenderingResources::get_texture(
             integral_cast<GLsizei>(adesc.tiles.size()),
             adesc.mip_level_count,
             aniso,
-            nchannels2sized_internal_format((GLenum)adesc.color_mode),
-            [this, &adesc](GLsizei width, GLsizei height, GLsizei layer, GLsizei level)
+            nchannels2sized_internal_format(integral_cast<size_t>((int)adesc.color_mode)),
+            [this, &adesc](GLsizei width, GLsizei height, GLsizei layer)
             {
                 render_texture_atlas(
                     *const_cast<RenderingResources*>(this),
@@ -695,20 +699,53 @@ GLuint RenderingResources::get_texture(
                     height / (float)adesc.height);
             });
     } else {
-        CHK(glGenTextures(1, &texture));
-        CHK(glBindTexture(GL_TEXTURE_2D, texture));
-        if (aniso != 0) {
-            CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
-        }
         if (preloaded_texture_dds_data_.contains(name.filename)) {
-            initialize_dds_texture(name.filename, desc);
+            GLuint original_texture;
+            CHK(glGenTextures(1, &original_texture));
+            const_cast<RenderingResources*>(this)->set_texture("__original_texture__", original_texture, ResourceOwner::CONTAINER);
+            DestructionGuard dg0{ [this]() { const_cast<RenderingResources*>(this)->delete_texture("__original_texture__", DeletionFailureMode::ABORT); } };
+            CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
+            DestructionGuard dg1{ [this]() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
+            auto sinfo = initialize_dds_texture(name.filename, desc);
+
+            FillWithTextureLogic logic{
+                *const_cast<RenderingResources*>(this),
+                "__original_texture__",
+                ResourceUpdateCycle::ONCE,
+                (ColorMode)sinfo.nchannels,
+                CullFaceMode::CULL,
+                BlendModeSource::CALLER,
+                vertically_flipped_quad_vertices };
+            texture = render_to_texture_2d(
+                sinfo.width,
+                sinfo.height,
+                // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
+                (sinfo.mip_level_count == 0)
+                    ? 1 + float_to_integral<GLsizei>(std::floor(std::log2(std::max(sinfo.width, sinfo.height))))
+                    : sinfo.mip_level_count,
+                aniso,
+                nchannels2sized_internal_format(integral_cast<size_t>(sinfo.nchannels)),
+                [this, &logic](GLsizei width, GLsizei height)
+                {
+                    ViewportGuard vg{
+                        0.f,
+                        0.f,
+                        (float)width,
+                        (float)height};
+                    logic.render();
+                });
         } else {
+            CHK(glGenTextures(1, &texture));
+            CHK(glBindTexture(GL_TEXTURE_2D, texture));
+            if (aniso != 0) {
+                CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
+            }
             initialize_non_dds_texture(desc.color, desc);
+            CHK(glBindTexture(GL_TEXTURE_2D, 0));
         }
-        CHK(glBindTexture(GL_TEXTURE_2D, 0));
     }
 
-    textures_.emplace(name, TextureHandleAndNeedsGc{texture, true});
+    textures_.emplace(name, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
     return texture;
 }
 
@@ -756,21 +793,29 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    textures_.emplace({.filename = name}, TextureHandleAndNeedsGc{textureID, true});
+    textures_.emplace({.filename = name}, TextureHandleAndOwner{textureID, ResourceOwner::CONTAINER});
     return textureID;
 }
 
-void RenderingResources::set_texture(const std::string& name, GLuint id) {
+void RenderingResources::set_texture(const std::string& name, GLuint id, ResourceOwner resource_owner) {
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
         THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
     }
-    auto it = textures_.try_extract({.filename = name});
-    if (!it.empty() && it.mapped().needs_gc) {
-        THROW_OR_ABORT("Overwriting texture that needs garbabe-collection");
+    std::scoped_lock lock{ mutex_ };
+    ColormapWithModifiers key{ .filename = name };
+    if (auto v = textures_.try_get(key); v != nullptr) {
+        if (v->owner == ResourceOwner::CONTAINER) {
+            THROW_OR_ABORT("Overwriting texture that needs garbage-collection");
+        }
+        textures_.erase(key);
     }
-    textures_.emplace({.filename = name}, TextureHandleAndNeedsGc{id, false});
+    textures_.emplace(
+        key,
+        TextureHandleAndOwner{
+            .handle = id,
+            .owner = resource_owner});
 }
 
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
@@ -1109,12 +1154,15 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
 }
 void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_texture " + name);
-    if (textures_.erase({.filename = name}) != 1) {
+    auto it = textures_.try_extract({ .filename = name });
+    if (it.empty()) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
             lwarn() << "Could not delete texture " << name;
         } else {
-            THROW_OR_ABORT("Could not delete texture " + name);
+            verbose_abort("Could not delete texture " + name);
         }
+    } else if (it.mapped().owner == ResourceOwner::CONTAINER) {
+        try_delete_texture(it.mapped().handle);
     }
 }
 
@@ -1276,7 +1324,7 @@ void RenderingResources::initialize_non_dds_texture(
     }
 }
 
-void RenderingResources::initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const
+TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const
 {
     auto it = preloaded_texture_dds_data_.extract(name);
 
@@ -1286,7 +1334,11 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
         for (uint8_t c : it.mapped()) {
             sstr << c;
         }
-        image.load(sstr);
+        // Setting flipImage to false because it does not
+        // work with image or mipmap sizes that are not a
+        // multiple of 4.
+        // Instead, the textures are now flipped using the GPU.
+        image.load(sstr, false /* flipImage */);
     }
 
     if (image.get_num_mipmaps() == 0) {
@@ -1372,4 +1424,9 @@ void RenderingResources::initialize_dds_texture(const std::string& name, const T
             }
         }
     }
+    return {
+        .width = integral_cast<GLsizei>(image.get_width()),
+        .height = integral_cast<GLsizei>(image.get_height()),
+        .nchannels = integral_cast<GLsizei>(image.get_components()),
+        .mip_level_count = integral_cast<GLsizei>(image.get_num_mipmaps())};
 }

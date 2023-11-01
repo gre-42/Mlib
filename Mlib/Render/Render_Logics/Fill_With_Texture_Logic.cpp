@@ -40,13 +40,15 @@ FillWithTextureLogic::FillWithTextureLogic(
     ResourceUpdateCycle update_cycle,
     ColorMode color_mode,
     CullFaceMode cull_face_mode,
+    BlendModeSource blend_mode_source,
     const float* quad_vertices)
 : GenericPostProcessingLogic{quad_vertices},
   rendering_resources_{rendering_resources},
   image_resource_name_{std::move(image_resource_name)},
   update_cycle_{update_cycle},
   color_mode_{color_mode},
-  cull_face_mode_{cull_face_mode}
+  cull_face_mode_{cull_face_mode},
+  blend_mode_source_{blend_mode_source}
 {}
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
@@ -81,7 +83,10 @@ void FillWithTextureLogic::render()
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }
-    if (color_mode_ == ColorMode::RGBA) {
+    bool enable_blend =
+        (blend_mode_source_ == BlendModeSource::COLOR_MODE) &&
+        (color_mode_ == ColorMode::RGBA);
+    if (enable_blend) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     }
@@ -100,7 +105,7 @@ void FillWithTextureLogic::render()
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glDisable(GL_CULL_FACE));
     }
-    if (color_mode_ == ColorMode::RGBA) {
+    if (enable_blend) {
         CHK(glDisable(GL_BLEND));
     }
 }
