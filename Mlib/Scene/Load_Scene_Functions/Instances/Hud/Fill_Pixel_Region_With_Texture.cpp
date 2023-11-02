@@ -55,7 +55,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
             ColorMode::RGBA,
             CullFaceMode::CULL,
-            RenderTarget::CANVAS),
+            AlphaChannelRole::BLEND),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

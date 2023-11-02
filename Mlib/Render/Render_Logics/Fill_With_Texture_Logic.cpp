@@ -57,7 +57,7 @@ FillWithTextureLogic::FillWithTextureLogic(
     ResourceUpdateCycle update_cycle,
     ColorMode color_mode,
     CullFaceMode cull_face_mode,
-    RenderTarget render_target,
+    AlphaChannelRole alpha_channel_role,
     const float* quad_vertices,
     std::optional<size_t> layer)
 : GenericPostProcessingLogic{quad_vertices},
@@ -66,7 +66,7 @@ FillWithTextureLogic::FillWithTextureLogic(
   update_cycle_{update_cycle},
   color_mode_{color_mode},
   cull_face_mode_{cull_face_mode},
-  render_target_{render_target},
+  alpha_channel_role_{alpha_channel_role},
   layer_{layer}
 {}
 
@@ -108,20 +108,11 @@ void FillWithTextureLogic::render()
         CHK(glEnable(GL_CULL_FACE));
     }
     bool enable_blend =
-        (render_target_ != RenderTarget::NO_BLEND) &&
+        (alpha_channel_role_ == AlphaChannelRole::BLEND) &&
         (color_mode_ == ColorMode::RGBA);
     if (enable_blend) {
-        if (color_mode_ != ColorMode::RGBA) {
-            THROW_OR_ABORT("Blend render-target is not disabled but texture is RGBA");
-        }
         CHK(glEnable(GL_BLEND));
-        if (render_target_ == RenderTarget::CANVAS) {
-            CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-        } else if (render_target_ == RenderTarget::TEXTURE) {
-            CHK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-        } else {
-            THROW_OR_ABORT("Unknown render-target");
-        }
+        CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     }
     CHK(glUseProgram(rp_.program));
 

@@ -132,7 +132,7 @@ int main(int argc, char** argv)
                     ResourceUpdateCycle::ONCE,
                     ColorMode::RGBA,
                     CullFaceMode::CULL,
-                    RenderTarget::CANVAS,
+                    AlphaChannelRole::BLEND,
                     standard_quad_vertices,
                     layer);
                 rendering_resources.preload({ .color = "__texture__" });

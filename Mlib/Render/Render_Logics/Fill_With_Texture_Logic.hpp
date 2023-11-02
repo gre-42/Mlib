@@ -13,10 +13,9 @@ enum class ResourceUpdateCycle;
 struct LayoutConstraintParameters;
 enum class ColorMode;
 
-enum class RenderTarget {
-    NO_BLEND,
-    CANVAS,
-    TEXTURE
+enum class AlphaChannelRole {
+    BLEND,
+    NO_BLEND
 };
 
 class FillWithTextureRenderProgram: public RenderProgram {
@@ -40,7 +39,7 @@ public:
         ResourceUpdateCycle update_cycle,
         ColorMode color_mode,
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
-        RenderTarget render_target = RenderTarget::CANVAS,
+        AlphaChannelRole alpha_channel_role = AlphaChannelRole::BLEND,
         const float* quad_vertices = standard_quad_vertices,
         std::optional<size_t> layer = std::nullopt);
     ~FillWithTextureLogic();
@@ -59,7 +58,7 @@ private:
     ResourceUpdateCycle update_cycle_;
     ColorMode color_mode_;
     CullFaceMode cull_face_mode_;
-    RenderTarget render_target_;
+    AlphaChannelRole alpha_channel_role_;
     std::optional<size_t> layer_;
 };
 

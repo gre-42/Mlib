@@ -11,7 +11,14 @@ CenteredTextureImageLogic::CenteredTextureImageLogic(
     RenderingResources& rendering_resources,
     const std::string& image_resource_name,
     ColorMode color_mode)
-: FillWithTextureLogic{ rendering_resources, image_resource_name, ResourceUpdateCycle::ONCE, color_mode, CullFaceMode::CULL, RenderTarget::CANVAS, nullptr }
+: FillWithTextureLogic{
+    rendering_resources,
+    image_resource_name,
+    ResourceUpdateCycle::ONCE,
+    color_mode,
+    CullFaceMode::CULL,
+    AlphaChannelRole::BLEND,
+    nullptr }
 {}
 
 CenteredTextureImageLogic::~CenteredTextureImageLogic() = default;

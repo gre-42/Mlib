@@ -19,7 +19,7 @@ void Mlib::render_texture_atlas(
         ResourceUpdateCycle::ONCE,
         ColorMode::RGBA,
         CullFaceMode::CULL,
-        RenderTarget::TEXTURE};
+        AlphaChannelRole::NO_BLEND };
     for (const auto& tile : tiles) {
         ViewportGuard vg{
             (float)tile.left * scale_width,
