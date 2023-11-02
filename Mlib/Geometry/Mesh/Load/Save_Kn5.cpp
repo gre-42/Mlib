@@ -102,8 +102,7 @@ void Mlib::save_kn5(
             for (auto it = floats.begin(); it != floats.end();) {
                 if (!it->second.has_value()) {
                     floats.erase(it++);
-                }
-                else {
+                } else {
                     ++it;
                 }
             }
