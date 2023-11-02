@@ -1306,7 +1306,8 @@ void RenderingResources::initialize_non_dds_texture(
 #else
         auto nchannels = (size_t)descriptor.color_mode;
 #endif
-        CHK(glTexImage2D(GL_TEXTURE_2D,
+        CHK(glTexImage2D(
+            GL_TEXTURE_2D,
             0,
             nchannels2internal_format(nchannels),
             si.width,
