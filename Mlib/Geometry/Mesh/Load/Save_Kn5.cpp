@@ -122,15 +122,16 @@ void Mlib::save_kn5(
 
         {
             std::map<std::string, std::string> strings{
-                { "txDiffuse",m.txDiffuse },
-                { "txNormal",m.txNormal },
-                { "txMask",m.txMask},
+                { "txDiffuse", m.txDiffuse },
+                { "txNormal", m.txNormal },
+                { "txMask", m.txMask},
                 { "txDetailR", m.txDetail4(0) },
                 { "txDetailG", m.txDetail4(1) },
                 { "txDetailB", m.txDetail4(2) },
                 { "txDetailA", m.txDetail4(3) },
                 { "txDetail", m.txDetail1 },
-                { "txDetailNM",m.txDetailNM} };
+                { "txDetailNM", m.txDetailNM},
+                { "txVariation", m.txVariation}};
 
             for (auto it = strings.begin(); it != strings.end();) {
                 if (it->second.empty()) {

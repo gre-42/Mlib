@@ -907,7 +907,6 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             ColorMode::RGBA};
         {
             RenderToFrameBufferGuard rfg{fb};
-            RenderToScreenGuard rsg;
             logic.render();
         }
         return fb.color_to_stb_image();
