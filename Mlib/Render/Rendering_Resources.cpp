@@ -904,7 +904,9 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             *const_cast<RenderingResources*>(this),
             descriptor.color.filename,
             ResourceUpdateCycle::ONCE,
-            ColorMode::RGBA};
+            ColorMode::RGBA,
+            CullFaceMode::CULL,
+            AlphaChannelRole::NO_BLEND};
         {
             RenderToFrameBufferGuard rfg{fb};
             logic.render();
