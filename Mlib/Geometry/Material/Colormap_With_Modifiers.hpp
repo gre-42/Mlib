@@ -37,6 +37,8 @@ struct ColormapWithModifiers {
         archive(alpha_blend);
         archive(mean_color);
         archive(lighten);
+        archive(lighten_left);
+        archive(lighten_right);
         archive(lighten_top);
         archive(lighten_bottom);
         archive(selected_color);

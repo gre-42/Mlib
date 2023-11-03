@@ -22,12 +22,14 @@ TriangleList<TPos>::TriangleList(
     Material material,
     PhysicsMaterial physics_material,
     std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
+    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+    std::list<uint8_t>&& triangle_texture_layers)
 : name{ std::move(name) },
   material{ std::move(material) },
   physics_material{ physics_material },
-  triangles{ triangles },
-  triangle_bone_weights{ triangle_bone_weights }
+  triangles{ std::move(triangles) },
+  triangle_bone_weights{ std::move(triangle_bone_weights) },
+  triangle_texture_layers{ std::move(triangle_texture_layers) }
 {}
 
 template <class TPos>

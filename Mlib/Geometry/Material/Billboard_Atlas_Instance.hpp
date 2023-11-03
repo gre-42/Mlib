@@ -21,6 +21,7 @@ struct BillboardAtlasInstance {
         archive(vertex_scale);
         archive(max_center_distance);
         archive(occluder_pass);
+        archive(alpha_distances);
     }
 };
 

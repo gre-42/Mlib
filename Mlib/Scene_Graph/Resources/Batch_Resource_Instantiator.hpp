@@ -71,8 +71,8 @@ public:
 private:
     FixedArray<float, 3> rotation_;
     float scale_;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
+    std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;
 };
 

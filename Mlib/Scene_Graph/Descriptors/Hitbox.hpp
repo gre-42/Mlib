@@ -17,7 +17,6 @@ struct Hitbox {
         archive(yangle);
         archive(scale);
         archive(billboard_id);
-        archive(supplies);
     }
 };
 
