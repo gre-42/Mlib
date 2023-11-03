@@ -30,22 +30,26 @@ BlendingXResource::BlendingXResource(
                 .position = {square(0u, 0u) / 2, square(0u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 0.f},
-                .normal = {0.f, 0.f, 1.f}};
+                .normal = {0.f, 0.f, 1.f},
+                .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v01{ // min(x), max(y)
                 .position = {square(0u, 0u) / 2, square(1u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 1.f},
-                .normal = {0.f, 0.f, 1.f}};
+                .normal = {0.f, 0.f, 1.f},
+                .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v10{ // max(x), min(y)
                 .position = {square(1u, 0u) / 2, square(0u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 0.f},
-                .normal = {0.f, 0.f, 1.f}};
+                .normal = {0.f, 0.f, 1.f},
+                .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v11{ // max(x), max(y)
                 .position = {square(1u, 0u) / 2, square(1u, 1u), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 1.f},
-                .normal = {0.f, 0.f, 1.f}};
+                .normal = {0.f, 0.f, 1.f},
+                .tangent = fixed_zeros<float, 3>()};
 
         std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
         triangles.reserve(2);
