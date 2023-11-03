@@ -103,13 +103,13 @@ void test_physics_engine(unsigned int seed) {
         std::scoped_lock lock{ delete_node_mutex };
         scene.shutdown();
     }};
-    SurfaceContactDb surface_contact_db;
-    SmokeParticleGenerator smoke_particle_generator{scene, scene_node_resources};
-    ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
-    pe.set_contact_smoke_generator(contact_smoke_generator);
     RenderingResources rendering_resources{
         "primary_rendering_resources",
         16 };
+    SurfaceContactDb surface_contact_db;
+    SmokeParticleGenerator smoke_particle_generator{&rendering_resources, scene_node_resources, scene};
+    ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
+    pe.set_contact_smoke_generator(contact_smoke_generator);
     RenderingContext primary_rendering_context{
         .scene_node_resources = scene_node_resources,
         .particle_resources = particle_resources,

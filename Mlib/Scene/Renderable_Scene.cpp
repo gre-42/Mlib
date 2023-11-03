@@ -67,7 +67,7 @@ RenderableScene::RenderableScene(
       .cull_faces = scene_config.render_config.cull_faces,
       .delete_node_mutex = delete_node_mutex_,
       .physics_set_fps = &physics_set_fps_},
-  smoke_particle_generator_{scene_, scene_node_resources},
+  smoke_particle_generator_{&rendering_resources_, scene_node_resources, scene_},
   contact_smoke_generator_{surface_contact_db, smoke_particle_generator_},
   paused_{[&ui_focus, focus_filter](){
     std::shared_lock lock{ui_focus.focuses.mutex};

@@ -25,6 +25,7 @@
 using namespace Mlib;
 
 Gun::Gun(
+    RenderingResources* rendering_resources,
     Scene& scene,
     SceneNodeResources& scene_node_resources,
     SmokeParticleGenerator& smoke_generator,
@@ -55,7 +56,8 @@ Gun::Gun(
     float muzzle_flash_animation_time,
     const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
     DeleteNodeMutex& delete_node_mutex)
-: scene_{ scene },
+: rendering_resources_{ rendering_resources },
+  scene_{ scene },
   scene_node_resources_{ scene_node_resources },
   smoke_generator_{ smoke_generator },
   rigid_bodies_{ rigid_bodies },
@@ -145,6 +147,7 @@ void Gun::generate_bullet() {
             scene_node_resources_.instantiate_renderable(
                 bullet_renderable_resource_name_,
                 InstantiationOptions{
+                    .rendering_resources = rendering_resources_,
                     .instance_name = "bullet",
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});

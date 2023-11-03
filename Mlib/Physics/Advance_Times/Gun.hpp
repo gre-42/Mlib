@@ -10,6 +10,7 @@
 
 namespace Mlib {
 
+class RenderingResources;
 class SceneNodeResources;
 class SmokeParticleGenerator;
 class RigidBodyVehicle;
@@ -24,7 +25,8 @@ enum class RigidBodyVehicleFlags;
 
 class Gun final: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteObserver, public AdvanceTime {
 public:
-    Gun(Scene& scene,
+    Gun(RenderingResources* rendering_resources,
+        Scene& scene,
         SceneNodeResources& scene_node_resources,
         SmokeParticleGenerator& smoke_generator,
         RigidBodies& rigid_bodies,
@@ -71,6 +73,7 @@ private:
     bool maybe_generate_bullet();
     void generate_bullet();
     void generate_muzzle_flash_hider();
+    RenderingResources* rendering_resources_;
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     SmokeParticleGenerator& smoke_generator_;

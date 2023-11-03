@@ -116,6 +116,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
     auto gun = std::make_unique<Gun>(
+        &rendering_resources,
         scene,
         scene_node_resources,
         smoke_particle_generator,

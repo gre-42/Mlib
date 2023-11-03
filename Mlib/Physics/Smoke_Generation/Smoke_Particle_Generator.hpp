@@ -11,6 +11,7 @@ class FixedArray;
 class Scene;
 class SceneNode;
 class SceneNodeResources;
+class RenderingResources;
 
 enum class ParticleType {
     NODE,
@@ -20,8 +21,9 @@ enum class ParticleType {
 class SmokeParticleGenerator {
 public:
     SmokeParticleGenerator(
-        Scene& scene,
-        SceneNodeResources& scene_node_resources);
+        RenderingResources* rendering_resources,
+        SceneNodeResources& scene_node_resources,
+        Scene& scene);
     void generate_root(
         const std::string& resource_name,
         const std::string& node_name,
@@ -36,8 +38,9 @@ public:
         float animation_duration);
     std::string generate_suffix();
 private:
-    Scene& scene_;
+    RenderingResources* rendering_resources_;
     SceneNodeResources& scene_node_resources_;
+    Scene& scene_;
 };
 
 }
