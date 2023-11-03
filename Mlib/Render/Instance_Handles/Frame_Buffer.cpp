@@ -226,6 +226,8 @@ GLuint FrameBufferStorage::texture_depth() const {
     return texture_depth_;
 }
 
+FrameBuffer::~FrameBuffer() = default;
+
 void FrameBuffer::configure(const FrameBufferConfig& config) {
     config_ = config;
     auto config1 = config;

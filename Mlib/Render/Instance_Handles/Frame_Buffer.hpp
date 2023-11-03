@@ -68,7 +68,7 @@ class FrameBuffer: public IFrameBuffer {
     FrameBuffer& operator = (const FrameBuffer&) = delete;
 public:
     FrameBuffer() = default;
-    ~FrameBuffer() = default;
+    virtual ~FrameBuffer();
     void configure(const FrameBufferConfig& config);
     bool is_configured() const override;
     void bind() const override;

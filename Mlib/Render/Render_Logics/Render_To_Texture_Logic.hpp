@@ -21,7 +21,7 @@ public:
         std::string depth_texture_name,
         const FixedArray<int, 2>& texture_size,
         FocusFilter focus_filter);
-    ~RenderToTextureLogic();
+    virtual ~RenderToTextureLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,

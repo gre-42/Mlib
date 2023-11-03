@@ -23,7 +23,7 @@ public:
         bool with_depth_texture,
         int lightmap_width,
         int lightmap_height);
-    ~LightmapLogic();
+    virtual ~LightmapLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,

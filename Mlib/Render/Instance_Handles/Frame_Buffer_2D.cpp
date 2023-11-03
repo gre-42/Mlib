@@ -22,7 +22,7 @@ void FrameBufferStorage2D::allocate(GLuint texture_color, GLint level)
 
     CHK(glBindTexture(GL_TEXTURE_2D, texture_color));
 
-    CHK(glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_color, level));
+    CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color, level));
 
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

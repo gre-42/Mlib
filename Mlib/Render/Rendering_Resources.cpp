@@ -15,6 +15,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Memory/Float_To_Integral.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
@@ -694,9 +695,9 @@ GLuint RenderingResources::get_texture(
             {
                 render_texture_atlas(
                     *const_cast<RenderingResources*>(this),
-                    adesc.tiles.at(layer),
-                    width / (float)adesc.width,
-                    height / (float)adesc.height);
+                    adesc.tiles.at(integral_cast<size_t>(layer)),
+                    integral_to_float<float>(width) / integral_to_float<float>(adesc.width),
+                    integral_to_float<float>(height) / integral_to_float<float>(adesc.height));
             });
     } else {
         if (preloaded_texture_dds_data_.contains(name.filename)) {
@@ -706,7 +707,7 @@ GLuint RenderingResources::get_texture(
             DestructionGuard dg0{ [this]() { const_cast<RenderingResources*>(this)->delete_texture("__original_texture__", DeletionFailureMode::ABORT); } };
             auto sinfo = [&](){
                 CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
-                DestructionGuard dg1{ [this]() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
+                DestructionGuard dg1{ []() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
                 return initialize_dds_texture(name.filename, desc);
             }();
 
@@ -727,13 +728,13 @@ GLuint RenderingResources::get_texture(
                     : sinfo.mip_level_count,
                 aniso,
                 nchannels2sized_internal_format(integral_cast<size_t>(sinfo.nchannels)),
-                [this, &logic](GLsizei width, GLsizei height)
+                [&logic](GLsizei width, GLsizei height)
                 {
                     ViewportGuard vg{
                         0.f,
                         0.f,
-                        (float)width,
-                        (float)height};
+                        integral_to_float<float>(width),
+                        integral_to_float<float>(height)};
                     logic.render();
                 });
         } else {
@@ -1037,12 +1038,12 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
             if (size_it == packed_sizes.end()) {
                 THROW_OR_ABORT("Could not find texture with name \"" + nb.name + '"');
             }
-            const auto& size = size_it->second;
+            const auto& tile_size = size_it->second;
             if (!result.insert({
                 nb.name,
                 AutoUvTile{
                     .position = nb.bottom_left.casted<float>() / (atlas_size_2d.casted<float>() - 1.f),
-                    .size = size.casted<float>()
+                    .size = tile_size.casted<float>()
                             / FixedArray<float, 2>{(float)tad.width, (float)tad.height},
                     .layer = integral_cast<uint8_t>(layer)}}).second)
             {
@@ -1051,8 +1052,8 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
             tiles.push_back(AutoAtlasTileDescriptor{
                 .left = nb.bottom_left(0),
                 .bottom = nb.bottom_left(1),
-                .width = size(0),
-                .height = size(1),
+                .width = tile_size(0),
+                .height = tile_size(1),
                 .filename = nb.name});
         }
     }

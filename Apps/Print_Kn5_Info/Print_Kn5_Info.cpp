@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
                 if (f->fail()) {
                     THROW_OR_ABORT("Could not open file for write: \"" + tex_filename.string() + '"');
                 }
-                f->write((const char*)data.data.data(), data.data.size());
+                f->write((const char*)data.data.data(), integral_cast<std::streamsize>(data.data.size()));
                 f->flush();
                 if (f->fail()) {
                     THROW_OR_ABORT("Could not write to file: \"" + tex_filename.string() + '"');

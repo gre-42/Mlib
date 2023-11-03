@@ -1,6 +1,6 @@
 #pragma once
-#include <Mlib/Memory/Integral_Cast.hpp>
 #include <cmath>
+#include <concepts>
 #include <string>
 
 namespace Mlib {

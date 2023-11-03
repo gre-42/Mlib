@@ -1,4 +1,5 @@
 #include "Render_To_Texture_2D.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Gl_Extensions.hpp>

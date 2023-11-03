@@ -107,6 +107,7 @@ int main(int argc, char** argv) {
             destination_material.txDetail4(3) = gen_optional_png_name(dds_material.txDetail4(3));
             destination_material.txDetail1 = gen_optional_png_name(dds_material.txDetail1);
             destination_material.txDetailNM = gen_optional_png_name(dds_material.txDetailNM);
+            destination_material.txVariation = gen_optional_png_name(dds_material.txVariation);
         }
         save_kn5(args.unnamed_value(1), kn5.version, kn5.unknownNo, destination_textures, destination_materials, *source);
     } catch (const std::exception& e) {
