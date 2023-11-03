@@ -41,16 +41,28 @@ void Mlib::draw_node(
 {
     ColoredVertex<double> v00{
         .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 1.f, 0.f}};
+        .color = FixedArray<float, 3>{1.f, 1.f, 0.f},
+        .uv = fixed_zeros<float, 2>(),
+        .normal = fixed_zeros<float, 3>(),
+        .tangent = fixed_zeros<float, 3>()};
     ColoredVertex<double> v01{
         .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 0.f, 1.f}};
+        .color = FixedArray<float, 3>{1.f, 0.f, 1.f},
+        .uv = fixed_zeros<float, 2>(),
+        .normal = fixed_zeros<float, 3>(),
+        .tangent = fixed_zeros<float, 3>()};
     ColoredVertex<double> v10{
         .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
-        .color = FixedArray<float, 3>{0.f, 1.f, 1.f}};
+        .color = FixedArray<float, 3>{0.f, 1.f, 1.f},
+        .uv = fixed_zeros<float, 2>(),
+        .normal = fixed_zeros<float, 3>(),
+        .tangent = fixed_zeros<float, 3>()};
     ColoredVertex<double> v11{
         .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 1.f, 1.f}};
+        .color = FixedArray<float, 3>{1.f, 1.f, 1.f},
+        .uv = fixed_zeros<float, 2>(),
+        .normal = fixed_zeros<float, 3>(),
+        .tangent = fixed_zeros<float, 3>()};
 
     triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v11, v00, v10});
