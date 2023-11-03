@@ -158,17 +158,19 @@ void test_contour2() {
         {v00, v01, v11},
         {v00, v11, v10}};
     std::vector<FixedArray<ColoredVertex<double>, 3>> otriangles;
+    const auto z2 = fixed_zeros<float, 2>();
+    const auto z3 = fixed_zeros<float, 3>();
     for (const auto& t : triangles) {
         otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{.position = {t(0)(0), t(0)(1), 0.f}},
-            ColoredVertex<double>{.position = {t(1)(0), t(1)(1), 0.f}},
-            ColoredVertex<double>{.position = {t(2)(0), t(2)(1), 0.f}}});
+            ColoredVertex<double>{.position = {t(0)(0), t(0)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
+            ColoredVertex<double>{.position = {t(1)(0), t(1)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
+            ColoredVertex<double>{.position = {t(2)(0), t(2)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3}});
     }
     for (const auto& t : triangles) {
         otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}},
-            ColoredVertex<double>{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}},
-            ColoredVertex<double>{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}}});
+            ColoredVertex<double>{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
+            ColoredVertex<double>{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
+            ColoredVertex<double>{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3}});
     }
     std::swap(otriangles[1], otriangles[2]);
     find_contours(std::list(otriangles.begin(), otriangles.end()), ContourDetectionStrategy::EDGE_NEIGHBOR);
