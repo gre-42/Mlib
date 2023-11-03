@@ -42,15 +42,17 @@ void Mlib::create_scene_flat(
     auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
     auto rb1_2 = rigid_cuboid("rb2", "rb2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
+    const auto z2 = fixed_zeros<float, 2>();
+    const auto z3 = fixed_zeros<float, 3>();
     std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {-10.f, -5.f, -10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}},
+            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
+            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
+            ColoredVertex<float>{.position = {-10.f, -5.f, -10.f}, .color = {1.f, 0.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3}},
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .normal = {0.f, 1.f, 0.f}},
-            ColoredVertex<float>{.position = {+10.f, -5.f, +10.f}, .color = {1.f, 0.f, 0.f}, .normal = {0.f, 1.f, 0.f}}}
+            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
+            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
+            ColoredVertex<float>{.position = {+10.f, -5.f, +10.f}, .color = {1.f, 0.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
         "triangles0",
