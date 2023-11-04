@@ -31,13 +31,15 @@ MinimapLogic::MinimapLogic(
     {
         .filename = map_image_resource_name,
         .color_mode = ColorMode::RGBA,
+        .mipmap_mode = MipmapMode::WITH_MIPMAPS
     }
   },
   locator_logic_{
     RenderingContextStack::primary_rendering_resources(),
     {
         .filename = locator_image_resource_name,
-        .color_mode = ColorMode::RGBA
+        .color_mode = ColorMode::RGBA,
+        .mipmap_mode = MipmapMode::WITH_MIPMAPS
     },
     ResourceUpdateCycle::ONCE,
   },
