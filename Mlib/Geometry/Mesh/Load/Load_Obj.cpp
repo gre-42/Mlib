@@ -326,24 +326,31 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             } else if (regex_match(line, match, usemtl_reg)) {
                 auto material_name = std::string{match[1].str()};
                 current_mtl = mtllib.at(material_name);
-                TextureDescriptor td{
-                    .color = {
+                TextureDescriptor td;
+                if (!current_mtl.color_texture.empty()) {
+                    fs::path p = fs::path(filename).parent_path();
+                    td.color = {
+                        .filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string(),
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}
-                };
-                if (!current_mtl.color_texture.empty()) {
-                    fs::path p = fs::path(filename).parent_path();
-                    td.color = { .filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string() };
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level };
                 }
                 if (!current_mtl.specular_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.specular = { .filename = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string(), .color_mode = ColorMode::RGB };
+                    td.specular = {
+                        .filename = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string(),
+                        .color_mode = ColorMode::RGB,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level};
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.normal = { .filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string(), .color_mode = ColorMode::RGB };
+                    td.normal = {
+                        .filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string(),
+                        .color_mode = ColorMode::RGB,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level};
                 }
                 if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
                     tl.material.textures_color = { {.texture_descriptor = td } };
