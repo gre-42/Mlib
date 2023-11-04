@@ -807,7 +807,10 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_.get_cubemap(reflection_map)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_.get_texture({
+            .filename = reflection_map,
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glActiveTexture(GL_TEXTURE0));

@@ -1,5 +1,6 @@
 #include "Skybox_Logic.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -146,7 +147,10 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_cubemap(alias_)));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_texture({
+            .filename = alias_,
+            .color_mode = ColorMode::RGB,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
 
         CHK(glBindVertexArray(va_.vertex_array()));
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));

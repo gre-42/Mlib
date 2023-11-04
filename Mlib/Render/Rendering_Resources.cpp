@@ -76,7 +76,7 @@ static const bool EXTRACT_RAW = false;
 template <class TNode>
 class ValueExtractor {
 public:
-    ValueExtractor(TNode&& node)
+    explicit ValueExtractor(TNode&& node)
         : node_{ std::move(node) }
     {}
     auto& operator * () {
@@ -813,6 +813,8 @@ GLuint RenderingResources::get_texture(
                         integral_to_float<float>(height)};
                     logic.render();
                 });
+        } else if (cubemap_descriptors_.contains(color.filename)) {
+            texture = get_cubemap_unsafe(color.filename);
         } else {
             CHK(glGenTextures(1, &texture));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
@@ -828,15 +830,8 @@ GLuint RenderingResources::get_texture(
     return texture;
 }
 
-GLuint RenderingResources::get_cubemap(const std::string& name) const {
+GLuint RenderingResources::get_cubemap_unsafe(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
-    if (auto it = textures_.try_get({.filename = name}); it != nullptr) {
-        return it->handle;
-    }
-    std::scoped_lock lock{mutex_};
-    if (auto it = textures_.try_get({.filename = name}); it != nullptr) {
-        return it->handle;
-    }
     auto it = cubemap_descriptors_.get(name);
     if (it.filenames.size() != 6) {
         THROW_OR_ABORT("Cubemap does not have 6 filenames");
@@ -872,7 +867,6 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     CHK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
-    textures_.emplace({.filename = name}, TextureHandleAndOwner{textureID, ResourceOwner::CONTAINER});
     return textureID;
 }
 

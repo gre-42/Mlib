@@ -125,7 +125,6 @@ public:
         const ColormapWithModifiers& name,
         TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
-    GLuint get_cubemap(const std::string& name) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
     void set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
@@ -185,6 +184,7 @@ public:
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
+    GLuint get_cubemap_unsafe(const std::string& name) const;
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
