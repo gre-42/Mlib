@@ -87,6 +87,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
+            .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -103,6 +104,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, 0.f, 0.f });
         node->set_position({double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. });
         rva_(0)->instantiate_renderable(InstantiationOptions{
+            .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -119,6 +121,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(1)->instantiate_renderable(InstantiationOptions{
+            .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -135,6 +138,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         node->set_rotation({0.f, -90.f * degrees, 0.f });
         node->set_position({0.f, 0.f, -(square_(1u, 1u) - square_(0u, 1u)) / 4.f });
         rva_(0)->instantiate_renderable(InstantiationOptions{
+            .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});

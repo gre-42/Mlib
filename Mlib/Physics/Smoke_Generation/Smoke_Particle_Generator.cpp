@@ -73,6 +73,7 @@ void SmokeParticleGenerator::generate_child(
     scene_node_resources_.instantiate_renderable(
         resource_name,
         InstantiationOptions{
+            .rendering_resources = rendering_resources_,
             .instance_name = resource_name,
             .scene_node = child_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
