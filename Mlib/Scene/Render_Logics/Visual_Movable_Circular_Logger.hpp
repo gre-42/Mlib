@@ -18,7 +18,7 @@ public:
         StatusWriter& status_writer,
         StatusComponents log_components,
         const std::string& ttf_filename,
-        const std::string& pointer_texture_name,
+        ColormapWithModifiers pointer_texture_name,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& tick_radius,

@@ -5,14 +5,13 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-enum class ColorMode;
+struct ColormapWithModifiers;
 
 class CenteredTextureImageLogic: public FillWithTextureLogic {
 public:
     explicit CenteredTextureImageLogic(
         RenderingResources& rendering_resources,
-        const std::string& image_resource_name,
-        ColorMode color_mode);
+        ColormapWithModifiers image_resource_name);
     ~CenteredTextureImageLogic();
 
     void render(

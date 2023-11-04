@@ -53,18 +53,16 @@ std::string fragment_shader_text_layer(size_t layer) {
 
 FillWithTextureLogic::FillWithTextureLogic(
     RenderingResources& rendering_resources,
-    std::string image_resource_name,
+    ColormapWithModifiers image_resource_name,
     ResourceUpdateCycle update_cycle,
-    ColorMode color_mode,
     CullFaceMode cull_face_mode,
     AlphaChannelRole alpha_channel_role,
     const float* quad_vertices,
     std::optional<size_t> layer)
 : GenericPostProcessingLogic{quad_vertices},
   rendering_resources_{rendering_resources},
-  image_resource_name_{std::move(image_resource_name)},
+  image_resource_name_{rendering_resources_.colormap(image_resource_name)},
   update_cycle_{update_cycle},
-  color_mode_{color_mode},
   cull_face_mode_{cull_face_mode},
   alpha_channel_role_{alpha_channel_role},
   layer_{layer}
@@ -72,8 +70,8 @@ FillWithTextureLogic::FillWithTextureLogic(
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
 
-void FillWithTextureLogic::set_image_resource_name(const std::string& image_resource_name) {
-    image_resource_name_ = image_resource_name;
+void FillWithTextureLogic::set_image_resource_name(const ColormapWithModifiers& image_resource_name) {
+    image_resource_name_ = rendering_resources_.colormap(image_resource_name);
     rp_.texture_id_ = (GLuint)-1;
 }
 
@@ -87,15 +85,16 @@ void FillWithTextureLogic::update_texture_id() {
         rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
     }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-            rp_.texture_id_ = rendering_resources_.get_texture({
-                .color = {.filename = image_resource_name_},
-                .color_mode = color_mode_,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS});
+            rp_.texture_id_ = rendering_resources_.get_texture(
+                image_resource_name_,
+                TextureRole::COLOR);
     }
 }
 
 bool FillWithTextureLogic::texture_is_loaded_and_try_preload() const {
-    return rendering_resources_.texture_is_loaded_and_try_preload({.color = {.filename = image_resource_name_}});
+    return rendering_resources_.texture_is_loaded_and_try_preload(
+        image_resource_name_,
+        TextureRole::COLOR);
 }
 
 void FillWithTextureLogic::render()
@@ -109,7 +108,7 @@ void FillWithTextureLogic::render()
     }
     bool enable_blend =
         (alpha_channel_role_ == AlphaChannelRole::BLEND) &&
-        (color_mode_ == ColorMode::RGBA);
+        (image_resource_name_.color_mode == ColorMode::RGBA);
     if (enable_blend) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

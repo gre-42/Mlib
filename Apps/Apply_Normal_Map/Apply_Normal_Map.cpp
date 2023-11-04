@@ -114,9 +114,11 @@ int main(int argc, char** argv) {
                     .textures_color{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
                         .color = ColormapWithModifiers{
                             .filename = args.named_value("--color"),
-                            .histogram = args.named_value("--histogram", "")},
-                        .normal = {.filename = args.named_value("--normal")},
-                        .color_mode = ColorMode::RGB}} }
+                            .histogram = args.named_value("--histogram", ""),
+                            .color_mode = ColorMode::RGB},
+                        .normal = ColormapWithModifiers{
+                            .filename = args.named_value("--normal"),
+                            .color_mode = ColorMode::RGB}}}}
                     },
                 PhysicsMaterial::ATTR_VISIBLE};
             tl.draw_rectangle_wo_normals(

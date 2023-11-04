@@ -49,9 +49,12 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
         std::make_shared<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources(),
-            args.arguments.path(KnownArgs::texture),
-            resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
-            ColorMode::RGBA),
+            ColormapWithModifiers{
+                .filename = args.arguments.path(KnownArgs::texture),
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+            },
+            resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update))),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

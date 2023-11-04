@@ -10,7 +10,7 @@ class PointerImageLogic: public FillWithTextureLogic {
 public:
     explicit PointerImageLogic(
         RenderingResources& rendering_resources,
-        const std::string& image_resource_name);
+        ColormapWithModifiers image_resource_name);
     ~PointerImageLogic();
 
     void render(

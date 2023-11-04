@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
             auto png_name = gen_png_name(dds_name);
             rendering_resources.insert_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
             auto tex = rendering_resources.get_texture_data(
-                {.color = {.filename = dds_name}},
+                { .filename = dds_name },
+                TextureRole::COLOR,
                 FlipMode::NONE,
                 CopyBehavior::COPY);
             auto& dest = destination_textures[png_name];

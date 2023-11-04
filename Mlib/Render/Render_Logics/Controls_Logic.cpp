@@ -10,16 +10,15 @@
 using namespace Mlib;
 
 ControlsLogic::ControlsLogic(
-    const std::string& gamepad_texture,
+    ColormapWithModifiers image_resource_name,
     std::unique_ptr<IWidget>&& widget,
     DelayLoadPolicy delay_load_policy,
     FocusFilter focus_filter)
 : gamepad_texture_{
     std::make_shared<FillWithTextureLogic>(
         RenderingContextStack::primary_rendering_resources(),
-        gamepad_texture,
-        ResourceUpdateCycle::ONCE,
-        ColorMode::RGBA),
+        std::move(image_resource_name),
+        ResourceUpdateCycle::ONCE),
     std::move(widget),
     delay_load_policy,
     {.focus_mask = Focus::ALWAYS} },

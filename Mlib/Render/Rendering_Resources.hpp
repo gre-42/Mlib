@@ -100,6 +100,14 @@ enum class CopyBehavior {
     COPY
 };
 
+enum class TextureRole {
+    TRUSTED,
+    COLOR_FROM_DB,
+    COLOR,
+    SPECULAR,
+    NORMAL
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -108,19 +116,18 @@ public:
         std::string name,
         unsigned int max_anisotropic_filtering_level);
     ~RenderingResources();
+    const ColormapWithModifiers& colormap(const ColormapWithModifiers& name) const;
     void preload(const TextureDescriptor& descriptor) const;
-    bool texture_is_loaded_and_try_preload(const TextureDescriptor& descriptor);
-    GLuint get_texture(
-        const TextureDescriptor& descriptor,
-        CallerType caller_type = CallerType::RENDER) const;
+    bool texture_is_loaded_and_try_preload(
+        const ColormapWithModifiers& color,
+        TextureRole role = TextureRole::COLOR);
     GLuint get_texture(
         const ColormapWithModifiers& name,
-        const TextureDescriptor& descriptor,
+        TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
-    GLuint get_normalmap_texture(const TextureDescriptor& descriptor) const;
     GLuint get_cubemap(const std::string& name) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
-    void set_texture(const std::string& name, GLuint id, ResourceOwner resource_owner);
+    void set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
@@ -136,7 +143,8 @@ public:
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);
 
     std::string get_texture_filename(
-        const TextureDescriptor& descriptor,
+        const ColormapWithModifiers& color,
+        TextureRole role,
         const std::string& default_filename) const;
 
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
@@ -154,7 +162,7 @@ public:
     void set_texture_wrap(const std::string& name, WrapMode mode);
 
     void delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode);
-    void delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode);
+    void delete_texture(const ColormapWithModifiers& name, DeletionFailureMode deletion_failure_mode);
 
     ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
 
@@ -162,13 +170,14 @@ public:
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
     StbInfo<uint8_t> get_texture_data(
-        const TextureDescriptor& descriptor,
+        const ColormapWithModifiers& color,
+        TextureRole role,
         FlipMode flip_mode,
         CopyBehavior copy_behavior = CopyBehavior::RAISE) const;
 
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 
-    void save_to_file(const std::string& filename, const TextureDescriptor& desc) const;
+    void save_to_file(const std::string& filename, const ColormapWithModifiers& color, TextureRole role) const;
 
     virtual void insert_texture(
         const std::string& name,
@@ -176,13 +185,15 @@ public:
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
+    void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
-    void initialize_non_dds_texture(const ColormapWithModifiers& name, const TextureDescriptor& descriptor) const;
-    TextureSizeAndMipmaps initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const;
+    void initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role) const;
+    TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
-    mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_texture_data_;
+    mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
+    mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
     mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;

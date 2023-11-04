@@ -5,8 +5,8 @@ using namespace Mlib;
 
 Material& Material::compute_color_mode() {
     for (auto& t : textures_color) {
-        if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
-            t.texture_descriptor.color_mode = (blend_mode == BlendMode::OFF)
+        if (t.texture_descriptor.color.color_mode == ColorMode::UNDEFINED) {
+            t.texture_descriptor.color.color_mode = (blend_mode == BlendMode::OFF)
                 ? ColorMode::RGB
                 : ColorMode::RGBA;
         }

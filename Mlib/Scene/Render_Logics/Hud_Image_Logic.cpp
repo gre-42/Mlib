@@ -39,9 +39,11 @@ HudImageLogic::HudImageLogic(
     HudErrorBehavior hud_error_behavior)
 : FillWithTextureLogic{
     RenderingContextStack::primary_rendering_resources(),
-    image_resource_name,
+    {
+        .filename = image_resource_name,
+        .color_mode = ColorMode::RGBA
+    },
     update_cycle,
-    ColorMode::RGBA,
     CullFaceMode::CULL,
     AlphaChannelRole::BLEND,
     nullptr },

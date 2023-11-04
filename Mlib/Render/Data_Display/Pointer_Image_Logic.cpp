@@ -1,5 +1,4 @@
 #include "Pointer_Image_Logic.hpp"
-#include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>
@@ -10,12 +9,11 @@ using namespace Mlib;
 
 PointerImageLogic::PointerImageLogic(
     RenderingResources& rendering_resources,
-    const std::string& image_resource_name)
+    ColormapWithModifiers image_resource_name)
 : FillWithTextureLogic{
     rendering_resources,
-    image_resource_name,
+    std::move(image_resource_name),
     ResourceUpdateCycle::ONCE,
-    ColorMode::RGBA,
     CullFaceMode::CULL,
     AlphaChannelRole::BLEND,
     nullptr }

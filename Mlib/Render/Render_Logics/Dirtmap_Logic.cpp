@@ -66,10 +66,11 @@ void DirtmapLogic::render(
         rendering_resources_.add_texture_descriptor(
             "dirtmap",
             TextureDescriptor{
-                .color = {.filename = filename_},
-                .color_mode = ColorMode::GRAYSCALE,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                .anisotropic_filtering_level = 8});
+                .color = {
+                    .filename = filename_,
+                    .color_mode = ColorMode::GRAYSCALE,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .anisotropic_filtering_level = 8}});
         rendering_resources_.set_vp("dirtmap", vp());
         generated_ = true;
     }

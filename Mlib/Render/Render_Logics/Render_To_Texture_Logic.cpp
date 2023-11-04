@@ -1,4 +1,5 @@
 #include "Render_To_Texture_Logic.hpp"
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
@@ -37,9 +38,9 @@ RenderToTextureLogic::RenderToTextureLogic(
 RenderToTextureLogic::~RenderToTextureLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture(color_texture_name_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture({ .filename = color_texture_name_, .color_mode = ColorMode::RGBA }, DeletionFailureMode::WARN);
         if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
-            rendering_resources_.delete_texture(depth_texture_name_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_texture({ .filename = depth_texture_name_, .color_mode = ColorMode::GRAYSCALE }, DeletionFailureMode::WARN);
         }
     }
 }
@@ -83,9 +84,9 @@ void RenderToTextureLogic::render(
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // PpmImage::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.ppm");
         }
-        rendering_resources_.set_texture(color_texture_name_, fbs_->texture_color(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture({ .filename = color_texture_name_, .color_mode = ColorMode::RGBA }, fbs_->texture_color(), ResourceOwner::CALLER);
         if (depth_kind_ == FrameBufferChannelKind::TEXTURE) {
-            rendering_resources_.set_texture(depth_texture_name_, fbs_->texture_depth(), ResourceOwner::CALLER);
+            rendering_resources_.set_texture({ .filename = depth_texture_name_, .color_mode = ColorMode::GRAYSCALE }, fbs_->texture_depth(), ResourceOwner::CALLER);
         }
     }
 }

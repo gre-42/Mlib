@@ -140,9 +140,8 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{
             .texture_descriptor = {
-                .color = {.filename = args.named_value("--multilayer_diffuse")},
-                .normal = {.filename = args.named_value("--multilayer_normal", "")},
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .color = {.filename = args.named_value("--multilayer_diffuse"), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .normal = {.filename = args.named_value("--multilayer_normal", ""), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
             .role = BlendMapRole::DETAIL_BASE}};
         std::vector<float> lcm_world_args;
         for (uint32_t i = 0; i < 4; ++i) {
@@ -154,15 +153,13 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
-                        .color = {.filename = args.named_value("--multilayer_mask")},
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .color = {.filename = args.named_value("--multilayer_mask"), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
-                    .color = {.filename = detail},
-                    .normal = {.filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .color = {.filename = detail, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .normal = {.filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                 .scale = multilayer_mult,
                 .role = BlendMapRole::DETAIL_COLOR,
                 .uv_source = BlendMapUvSource::HORIZONTAL});

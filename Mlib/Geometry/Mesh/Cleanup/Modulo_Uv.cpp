@@ -31,7 +31,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
             lcm_world_args.push_back(1.f / t->scale);
         } else {
             for (size_t i = 0; i < 2; ++i) {
-                if (t->texture_descriptor.wrap_modes(i) == WrapMode::REPEAT) {
+                if (t->texture_descriptor.color.wrap_modes(i) == WrapMode::REPEAT) {
                     lcm_local_args(i).push_back(1.f / t->scale);
                 } else {
                     detected_non_repeat(i) = true;

@@ -51,9 +51,12 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
         std::make_shared<FillWithTextureLogic>(
             rs.rendering_resources_,
-            args.arguments.at<std::string>(KnownArgs::texture),
+            ColormapWithModifiers{
+                .filename = args.arguments.at<std::string>(KnownArgs::texture),
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::NO_MIPMAPS
+            },
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
-            ColorMode::RGBA,
             CullFaceMode::CULL,
             AlphaChannelRole::BLEND),
         std::make_unique<Widget>(

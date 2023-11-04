@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -12,6 +13,7 @@ class RenderingResources;
 enum class ResourceUpdateCycle;
 struct LayoutConstraintParameters;
 enum class ColorMode;
+enum class MipmapMode;
 
 enum class AlphaChannelRole {
     BLEND,
@@ -35,15 +37,14 @@ class FillWithTextureLogic: public GenericPostProcessingLogic {
 public:
     FillWithTextureLogic(
         RenderingResources& rendering_resources,
-        std::string image_resource_name,
+        ColormapWithModifiers image_resource_name,
         ResourceUpdateCycle update_cycle,
-        ColorMode color_mode,
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
         AlphaChannelRole alpha_channel_role = AlphaChannelRole::BLEND,
         const float* quad_vertices = standard_quad_vertices,
         std::optional<size_t> layer = std::nullopt);
     ~FillWithTextureLogic();
-    void set_image_resource_name(const std::string& image_resource_name);
+    void set_image_resource_name(const ColormapWithModifiers& image_resource_name);
     void update_texture_id();
     bool texture_is_loaded_and_try_preload() const;
     void render();
@@ -54,9 +55,8 @@ public:
 private:
     FillWithTextureRenderProgram rp_;
     RenderingResources& rendering_resources_;
-    std::string image_resource_name_;
+    ColormapWithModifiers image_resource_name_;
     ResourceUpdateCycle update_cycle_;
-    ColorMode color_mode_;
     CullFaceMode cull_face_mode_;
     AlphaChannelRole alpha_channel_role_;
     std::optional<size_t> layer_;

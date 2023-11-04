@@ -28,13 +28,19 @@ MinimapLogic::MinimapLogic(
 : node_{node},
   centered_texture_image_logic_{
     RenderingContextStack::primary_rendering_resources(),
-    map_image_resource_name,
-    ColorMode::RGBA },
+    {
+        .filename = map_image_resource_name,
+        .color_mode = ColorMode::RGBA,
+    }
+  },
   locator_logic_{
     RenderingContextStack::primary_rendering_resources(),
-    locator_image_resource_name,
+    {
+        .filename = locator_image_resource_name,
+        .color_mode = ColorMode::RGBA
+    },
     ResourceUpdateCycle::ONCE,
-    ColorMode::RGBA},
+  },
   widget_{std::move(widget)},
   locator_size_{locator_size},
   pointer_reference_length_{pointer_reference_length},

@@ -1427,14 +1427,15 @@ void OsmMapResource::save_to_obj_file(
 {
     auto filename = prefix + "_osm_map.obj";
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
-    std::map<TextureDescriptor, std::string> autogen_textures;
-    auto get_filename = [&](const TextureDescriptor& desc){
-        auto it = autogen_textures.find(desc);
+    std::map<ColormapWithModifiers, std::string> autogen_textures;
+    auto get_filename = [&](const ColormapWithModifiers& color, TextureRole role){
+        auto it = autogen_textures.find(color);
         if (it == autogen_textures.end()) {
             std::string result = primary_rendering_resources.get_texture_filename(
-                desc,
+                color,
+                role,
                 filename + ".tex." + std::to_string(autogen_textures.size()) + ".png");
-            autogen_textures.insert({ desc, result });
+            autogen_textures.insert({ color, result });
             return result;
         } else {
             return it->second;
@@ -1454,12 +1455,9 @@ void OsmMapResource::save_to_obj_file(
                 .specularity = m.specularity};
             if (!m.textures_color.empty()) {
                 const auto& desc = m.textures_color[0].texture_descriptor;
-                result.color_texture = get_filename(desc);
-                result.bump_texture = get_filename(TextureDescriptor{
-                    .color = {.filename = desc.normal.filename, .average = desc.normal.average},
-                    .color_mode = ColorMode::RGB,
-                    .anisotropic_filtering_level = desc.anisotropic_filtering_level});
-                result.has_alpha_texture = (desc.color_mode == ColorMode::RGBA);
+                result.color_texture = get_filename(desc.color, TextureRole::COLOR);
+                result.bump_texture = get_filename(desc.normal, TextureRole::NORMAL);
+                result.has_alpha_texture = (desc.color.color_mode == ColorMode::RGBA);
             }
             return result;
         });

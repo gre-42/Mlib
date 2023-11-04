@@ -92,7 +92,11 @@ int main(int argc, char** argv)
         }
         PointerImageLogic pointer_image_logic{
             rendering_resources,
-            argv[2]
+            {
+                .filename = argv[2],
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+            }
         };
         CircularDataDisplay circular_data_display{
             circular_renderable_text,

@@ -118,9 +118,12 @@ int main(int argc, char** argv)
             if (parsed.has_named_value("--texname")) {
                 ftl.emplace(
                     rendering_resources,
-                    parsed.named_value("--texname"),
-                    ResourceUpdateCycle::ONCE,
-                    ColorMode::RGBA);
+                    ColormapWithModifiers{
+                        .filename = parsed.named_value("--texname"),
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    },
+                    ResourceUpdateCycle::ONCE);
             } else if (!parsed.has_named("--rerender_atlas")) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {
@@ -128,9 +131,10 @@ int main(int argc, char** argv)
                 }
                 ftl.emplace(
                     rendering_resources,
-                    "__texture__",
+                    ColormapWithModifiers{
+                        .filename = "__texture__",
+                        .color_mode = ColorMode::RGBA},
                     ResourceUpdateCycle::ONCE,
-                    ColorMode::RGBA,
                     CullFaceMode::CULL,
                     AlphaChannelRole::BLEND,
                     standard_quad_vertices,
@@ -141,10 +145,16 @@ int main(int argc, char** argv)
             rendering_resources.add_texture_descriptor(
                 "__texture__",
                 TextureDescriptor{
-                    .color = {.filename = parsed.unnamed_value(0)},
-                    .color_mode = ColorMode::RGBA,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS});
-            ftl.emplace(rendering_resources, "__texture__", ResourceUpdateCycle::ONCE, ColorMode::RGBA);
+                    .color = {
+                        .filename = parsed.unnamed_value(0),
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS}});
+            ftl.emplace(
+                rendering_resources,
+                ColormapWithModifiers{
+                    .filename = "__texture__",
+                    .color_mode = ColorMode::RGBA},
+                ResourceUpdateCycle::ONCE);
         }
 
         // render loop

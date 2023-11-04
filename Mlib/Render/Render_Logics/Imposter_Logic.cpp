@@ -101,7 +101,12 @@ ImposterLogic::ImposterLogic(
 ImposterLogic::~ImposterLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture(texture_id_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture(
+            {
+                .filename = texture_id_,
+                .color_mode = ColorMode::RGB
+            },
+            DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
 }
@@ -116,7 +121,9 @@ void ImposterLogic::add_imposter(
     Material material{
         // .blend_mode = BlendMode::SEMI_CONTINUOUS_08,  // does not work with vegetation
         .blend_mode = BlendMode::BINARY_08,
-        .textures_color = { {.texture_descriptor = TextureDescriptor{.color = {.filename = texture_id_}, .color_mode = ColorMode::RGBA}} },
+        .textures_color = { {.texture_descriptor = TextureDescriptor{.color = {
+            .filename = texture_id_,
+            .color_mode = ColorMode::RGBA}}} },
         .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
@@ -303,7 +310,7 @@ void ImposterLogic::render(
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
-        rendering_resources_.set_texture(texture_id_, fbs_->texture_color(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture({ .filename = texture_id_, .color_mode = ColorMode::RGBA }, fbs_->texture_color(), ResourceOwner::CALLER);
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{

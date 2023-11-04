@@ -244,12 +244,11 @@ void PostProcessingLogic::render(
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
                 CHK(glBindTexture(
                     GL_TEXTURE_2D,
-                    rendering_resources_.get_texture(
-                        {.filename = "soft_light"},
-                        TextureDescriptor{
-                            .color = {.filename = soft_light_filename_},
+                    rendering_resources_.get_texture({
+                            .filename = soft_light_filename_,
                             .color_mode = ColorMode::RGB,
-                            .mipmap_mode = MipmapMode::NO_MIPMAPS})));
+                            .mipmap_mode = MipmapMode::NO_MIPMAPS},
+                        TextureRole::COLOR_FROM_DB)));
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             }
 

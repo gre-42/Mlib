@@ -1,5 +1,6 @@
 #include "Controls.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -48,7 +49,10 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
             .icon = args.arguments.at<std::string>(KnownArgs::icon)},
         0);
     controls_logic = std::make_shared<ControlsLogic>(
-        args.arguments.path(KnownArgs::gamepad_texture),
+        ColormapWithModifiers{
+            .filename = args.arguments.path(KnownArgs::gamepad_texture),
+            .color_mode = ColorMode::RGBA
+        },
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

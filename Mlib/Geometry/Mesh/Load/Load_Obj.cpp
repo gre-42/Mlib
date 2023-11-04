@@ -329,23 +329,23 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 TextureDescriptor td{
                     .color = {
                         .desaturate = cfg.desaturate,
-                        .histogram = cfg.histogram},
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level
+                        .histogram = cfg.histogram,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}
                 };
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.color = {.filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string()};
+                    td.color = { .filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string() };
                 }
                 if (!current_mtl.specular_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.specular = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string();
+                    td.specular = { .filename = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string(), .color_mode = ColorMode::RGB };
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.normal = {.filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string()};
+                    td.normal = { .filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string(), .color_mode = ColorMode::RGB };
                 }
-                if (!td.color.filename.empty() || !td.specular.empty() || !td.normal.filename.empty()) {
+                if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
                     tl.material.textures_color = { {.texture_descriptor = td } };
                 } else {
                     tl.material.textures_color = cfg.textures;

@@ -65,6 +65,42 @@
 using namespace Mlib;
 namespace fs = std::filesystem;
 
+#ifdef __ANDROID__
+static const bool EXTRACT_PROCESSED = false;
+static const bool EXTRACT_RAW = false;
+#else
+static const bool EXTRACT_PROCESSED = true;
+static const bool EXTRACT_RAW = false;
+#endif
+
+template <class TNode>
+class ValueExtractor {
+public:
+    ValueExtractor(TNode&& node)
+        : node_{ std::move(node) }
+    {}
+    auto& operator * () {
+        return node_.mapped();
+    }
+    auto* operator -> () {
+        return &node_.mapped();
+    }
+    bool operator == (std::nullptr_t) const {
+        return node_.empty();
+    }
+private:
+    TNode node_;
+};
+
+template <bool textract, class TContainer, class TKey>
+auto get_or_extract(TContainer& container, const TKey& key) {
+    if constexpr (textract) {
+        return ValueExtractor{ container.try_extract(key) };
+    } else {
+        return container.try_get(key);
+    }
+}
+
 std::ostream& Mlib::operator << (std::ostream& ostr, const AutoAtlasTileDescriptor& aatd) {
     ostr <<
         "name: " << aatd.filename <<
@@ -115,49 +151,49 @@ static StbInfo<uint8_t> stb_load_texture(
     return result;
 }
 
-static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& desc, FlipMode flip_mode) {
-    std::string touch_file = desc.color.filename + ".xpltd";
+static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifiers& color, FlipMode flip_mode) {
+    std::string touch_file = color.filename + ".xpltd";
     bool has_color_selector =
-        (desc.color.selected_color_near != 0.f) ||
-        (desc.color.selected_color_far != INFINITY);
+        (color.selected_color_near != 0.f) ||
+        (color.selected_color_far != INFINITY);
     auto source_color_mode = has_color_selector
         ? ColorMode::RGB
-        : desc.color_mode;
-    if (has_color_selector && (desc.color_mode != ColorMode::GRAYSCALE)) {
+        : color.color_mode;
+    if (has_color_selector && (color.color_mode != ColorMode::GRAYSCALE)) {
         THROW_OR_ABORT("Color-selector requires grayscale");
     }
     if ((source_color_mode == ColorMode::RGBA) &&
-        desc.color.alpha.empty() &&
+        color.alpha.empty() &&
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
         !fs::exists(touch_file))
     {
-        linfo() << "Extrapolating RGBA image \"" << desc.color << '"';
-        auto img = StbImage4::load_from_file(desc.color.filename);
+        linfo() << "Extrapolating RGBA image \"" << color << '"';
+        auto img = StbImage4::load_from_file(color.filename);
         float sigma = 3.f;
         size_t niterations = 1 + (size_t)((float)std::max(img.shape(0), img.shape(1)) / (sigma * 4));
         extrapolate_rgba_colors(
             img,
             sigma,
-            niterations).save_to_file(desc.color.filename);
+            niterations).save_to_file(color.filename);
         std::ofstream ofstr{ touch_file };
         if (ofstr.fail()) {
             THROW_OR_ABORT("Could not create file \"" + touch_file + '"');
         }
     }
     StbInfo<uint8_t> si0;
-    if (!desc.color.alpha.empty()) {
+    if (!color.alpha.empty()) {
         if (source_color_mode != ColorMode::RGBA) {
-            THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + desc.color.filename + '"');
+            THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + color.filename + '"');
         }
         si0 = stb_load_texture(
-            desc.color.filename, (int)ColorMode::RGB, flip_mode);
+            color.filename, (int)ColorMode::RGB, flip_mode);
         if (si0.nrChannels != 3) {
-            THROW_OR_ABORT("#channels not 3: \"" + desc.color.filename + '"');
+            THROW_OR_ABORT("#channels not 3: \"" + color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
-            desc.color.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
+            color.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
         if (si_alpha.nrChannels != 1) {
-            THROW_OR_ABORT("#channels not 1: \"" + desc.color.alpha + '"');
+            THROW_OR_ABORT("#channels not 1: \"" + color.alpha + '"');
         }
         StbInfo<uint8_t> si0_rgb = std::move(si0);
         si0 = stb_create<uint8_t>(si0_rgb.width, si0_rgb.height, 4);
@@ -171,11 +207,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            desc.color.filename, (int)source_color_mode, flip_mode);
+            color.filename, (int)source_color_mode, flip_mode);
     }
-    if (!desc.color.average.empty()) {
+    if (!color.average.empty()) {
         auto si1 = stb_load_texture(
-            desc.color.average, (int)source_color_mode, flip_mode);
+            color.average, (int)source_color_mode, flip_mode);
         stb_average(
             si0.data.get(),
             si1.data.get(),
@@ -188,9 +224,9 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si1.nrChannels,
             si0.nrChannels);
     }
-    if (!desc.color.multiply.empty()) {
+    if (!color.multiply.empty()) {
         auto si1 = stb_load_texture(
-            desc.color.multiply, (int)source_color_mode, flip_mode);
+            color.multiply, (int)source_color_mode, flip_mode);
         stb_multiply_color(
             si0.data.get(),
             si1.data.get(),
@@ -203,32 +239,32 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si1.nrChannels,
             si0.nrChannels);
     }
-    if (desc.alpha_fac != 1.f) {
+    if (color.alpha_fac != 1.f) {
         stb_alpha_fac(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            desc.alpha_fac);
+            color.alpha_fac);
     }
-    if (desc.color.desaturate) {
+    if (color.desaturate) {
         stb_desaturate(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels);
     }
-    if (!desc.color.histogram.empty()) {
+    if (!color.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
-        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(desc.color.histogram, -3, FlipMode::NONE));
+        Array<unsigned char> ref = stb_image_2_array(stb_load_texture(color.histogram, -3, FlipMode::NONE));
         Array<unsigned char> m = match_rgba_histograms(image, ref);
         assert_true(m.shape(0) == (size_t)si0.nrChannels);
         assert_true(m.shape(1) == (size_t)si0.height);
         assert_true(m.shape(2) == (size_t)si0.width);
         array_2_stb_image(m, si0.data.get());
     }
-    if (!desc.color.lighten.all_equal(0.f)) {
-        const FixedArray<float, 3>& lighten = desc.color.lighten;
+    if (!color.lighten.all_equal(0.f)) {
+        const FixedArray<float, 3>& lighten = color.lighten;
         if (any(lighten > 1.f) ||
             any(lighten < -1.f) ||
             !all(Mlib::isfinite(lighten)))
@@ -240,13 +276,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.width,
             si0.height,
             si0.nrChannels,
-            (desc.color.lighten * 255.f).casted<short>().flat_begin());
+            (color.lighten * 255.f).casted<short>().flat_begin());
     }
-    if (!desc.color.lighten_left.all_equal(0.f) ||
-        !desc.color.lighten_right.all_equal(0.f))
+    if (!color.lighten_left.all_equal(0.f) ||
+        !color.lighten_right.all_equal(0.f))
     {
-        const FixedArray<float, 3>& lighten_left = desc.color.lighten_left;
-        const FixedArray<float, 3>& lighten_right = desc.color.lighten_right;
+        const FixedArray<float, 3>& lighten_left = color.lighten_left;
+        const FixedArray<float, 3>& lighten_right = color.lighten_right;
         if (!all(Mlib::isfinite(lighten_left)) ||
             any(lighten_left > 1.f) ||
             any(lighten_left < -1.f))
@@ -264,14 +300,14 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.width,
             si0.height,
             si0.nrChannels,
-            (desc.color.lighten_left * 255.f).casted<short>().flat_begin(),
-            (desc.color.lighten_right * 255.f).casted<short>().flat_begin());
+            (color.lighten_left * 255.f).casted<short>().flat_begin(),
+            (color.lighten_right * 255.f).casted<short>().flat_begin());
     }
-    if (!desc.color.lighten_top.all_equal(0.f) ||
-        !desc.color.lighten_bottom.all_equal(0.f))
+    if (!color.lighten_top.all_equal(0.f) ||
+        !color.lighten_bottom.all_equal(0.f))
     {
-        const FixedArray<float, 3>& lighten_top = desc.color.lighten_top;
-        const FixedArray<float, 3>& lighten_bottom = desc.color.lighten_bottom;
+        const FixedArray<float, 3>& lighten_top = color.lighten_top;
+        const FixedArray<float, 3>& lighten_bottom = color.lighten_bottom;
         if (!all(Mlib::isfinite(lighten_top)) ||
             any(lighten_top > 1.f) ||
             any(lighten_top < -1.f))
@@ -289,23 +325,23 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
             si0.width,
             si0.height,
             si0.nrChannels,
-            (desc.color.lighten_top * 255.f).casted<short>().flat_begin(),
-            (desc.color.lighten_bottom * 255.f).casted<short>().flat_begin());
+            (color.lighten_top * 255.f).casted<short>().flat_begin(),
+            (color.lighten_bottom * 255.f).casted<short>().flat_begin());
     }
-    if (!desc.color.mean_color.all_equal(-1.f)) {
+    if (!color.mean_color.all_equal(-1.f)) {
         if (!stb_colorize(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            (desc.color.mean_color * 255.f).casted<unsigned char>().flat_begin()))
+            (color.mean_color * 255.f).casted<unsigned char>().flat_begin()))
         {
-            lwarn() << "alpha = 0: " << desc.color << std::endl;
+            lwarn() << "alpha = 0: " << color << std::endl;
         }
     }
-    if (!desc.color.alpha_blend.empty()) {
+    if (!color.alpha_blend.empty()) {
         auto si1 = stb_load_texture(
-            desc.color.alpha_blend, 4, flip_mode);
+            color.alpha_blend, 4, flip_mode);
         stb_alpha_blend(
             si0.data.get(),
             si1.data.get(),
@@ -323,46 +359,46 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const TextureDescriptor& 
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("Only 3 channels are supported for selected_color");;
         }
-        if (desc.color_mode != ColorMode::GRAYSCALE) {
+        if (color.color_mode != ColorMode::GRAYSCALE) {
             THROW_OR_ABORT("Color-selector requires grayscale");
         }
-        const FixedArray<float, 3>& selected_color = desc.color.selected_color;
+        const FixedArray<float, 3>& selected_color = color.selected_color;
         if (any(selected_color < 0.f) || any(selected_color > 1.f)) {
             THROW_OR_ABORT("selected_color out of bounds");
         }
-        if (!std::isfinite(desc.color.selected_color_near) ||
-            (desc.color.selected_color_near < 0.f) ||
-            (desc.color.selected_color_near > 1.f))
+        if (!std::isfinite(color.selected_color_near) ||
+            (color.selected_color_near < 0.f) ||
+            (color.selected_color_near > 1.f))
         {
             THROW_OR_ABORT("selected_color_near out of bounds");
         }
-        if (!std::isfinite(desc.color.selected_color_far) ||
-            (desc.color.selected_color_far < 0.f) ||
-            (desc.color.selected_color_far > 1.f))
+        if (!std::isfinite(color.selected_color_far) ||
+            (color.selected_color_far < 0.f) ||
+            (color.selected_color_far > 1.f))
         {
             THROW_OR_ABORT("selected_color_far out of bounds");
         }
         auto si1 = stb_create<uint8_t>(si0.width, si0.height, 1);
-        assert_isequal(si0.nrChannels, integral_cast<int>(desc.color.selected_color.length()));
+        assert_isequal(si0.nrChannels, integral_cast<int>(color.selected_color.length()));
         stb_generate_color_mask(
             si0.data.get(),
             si1.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            (desc.color.selected_color * 255.f).casted<short>().flat_begin(),
-            (unsigned short)std::round(desc.color.selected_color_near * 255.f),
-            (unsigned short)std::round(desc.color.selected_color_far * 255.f));
+            (color.selected_color * 255.f).casted<short>().flat_begin(),
+            (unsigned short)std::round(color.selected_color_near * 255.f),
+            (unsigned short)std::round(color.selected_color_far * 255.f));
         si0 = std::move(si1);
     }
-    if ((desc.color.times != 0.f) || (desc.color.plus != 1.f)) {
+    if ((color.times != 1.f) || (color.plus != 0.f)) {
         stb_transform(
             si0.data.get(),
             si0.width,
             si0.height,
             si0.nrChannels,
-            desc.color.times,
-            desc.color.plus);
+            color.times,
+            color.plus);
     }
     return si0;
 }
@@ -378,6 +414,29 @@ static double mean_opacity(const StbInfo<uint8_t>& si) {
         }
     }
     return opacity / double(si.width * si.height);
+}
+
+static void check_color_mode(
+    const ColormapWithModifiers& color,
+    TextureRole role)
+{
+    if ((role == TextureRole::COLOR) || (role == TextureRole::COLOR_FROM_DB)) {
+        if (color.color_mode == ColorMode::UNDEFINED) {
+            THROW_OR_ABORT("Colormode undefined in color texture \"" + color.filename + '"');
+        }
+    } else if (role == TextureRole::SPECULAR) {
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + color.filename + '"');
+        }
+    } else if (role == TextureRole::NORMAL) {
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + color.filename + '"');
+        }
+    } else if (role == TextureRole::TRUSTED) {
+        // Do nothing
+    } else {
+        THROW_OR_ABORT("Unknown texture role: " + std::to_string((int)role));
+    }
 }
 
 // static void generate_rgba_mipmaps_inplace(const StbInfo& si) {
@@ -424,8 +483,9 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 
 RenderingResources::RenderingResources(std::string name,
                                        unsigned int max_anisotropic_filtering_level)
-    : preloaded_texture_data_{"Preloaded texture dataa",
-                              [](const ColormapWithModifiers &e) { return e.filename; }}
+    : preloaded_processed_texture_data_{"Preloaded processed texture dataa",
+                                        [](const ColormapWithModifiers &e) { return e.filename; }}
+    , preloaded_raw_texture_data_{"Preloaded raw texture dataa"}
     , preloaded_texture_dds_data_{"Preloaded texture DDS data"}
     , texture_descriptors_{"Texture descriptors"}
     , textures_{"Textures", [](const ColormapWithModifiers &e) { return e.filename; }}
@@ -443,7 +503,12 @@ RenderingResources::RenderingResources(std::string name,
     , name_{std::move(name)}
     , max_anisotropic_filtering_level_{max_anisotropic_filtering_level}
     , preloader_background_loop_{"Preload_BG"}
-    , deallocation_token_{render_deallocator.insert([this]() { deallocate(); })} {
+    , deallocation_token_{render_deallocator.insert([this]() {
+        for (const auto& [d, _] : textures_) {
+            append_render_allocator([this, d](){ preload(d, TextureRole::TRUSTED); });
+        }
+        deallocate();
+    })} {
 }
 
 RenderingResources::~RenderingResources() {
@@ -465,65 +530,71 @@ void RenderingResources::deallocate() {
 }
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {
-    LOG_FUNCTION("RenderingResources::preload, color=" + descriptor.color);
-    std::scoped_lock lock{ mutex_ };
     auto dit = texture_descriptors_.try_get(descriptor.color.filename);
     const TextureDescriptor& desc = dit != nullptr
         ? *dit
         : descriptor;
-    if (ContextQuery::is_initialized()) {
-        if (!desc.color.filename.empty()) {
-            get_texture(desc, CallerType::PRELOAD);
-        }
-        if (!desc.normal.filename.empty()) {
-            get_normalmap_texture(desc);
-        }
-    } else {
-        if (!desc.color.filename.empty() &&
-            !textures_.contains(descriptor.color) &&
-            !preloaded_texture_data_.contains(descriptor.color) &&
-            !preloaded_texture_dds_data_.contains(descriptor.color.filename) &&
-            !auto_atlas_tile_descriptors_.contains(descriptor.color.filename))
-        {
-            auto data = get_texture_data(desc, FlipMode::VERTICAL);
-            preloaded_texture_data_.emplace(descriptor.color, std::move(data));
-            if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-                linfo() << this << " Preloaded color texture: " << descriptor.color;
-            }
-        }
-        if (!desc.normal.filename.empty() &&
-            !textures_.contains({.filename = desc.normal.filename, .average = desc.normal.average}) &&
-            !preloaded_texture_data_.contains({.filename = desc.normal.filename, .average = desc.normal.average}) &&
-            !preloaded_texture_dds_data_.contains(desc.normal.filename) &&
-            !auto_atlas_tile_descriptors_.contains(descriptor.normal.filename))
-        {
-            auto data = get_texture_data(
-                TextureDescriptor{
-                    .color = {.filename = desc.normal.filename, .average = desc.normal.average},
-                    .color_mode = ColorMode::RGB},
-                FlipMode::VERTICAL);
-            preloaded_texture_data_.emplace({.filename = desc.normal.filename, .average = desc.normal.average}, std::move(data));
-            if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-                linfo() << this << " Preloaded normal texture: " << desc.normal;
-            }
-        }
+    if (!desc.color.filename.empty()) {
+        preload(desc.color, TextureRole::COLOR);
+    }
+    if (!desc.specular.filename.empty()) {
+        preload(desc.specular, TextureRole::SPECULAR);
+    }
+    if (!desc.normal.filename.empty()) {
+        preload(desc.normal, TextureRole::NORMAL);
     }
 }
 
-bool RenderingResources::texture_is_loaded_and_try_preload(const TextureDescriptor& descriptor) {
-    if (texture_is_loaded_unsafe(descriptor.color)) {
+void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole role) const {
+    LOG_FUNCTION("RenderingResources::preload, color=" + color);
+    if (color.filename.empty()) {
+        THROW_OR_ABORT("Attempt to preload empty texture");
+    }
+    if (textures_.contains(color)) {
+        return;
+    }
+    if (ContextQuery::is_initialized()) {
+        get_texture(color, role, CallerType::PRELOAD);
+    } else {
+        check_color_mode(color, role);
+        {
+            std::scoped_lock lock{ mutex_ };
+            if (textures_.contains(color)) {
+                return;
+            }
+            if (!preloaded_processed_texture_data_.contains(color) &&
+                !preloaded_raw_texture_data_.contains(color.filename) &&
+                !preloaded_texture_dds_data_.contains(color.filename) &&
+                !auto_atlas_tile_descriptors_.contains(color.filename))
+            {
+                auto data = get_texture_data(color, role, FlipMode::VERTICAL);
+                preloaded_processed_texture_data_.emplace(color, std::move(data));
+                if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+                    linfo() << this << " Preloaded texture: " << color;
+                }
+            }
+        }
+        append_render_allocator([this, color, role]() { get_texture(color, role, CallerType::PRELOAD); });
+    }
+}
+
+bool RenderingResources::texture_is_loaded_and_try_preload(
+    const ColormapWithModifiers& color,
+    TextureRole role)
+{
+    if (texture_is_loaded_unsafe(color)) {
         return true;
     }
     if (!preloader_background_loop_.done()) {
         return false;
     }
     std::scoped_lock lock{mutex_};
-    if (texture_is_loaded_unsafe(descriptor.color)) {
+    if (texture_is_loaded_unsafe(color)) {
         return true;
     }
     if (preloader_background_loop_.done()) {
-        preloader_background_loop_.run([this, descriptor](){
-            preload(descriptor);
+        preloader_background_loop_.run([this, color, role](){
+            preload(color, role);
         });
     }
     return false;
@@ -533,7 +604,10 @@ bool RenderingResources::texture_is_loaded_unsafe(const ColormapWithModifiers& n
     if (preloaded_texture_dds_data_.contains(name.filename)) {
         return true;
     }
-    if (preloaded_texture_data_.contains(name)) {
+    if (preloaded_processed_texture_data_.contains(name)) {
+        return true;
+    }
+    if (preloaded_raw_texture_data_.contains(name.filename)) {
         return true;
     }
     if (textures_.contains(name)) {
@@ -550,25 +624,37 @@ bool RenderingResources::contains_texture(const ColormapWithModifiers& name) con
     return textures_.contains(name) || auto_atlas_tile_descriptors_.contains(name.filename);
 }
 
+const ColormapWithModifiers& RenderingResources::colormap(const ColormapWithModifiers& name) const
+{
+    if (auto dit = texture_descriptors_.try_get(name.filename); dit != nullptr) {
+        return dit->color;
+    } else {
+        return name;
+    }
+}
+
 std::string RenderingResources::get_texture_filename(
-    const TextureDescriptor& descriptor,
+    const ColormapWithModifiers& color,
+    TextureRole role,
     const std::string& default_filename) const
 {
     std::shared_lock lock{mutex_};
-    auto dit = texture_descriptors_.try_get(descriptor.color.filename);
-    const TextureDescriptor &desc = dit != nullptr
-        ? *dit
-        : descriptor;
     
-    if (manual_atlas_tile_descriptors_.contains(desc.color.filename) ||
-        desc.color.desaturate ||
-        !desc.color.histogram.empty() ||
-        !desc.color.average.empty() ||
-        !desc.color.multiply.empty() ||
-        !desc.color.mean_color.all_equal(-1.f) ||
-        !desc.color.lighten.all_equal(0.f))
+    if (role == TextureRole::COLOR_FROM_DB) {
+        return get_texture_filename(colormap(color), TextureRole::COLOR, default_filename);
+    }
+
+    check_color_mode(color, role);
+
+    if (manual_atlas_tile_descriptors_.contains(color.filename) ||
+        color.desaturate ||
+        !color.histogram.empty() ||
+        !color.average.empty() ||
+        !color.multiply.empty() ||
+        !color.mean_color.all_equal(-1.f) ||
+        !color.lighten.all_equal(0.f))
     {
-        StbInfo si = get_texture_data(desc, FlipMode::VERTICAL);
+        StbInfo si = get_texture_data(color, role, FlipMode::VERTICAL);
         if (!default_filename.ends_with(".png")) {
             THROW_OR_ABORT("Filename \"" + default_filename + "\" does not end with .png");
         }
@@ -584,25 +670,8 @@ std::string RenderingResources::get_texture_filename(
         }
         return default_filename;
     } else {
-        return desc.color.filename;
+        return color.filename;
     }
-}
-
-GLuint RenderingResources::get_texture(
-    const TextureDescriptor& descriptor,
-    CallerType caller_type) const
-{
-    return get_texture(descriptor.color, descriptor, caller_type);
-}
-
-GLuint RenderingResources::get_normalmap_texture(const TextureDescriptor& descriptor) const {
-    return get_texture(TextureDescriptor{
-        .color = {
-            .filename = descriptor.normal.filename,
-            .average = descriptor.normal.average},
-        .color_mode = ColorMode::RGB,
-        .mipmap_mode = descriptor.mipmap_mode,
-        .anisotropic_filtering_level = descriptor.anisotropic_filtering_level});
 }
 
 static GLenum nchannels2sized_internal_format(size_t nchannels) {
@@ -645,77 +714,84 @@ static GLenum nchannels2format(size_t nchannels) {
 }
 
 GLuint RenderingResources::get_texture(
-    const ColormapWithModifiers& name,
-    const TextureDescriptor& descriptor,
+    const ColormapWithModifiers& color,
+    TextureRole role,
     CallerType caller_type) const
 {
-    LOG_FUNCTION("RenderingResources::get_texture " + name.filename);
-    if (auto it = textures_.try_get(name); it != nullptr) {
+    if (role == TextureRole::COLOR_FROM_DB) {
+        return get_texture(colormap(color), TextureRole::COLOR, caller_type);
+    }
+    check_color_mode(color, role);
+    LOG_FUNCTION("RenderingResources::get_texture " + color.filename);
+    if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
     }
     std::scoped_lock lock{mutex_};
-    if (auto it = textures_.try_get(name); it != nullptr) {
+    if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
     }
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
-    auto dit = texture_descriptors_.try_get(name.filename);
-    const TextureDescriptor &desc = dit != nullptr
-        ? *dit
-        : descriptor;
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-        linfo() << this << " Loading texture: " << desc.color;
-        if (!desc.color.average.empty()) {
-            linfo() << this << " Loading texture: " << desc.color.average;
+        linfo() << this << " Loading texture: " << color;
+        if (!color.average.empty()) {
+            linfo() << this << " Loading texture: " << color.average;
         }
-        if (!desc.color.multiply.empty()) {
-            linfo() << this << " Loading texture: " << desc.color.multiply;
+        if (!color.multiply.empty()) {
+            linfo() << this << " Loading texture: " << color.multiply;
         }
     }
 
     float aniso = 0.0f;
     WARN(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso));
-    aniso = std::min({ aniso, (float)desc.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
+    aniso = std::min({ aniso, (float)color.anisotropic_filtering_level, (float)max_anisotropic_filtering_level_ });
 
     GLuint texture;
 
-    if (auto ait = auto_atlas_tile_descriptors_.try_extract(descriptor.color.filename); !ait.empty()) {
+    if (auto aptr = get_or_extract<EXTRACT_PROCESSED>(auto_atlas_tile_descriptors_, color.filename); aptr != nullptr) {
         if (caller_type != CallerType::PRELOAD) {
-            THROW_OR_ABORT("Texture source is not preload for texture \"" + descriptor.color.filename + '"');
+            THROW_OR_ABORT("Texture source is not preload for texture \"" + color.filename + '"');
         }
-        const auto &adesc = ait.mapped();
         texture = render_to_texture_2d_array(
-            adesc.width,
-            adesc.height,
-            integral_cast<GLsizei>(adesc.tiles.size()),
-            adesc.mip_level_count,
+            aptr->width,
+            aptr->height,
+            integral_cast<GLsizei>(aptr->tiles.size()),
+            aptr->mip_level_count,
             aniso,
-            nchannels2sized_internal_format(integral_cast<size_t>((int)adesc.color_mode)),
-            [this, &adesc](GLsizei width, GLsizei height, GLsizei layer)
+            nchannels2sized_internal_format(integral_cast<size_t>((int)aptr->color_mode)),
+            [this, &aptr](GLsizei width, GLsizei height, GLsizei layer)
             {
                 render_texture_atlas(
                     *const_cast<RenderingResources*>(this),
-                    adesc.tiles.at(integral_cast<size_t>(layer)),
-                    integral_to_float<float>(width) / integral_to_float<float>(adesc.width),
-                    integral_to_float<float>(height) / integral_to_float<float>(adesc.height));
+                    aptr->tiles.at(integral_cast<size_t>(layer)),
+                    integral_to_float<float>(width) / integral_to_float<float>(aptr->width),
+                    integral_to_float<float>(height) / integral_to_float<float>(aptr->height));
             });
     } else {
-        if (preloaded_texture_dds_data_.contains(name.filename)) {
+        if (preloaded_texture_dds_data_.contains(color.filename)) {
             GLuint original_texture;
             CHK(glGenTextures(1, &original_texture));
-            const_cast<RenderingResources*>(this)->set_texture("__original_texture__", original_texture, ResourceOwner::CONTAINER);
-            DestructionGuard dg0{ [this]() { const_cast<RenderingResources*>(this)->delete_texture("__original_texture__", DeletionFailureMode::ABORT); } };
+            DestructionGuard dg0{ [original_texture]() { ABORT(glDeleteTextures(1, &original_texture)); } };
             auto sinfo = [&](){
                 CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
                 DestructionGuard dg1{ []() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
-                return initialize_dds_texture(name.filename, desc);
+                return initialize_dds_texture(color);
             }();
+            auto original_key = ColormapWithModifiers{
+                .filename = "__original_texture__",
+                .color_mode = (ColorMode)sinfo.nchannels,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+            };
+            const_cast<RenderingResources*>(this)->set_texture(
+                original_key,
+                original_texture,
+                ResourceOwner::CALLER);
+            DestructionGuard dg1{ [this, &original_key]() { const_cast<RenderingResources*>(this)->delete_texture(original_key, DeletionFailureMode::ABORT); } };
 
             FillWithTextureLogic logic{
                 *const_cast<RenderingResources*>(this),
-                "__original_texture__",
+                original_key,
                 ResourceUpdateCycle::ONCE,
-                (ColorMode)sinfo.nchannels,
                 CullFaceMode::CULL,
                 AlphaChannelRole::NO_BLEND,
                 vertically_flipped_quad_vertices };
@@ -743,12 +819,12 @@ GLuint RenderingResources::get_texture(
             if (aniso != 0) {
                 CHK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
             }
-            initialize_non_dds_texture(desc.color, desc);
+            initialize_non_dds_texture(color, role);
             CHK(glBindTexture(GL_TEXTURE_2D, 0));
         }
     }
 
-    textures_.emplace(name, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
+    textures_.emplace(color, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
     return texture;
 }
 
@@ -772,13 +848,13 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     for (GLuint i = 0; i < it.filenames.size(); i++) {
         auto color = it.filenames[i];
         auto dit = texture_descriptors_.try_get(color);
-        const TextureDescriptor& desc = dit != nullptr
-            ? *dit
-            : TextureDescriptor{
-                .color = {.filename = color},
+        ColormapWithModifiers desc = dit != nullptr
+            ? dit->color
+            : ColormapWithModifiers{
+                .filename = color,
                 .color_mode = ColorMode::RGB};
 
-        auto info = get_texture_data(desc, FlipMode::NONE);
+        auto info = get_texture_data(desc, TextureRole::COLOR, FlipMode::NONE);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
         CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                             0,
@@ -800,22 +876,21 @@ GLuint RenderingResources::get_cubemap(const std::string& name) const {
     return textureID;
 }
 
-void RenderingResources::set_texture(const std::string& name, GLuint id, ResourceOwner resource_owner) {
-    LOG_FUNCTION("RenderingResources::set_texture " + name);
+void RenderingResources::set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner) {
+    LOG_FUNCTION("RenderingResources::set_texture " + name.filename);
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
         THROW_OR_ABORT("RenderingResources::set_texture: invalid texture ID");
     }
     std::scoped_lock lock{ mutex_ };
-    ColormapWithModifiers key{ .filename = name };
-    if (auto v = textures_.try_get(key); v != nullptr) {
+    if (auto v = textures_.try_get(name); v != nullptr) {
         if (v->owner == ResourceOwner::CONTAINER) {
             THROW_OR_ABORT("Overwriting texture that needs garbage-collection");
         }
-        textures_.erase(key);
+        textures_.erase(name);
     }
     textures_.emplace(
-        key,
+        name,
         TextureHandleAndOwner{
             .handle = id,
             .owner = resource_owner});
@@ -824,6 +899,15 @@ void RenderingResources::set_texture(const std::string& name, GLuint id, Resourc
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
+    if (descriptor.color.color_mode == ColorMode::UNDEFINED) {
+        THROW_OR_ABORT("Colormode undefined color texture: \"" + descriptor.color.filename + '"');
+    }
+    if (!descriptor.specular.filename.empty() && (descriptor.specular.color_mode != ColorMode::RGB)) {
+        THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + descriptor.specular.filename + '"');
+    }
+    if (!descriptor.normal.filename.empty() && (descriptor.normal.color_mode != ColorMode::RGB)) {
+        THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + descriptor.normal.filename + '"');
+    }
     texture_descriptors_.emplace(name, descriptor);
 }
 
@@ -849,7 +933,15 @@ void RenderingResources::add_auto_texture_atlas(
     std::scoped_lock lock{mutex_};
     append_render_allocator(
         [this, name, texture_atlas_descriptor]()
-        {preload({.color = {.filename = name}, .color_mode = texture_atlas_descriptor.color_mode});});
+        {
+            preload(
+                {
+                    .filename = name,
+                    .color_mode = texture_atlas_descriptor.color_mode,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                },
+                TextureRole::COLOR);
+        });
     auto_atlas_tile_descriptors_.emplace(name, texture_atlas_descriptor);
 }
 
@@ -863,31 +955,36 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
 }
 
 StbInfo<uint8_t> RenderingResources::get_texture_data(
-    const TextureDescriptor& descriptor,
+    const ColormapWithModifiers& color,
+    TextureRole role,
     FlipMode flip_mode,
     CopyBehavior copy_behavior) const
 {
-    if (auto it = manual_atlas_tile_descriptors_.try_get(descriptor.color.filename); it != nullptr) {
+    if (role == TextureRole::COLOR_FROM_DB) {
+        return get_texture_data(colormap(color), TextureRole::COLOR, flip_mode, copy_behavior);
+    }
+    check_color_mode(color, role);
+    if (auto it = manual_atlas_tile_descriptors_.try_get(color.filename); it != nullptr) {
         auto si = stb_create<uint8_t>(it->width, it->height, (int)it->color_mode);
         std::vector<AtlasTile> atlas_tiles;
         atlas_tiles.reserve(it->tiles.size());
         for (const auto& atd : it->tiles) {
             auto dit = texture_descriptors_.try_get(atd.filename);
-            TextureDescriptor desc = dit != nullptr
-                ? *dit
-                : TextureDescriptor{
-                    .color = {.filename = atd.filename},
-                    .color_mode = descriptor.color_mode};
+            ColormapWithModifiers desc = dit != nullptr
+                ? dit->color
+                : ColormapWithModifiers{
+                    .filename = atd.filename,
+                    .color_mode = color.color_mode};
             atlas_tiles.push_back(AtlasTile{
                 .left = atd.left,
                 .bottom = atd.bottom,
-                .image = get_texture_data(desc, flip_mode)});
+                .image = get_texture_data(desc, role, flip_mode)});
         }
         build_image_atlas(si, atlas_tiles);
         return si;
     }
-    if (auto it = preloaded_texture_dds_data_.try_get(descriptor.color.filename); it != nullptr) {
-        auto info = ImageInfo::load(descriptor.color.filename, it);
+    if (auto it = preloaded_texture_dds_data_.try_get(color.filename); it != nullptr) {
+        auto info = ImageInfo::load(color.filename, it);
         FrameBuffer fb;
         fb.configure(FrameBufferConfig{
             .width = integral_cast<int>(info.size(0)),
@@ -903,9 +1000,12 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             (float)info.size(1)};
         FillWithTextureLogic logic{
             *const_cast<RenderingResources*>(this),
-            descriptor.color.filename,
+            {
+                .filename = color.filename,
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::NO_MIPMAPS
+            },
             ResourceUpdateCycle::ONCE,
-            ColorMode::RGBA,
             CullFaceMode::CULL,
             AlphaChannelRole::NO_BLEND};
         {
@@ -914,22 +1014,28 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         }
         return fb.color_to_stb_image();
     }
-    if (auto it = preloaded_texture_data_.try_get(descriptor.color); it != nullptr) {
+    if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy \"" + descriptor.color.filename + '"');
+            THROW_OR_ABORT("Refusing to copy \"" + color.filename + '"');
         }
         auto result = stb_create<uint8_t>(it->width, it->height, it->nrChannels);
         std::copy(it->data.get(), it->data.get() + it->width * it->height * it->nrChannels, result.data.get());
         return result;
     }
-    auto si = stb_load_and_transform_texture(descriptor, flip_mode);
-    if ((descriptor.color_mode == ColorMode::RGB) &&
+    if (auto it = preloaded_raw_texture_data_.try_get(color.filename); it != nullptr) {
+        if (copy_behavior == CopyBehavior::RAISE) {
+            THROW_OR_ABORT("Refusing to copy \"" + color.filename + '"');
+        }
+        return stb_load8(color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
+    }
+    auto si = stb_load_and_transform_texture(color, flip_mode);
+    if ((color.color_mode == ColorMode::RGB) &&
         (si.nrChannels == 4) &&
         getenv_default_bool("CHECK_OPACITY", false))
     {
         double opacity = mean_opacity(si);
         if (opacity < 0.8) {
-            lwarn() << descriptor.color << ": Opacity is only " << opacity;
+            lwarn() << color << ": Opacity is only " << opacity;
         }
     }
     return si;
@@ -1003,9 +1109,12 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
     for (const auto& filename : filenames) {
         FixedArray<int, 2> image_size;
-        if (preloaded_texture_data_.contains({.filename = filename})) {
-            const auto& img = preloaded_texture_data_.get({.filename = filename});
+        if (preloaded_processed_texture_data_.contains({.filename = filename})) {
+            const auto& img = preloaded_processed_texture_data_.get({.filename = filename});
             image_size = {img.width, img.height};
+        } else if (preloaded_raw_texture_data_.contains(filename)) {
+            auto info = ImageInfo::load(filename, &preloaded_raw_texture_data_.get(filename));
+            image_size = {integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1))};
         } else if (preloaded_texture_dds_data_.contains(filename)) {
             auto info = ImageInfo::load(filename, &preloaded_texture_dds_data_.get(filename));
             image_size = {integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1))};
@@ -1081,8 +1190,10 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &nam
     if (auto tit = texture_descriptors_.try_get(name); tit != nullptr) {
         return BlendMapTexture{.texture_descriptor = *tit};
     }
-    return BlendMapTexture{.texture_descriptor = {.color = {.filename = name},
-                                                  .mipmap_mode = MipmapMode::WITH_MIPMAPS}};
+    return BlendMapTexture{
+        .texture_descriptor = {.color = {
+            .filename = name,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}};
 }
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
@@ -1157,14 +1268,14 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
         }
     }
 }
-void RenderingResources::delete_texture(const std::string& name, DeletionFailureMode deletion_failure_mode) {
-    LOG_FUNCTION("RenderingResources::delete_texture " + name);
-    auto it = textures_.try_extract({ .filename = name });
+void RenderingResources::delete_texture(const ColormapWithModifiers& name, DeletionFailureMode deletion_failure_mode) {
+    LOG_FUNCTION("RenderingResources::delete_texture " + name.filename);
+    auto it = textures_.try_extract(name);
     if (it.empty()) {
         if (deletion_failure_mode == DeletionFailureMode::WARN) {
-            lwarn() << "Could not delete texture " << name;
+            lwarn() << "Could not delete texture " << name.filename;
         } else {
-            verbose_abort("Could not delete texture " + name);
+            verbose_abort("Could not delete texture " + name.filename);
         }
     } else if (it.mapped().owner == ResourceOwner::CONTAINER) {
         try_delete_texture(it.mapped().handle);
@@ -1217,11 +1328,15 @@ const LoadedFont& RenderingResources::get_font_texture(
     return font_textures_.emplace({ttf_filename, font_height_pixels}, std::move(font));
 }
 
-void RenderingResources::save_to_file(const std::string& filename, const TextureDescriptor& desc) const {
+void RenderingResources::save_to_file(
+    const std::string& filename,
+    const ColormapWithModifiers& color,
+    TextureRole role) const
+{
     if (!filename.ends_with(".png")) {
         THROW_OR_ABORT("Filename \"" + filename + "\" does not end with .png");
     }
-    StbInfo img = get_texture_data(desc, FlipMode::NONE);
+    StbInfo img = get_texture_data(color, role, FlipMode::NONE);
     if (!stbi_write_png(
         filename.c_str(),
         img.width,
@@ -1249,12 +1364,19 @@ void RenderingResources::insert_texture(
         }
         THROW_OR_ABORT("DDS-texture with name \"" + name + "\" already exists");
     }
-    if (preloaded_texture_data_.contains({.filename = name})) {
+    if (preloaded_processed_texture_data_.contains({.filename = name})) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
-            lwarn() << "Preloaded non-DDS-texture with name \"" + name + "\" already exists";
+            lwarn() << "Preloaded processed non-DDS-texture with name \"" + name + "\" already exists";
             return;
         }
-        THROW_OR_ABORT("Preloaded non-DDS-texture with name \"" + name + "\" already exists");
+        THROW_OR_ABORT("Preloaded processed non-DDS-texture with name \"" + name + "\" already exists");
+    }
+    if (preloaded_raw_texture_data_.contains(name)) {
+        if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
+            lwarn() << "Preloaded raw non-DDS-texture with name \"" + name + "\" already exists";
+            return;
+        }
+        THROW_OR_ABORT("Preloaded raw non-DDS-texture with name \"" + name + "\" already exists");
     }
     if (auto_atlas_tile_descriptors_.contains(name)) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
@@ -1276,9 +1398,7 @@ void RenderingResources::insert_texture(
     if ((extension == ".jpg") ||
         (extension == ".png"))
     {
-        auto d = std::move(data);
-        auto image = stb_load8(name, FlipMode::NONE, &d, IncorrectDatasizeBehavior::CONVERT);
-        preloaded_texture_data_.emplace({.filename = name}, std::move(image));
+        preloaded_raw_texture_data_.emplace(name, std::move(data));
     } else if (extension == ".dds") {
         preloaded_texture_dds_data_.emplace(name, std::move(data));
     } else {
@@ -1286,58 +1406,67 @@ void RenderingResources::insert_texture(
     }
 }
 
-void RenderingResources::initialize_non_dds_texture(
-    const ColormapWithModifiers& name,
-    const TextureDescriptor& descriptor) const
+void RenderingResources::initialize_non_dds_texture(const ColormapWithModifiers& color, TextureRole role) const
 {
-    StbInfo<uint8_t> si;
-    if (auto it = preloaded_texture_data_.try_extract(name); !it.empty()) {
-        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            linfo() << this << " Using preloaded texture: " << name;
+    auto generate_texture = [&color](
+        const uint8_t* data,
+        int width,
+        int height,
+        int nrChannels)
+    {
+        CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
+        {
+#ifdef __ANDROID__
+            auto nchannels = (size_t)nrChannels;
+#else
+            auto nchannels = (size_t)color.color_mode;
+#endif
+            CHK(glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                nchannels2internal_format(nchannels),
+                width,
+                height,
+                0,
+                nchannels2format((size_t)nrChannels),
+                GL_UNSIGNED_BYTE,
+                data));
         }
-        si = std::move(it.mapped());
+        // if (si.nrChannels == 4) {
+        //     generate_rgba_mipmaps_inplace(si);
+        // } else {
+        //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        // }
+        if (color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+            CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        }
+    };
+
+    if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_data_, color); it != nullptr) {
+        if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
+            linfo() << this << " Using preloaded texture: " << color;
+        }
+        generate_texture(it->data.get(), it->width, it->height, it->nrChannels);
+    } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color.filename); it != nullptr) {
+        auto si = stb_load8(color.filename, FlipMode::NONE, it);
+        generate_texture(si.data.get(), si.width, si.height, si.nrChannels);
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
-            linfo() << this << " Could not find preloaded texture: " << name;
+            linfo() << this << " Could not find preloaded texture: " << color;
         }
-        si = get_texture_data(descriptor, FlipMode::VERTICAL);
-    }
-    CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
-    {
-#ifdef __ANDROID__
-        auto nchannels = (size_t)si.nrChannels;
-#else
-        auto nchannels = (size_t)descriptor.color_mode;
-#endif
-        CHK(glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            nchannels2internal_format(nchannels),
-            si.width,
-            si.height,
-            0,
-            nchannels2format((size_t)si.nrChannels),
-            GL_UNSIGNED_BYTE,
-            si.data.get()));
-    }
-    // if (si.nrChannels == 4) {
-    //     generate_rgba_mipmaps_inplace(si);
-    // } else {
-    //     CHK(glGenerateMipmap(GL_TEXTURE_2D));
-    // }
-    if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-        CHK(glGenerateMipmap(GL_TEXTURE_2D));
+        auto si = get_texture_data(color, role, FlipMode::VERTICAL);
+        generate_texture(si.data.get(), si.width, si.height, si.nrChannels);
     }
 }
 
-TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const std::string& name, const TextureDescriptor& descriptor) const
+TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const ColormapWithModifiers& color) const
 {
-    auto it = preloaded_texture_dds_data_.extract(name);
+    auto data = get_or_extract<EXTRACT_RAW>(preloaded_texture_dds_data_, color.filename);
 
     nv_dds::CDDSImage image;
     {
         std::stringstream sstr;
-        for (uint8_t c : it.mapped()) {
+        for (uint8_t c : *data) {
             sstr << c;
         }
         // Setting flipImage to false because it does not
@@ -1373,7 +1502,7 @@ TextureSizeAndMipmaps RenderingResources::initialize_dds_texture(const std::stri
                 image.word_type(),
                 image));
         }
-        if (descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        if (color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
             CHK(glGenerateMipmap(GL_TEXTURE_2D));
         }
     } else {

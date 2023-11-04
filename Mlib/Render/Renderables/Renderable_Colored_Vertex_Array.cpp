@@ -335,7 +335,7 @@ void RenderableColoredVertexArray::render_cva(
             if (t.texture_descriptor.color.filename.empty()) {
                 THROW_OR_ABORT("Empty color or alpha texture not supported, cva: " + cva->name);
             }
-            if (t.texture_descriptor.color_mode == ColorMode::UNDEFINED) {
+            if (t.texture_descriptor.color.color_mode == ColorMode::UNDEFINED) {
                 THROW_OR_ABORT("Material's color or alpha texture \"" + t.texture_descriptor.color.filename + "\" has undefined color mode");
             }
         }
@@ -344,10 +344,10 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.textures_alpha.empty()) {
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (i == 0) {
-                if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color_mode == ColorMode::RGBA)) {
+                if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color.color_mode == ColorMode::RGBA)) {
                     THROW_OR_ABORT("Opaque material's color texture \"" + t.texture_descriptor.color.filename + "\" was loaded as RGBA");
                 }
-                if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color_mode != ColorMode::RGBA)) {
+                if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color.color_mode != ColorMode::RGBA)) {
                     THROW_OR_ABORT("Transparent material's color texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGBA");
                 }
             }
@@ -358,12 +358,12 @@ void RenderableColoredVertexArray::render_cva(
             THROW_OR_ABORT("Blend-mode is off despite alpha texture, cva: " + cva->name);
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
-            if (t.texture_descriptor.color_mode != ColorMode::RGB) {
+            if (t.texture_descriptor.color.color_mode != ColorMode::RGB) {
                 THROW_OR_ABORT("Color-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGB, but an alpha-texture was set");
             }
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_alpha)) {
-            if (t.texture_descriptor.color_mode != ColorMode::GRAYSCALE) {
+            if (t.texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
                 THROW_OR_ABORT("Alpha-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as grayscale");
             }
         }
@@ -445,10 +445,10 @@ void RenderableColoredVertexArray::render_cva(
     if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specularity == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures_color.size() == 1) {
-        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.empty();
+        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename.empty();
     } else {
         for (const auto& t : cva->material.textures_color) {
-            if (!t.texture_descriptor.specular.empty()) {
+            if (!t.texture_descriptor.specular.filename.empty()) {
                 THROW_OR_ABORT("Specular maps not supported for blended textures");
             }
         }
@@ -510,7 +510,7 @@ void RenderableColoredVertexArray::render_cva(
             .interior_size = cva->material.interior_textures.interior_size,
             .has_horizontal_detailmap = has_horizontal_detailmap,
             .dirt_color_mode = (tic.ntextures_dirt != 0)
-                ? rcva_->rendering_resources_.get_existing_texture_descriptor(cva->material.dirt_texture).color_mode
+                ? rcva_->rendering_resources_.get_existing_texture_descriptor(cva->material.dirt_texture).color.color_mode
                 : ColorMode::UNDEFINED,
             .has_instances = has_instances,
             .has_lookat = has_lookat,
@@ -705,9 +705,9 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");
     auto setup_texture = [&cva, &render_pass](const TextureDescriptor texture_descriptor, GLenum target = GL_TEXTURE_2D) {
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.wrap_modes(0))));
-        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.wrap_modes(1))));
-        if (texture_descriptor.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.color.wrap_modes(0))));
+        CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.color.wrap_modes(1))));
+        if (texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
         } else {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
@@ -728,8 +728,8 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color.filename + '"');
             GLuint texture = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
-                ? secondary_rendering_resources_.get_texture(t.texture_descriptor)
-                : rcva_->rendering_resources_.get_texture(t.texture_descriptor);
+                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color)
+                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
             GLenum target = cva->triangle_texture_layers.empty()
@@ -745,8 +745,8 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_alpha)) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color.filename + '"');
             GLuint texture = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
-                ? secondary_rendering_resources_.get_texture(t.texture_descriptor)
-                : rcva_->rendering_resources_.get_texture(t.texture_descriptor);
+                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color)
+                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
@@ -765,7 +765,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.color = {.filename = mname}, .color_mode = ColorMode::RGB})));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::RGB})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -785,7 +785,7 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.color = {.filename = mname}, .color_mode = ColorMode::GRAYSCALE})));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::GRAYSCALE})));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -798,7 +798,7 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (!t.texture_descriptor.normal.filename.empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
-                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_normalmap_texture(t.texture_descriptor)));
+                CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(t.texture_descriptor.normal)));
                 setup_texture(t.texture_descriptor);
                 CHK(glActiveTexture(GL_TEXTURE0));
             }
@@ -822,7 +822,7 @@ void RenderableColoredVertexArray::render_cva(
         }
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(0))));
-        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.color = {.filename = mname}, .color_mode = ColorMode::GRAYSCALE})));
+        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::GRAYSCALE}, TextureRole::COLOR_FROM_DB)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         {
@@ -833,7 +833,10 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glActiveTexture(GL_TEXTURE0));
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(1))));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({.color = {.filename = cva->material.dirt_texture}})));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({
+                .filename = cva->material.dirt_texture,
+                .color_mode = ColorMode::RGB},
+            TextureRole::COLOR_FROM_DB)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, get_wrap_param(WrapMode::REPEAT)));
@@ -844,9 +847,10 @@ void RenderableColoredVertexArray::render_cva(
         for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_interior(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({
-                .color = {.filename = cva->material.interior_textures[i]},
-                .color_mode = ColorMode::RGB,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
+                    .filename = cva->material.interior_textures[i],
+                    .color_mode = ColorMode::RGB,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                TextureRole::COLOR_FROM_DB)));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -858,12 +862,9 @@ void RenderableColoredVertexArray::render_cva(
         assert_true(tic.ntextures_specular == 1);
         assert_true(cva->material.textures_color.size() == 1);
         const auto& desc = cva->material.textures_color[0].texture_descriptor;
-        assert_true(!desc.specular.empty());
+        assert_true(!desc.specular.filename.empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({
-            .color = {.filename = desc.specular},
-            .color_mode = ColorMode::RGB,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(desc.specular)));
         setup_texture(desc);
         CHK(glActiveTexture(GL_TEXTURE0));
     }

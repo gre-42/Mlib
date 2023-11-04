@@ -1,5 +1,5 @@
 #include "Render_Texture_Atlas.hpp"
-#include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -15,9 +15,8 @@ void Mlib::render_texture_atlas(
 {
     FillWithTextureLogic logic{
         rendering_resources,
-        "",
+        { .filename = "" },
         ResourceUpdateCycle::ONCE,
-        ColorMode::RGBA,
         CullFaceMode::CULL,
         AlphaChannelRole::NO_BLEND };
     for (const auto& tile : tiles) {
@@ -26,7 +25,10 @@ void Mlib::render_texture_atlas(
             (float)tile.bottom * scale_height,
             (float)tile.width * scale_width,
             (float)tile.height * scale_height};
-        logic.set_image_resource_name(tile.filename);
+        logic.set_image_resource_name({
+            .filename = tile.filename,
+            .color_mode = ColorMode::RGBA,
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS,});
         logic.render();
     }
 }

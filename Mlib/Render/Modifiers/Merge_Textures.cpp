@@ -144,9 +144,10 @@ void Mlib::merge_textures(
                         .blend_mode = merged_materials_config.blend_mode,
                         .continuous_blending_z_order = merged_materials_config.continuous_blending_z_order,
                         .textures_color = {{.texture_descriptor = {
-                            .color = {.filename = merged_materials_config.texture_name},
-                            .color_mode = ColorMode::RGBA,
-                            .mipmap_mode = MipmapMode::WITH_MIPMAPS}}},
+                            .color = {
+                                .filename = merged_materials_config.texture_name,
+                                .color_mode = ColorMode::RGBA,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}}},
                         .occluded_pass = merged_materials_config.occluded_pass,
                         .occluder_pass = merged_materials_config.occluder_pass,
                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,

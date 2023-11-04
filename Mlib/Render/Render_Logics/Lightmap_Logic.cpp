@@ -1,4 +1,5 @@
 #include "Lightmap_Logic.hpp"
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Optional.hpp>
@@ -46,10 +47,10 @@ LightmapLogic::LightmapLogic(
 LightmapLogic::~LightmapLogic() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture({ .filename = "lightmap_color." + resource_suffix_, .color_mode = ColorMode::RGB }, DeletionFailureMode::WARN);
         rendering_resources_.delete_vp("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
-            rendering_resources_.delete_texture("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_texture({ .filename = "lightmap_depth." + resource_suffix_, .color_mode = ColorMode::GRAYSCALE }, DeletionFailureMode::WARN);
             rendering_resources_.delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
         }
     }
@@ -123,10 +124,10 @@ void LightmapLogic::render(
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
         }
 
-        rendering_resources_.set_texture("lightmap_color." + resource_suffix_, fbs_->texture_color(), ResourceOwner::CALLER);
+        rendering_resources_.set_texture({ .filename = "lightmap_color." + resource_suffix_, .color_mode = ColorMode::RGB }, fbs_->texture_color(), ResourceOwner::CALLER);
         rendering_resources_.set_vp("lightmap_color." + resource_suffix_, vp());
         if (with_depth_texture_) {
-            rendering_resources_.set_texture("lightmap_depth." + resource_suffix_, fbs_->texture_depth(), ResourceOwner::CALLER);
+            rendering_resources_.set_texture({ .filename = "lightmap_depth." + resource_suffix_, .color_mode = ColorMode::GRAYSCALE }, fbs_->texture_depth(), ResourceOwner::CALLER);
             rendering_resources_.set_vp("lightmap_depth." + resource_suffix_, vp());
         }
     }

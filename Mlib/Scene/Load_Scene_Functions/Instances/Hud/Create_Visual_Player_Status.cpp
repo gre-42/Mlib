@@ -85,7 +85,11 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             *lo,
             log_components,
             args.arguments.path(KnownArgs::ttf_file),
-            c->path(CircularArgs::pointer),
+            ColormapWithModifiers{
+                .filename = c->path(CircularArgs::pointer),
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+            },
             std::move(widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(c->at<std::string>(CircularArgs::tick_radius)),

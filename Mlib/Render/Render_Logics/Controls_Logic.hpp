@@ -7,11 +7,12 @@ namespace Mlib {
 
 class IWidget;
 enum class ResourceUpdateCycle;
+struct ColormapWithModifiers;
 
 class ControlsLogic: public RenderLogic {
 public:
     ControlsLogic(
-        const std::string& gamepad_texture,
+        ColormapWithModifiers image_resource_name,
         std::unique_ptr<IWidget>&& widget,
         DelayLoadPolicy delay_load_policy,
         FocusFilter focus_filter);

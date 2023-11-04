@@ -49,6 +49,13 @@ LoadSceneJsonUserFunction AddTextureDescriptor::json_user_function = [](const Lo
 
 void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto mipmap_mode = args.arguments.contains(KnownArgs::mipmap_mode)
+        ? mipmap_mode_from_string(args.arguments.at<std::string>(KnownArgs::mipmap_mode))
+        : MipmapMode::WITH_MIPMAPS;
+    auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
+    auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
+        wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
+        wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
         args.arguments.at<std::string>(KnownArgs::name),
         TextureDescriptor{
@@ -70,19 +77,24 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
                 .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
                 .times = args.arguments.at<float>(KnownArgs::times, 1.f),
-                .plus = args.arguments.at<float>(KnownArgs::plus, 0.f)},
-            .specular = args.arguments.try_path_or_variable(KnownArgs::specular).path,
+                .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
+                .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
+                .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
+                .mipmap_mode = mipmap_mode,
+                .anisotropic_filtering_level = anisotropic_filtering_level,
+                .wrap_modes = wrap_modes},
+            .specular = {
+                .filename = args.arguments.try_path_or_variable(KnownArgs::specular).path,
+                .color_mode = ColorMode::RGB,
+                .mipmap_mode = mipmap_mode,
+                .anisotropic_filtering_level = anisotropic_filtering_level,
+                .wrap_modes = wrap_modes},
             .normal = {
                 .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
-                .average =  args.arguments.try_path_or_variable(KnownArgs::average_normal).path},
-            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
-            .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
-            .mipmap_mode = args.arguments.contains(KnownArgs::mipmap_mode)
-                ? mipmap_mode_from_string(args.arguments.at<std::string>(KnownArgs::mipmap_mode))
-                : MipmapMode::WITH_MIPMAPS,
-            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level),
-            .wrap_modes = {
-                wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
-                wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))}});
+                .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
+                .color_mode = ColorMode::RGB,
+                .mipmap_mode = mipmap_mode,
+                .anisotropic_filtering_level = anisotropic_filtering_level,
+                .wrap_modes = wrap_modes} });
 
 }
