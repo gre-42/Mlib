@@ -227,6 +227,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             // AC_PIT_(\\d+)
         }
         for (const auto& [_, node] : kn5.nodes) {
+            auto material = node.materialID.has_value()
+                ? &kn5.materials.at(node.materialID.value())
+                : nullptr;
+
             TriangleList<TPos> tl{
                 node.name,
                 Material{
@@ -289,6 +293,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (Mlib::re::regex_search(match[NAME].str(), vertical_reg)) {
                     attrs |= MetaAttributes::ATTR_VERTICAL;
                 }
+                if (any(attrs & MetaAttributes::SURFACE_ANY) &&
+                    (material != nullptr) &&
+                    (material->shader == "ksGrass"))
+                {
+                    attrs &= ~MetaAttributes::SURFACE_ANY;
+                    attrs |= MetaAttributes::SURFACE_GRASS;
+                }
             }
             if (any(attrs & MetaAttributes::ATTR_COLLIDABLE)) {
                 tl.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
@@ -321,22 +332,21 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (!node.isRenderable || !any(attrs & MetaAttributes::ATTR_VISIBLE)) {
                 tl.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
-            if (node.materialID.has_value()) {
-                const auto& material = kn5.materials.at(node.materialID.value());
+            if (material != nullptr) {
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
                 //       https://assettocorsamods.net/threads/setting-up-trees.162/
                 if (!any(attrs & MetaAttributes::SURFACE_ANY) &&
-                    (material.shader == "ksGrass"))
+                    (material->shader == "ksGrass"))
                 {
                     attrs |= MetaAttributes::OBJ_GRASS;
                 }
-                if (material.shader == "ksTree") {
+                if (material->shader == "ksTree") {
                     attrs |= MetaAttributes::OBJ_TREE;
                 }
                 if (any(attrs & MetaAttributes::OBJ_GRASS)) {
                     tl.physics_material |= PhysicsMaterial::OBJ_GRASS;
                 }
-                if (grass_materials.contains(material.name) &&
+                if (grass_materials.contains(material->name) &&
                     !occluding_meshes.contains(node.name))
                 {
                     tl.modifier_backlog.add_foliage = true;
@@ -356,155 +366,165 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                     tl.material.blend_mode = cfg.blend_mode;
                 } else {
-                    if ((material.ksAlphaRef.value_or_default() != 0.f) && (material.ksAlphaRef.value_or_default() != 1.f)) {
+                    if ((material->ksAlphaRef.value_or_default() != 0.f) && (material->ksAlphaRef.value_or_default() != 1.f)) {
                         tl.material.occluded_pass = ExternalRenderPassType::NONE;
                         tl.material.occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_AND_LOCAL;
                     } else {
                         tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     }
-                    if ((material.shader == "ksPerPixel") ||                    // required for Akina track
-                        (material.shader == "ksPerPixelAT") ||                  // required for Hondarribia and Akagi tracks
-                        (material.shader == "ksPerPixelAT_NM") ||               // required for Semetin track
-                        (material.shader == "ksPerPixelMultiMap_AT") ||
-                        (material.shader == "ksPerPixelMultiMap_AT_NMDetail"))
+                    if ((material->shader == "ksPerPixel") ||                    // required for Akina track
+                        (material->shader == "ksPerPixelAT") ||                  // required for Hondarribia and Akagi tracks
+                        (material->shader == "ksPerPixelAT_NM") ||               // required for Semetin track
+                        (material->shader == "ksPerPixelMultiMap_AT") ||
+                        (material->shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
                         if (any(attrs & MetaAttributes::SURFACE_SKIDS)) {
                             tl.material.blend_mode = cfg.blend_mode;
                         } else {
                             tl.material.blend_mode = BlendMode::BINARY_05;
                         }
-                    } else if (material.shader == "ksPerPixelAlpha")
+                    } else if (material->shader == "ksPerPixelAlpha")
                     {
                         tl.material.blend_mode = cfg.blend_mode;
-                    } else if ((material.shader == "ksGrass") ||
-                               (material.shader == "ksFlags") ||
-                               (material.shader == "ksPerPixelNM") ||
-                               (material.shader == "ksPerPixelMultiMap") ||
-                               (material.shader == "ksPerPixelMultiMap_NMDetail") ||
-                               (material.shader == "ksPerPixelReflection") ||
-                               (material.shader == "ksPerPixelSimpleRefl") ||
-                               (material.shader == "ksMultilayer") ||
-                               (material.shader == "ksMultilayer_fresnel_nm"))
+                    } else if ((material->shader == "ksGrass") ||
+                               (material->shader == "ksFlags") ||
+                               (material->shader == "ksPerPixelNM") ||
+                               (material->shader == "ksPerPixelMultiMap") ||
+                               (material->shader == "ksPerPixelMultiMap_NMDetail") ||
+                               (material->shader == "ksPerPixelReflection") ||
+                               (material->shader == "ksPerPixelSimpleRefl") ||
+                               (material->shader == "ksMultilayer") ||
+                               (material->shader == "ksMultilayer_fresnel_nm"))
                     {
                         tl.material.blend_mode = BlendMode::OFF;
                     } else {
-                        THROW_OR_ABORT("Unknown shader: \"" + material.shader + '"');
+                        THROW_OR_ABORT("Unknown shader: \"" + material->shader + '"');
                     }
                 }
                 tl.material.emissivity = OrderableFixedArray{
                     cfg.emissivity_factor *
-                    material.ksEmissive.value_or_default()};
+                    material->ksEmissive.value_or_default()};
                 tl.material.ambience = OrderableFixedArray{
                     cfg.ambience_factor *
-                    material.ksAmbient.value_or_default() *
+                    material->ksAmbient.value_or_default() *
                     lit_mult};
                 tl.material.diffusivity = OrderableFixedArray{
                     cfg.diffusivity_factor *
-                    material.diffuseMult.value_or_default() *
-                    material.ksDiffuse.value_or_default() *
+                    material->diffuseMult.value_or_default() *
+                    material->ksDiffuse.value_or_default() *
                     lit_mult};
                 tl.material.specularity = OrderableFixedArray{
                     cfg.specularity_factor *
-                    material.ksSpecular.value_or_default() *
+                    material->ksSpecular.value_or_default() *
                     lit_mult *
                     specular_mult};
-                tl.material.specular_exponent = material.ksSpecularEXP.value_or_default();
+                tl.material.specular_exponent = material->ksSpecularEXP.value_or_default();
                 if (tl.material.specular_exponent == 0.f) {
                     tl.material.specularity = 0.f;
                 }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
-                    (material.shader == "ksGrass") &&
-                    !material.txDiffuse.empty() &&
-                    !material.txVariation.empty())
+                    (material->shader == "ksGrass") &&
+                    !material->txDiffuse.empty() &&
+                    !material->txVariation.empty())
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
-                                .filename = material.txDiffuse,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                                .filename = material->txDiffuse,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .normal = {
-                                .filename = material.txNormal,
+                                .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     tl.material.textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
-                                .filename = material.txVariation,
+                                .filename = material->txVariation,
                                 .color_mode = ColorMode::RGB,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .scale = 0.5f,
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::HORIZONTAL});
                     tl.material.compute_color_mode();
                 } else if (
-                    (material.useDetail.value_or_default() != 0.f) &&
-                    (material.detailUVMultiplier.value_or_default() != 0.f) &&
-                    !material.txDiffuse.empty() &&
-                    !material.txDetail1.empty())
+                    (material->useDetail.value_or_default() != 0.f) &&
+                    (material->detailUVMultiplier.value_or_default() != 0.f) &&
+                    !material->txDiffuse.empty() &&
+                    !material->txDetail1.empty())
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
-                                .filename = material.txDiffuse,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                                .filename = material->txDiffuse,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .normal = {
-                                .filename = material.txNormal,
+                                .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     tl.material.textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
-                                .filename = material.txDetail1,
+                                .filename = material->txDetail1,
                                 .color_mode = ColorMode::RGB,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-                        .scale = material.detailUVMultiplier.value_or_default(),
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                        .scale = material->detailUVMultiplier.value_or_default(),
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL});
                     tl.material.compute_color_mode();
                 } else if (
-                    !material.txDiffuse.empty() &&
-                    !material.txMask.empty() &&
-                    (material.detailUVMultiplier.value_or_default() != 0.f) &&
-                    ((material.shader == "ksMultilayer") ||
-                     (material.shader == "ksMultilayer_fresnel_nm")))
+                    !material->txDiffuse.empty() &&
+                    !material->txMask.empty() &&
+                    (material->detailUVMultiplier.value_or_default() != 0.f) &&
+                    ((material->shader == "ksMultilayer") ||
+                     (material->shader == "ksMultilayer_fresnel_nm")))
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
                             .color = {
-                                .filename = material.txDiffuse,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                                .filename = material->txDiffuse,
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                             .normal = {
-                                .filename = material.txNormal,
+                                .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-                        .weight = material.magicMult.value_or_default(),
+                                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                        .weight = material->magicMult.value_or_default(),
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     for (uint32_t i = 0; i < 4; ++i) {
-                        if (material.txDetail4(i).empty() ||
-                            (material.mult(i).value_or_default() == 0.f))
+                        if (material->txDetail4(i).empty() ||
+                            (material->mult(i).value_or_default() == 0.f))
                         {
                             continue;
                         }
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
-                                    .filename = material.txMask,
+                                    .filename = material->txMask,
                                     .color_mode = ColorMode::RGBA,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                             .role = BlendMapRole::DETAIL_MASK_R + i});
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
-                                    .filename = material.txDetail4(i),
+                                    .filename = material->txDetail4(i),
                                     .color_mode = ColorMode::RGB,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-                            .scale = material.mult(i).value_or_default(),
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                            .scale = material->mult(i).value_or_default(),
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
                                 ? BlendMapUvSource::VERTICAL
@@ -512,16 +532,18 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     }
                     tl.material.compute_color_mode();
                 } else {
-                    if (!material.txDiffuse.empty()) {
+                    if (!material->txDiffuse.empty()) {
                         tl.material.textures_color = {BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
-                                    .filename = material.txDiffuse,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                                    .filename = material->txDiffuse,
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
                                 .normal = {
-                                    .filename = material.txNormal,
+                                    .filename = material->txNormal,
                                     .color_mode = ColorMode::RGB,
-                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}}}};
+                                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}};
                         tl.material.compute_color_mode();
                     }
                 }
