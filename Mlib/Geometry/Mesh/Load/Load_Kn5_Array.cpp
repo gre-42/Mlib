@@ -266,7 +266,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (number.has_value() && (number.value() > 0)) {
                     attrs |= MetaAttributes::ATTR_COLLIDABLE;
                 }
-                if (Mlib::re::regex_search(match[NAME].str(), grass_reg)) {
+                if (any(attrs & MetaAttributes::ATTR_COLLIDABLE) &&
+                    Mlib::re::regex_search(match[NAME].str(), grass_reg))
+                {
                     attrs |= MetaAttributes::SURFACE_GRASS;
                 }
                 if (Mlib::re::regex_search(match[NAME].str(), tree_reg)) {
