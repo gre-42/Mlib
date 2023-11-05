@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
                 if (o->fail()) {
                     THROW_OR_ABORT("Could not open \"" + png_name + '"');
                 }
-                o->write((const char*)dest.data.data(), dest.data.size());
+                o->write((const char*)dest.data.data(), integral_cast<std::streamsize>(dest.data.size()));
                 o->flush();
                 if (o->fail()) {
                     THROW_OR_ABORT("Could not write to \"" + png_name + '"');
