@@ -426,6 +426,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .texture_descriptor = {
                             .color = {
                                 .filename = material.txVariation,
+                                .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                         .scale = 0.5f,
                         .role = BlendMapRole::DETAIL_COLOR,

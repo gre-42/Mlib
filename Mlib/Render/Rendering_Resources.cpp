@@ -994,11 +994,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             (float)info.size(1)};
         FillWithTextureLogic logic{
             *const_cast<RenderingResources*>(this),
-            {
-                .filename = color.filename,
-                .color_mode = ColorMode::RGBA,
-                .mipmap_mode = MipmapMode::NO_MIPMAPS
-            },
+            color,
             ResourceUpdateCycle::ONCE,
             CullFaceMode::CULL,
             AlphaChannelRole::NO_BLEND};

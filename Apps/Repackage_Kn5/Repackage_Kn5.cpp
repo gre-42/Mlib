@@ -76,7 +76,11 @@ int main(int argc, char** argv) {
             auto png_name = gen_png_name(dds_name);
             rendering_resources.insert_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
             auto tex = rendering_resources.get_texture_data(
-                { .filename = dds_name },
+                {
+                    .filename = dds_name,
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                },
                 TextureRole::COLOR,
                 FlipMode::NONE,
                 CopyBehavior::COPY);
