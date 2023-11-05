@@ -242,7 +242,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .cull_faces = cfg.cull_faces_default},
                 cfg.physics_material};
             auto attrs = MetaAttributes::ATTR_VISIBLE;
-            static const DECLARE_REGEX(name_reg, "^(0+)?(\\d+)?(\\w+)");
+            static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
+            static const size_t NUMBER = 1;
+            static const size_t NAME = 2;
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
                 static const DECLARE_REGEX(grass_reg, "^(?:grass|(?:GR|GRASS)(?:\\b|_|\\d))");
@@ -252,34 +254,37 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 static const DECLARE_REGEX(skids_reg, "^SKIDS(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(vertical_reg, "^(?:wall|(?:WALL|KERB|ROCKS)(?:\\b|_|\\d))");
-                if (match[1].matched ||
-                    match[3].str().starts_with("WALL_col") ||
-                    match[3].str().starts_with("INVISIBLE"))
+                auto number = match[NUMBER].matched
+                    ? std::optional{ safe_stou(match[NUMBER].str()) }
+                    : std::nullopt;
+                if (number.has_value() && (number.value() == 0) ||
+                    match[NAME].str().starts_with("WALL_col") ||
+                    match[NAME].str().starts_with("INVISIBLE"))
                 {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
-                if (match[2].matched) {
+                if (number.has_value() && (number.value() > 0)) {
                     attrs |= MetaAttributes::ATTR_COLLIDABLE;
                 }
-                if (Mlib::re::regex_search(match[3].str(), grass_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), grass_reg)) {
                     attrs |= MetaAttributes::SURFACE_GRASS;
                 }
-                if (Mlib::re::regex_search(match[3].str(), tree_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), tree_reg)) {
                     attrs |= MetaAttributes::OBJ_TREE;
                 }
-                if (Mlib::re::regex_search(match[3].str(), road_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), road_reg)) {
                     attrs |= MetaAttributes::SURFACE_ROAD;
                 }
-                if (Mlib::re::regex_search(match[3].str(), gravel_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), gravel_reg)) {
                     attrs |= MetaAttributes::SURFACE_GRAVEL;
                 }
-                if (Mlib::re::regex_search(match[3].str(), side_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), side_reg)) {
                     attrs |= MetaAttributes::SURFACE_SIDE;
                 }
-                if (Mlib::re::regex_search(match[3].str(), skids_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), skids_reg)) {
                     attrs |= MetaAttributes::SURFACE_SKIDS;
                 }
-                if (Mlib::re::regex_search(match[3].str(), vertical_reg)) {
+                if (Mlib::re::regex_search(match[NAME].str(), vertical_reg)) {
                     attrs |= MetaAttributes::ATTR_VERTICAL;
                 }
             }
@@ -432,7 +437,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::HORIZONTAL});
                     tl.material.compute_color_mode();
-                } else if ((material.useDetail.value_or_default() != 0.f) &&
+                } else if (
+                    (material.useDetail.value_or_default() != 0.f) &&
                     (material.detailUVMultiplier.value_or_default() != 0.f) &&
                     !material.txDiffuse.empty() &&
                     !material.txDetail1.empty())
@@ -452,6 +458,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .texture_descriptor = {
                             .color = {
                                 .filename = material.txDetail1,
+                                .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                         .scale = material.detailUVMultiplier.value_or_default(),
                         .role = BlendMapRole::DETAIL_COLOR,
@@ -486,12 +493,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             .texture_descriptor = {
                                 .color = {
                                     .filename = material.txMask,
+                                    .color_mode = ColorMode::RGBA,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                             .role = BlendMapRole::DETAIL_MASK_R + i});
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
                                     .filename = material.txDetail4(i),
+                                    .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                             .scale = material.mult(i).value_or_default(),
                             .role = BlendMapRole::DETAIL_COLOR,
