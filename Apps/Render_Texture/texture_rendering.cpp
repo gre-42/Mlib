@@ -133,13 +133,19 @@ int main(int argc, char** argv)
                     rendering_resources,
                     ColormapWithModifiers{
                         .filename = "__texture__",
-                        .color_mode = ColorMode::RGBA},
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     ResourceUpdateCycle::ONCE,
                     CullFaceMode::CULL,
                     AlphaChannelRole::BLEND,
                     standard_quad_vertices,
                     layer);
-                rendering_resources.preload({ .color = "__texture__" });
+                rendering_resources.preload({
+                    .color = {
+                        .filename = "__texture__",
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    }});
             }
         } else {
             rendering_resources.add_texture_descriptor(
@@ -153,7 +159,8 @@ int main(int argc, char** argv)
                 rendering_resources,
                 ColormapWithModifiers{
                     .filename = "__texture__",
-                    .color_mode = ColorMode::RGBA},
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 ResourceUpdateCycle::ONCE);
         }
 
