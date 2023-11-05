@@ -1,6 +1,7 @@
 #pragma once
 #include "Array_Forward.hpp"
 #include <cassert>
+#include <climits>
 #include <ostream>
 #include <sstream>
 #include <vector>
