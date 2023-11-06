@@ -19,8 +19,11 @@
 #include "InputGeom.hpp"
 #include <Mlib/Navigation/ChunkyTriMesh.h>
 #include <Mlib/Navigation/MeshLoaderObj.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <DetourNavMesh.h>
 #include <Recast.h>
+#pragma clang diagnostic pop
 #include <algorithm>
 #include <cctype>
 #include <cmath>

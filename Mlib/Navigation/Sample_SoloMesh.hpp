@@ -1,8 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 #include <Recast.h>
+#pragma clang diagnostic pop
 #include <list>
 
 class InputGeom;
