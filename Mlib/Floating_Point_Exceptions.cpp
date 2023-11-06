@@ -23,7 +23,7 @@ void Mlib::enable_floating_point_exceptions() {
         }
     }
     // From: https://stackoverflow.com/questions/4282217/visual-c-weird-behavior-after-enabling-floating-point-exceptions-compiler-b
-    control_word &= ~_EM_INVALID;
+    control_word &= ~(unsigned int)_EM_INVALID;
     {
         unsigned int control_word2 = 0;
         errno_t err = _controlfp_s(&control_word2, control_word, _MCW_EM);

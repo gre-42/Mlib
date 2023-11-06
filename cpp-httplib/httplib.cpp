@@ -5,6 +5,10 @@
 #include "httplib.h"
 
 #pragma GCC diagnostic pop
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
+
 namespace httplib {
 
 /*
@@ -7080,3 +7084,5 @@ SSL_CTX *Client::ssl_context() const {
 #endif
 
 } // namespace httplib
+
+#pragma clang diagnostic pop
