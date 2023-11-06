@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string_view>
 
-#ifdef __ANDROID__
+#ifdef __clang__
 #include <fast_double_parser/fast_double_parser.hpp>
 #endif
 
@@ -42,7 +42,7 @@ static T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
     return res;
 }
 
-#ifdef __ANDROID__
+#ifdef __clang__
 template <>
 double safe_stox<double>(const std::string_view& s, const char* msg) {
     double res;
