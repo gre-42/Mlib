@@ -588,7 +588,7 @@ void KeyBindings::increment_external_forces(
                 }
             };
 
-            auto translate = [&k, &rt](double dx){
+            auto translate = [&k=k, &rt](double dx){
                 if (dx == 0.) {
                     return;
                 }
