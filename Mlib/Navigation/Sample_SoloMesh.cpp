@@ -23,8 +23,11 @@
 #include <DetourNavMesh.h>
 #include <DetourNavMeshBuilder.h>
 #include <DetourNavMeshQuery.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <Recast.h>
 #include <RecastDump.h>
+#pragma clang diagnostic pop
 #include <cmath>
 #include <cstring>
 
