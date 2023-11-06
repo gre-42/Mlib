@@ -558,7 +558,7 @@ void KeyBindings::increment_external_forces(
             auto rt = dynamic_cast<RelativeTransformer*>(&m);
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
 
-            auto rotate = [&k, &rt, &ypln](float dangle){
+            auto rotate = [&k=k, &rt, &ypln](float dangle){
                 if (dangle == 0.f) {
                     return;
                 }
