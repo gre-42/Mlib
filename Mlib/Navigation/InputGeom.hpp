@@ -152,8 +152,8 @@ public:
 	
 private:
 	// Explicitly disabled copy constructor and copy assignment operator.
-	InputGeom(const InputGeom&);
-	InputGeom& operator=(const InputGeom&);
+	InputGeom(const InputGeom&) = delete;
+	InputGeom& operator=(const InputGeom&) = delete;
 };
 
 #endif // INPUTGEOM_H

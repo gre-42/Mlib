@@ -19,12 +19,12 @@
 #include "Sample_SoloMesh.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Navigation/InputGeom.hpp>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <DetourCommon.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshBuilder.h>
 #include <DetourNavMeshQuery.h>
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsign-conversion"
 #include <Recast.h>
 #include <RecastDump.h>
 #pragma clang diagnostic pop
