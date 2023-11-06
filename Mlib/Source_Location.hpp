@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __ANDROID__
+#ifdef __clang__
 
 namespace Mlib {
 
