@@ -9,6 +9,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Io/Ini_Parser.hpp>
+#include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Determinant.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -18,6 +19,7 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <filesystem>
+#include <map>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -136,6 +138,65 @@ bool any(MetaAttributes attr) {
     return attr != MetaAttributes::NONE;
 }
 
+struct MaterialProperties {
+    std::optional<float> ksDiffuse;
+    std::optional<float> ksAmbient;
+    std::optional<float> ksSpecular;
+    std::optional<float> ksSpecularEXP;
+    std::optional<float> ksEmissive;
+    std::optional<float> ksAlphaRef;
+};
+
+struct MaterialSettings {
+    std::string shaderName;
+    std::string alphaBlendMode;
+    bool alphaTested = false;
+    std::string depthMode;
+    MaterialProperties properties;
+};
+
+struct SettingsJson {
+    std::map<std::string, MaterialSettings> materials;
+};
+
+void from_json(const nlohmann::json& j, MaterialProperties& v) {
+    JsonView jv{ j };
+    if (j.contains("ksDiffuse")) {
+        v.ksDiffuse = JsonView{ jv.at("ksDiffuse") }.at<float>("valueA");
+    }
+    if (j.contains("ksAmbient")) {
+        v.ksAmbient = JsonView{ jv.at("ksAmbient") }.at<float>("valueA");
+    }
+    if (j.contains("ksSpecular")) {
+        v.ksSpecular = JsonView{ jv.at("ksSpecular") }.at<float>("valueA");
+    }
+    if (j.contains("ksSpecularEXP")) {
+        v.ksSpecularEXP = JsonView{ jv.at("ksSpecularEXP") }.at<float>("valueA");
+    }
+    if (j.contains("ksEmissive")) {
+        v.ksEmissive = JsonView{ jv.at("ksEmissive") }.at<float>("valueA");
+    }
+    if (j.contains("ksAlphaRef")) {
+        v.ksAlphaRef = JsonView{ jv.at("ksAlphaRef") }.at<float>("valueA");
+    }
+}
+
+void from_json(const nlohmann::json& j, MaterialSettings& v) {
+    JsonView jv{ j };
+    v.shaderName = jv.at<std::string>("shaderName", "");
+    v.alphaBlendMode = jv.at<std::string>("alphaBlendMode", "");
+    v.alphaTested = jv.at<bool>("alphaTested", false);
+    v.depthMode = jv.at<std::string>("depthMode", "");
+    v.properties = jv.at<MaterialProperties>("properties");
+}
+
+void from_json(const nlohmann::json& j, SettingsJson& v) {
+    JsonView jv{ j };
+    if (jv.contains("materials")) {
+        v.materials = jv.at<std::map<std::string, MaterialSettings>>("materials");
+    }
+}
+
 template <class TPos>
 std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     const std::string& filename,
@@ -150,9 +211,33 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     float lit_mult = 1.f;
     float specular_mult = 1.f;
     bool raceway_is_circular = true;
+    SettingsJson settings_json;
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
         auto kn5 = load_kn5(kn5_filename);
+        for (auto& [_, m] : kn5.materials) {
+            if (settings_json.materials.contains(m.name)) {
+                const auto& ms = settings_json.materials.at(m.name);
+                if (ms.properties.ksDiffuse.has_value()) {
+                    m.ksDiffuse = ms.properties.ksDiffuse.value();
+                }
+                if (ms.properties.ksAmbient.has_value()) {
+                    m.ksAmbient = ms.properties.ksAmbient.value();
+                }
+                if (ms.properties.ksSpecular.has_value()) {
+                    m.ksSpecular = ms.properties.ksSpecular.value();
+                }
+                if (ms.properties.ksSpecularEXP.has_value()) {
+                    m.ksSpecularEXP = ms.properties.ksSpecularEXP.value();
+                }
+                if (ms.properties.ksEmissive.has_value()) {
+                    m.ksEmissive = ms.properties.ksEmissive.value();
+                }
+                if (ms.properties.ksAlphaRef.has_value()) {
+                    m.ksAlphaRef = ms.properties.ksAlphaRef.value();
+                }
+            }
+        }
         if (dds_resources != nullptr) {
             for (auto& [name, content] : kn5.textures) {
                 dds_resources->insert_texture(name, std::move(content.data), TextureAlreadyExistsBehavior::WARN);
@@ -570,6 +655,23 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             result.push_back(tl.triangle_array());
         }
     };
+    {
+        auto settings_json_filename =
+            fs::path{filename}.parent_path() /
+            fs::path{"settings.json"};
+        if (path_exists(settings_json_filename)) {
+            auto f = create_ifstream(settings_json_filename);
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not open \"" + settings_json_filename.string() + '"');
+            }
+            nlohmann::json j;
+            *f >> j;
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not read from file \"" + settings_json_filename.string() + '"');
+            }
+            settings_json = j.get<SettingsJson>();
+        }
+    }
     {
         auto ext_config_ini_filename =
             fs::path{filename}.parent_path() /
