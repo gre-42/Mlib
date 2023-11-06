@@ -18,6 +18,8 @@ def patch_file(filename):
                 rest_reached = True
             elif l.startswith('#define'):
                 rest_reached = True
+            elif l.startswith('#pragma clang'):
+                rest_reached = True
             elif 'impl.hpp' in l:
                 rest_reached = True
             elif l.startswith('/'):
