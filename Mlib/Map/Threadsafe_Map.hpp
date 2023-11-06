@@ -64,7 +64,7 @@ public:
         return &it->second;
     }
 
-    std::map<TKey, TValue>::node_type extract(const TKey &key) {
+    typename std::map<TKey, TValue>::node_type extract(const TKey &key) {
         std::shared_lock lock{mutex_};
         auto res = elements_.extract(key);
         if (res.empty()) {
@@ -73,7 +73,7 @@ public:
         return res;
     }
 
-    std::map<TKey, TValue>::node_type try_extract(const TKey &key) {
+    typename std::map<TKey, TValue>::node_type try_extract(const TKey &key) {
         std::shared_lock lock{mutex_};
         return elements_.extract(key);
     }
