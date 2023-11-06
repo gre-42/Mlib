@@ -505,7 +505,7 @@ RenderingResources::RenderingResources(std::string name,
     , preloader_background_loop_{"Preload_BG"}
     , deallocation_token_{render_deallocator.insert([this]() {
         for (const auto& [d, _] : textures_) {
-            append_render_allocator([this, d](){ preload(d, TextureRole::TRUSTED); });
+            append_render_allocator([this, d=d](){ preload(d, TextureRole::TRUSTED); });
         }
         deallocate();
     })} {
