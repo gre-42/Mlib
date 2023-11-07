@@ -728,8 +728,8 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color.filename + '"');
             GLuint texture = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
-                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color)
-                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color);
+                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
             GLenum target = cva->triangle_texture_layers.empty()
@@ -745,8 +745,8 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_alpha)) {
             LOG_INFO("RenderableColoredVertexArray::render_cva get texture \"" + t.texture_descriptor.color.filename + '"');
             GLuint texture = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
-                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color)
-                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color);
+                ? secondary_rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+                : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_alpha(i))));
             CHK(glBindTexture(GL_TEXTURE_2D, texture));
