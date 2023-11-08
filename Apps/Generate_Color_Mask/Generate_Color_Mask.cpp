@@ -41,9 +41,10 @@ int main(int argc, char** argv) {
                 im_out.flat_begin(),
                 integral_cast<int>(im_out.shape(1)),
                 integral_cast<int>(im_out.shape(0)),
-                1,
-                -1.f,
-                1.f);
+                1,      // nchannels
+                -1.f,   // times
+                1.f,    // plus
+                false); // abs
         }
         im_out.save_to_file(args.unnamed_value(1));
     } catch (const std::runtime_error& e) {

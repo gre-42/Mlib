@@ -7,14 +7,19 @@ void stb_transform(
     int height,
     int nrChannels,
     float times,
-    float plus)
+    float plus,
+    bool abs)
 {
     for (int r = 0; r < height; ++r) {
         for (int c = 0; c < width; ++c) {
             for (int d = 0; d < nrChannels; ++d) {
                 int i = (r * width + c) * nrChannels + d;
+                float v = data[i] * times + plus * 255.f;
+                if (abs) {
+                    v = std::abs(v);
+                }
                 data[i] = (unsigned char)std::clamp(
-                    std::round(data[i] * times + plus * 255.f),
+                    std::round(v),
                     0.f,
                     255.f);
             }

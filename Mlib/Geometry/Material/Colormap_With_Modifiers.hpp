@@ -27,6 +27,8 @@ struct ColormapWithModifiers {
     float selected_color_far = INFINITY;
     float times = 1.f;
     float plus = 0.f;
+    bool abs = false;
+    bool invert = false;
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
@@ -53,6 +55,8 @@ struct ColormapWithModifiers {
         archive(selected_color_far);
         archive(times);
         archive(plus);
+        archive(abs);
+        archive(invert);
         archive(color_mode);
         archive(alpha_fac);
         archive(mipmap_mode);

@@ -6,5 +6,5 @@ void stb_transform(
     int height,
     int nrChannels,
     float times,
-    float plus);
-
+    float plus,
+    bool abs);

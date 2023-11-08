@@ -33,6 +33,8 @@ DECLARE_ARGUMENT(selected_color_near);
 DECLARE_ARGUMENT(selected_color_far);
 DECLARE_ARGUMENT(times);
 DECLARE_ARGUMENT(plus);
+DECLARE_ARGUMENT(abs);
+DECLARE_ARGUMENT(invert);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
@@ -78,6 +80,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
                 .times = args.arguments.at<float>(KnownArgs::times, 1.f),
                 .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
+                .abs = args.arguments.at<bool>(KnownArgs::abs, false),
+                .invert = args.arguments.at<bool>(KnownArgs::invert, false),
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
