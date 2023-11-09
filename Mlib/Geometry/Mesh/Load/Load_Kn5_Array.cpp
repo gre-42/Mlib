@@ -338,7 +338,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
                 static const DECLARE_REGEX(grass_reg, "^(?:grass|(?:GR|GRASS)(?:\\b|_|\\d))");
                 static const DECLARE_REGEX(road_reg, "^(?:road|ROAD(?:\\b|_|\\d))");
-                static const DECLARE_REGEX(gravel_reg, "^(?:sandgravel|GRAVEL(?:\\b|_|\\d))");
+                static const DECLARE_REGEX(gravel_reg, "^(?:sandgravel|SAND|GRAVEL(?:\\b|_|\\d))");
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(skids_reg, "^SKIDS(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
