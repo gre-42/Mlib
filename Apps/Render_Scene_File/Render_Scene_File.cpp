@@ -54,6 +54,7 @@ std::future<void> render_thread(
     return std::async(std::launch::async, [&](){
         try {
             ThreadInitializer ti{"render", ThreadAffinity::POOL};
+            bool last_load_scene_finished = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
                     const LayoutConstraintParameters& ly,
@@ -65,6 +66,16 @@ std::future<void> render_thread(
                     menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
+                        if (!last_load_scene_finished && 
+                            !args.has_named("--no_physics") &&
+                            !args.has_named("--single_threaded"))
+                        {
+                            for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                                r.delete_node_mutex_.clear_deleter_thread();
+                                r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
+                            }
+                            last_load_scene_finished = true;
+                        }
                         renderable_scenes["primary_scene"].render(
                             lx,
                             ly,
@@ -180,9 +191,16 @@ std::future<void> loader_thread(
                     gallery,
                     asset_references,
                     renderable_scenes);
-                if (args.has_named("--single_threaded")) {
-                    for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
-                        r.scene_.delete_node_mutex().clear_deleter_thread();
+                if (!args.has_named("--no_physics")) {
+                    if (args.has_named("--no_render")) {
+                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                            r.delete_node_mutex_.clear_deleter_thread();
+                            r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
+                        }
+                    } else if (args.has_named("--single_threaded")) {
+                        for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                            r.scene_.delete_node_mutex().clear_deleter_thread();
+                        }
                     }
                 }
                 load_scene_finished = true;
@@ -191,14 +209,6 @@ std::future<void> loader_thread(
 
             print_debug_info(args, renderable_scenes);
 
-            if (!args.has_named("--no_physics") &&
-                !args.has_named("--single_threaded"))
-            {
-                for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
-                    r.delete_node_mutex_.clear_deleter_thread();
-                    r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
-                }
-            }
         } catch (...) {
             add_unhandled_exception(std::current_exception());
         }
