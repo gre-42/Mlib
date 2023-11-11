@@ -39,7 +39,6 @@
 
 using namespace Mlib;
 
-static const float MIN_DETAIL_WEIGHT = 0.01f;
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
     unsigned char indices[ANIMATION_NINTERPOLATED];
@@ -639,7 +638,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else if (textures_color[0]->role == BlendMapRole::DETAIL_BASE) {
             sstr << "    vec4 texture_color_ambient_diffuse = texture(textures_color[0], tex_coord_flipped * " << textures_color[0]->scale << ");" << std::endl;
             sstr << "    vec3 sum_of_details = vec3(0.0, 0.0, 0.0);" << std::endl;
-            sstr << "    float mask = 1.0;" << std::endl;
         } else {
             THROW_OR_ABORT("Unsupported base blend map role (0)");
         }
@@ -652,7 +650,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "        discard;" << std::endl;
         sstr << "    }" << std::endl;
     }
+    sstr << "    float weight;" << std::endl;
     auto sample_textures = [&](const std::vector<BlendMapTexture*>& textures, ReductionTarget target) {
+        sstr << "    weight = 1.0;" << std::endl;
         if (target == ReductionTarget::COLOR) {
             sstr << "    float sum_weights = 0.0;" << std::endl;
             if (has_normalmap) {
@@ -706,13 +706,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             if (t->cosines(3) != 1) {
                 checks.push_back("(cosine <= " + std::to_string(t->cosines(3)) + ')');
             }
+            if (t->weight == 0.f) {
+                checks.push_back("(weight != 0.0)");
+            }
             if (!checks.empty()) {
                 sstr << "        if (" << join(" && ", checks) << ") {" << std::endl;
             }
-            sstr << "            float weight = " << t->weight << ';' << std::endl;
-            if (t->role == BlendMapRole::DETAIL_COLOR) {
-                sstr << "            weight *= mask;" << std::endl;
-                sstr << "            weight = max(weight, " << MIN_DETAIL_WEIGHT << ");" << std::endl;
+            if (t->weight != 0.f) {
+                sstr << "            weight = " << t->weight << ';' << std::endl;
             }
             sstr << "            float scale = " << t->scale << ';' << std::endl;
             if (t->distances(0) != t->distances(1)) {
@@ -738,55 +739,72 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             auto tex_coords = (t->uv_source == BlendMapUvSource::HORIZONTAL)
                 ? "(FragPos.xz + horizontal_detailmap_remainder)"
                 : "tex_coord_flipped";
-            if (t->role == BlendMapRole::DETAIL_MASK_R) {
-                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).r;" << std::endl;
-            } else if (t->role == BlendMapRole::DETAIL_MASK_G) {
-                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).g;" << std::endl;
-            } else if (t->role == BlendMapRole::DETAIL_MASK_B) {
-                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).b;" << std::endl;
-            } else if (t->role == BlendMapRole::DETAIL_MASK_A) {
-                sstr << "            weight *= texture(textures_color[" << i << "], tex_coord_flipped * scale).a;" << std::endl;
+            if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
+                char c;
+                switch (t->role) {
+                    case BlendMapRole::DETAIL_MASK_R: c = 'r'; break;
+                    case BlendMapRole::DETAIL_MASK_G: c = 'g'; break;
+                    case BlendMapRole::DETAIL_MASK_B: c = 'b'; break;
+                    case BlendMapRole::DETAIL_MASK_A: c = 'a'; break;
+                    default: THROW_OR_ABORT("Unknown detail mask");
+                }
+                sstr << "            float w = texture(textures_color[" << i << "], tex_coord_flipped * scale)." << c << ';' << std::endl;
+                if (t->reduction == BlendMapReductionOperation::TIMES) {
+                    sstr << "            weight *= w;" << std::endl;
+                } else if (t->reduction == BlendMapReductionOperation::FEATHER) {
+                    if (t->discreteness == 0) {
+                        THROW_OR_ABORT("Detail-mask with feather as zero discreteness");
+                    }
+                    sstr << "            weight += (0.5 - abs(weight - 0.5)) * (w + " << t->plus << ") * " << t->discreteness << ';' << std::endl;
+                    sstr << "            weight = clamp(weight, 0, 1);" << std::endl;
+                } else if (t->reduction == BlendMapReductionOperation::INVERT) {
+                    sstr << "            weight = 1 - weight;" << std::endl;
+                } else {
+                    THROW_OR_ABORT("Unknown reduction operation");
+                }
+                if (t->min_detail_weight != 0.f) {
+                    sstr << "            weight = max(weight, " << t->min_detail_weight << ");" << std::endl;
+                }
             } else if ((t->texture_descriptor.color.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
                 sstr << "            vec4 bcolor = texture(textures_color[" << i << "], " << tex_coords << " * scale).rgba;" << std::endl;
-                sstr << "            weight *= clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
+                sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
                 (t->texture_descriptor.color.color_mode == ColorMode::RGB) ||
                 ((t->texture_descriptor.color.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
             {
                 sstr << "            vec3 bcolor = texture(textures_color[" << i << "], " << tex_coords << " * scale).rgb;" << std::endl;
+                sstr << "            float final_weight = weight;" << std::endl;
             } else if (target == ReductionTarget::ALPHA) {
                 if (t->texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
                     THROW_OR_ABORT("Alpha-texture not loaded as grayscale");
                 }
                 sstr << "            float intensity = texture(textures_alpha[" << i << "], " << tex_coords << " * scale).r;" << std::endl;
+                sstr << "            float final_weight = weight;" << std::endl;
             } else {
                 THROW_OR_ABORT("Texture: \"" + t->texture_descriptor.color.filename + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color.color_mode) + '"');
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
-                sstr << "            mask = weight;" << std::endl;
+                // Do nothing
             } else {
                 char rop;
                 switch (t->reduction) {
-                case BlendMapReductionOperation::PLUS:
-                    rop = '+';
-                    break;
-                case BlendMapReductionOperation::MINUS:
-                    rop = '-';
-                    break;
-                case BlendMapReductionOperation::TIMES:
-                    rop = '*';
-                    break;
-                default:
-                    THROW_OR_ABORT("Unknown blendmap reduction type");
+                    case BlendMapReductionOperation::PLUS:  rop = '+'; break;
+                    case BlendMapReductionOperation::MINUS: rop = '-'; break;
+                    case BlendMapReductionOperation::TIMES: rop = '*'; break;
+                    case BlendMapReductionOperation::BLEND: rop = '+'; break;
+                    default: THROW_OR_ABORT("Unknown blendmap reduction type");
                 }
                 if (t->role == BlendMapRole::DETAIL_COLOR) {
-                    sstr << "            sum_of_details " << rop << "= weight * bcolor.rgb;" << std::endl;
+                    sstr << "            sum_of_details " << rop << "= final_weight * bcolor.rgb;" << std::endl;
                 } else if (t->role == BlendMapRole::SUMMAND) {
                     if (target == ReductionTarget::COLOR) {
-                        sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= weight * bcolor.rgb;" << std::endl;
+                        if (t->reduction == BlendMapReductionOperation::BLEND) {
+                            sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight);" << std::endl;
+                        }
+                        sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
                     } else if (target == ReductionTarget::ALPHA) {
-                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= weight * intensity + " << t->plus << ";" << std::endl;
+                        sstr << "            texture_color_ambient_diffuse.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
                     } else {
                         THROW_OR_ABORT("Unknown reduction target (1)");
                     }
@@ -796,15 +814,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 if (target == ReductionTarget::COLOR) {
                     if (has_normalmap) {
                         if (t->texture_descriptor.normal.filename.empty()) {
-                            sstr << "            tnorm.z += weight;" << std::endl;
+                            sstr << "            tnorm.z += final_weight;" << std::endl;
                         } else {
-                            sstr << "            tnorm += weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
+                            sstr << "            tnorm += final_weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords << " * scale).rgb - 1.0);" << std::endl;
                         }
                     }
-                    sstr << "            sum_weights += weight;" << std::endl;
+                    sstr << "            sum_weights += final_weight;" << std::endl;
                 }
             }
             if (!checks.empty()) {
+                if (t->weight != 0.f) {
+                    sstr << "        } else {" << std::endl;
+                    sstr << "            weight = 0.0;" << std::endl;
+                }
                 sstr << "        }" << std::endl;
             }
             sstr << "    }" << std::endl;

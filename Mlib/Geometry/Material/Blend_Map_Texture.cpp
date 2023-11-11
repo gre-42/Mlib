@@ -39,6 +39,12 @@ BlendMapReductionOperation Mlib::blend_map_reduction_operation_from_string(std::
         return BlendMapReductionOperation::MINUS;
     } else if (s == "times"sv) {
         return BlendMapReductionOperation::TIMES;
+    } else if (s == "feather"sv) {
+        return BlendMapReductionOperation::FEATHER;
+    } else if (s == "invert"sv) {
+        return BlendMapReductionOperation::INVERT;
+    } else if (s == "blend"sv) {
+        return BlendMapReductionOperation::BLEND;
     } else {
         THROW_OR_ABORT("Unknown blend map reduction operation: \"" + std::string{ s } + '"');
     }

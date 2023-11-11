@@ -601,7 +601,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .color_mode = ColorMode::RGBA,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
-                            .role = BlendMapRole::DETAIL_MASK_R + i});
+                            .min_detail_weight = 0.01f,
+                            .role = BlendMapRole::DETAIL_MASK_R + i,
+                            .reduction = BlendMapReductionOperation::TIMES});
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
@@ -610,6 +612,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                                     .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
                             .scale = material->mult(i).value_or_default(),
+                            .weight = 0.f,
                             .role = BlendMapRole::DETAIL_COLOR,
                             .uv_source = any(attrs & MetaAttributes::ATTR_VERTICAL)
                                 ? BlendMapUvSource::VERTICAL

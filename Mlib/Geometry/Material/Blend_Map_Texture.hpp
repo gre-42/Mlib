@@ -44,7 +44,10 @@ BlendMapUvSource blend_map_uv_source_from_string(std::string_view s);
 enum class BlendMapReductionOperation {
     PLUS,
     MINUS,
-    TIMES
+    TIMES,
+    FEATHER,
+    INVERT,
+    BLEND
 };
 
 BlendMapReductionOperation blend_map_reduction_operation_from_string(std::string_view s);
@@ -68,6 +71,7 @@ struct BlendMapTexture {
     float scale = 1.f;
     float weight = 1.f;
     float plus = 0.f;
+    float min_detail_weight = 0.f;
     BlendMapRole role = BlendMapRole::SUMMAND;
     BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
     BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
@@ -85,6 +89,7 @@ struct BlendMapTexture {
         archive(scale);
         archive(weight);
         archive(plus);
+        archive(min_detail_weight);
         archive(role);
         archive(uv_source);
         archive(reduction);

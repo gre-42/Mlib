@@ -492,13 +492,13 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 
 RenderingResources::RenderingResources(std::string name,
                                        unsigned int max_anisotropic_filtering_level)
-    : preloaded_processed_texture_data_{"Preloaded processed texture dataa",
+    : preloaded_processed_texture_data_{"Preloaded processed texture data",
                                         [](const ColormapWithModifiers &e) { return e.filename; }}
-    , preloaded_raw_texture_data_{"Preloaded raw texture dataa"}
+    , preloaded_raw_texture_data_{"Preloaded raw texture data"}
     , preloaded_texture_dds_data_{"Preloaded texture DDS data"}
-    , texture_descriptors_{"Texture descriptors"}
-    , textures_{"Textures", [](const ColormapWithModifiers &e) { return e.filename; }}
-    , manual_atlas_tile_descriptors_{"Manual atlas tile descriptors"}
+    , texture_descriptors_{"Texture descriptor"}
+    , textures_{"Texture", [](const ColormapWithModifiers &e) { return e.filename; }}
+    , manual_atlas_tile_descriptors_{"Manual atlas tile descriptor"}
     , auto_atlas_tile_descriptors_{"Auto atlas tile descriptor"}
     , cubemap_descriptors_{"Cubemap descriptor"}
     , font_textures_{"Font", [](const auto &e) { return e.first; }}

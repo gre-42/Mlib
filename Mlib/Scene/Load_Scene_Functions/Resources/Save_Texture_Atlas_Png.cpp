@@ -33,5 +33,5 @@ void SaveTextureAtlasPng::execute(const LoadSceneJsonUserFunctionArgs& args)
         ColormapWithModifiers{
             .filename = args.arguments.at<std::string>(KnownArgs::name),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))},
-        TextureRole::COLOR);
+        TextureRole::COLOR_FROM_DB);
 }
