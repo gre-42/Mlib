@@ -104,7 +104,7 @@ ImposterLogic::~ImposterLogic() {
         rendering_resources_.delete_texture(
             {
                 .filename = texture_id_,
-                .color_mode = ColorMode::RGB
+                .color_mode = ColorMode::RGBA
             },
             DeletionFailureMode::WARN);
     }
@@ -124,7 +124,7 @@ void ImposterLogic::add_imposter(
         .textures_color = { {.texture_descriptor = TextureDescriptor{.color = {
             .filename = texture_id_,
             .color_mode = ColorMode::RGBA}}} },
-        .ambience = OrderableFixedArray<float, 3>{2.f, 2.f, 2.f},
+        .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
         .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
     material.compute_color_mode();
