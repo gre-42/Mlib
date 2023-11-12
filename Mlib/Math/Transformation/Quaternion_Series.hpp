@@ -27,6 +27,10 @@ public:
 		append(qo, time);
 	}
 
+	void clear() {
+		last_ = SIZE_MAX;
+	}
+
 	void append(const OffsetAndQuaternion<TDir, TPos>& qo, std::chrono::steady_clock::time_point time) {
 		last_ = (last_ + 1) % length;
 		data_(last_) = qo;

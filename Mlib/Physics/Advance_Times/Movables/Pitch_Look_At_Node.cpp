@@ -112,7 +112,9 @@ void PitchLookAtNode::set_pitch(float pitch) {
 
 TransformationMatrix<float, double, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
     if (head_node_ != nullptr) {
-        head_node_->set_rotation(FixedArray<float, 3>{pitch_ + (std::isnan(dpitch_head_) ? 0.f : dpitch_head_), 0.f, 0.f});
+        head_node_->set_rotation(
+            FixedArray<float, 3>{pitch_ + (std::isnan(dpitch_head_) ? 0.f : dpitch_head_), 0.f, 0.f},
+            SUCCESSOR_POSE);
     }
     return TransformationMatrix<float, double, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{pitch_, 0.f, 0.f}),

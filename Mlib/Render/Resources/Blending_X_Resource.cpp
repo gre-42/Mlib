@@ -83,9 +83,10 @@ void BlendingXResource::preload(const RenderableResourceFilter& filter) const {
 void BlendingXResource::instantiate_renderable(const InstantiationOptions& options) const
 {
     {
-        auto node = make_dunique<SceneNode>();
-        node->set_rotation({0.f, 0.f, 0.f });
-        node->set_position({(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f });
+        auto node = make_dunique<SceneNode>(
+            FixedArray<double, 3>{(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f },
+            fixed_zeros<float, 3>(),
+            1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
@@ -100,9 +101,10 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         }
     }
     {
-        auto node = make_dunique<SceneNode>();
-        node->set_rotation({0.f, 0.f, 0.f });
-        node->set_position({double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. });
+        auto node = make_dunique<SceneNode>(
+            FixedArray<double, 3>{double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. },
+            fixed_zeros<float, 3>(),
+            1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
@@ -117,9 +119,10 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         }
     }
     {
-        auto node = make_dunique<SceneNode>();
-        node->set_rotation({0.f, -90.f * degrees, 0.f });
-        node->set_position({0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f });
+        auto node = make_dunique<SceneNode>(
+            FixedArray<double, 3>{0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f },
+            FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
+            1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
@@ -134,9 +137,10 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
         }
     }
     {
-        auto node = make_dunique<SceneNode>();
-        node->set_rotation({0.f, -90.f * degrees, 0.f });
-        node->set_position({0.f, 0.f, -(square_(1u, 1u) - square_(0u, 1u)) / 4.f });
+        auto node = make_dunique<SceneNode>(
+            FixedArray<double, 3>{0., 0., -(square_(1u, 1u) - square_(0u, 1u)) / 4. },
+            FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
+            1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",

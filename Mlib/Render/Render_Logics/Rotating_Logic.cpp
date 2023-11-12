@@ -139,7 +139,9 @@ void RotatingLogic::render(
     float aspect_ratio = lx.flength() / ly.flength();
 
     DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);
-    cn->set_position(FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z});
+    cn->set_position(
+        FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z},
+        std::nullopt);
     auto co = cn->get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<double, 4, 4> vp = dot2d(
@@ -153,14 +155,15 @@ void RotatingLogic::render(
         on->set_rotation(FixedArray<float, 3>{
             user_object_.angle_x,
             rotate_ ? (float)glfwGetTime() : user_object_.angle_y,
-            0.f});
+            0.f},
+            std::nullopt);
     }
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
         DanglingRef<SceneNode> bn = scene_.get_node("obj", DP_LOC)->get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
         const TransformationMatrix<float, double, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
-        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale);
+        bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale, std::nullopt);
     }
 
     RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };

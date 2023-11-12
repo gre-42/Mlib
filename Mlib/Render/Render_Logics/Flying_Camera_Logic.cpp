@@ -167,15 +167,15 @@ void FlyingCameraLogic::render(
 #else
         flying_key_callback(button_press_, user_object_, *keys_);
 #endif
-        cn->set_position(user_object_.position);
-        cn->set_rotation(user_object_.angles);
+        cn->set_position(user_object_.position, SUCCESSOR_POSE);
+        cn->set_rotation(user_object_.angles, SUCCESSOR_POSE);
     } else {
         nofly_key_callback(button_press_, user_object_, *keys_);
     }
     if (rotate_) {
         DanglingRef<SceneNode> on = scene_.get_node(user_object_.obj_node_name, DP_LOC);
-        on->set_position(user_object_.obj_position);
-        on->set_rotation(user_object_.obj_angles);
+        on->set_position(user_object_.obj_position, SUCCESSOR_POSE);
+        on->set_rotation(user_object_.obj_angles, SUCCESSOR_POSE);
     }
 }
 

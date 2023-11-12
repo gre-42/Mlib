@@ -133,8 +133,7 @@ void ImposterLogic::add_imposter(
         FixedArray<float, 2, 2>::init(ips.uv.min()(0), ips.uv.min()(1), ips.uv.max()(0), ips.uv.max()(1)),
         TransformationMatrix<float, float, 3>::identity(),
         material};
-    auto new_imposter_node = make_dunique<SceneNode>();
-    new_imposter_node->set_relative_pose(
+    auto new_imposter_node = make_dunique<SceneNode>(
         FixedArray<double, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
@@ -260,8 +259,10 @@ void ImposterLogic::render(
         if (!npixels.has_value()) {
             return;
         }
-        DanglingStackPtr<SceneNode> imposter_camera_node;
-        imposter_camera_node->set_relative_pose(camera_position, matrix_2_tait_bryan_angles(la.value().extrinsic_R), 1.f);
+        auto imposter_camera_node = make_dunique<SceneNode>(
+            camera_position,
+            matrix_2_tait_bryan_angles(la.value().extrinsic_R),
+            1.f);
         imposter_camera_node->set_camera(
             std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(

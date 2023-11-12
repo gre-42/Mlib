@@ -102,6 +102,9 @@ enum class ChildParentState {
     PARENT_ALREADY_SET
 };
 
+static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
+static const auto SUCCESSOR_POSE = std::nullopt;
+
 class SceneNode: public Object {
     template <class TAbsoluteMovable>
     friend class AbsoluteMovableSetter;
@@ -222,17 +225,23 @@ public:
     const FixedArray<double, 3>& position() const;
     FixedArray<float, 3> rotation() const;
     float scale() const;
-    void set_position(const FixedArray<double, 3>& position);
-    void set_rotation(const FixedArray<float, 3>& rotation);
+    void set_position(
+        const FixedArray<double, 3>& position,
+        std::optional<std::chrono::steady_clock::time_point> time);
+    void set_rotation(
+        const FixedArray<float, 3>& rotation,
+        std::optional<std::chrono::steady_clock::time_point> time);
     void set_scale(float scale);
     void set_relative_pose(
         const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
-        float scale);
+        float scale,
+        std::optional<std::chrono::steady_clock::time_point> time);
     void set_absolute_pose(
         const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
-        float scale);
+        float scale,
+        std::optional<std::chrono::steady_clock::time_point> time);
     TransformationMatrix<float, double, 3> relative_model_matrix() const;
     TransformationMatrix<float, double, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, double, 3> relative_view_matrix() const;

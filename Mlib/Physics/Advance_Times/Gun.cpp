@@ -99,7 +99,7 @@ void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     punch_angle_ = punch_angle_rng_(maybe_generate_bullet());
-    punch_angle_node_->set_rotation(punch_angle_);
+    punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
     triggered_ = false;
 }
 
@@ -135,11 +135,10 @@ void Gun::generate_bullet() {
     rcu->rbi_.rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
         + parent_rb_.rbi_.rbp_.v_;
-    auto node = make_dunique<SceneNode>();
-    FixedArray<double, 3> t = absolute_model_matrix_.t();
-    FixedArray<float, 3> r = matrix_2_tait_bryan_angles(absolute_model_matrix_.R());
-    node->set_position(t);
-    node->set_rotation(r);
+    auto node = make_dunique<SceneNode>(
+        absolute_model_matrix_.t(),
+        matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),
+        1.f);
     auto& rc = *rcu;
     {
         AbsoluteMovableSetter ams{node.ref(DP_LOC), std::move(rcu)};

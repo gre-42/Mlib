@@ -63,17 +63,16 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             scene_.delete_root_nodes(re);
             size_t i = 0;
             for (const auto& beacon : beacons) {
-                auto node = make_dunique<SceneNode>();
+                auto node = make_dunique<SceneNode>(
+                    beacon.location.t(),
+                    matrix_2_tait_bryan_angles<float>(beacon.location.R()),
+                    beacon.location.get_scale());
                 scene_node_resources_.instantiate_renderable(
                     beacon.resource_name,
                     InstantiationOptions{
                         .instance_name = "beacon",
                         .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});
-                node->set_relative_pose(
-                    beacon.location.t(),
-                    matrix_2_tait_bryan_angles<float>(beacon.location.R()),
-                    beacon.location.get_scale());
                 // node->set_scale(0.05);
                 scene_.add_root_node("beacon" + std::to_string(i), std::move(node));
                 ++i;

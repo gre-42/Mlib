@@ -147,15 +147,16 @@ int main(int argc, char** argv) {
 
         std::list<Light*> lights;
         if (light_configuration == "one") {
-            scene.add_root_node("light_node0", make_dunique<SceneNode>());
-            scene.get_node("light_node0", DP_LOC)->set_position({
-                safe_stof(args.named_value("--light_x", "0")),
-                safe_stof(args.named_value("--light_y", "50")),
-                safe_stof(args.named_value("--light_z", "0"))});
-            scene.get_node("light_node0", DP_LOC)->set_rotation({
-                safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
-                safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
-                safe_stof(args.named_value("--light_angle_z", "0")) * degrees});
+            scene.add_root_node("light_node0", make_dunique<SceneNode>(
+                FixedArray<double, 3>{
+                    safe_stof(args.named_value("--light_x", "0")),
+                    safe_stof(args.named_value("--light_y", "50")),
+                    safe_stof(args.named_value("--light_z", "0"))},
+                FixedArray<float, 3>{
+                    safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
+                    safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
+                    safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
+                1.f));
             auto light = std::make_unique<Light>(Light{
                 .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
@@ -174,11 +175,12 @@ int main(int argc, char** argv) {
             }
             for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
                 std::string name = "light" + std::to_string(i++);
-                scene.add_root_node(name, make_dunique<SceneNode>());
-                scene.get_node(name, DP_LOC)->set_position({float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)});
-                scene.get_node(name, DP_LOC)->set_rotation(matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                    scene.get_node(name, DP_LOC)->position(),
-                    scene.get_node("obj", DP_LOC)->position())).casted<float>());
+                scene.add_root_node(name, make_dunique<SceneNode>(
+                    FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
+                    matrix_2_tait_bryan_angles(gl_lookat_absolute(
+                        scene.get_node(name, DP_LOC)->position(),
+                        scene.get_node("obj", DP_LOC)->position())).casted<float>(),
+                    1.f));
                 auto light = std::make_unique<Light>(Light{
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());

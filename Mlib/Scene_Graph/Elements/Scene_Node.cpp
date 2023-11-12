@@ -576,7 +576,8 @@ void SceneNode::move(
             set_relative_pose(
                 res_pose.offset(),
                 res_pose.quaternion().to_tait_bryan_angles(),
-                scale());
+                scale(),
+                INITIAL_POSE);
         };
         if (estate->aperiodic_animation_frame.active()) {
             apply_scene_node_animation(
@@ -609,20 +610,20 @@ void SceneNode::move(
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f);
+        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f, INITIAL_POSE);
         v2 = relative_view_matrix() * v;
         absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
         if (absolute_movable_ != nullptr) {
             auto m = absolute_movable_->get_new_absolute_model_matrix();
             m = v * m;
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, INITIAL_POSE);
         }
         v2 = relative_view_matrix() * v;
         if (relative_movable_ != nullptr) {
             relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
             auto m = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1);
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, INITIAL_POSE);
             v2 = relative_view_matrix() * v;
         }
     }
@@ -945,24 +946,47 @@ float SceneNode::scale() const {
     return scale_;
 }
 
-void SceneNode::set_position(const FixedArray<double, 3>& position) {
+void SceneNode::set_position(
+    const FixedArray<double, 3>& position,
+    std::optional<std::chrono::steady_clock::time_point> time)
+{
     std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot set position for a static node");
     }
     trafo_.offset() = position;
+    if (!time.has_value()) {
+        // Do nothing
+    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+        trafo_history_.clear();
+        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
+    } else {
+        trafo_history_.append(trafo_, time.value());
+    }
 }
 
-void SceneNode::set_rotation(const FixedArray<float, 3>& rotation) {
+void SceneNode::set_rotation(
+    const FixedArray<float, 3>& rotation,
+    std::optional<std::chrono::steady_clock::time_point> time)
+{
     std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot set rotation for a static node");
     }
     trafo_.quaternion() = Quaternion<float>::from_tait_bryan_angles(rotation);
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation);
+    if (!time.has_value()) {
+        // Do nothing
+    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+        trafo_history_.clear();
+        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
+    } else {
+        trafo_history_.append(trafo_, time.value());
+    }
 }
 
-void SceneNode::set_scale(float scale) {
+void SceneNode::set_scale(float scale)
+{
     std::scoped_lock lock{mutex_};
     if (state_ == SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot set scale for a static node");
@@ -973,11 +997,20 @@ void SceneNode::set_scale(float scale) {
 void SceneNode::set_relative_pose(
     const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
-    float scale)
+    float scale,
+    std::optional<std::chrono::steady_clock::time_point> time)
 {
-    set_position(position);
-    set_rotation(rotation);
+    set_position(position, SUCCESSOR_POSE);
+    set_rotation(rotation, SUCCESSOR_POSE);
     set_scale(scale);
+    if (!time.has_value()) {
+        // Do nothing
+    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+        trafo_history_.clear();
+        trafo_history_.append(trafo_, std::chrono::steady_clock::now());
+    } else {
+        trafo_history_.append(trafo_, time.value());
+    }
 }
 
 TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe(std::chrono::steady_clock::time_point time) const {
@@ -1039,14 +1072,16 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix(std::chro
 void SceneNode::set_absolute_pose(
     const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
-    float scale)
+    float scale,
+    std::optional<std::chrono::steady_clock::time_point> time)
 {
     std::scoped_lock lock{mutex_};
     if (parent_ == nullptr) {
         set_relative_pose(
             position,
             rotation,
-            scale);
+            scale,
+            time);
     } else {
         auto p_v = parent_->absolute_view_matrix();
         auto m = TransformationMatrix<float, double, 3>{
@@ -1057,7 +1092,8 @@ void SceneNode::set_absolute_pose(
         set_relative_pose(
             rel_trafo.t(),
             matrix_2_tait_bryan_angles(rel_trafo.R() / rel_scale),
-            rel_scale);
+            rel_scale,
+            time);
     }
 }
 

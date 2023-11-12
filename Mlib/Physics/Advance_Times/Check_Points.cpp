@@ -178,7 +178,8 @@ void CheckPoints::advance_time(float dt) {
         beacon_nodes_[i01_].beacon_node->set_relative_pose(
             t.position(),
             t.rotation(),
-            1);
+            1,
+            INITIAL_POSE);
         i01_ = (i01_ + 1) % nbeacons_;
     }
 
@@ -187,7 +188,7 @@ void CheckPoints::advance_time(float dt) {
         for (auto& b : beacon_nodes_) {
             auto pos = b.beacon_node->position();
             pos(1) = y;
-            b.beacon_node->set_position(pos);
+            b.beacon_node->set_position(pos, INITIAL_POSE);
         }
         if (checkpoints_ahead_.empty()) {
             checkpoints_ahead_.front().track_element.set_y_position(y);

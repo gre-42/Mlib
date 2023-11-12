@@ -115,13 +115,19 @@ void BatchResourceInstantiator::instantiate_renderables(
                 }
                 auto pm = options.scene_node->absolute_model_matrix();
                 auto cm = pm * TransformationMatrix<float, double, 3>{local_rotation, p.position};
-                node->set_relative_pose(cm.t(), matrix_2_tait_bryan_angles(cm.R()), p.scale);
+                node->set_relative_pose(
+                    cm.t(),
+                    matrix_2_tait_bryan_angles(cm.R()),
+                    p.scale,
+                    INITIAL_POSE);
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
                 options.scene_node->scene().add_root_node(child_name, std::move(node));
             } else {
-                node->set_position(p.position);
-                node->set_scale(scale_ * p.scale);
-                node->set_rotation(matrix_2_tait_bryan_angles(local_rotation));
+                node->set_relative_pose(
+                    p.position,
+                    matrix_2_tait_bryan_angles(local_rotation),
+                    scale_ * p.scale,
+                    INITIAL_POSE);
                 if (p.aggregate_mode == AggregateMode::NONE) {
                     node->set_parent(options.scene_node);
                     if (p.create_imposter) {
@@ -149,8 +155,10 @@ void BatchResourceInstantiator::instantiate_renderables(
         }
     }
     for (const auto& [name, ps] : resource_instance_positions_) {
-        auto node = make_dunique<SceneNode>();
-        node->set_rotation(rotation_);
+        auto node = make_dunique<SceneNode>(
+            fixed_zeros<double, 3>(),
+            rotation_,
+            1.f);
         scene_node_resources.instantiate_renderable(
             name,
             InstantiationOptions{

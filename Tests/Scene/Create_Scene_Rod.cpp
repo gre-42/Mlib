@@ -94,15 +94,15 @@ void Mlib::create_scene_rod(
         .instance_name = "obj1_0",
         .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)});
-    scene_node0->set_position({0., -4., 0.});
-    scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)});
+    scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
+    scene_node0->set_position({0., -4., 0.}, INITIAL_POSE);
+    scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)}, INITIAL_POSE);
 
     scene_nodeR->add_child("n0", std::move(scene_node0));
     scene_nodeR->add_child("n1_0", std::move(scene_node1_0));
-    scene_nodeR->set_position({0.f, -1.f, -40.f});
-    scene_nodeL->set_position({0.f, 50.f, -40.f});
-    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f});
+    scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
+    scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
+    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .resource_suffix = "light_node",
         .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));

@@ -44,12 +44,14 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         .asset_references["vehicles"]
         .at(trailer_asset_id)
         .rp;
-    auto node = make_dunique<SceneNode>();
     auto pose0 = TranslationMatrix<double, 3>(
         rb->trailer_hitches_.get_position_male().casted<double>() -
         vars.database.at<FixedArray<double, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
     auto pose1 = rb->rbi_.rbp_.abs_transformation() * pose0;
-    node->set_relative_pose(pose1.t(), matrix_2_tait_bryan_angles(pose1.R()), pose1.get_scale());
+    auto node = make_dunique<SceneNode>(
+        pose1.t(),
+        matrix_2_tait_bryan_angles(pose1.R()),
+        pose1.get_scale());
     scene.add_root_node(
         args.arguments.at<std::string>(KnownArgs::trailer_node),
         std::move(node));

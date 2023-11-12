@@ -27,8 +27,10 @@ void SmokeParticleGenerator::generate_root(
     ParticleType particle_type)
 {
     if (particle_type == ParticleType::NODE) {
-        auto node = make_dunique<SceneNode>();
-        node->set_position(position);
+        auto node = make_dunique<SceneNode>(
+            position,
+            fixed_zeros<float, 3>(),
+            1.f);
         node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
             .aperiodic_animation_frame = AperiodicAnimationFrame{
                 .frame = AnimationFrame{
@@ -60,9 +62,10 @@ void SmokeParticleGenerator::generate_child(
     const FixedArray<double, 3>& relative_position,
     float animation_duration)
 {
-    auto child_node = make_dunique<SceneNode>();
-    child_node->set_position(relative_position);
-
+    auto child_node = make_dunique<SceneNode>(
+        relative_position,
+        fixed_zeros<float, 3>(),
+        1.f);
     child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{

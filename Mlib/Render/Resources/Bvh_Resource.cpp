@@ -41,8 +41,10 @@ static void instantiate_bvh(
             aabb.extend(b.first);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
-        auto node = make_dunique<SceneNode>();
-        node->set_position((center - position_shift).casted<double>());
+        auto node = make_dunique<SceneNode>(
+            (center - position_shift).casted<double>(),
+            fixed_zeros<float, 3>(),
+            1.f);
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
         for (const auto& [material, cva] : cvas) {
             std::vector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
@@ -78,8 +80,10 @@ static void instantiate_bvh(
     }
     size_t i = 0;
     for (const auto& c : bvh.children()) {
-        auto node = make_dunique<SceneNode>();
-        node->set_position(((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>());
+        auto node = make_dunique<SceneNode>(
+            ((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>(),
+            fixed_zeros<float, 3>(),
+            1.f);
         instantiate_bvh(
             name,
             node.ref(DP_LOC),
