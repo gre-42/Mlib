@@ -16,6 +16,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
@@ -73,6 +74,8 @@ public:
       args_{args},
       render_set_fps_{render_set_fps},
       menu_logic_{menu_logic},
+      renderable_scenes_{nullptr},
+      load_scene_finished_{nullptr},
       last_load_scene_finished_{false}
     {}
 
@@ -93,28 +96,26 @@ public:
         if (event != RenderEvent::LOOP) {
             return;
         }
-        auto load_scene_finished = load_scene_finished_.lock();
-        if (load_scene_finished == nullptr) {
-            return;
+        if (load_scene_finished_ == nullptr) {
+            verbose_abort("load_scene_finished is null");
         }
-        auto renderable_scenes = renderable_scenes_.lock();
-        if (renderable_scenes == nullptr) {
-            return;
+        if (renderable_scenes_ == nullptr) {
+            verbose_abort("renderable_scenes is null");
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
-        if (*load_scene_finished) {
+        if (*load_scene_finished_) {
             execute_render_allocators();
             if (!last_load_scene_finished_ &&
-                !args.has_named("--no_physics") &&
-                !args.has_named("--single_threaded"))
+                !args_.has_named("--no_physics") &&
+                !args_.has_named("--single_threaded"))
             {
-                for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
+                for (auto& [n, r] : renderable_scenes_->guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
                     r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
                 }
                 last_load_scene_finished_ = true;
             }
-            (*renderable_scenes)["primary_scene"].render(
+            (*renderable_scenes_)["primary_scene"].render(
                 lx,
                 ly,
                 render_config_,
@@ -122,14 +123,14 @@ public:
                 render_results_,
                 rrsd_.next(render_config_.motion_interpolation));
             if (args_.has_named("--single_threaded")) {
-                for (auto& [_, r]: renderable_scenes->guarded_iterable()) {
+                for (auto& [_, r]: renderable_scenes_->guarded_iterable()) {
                     if (!r.physics_set_fps_.paused()) {
                         r.physics_iteration_(std::chrono::steady_clock::now());
                     }
                 }
             }
-        } else if (renderable_scenes->contains("loading")) {
-            auto &rs = (*renderable_scenes)["loading"];
+        } else if (renderable_scenes_->contains("loading")) {
+            auto &rs = (*renderable_scenes_)["loading"];
             std::scoped_lock lock{rs.scene_.delete_node_mutex()};
             if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
                 rs.render(
@@ -147,11 +148,12 @@ public:
     }
 
     void set_scene(
-        std::weak_ptr<RenderableScenes> renderable_scenes,
-        std::weak_ptr<std::atomic_bool> load_scene_finished)
+        RenderableScenes* renderable_scenes,
+        std::atomic_bool* load_scene_finished)
     {
-        renderable_scenes_ = std::move(renderable_scenes);
-        load_scene_finished_ = std::move(load_scene_finished);
+        renderable_scenes_ = renderable_scenes;
+        load_scene_finished_ = load_scene_finished;
+        last_load_scene_finished_ = false;
     }
 
 private:
@@ -161,8 +163,8 @@ private:
     const ParsedArgs &args_;
     RealtimeDependentFps& render_set_fps_;
     MenuLogic& menu_logic_;
-    std::weak_ptr<RenderableScenes> renderable_scenes_;
-    std::weak_ptr<std::atomic_bool> load_scene_finished_;
+    RenderableScenes* renderable_scenes_;
+    std::atomic_bool* load_scene_finished_;
     RootRenderedSceneDescriptor rrsd_;
     bool last_load_scene_finished_;
 };
@@ -582,17 +584,16 @@ void android_main(android_app* app) {
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
-                auto renderable_scenes = std::make_shared<RenderableScenes>();
-
-                auto load_scene_finished = std::make_shared<std::atomic_bool>(false);
-                scene_renderer.set_scene(renderable_scenes, load_scene_finished);
-                std::future<void> render_future;
+                RenderableScenes renderable_scenes;
+                std::atomic_bool load_scene_finished = false;
+                scene_renderer.set_scene(&renderable_scenes, &load_scene_finished);
+                DestructionGuard dg{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
 
                 FutureGuard loader_future_guard{loader_thread(
                     args,
                     gallery,
                     asset_references,
-                    *renderable_scenes,
+                    renderable_scenes,
                     search_path,
                     main_scene_filename,
                     next_scene_filename,
@@ -607,7 +608,7 @@ void android_main(android_app* app) {
                     ui_focus,
                     layout_constraints,
                     load_scene,
-                    *load_scene_finished)};
+                    load_scene_finished)};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));
