@@ -1123,6 +1123,17 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
+    for (const auto& [visual_road_type, visual_e] : osm_triangle_lists.tl_street_visuals.map()) {
+        for (const auto& [physics_road_type, physics_e] : osm_triangle_lists.tl_street.list()) {
+            if (physics_road_type.type != visual_road_type) {
+                continue;
+            }
+            visual_e->triangles.insert(
+                visual_e->triangles.end(),
+                physics_e.triangle_list->triangles.begin(),
+                physics_e.triangle_list->triangles.end());
+        }
+    }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
         LOG_INFO("inser air triangles lists");

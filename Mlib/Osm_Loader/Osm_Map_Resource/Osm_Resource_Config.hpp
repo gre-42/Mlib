@@ -52,9 +52,11 @@ struct OsmResourceConfig {
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;
     std::string street_dirt_texture;
+    std::map<RoadType, std::vector<std::string>> street_mud_textures;
     std::map<RoadType, std::string> street_reflection_map;
     std::map<TerrainType, std::string> terrain_reflection_map;
     std::map<RoadType, std::vector<std::string>> street_alpha_textures;
+    std::map<RoadType, std::vector<std::string>> street_mud_alpha_textures;
     std::map<RoadProperties, RoadStyle> street_texture;
     std::map<RoadType, std::vector<std::string>> street_crossing_textures;
     std::map<RoadType, std::string> curb_street_texture;

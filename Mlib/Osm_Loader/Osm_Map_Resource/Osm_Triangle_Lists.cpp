@@ -253,48 +253,91 @@ OsmTriangleLists::OsmTriangleLists(
             THROW_OR_ABORT("Could not find physics material for type \"" + road_type_to_string(road_properties.type) + '"');
         }
         bool blend = config.blend_street.contains(road_properties.type) && config.blend_street.at(road_properties.type) && (road_properties.type != RoadType::WALL);
-        auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
-            ? config.street_alpha_textures.at(road_properties.type)
-            : std::vector<std::string>{};
-        std::vector<BlendMapTexture> textures_color;
-        textures_color.reserve(road_style.textures.size());
-        for (const std::string& texture : road_style.textures) {
-            textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+        {
+            auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
+                ? config.street_alpha_textures.at(road_properties.type)
+                : std::vector<std::string>{};
+            std::vector<BlendMapTexture> textures_color;
+            textures_color.reserve(road_style.textures.size());
+            for (const std::string& texture : road_style.textures) {
+                textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
+            std::vector<BlendMapTexture> textures_alpha;
+            textures_alpha.reserve(alpha_texture_names.size());
+            for (const std::string& texture : alpha_texture_names) {
+                textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
+            auto rit = config.street_reflection_map.find(road_properties.type);
+            tl_street.append(StyledRoadEntry{
+                .road_properties = road_properties,
+                .styled_road = StyledRoad{
+                    .triangle_list = std::make_shared<TriangleList<double>>(
+                        (std::string)road_properties + name_suffix,
+                        Material{
+                            .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
+                            .continuous_blending_z_order = 1,
+                            .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
+                            .textures_color = textures_color,
+                            .textures_alpha = textures_alpha,
+                            .reflection_map = (rit != config.street_reflection_map.end())
+                                ? rit->second
+                                : "",
+                            .dirt_texture = config.street_dirt_texture,
+                            .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
+                            .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                            // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
+                            .magnifying_interpolation_mode = InterpolationMode::LINEAR,
+                            // depth-func==equal requires aggregation, because the terrain is also aggregated.
+                            .aggregate_mode = AggregateMode::ONCE,
+                            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
+                            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
+                            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
+                            .specularity = OrderableFixedArray{config.specularity_factor * material_specularity(pmit->second) * (float)(road_properties.type != RoadType::WALL)},
+                            // .reflect_only_y = true,
+                            .draw_distance_noperations = 1000}.compute_color_mode(),
+                        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
+                    .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
         }
-        std::vector<BlendMapTexture> textures_alpha;
-        textures_alpha.reserve( alpha_texture_names.size());
-        for (const std::string& texture : alpha_texture_names) {
-            textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+        if (blend &&
+            !tl_street_visuals.contains(road_properties.type) &&
+            config.street_mud_textures.contains(road_properties.type) &&
+            (road_properties.type != RoadType::WALL))
+        {
+            auto alpha_texture_names = config.street_mud_alpha_textures.contains(road_properties.type)
+                ? config.street_mud_alpha_textures.at(road_properties.type)
+                : std::vector<std::string>{};
+            std::vector<BlendMapTexture> textures_color;
+            textures_color.reserve(config.street_mud_textures.at(road_properties.type).size());
+            for (const std::string& texture : config.street_mud_textures.at(road_properties.type)) {
+                textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
+            std::vector<BlendMapTexture> textures_alpha;
+            textures_alpha.reserve(alpha_texture_names.size());
+            for (const std::string& texture : alpha_texture_names) {
+                textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
+            }
+            tl_street_visuals.insert(road_properties.type, std::make_shared<TriangleList<double>>(
+                "street_visual_" + road_type_to_string(road_properties.type) + name_suffix,
+                Material{
+                    .blend_mode = BlendMode::CONTINUOUS,
+                    .depth_func = DepthFunc::EQUAL,
+                    .textures_color = textures_color,
+                    .textures_alpha = textures_alpha,
+                    .dirt_texture = config.street_dirt_texture,
+                    .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                    .occluder_pass = ExternalRenderPassType::NONE,
+                    // .wrap_mode_s = (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
+                    .magnifying_interpolation_mode = InterpolationMode::LINEAR,
+                    // depth-func==equal requires aggregation, because the terrain is also aggregated.
+                    .aggregate_mode = AggregateMode::ONCE,
+                    .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
+                    .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
+                    .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
+                    .specularity = {0.f, 0.f, 0.f},
+                    // .reflect_only_y = true,
+                    .draw_distance_noperations = 1000}.compute_color_mode(),
+                PhysicsMaterial::ATTR_VISIBLE));
         }
-        auto rit = config.street_reflection_map.find(road_properties.type);
-        tl_street.append(StyledRoadEntry{
-            .road_properties = road_properties,
-            .styled_road = StyledRoad{
-                .triangle_list = std::make_shared<TriangleList<double>>(
-                    (std::string)road_properties + name_suffix,
-                    Material{
-                        .blend_mode = blend ? BlendMode::CONTINUOUS : BlendMode::OFF,
-                        .depth_func = blend ? DepthFunc::EQUAL : DepthFunc::LESS,
-                        .textures_color = textures_color,
-                        .textures_alpha = textures_alpha,
-                        .reflection_map = (rit != config.street_reflection_map.end())
-                            ? rit->second
-                            : "",
-                        .dirt_texture = config.street_dirt_texture,
-                        .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
-                        .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
-                        // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
-                        .magnifying_interpolation_mode = InterpolationMode::LINEAR,
-                        // depth-func==equal requires aggregation, because the terrain is also aggregated.
-                        .aggregate_mode = AggregateMode::ONCE,
-                        .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                        .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                        .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                        .specularity = OrderableFixedArray{config.specularity_factor * material_specularity(pmit->second) * (float)(road_properties.type != RoadType::WALL)},
-                        // .reflect_only_y = true,
-                        .draw_distance_noperations = 1000}.compute_color_mode(),
-                    PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
-                .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
     }
     // WrapMode curb_wrap_mode_s = (config.extrude_curb_amount != 0) || (config.extrude_street_amount != 0)
     //     ? WrapMode::REPEAT
@@ -374,7 +417,7 @@ OsmTriangleLists::OsmTriangleLists(
         "racing_line" + name_suffix,
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
-            .continuous_blending_z_order = 1,
+            .continuous_blending_z_order = 2,
             .depth_func = DepthFunc::EQUAL,
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.racing_line_texture)},
             // .wrap_mode_s = WrapMode::CLAMP_TO_EDGE,
@@ -479,6 +522,7 @@ void OsmTriangleLists::insert(const OsmTriangleLists& other) {
     INSERT2p(tl_terrain)
     INSERT2(tl_terrain_visuals)
     INSERT2(tl_terrain_extrusion)
+    INSERT2(tl_street_visuals)
     INSERT2(tl_street_crossing)
     INSERT3(tl_street)
     INSERT2(tl_street_curb)
@@ -542,6 +586,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smooth() 
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     // for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -558,6 +603,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_backfa
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     // for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -575,6 +621,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
     for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -593,6 +640,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_wo_subtra
     for (const auto& [_, e] : tl_terrain->map()) {if (e->physics_material != PhysicsMaterial::NONE) res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -611,6 +659,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_raised() 
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -626,6 +675,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_smoothed(
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_extrusion.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_street_crossing.map()) {res.push_back(e);}
     for (const auto& e : tl_street.list()) {res.push_back(e.styled_road.triangle_list);}
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
@@ -639,6 +689,7 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_with_vert
         tl_tunnel_crossing};
     for (const auto& [_, e] : tl_terrain->map()) {res.push_back(e);}
     for (const auto& [_, e] : tl_terrain_visuals.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_visuals.map()) {res.push_back(e);}
     for (const auto& [tpe, e] : tl_street_crossing.map()) { if (tpe != RoadType::WALL) res.push_back(e);}
     for (const auto& e : tl_street.list()) { if (e.road_properties.type != RoadType::WALL) res.push_back(e.styled_road.triangle_list);}
     return res;
