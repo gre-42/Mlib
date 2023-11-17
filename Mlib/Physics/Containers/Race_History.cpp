@@ -147,7 +147,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string cn = config_json_filename();
         if (!path_exists(cn)) {
-            save_json(json{ race_configuration }, cn, cn + "~");
+            save_json(json(race_configuration), cn, cn + "~");
         } else {
             auto fstr = create_ifstream(cn);
             json j;
@@ -189,7 +189,7 @@ void RaceHistory::save_and_discard() {
     {
         std::string old_json_filename = stats_json_filename();
         std::string new_json_filename = old_json_filename + "~";
-        save_json(json{ lap_time_events_ }, old_json_filename, new_json_filename);
+        save_json(json(lap_time_events_), old_json_filename, new_json_filename);
     }
 }
 
