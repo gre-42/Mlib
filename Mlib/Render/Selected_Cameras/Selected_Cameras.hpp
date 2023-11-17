@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <map>
@@ -12,6 +13,8 @@ class Scene;
 enum class CameraCycleType;
 
 class SelectedCameras {
+    SelectedCameras(const SelectedCameras&) = delete;
+    SelectedCameras& operator = (const SelectedCameras&) = delete;
 public:
     explicit SelectedCameras(Scene& scene);
     ~SelectedCameras();
@@ -21,7 +24,9 @@ public:
     void set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras);
     void cycle_camera(CameraCycleType tpe);
     std::optional<CameraCycleType> cycle(const std::string& name) const;
+    EventEmitter camera_changed;
 private:
+    bool camera_node_exists() const;
     Scene& scene_;
     std::string dirtmap_node_name_;
     CameraCycle camera_cycle_near_;

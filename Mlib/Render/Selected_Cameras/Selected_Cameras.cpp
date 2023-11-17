@@ -8,13 +8,14 @@
 using namespace Mlib;
 
 SelectedCameras::SelectedCameras(Scene& scene)
-: scene_{scene},
-  dirtmap_node_name_{ "dirtmap_node" },
-  camera_cycle_near_{ *this, {"follower_camera", "turret_camera_node"} },  // "main_gun_end_node"
-  camera_cycle_far_{ *this, {"45_deg_camera", "light_node", "dirtmap_node"} },
-  camera_cycle_tripod_{ *this, {"tripod0"} },
-  fallback_camera_node_name_{ "stadium_camera" },
-  camera_node_name_{ "follower_camera" }
+    : camera_changed{ [this]() { return camera_node_exists(); } }
+    , scene_{ scene }
+    , dirtmap_node_name_{ "dirtmap_node" }
+    , camera_cycle_near_{ *this, {"follower_camera", "turret_camera_node"} }  // "main_gun_end_node"
+    , camera_cycle_far_{ *this, {"45_deg_camera", "light_node", "dirtmap_node"} }
+    , camera_cycle_tripod_{ *this, {"tripod0"} }
+    , fallback_camera_node_name_{ "stadium_camera" }
+    , camera_node_name_{ "follower_camera" }
 {}
 
 SelectedCameras::~SelectedCameras()
@@ -36,6 +37,7 @@ std::optional<CameraCycleType> SelectedCameras::cycle(const std::string& name) c
 void SelectedCameras::set_camera_node_name(const std::string& name) {
     std::scoped_lock lock{camera_mutex_};
     camera_node_name_ = name;
+    camera_changed.emit();
 }
 
 std::string SelectedCameras::camera_node_name() const {
@@ -84,4 +86,9 @@ void SelectedCameras::cycle_camera(CameraCycleType tpe) {
     } else {
         THROW_OR_ABORT("Unknown camera cycle type: " + std::to_string(int(tpe)));
     }
+}
+
+bool SelectedCameras::camera_node_exists() const {
+    std::scoped_lock lock{camera_mutex_};
+    return scene_.contains_node(camera_node_name());
 }

@@ -8,10 +8,11 @@ namespace Mlib {
 class EventEmitter;
 
 class EventReceiverDeletionToken {
+    friend EventEmitter;
     EventReceiverDeletionToken(const EventReceiverDeletionToken&) = delete;
     EventReceiverDeletionToken& operator = (const EventReceiverDeletionToken&) = delete;
 public:
-    explicit EventReceiverDeletionToken(EventEmitter* emitter);
+    explicit EventReceiverDeletionToken(EventEmitter& emitter);
     ~EventReceiverDeletionToken();
 private:
     EventEmitter* emitter_;
@@ -19,11 +20,16 @@ private:
 
 class EventEmitter {
     friend EventReceiverDeletionToken;
+    EventEmitter(const EventEmitter&) = delete;
+    EventEmitter& operator = (const EventEmitter&) = delete;
 public:
+    explicit EventEmitter(std::function<bool()> fire_initial_event);
+    ~EventEmitter();
     std::unique_ptr<EventReceiverDeletionToken> insert(std::function<void()> f);
     void emit();
 private:
-    std::map<void*, std::function<void()>> functions_;
+    std::function<bool()> fire_initial_event_;
+    std::map<EventReceiverDeletionToken*, std::function<void()>> functions_;
 };
 
 }

@@ -47,6 +47,7 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
         scene,
         selected_cameras,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::offset),
-        grid);
+        grid,
+        follower_node);
     linker.link_absolute_movable(follower_node, std::move(follower));
 }

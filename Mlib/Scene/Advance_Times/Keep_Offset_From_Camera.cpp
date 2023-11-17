@@ -1,4 +1,5 @@
 #include "Keep_Offset_From_Camera.hpp"
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
@@ -10,14 +11,31 @@ using namespace Mlib;
 KeepOffsetFromCamera::KeepOffsetFromCamera(
     AdvanceTimes& advance_times,
     Scene& scene,
-    const SelectedCameras& cameras,
+    SelectedCameras& cameras,
     const FixedArray<float, 3>& offset,
-    const FixedArray<float, 3>& grid)
-: advance_times_{advance_times},
-  scene_{scene},
-  cameras_{cameras},
-  offset_{offset},
-  grid_{grid}
+    const FixedArray<float, 3>& grid,
+    DanglingRef<SceneNode> follower_node)
+    : advance_times_{ advance_times }
+    , scene_{ scene }
+    , cameras_{ cameras }
+    , offset_{ offset }
+    , grid_{ grid }
+    , follower_node_{ follower_node.ptr() }
+    , camera_changed_deletion_token_{
+        cameras.camera_changed.insert([this]() {
+            if (follower_node_ == nullptr) {
+                return;
+            }
+            advance_time(NAN);
+            auto trafo = get_new_absolute_model_matrix();
+            follower_node_->set_absolute_pose(
+                trafo.t(),
+                matrix_2_tait_bryan_angles(trafo.R()),
+                1.f,
+                INITIAL_POSE);
+            }
+        )
+    }
 {}
 
 KeepOffsetFromCamera::~KeepOffsetFromCamera()
@@ -50,5 +68,6 @@ TransformationMatrix<float, double, 3> KeepOffsetFromCamera::get_new_absolute_mo
 }
 
 void KeepOffsetFromCamera::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    follower_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
