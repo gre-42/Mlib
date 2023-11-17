@@ -338,6 +338,7 @@ void android_main(android_app* app) {
         "    [--high_pass]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
+        "    [--save_playback]\n"
         "    [--optimize_search_time]\n"
         "    [--plot_triangle_bvh]\n"
         "    [--print_gamepad_buttons]\n"
@@ -369,6 +370,7 @@ void android_main(android_app* app) {
          "--high_pass",
          "--motion_interpolation",
          "--no_render",
+         "--save_playback",
          "--optimize_search_time",
          "--plot_triangle_bvh",
          "--record_track",
@@ -551,7 +553,7 @@ void android_main(android_app* app) {
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
-                    {"PRIMARY_SCENE_CLEAR_MODE", "color_and_depth"},
+                    {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},
                     {"FAR_PLANE", safe_stof(args.named_value("--far_plane", "10000"))},
                     {"IF_RECORD_TRACK", args.has_named("--record_track")},
                     {"IF_DEVEL", args.has_named("--devel_mode")},

@@ -17,11 +17,13 @@ Players::Players(
     AdvanceTimes& advance_times,
     const std::string& level_name,
     size_t max_tracks,
+    bool save_playback,
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier)
 : advance_times_{advance_times},
   race_history_{std::make_unique<RaceHistory>(
     max_tracks,
+    save_playback,
     scene_node_resources,
     race_identifier)}
 {}

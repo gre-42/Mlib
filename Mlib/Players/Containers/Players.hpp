@@ -28,6 +28,7 @@ public:
         AdvanceTimes& advance_times,
         const std::string& level_name,
         size_t max_tracks,
+        bool save_playback,
         const SceneNodeResources& scene_node_resources,
         const RaceIdentifier& race_identifier);
     ~Players();

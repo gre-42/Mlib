@@ -1,5 +1,6 @@
 #include "Race_History.hpp"
 #include <Mlib/Env.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Physics/Containers/Race_Configuration.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -19,6 +20,40 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 using namespace Mlib;
+
+namespace Mlib {
+
+void to_json(nlohmann::json& j, const LapTimeEventAndId& l) {
+    j["id"] = l.id;
+    j["lap_times_seconds"] = l.lap_times_seconds;
+    j["playback_exists"] = l.playback_exists;
+    j["race_time_seconds"] = l.event.race_time_seconds;
+    j["player_name"] = l.event.player_name;
+    j["vehicle"] = l.event.vehicle;
+    j["vehicle_colors"] = l.event.vehicle_colors;
+}
+
+void from_json(const nlohmann::json& j, LapTimeEventAndId& l) {
+    l.id = j.at("id").get<size_t>();
+    l.lap_times_seconds = j.at("lap_times_seconds").get<std::list<float>>();
+    l.playback_exists = j.contains("playback_exists")
+        ? j.at("playback_exists").get<bool>()
+        : true;
+    l.event.race_time_seconds = j.at("race_time_seconds").get<float>();
+    l.event.player_name = j.at("player_name").get<std::string>();
+    l.event.vehicle = j.at("vehicle").get<std::string>();
+    l.event.vehicle_colors = j.at("vehicle_colors").get<std::vector<FixedArray<float, 3>>>();
+}
+
+void to_json(nlohmann::json& j, const RaceConfiguration& c) {
+    j["readonly"] = c.readonly;
+}
+
+void from_json(const nlohmann::json& j, RaceConfiguration& c) {
+    c.readonly = j.at("readonly").get<bool>();
+}
+
+}
 
 static void save_json(
     const json& j,
@@ -41,10 +76,12 @@ static void save_json(
 
 RaceHistory::RaceHistory(
     size_t max_tracks,
+    bool save_playback,
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier)
-: max_tracks_{max_tracks},
-  scene_node_resources_{scene_node_resources}
+: max_tracks_{ max_tracks },
+  save_playback_{ save_playback },
+  scene_node_resources_{ scene_node_resources }
 {
     if (!race_identifier.session.empty()) {
         set_race_identifier_and_reload(race_identifier);
@@ -91,19 +128,10 @@ void RaceHistory::set_race_identifier_and_reload(const RaceIdentifier& race_iden
         if (fstr->fail()) {
             THROW_OR_ABORT("Could not load \"" + fn + '"');
         }
-        for (const auto& l : j) {
-            try {
-                lap_time_events_.push_back(LapTimeEventAndId{
-                    .event = LapTimeEvent{
-                        .race_time_seconds = l.at("race_time_seconds").get<float>(),
-                        .player_name = l.at("player_name").get<std::string>(),
-                        .vehicle = l.at("vehicle").get<std::string>(),
-                        .vehicle_colors = l.at("vehicle_colors").get<std::vector<FixedArray<float, 3>>>()},
-                    .id = l.at("id").get<size_t>(),
-                    .lap_times_seconds = l.at("lap_times_seconds").get<std::list<float>>()});
-            } catch (const nlohmann::detail::type_error& e) {
-                throw std::runtime_error("Could not parse " + fn + ": " + e.what());
-            }
+        try {
+            lap_time_events_ = j.get<std::list<LapTimeEventAndId>>();
+        } catch (const nlohmann::detail::type_error& e) {
+            throw std::runtime_error("Could not parse " + fn + ": " + e.what());
         }
     }
 }
@@ -119,11 +147,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
     {
         std::string cn = config_json_filename();
         if (!path_exists(cn)) {
-            json j;
-            j["readonly"] = race_configuration.readonly;
-            {
-                save_json(j, cn, cn + "~");
-            }
+            save_json(json{ race_configuration }, cn, cn + "~");
         } else {
             auto fstr = create_ifstream(cn);
             json j;
@@ -133,7 +157,7 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
                 throw std::runtime_error("Could not parse file \"" + cn + "\": " + e.what());
             }
             try {
-                if (j.at("readonly").get<bool>()) {
+                if (j.get<RaceConfiguration>().readonly) {
                     THROW_OR_ABORT("Attempt to restart readonly race");
                 }
             } catch (const nlohmann::json::exception& e) {
@@ -145,24 +169,19 @@ void RaceHistory::start_race(const RaceConfiguration& race_configuration) {
 
 void RaceHistory::save_and_discard() {
     std::scoped_lock lock{ mutex_ };
-    json j;
     {
         size_t ntracks = 0;
-        lap_time_events_.remove_if([&ntracks, &j, this](const LapTimeEventAndId& l){
+        lap_time_events_.remove_if([&ntracks, this](const LapTimeEventAndId& l){
             if (ntracks < max_tracks_) {
-                json entry;
-                entry["id"] = l.id;
-                entry["race_time_seconds"] = l.event.race_time_seconds;
-                entry["lap_times_seconds"] = l.lap_times_seconds;
-                entry["player_name"] = l.event.player_name;
-                entry["vehicle"] = l.event.vehicle;
-                entry["vehicle_colors"] = l.event.vehicle_colors;
-                j.push_back(entry);
                 ++ntracks;
                 return false;
             } else {
-                std::string fn = track_m_filename(l.id);
-                remove_path(fn);
+                auto fn = track_m_filename(l.id);
+                if (l.playback_exists) {
+                    remove_path(fn);
+                } else if (path_exists(fn)) {
+                    THROW_OR_ABORT("Did not expect playback \"" + fn + "\" to exist");
+                }
                 return true;
             }
         });
@@ -170,7 +189,7 @@ void RaceHistory::save_and_discard() {
     {
         std::string old_json_filename = stats_json_filename();
         std::string new_json_filename = old_json_filename + "~";
-        save_json(j, old_json_filename, new_json_filename);
+        save_json(json{ lap_time_events_ }, old_json_filename, new_json_filename);
     }
 }
 
@@ -201,14 +220,19 @@ RaceState RaceHistory::notify_lap_finished(
     } else {
         max_id = max_element->id + 1;
     }
-    {
+    if (save_playback_) {
         TrackWriter track_writer{track_m_filename(max_id), scene_node_resources_.get_geographic_mapping("world")};
         for (const auto& e : track) {
             track_writer.write(e);
         }
         track_writer.flush();
     }
-    LapTimeEventAndId lid{lap_time_event, max_id, lap_times_seconds};
+    LapTimeEventAndId lid{
+        .event = lap_time_event,
+        .id = max_id,
+        .lap_times_seconds = lap_times_seconds,
+        .playback_exists = save_playback_
+    };
     // From: https://stackoverflow.com/a/35840954/2292832
     lap_time_events_.insert(
         std::lower_bound(
@@ -252,16 +276,17 @@ std::string RaceHistory::get_level_history() const {
 }
 
 std::optional<LapTimeEventAndIdAndMfilename> RaceHistory::get_winner_track_filename(size_t rank) const {
-    size_t i = 0;
     std::shared_lock guard{ mutex_ };
-    for (const auto& l : lap_time_events_) {
+    for (const auto& [i, l] : enumerate(lap_time_events_)) {
         if (i == rank) {
+            if (!l.playback_exists) {
+                break;
+            }
             return LapTimeEventAndIdAndMfilename{
                 .event = l.event,
                 .m_filename = track_m_filename(l.id)
             };
         }
-        ++i;
     }
     return std::nullopt;
 }

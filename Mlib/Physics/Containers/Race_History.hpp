@@ -25,6 +25,7 @@ struct LapTimeEventAndId {
     LapTimeEvent event;
     size_t id;
     std::list<float> lap_times_seconds;
+    bool playback_exists;
 };
 
 struct LapTimeEventAndIdAndMfilename {
@@ -39,6 +40,7 @@ class RaceHistory {
 public:
     explicit RaceHistory(
         size_t max_tracks,
+        bool save_playback,
         const SceneNodeResources& scene_node_resources,
         const RaceIdentifier& race_identifier);
     ~RaceHistory();
@@ -59,6 +61,7 @@ private:
     std::string track_m_filename(size_t id) const;
     void save_and_discard();
     size_t max_tracks_;
+    bool save_playback_;
     std::list<LapTimeEventAndId> lap_time_events_;
     const SceneNodeResources& scene_node_resources_;
     RaceIdentifier race_identifier_;

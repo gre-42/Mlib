@@ -33,6 +33,7 @@ DECLARE_ARGUMENT(with_skybox);
 DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
 DECLARE_ARGUMENT(max_tracks);
+DECLARE_ARGUMENT(save_playback);
 DECLARE_ARGUMENT(setup_new_round);
 }
 
@@ -71,6 +72,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
             .clear_mode = clear_mode_from_string(args.arguments.at<std::string>(KnownArgs::clear_mode))},
         args.script_filename,
         args.arguments.at<size_t>(KnownArgs::max_tracks, 0),
+        args.arguments.at<bool>(KnownArgs::save_playback, false),
         RaceIdentifier{
             .level = "",
             .session = "",

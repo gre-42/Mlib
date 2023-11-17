@@ -38,6 +38,7 @@ RenderableScene::RenderableScene(
     const SceneConfigResource& config,
     const std::string& level_name,
     size_t max_tracks,
+    bool save_playback,
     const RaceIdentifier& race_identfier,
     const std::function<void()>& setup_new_round,
     const FocusFilter& focus_filter,
@@ -139,7 +140,7 @@ RenderableScene::RenderableScene(
   imposter_render_logics_{std::make_shared<RenderLogics>(ui_focus)},
   render_logics_{ui_focus},
   imposters_{rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_},
-  players_{physics_engine_.advance_times_, level_name, max_tracks, scene_node_resources, race_identfier},
+  players_{physics_engine_.advance_times_, level_name, max_tracks, save_playback, scene_node_resources, race_identfier},
   supply_depots_{physics_engine_.advance_times_, players_, scene_config.physics_engine_config},
   game_logic_{
       scene_,
