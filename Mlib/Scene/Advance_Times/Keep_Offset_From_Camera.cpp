@@ -27,10 +27,11 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
                 return;
             }
             advance_time(NAN);
-            auto trafo = get_new_absolute_model_matrix();
+            auto new_trafo = get_new_absolute_model_matrix();
+            auto old_trafo = follower_node_->absolute_model_matrix();
             follower_node_->set_absolute_pose(
-                trafo.t(),
-                matrix_2_tait_bryan_angles(trafo.R()),
+                new_trafo.t(),
+                matrix_2_tait_bryan_angles(old_trafo.R()),
                 1.f,
                 INITIAL_POSE);
             }
