@@ -17,6 +17,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(scale);
+DECLARE_ARGUMENT(interpolation);
 }
 
 const std::string RootNodeInstance::key = "root_node_instance";
@@ -82,7 +83,8 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node = make_dunique<SceneNode>(
         pos * (double)meters,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
-        args.arguments.at<float>(KnownArgs::scale, 1.f));
+        args.arguments.at<float>(KnownArgs::scale, 1.f),
+        pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));
     auto type = args.arguments.at<std::string>(KnownArgs::type);
     if (type == "aggregate") {
         scene.add_root_aggregate_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));

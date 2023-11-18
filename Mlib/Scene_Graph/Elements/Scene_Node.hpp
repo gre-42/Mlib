@@ -102,6 +102,13 @@ enum class ChildParentState {
     PARENT_ALREADY_SET
 };
 
+enum class PoseInterpolationMode {
+    DISABLED,
+    ENABLED
+};
+
+PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
+
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
 static const auto SUCCESSOR_POSE = std::nullopt;
 
@@ -111,11 +118,13 @@ class SceneNode: public Object {
     SceneNode(const SceneNode& other) = delete;
     SceneNode& operator = (const SceneNode& other) = delete;
 public:
-    explicit SceneNode();
+    explicit SceneNode(
+        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
     SceneNode(
         const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
-        float scale);
+        float scale,
+        PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
     ~SceneNode();
     bool shutting_down() const;
     AbsoluteMovable& get_absolute_movable() const;
@@ -264,6 +273,7 @@ public:
     const Scene& scene() const;
     void set_debug_message(std::string message);
     std::string debug_message() const;
+    PoseInterpolationMode pose_interpolation_mode() const;
     mutable DestructionObservers<DanglingRef<const SceneNode>> clearing_observers;
     mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
@@ -296,6 +306,7 @@ private:
     QuaternionSeries<float, double, 3> trafo_history_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
+    PoseInterpolationMode interpolation_mode_;
     std::unique_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;

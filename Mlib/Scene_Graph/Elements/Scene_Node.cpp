@@ -29,31 +29,44 @@
 
 using namespace Mlib;
 
+PoseInterpolationMode Mlib::pose_interpolation_mode_from_string(const std::string& s) {
+    if (s == "disabled") {
+        return PoseInterpolationMode::DISABLED;
+    } else if (s == "enabled") {
+        return PoseInterpolationMode::ENABLED;
+    } else {
+        THROW_OR_ABORT("Unknown pose interpolation mode: \"" + s + '"');
+    }
+}
+
 SceneNode::SceneNode(
     const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
-    float scale)
-: clearing_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
-  destruction_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)},
-  scene_{ nullptr },
-  parent_{ nullptr },
-  absolute_movable_{ nullptr },
-  relative_movable_{ nullptr },
-  absolute_observer_{ nullptr },
-  absolute_destruction_observer_{ nullptr },
-  trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) },
-  trafo_history_{ trafo_, std::chrono::steady_clock::now() },
-  scale_{ scale },
-  rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) },
-  state_{ SceneNodeState::DETACHED },
-  shutting_down_{ false }
+    float scale,
+    PoseInterpolationMode interpolation_mode)
+    : clearing_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)}
+    , destruction_observers{DanglingRef<SceneNode>::from_object(*this, DP_LOC)}
+    , scene_{ nullptr }
+    , parent_{ nullptr }
+    , absolute_movable_{ nullptr }
+    , relative_movable_{ nullptr }
+    , absolute_observer_{ nullptr }
+    , absolute_destruction_observer_{ nullptr }
+    , trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) }
+    , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
+    , scale_{ scale }
+    , rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) }
+    , interpolation_mode_{interpolation_mode}
+    , state_{ SceneNodeState::DETACHED }
+    , shutting_down_{ false }
 {}
 
-SceneNode::SceneNode()
+SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
 : SceneNode{
     fixed_zeros<double, 3>(),
     fixed_zeros<float, 3>(),
-    1.f}
+    1.f,
+    interpolation_mode}
 {}
 
 SceneNode::~SceneNode() {
@@ -577,7 +590,7 @@ void SceneNode::move(
                 res_pose.offset(),
                 res_pose.quaternion().to_tait_bryan_angles(),
                 scale(),
-                INITIAL_POSE);
+                SUCCESSOR_POSE);
         };
         if (estate->aperiodic_animation_frame.active()) {
             apply_scene_node_animation(
@@ -610,20 +623,20 @@ void SceneNode::move(
         relative_movable_->set_updated_relative_model_matrix(mr);
         relative_movable_->set_absolute_model_matrix(ma);
         auto mr2 = relative_movable_->get_new_relative_model_matrix();
-        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f, INITIAL_POSE);
+        set_relative_pose(mr2.t(), matrix_2_tait_bryan_angles(mr2.R()), 1.f, SUCCESSOR_POSE);
         v2 = relative_view_matrix() * v;
         absolute_movable_->set_absolute_model_matrix(v2.inverted_scaled());
     } else {
         if (absolute_movable_ != nullptr) {
             auto m = absolute_movable_->get_new_absolute_model_matrix();
             m = v * m;
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, INITIAL_POSE);
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, SUCCESSOR_POSE);
         }
         v2 = relative_view_matrix() * v;
         if (relative_movable_ != nullptr) {
             relative_movable_->set_absolute_model_matrix(v2.inverted_scaled());
             auto m = relative_movable_->get_new_relative_model_matrix();
-            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, INITIAL_POSE);
+            set_relative_pose(m.t(), matrix_2_tait_bryan_angles(m.R()), 1, SUCCESSOR_POSE);
             v2 = relative_view_matrix() * v;
         }
     }
@@ -637,6 +650,9 @@ void SceneNode::move(
         } else {
             ++it;
         }
+    }
+    if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
+        trafo_history_.clear();
     }
     trafo_history_.append(trafo_, time);
 }
@@ -1230,6 +1246,11 @@ void SceneNode::set_debug_message(std::string message) {
 std::string SceneNode::debug_message() const {
     std::shared_lock lock{mutex_};
     return debug_message_;
+}
+
+PoseInterpolationMode SceneNode::pose_interpolation_mode() const {
+    std::shared_lock lock{mutex_};
+    return interpolation_mode_;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {

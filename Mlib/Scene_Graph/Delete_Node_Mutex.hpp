@@ -28,7 +28,7 @@ public:
     }
     void unlock() {
         if (nlocked_ == 0) {
-            THROW_OR_ABORT("DeleteNodeMutex already unlocked");
+            verbose_abort("DeleteNodeMutex already unlocked");
         }
         --nlocked_;
         if (nlocked_ == 0) {
