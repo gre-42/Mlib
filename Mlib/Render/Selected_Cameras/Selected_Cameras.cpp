@@ -35,8 +35,10 @@ std::optional<CameraCycleType> SelectedCameras::cycle(const std::string& name) c
 }
 
 void SelectedCameras::set_camera_node_name(const std::string& name) {
-    std::scoped_lock lock{camera_mutex_};
-    camera_node_name_ = name;
+    {
+        std::scoped_lock lock{ camera_mutex_ };
+        camera_node_name_ = name;
+    }
     camera_changed.emit();
 }
 
@@ -89,6 +91,5 @@ void SelectedCameras::cycle_camera(CameraCycleType tpe) {
 }
 
 bool SelectedCameras::camera_node_exists() const {
-    std::scoped_lock lock{camera_mutex_};
     return scene_.contains_node(camera_node_name());
 }
