@@ -20,8 +20,6 @@ SquareResource::SquareResource(
     if (material.number_of_frames == 0) {
         THROW_OR_ABORT("SquareResource: material.number_of_frames is zero");
     }
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
-    triangles.reserve(2);
 
     ColoredVertex<float> v00{ // min(x), min(y)
         {square(0u, 0u), square(0u, 1u), 0.f},
@@ -49,8 +47,10 @@ SquareResource::SquareResource(
         {1.f, 0.f, 0.f}};
 
     auto r = transformation.R() / transformation.get_scale();
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)});
-    triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)});
+    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles{
+        FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)},
+        FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)}
+    };
 
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(

@@ -25,5 +25,5 @@ LoadSceneJsonUserFunction GenCompoundResource::json_user_function = [](const Loa
         args.arguments.at<std::string>(KnownArgs::dest_name),
         std::make_shared<CompoundResource>(
             RenderingContextStack::primary_scene_node_resources(),
-            args.arguments.at<std::vector<std::string>>(KnownArgs::source_names)));
+            args.arguments.at_non_null<std::vector<std::string>>(KnownArgs::source_names, std::vector<std::string>{})));
 };
