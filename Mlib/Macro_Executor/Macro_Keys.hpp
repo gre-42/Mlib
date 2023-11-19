@@ -18,7 +18,7 @@ DECLARE_ARGUMENT(content);
 DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(exclude);
 DECLARE_ARGUMENT(context);
-DECLARE_ARGUMENT(literals);
+DECLARE_ARGUMENT(arguments);
 }
 
 }

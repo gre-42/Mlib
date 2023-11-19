@@ -160,7 +160,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             "_for_" + controller)
                     },
                     {
-                        MacroKeys::literals,
+                        MacroKeys::arguments,
                         {
                             {"DECIMATE", ""},
                             {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
@@ -199,7 +199,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             vars.database.at<std::string>("CLASS"))
                     },
                     {
-                        MacroKeys::literals,
+                        MacroKeys::arguments,
                         {
                             {"DECIMATE", ""},
                             {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},

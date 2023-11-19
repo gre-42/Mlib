@@ -65,7 +65,7 @@ static nlohmann::json subst_and_replace(
         nlohmann::json result;
         for (const auto& [key, value] : j.items()) {
             if ((key == MacroKeys::required) ||
-                (key == MacroKeys::literals) ||
+                (key == MacroKeys::arguments) ||
                 (key == MacroKeys::content) ||
                 (key == MacroKeys::comment) ||
                 key.starts_with('#'))

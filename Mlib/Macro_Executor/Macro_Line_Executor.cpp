@@ -214,8 +214,8 @@ void MacroLineExecutor::operator () (
             args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
             args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
             try {
-                if (jv.contains(MacroKeys::literals)) {
-                    args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::literals), global_args, asset_references_));
+                if (jv.contains(MacroKeys::arguments)) {
+                    args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_));
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
