@@ -219,6 +219,7 @@ void Scene::wait_until_done() const {
 }
 
 bool Scene::contains_node(const std::string& name) const {
+    delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
     return nodes_.contains(name);
 }

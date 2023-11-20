@@ -41,9 +41,7 @@ void StandardCameraLogic::render(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
-    if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        THROW_OR_ABORT("Deletion mutex not locked in StandardCameraLogic::render");
-    }
+    delete_node_mutex_.notify_reading();
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
