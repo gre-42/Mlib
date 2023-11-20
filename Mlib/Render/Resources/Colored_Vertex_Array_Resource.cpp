@@ -586,7 +586,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else {
             sstr << "tex_coord_flipped";
         }
-        sstr << " * " << t.scale << ')';
+        sstr << " * float(" << t.scale << "))";
         return sstr.str();
     };
     sstr << "void main()" << std::endl;
