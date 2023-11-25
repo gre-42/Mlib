@@ -1123,7 +1123,7 @@ OsmMapResource::OsmMapResource(
             }
         }
     }
-    for (const auto& [visual_road_type, visual_e] : osm_triangle_lists.tl_street_visuals.map()) {
+    for (const auto& [visual_road_type, visual_e] : osm_triangle_lists.tl_street_mud_visuals.map()) {
         for (const auto& [physics_road_type, physics_e] : osm_triangle_lists.tl_street.list()) {
             if (physics_road_type.type != visual_road_type) {
                 continue;
@@ -1133,6 +1133,12 @@ OsmMapResource::OsmMapResource(
                 physics_e.triangle_list->triangles.begin(),
                 physics_e.triangle_list->triangles.end());
         }
+    }
+    if (osm_triangle_lists.tl_street_mud_visuals.contains(RoadType::STREET)) {
+        tl_mud_street_visuals_ = osm_triangle_lists.tl_street_mud_visuals[RoadType::STREET];
+    }
+    if (osm_triangle_lists.tl_street_mud_visuals.contains(RoadType::PATH)) {
+        tl_mud_path_visuals_ = osm_triangle_lists.tl_street_mud_visuals[RoadType::PATH];
     }
 
     if (!std::isnan(config.extrude_air_curb_amount)) {
@@ -1519,7 +1525,9 @@ TerrainTriangles OsmMapResource::terrain_triangles() const {
         .wayside1_grass = tl_terrain_->contains(TerrainType::WAYSIDE1_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE1_GRASS]->triangles : nullptr,
         .wayside2_grass = tl_terrain_->contains(TerrainType::WAYSIDE2_GRASS) ? &(*tl_terrain_)[TerrainType::WAYSIDE2_GRASS]->triangles : nullptr,
         .flowers = tl_terrain_->contains(TerrainType::FLOWERS) ? &(*tl_terrain_)[TerrainType::FLOWERS]->triangles : nullptr,
-        .trees = tl_terrain_->contains(TerrainType::TREES) ? &(*tl_terrain_)[TerrainType::TREES]->triangles : nullptr
+        .trees = tl_terrain_->contains(TerrainType::TREES) ? &(*tl_terrain_)[TerrainType::TREES]->triangles : nullptr,
+        .street_mud_grass = tl_mud_street_visuals_ != nullptr ? &tl_mud_street_visuals_->triangles : nullptr,
+        .path_mud_grass = tl_mud_path_visuals_ != nullptr ? &tl_mud_path_visuals_->triangles : nullptr,
     };
 }
 

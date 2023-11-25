@@ -32,7 +32,8 @@ public:
         UpAxis up_axis,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh,
         const Array<float>& dirtmap,
-        float dirtmap_scale);
+        float dirtmap_scale,
+        const Array<float>& mudmap);
     void sample_triangle(
         const FixedArray<ColoredVertex<double>, 3>& t,
         unsigned int seed,
@@ -54,6 +55,7 @@ private:
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh_;
     const Array<float>& dirtmap_;
     float dirtmap_scale_;
+    const Array<float>& mudmap_;
 };
 
 }

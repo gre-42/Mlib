@@ -34,15 +34,7 @@ FoliageResource::FoliageResource(
             .much_near_distance = near_grass_distance,
             .foliagemap_filename = near_grass_foliagemap,
             .foliagemap_scale = near_grass_foliagemap_scale,
-        },
-        .far_grass_terrain_style_config = { .much_near_distance = 20 },
-        .near_wayside1_grass_terrain_style_config = { .much_near_distance = 1 },
-        .near_wayside2_grass_terrain_style_config = { .much_near_distance = 1 },
-        .near_flowers_terrain_style_config = { .much_near_distance = 2 },
-        .far_flowers_terrain_style_config = { .much_near_distance = 5 },
-        .near_trees_terrain_style_config = { .much_near_distance = 5, .size_classification = SizeClassification::LARGE },
-        .far_trees_terrain_style_config = { .much_near_distance = 20, .size_classification = SizeClassification::LARGE },
-        .no_grass_decals_terrain_style_config = { .much_near_distance = 10 }
+        }
     }},
   scale_{scale},
   up_axis_{up_axis}

@@ -143,3 +143,23 @@ const Array<float>& TerrainStyle::foliagemap() const {
     }
     return foliagemap_array_;
 }
+
+const Array<float>& TerrainStyle::mudmap() const {
+    if (config.mudmap_filename.empty()) {
+        return mudmap_array_;
+    }
+    {
+        std::shared_lock lock{mudmap_mutex_};
+        if (mudmap_array_.initialized()) {
+            return mudmap_array_;
+        }
+    }
+    {
+        std::scoped_lock lock{mudmap_mutex_};
+        if (mudmap_array_.initialized()) {
+            return mudmap_array_;
+        }
+        mudmap_array_ = StbImage1::load_from_file(config.mudmap_filename).to_float_grayscale();
+    }
+    return mudmap_array_;
+}

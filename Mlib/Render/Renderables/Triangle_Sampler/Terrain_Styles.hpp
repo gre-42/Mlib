@@ -15,6 +15,8 @@ public:
 
     template <class Archive>
     void serialize(Archive& archive) {
+        archive(street_mud_terrain_style);
+        archive(path_mud_terrain_style);
         archive(near_grass_terrain_style);
         archive(far_grass_terrain_style);
         archive(near_wayside1_grass_terrain_style);
@@ -26,6 +28,8 @@ public:
         archive(no_grass_decals_terrain_style);
     }
 
+    TerrainStyle street_mud_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
+    TerrainStyle path_mud_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_grass_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle far_grass_terrain_style{ TerrainStyleConfig{ .much_near_distance = 2 } };
     TerrainStyle near_wayside1_grass_terrain_style{ TerrainStyleConfig{ .much_near_distance = 1 } };

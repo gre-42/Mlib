@@ -38,6 +38,8 @@ DECLARE_ARGUMENT(heightmap_mask);
 DECLARE_ARGUMENT(heightmap_extension);
 DECLARE_ARGUMENT(grass_foliagemap);
 DECLARE_ARGUMENT(grass_foliagemap_period);
+DECLARE_ARGUMENT(street_mudmap);
+DECLARE_ARGUMENT(path_mudmap);
 DECLARE_ARGUMENT(terrain_undefined_materials);
 DECLARE_ARGUMENT(street_materials);
 DECLARE_ARGUMENT(path_materials);
@@ -108,6 +110,8 @@ DECLARE_ARGUMENT(water_texture);
 DECLARE_ARGUMENT(water_height);
 DECLARE_ARGUMENT(tree_resource_names);
 DECLARE_ARGUMENT(grass_resource_names);
+DECLARE_ARGUMENT(street_mud_grass_resource_names);
+DECLARE_ARGUMENT(path_mud_grass_resource_names);
 DECLARE_ARGUMENT(near_grass_resource_names);
 DECLARE_ARGUMENT(near_dirty_grass_resource_names);
 DECLARE_ARGUMENT(far_grass_resource_names);
@@ -155,6 +159,8 @@ DECLARE_ARGUMENT(with_tree_nodes);
 DECLARE_ARGUMENT(forest_outline_tree_distance);
 DECLARE_ARGUMENT(forest_outline_tree_inwards_distance);
 DECLARE_ARGUMENT(much_grass_distance);
+DECLARE_ARGUMENT(street_mud_grass_distance);
+DECLARE_ARGUMENT(path_mud_grass_distance);
 DECLARE_ARGUMENT(much_near_grass_distance);
 DECLARE_ARGUMENT(much_far_grass_distance);
 DECLARE_ARGUMENT(much_near_wayside1_grass_distance);
@@ -328,6 +334,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::grass_foliagemap_period)) {
             tconfig.near_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
             tconfig.far_grass_terrain_style_config.foliagemap_scale = 1.f / args.arguments.at<float>(KnownArgs::grass_foliagemap_period);
+        }
+        if (args.arguments.contains(KnownArgs::street_mudmap)) {
+            tconfig.street_mud_config.mudmap_filename = args.arguments.path(KnownArgs::street_mudmap);
+        }
+        if (args.arguments.contains(KnownArgs::path_mudmap)) {
+            tconfig.path_mud_config.mudmap_filename = args.arguments.path(KnownArgs::path_mudmap);
         }
         if (args.arguments.contains(KnownArgs::terrain_undefined_materials)) {
             config.terrain_undefined_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::terrain_undefined_materials));
@@ -543,6 +555,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::grass_resource_names)) {
             config.grass_resource_names = args.arguments.at_vector<std::string>(KnownArgs::grass_resource_names, parse_resource_name_func);
         }
+        if (args.arguments.contains_non_null(KnownArgs::street_mud_grass_resource_names)) {
+            tconfig.street_mud_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::street_mud_grass_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::path_mud_grass_resource_names)) {
+            tconfig.path_mud_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::path_mud_grass_resource_names, parse_resource_name_func);
+        }
         if (args.arguments.contains_non_null(KnownArgs::near_grass_resource_names)) {
             tconfig.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func);
         }
@@ -690,6 +708,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::much_grass_distance)) {
             config.much_grass_distance = args.arguments.at<float>(KnownArgs::much_grass_distance);
+        }
+        if (args.arguments.contains(KnownArgs::street_mud_grass_distance)) {
+            tconfig.street_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::street_mud_grass_distance);
+        }
+        if (args.arguments.contains(KnownArgs::path_mud_grass_distance)) {
+            tconfig.path_mud_config.much_near_distance = args.arguments.at<float>(KnownArgs::path_mud_grass_distance);
         }
         if (args.arguments.contains(KnownArgs::much_near_grass_distance)) {
             tconfig.near_grass_terrain_style_config.much_near_distance = args.arguments.at<float>(KnownArgs::much_near_grass_distance);

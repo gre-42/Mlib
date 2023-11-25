@@ -94,6 +94,8 @@ public:
         archive(normalization_matrix_);
         archive(tl_terrain_);
         archive(tls_no_grass_);
+        archive(tl_mud_street_visuals_);
+        archive(tl_mud_path_visuals_);
         archive(terrain_styles_);
     }
     void save_to_file(const std::string& filename) const;
@@ -122,6 +124,8 @@ private:
 
     std::shared_ptr<TerrainTypeTriangleList> tl_terrain_;
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass_;
+    std::shared_ptr<TriangleList<double>> tl_mud_street_visuals_;
+    std::shared_ptr<TriangleList<double>> tl_mud_path_visuals_;
 
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
     mutable SafeSharedMutex street_bvh_mutex_;

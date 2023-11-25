@@ -51,7 +51,8 @@ void CollidableTriangleSampler::add_near_hitboxes(
             up_axis_,
             &street_bvh,
             terrain_style.foliagemap(),
-            terrain_style.config.foliagemap_scale};
+            terrain_style.config.foliagemap_scale,
+            terrain_style.mudmap()};
         unsigned int seed = 0;
         for (const auto& t : gtl) {
             ++seed;
@@ -125,7 +126,8 @@ void CollidableTriangleSampler::add_far_hitboxes(
             up_axis_,
             &street_bvh,
             terrain_style.foliagemap(),
-            terrain_style.config.foliagemap_scale};
+            terrain_style.config.foliagemap_scale,
+            terrain_style.mudmap()};
         unsigned int seed = 8579;
         for (const auto& t : gtl) {
             ++seed;

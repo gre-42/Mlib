@@ -76,7 +76,8 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
             up_axis_,
             boundary_bvh,
             terrain_style.foliagemap(),
-            terrain_style.config.foliagemap_scale};
+            terrain_style.config.foliagemap_scale,
+            terrain_style.mudmap()};
         auto traverse_triangle = [&](const TriangleAndSeed& t){
             if (!orthographic) {
                 BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
@@ -155,38 +156,42 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     };
     if (!grass_bvhs_.has_value()) {
         grass_bvhs_.emplace();
-        if (terrain_styles_.near_grass_terrain_style.is_visible()) {
-            if (auto tris = terrain_triangles_.grass; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style, *tris);
+        if (const auto& style = terrain_styles_.near_grass_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
-            if (auto tris = terrain_triangles_.elevated_grass; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_grass_terrain_style, *tris);
+            if (auto tris = terrain_triangles_.elevated_grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
         }
-        if (terrain_styles_.near_wayside1_grass_terrain_style.is_visible()) {
-            if (auto tris = terrain_triangles_.wayside1_grass; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside1_grass_terrain_style, *tris);
+        if (const auto& style = terrain_styles_.near_wayside1_grass_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.wayside1_grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
         }
-        if (terrain_styles_.near_wayside2_grass_terrain_style.is_visible()) {
-            if (auto tris = terrain_triangles_.wayside2_grass; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_wayside2_grass_terrain_style, *tris);
+        if (const auto& style = terrain_styles_.near_wayside2_grass_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.wayside2_grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
         }
-        if (terrain_styles_.near_flowers_terrain_style.is_visible()) {
-            if (auto tris = terrain_triangles_.flowers; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_flowers_terrain_style, *tris);
+        if (const auto& style = terrain_styles_.near_flowers_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.flowers; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
         }
-        if (terrain_styles_.near_trees_terrain_style.is_visible()) {
-            if (auto tris = terrain_triangles_.trees; tris != nullptr)
-            {
-                add_triangles(grass_bvhs_.value(), terrain_styles_.near_trees_terrain_style, *tris);
+        if (const auto& style = terrain_styles_.near_trees_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.trees; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
+            }
+        }
+        if (const auto& style = terrain_styles_.street_mud_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.street_mud_grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
+            }
+        }
+        if (const auto& style = terrain_styles_.path_mud_terrain_style; style.is_visible()) {
+            if (auto tris = terrain_triangles_.path_mud_grass; tris != nullptr) {
+                add_triangles(grass_bvhs_.value(), style, *tris);
             }
         }
     }

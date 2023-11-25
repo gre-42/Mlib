@@ -5,6 +5,8 @@
 namespace Mlib {
 
 struct TriangleSamplerResourceConfig {
+    TerrainStyleConfig street_mud_config{ .much_near_distance = 2 };
+    TerrainStyleConfig path_mud_config{ .much_near_distance = 2 };
     TerrainStyleConfig near_grass_terrain_style_config{ .much_near_distance = 2 };
     TerrainStyleConfig far_grass_terrain_style_config{ .much_near_distance = 20 };
     TerrainStyleConfig near_wayside1_grass_terrain_style_config{ .much_near_distance = 1 };

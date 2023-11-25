@@ -21,6 +21,7 @@ struct TerrainStyleConfig {
     double much_near_distance = INFINITY;
     std::string foliagemap_filename;
     float foliagemap_scale = 1.f;
+    std::string mudmap_filename;
     SizeClassification size_classification = SizeClassification::SMALL;
     bool is_visible() const;
     template <class Archive>
@@ -32,6 +33,7 @@ struct TerrainStyleConfig {
         archive(much_near_distance);
         archive(foliagemap_filename);
         archive(foliagemap_scale);
+        archive(mudmap_filename);
         archive(size_classification);
     }
 };
@@ -47,6 +49,7 @@ public:
     explicit TerrainStyle(const TerrainStyleConfig &config);
     TerrainStyleConfig config;
     const Array<float>& foliagemap() const;
+    const Array<float>& mudmap() const;
     bool is_visible() const;
     double max_distance_to_camera(const SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
@@ -62,6 +65,9 @@ private:
 
     mutable SafeSharedMutex foliagemap_mutex_;
     mutable Array<float> foliagemap_array_;
+
+    mutable SafeSharedMutex mudmap_mutex_;
+    mutable Array<float> mudmap_array_;
 };
 
 }

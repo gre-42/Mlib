@@ -17,21 +17,23 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     UpAxis up_axis,
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh,
     const Array<float>& dirtmap,
-    float dirtmap_scale)
-: tsc_{terrain_style.config},
-  distances_to_bdry_{terrain_style.distances_to_bdry()},
-  rnc_valley_regular_{tsc_.near_resource_names_valley_regular},
-  rnc_mountain_regular_{tsc_.near_resource_names_mountain_regular},
-  rnc_valley_dirt_{tsc_.near_resource_names_valley_dirt},
-  rnc_mountain_dirt_{tsc_.near_resource_names_mountain_dirt},
-  max_dboundary_{distances_to_bdry_.max_distance_to_bdry * scale},
-  min_dboundary2_{squared(distances_to_bdry_.min_distance_to_bdry * scale)},
-  ts_{ 392743 },
-  scale_{scale},
-  up_axis_{up_axis},
-  boundary_bvh_{boundary_bvh},
-  dirtmap_{dirtmap},
-  dirtmap_scale_{dirtmap_scale}
+    float dirtmap_scale,
+    const Array<float>& mudmap)
+    : tsc_{terrain_style.config}
+    , distances_to_bdry_{terrain_style.distances_to_bdry()}
+    , rnc_valley_regular_{tsc_.near_resource_names_valley_regular}
+    , rnc_mountain_regular_{tsc_.near_resource_names_mountain_regular}
+    , rnc_valley_dirt_{tsc_.near_resource_names_valley_dirt}
+    , rnc_mountain_dirt_{tsc_.near_resource_names_mountain_dirt}
+    , max_dboundary_{distances_to_bdry_.max_distance_to_bdry * scale}
+    , min_dboundary2_{squared(distances_to_bdry_.min_distance_to_bdry * scale)}
+    , ts_{ 392743 }
+    , scale_{scale}
+    , up_axis_{up_axis}
+    , boundary_bvh_{boundary_bvh}
+    , dirtmap_{dirtmap}
+    , dirtmap_scale_{dirtmap_scale}
+    , mudmap_{mudmap}
 {
     assert_true(!tsc_.near_resource_names_valley_regular.empty() ||
                 !tsc_.near_resource_names_mountain_regular.empty() ||
@@ -59,6 +61,24 @@ void TriangleInteriorInstancesSampler::sample_triangle(
         tsc_.much_near_distance * scale_,
         [&](const double& a, const double& b, const double& c)
         {
+            if (mudmap_.initialized()) {
+                if ((mudmap_.shape(0) == 0) ||
+                    (mudmap_.shape(1) == 0))
+                {
+                    THROW_OR_ABORT("Mudmap dimension is zero");
+                }
+                FixedArray<float, 2> uv = t(0).uv * float(a) + t(1).uv * float(b) + t(2).uv * float(c);
+                uv(0) -= std::floor(uv(0));
+                uv(1) -= std::floor(uv(1));
+                uv(1) = 1 - uv(1);
+                float intensity;
+                if (!bilinear_grayscale_interpolation(uv(1) * float(mudmap_.shape(0) - 1), uv(0) * float(mudmap_.shape(1) - 1), mudmap_, intensity)) {
+                    THROW_OR_ABORT("Unexpected bilinear interpolation failure (0)");
+                }
+                if (intensity >= 0.5f) {
+                    return;
+                }
+            }
             FixedArray<float, 3> n = t(0).normal * float(a) + t(1).normal * float(b) + t(2).normal * float(c);
             bool is_in_valley = (squared(n((size_t)up_axis_)) > squared(0.85) * sum(squared(n)));
             bool is_regular;
@@ -72,9 +92,10 @@ void TriangleInteriorInstancesSampler::sample_triangle(
                 uv *= dirtmap_scale_;
                 uv(0) -= std::floor(uv(0));
                 uv(1) -= std::floor(uv(1));
+                uv(1) = 1 - uv(1);
                 float intensity;
                 if (!bilinear_grayscale_interpolation(uv(1) * float(dirtmap_.shape(0) - 1), uv(0) * float(dirtmap_.shape(1) - 1), dirtmap_, intensity)) {
-                    THROW_OR_ABORT("Unexpected bilinear interpolation failure");
+                    THROW_OR_ABORT("Unexpected bilinear interpolation failure (1)");
                 }
                 is_regular = (intensity < 0.5f);
             } else {

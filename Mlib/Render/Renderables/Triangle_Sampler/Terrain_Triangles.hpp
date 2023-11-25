@@ -16,6 +16,8 @@ struct TerrainTriangles {
     const std::list<FixedArray<ColoredVertex<double>, 3>>* wayside2_grass = nullptr;
     const std::list<FixedArray<ColoredVertex<double>, 3>>* flowers = nullptr;
     const std::list<FixedArray<ColoredVertex<double>, 3>>* trees = nullptr;
+    const std::list<FixedArray<ColoredVertex<double>, 3>>* street_mud_grass = nullptr;
+    const std::list<FixedArray<ColoredVertex<double>, 3>>* path_mud_grass = nullptr;
 };
 
 }

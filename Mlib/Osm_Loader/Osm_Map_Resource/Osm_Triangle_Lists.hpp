@@ -62,7 +62,7 @@ struct OsmTriangleLists {
     TerrainTypeTriangleList tl_terrain_visuals;
     TerrainTypeTriangleList tl_terrain_extrusion;
     RoadPropertiesTriangleList tl_street;
-    RoadTypeTriangleList tl_street_visuals;
+    RoadTypeTriangleList tl_street_mud_visuals;
     RoadTypeTriangleList tl_street_crossing;
     RoadTypeTriangleList tl_street_curb;
     RoadTypeTriangleList tl_street_curb2;
