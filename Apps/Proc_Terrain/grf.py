@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# From: https://andrewwalker.github.io/statefultransitions/post/gaussian-fields
 def fftIndgen(n):
     a = range(0, n//2+1)
     b = range(1, n//2)[::-1]
