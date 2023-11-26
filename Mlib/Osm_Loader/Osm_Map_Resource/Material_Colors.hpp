@@ -19,9 +19,9 @@ static const float DEFAULT_DIFFUSIVITY = 0.8f;
 static const float DEFAULT_SPECULARITY = 0.5f;
 
 static const float TERRAIN_EMISSIVITY = 0.f;
-static const float TERRAIN_AMBIENCE = 0.1f;
-static const float TERRAIN_DIFFUSIVITY = 1.7f;
-static const float TERRAIN_SPECULARITY = 0.f;
+static const float TERRAIN_AMBIENCE = 1.2f;
+static const float TERRAIN_DIFFUSIVITY = 0.5f;
+// static const float TERRAIN_SPECULARITY = 0.f;
 
 static const float WALL_EMISSIVITY = 0.f;
 static const float WALL_AMBIENCE = 1.2f;
