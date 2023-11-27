@@ -85,7 +85,9 @@ class ResampledImage:
             for i in range(-self.downsample):
                 res = upsample2d(res)
         if (width is not None) and (height is not None):
-            res = np.resize(res[:height, :width, ...], (height, width) + res.shape[2:])
+            R = (height - 1) // res.shape[0] + 1
+            C = (width - 1) // res.shape[1] + 1
+            res = np.tile(res, (R, C) + (1,) * (res.ndim - 2))[:height, :width, ...]
         return res
 
 
