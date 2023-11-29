@@ -26,25 +26,25 @@ Array<float> ramp_blend(
     return result;
 }
 
-Array<float> make_symmetric_2d(const Array<float>& image, size_t overlap) {
+Array<float> make_symmetric_2d(const Array<float>& image, size_t overlap, size_t niterations = 1) {
     if (image.ndim() != 2) {
         throw std::runtime_error("Image dimension must be 2");
     }
     auto res = image.copy();
-    for (size_t i = 0; i < 5; ++i) {
-        res = ramp_blend(res, image.shape(0)/ 2, overlap);
-        res = ramp_blend(res.T(), image.shape(1)/ 2, overlap).T();
+    for (size_t i = 0; i < niterations; ++i) {
+        res = ramp_blend(res, image.shape(0) / 2, overlap);
+        res = ramp_blend(res.T(), image.shape(1) / 2, overlap).T();
     }
     return res;
 }
 
-Array<float> make_symmetric_2d_multichannel(const Array<float>& image, size_t overlap) {
+Array<float> make_symmetric_2d_multichannel(const Array<float>& image, size_t overlap, size_t niterations = 1) {
     if (image.ndim() != 3) {
         throw std::runtime_error("Image dimension must be 3");
     }
     auto res = Array<float>(image.shape());
     for (size_t d = 0; d < image.shape(0); ++d) {
-        res[d] = make_symmetric_2d(image[d], overlap);
+        res[d] = make_symmetric_2d(image[d], overlap, niterations);
     }
     return res;
 }
