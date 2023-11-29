@@ -796,10 +796,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             } else {
                 char rop;
                 switch (t->reduction) {
-                    case BlendMapReductionOperation::PLUS:  rop = '+'; break;
-                    case BlendMapReductionOperation::MINUS: rop = '-'; break;
-                    case BlendMapReductionOperation::TIMES: rop = '*'; break;
-                    case BlendMapReductionOperation::BLEND: rop = '+'; break;
+                    case BlendMapReductionOperation::PLUS:     rop = '+'; break;
+                    case BlendMapReductionOperation::MINUS:    rop = '-'; break;
+                    case BlendMapReductionOperation::TIMES:    rop = '*'; break;
+                    case BlendMapReductionOperation::BLEND:    rop = '+'; break;
+                    case BlendMapReductionOperation::COLORIZE: rop = '?'; break;
                     default: THROW_OR_ABORT("Unknown blendmap reduction type");
                 }
                 if (t->role == BlendMapRole::DETAIL_COLOR) {
@@ -809,7 +810,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         if (t->reduction == BlendMapReductionOperation::BLEND) {
                             sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight);" << std::endl;
                         }
-                        sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
+                        if (t->reduction == BlendMapReductionOperation::COLORIZE) {
+                            sstr << "            float final_weight2 = min(1.0, final_weight * " << t->discreteness << ");" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight2) + final_weight2 * bcolor.rgb;" << std::endl;
+                        } else {
+                            sstr << "            texture_color_ambient_diffuse.rgb " << rop << "= final_weight * bcolor.rgb;" << std::endl;
+                        }
                     } else if (target == ReductionTarget::ALPHA) {
                         sstr << "            texture_color_ambient_diffuse.a " << rop << "= final_weight * intensity + " << t->plus << ";" << std::endl;
                     } else {

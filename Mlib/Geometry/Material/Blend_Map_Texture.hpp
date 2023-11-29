@@ -47,7 +47,8 @@ enum class BlendMapReductionOperation {
     TIMES,
     FEATHER,
     INVERT,
-    BLEND
+    BLEND,
+    COLORIZE
 };
 
 BlendMapReductionOperation blend_map_reduction_operation_from_string(std::string_view s);
