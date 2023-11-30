@@ -30,6 +30,7 @@ class Players;
 struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
 struct KeyConfiguration;
+class IncrementalAlpha;
 
 class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
 public:
@@ -92,7 +93,7 @@ public:
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
     void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
 private:
-    float get_alpha(const KeyConfiguration& key_config, const std::string& role);
+    float get_alpha(const KeyConfiguration& key_config, const std::string& role, IncrementalAlpha& incremental_alpha);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;

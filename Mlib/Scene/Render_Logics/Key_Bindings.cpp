@@ -99,6 +99,41 @@ struct KeyConfiguration {
     std::shared_ptr<CursorMovement> scroll_wheel_movement;
 };
 
+class IncrementalAlpha {
+public:
+    explicit IncrementalAlpha(const KeyConfiguration& key_config)
+        : key_config_{ key_config }
+        , cursor_consumed_{ false }
+        , scroll_wheel_consumed_{ false }
+    {}
+    ~IncrementalAlpha() {
+        if (!cursor_consumed_ && (key_config_.cursor_movement != nullptr)) {
+            key_config_.cursor_movement->axis_alpha(key_config_.base_cursor_axis);
+        }
+        if (!scroll_wheel_consumed_ && (key_config_.scroll_wheel_movement != nullptr)) {
+            key_config_.scroll_wheel_movement->axis_alpha(key_config_.base_scroll_wheel_axis);
+        }
+    }
+    float cursor_alpha() {
+        cursor_consumed_ = true;
+        if (key_config_.cursor_movement == nullptr) {
+            return NAN;
+        }
+        return key_config_.cursor_movement->axis_alpha(key_config_.base_cursor_axis);
+    }
+    float scroll_wheel_alpha() {
+        scroll_wheel_consumed_ = true;
+        if (key_config_.scroll_wheel_movement == nullptr) {
+            return NAN;
+        }
+        return key_config_.scroll_wheel_movement->axis_alpha(key_config_.base_scroll_wheel_axis);
+    }
+private:
+    const KeyConfiguration& key_config_;
+    bool cursor_consumed_;
+    bool scroll_wheel_consumed_;
+};
+
 void from_json(const json& j, JoystickDigitalAxis& obj)
 {
     validate(j, JoystickDigitalAxisArgs::options);
@@ -387,7 +422,11 @@ void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_
     });
 }
 
-float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::string& role)
+void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding) {
+    print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+}
+
+float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::string& role, IncrementalAlpha& incremental_alpha)
 {
     // Analog gamepad axis
     float alpha = gamepad_analog_axes_position_.axis_alpha(key_config.base_gamepad_analog_axes, role);
@@ -400,15 +439,15 @@ float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::stri
             }
         }
         // Analog cursor
-        if (key_config.cursor_movement != nullptr) {
-            float alpha_digital = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+        {
+            float alpha_digital = incremental_alpha.cursor_alpha();
             if (!std::isnan(alpha_digital)) {
                 return alpha_digital;
             }
         }
         // Analog scroll wheel
-        if (key_config.scroll_wheel_movement != nullptr) {
-            float alpha_digital = key_config.scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
+        {
+            float alpha_digital = incremental_alpha.scroll_wheel_alpha();
             if (!std::isnan(alpha_digital)) {
                 return alpha_digital;
             }
@@ -436,6 +475,12 @@ void KeyBindings::increment_external_forces(
     // }
     if (print_gamepad_buttons_) {
         button_press_.print();
+    }
+    Map<std::string, IncrementalAlpha> incremental_alphas;
+    for (const auto& [k, v] : key_configurations_) {
+        if (!incremental_alphas.try_emplace(k, v).second) {
+            verbose_abort("KeyBindings::increment_external_forces: Internal error");
+        }
     }
     // std::cerr << std::endl;
     // std::cerr << std::endl;
@@ -695,7 +740,10 @@ void KeyBindings::increment_external_forces(
             k.steer_relaxation);
     }
     for (const auto& k : car_controller_key_bindings_) {
-        float alpha = get_alpha(key_configurations_.get(k.id), k.role);
+        float alpha = get_alpha(
+            key_configurations_.get(k.id),
+            k.role,
+            incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -734,8 +782,10 @@ void KeyBindings::increment_external_forces(
         rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
     }
     for (const auto& k : plane_controller_key_bindings_) {
-        const auto& key_config = key_configurations_.get(k.id);
-        float alpha = get_alpha(key_config, k.role);
+        float alpha = get_alpha(
+            key_configurations_.get(k.id),
+            k.role,
+            incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
             auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
             if (rb == nullptr) {
@@ -767,8 +817,10 @@ void KeyBindings::increment_external_forces(
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
-        const auto& key_config = key_configurations_.get(k.id);
-        float alpha = get_alpha(key_config, k.role);
+        float alpha = get_alpha(
+            key_configurations_.get(k.id),
+            k.role,
+            incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
             auto wc = dynamic_cast<WeaponCycle*>(&k.node->get_node_modifier());
             if (wc == nullptr) {

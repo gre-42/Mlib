@@ -25,6 +25,10 @@ public:
     }
 
     const TValue& get(const TKey& key) const {
+        return const_cast<Map*>(this)->get(key);
+    }
+
+    TValue& get(const TKey& key) {
         auto it = this->find(key);
         if (it == this->end()) {
             THROW_OR_ABORT("Could not find entry with key \"" + key + '"');
