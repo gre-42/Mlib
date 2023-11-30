@@ -48,6 +48,7 @@ enum class BlendMapReductionOperation {
     FEATHER,
     INVERT,
     BLEND,
+    REPLACE_COLOR,
     COLORIZE
 };
 

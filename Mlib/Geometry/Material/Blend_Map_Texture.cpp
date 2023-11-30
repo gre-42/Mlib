@@ -45,6 +45,8 @@ BlendMapReductionOperation Mlib::blend_map_reduction_operation_from_string(std::
         return BlendMapReductionOperation::INVERT;
     } else if (s == "blend"sv) {
         return BlendMapReductionOperation::BLEND;
+    } else if (s == "replace_color"sv) {
+        return BlendMapReductionOperation::REPLACE_COLOR;
     } else if (s == "colorize"sv) {
         return BlendMapReductionOperation::COLORIZE;
     } else {
