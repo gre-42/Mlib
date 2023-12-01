@@ -30,7 +30,7 @@ void Mlib::draw_building_walls(
     for (const auto& bu : buildings) {
         std::list<FixedArray<FixedArray<double, 2>, 2>> swG;
         for (const auto& bl : bu.levels) {
-            tls.push_back(std::make_shared<TriangleList<double>>(
+            const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
                 PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
@@ -42,9 +42,9 @@ void Mlib::draw_building_walls(
             } else {
                 bottom_ambient_occlusion = 0.f;
             }
-            tls.back()->material.textures_color = { { primary_rendering_resources.get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
-            tls.back()->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
-            tls.back()->material.compute_color_mode();
+            tl->material.textures_color = { { primary_rendering_resources.get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
+            tl->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
+            tl->material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = smooth_building_level(bu, nodes, max_width, bl.extra_width, bl.extra_width, scale);
             auto swGit = swG.begin();
@@ -65,7 +65,7 @@ void Mlib::draw_building_walls(
                 ColoredVertex<double>* pp10b;
                 ColoredVertex<double>* pp11b;
                 // some buildings are clock-wise, others counter-clock-wise
-                tls.back()->draw_rectangle_wo_normals(
+                tl->draw_rectangle_wo_normals(
                     {p1(0), p1(1), bl.bottom * scale}, // p00
                     {p0(0), p0(1), bl.bottom * scale}, // p10
                     {p0(0), p0(1), bl.top * scale},    // p11

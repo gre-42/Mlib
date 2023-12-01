@@ -111,14 +111,14 @@ void Mlib::draw_boundary_barriers(
             if (gear >= 3) {
                 continue;
             }
-            auto p0 = n(2);
-            auto p1 = n(1);
-            auto p0_2 = n2(2);
-            auto p1_2 = n2(1);
+            const auto& p0 = n(2);
+            const auto& p1 = n(1);
+            const auto& p0_2 = n2(2);
+            const auto& p1_2 = n2(1);
             float width = (float)std::sqrt(sum(squared(p1_2 - p0_2)));
             FixedArray<float, 2> uv = 1.f / scale * uv_scale * barrier_style.uv;
             FixedArray<float, 3> color{1.f, 1.f, 1.f};
-            tls.back()->draw_rectangle_wo_normals(
+            tl->draw_rectangle_wo_normals(
                 {p1(0), p1(1), p1(2)},
                 {p0(0), p0(1), p0(2)},
                 {p0(0), p0(1), p1(2) + barrier_height * scale},
