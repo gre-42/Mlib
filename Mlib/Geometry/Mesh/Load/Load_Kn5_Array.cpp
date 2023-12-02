@@ -346,8 +346,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 auto number = match[NUMBER].matched
                     ? std::optional{ safe_stou(match[NUMBER].str()) }
                     : std::nullopt;
-                if ((number.has_value() && (number.value() == 0)) ||
-                    match[NAME].str().starts_with("WALL_col") ||
+                if (match[NAME].str().starts_with("WALL_col") ||
                     match[NAME].str().starts_with("INVISIBLE"))
                 {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
