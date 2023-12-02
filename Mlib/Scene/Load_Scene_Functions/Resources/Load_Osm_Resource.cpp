@@ -108,6 +108,7 @@ DECLARE_ARGUMENT(path_bumps_endpoint0_resource_name);
 DECLARE_ARGUMENT(path_bumps_endpoint1_resource_name);
 DECLARE_ARGUMENT(water_texture);
 DECLARE_ARGUMENT(water_height);
+DECLARE_ARGUMENT(road_bollard_resource_names);
 DECLARE_ARGUMENT(tree_resource_names);
 DECLARE_ARGUMENT(grass_resource_names);
 DECLARE_ARGUMENT(street_mud_grass_resource_names);
@@ -548,6 +549,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::water_height)) {
             config.water_height = args.arguments.at<float>(KnownArgs::water_height);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::road_bollard_resource_names)) {
+            config.road_bollard_resource_names = args.arguments.at_vector<std::string>(KnownArgs::road_bollard_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
             config.tree_resource_names = args.arguments.at_vector<std::string>(KnownArgs::tree_resource_names, parse_resource_name_func);

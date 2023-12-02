@@ -94,6 +94,11 @@ struct OsmResourceConfig {
     std::string water_texture;
     float water_height = 0;
     std::string roof_texture;
+    std::vector<ParsedResourceName> road_bollard_resource_names;
+    double road_bollard_tangential_distance = 3.;
+    double road_bollard_normal_distance = 0.5;
+    double road_bollard_gradient_dx = 0.1;
+    double road_bollard_max_gradient = -0.1;
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
     TriangleSamplerResourceConfig triangle_sampler_resource_config;

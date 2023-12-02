@@ -42,6 +42,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Ceilings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Into_Street_Rectangles.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Road_Bollards.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Roofs.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Wall_Barriers.hpp>
@@ -956,56 +957,70 @@ OsmMapResource::OsmMapResource(
                 handle_triangle_exception(e, "add models failed, consider setting the 'EXCEPT_MESH_AROUND_PREFIX' environment variable");
             }
         }
+    }
 
-        if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-            ResourceNameCycle rnc{config.tree_resource_names};
-            LOG_INFO("add_trees_to_tree_nodes");
-            add_trees_to_tree_nodes(
-                *hri_.bri,
-                // steiner_points,
-                rnc,
-                config.min_dist_to_road,
-                all_holes_bvh,
-                *ground_bvh,
-                nodes,
-                config.scale);
-        }
+    if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
+        ResourceNameCycle rnc{config.tree_resource_names};
+        LOG_INFO("add_trees_to_tree_nodes");
+        add_trees_to_tree_nodes(
+            *hri_.bri,
+            // steiner_points,
+            rnc,
+            config.min_dist_to_road,
+            all_holes_bvh,
+            *ground_bvh,
+            nodes,
+            config.scale);
+    }
 
-        if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
-            ResourceNameCycle rnc{config.tree_resource_names};
-            LOG_INFO("add_trees_to_forest_outlines");
-            add_trees_to_forest_outlines(
-                *hri_.bri,
-                // steiner_points,
-                rnc,
-                config.min_dist_to_road,
-                all_holes_bvh,
-                *ground_bvh,
-                nodes,
-                ways,
-                config.forest_outline_tree_distance,
-                config.forest_outline_tree_inwards_distance,
-                config.scale);
-            // add_binary_vegetation(
-            //     tls,
-            //     Material{
-            //         .texture: grass_texture,
-            //         .mixed_texture: "",
-            //         .overlap_npixels: 0,
-            //         .blend_mode: BlendMode::BINARY,
-            //         .wrap_mode: WrapMode::CLAMP_TO_EDGE,
-            //         .collide: false,
-            //         .aggregate_mode: AggregateMode::ONCE,
-            //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor},},
-            //     grass_texture,
-            //     tree_texture,
-            //     tree_texture_2,
-            //     *tl_terrain,
-            //     scale);
-        }
+    if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {
+        ResourceNameCycle rnc{config.tree_resource_names};
+        LOG_INFO("add_trees_to_forest_outlines");
+        add_trees_to_forest_outlines(
+            *hri_.bri,
+            // steiner_points,
+            rnc,
+            config.min_dist_to_road,
+            all_holes_bvh,
+            *ground_bvh,
+            nodes,
+            ways,
+            config.forest_outline_tree_distance,
+            config.forest_outline_tree_inwards_distance,
+            config.scale);
+        // add_binary_vegetation(
+        //     tls,
+        //     Material{
+        //         .texture: grass_texture,
+        //         .mixed_texture: "",
+        //         .overlap_npixels: 0,
+        //         .blend_mode: BlendMode::BINARY,
+        //         .wrap_mode: WrapMode::CLAMP_TO_EDGE,
+        //         .collide: false,
+        //         .aggregate_mode: AggregateMode::ONCE,
+        //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissivity_factor},
+        //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
+        //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
+        //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor},},
+        //     grass_texture,
+        //     tree_texture,
+        //     tree_texture_2,
+        //     *tl_terrain,
+        //     scale);
+    }
+    if (!config.road_bollard_resource_names.empty()) {
+        ResourceNameCycle rnc{config.road_bollard_resource_names};
+        LOG_INFO("draw_road_bollards");
+        draw_road_bollards(
+            *hri_.bri,
+            rnc,
+            street_hole_triangles,
+            *ground_bvh,
+            config.scale,
+            config.road_bollard_tangential_distance,
+            config.road_bollard_normal_distance,
+            config.road_bollard_gradient_dx,
+            config.road_bollard_max_gradient);
     }
 
     {
