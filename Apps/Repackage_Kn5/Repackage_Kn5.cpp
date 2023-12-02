@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
         auto gen_png_name = [](const std::string& dds_name) { return dds_name + ".png"; };
         auto gen_optional_png_name = [&gen_png_name](const std::string& dds_name) { return dds_name.empty() ? "" : gen_png_name(dds_name); };
-        auto source_filename = args.unnamed_value(0);
+        const auto& source_filename = args.unnamed_value(0);
         auto source = create_ifstream(source_filename, std::ios::binary);
         if (source->fail()) {
             THROW_OR_ABORT("Could not open file for read: \"" + source_filename + '"');
