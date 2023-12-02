@@ -104,6 +104,10 @@ void Mlib::draw_boundary_barriers(
             double k = 0.5 * (
                 curvature(n2_0 / fixed_full<double, 2>(scale)) +
                 curvature(n2_1 / fixed_full<double, 2>(scale)));
+            // Each way segment has (at least) two boundary edges.
+            // The barrier is drawn on the side with positive curvature.
+            // Note that the contours have the same {counter-}clockwise
+            // orientation as the triangles they were computed from.
             if (k < 0) {
                 continue;
             }
