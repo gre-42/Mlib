@@ -763,6 +763,13 @@ std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::all_hole_trian
     return result;
 }
 
+std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::entrance_triangles() const {
+    std::list<FixedArray<ColoredVertex<double>, 3>> result;
+    INSERT(tl_entrance.at(EntranceType::TUNNEL))
+    INSERT(tl_entrance.at(EntranceType::BRIDGE))
+    return result;
+}
+
 std::list<FixedArray<ColoredVertex<double>, 3>> OsmTriangleLists::street_hole_triangles() const {
     std::list<FixedArray<ColoredVertex<double>, 3>> result;
     INSERT2(tl_street_crossing)

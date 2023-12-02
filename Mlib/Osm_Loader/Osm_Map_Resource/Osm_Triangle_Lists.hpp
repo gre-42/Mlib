@@ -95,6 +95,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList<double>>> tls_curb_only() const;
     std::list<std::shared_ptr<TriangleList<double>>> tls_crossing_only() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> all_hole_triangles() const;
+    std::list<FixedArray<ColoredVertex<double>, 3>> entrance_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> street_hole_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> no_trees_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> building_hole_triangles() const;

@@ -323,6 +323,7 @@ OsmMapResource::OsmMapResource(
     StreetBvh all_holes_bvh{all_hole_triangles};
     StreetBvh ground_street_bvh{street_hole_triangles};
     StreetBvh air_bvh{air_triangle_lists.street_hole_triangles()};
+    StreetBvh entrance_bvh{ osm_triangle_lists.entrance_triangles() };
 
     // if (forest_outline_tree_distance != INFINITY) {
     //     add_grass_outlines(
@@ -1016,6 +1017,7 @@ OsmMapResource::OsmMapResource(
             rnc,
             street_hole_triangles,
             *ground_bvh,
+            entrance_bvh,
             config.scale,
             config.road_bollard_tangential_distance,
             config.road_bollard_normal_distance,
