@@ -1395,7 +1395,8 @@ void RenderingResources::insert_texture(
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });
     if ((extension == ".jpg") ||
-        (extension == ".png"))
+        (extension == ".png") ||
+        (extension == ".bmp"))
     {
         preloaded_raw_texture_data_.emplace(name, std::move(data));
     } else if (extension == ".dds") {

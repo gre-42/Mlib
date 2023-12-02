@@ -73,7 +73,11 @@ DdsInfo DdsInfo::load_from_file(const std::string& filename) {
     if (ifstr->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + "'");
     }
-    return load_from_stream(*ifstr);
+    try {
+        return load_from_stream(*ifstr);
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Could not load \"" + filename + "\": " + e.what());
+    }
 }
 
 DdsInfo DdsInfo::load_from_stream(std::istream& istream) {

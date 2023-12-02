@@ -12,7 +12,8 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });
     if ((extension == ".jpg") ||
-        (extension == ".png"))
+        (extension == ".png") ||
+        (extension == ".bmp"))
     {
         int width;
         int height;
@@ -41,7 +42,11 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t
         if (data == nullptr) {
             info = DdsInfo::load_from_file(filename);
         } else {
-            info = DdsInfo::load_from_buffer(*data);
+            try {
+                info = DdsInfo::load_from_buffer(*data);
+            } catch (const std::exception& e) {
+                throw std::runtime_error("Could not load \"" + filename + "\": " + e.what());
+            }
         }
         result.size = {
             integral_cast<size_t>(info.width),

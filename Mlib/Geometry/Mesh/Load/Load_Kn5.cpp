@@ -10,6 +10,19 @@
 
 using namespace Mlib;
 
+static std::string ModifiedTextureName(const std::string& name) {
+    if (name.find('.') != std::string::npos) {
+        return name;
+    }
+    if (name.ends_with("_dds_img")) {
+        return name + ".dds";
+    }
+    if (name.ends_with("_bmp_img")) {
+        return name + ".bmp";
+    }
+    return name + ".dds";
+}
+
 // From: https://github.com/RaduMC/kn5-converter/blob/master/kn5%20converter/Program.cs
 
 template <class T>
@@ -282,7 +295,7 @@ kn5Model Mlib::load_kn5(
     for (int t = 0; t < texCount; t++)
     {
         int texType = ReadInt32(binStream);
-        std::string texName = ReadStr(binStream, ReadUInt32(binStream));
+        std::string texName = ModifiedTextureName(ReadStr(binStream, ReadUInt32(binStream)));
         int texSize = ReadInt32(binStream);
         auto tex = newModel.textures.try_emplace(texName, kn5Texture{.type = texType});
         if (!tex.second) {
@@ -382,7 +395,7 @@ kn5Model Mlib::load_kn5(
         {
             std::string samplerName = ReadStr(binStream, ReadUInt32(binStream));
             int samplerSlot = ReadInt32(binStream);
-            std::string texName = ReadStr(binStream, ReadUInt32(binStream));
+            std::string texName = ModifiedTextureName(ReadStr(binStream, ReadUInt32(binStream)));
 
             newMaterial.shaderProps += samplerName + " = " + texName + '\n';
 
