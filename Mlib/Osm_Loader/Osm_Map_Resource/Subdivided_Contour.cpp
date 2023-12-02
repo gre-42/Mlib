@@ -1,6 +1,7 @@
 #include "Subdivided_Contour.hpp"
 #include <Mlib/Iterator/Iterable.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Math/Math.hpp>
 
 using namespace Mlib;
 
