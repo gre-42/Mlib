@@ -2,6 +2,7 @@
 #include <Mlib/Array/Base_Dense_Fixed_Array.hpp>
 #include <Mlib/Array/Fixed_Array_Shape.hpp>
 #include <Mlib/Io/Write_Number.hpp>
+#include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
 #include <Mlib/Template.hpp>
 #include <array>
@@ -16,24 +17,6 @@ namespace Mlib {
 template <class TData>
 class Array;
 class ArrayShape;
-
-template <typename TData>
-class PointerIterable {
-public:
-    PointerIterable(TData* begin, TData* end)
-    :begin_(begin),
-     end_(end)
-    {}
-    TData* begin() {
-        return begin_;
-    }
-    TData* end() {
-        return end_;
-    }
-private:
-    TData* begin_;
-    TData* end_;
-};
 
 template <typename TData, size_t... tshape>
 class FixedArray;
