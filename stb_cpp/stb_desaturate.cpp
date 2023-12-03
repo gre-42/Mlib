@@ -1,5 +1,6 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
 void stb_desaturate(
