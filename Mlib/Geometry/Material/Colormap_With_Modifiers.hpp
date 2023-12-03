@@ -10,7 +10,7 @@ namespace Mlib {
 
 struct ColormapWithModifiers {
     std::string filename;
-    bool desaturate = false;
+    float desaturate = 0.f;
     std::string alpha = "";
     std::string histogram = "";
     std::string average = "";

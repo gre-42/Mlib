@@ -63,7 +63,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
         TextureDescriptor{
             .color = {
                 .filename = args.arguments.path_or_variable(KnownArgs::color).path,
-                .desaturate = args.arguments.at<bool>(KnownArgs::desaturate, false),
+                .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
                 .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
                 .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
                 .average = "",

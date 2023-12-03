@@ -4,4 +4,5 @@ void stb_desaturate(
     unsigned char* data,
     int width,
     int height,
-    int nrChannels);
+    int nrChannels,
+    float amount);

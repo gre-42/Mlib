@@ -36,7 +36,7 @@ struct LoadMeshConfig {
     FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
-    bool desaturate = false;
+    float desaturate = 0.f;
     std::string histogram;
     std::vector<BlendMapTexture> textures;
     float period_world;

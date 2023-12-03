@@ -163,7 +163,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, fixed_ones<float, 3>()),
         .diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, fixed_ones<float, 3>()),
         .specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, fixed_ones<float, 3>()),
-        .desaturate = args.arguments.at<bool>(KnownArgs::desaturate, false),
+        .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
         .triangle_tangent_error_behavior = args.arguments.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::triangle_tangent_error_behavior))

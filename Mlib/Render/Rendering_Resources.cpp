@@ -248,12 +248,13 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si0.nrChannels,
             color.alpha_fac);
     }
-    if (color.desaturate) {
+    if (color.desaturate != 0.f) {
         stb_desaturate(
             si0.data.get(),
             si0.width,
             si0.height,
-            si0.nrChannels);
+            si0.nrChannels,
+            color.desaturate);
     }
     if (!color.histogram.empty()) {
         Array<unsigned char> image = stb_image_2_array(si0);
