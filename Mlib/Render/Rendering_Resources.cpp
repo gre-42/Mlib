@@ -661,7 +661,7 @@ std::string RenderingResources::get_texture_filename(
     check_color_mode(color, role);
 
     if (manual_atlas_tile_descriptors_.contains(color.filename) ||
-        color.desaturate ||
+        (color.desaturate != 0.f) ||
         !color.histogram.empty() ||
         !color.average.empty() ||
         !color.multiply.empty() ||
