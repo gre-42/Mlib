@@ -22,7 +22,7 @@ JsonMacroArguments::JsonMacroArguments(const JsonMacroArguments& other)
     }
 }
 
-JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
+JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other) noexcept
 : JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
   j_(std::move(other.j_)),
   fpathes_{std::move(other.fpathes_)},
@@ -30,7 +30,7 @@ JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other)
   spath_{std::move(other.spath_)}
 {
     if (j_.type() != nlohmann::detail::value_t::object) {
-        THROW_OR_ABORT("JSON is not of type object");
+        verbose_abort("JSON is not of type object");
     }
 }
 

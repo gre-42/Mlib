@@ -74,7 +74,7 @@ public:
     }
     template <class TData, class TOperation>
     auto at_vector(const std::string& name, const TOperation& op) const {
-        auto val = j_.at(name);
+        const auto& val = j_.at(name);
         if (val.type() != nlohmann::detail::value_t::array) {
             THROW_OR_ABORT("Type is not array for key \"" + name + '"');
         }
@@ -82,7 +82,7 @@ public:
     }
     template <class TData, class TOperation>
     auto at_vector_non_null(const std::string& name, const TOperation& op) const {
-        auto val = j_.at(name);
+        const auto& val = j_.at(name);
         if ((val.type() != nlohmann::detail::value_t::array) &&
             (val.type() != nlohmann::detail::value_t::null))
         {

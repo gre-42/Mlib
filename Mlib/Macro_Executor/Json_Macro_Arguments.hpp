@@ -20,7 +20,7 @@ class JsonMacroArguments: public JsonView {
 public:
     JsonMacroArguments();
     JsonMacroArguments(const JsonMacroArguments& other);
-    JsonMacroArguments(JsonMacroArguments&& other);
+    JsonMacroArguments(JsonMacroArguments&& other) noexcept;
     explicit JsonMacroArguments(nlohmann::json j);
     ~JsonMacroArguments();
     void set(const std::string& key, nlohmann::json value);
