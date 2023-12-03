@@ -2,13 +2,14 @@
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <cmath>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 
 class JsonMacroArguments;
 
 struct FacadeTextureDescriptor {
-    std::string name;
+    std::vector<std::string> names;
     InteriorTextures interior_textures;
 };
 

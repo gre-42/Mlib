@@ -2,6 +2,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -13,7 +14,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     float building_bottom,
     float default_building_top,
     float uv_scale_facade,
-    const std::vector<std::string>& socle_textures,
+    const std::vector<SocleTexture>& socle_textures,
     FacadeTextureCycle& ftc)
 {
     size_t bid = 0;
@@ -136,7 +137,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .extra_width = 0.f,
                         .type = BuildingLevelType::SOCLE,
                         .facade_texture_descriptor = FacadeTextureDescriptor{
-                            .name = socle_textures.at(bid % socle_textures.size())
+                            .names = socle_textures.at(bid % socle_textures.size()).textures
                         }},
                     BuildingLevel{
                         .top = building_top,

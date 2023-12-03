@@ -42,7 +42,10 @@ void Mlib::draw_building_walls(
             } else {
                 bottom_ambient_occlusion = 0.f;
             }
-            tl->material.textures_color = { { primary_rendering_resources.get_existing_texture_descriptor(bl.facade_texture_descriptor.name) } };
+            tl->material.textures_color.reserve(bl.facade_texture_descriptor.names.size());
+            for (const auto& name : bl.facade_texture_descriptor.names) {
+                tl->material.textures_color.push_back(primary_rendering_resources.get_blend_map_texture(name));
+            }
             tl->material.interior_textures = bl.facade_texture_descriptor.interior_textures;
             tl->material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);

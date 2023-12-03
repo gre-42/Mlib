@@ -485,7 +485,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.racing_line_playback = args.arguments.path_or_variable(KnownArgs::racing_line_playback).path;
         }
         if (args.arguments.contains(KnownArgs::socle_textures)) {
-            config.socle_textures = fpathps(KnownArgs::socle_textures);
+            config.socle_textures = args.arguments.children(KnownArgs::socle_textures, parse_socle_texture);
         }
         if (args.arguments.contains_non_null(KnownArgs::facade_textures)) {
             config.facade_textures = args.arguments.children(KnownArgs::facade_textures, parse_facade_texture);

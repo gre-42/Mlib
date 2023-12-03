@@ -473,6 +473,10 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     for (const auto& x : texture_descriptors_) {
         ostr << indent << "  " << x.first << '\n';
     }
+    ostr << indent << "Blend map textures\n";
+    for (const auto& x : blend_map_textures_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
     ostr << indent << "Textures\n";
     for (const auto& x : textures_) {
         ostr << indent << "  " << x.first << '\n';

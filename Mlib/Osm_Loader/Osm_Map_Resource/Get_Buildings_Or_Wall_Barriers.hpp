@@ -9,6 +9,7 @@ namespace Mlib {
 struct Building;
 struct Way;
 class FacadeTextureCycle;
+struct SocleTexture;
 
 enum class BuildingType {
     BUILDING,
@@ -22,7 +23,7 @@ std::list<Building> get_buildings_or_wall_barriers(
     float building_bottom,
     float default_building_top,
     float uv_scale_facade,
-    const std::vector<std::string>& socle_textures,
+    const std::vector<SocleTexture>& socle_textures,
     FacadeTextureCycle& ftc);
 
 }

@@ -7,6 +7,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
@@ -68,7 +69,7 @@ struct OsmResourceConfig {
     std::string racing_line_track;
     std::string racing_line_playback;
     std::string air_support_texture;
-    std::vector<std::string> socle_textures;
+    std::vector<SocleTexture> socle_textures;
     float extrusion_ambient_occlusion = 0.5f;
     float laplace_ambient_occlusion = 1.f;
     Interp<float, FixedArray<float, 3>> height_colors{
