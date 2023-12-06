@@ -251,7 +251,9 @@ OsmMapResource::OsmMapResource(
             config.default_snap_building_height,
             config.uv_scale_facade,
             config.socle_textures,
-            ftc);
+            config.entrances_textures,
+            ftc,
+            config.default_building_vertical_subdivision);
         compute_building_area(
             buildings,
             nodes,
@@ -267,7 +269,9 @@ OsmMapResource::OsmMapResource(
             config.default_snap_barrier_height,
             config.uv_scale_barrier_wall,
             {},
-            ftc);
+            {},
+            ftc,
+            VerticalSubdivision::NO);
     }
 
     std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>> terrain_region_contours =
@@ -1232,7 +1236,9 @@ OsmMapResource::OsmMapResource(
             false,  // default_snap_height
             NAN,    // uv_scale_facade
             {},     // socle_textures
-            ftc);
+            {},     // entrances_textures
+            ftc,
+            VerticalSubdivision::NO);
         try {
             for (const Building& bu : spawn_lines) {
                 auto iteam = bu.way.tags.find("team");

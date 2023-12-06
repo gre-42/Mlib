@@ -5,9 +5,11 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Entrances_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
@@ -70,6 +72,7 @@ struct OsmResourceConfig {
     std::string racing_line_playback;
     std::string air_support_texture;
     std::vector<SocleTexture> socle_textures;
+    std::vector<EntrancesTexture> entrances_textures;
     float extrusion_ambient_occlusion = 0.5f;
     float laplace_ambient_occlusion = 1.f;
     Interp<float, FixedArray<float, 3>> height_colors{
@@ -129,6 +132,7 @@ struct OsmResourceConfig {
     float default_barrier_top = 3;
     bool default_snap_building_height = false;
     bool default_snap_barrier_height = false;
+    VerticalSubdivision default_building_vertical_subdivision = VerticalSubdivision::SOCLE;
     bool remove_backfacing_triangles = true;
     bool with_tree_nodes = true;
     float forest_outline_tree_distance = 10.f;

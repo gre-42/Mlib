@@ -10,6 +10,8 @@ struct Building;
 struct Way;
 class FacadeTextureCycle;
 struct SocleTexture;
+struct EntrancesTexture;
+enum class VerticalSubdivision;
 
 enum class BuildingType {
     BUILDING,
@@ -25,6 +27,8 @@ std::list<Building> get_buildings_or_wall_barriers(
     bool default_snap_height,
     float uv_scale_facade,
     const std::vector<SocleTexture>& socle_textures,
-    FacadeTextureCycle& ftc);
+    const std::vector<EntrancesTexture>& entrances_textures,
+    FacadeTextureCycle& ftc,
+    VerticalSubdivision default_vertical_subdivision);
 
 }

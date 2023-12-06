@@ -40,6 +40,14 @@ public:
         return it->second;
     }
 
+    TValue get(const TKey& key, const TValue& deflt) const {
+        auto it = this->find(key);
+        if (it == this->end()) {
+            return deflt;
+        }
+        return it->second;
+    }
+
     const std::optional<const TValue> try_get(const TKey& key) const {
         auto it = this->find(key);
         if (it == this->end()) {

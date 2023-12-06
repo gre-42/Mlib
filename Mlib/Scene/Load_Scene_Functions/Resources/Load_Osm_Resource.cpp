@@ -87,6 +87,7 @@ DECLARE_ARGUMENT(racing_line_texture);
 DECLARE_ARGUMENT(racing_line_track);
 DECLARE_ARGUMENT(racing_line_playback);
 DECLARE_ARGUMENT(socle_textures);
+DECLARE_ARGUMENT(entrances_textures);
 DECLARE_ARGUMENT(facade_textures);
 DECLARE_ARGUMENT(ceiling_texture);
 DECLARE_ARGUMENT(barrier_styles);
@@ -157,6 +158,7 @@ DECLARE_ARGUMENT(default_building_top);
 DECLARE_ARGUMENT(default_barrier_top);
 DECLARE_ARGUMENT(default_snap_building_height);
 DECLARE_ARGUMENT(default_snap_barrier_height);
+DECLARE_ARGUMENT(default_building_vertical_subdivision);
 DECLARE_ARGUMENT(remove_backfacing_triangles);
 DECLARE_ARGUMENT(with_tree_nodes);
 DECLARE_ARGUMENT(forest_outline_tree_distance);
@@ -489,6 +491,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::socle_textures)) {
             config.socle_textures = args.arguments.children(KnownArgs::socle_textures, parse_socle_texture);
         }
+        if (args.arguments.contains(KnownArgs::entrances_textures)) {
+            config.entrances_textures = args.arguments.children(KnownArgs::entrances_textures, parse_entrances_texture);
+        }
         if (args.arguments.contains_non_null(KnownArgs::facade_textures)) {
             config.facade_textures = args.arguments.children(KnownArgs::facade_textures, parse_facade_texture);
         }
@@ -705,6 +710,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::default_snap_barrier_height)) {
             config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height);
+        }
+        if (args.arguments.contains(KnownArgs::default_building_vertical_subdivision)) {
+            config.default_building_vertical_subdivision = vertical_subdivision_from_string(args.arguments.at<std::string>(KnownArgs::default_building_vertical_subdivision));
         }
         if (args.arguments.contains(KnownArgs::remove_backfacing_triangles)) {
             config.remove_backfacing_triangles = args.arguments.at<bool>(KnownArgs::remove_backfacing_triangles);

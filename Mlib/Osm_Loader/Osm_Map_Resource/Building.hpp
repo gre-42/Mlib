@@ -11,6 +11,7 @@ struct Way;
 enum class BuildingLevelType {
     TOP,
     SOCLE,
+    ENTRANCES,
     MIDDLE
 };
 
