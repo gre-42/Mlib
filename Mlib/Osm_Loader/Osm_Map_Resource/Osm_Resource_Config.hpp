@@ -127,6 +127,8 @@ struct OsmResourceConfig {
     float building_bottom = -3;
     float default_building_top = 6;
     float default_barrier_top = 3;
+    bool default_snap_building_height = false;
+    bool default_snap_barrier_height = false;
     bool remove_backfacing_triangles = true;
     bool with_tree_nodes = true;
     float forest_outline_tree_distance = 10.f;

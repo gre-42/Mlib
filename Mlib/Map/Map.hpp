@@ -19,9 +19,13 @@ public:
         return m->contains(key);
     }
 
-    bool contains(const TKey& key, const TValue& value) const {
+    bool contains(const TKey& key, const TValue& value, bool deflt = false) const {
         auto it = this->find(key);
-        return (it != this->end()) && (it->second == value);
+        if (it == this->end()) {
+            return deflt;
+        } else {
+            return it->second == value;
+        }
     }
 
     const TValue& get(const TKey& key) const {

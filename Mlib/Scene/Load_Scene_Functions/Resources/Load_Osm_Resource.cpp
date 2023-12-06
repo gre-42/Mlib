@@ -155,6 +155,8 @@ DECLARE_ARGUMENT(with_ceilings);
 DECLARE_ARGUMENT(building_bottom);
 DECLARE_ARGUMENT(default_building_top);
 DECLARE_ARGUMENT(default_barrier_top);
+DECLARE_ARGUMENT(default_snap_building_height);
+DECLARE_ARGUMENT(default_snap_barrier_height);
 DECLARE_ARGUMENT(remove_backfacing_triangles);
 DECLARE_ARGUMENT(with_tree_nodes);
 DECLARE_ARGUMENT(forest_outline_tree_distance);
@@ -697,6 +699,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::default_barrier_top)) {
             config.default_barrier_top = args.arguments.at<float>(KnownArgs::default_barrier_top);
+        }
+        if (args.arguments.contains(KnownArgs::default_snap_building_height)) {
+            config.default_snap_building_height = args.arguments.at<bool>(KnownArgs::default_snap_building_height);
+        }
+        if (args.arguments.contains(KnownArgs::default_snap_barrier_height)) {
+            config.default_snap_barrier_height = args.arguments.at<bool>(KnownArgs::default_snap_barrier_height);
         }
         if (args.arguments.contains(KnownArgs::remove_backfacing_triangles)) {
             config.remove_backfacing_triangles = args.arguments.at<bool>(KnownArgs::remove_backfacing_triangles);

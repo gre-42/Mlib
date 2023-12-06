@@ -13,28 +13,28 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     const std::map<std::string, Way>& ways,
     float building_bottom,
     float default_building_top,
+    bool default_snap_height,
     float uv_scale_facade,
     const std::vector<SocleTexture>& socle_textures,
     FacadeTextureCycle& ftc)
 {
     size_t bid = 0;
     std::list<Building> result;
-    for (const auto& w : ways) {
-        const auto& tags = w.second.tags;
-        if (tags.contains("layer") &&
-            (safe_stoi(tags.at("layer")) != 0)) {
+    for (const auto& [id, w] : ways) {
+        if (w.tags.contains("layer") &&
+            (safe_stoi(w.tags.at("layer")) != 0)) {
             continue;
         }
-        if (tags.find("building") != tags.end()) {
-            if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains(tags.at("building"))) {
+        if (w.tags.find("building") != w.tags.end()) {
+            if ((building_type != BuildingType::BUILDING) || excluded_buildings.contains(w.tags.at("building"))) {
                 continue;
             }
-        } else if (tags.find("barrier") != tags.end()) {
-            if ((building_type != BuildingType::WALL_BARRIER) || !included_barriers.contains(tags.at("barrier"))) {
+        } else if (w.tags.find("barrier") != w.tags.end()) {
+            if ((building_type != BuildingType::WALL_BARRIER) || !included_barriers.contains(w.tags.at("barrier"))) {
                 continue;
             }
-        } else if (tags.find("spawn_line") != tags.end()) {
-            if ((building_type != BuildingType::SPAWN_LINE) || (tags.at("spawn_line") != "yes")) {
+        } else if (w.tags.find("spawn_line") != w.tags.end()) {
+            if ((building_type != BuildingType::SPAWN_LINE) || (w.tags.at("spawn_line") != "yes")) {
                 continue;
             }
         } else {
@@ -43,10 +43,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         std::string style;
         switch (building_type) {
             case BuildingType::BUILDING:
-                style = tags.contains("building:material") ? tags.get("building:material") : "";
+                style = w.tags.contains("building:material") ? w.tags.get("building:material") : "";
                 break;
             case BuildingType::WALL_BARRIER:
-                style = tags.contains("style") ? tags.get("style") : "";
+                style = w.tags.contains("style") ? w.tags.get("style") : "";
                 break;
             case BuildingType::SPAWN_LINE:
                 break;
@@ -54,8 +54,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 THROW_OR_ABORT("Unknown building type");
         }
         float building_top = default_building_top;
-        building_top = parse_meters(tags, "height", building_top);
-        building_top = parse_meters(tags, "building:height", building_top);
+        building_top = parse_meters(w.tags, "height", building_top);
+        building_top = parse_meters(w.tags, "building:height", building_top);
 
         FacadeTextureDescriptor middle_ftd;
         if (building_type == BuildingType::BUILDING) {
@@ -76,12 +76,12 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
             }
         }
 
-        auto vs = tags.find("vertical_subdivision");
+        auto vs = w.tags.find("vertical_subdivision");
         bool has_socle =
-            ((vs == tags.end()) && (building_type == BuildingType::BUILDING)) ||
-            ((vs != tags.end()) && (vs->second == "socle"));
+            ((vs == w.tags.end()) && (building_type == BuildingType::BUILDING)) ||
+            ((vs != w.tags.end()) && (vs->second == "socle"));
         float socle_height = 1.2f;
-        if (tags.contains("snap_height", "yes")) {
+        if (w.tags.contains("snap_height", "yes", default_snap_height)) {
             if (!middle_ftd.interior_textures.empty()) {
                 float repeated_height =
                     building_top
@@ -103,10 +103,13 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 building_top -= std::fmod(repeated_height, 1.f / uv_scale_facade);
             }
         }
+        if (building_top <= 0.1) {
+            THROW_OR_ABORT("Building too small. ID=" + id);
+        }
         std::optional<Roof9_2> roof_9_2;
-        if (tags.contains("3dr:type", "9.2")) {
-            float roof_height = parse_meters(tags, "3dr:height1", NAN);
-            float roof_angle = parse_radians(tags, "3dr:alpha", NAN);
+        if (w.tags.contains("3dr:type", "9.2")) {
+            float roof_height = parse_meters(w.tags, "3dr:height1", NAN);
+            float roof_angle = parse_radians(w.tags, "3dr:alpha", NAN);
             if (std::isnan(roof_height)) {
                 THROW_OR_ABORT("3dr:type=9.2 requires 3dr:height1");
             }
@@ -119,17 +122,21 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     : roof_height / std::tan(roof_angle),
                 .height = roof_height};
         }
+        if (has_socle && (building_top <= socle_height)) {
+            lwarn() <<
+                "Building height (" << building_top <<
+                ") too small for socle (" << socle_height <<
+                "). ID=" << id;
+            has_socle = false;
+        }
         if (has_socle)
         {
             if (socle_textures.empty()) {
                 THROW_OR_ABORT("Socle textures empty");
             }
-            if (building_top <= socle_height) {
-                THROW_OR_ABORT("Building height too small for socle. ID=" + w.first);
-            }
             result.push_back(Building{
-                .id = w.first,
-                .way = w.second,
+                .id = id,
+                .way = w,
                 .levels = {
                     BuildingLevel{
                         .top = socle_height,
@@ -147,10 +154,10 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 },
                 .roof_9_2 = roof_9_2,
                 .style = style});
-        } else if ((vs == tags.end()) || (vs->second == "no")) {
+        } else if ((vs == w.tags.end()) || (vs->second == "no")) {
             result.push_back(Building{
-                .id = w.first,
-                .way = w.second,
+                .id = id,
+                .way = w,
                 .levels = {BuildingLevel{
                     .top = building_top,
                     .bottom = building_bottom,

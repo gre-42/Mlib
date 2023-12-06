@@ -248,6 +248,7 @@ OsmMapResource::OsmMapResource(
             ways,
             config.building_bottom,
             config.default_building_top,
+            config.default_snap_building_height,
             config.uv_scale_facade,
             config.socle_textures,
             ftc);
@@ -263,6 +264,7 @@ OsmMapResource::OsmMapResource(
             ways,
             config.building_bottom,
             config.default_barrier_top,
+            config.default_snap_barrier_height,
             config.uv_scale_barrier_wall,
             {},
             ftc);
@@ -1225,10 +1227,11 @@ OsmMapResource::OsmMapResource(
         std::list<Building> spawn_lines = get_buildings_or_wall_barriers(
             BuildingType::SPAWN_LINE,
             ways,
-            0,  // building_bottom
-            0,  // default_building_top
-            NAN,
-            {},
+            0,      // building_bottom
+            0,      // default_building_top
+            false,  // default_snap_height
+            NAN,    // uv_scale_facade
+            {},     // socle_textures
             ftc);
         try {
             for (const Building& bu : spawn_lines) {
