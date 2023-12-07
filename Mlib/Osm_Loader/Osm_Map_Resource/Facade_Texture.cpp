@@ -11,7 +11,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(selector);
 DECLARE_ARGUMENT(facade);
-DECLARE_ARGUMENT(uv_scale_x);
 DECLARE_ARGUMENT(min_height);
 DECLARE_ARGUMENT(max_height);
 DECLARE_ARGUMENT(interior);
@@ -52,6 +51,5 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
         .max_height = args.at<float>(KnownArgs::max_height, INFINITY),
         .descriptor = FacadeTextureDescriptor{
             .names = args.at<std::vector<std::string>>(KnownArgs::facade),
-            .uv_scale_x = args.at<float>(KnownArgs::uv_scale_x, 1.f),
             .interior_textures = std::move(itx)}};
 }

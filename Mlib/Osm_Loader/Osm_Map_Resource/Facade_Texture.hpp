@@ -10,7 +10,6 @@ class JsonMacroArguments;
 
 struct FacadeTextureDescriptor {
     std::vector<std::string> names;
-    float uv_scale_x;
     InteriorTextures interior_textures;
 };
 

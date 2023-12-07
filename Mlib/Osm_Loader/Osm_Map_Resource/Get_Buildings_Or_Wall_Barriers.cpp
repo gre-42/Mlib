@@ -1,6 +1,5 @@
 #include "Get_Buildings_Or_Wall_Barriers.hpp"
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Entrances_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
@@ -21,8 +20,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
     bool default_snap_height,
     float uv_scale_facade,
     const std::vector<SocleTexture>& socle_textures,
-    const std::vector<EntrancesTexture>& entrances_textures,
-    FacadeTextureCycle& ftc,
+    FacadeTextureCycle& entrance_ftc,
+    FacadeTextureCycle& middle_ftc,
     VerticalSubdivision default_vertical_subdivision)
 {
     size_t bid = 0;
@@ -47,13 +46,15 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         } else {
             continue;
         }
-        std::string style;
+        std::string middle_style;
+        std::string entrance_style;
         switch (building_type) {
             case BuildingType::BUILDING:
-                style = w.tags.contains("building:material") ? w.tags.get("building:material") : "";
+                middle_style = w.tags.get("building:material", "");
+                entrance_style = w.tags.get("building:entrance_material", "");
                 break;
             case BuildingType::WALL_BARRIER:
-                style = w.tags.contains("style") ? w.tags.get("style") : "";
+                middle_style = w.tags.get("style", "");
                 break;
             case BuildingType::SPAWN_LINE:
                 break;
@@ -64,30 +65,20 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         building_top = parse_meters(w.tags, "height", building_top);
         building_top = parse_meters(w.tags, "building:height", building_top);
 
+        FacadeTextureDescriptor entrance_ftd;
         FacadeTextureDescriptor middle_ftd;
         if (building_type == BuildingType::BUILDING) {
-            if (!style.empty()) {
-                auto ft = ftc(style);
-                if (ft == nullptr) {
-                    // THROW_OR_ABORT("Unknown building material: \"" + bu.style + '"');
-                    std::cerr << "Unknown building material: \"" + style + '"' << std::endl;
-                    middle_ftd = ftc(building_top).descriptor;
-                } else {
-                    middle_ftd = ft->descriptor;
-                }
-            } else {
-                if (ftc.empty()) {
-                    THROW_OR_ABORT("Facade textures empty");
-                }
-                middle_ftd = ftc(building_top).descriptor;
-            }
+            entrance_ftd = entrance_ftc(entrance_style, building_top).descriptor;
+            middle_ftd = middle_ftc(middle_style, building_top).descriptor;
         }
         auto vss = w.tags.try_get("vertical_subdivision");
         auto vertical_subdivision = vss.has_value()
             ? vertical_subdivision_from_string(vss.value())
             : default_vertical_subdivision;
         float socle_height = SOCLE_HEIGHT * any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE);
-        float entrances_height = 1.f / uv_scale_facade * any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES);
+        float entrances_height =
+            (entrance_ftd.interior_textures.interior_size(1) + 2.f * entrance_ftd.interior_textures.facade_edge_size(1))
+            * any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES);
         float base_height = socle_height + entrances_height;
         float delta_height = 0.f;
         if (w.tags.contains("snap_height", "yes", default_snap_height)) {
@@ -165,12 +156,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .facade_texture_descriptor = middle_ftd}
                 },
                 .roof_9_2 = roof_9_2,
-                .style = style });
+                .style = middle_style });
         } else if (vertical_subdivision == VerticalSubdivision::ENTRANCES) {
-            if (entrances_textures.empty()) {
-                THROW_OR_ABORT("Entrances textures empty");
-            }
-            const auto& et = entrances_textures.at(bid % entrances_textures.size());
             result.push_back(Building{
                 .id = id,
                 .way = w,
@@ -180,10 +167,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .bottom = building_bottom,
                         .extra_width = 0.f,
                         .type = BuildingLevelType::ENTRANCES,
-                        .facade_texture_descriptor = FacadeTextureDescriptor{
-                            .names = et.textures,
-                            .uv_scale_x = et.uv_scale_x
-                        }},
+                        .facade_texture_descriptor = entrance_ftd},
                     BuildingLevel{
                         .top = building_top,
                         .bottom = entrances_height,
@@ -191,7 +175,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                         .facade_texture_descriptor = middle_ftd}
                     },
                     .roof_9_2 = roof_9_2,
-                    .style = style});
+                    .style = entrance_style});
         } else if (vertical_subdivision == VerticalSubdivision::NO) {
             result.push_back(Building{
                 .id = id,
@@ -203,7 +187,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                     .facade_texture_descriptor = middle_ftd
                 }},
                 .roof_9_2 = roof_9_2,
-                .style = style});
+                .style = middle_style});
         } else {
             verbose_abort("Internal error: Unknown vertical_subdivision: " + (int)vertical_subdivision);
         }

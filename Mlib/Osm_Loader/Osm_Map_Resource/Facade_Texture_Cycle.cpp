@@ -18,7 +18,27 @@ FacadeTextureCycle::FacadeTextureCycle(const std::vector<FacadeTexture>& names)
     }
 }
 
-const FacadeTexture& FacadeTextureCycle::operator () (float building_top) {
+const FacadeTexture& FacadeTextureCycle::operator () (
+    const std::string& style,
+    float building_top)
+{
+    if (!style.empty()) {
+        auto ft = from_style(style);
+        if (ft == nullptr) {
+            lwarn() << "Unknown material: \"" + style + '"';
+            return from_building_top(building_top);
+        } else {
+            return *ft;
+        }
+    } else {
+        if (empty()) {
+            THROW_OR_ABORT("Facade textures empty");
+        }
+        return from_building_top(building_top);
+    }
+}
+
+const FacadeTexture& FacadeTextureCycle::from_building_top(float building_top) {
     ResourceCycle& rc = *this;
     return rc([&building_top](const FacadeTexture& tex){
         return
@@ -27,7 +47,7 @@ const FacadeTexture& FacadeTextureCycle::operator () (float building_top) {
     });
 }
 
-const FacadeTexture* FacadeTextureCycle::operator () (const std::string& style) {
+const FacadeTexture* FacadeTextureCycle::from_style(const std::string& style) {
     auto it = ftm_.find(style);
     return it == ftm_.end()
         ? nullptr

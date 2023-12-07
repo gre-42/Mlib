@@ -5,7 +5,6 @@
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Barrier_Style.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Entrances_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
@@ -72,7 +71,7 @@ struct OsmResourceConfig {
     std::string racing_line_playback;
     std::string air_support_texture;
     std::vector<SocleTexture> socle_textures;
-    std::vector<EntrancesTexture> entrances_textures;
+    std::vector<FacadeTexture> entrance_textures;
     float extrusion_ambient_occlusion = 0.5f;
     float laplace_ambient_occlusion = 1.f;
     Interp<float, FixedArray<float, 3>> height_colors{

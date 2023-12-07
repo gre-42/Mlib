@@ -242,7 +242,8 @@ OsmMapResource::OsmMapResource(
     std::list<Building> buildings;
     std::list<Building> wall_barriers;
     if (config.with_buildings || config.with_roofs || config.with_ceilings) {
-        FacadeTextureCycle ftc{ config.facade_textures };
+        FacadeTextureCycle entrance_ftc{ config.entrance_textures };
+        FacadeTextureCycle middle_ftc{ config.facade_textures };
         buildings = get_buildings_or_wall_barriers(
             BuildingType::BUILDING,
             ways,
@@ -251,8 +252,8 @@ OsmMapResource::OsmMapResource(
             config.default_snap_building_height,
             config.uv_scale_facade,
             config.socle_textures,
-            config.entrances_textures,
-            ftc,
+            entrance_ftc,
+            middle_ftc,
             config.default_building_vertical_subdivision);
         compute_building_area(
             buildings,
@@ -269,7 +270,7 @@ OsmMapResource::OsmMapResource(
             config.default_snap_barrier_height,
             config.uv_scale_barrier_wall,
             {},
-            {},
+            ftc,
             ftc,
             VerticalSubdivision::NO);
     }
@@ -1236,8 +1237,8 @@ OsmMapResource::OsmMapResource(
             false,  // default_snap_height
             NAN,    // uv_scale_facade
             {},     // socle_textures
-            {},     // entrances_textures
-            ftc,
+            ftc,    // entrance_ftc
+            ftc,    // middle_ftc
             VerticalSubdivision::NO);
         try {
             for (const Building& bu : spawn_lines) {
