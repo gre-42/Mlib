@@ -189,7 +189,7 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
                 .roof_9_2 = roof_9_2,
                 .style = middle_style});
         } else {
-            verbose_abort("Internal error: Unknown vertical_subdivision: " + (int)vertical_subdivision);
+            verbose_abort("Internal error: Unknown vertical_subdivision: " + std::to_string((int)vertical_subdivision));
         }
         ++bid;
     }
