@@ -88,12 +88,12 @@ void Mlib::smoothen_and_apply_heightmap(
                 smoothed_vertices.push_back(&p);
             }
         }
-        for (auto& w : way_point_edge_descriptors) {
-            for (auto& e : w.second) {
-                smoothed_vertices.push_back(&e.first.edge.first);
-                smoothed_vertices.push_back(&e.first.edge.second);
-                smoothed_vertices.push_back(&e.second.edge.first);
-                smoothed_vertices.push_back(&e.second.edge.second);
+        for (auto& [_, w] : way_point_edge_descriptors) {
+            for (auto& [p0, p1] : w) {
+                smoothed_vertices.push_back(&p0.edge.first);
+                smoothed_vertices.push_back(&p0.edge.second);
+                smoothed_vertices.push_back(&p1.edge.first);
+                smoothed_vertices.push_back(&p1.edge.second);
             }
         }
         {
