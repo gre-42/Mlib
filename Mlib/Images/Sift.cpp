@@ -185,9 +185,9 @@ FixedArray<float, 3> computeGradientAtCenterPixel(const FixedArray<float, 3, 3, 
     // Here h = 1, so the formula simplifies to f'(x) = (f(x + 1) - f(x - 1)) / 2
     // NOTE: x corresponds to second array axis, y corresponds to first array axis, and s (scale) corresponds to third array axis
     return FixedArray<float, 3>{
-        0.5f * (pixel_array(1u, 1u, 2u) - pixel_array(1u, 1u, 0u)),
-        0.5f * (pixel_array(1u, 2u, 1u) - pixel_array(1u, 0u, 1u)),
-        0.5f * (pixel_array(2u, 1u, 1u) - pixel_array(0u, 1u, 1u))};
+        0.5f * (pixel_array(1, 1, 2) - pixel_array(1, 1, 0)),
+        0.5f * (pixel_array(1, 2, 1) - pixel_array(1, 0, 1)),
+        0.5f * (pixel_array(2, 1, 1) - pixel_array(0, 1, 1))};
 }
 
 FixedArray<float, 3, 3> computeHessianAtCenterPixel(const FixedArray<float, 3, 3, 3>& pixel_array)
@@ -199,13 +199,13 @@ FixedArray<float, 3, 3> computeHessianAtCenterPixel(const FixedArray<float, 3, 3
     // With step size h, the central difference formula of order O(h^2) for (d^2) f(x, y) / (dx dy) = (f(x + h, y + h) - f(x + h, y - h) - f(x - h, y + h) + f(x - h, y - h)) / (4 * h ^ 2)
     // Here h = 1, so the formula simplifies to (d^2) f(x, y) / (dx dy) = (f(x + 1, y + 1) - f(x + 1, y - 1) - f(x - 1, y + 1) + f(x - 1, y - 1)) / 4
     // NOTE: x corresponds to second array axis, y corresponds to first array axis, and s (scale) corresponds to third array axis
-    float center_pixel_value = pixel_array(1u, 1u, 1u);
-    float dxx = pixel_array(1u, 1u, 2u) - 2 * center_pixel_value + pixel_array(1u, 1u, 0u);
-    float dyy = pixel_array(1u, 2u, 1u) - 2 * center_pixel_value + pixel_array(1u, 0u, 1u);
-    float dss = pixel_array(2u, 1u, 1u) - 2 * center_pixel_value + pixel_array(0u, 1u, 1u);
-    float dxy = 0.25f * (pixel_array(1u, 2u, 2u) - pixel_array(1u, 2u, 0u) - pixel_array(1u, 0u, 2u) + pixel_array(1u, 0u, 0u));
-    float dxs = 0.25f * (pixel_array(2u, 1u, 2u) - pixel_array(2u, 1u, 0u) - pixel_array(0u, 1u, 2u) + pixel_array(0u, 1u, 0u));
-    float dys = 0.25f * (pixel_array(2u, 2u, 1u) - pixel_array(2u, 0u, 1u) - pixel_array(0u, 2u, 1u) + pixel_array(0u, 0u, 1u));
+    float center_pixel_value = pixel_array(1, 1, 1);
+    float dxx = pixel_array(1, 1, 2) - 2 * center_pixel_value + pixel_array(1, 1, 0);
+    float dyy = pixel_array(1, 2, 1) - 2 * center_pixel_value + pixel_array(1, 0, 1);
+    float dss = pixel_array(2, 1, 1) - 2 * center_pixel_value + pixel_array(0, 1, 1);
+    float dxy = 0.25f * (pixel_array(1, 2, 2) - pixel_array(1, 2, 0) - pixel_array(1, 0, 2) + pixel_array(1, 0, 0));
+    float dxs = 0.25f * (pixel_array(2, 1, 2) - pixel_array(2, 1, 0) - pixel_array(0, 1, 2) + pixel_array(0, 1, 0));
+    float dys = 0.25f * (pixel_array(2, 2, 1) - pixel_array(2, 0, 1) - pixel_array(0, 2, 1) + pixel_array(0, 0, 1));
     return FixedArray<float, 3, 3>::init(
         dxx, dxy, dxs,
         dxy, dyy, dys,
@@ -278,11 +278,11 @@ bool localizeExtremumViaQuadraticFit(
         // logger.debug('Exceeded maximum number of attempts without reaching convergence for this extremum. Skipping...')
         return false;
     }
-    float functionValueAtUpdatedExtremum = pixel_cube(1u, 1u, 1u) + 0.5f * dot0d(gradient, extremum_update);
+    float functionValueAtUpdatedExtremum = pixel_cube(1, 1, 1) + 0.5f * dot0d(gradient, extremum_update);
     if (std::abs(functionValueAtUpdatedExtremum) * float(num_intervals) >= contrast_threshold) {
         auto xy_hessian = FixedArray<float, 2, 2>::init(
-            hessian(0u, 0u), hessian(0u, 1u),
-            hessian(1u, 0u), hessian(1u, 1u));
+            hessian(0, 0), hessian(0, 1),
+            hessian(1, 0), hessian(1, 1));
         float xy_hessian_trace = trace2x2(xy_hessian);
         float xy_hessian_det = det2x2(xy_hessian);
         if (xy_hessian_det > 0 and eigenvalue_ratio * squared(xy_hessian_trace) < squared((eigenvalue_ratio + 1)) * xy_hessian_det) {

@@ -50,18 +50,18 @@ FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(
  */
 template <class TData>
 FixedArray<TData, 3> matrix_2_tait_bryan_angles(FixedArray<TData, 3, 3> R, bool force_singular = false) {
-    TData sy = std::sqrt(squared(R(0u, 0u)) + squared(R(1u, 0u)));
+    TData sy = std::sqrt(squared(R(0, 0)) + squared(R(1, 0)));
     bool singular = (sy < 1e-6);
 
     if (!singular && !force_singular) {
         return FixedArray<TData, 3>{
-            std::atan2(R(2u, 1u), R(2u, 2u)),
-            std::atan2(-R(2u, 0u), sy),
-            std::atan2(R(1u, 0u), R(0u, 0u))};
+            std::atan2(R(2, 1), R(2, 2)),
+            std::atan2(-R(2, 0), sy),
+            std::atan2(R(1, 0), R(0, 0))};
     } else {
         return FixedArray<TData, 3>{
-            std::atan2(-R(1u, 2u), R(1u, 1u)),
-            std::atan2(-R(2u, 0u), sy),
+            std::atan2(-R(1, 2), R(1, 1)),
+            std::atan2(-R(2, 0), sy),
             0.f};
     }
 }
@@ -71,11 +71,11 @@ FixedArray<TData, 3> matrix_2_tait_bryan_angles(FixedArray<TData, 3, 3> R, bool 
  */
 template <class TData>
 FixedArray<TData, 3> inverse_rodrigues(const FixedArray<TData, 3, 3>& R) {
-    TData t = std::acos((R(0u, 0u) + R(1u, 1u) + R(2u, 2u) - 1) / 2);
+    TData t = std::acos((R(0, 0) + R(1, 1) + R(2, 2) - 1) / 2);
     FixedArray<TData, 3> w = FixedArray<TData, 3>{
-        R(2u, 1u) - R(1u, 2u),
-        R(0u, 2u) - R(2u, 0u),
-        R(1u, 0u) - R(0u, 1u)};
+        R(2, 1) - R(1, 2),
+        R(0, 2) - R(2, 0),
+        R(1, 0) - R(0, 1)};
     TData len2 = sum(squared(w));
     if (len2 < (TData)1e-12) {
         return fixed_zeros<float, 3>();
@@ -90,9 +90,9 @@ FixedArray<TData, 3> inverse_rodrigues(const FixedArray<TData, 3, 3>& R) {
 template <class TData>
 FixedArray<TData, 3> inverse_rodrigues2(const FixedArray<TData, 3, 3>& R) {
     FixedArray<TData, 3> x{
-        R(2u, 1u) - R(1u, 2u),
-        R(0u, 2u) - R(2u, 0u),
-        R(1u, 0u) - R(0u, 1u)};
+        R(2, 1) - R(1, 2),
+        R(0, 2) - R(2, 0),
+        R(1, 0) - R(0, 1)};
     TData len2 = sum(squared(x));
     if (len2 < 1e-12) {
         return fixed_zeros<TData, 3>();

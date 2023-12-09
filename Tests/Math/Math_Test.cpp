@@ -107,7 +107,7 @@ void test_qdq() {
     std::cerr << q << std::endl;
     std::cerr << "s" << std::endl;
     std::cerr << s << std::endl;*/
-    assert_isclose<float>(q(1, 0) / sign(q(0u, 0u)), (float)-0.149676);
+    assert_isclose<float>(q(1, 0) / sign(q(0, 0)), (float)-0.149676);
     assert_isclose<float>(s(0), 447580.468750f);
     assert_isclose<float>(s(1), 64099.5f);
 }
@@ -319,8 +319,8 @@ void test_fixed_shape() {
         FixedArray<float, 4, 5, 6> b{ bd };
         assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
         assert_isclose(
-            dot(a, b)(1u, 2u, 3u),
-            dot(ad, bd)(1u, 2u, 3u));
+            dot(a, b)(1, 2, 3),
+            dot(ad, bd)(1, 2, 3));
     }
 }
 
@@ -332,8 +332,8 @@ void test_fixed_outer() {
 
     assert_isequal(outer(a, b).ndim(), outer(ad, bd).ndim());
     assert_isclose(
-        outer(a, b)(1u, 2u, 3u),
-        outer(ad, bd)(1u, 2u, 3u));
+        outer(a, b)(1, 2, 3),
+        outer(ad, bd)(1, 2, 3));
 }
 
 void test_regularization() {

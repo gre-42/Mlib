@@ -37,10 +37,10 @@ void Mlib::draw_into_street_rectangles(
         }
         auto& tl_str = result[r.road_properties];
         OsmRectangle3D rect{
-            .p00_ = r.rectangle(0u, 0u),
-            .p01_ = r.rectangle(0u, 1u),
-            .p10_ = r.rectangle(1u, 0u),
-            .p11_ = r.rectangle(1u, 1u)};
+            .p00_ = r.rectangle(0, 0),
+            .p01_ = r.rectangle(0, 1),
+            .p10_ = r.rectangle(1, 0),
+            .p11_ = r.rectangle(1, 1)};
         const auto& cvas = scene_node_resources.get_physics_arrays(r.bumps_model)->scvas;
         for (const auto& cva : cvas) {
             if (cva->name != "street") {

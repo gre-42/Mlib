@@ -33,24 +33,24 @@ FixedArray<TData, 3, 3> fixed_inverse_3x3(const FixedArray<TData, 3, 3>& m) {
  */
 template <class TData>
 FixedArray<TData, 3, 3> fixed_symmetric_inverse_3x3(const FixedArray<TData, 3, 3>& m) {
-    TData det = -m(0u, 0u) * squared(m(0u, 1u)) + squared(m(0u, 0u)) * m(1u, 1u)
-              - squared(m(0u, 2u)) * m(1u, 1u) + 2 * m(0u, 1u) * m(0u, 2u) * m(1u, 2u)
-              - m(0u, 0u) * squared(m(1u, 2u));
+    TData det = -m(0, 0) * squared(m(0, 1)) + squared(m(0, 0)) * m(1, 1)
+              - squared(m(0, 2)) * m(1, 1) + 2 * m(0, 1) * m(0, 2) * m(1, 2)
+              - m(0, 0) * squared(m(1, 2));
 
     TData di = 1 / det;
 
     FixedArray<TData, 3, 3> a;
-    a(0u, 0u) = (m(0u, 0u) * m(1u, 1u) - squared(m(1u, 2u))) * di;
-    a(0u, 1u) = (m(0u, 2u) * m(1u, 2u) - m(0u, 0u) * m(0u, 1u)) * di;
-    a(1u, 0u) = a(0u, 1u);
-    a(0u, 2u) = (m(0u, 1u) * m(1u, 2u) - m(0u, 2u) * m(1u, 1u)) * di;
-    a(2u, 0u) = a(0u, 2u);
+    a(0, 0) = (m(0, 0) * m(1, 1) - squared(m(1, 2))) * di;
+    a(0, 1) = (m(0, 2) * m(1, 2) - m(0, 0) * m(0, 1)) * di;
+    a(1, 0) = a(0, 1);
+    a(0, 2) = (m(0, 1) * m(1, 2) - m(0, 2) * m(1, 1)) * di;
+    a(2, 0) = a(0, 2);
 
-    a(1u, 1u) = (squared(m(0u, 0u)) - squared(m(0u, 2u))) * di;
-    a(1u, 2u) = (m(0u, 1u) * m(0u, 2u) - m(0u, 0u) * m(1u, 2u)) * di;
-    a(2u, 1u) = a(1u, 2u);
+    a(1, 1) = (squared(m(0, 0)) - squared(m(0, 2))) * di;
+    a(1, 2) = (m(0, 1) * m(0, 2) - m(0, 0) * m(1, 2)) * di;
+    a(2, 1) = a(1, 2);
 
-    a(2u, 2u) = (m(0u, 0u) * m(1u, 1u) - squared(m(0u, 1u))) * di;
+    a(2, 2) = (m(0, 0) * m(1, 1) - squared(m(0, 1))) * di;
     return a;
 }
 

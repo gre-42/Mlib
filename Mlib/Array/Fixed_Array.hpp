@@ -69,7 +69,9 @@ public:
     template<typename... Values>
     FixedArray(const FixedArray<TData, tshape...>& v0, const Values&... values)
     : data_{v0, values...}
-    {}
+    {
+        static_assert(1 + sizeof...(values) == tshape0);
+    }
     template<typename... Values>
     static FixedArray<TData, tshape0, tshape...> init(const TData& v0, const Values&... values) {
         static_assert(std::is_trivially_constructible_v<TData>);
@@ -84,16 +86,30 @@ public:
         }
         return *this;
     }
+    // Specialized access operators to avoid compiler warning
+    // for signed-ness of second/third index parameter
+    const TData& operator() (size_t id0, size_t id1) const {
+        return data_[id0](id1);
+    }
+    TData& operator() (size_t id0, size_t id1) {
+        return data_[id0](id1);
+    }
+    const TData& operator() (size_t id0, size_t id1, size_t id2) const {
+        return data_[id0](id1, id2);
+    }
+    TData& operator() (size_t id0, size_t id1, size_t id2) {
+        return data_[id0](id1, id2);
+    }
+    // Generic () access operators
     template <typename... Ids>
     const TData& operator() (size_t id0, Ids... ids) const {
-        assert(id0 < tshape0);
         return data_[id0](ids...);
     }
     template <typename... Ids>
     TData& operator() (size_t id0, Ids... ids) {
-        assert(id0 < tshape0);
         return data_[id0](ids...);
     }
+    // Generic [] access operators
     const FixedArray<TData, tshape...>& operator [] (size_t id) const {
         assert(id < tshape0);
         return data_[id];

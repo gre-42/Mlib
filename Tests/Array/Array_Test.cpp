@@ -166,20 +166,20 @@ void test_take() {
 
 void test_fixed_array() {
     FixedArray<bool, 1, 2> f;
-    f(0u, 0u) = true;
-    f(0u, 1u) = true;
+    f(0, 0) = true;
+    f(0, 1) = true;
     assert_isequal(all(f), true);
     assert_isequal(any(f), true);
-    f(0u, 0u) = true;
-    f(0u, 1u) = false;
+    f(0, 0) = true;
+    f(0, 1) = false;
     assert_isequal(all(f), false);
     assert_isequal(any(f), true);
-    f(0u, 0u) = false;
-    f(0u, 1u) = true;
+    f(0, 0) = false;
+    f(0, 1) = true;
     assert_isequal(all(f), false);
     assert_isequal(any(f), true);
-    f(0u, 0u) = false;
-    f(0u, 1u) = false;
+    f(0, 0) = false;
+    f(0, 1) = false;
     assert_isequal(all(f), false);
     assert_isequal(any(f), false);
 
@@ -246,7 +246,7 @@ void test_semi_fix() {
 void test_fixed_array_of_string() {
     FixedArray<std::string, 3, 4> a;
     auto b = FixedArray<std::string, 3>{ std::string{"1"}, std::string{"2"}, std::string{"3"} };
-    std::cerr << a(1u, 2u) << " " << b(2) << std::endl;
+    std::cerr << a(1, 2) << " " << b(2) << std::endl;
 }
 
 int main(int argc, char **argv) {

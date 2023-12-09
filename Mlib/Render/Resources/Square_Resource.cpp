@@ -22,27 +22,27 @@ SquareResource::SquareResource(
     }
 
     ColoredVertex<float> v00{ // min(x), min(y)
-        {square(0u, 0u), square(0u, 1u), 0.f},
+        {square(0, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {uv(0u, 0u), uv(0u, 1u)},
+        {uv(0, 0), uv(0, 1)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
-        {square(0u, 0u), square(1u, 1u), 0.f},
+        {square(0, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {uv(0u, 0u), uv(1u, 1u)},
+        {uv(0, 0), uv(1, 1)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
-        {square(1u, 0u), square(0u, 1u), 0.f},
+        {square(1, 0), square(0, 1), 0.f},
         fixed_ones<float, 3>(),
-        {uv(1u, 0u) / (float)material.number_of_frames, uv(0u, 1u)},
+        {uv(1, 0) / (float)material.number_of_frames, uv(0, 1)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
-        {square(1u, 0u), square(1u, 1u), 0.f},
+        {square(1, 0), square(1, 1), 0.f},
         fixed_ones<float, 3>(),
-        {uv(1u, 0u) / (float)material.number_of_frames, uv(1u, 1u)},
+        {uv(1, 0) / (float)material.number_of_frames, uv(1, 1)},
         {0.f, 0.f, 1.f},
         {1.f, 0.f, 0.f}};
 

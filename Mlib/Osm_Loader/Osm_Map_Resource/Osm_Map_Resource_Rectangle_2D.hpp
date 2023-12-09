@@ -128,10 +128,7 @@ private:
 
 struct CurbedStreet {
     explicit CurbedStreet(const OsmRectangle2D& r, double start, double stop);
-    FixedArray<double, 2> s00;
-    FixedArray<double, 2> s10;
-    FixedArray<double, 2> s01;
-    FixedArray<double, 2> s11;
+    FixedArray<FixedArray<double, 2>, 2, 2> s;
 };
 
 }

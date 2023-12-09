@@ -9,13 +9,13 @@ class FixedArray;
 template <class TData>
 inline TData trace2x2(const FixedArray<TData, 2, 2>& a)
 {
-    return a(0u, 0u) + a(1u, 1u);
+    return a(0, 0) + a(1, 1);
 }
 
 template <class TData>
 inline TData trace3x3(const FixedArray<TData, 3, 3>& a)
 {
-    return a(0u, 0u) + a(1u, 1u) + a(2u, 2u);
+    return a(0, 0) + a(1, 1) + a(2, 2);
 }
 
 }

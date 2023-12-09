@@ -86,22 +86,22 @@ static void readNodes(
         case 1: //dummy
             {
                 FixedArray<float, 4, 4> tmatrix;
-                tmatrix(0u, 0u) = ReadSingle(modelStream);
-                tmatrix(1u, 0u) = ReadSingle(modelStream);
-                tmatrix(2u, 0u) = ReadSingle(modelStream);
-                tmatrix(3u, 0u) = ReadSingle(modelStream);
-                tmatrix(0u, 1u) = ReadSingle(modelStream);
-                tmatrix(1u, 1u) = ReadSingle(modelStream);
-                tmatrix(2u, 1u) = ReadSingle(modelStream);
-                tmatrix(3u, 1u) = ReadSingle(modelStream);
-                tmatrix(0u, 2u) = ReadSingle(modelStream);
-                tmatrix(1u, 2u) = ReadSingle(modelStream);
-                tmatrix(2u, 2u) = ReadSingle(modelStream);
-                tmatrix(3u, 2u) = ReadSingle(modelStream);
-                tmatrix(0u, 3u) = ReadSingle(modelStream);
-                tmatrix(1u, 3u) = ReadSingle(modelStream);
-                tmatrix(2u, 3u) = ReadSingle(modelStream);
-                tmatrix(3u, 3u) = ReadSingle(modelStream);
+                tmatrix(0, 0) = ReadSingle(modelStream);
+                tmatrix(1, 0) = ReadSingle(modelStream);
+                tmatrix(2, 0) = ReadSingle(modelStream);
+                tmatrix(3, 0) = ReadSingle(modelStream);
+                tmatrix(0, 1) = ReadSingle(modelStream);
+                tmatrix(1, 1) = ReadSingle(modelStream);
+                tmatrix(2, 1) = ReadSingle(modelStream);
+                tmatrix(3, 1) = ReadSingle(modelStream);
+                tmatrix(0, 2) = ReadSingle(modelStream);
+                tmatrix(1, 2) = ReadSingle(modelStream);
+                tmatrix(2, 2) = ReadSingle(modelStream);
+                tmatrix(3, 2) = ReadSingle(modelStream);
+                tmatrix(0, 3) = ReadSingle(modelStream);
+                tmatrix(1, 3) = ReadSingle(modelStream);
+                tmatrix(2, 3) = ReadSingle(modelStream);
+                tmatrix(3, 3) = ReadSingle(modelStream);
 
                 newNode.tmatrix = TransformationMatrix<float, float, 3>{tmatrix};
             

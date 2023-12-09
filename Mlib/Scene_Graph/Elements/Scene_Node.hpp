@@ -52,7 +52,7 @@ struct Blended {
     const AnimationState* animation_state;
     ColorStyle color_style;
     inline std::pair<int, double> sorting_key() const {
-        return { z_order, mvp(2u, 3u) };
+        return { z_order, mvp(2, 3) };
     }
 };
 

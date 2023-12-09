@@ -98,8 +98,8 @@ TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
     const auto& R2 = geographic_mapping_2d.R();
     const auto& t2 = geographic_mapping_2d.t();
     m3.R() = FixedArray<TData, 3, 3>::init(
-        R2(0u, 0u), R2(0u, 1u), (TData)0,
-        R2(1u, 0u), R2(1u, 1u), (TData)0,
+        R2(0, 0), R2(0, 1), (TData)0,
+        R2(1, 0), R2(1, 1), (TData)0,
         (TData)0, (TData)0, scale);
     m3.t() = FixedArray<TData, 3>{
         t2(0),

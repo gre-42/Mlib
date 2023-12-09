@@ -86,20 +86,20 @@ void OsmRectangle2D::draw_z0(
     // b, 01 >-->-->-->-->--> c, 11
 
     if (with_b_height_binding) {
-        node_height_bindings[OrderableFixedArray{cs.s00}] = b;
-        node_height_bindings[OrderableFixedArray{cs.s01}] = b;
+        node_height_bindings[OrderableFixedArray{cs.s(0, 0)}] = b;
+        node_height_bindings[OrderableFixedArray{cs.s(0, 1)}] = b;
     }
     if (with_c_height_binding) {
-        node_height_bindings[OrderableFixedArray{cs.s10}] = c;
-        node_height_bindings[OrderableFixedArray{cs.s11}] = c;
+        node_height_bindings[OrderableFixedArray{cs.s(1, 0)}] = c;
+        node_height_bindings[OrderableFixedArray{cs.s(1, 1)}] = c;
     }
     if (b_entrance_type != EntranceType::NONE) {
-        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s00});
-        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s01});
+        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s(0, 0)});
+        entrances[b_entrance_type].insert(OrderableFixedArray{cs.s(0, 1)});
     }
     if (c_entrance_type != EntranceType::NONE) {
-        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s10});
-        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s11});
+        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s(1, 0)});
+        entrances[c_entrance_type].insert(OrderableFixedArray{cs.s(1, 1)});
     }
 
     {
@@ -110,10 +110,10 @@ void OsmRectangle2D::draw_z0(
                 : uv;
         };
         tl_road.draw_rectangle_wo_normals(
-            FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
-            FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
-            FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
-            FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+            FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.},
+            FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.},
+            FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.},
+            FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.},
             /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
             /* b_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color0,
             /* c_entrance_type != EntranceType::NONE ? FixedArray<float, 3>{1.f, 0.f, 0.f} :*/ color1,
@@ -140,10 +140,10 @@ void OsmRectangle2D::draw_z0(
                 : uv;
         };
         tl_racing_line->draw_rectangle_wo_normals(
-            FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.f},
-            FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.f},
-            FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.f},
-            FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.f},
+            FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.f},
+            FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.f},
+            FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.f},
+            FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.f},
             racing_line_color0,
             racing_line_color0,
             racing_line_color1,
@@ -168,10 +168,10 @@ void OsmRectangle2D::draw_z0(
             (c_entrance_type == EntranceType::TUNNEL))
         {
             tl_entrance->draw_rectangle_wo_normals(
-                FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
-                FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
-                FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
-                FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.},
+                FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.},
+                FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.},
+                FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.},
                 {1.f, 0.f, 0.f},  // c00
                 {0.f, 1.f, 0.f},  // c10
                 {0.f, 0.f, 1.f},  // c11
@@ -192,17 +192,17 @@ void OsmRectangle2D::draw_z0(
             if (orientation == RectangleOrientation::RIGHT) {
                 tl_entrance->draw_triangle_wo_normals(
                     FixedArray<double, 3>{p10_(0), p10_(1), 0.},
-                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
-                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.});
+                    FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.},
+                    FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.});
             } else if (orientation == RectangleOrientation::LEFT) {
                 tl_entrance->draw_triangle_wo_normals(
                     FixedArray<double, 3>{p11_(0), p11_(1), 0.},
-                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
-                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.});
+                    FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.},
+                    FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.});
             } else {
                 tl_entrance->draw_rectangle_wo_normals(
-                    FixedArray<double, 3>{cs.s00(0), cs.s00(1), 0.},
-                    FixedArray<double, 3>{cs.s01(0), cs.s01(1), 0.},
+                    FixedArray<double, 3>{cs.s(0, 0)(0), cs.s(0, 0)(1), 0.},
+                    FixedArray<double, 3>{cs.s(0, 1)(0), cs.s(0, 1)(1), 0.},
                     FixedArray<double, 3>{p11_(0), p11_(1), 0.f},
                     FixedArray<double, 3>{p10_(0), p10_(1), 0.f},
                     {1.f, 0.f, 0.f},  // c00
@@ -225,20 +225,20 @@ void OsmRectangle2D::draw_z0(
         {
             if (orientation == RectangleOrientation::LEFT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.},
                     FixedArray<double, 3>{p01_(0), p01_(1), 0.},
-                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.});
+                    FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.});
             } else if (orientation == RectangleOrientation::RIGHT) {
                 tl_entrance->draw_triangle_wo_normals(
-                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.},
                     FixedArray<double, 3>{p00_(0), p00_(1), 0.},
-                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.});
+                    FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.});
             } else {
                 tl_entrance->draw_rectangle_wo_normals(
                     FixedArray<double, 3>{p00_(0), p00_(1), 0.},
                     FixedArray<double, 3>{p01_(0), p01_(1), 0.},
-                    FixedArray<double, 3>{cs.s11(0), cs.s11(1), 0.},
-                    FixedArray<double, 3>{cs.s10(0), cs.s10(1), 0.},
+                    FixedArray<double, 3>{cs.s(1, 1)(0), cs.s(1, 1)(1), 0.},
+                    FixedArray<double, 3>{cs.s(1, 0)(0), cs.s(1, 0)(1), 0.},
                     {1.f, 0.f, 0.f},  // c00
                     {0.f, 1.f, 0.f},  // c10
                     {0.f, 0.f, 1.f},  // c11
@@ -469,16 +469,16 @@ FixedArray<double, 3> WarpedSegment2D::warp_1(const FixedArray<double, 3>& p, do
 
 CurbedStreet::CurbedStreet(const OsmRectangle2D& r, double start, double stop) {
     WarpedSegment2D ws{r};
-    s00 = ws.warp_0(start);
-    s10 = ws.warp_1(start);
-    s01 = ws.warp_0(stop);
-    s11 = ws.warp_1(stop);
+    s(0, 0) = ws.warp_0(start);
+    s(1, 0) = ws.warp_1(start);
+    s(0, 1) = ws.warp_0(stop);
+    s(1, 1) = ws.warp_1(stop);
     if (start == -1) {
-        s00 = r.p00_;
-        s10 = r.p10_;
+        s(0, 0) = r.p00_;
+        s(1, 0) = r.p10_;
     }
     if (stop == 1) {
-        s01 = r.p01_;
-        s11 = r.p11_;
+        s(0, 1) = r.p01_;
+        s(1, 1) = r.p11_;
     }
 }

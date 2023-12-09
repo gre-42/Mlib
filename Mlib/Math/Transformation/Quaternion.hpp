@@ -31,31 +31,31 @@ public:
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
      */
     explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
-        TData trace = m(0u, 0u) + m(1u, 1u) + m(2u, 2u);
+        TData trace = m(0, 0) + m(1, 1) + m(2, 2);
         if (trace > 0) {
             TData k = TData{0.5} / std::sqrt(trace + (TData)1);
             s_ = TData{0.25} / k;
-            v_(0) = (m(2u, 1u) - m(1u, 2u) ) * k;
-            v_(1) = (m(0u, 2u) - m(2u, 0u) ) * k;
-            v_(2) = (m(1u, 0u) - m(0u, 1u) ) * k;
+            v_(0) = (m(2, 1) - m(1, 2) ) * k;
+            v_(1) = (m(0, 2) - m(2, 0) ) * k;
+            v_(2) = (m(1, 0) - m(0, 1) ) * k;
         } else {
-            if (m(0u, 0u) > m(1u, 1u) && m(0u, 0u) > m(2u, 2u) ) {
-                TData k = (TData)2 * std::sqrt(1 + m(0u, 0u) - m(1u, 1u) - m(2u, 2u));
-                s_ = (m(2u, 1u) - m(1u, 2u) ) / k;
+            if (m(0, 0) > m(1, 1) && m(0, 0) > m(2, 2) ) {
+                TData k = (TData)2 * std::sqrt(1 + m(0, 0) - m(1, 1) - m(2, 2));
+                s_ = (m(2, 1) - m(1, 2) ) / k;
                 v_(0) = TData{0.25} * k;
-                v_(1) = (m(0u, 1u) + m(1u, 0u) ) / k;
-                v_(2) = (m(0u, 2u) + m(2u, 0u) ) / k;
-            } else if (m(1u, 1u) > m(2u, 2u)) {
-                TData k = (TData)2 * std::sqrt(1 + m(1u, 1u) - m(0u, 0u) - m(2u, 2u));
-                s_ = (m(0u, 2u) - m(2u, 0u) ) / k;
-                v_(0) = (m(0u, 1u) + m(1u, 0u) ) / k;
+                v_(1) = (m(0, 1) + m(1, 0) ) / k;
+                v_(2) = (m(0, 2) + m(2, 0) ) / k;
+            } else if (m(1, 1) > m(2, 2)) {
+                TData k = (TData)2 * std::sqrt(1 + m(1, 1) - m(0, 0) - m(2, 2));
+                s_ = (m(0, 2) - m(2, 0) ) / k;
+                v_(0) = (m(0, 1) + m(1, 0) ) / k;
                 v_(1) = TData{0.25} * k;
-                v_(2) = (m(1u, 2u) + m(2u, 1u) ) / k;
+                v_(2) = (m(1, 2) + m(2, 1) ) / k;
             } else {
-                TData k = (TData)2 * std::sqrt(1 + m(2u, 2u) - m(0u, 0u) - m(1u, 1u));
-                s_ = (m(1u, 0u) - m(0u, 1u) ) / k;
-                v_(0) = (m(0u, 2u) + m(2u, 0u) ) / k;
-                v_(1) = (m(1u, 2u) + m(2u, 1u) ) / k;
+                TData k = (TData)2 * std::sqrt(1 + m(2, 2) - m(0, 0) - m(1, 1));
+                s_ = (m(1, 0) - m(0, 1) ) / k;
+                v_(0) = (m(0, 2) + m(2, 0) ) / k;
+                v_(1) = (m(1, 2) + m(2, 1) ) / k;
                 v_(2) = TData{0.25} * k;
             }
         }

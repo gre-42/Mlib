@@ -36,12 +36,12 @@ void Mlib::hessian_determinant_trace(
             // d00 d01
             // d10 d11
             FixedArray<float, 2, 2> hessian;
-            hessian(0u, 0u) = (image(r - 1, c) - 2.f * image(r, c) + image(r + 1, c)) / 4.f;
-            hessian(1u, 1u) = (image(r, c - 1) - 2.f * image(r, c) + image(r, c + 1)) / 4.f;
-            hessian(0u, 1u) = (
+            hessian(0, 0) = (image(r - 1, c) - 2.f * image(r, c) + image(r + 1, c)) / 4.f;
+            hessian(1, 1) = (image(r, c - 1) - 2.f * image(r, c) + image(r, c + 1)) / 4.f;
+            hessian(0, 1) = (
                 (image(r + 1, c + 1) - image(r - 1, c + 1)) -
                 (image(r + 1, c - 1) - image(r - 1, c - 1))) / 4.f;
-            hessian(1u, 0u) = (
+            hessian(1, 0) = (
                 (image(r + 1, c + 1) - image(r + 1, c - 1)) -
                 (image(r - 1, c + 1) - image(r - 1, c - 1))) / 4.f;
             //Array<float> q;

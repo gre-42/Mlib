@@ -107,20 +107,20 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
 bool GroundBvh::gradient(FixedArray<double, 2>& grad, const FixedArray<double, 2>& pt, double dx) const
 {
     FixedArray<double, 2, 2> positions;
-    if (!height(positions(0u, 0u), pt + FixedArray<double, 2>{ -dx, 0. })) {
+    if (!height(positions(0, 0), pt + FixedArray<double, 2>{ -dx, 0. })) {
         return false;
     }
-    if (!height(positions(0u, 1u), pt + FixedArray<double, 2>{ dx, 0. })) {
+    if (!height(positions(0, 1), pt + FixedArray<double, 2>{ dx, 0. })) {
         return false;
     }
-    if (!height(positions(1u, 0u), pt + FixedArray<double, 2>{ 0., -dx })) {
+    if (!height(positions(1, 0), pt + FixedArray<double, 2>{ 0., -dx })) {
         return false;
     }
-    if (!height(positions(1u, 1u), pt + FixedArray<double, 2>{ 0., dx })) {
+    if (!height(positions(1, 1), pt + FixedArray<double, 2>{ 0., dx })) {
         return false;
     }
-    grad(0) = (positions(0u, 1u) - positions(0u, 0u)) / (2. * dx);
-    grad(1) = (positions(1u, 1u) - positions(1u, 0u)) / (2. * dx);
+    grad(0) = (positions(0, 1) - positions(0, 0)) / (2. * dx);
+    grad(1) = (positions(1, 1) - positions(1, 0)) / (2. * dx);
     return true;
 }
 

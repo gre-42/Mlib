@@ -39,7 +39,7 @@ FixedArray<float, 3, 3> trafo(const FixedArray<float, 3, 3>& R) {
 
 static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
 {
-    if (R(1u, 1u) > 0.f) {
+    if (R(1, 1) > 0.f) {
         // Akagi
         return dot2d(R, tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, 180.f * degrees, 0.f}));
     } else {

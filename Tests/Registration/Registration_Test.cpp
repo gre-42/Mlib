@@ -49,8 +49,8 @@ void test_patch_registration_2d() {
         Array<float> flow = patch_registration(a, b, max_window_shape, false);
         //std::cerr << "flow" << std::endl;
         //std::cerr << flow << std::endl;
-        assert_isclose<float>(flow[0](1u, 2u), (float)s);
-        assert_isclose<float>(flow[1](1u, 2u), 0.f);
+        assert_isclose<float>(flow[0](1, 2), (float)s);
+        assert_isclose<float>(flow[1](1, 2), 0.f);
 
         //Array<float> oflow = optical_flow(a, b, max_window_shape);
         //std::cerr << oflow << std::endl;

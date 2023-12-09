@@ -139,10 +139,10 @@ void SkyboxLogic::render(
         CHK(glUseProgram(rp_.program));
 
         FixedArray<float, 4, 4> vp = child_logic_.vp().casted<float>();
-        vp(0u, 3u) = 0;
-        vp(1u, 3u) = 0;
-        vp(2u, 3u) = 0;
-        vp(3u, 3u) = 1;
+        vp(0, 3) = 0;
+        vp(1, 3) = 0;
+        vp(2, 3) = 0;
+        vp(3, 3) = 1;
         CHK(glUniformMatrix4fv(rp_.vp_location, 1, GL_TRUE, vp.flat_begin()));
 
         CHK(glUniform1i(rp_.skybox_location, 0));

@@ -25,25 +25,25 @@ BinaryXResource::BinaryXResource(
     triangles.reserve(2);
 
     ColoredVertex<float> v00{ // min(x), min(y)
-        .position = {square(0u, 0u), square(0u, 1u), 0.f},
+        .position = {square(0, 0), square(0, 1), 0.f},
         .color = fixed_ones<float, 3>(),
         .uv = {0.f, 0.f},
         .normal = {0.f, 0.f, 1.f},
         .tangent = {0.f, 0.f, 0.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
-        .position = {square(0u, 0u), square(1u, 1u), 0.f},
+        .position = {square(0, 0), square(1, 1), 0.f},
         .color = fixed_ones<float, 3>(),
         .uv = {0.f, 1.f},
         .normal = {0.f, 0.f, 1.f},
         .tangent = {0.f, 0.f, 0.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
-        .position = {square(1u, 0u), square(0u, 1u), 0.f},
+        .position = {square(1, 0), square(0, 1), 0.f},
         .color = fixed_ones<float, 3>(),
         .uv = {1.f, 0.f},
         .normal = {0.f, 0.f, 1.f},
         .tangent = {0.f, 0.f, 0.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
-        .position = {square(1u, 0u), square(1u, 1u), 0.f},
+        .position = {square(1, 0), square(1, 1), 0.f},
         .color = fixed_ones<float, 3>(),
         .uv = {1.f, 1.f},
         .normal = {0.f, 0.f, 1.f},

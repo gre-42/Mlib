@@ -27,25 +27,25 @@ BlendingXResource::BlendingXResource(
     for (size_t i = 0; i < 2; ++i) {
         float n = (float)materials(i).number_of_frames;
         ColoredVertex<float> v00{ // min(x), min(y)
-                .position = {square(0u, 0u) / 2, square(0u, 1u), 0.f},
+                .position = {square(0, 0) / 2, square(0, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f},
                 .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v01{ // min(x), max(y)
-                .position = {square(0u, 0u) / 2, square(1u, 1u), 0.f},
+                .position = {square(0, 0) / 2, square(1, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {i / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f},
                 .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v10{ // max(x), min(y)
-                .position = {square(1u, 0u) / 2, square(0u, 1u), 0.f},
+                .position = {square(1, 0) / 2, square(0, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 0.f},
                 .normal = {0.f, 0.f, 1.f},
                 .tangent = fixed_zeros<float, 3>()};
         ColoredVertex<float> v11{ // max(x), max(y)
-                .position = {square(1u, 0u) / 2, square(1u, 1u), 0.f},
+                .position = {square(1, 0) / 2, square(1, 1), 0.f},
                 .color = fixed_ones<float, 3>(),
                 .uv = {(1 + i) / 2.f / n, 1.f},
                 .normal = {0.f, 0.f, 1.f},
@@ -84,7 +84,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
 {
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{(square_(1u, 0u) - square_(0u, 0u)) / 4.f, 0.f, 0.f },
+            FixedArray<double, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
             fixed_zeros<float, 3>(),
             1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -102,7 +102,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{double(-(square_(1u, 0u) - square_(0u, 0u)) / 4.f), 0., 0. },
+            FixedArray<double, 3>{double(-(square_(1, 0) - square_(0, 0)) / 4.f), 0., 0. },
             fixed_zeros<float, 3>(),
             1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{
@@ -120,7 +120,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{0.f, 0.f, (square_(1u, 1u) - square_(0u, 1u)) / 4.f },
+            FixedArray<double, 3>{0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
             1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -138,7 +138,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{0., 0., -(square_(1u, 1u) - square_(0u, 1u)) / 4. },
+            FixedArray<double, 3>{0., 0., -(square_(1, 1) - square_(0, 1)) / 4. },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
             1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{
