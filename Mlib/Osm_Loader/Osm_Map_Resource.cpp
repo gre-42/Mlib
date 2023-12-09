@@ -658,7 +658,7 @@ OsmMapResource::OsmMapResource(
     }
     // If extrude_air_curb_amount is not NAN,
     // boundaries have to be calculated at the ends of
-    // ends of air and ground street.
+    // air and ground street.
     try {
         LOG_INFO("extrude curbs, walls, grass, water");
         if (std::isnan(config.extrude_air_curb_amount)) {
@@ -668,7 +668,11 @@ OsmMapResource::OsmMapResource(
         } else if (config.extrude_air_curb_amount != 0) {
             TriangleList<double>::extrude(
                 *air_triangle_lists.tl_street_curb[RoadType::STREET],
-                {air_triangle_lists.tl_street_curb[RoadType::STREET]},
+                {
+                    config.curb_alpha != config.curb2_alpha
+                        ? air_triangle_lists.tl_street_curb[RoadType::STREET]
+                        : air_triangle_lists.tl_street_curb2[RoadType::STREET]
+                },
                 nullptr,
                 nullptr,
                 nullptr,
@@ -682,7 +686,11 @@ OsmMapResource::OsmMapResource(
             if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList<double>::extrude(
                     *air_triangle_lists.tl_street_curb[RoadType::PATH],
-                    {air_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    {
+                        config.curb_alpha != config.curb2_alpha
+                            ? air_triangle_lists.tl_street_curb[RoadType::PATH]
+                            : air_triangle_lists.tl_street_curb2[RoadType::PATH]
+                    },
                     nullptr,
                     nullptr,
                     nullptr,
@@ -698,7 +706,11 @@ OsmMapResource::OsmMapResource(
         if (config.extrude_curb_amount != 0) {
             TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_street_curb[RoadType::STREET],
-                {osm_triangle_lists.tl_street_curb[RoadType::STREET]},
+                {
+                    config.curb_alpha != config.curb2_alpha
+                        ? osm_triangle_lists.tl_street_curb[RoadType::STREET]
+                        : osm_triangle_lists.tl_street_curb2[RoadType::STREET]
+                },
                 nullptr,
                 nullptr,
                 nullptr,
@@ -709,10 +721,14 @@ OsmMapResource::OsmMapResource(
                 config.uv_scales_street.at(RoadType::STREET),
                 false,  // uvs_equal_lengths
                 0.f);   // ambient_occlusion
-            if (air_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
+            if (osm_triangle_lists.tl_street_curb.contains(RoadType::PATH)) {
                 TriangleList<double>::extrude(
                     *osm_triangle_lists.tl_street_curb[RoadType::PATH],
-                    {osm_triangle_lists.tl_street_curb[RoadType::PATH]},
+                    {
+                        config.curb_alpha != config.curb2_alpha
+                            ? osm_triangle_lists.tl_street_curb[RoadType::PATH]
+                            : osm_triangle_lists.tl_street_curb2[RoadType::PATH]
+                    },
                     nullptr,
                     nullptr,
                     nullptr,
