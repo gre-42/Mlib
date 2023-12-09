@@ -458,31 +458,37 @@ void DrawStreets::draw_holes() {
     };
     draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
     draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
-    for (const auto& nh : node_hole_contours) {
-        if (nh.second.empty()) {
+    for (const auto& [nid, nh] : node_hole_contours) {
+        if (nh.empty()) {
             continue;
         }
-        Array<NodeHoleVertex> hv{ArrayShape{nh.second.size()}};
+        Array<NodeHoleVertex> hv{ArrayShape{nh.size()}};
         {
             size_t i = 0;
-            for (const auto& h : nh.second) {
+            for (const auto& [a, h] : nh) {
                 if (curb_alpha_ != 1) {
-                    if (h.first.curb == 0 || h.first.curb == -1) {
-                        hv(i++) = h.second;
+                    if (curb_alpha_ != curb2_alpha_) {
+                        if (a.curb == 0 || a.curb == -1) {
+                            hv(i++) = h;
+                        }
+                    } else {
+                        if (a.curb == 0 || a.curb == -2) {
+                            hv(i++) = h;
+                        }
                     }
                 } else {
-                    hv(i++) = h.second;
+                    hv(i++) = h;
                 }
             }
             hv.reshape(ArrayShape{i});
         }
         RoadType road_type = RoadType::PATH;
         OsmTriangleLists* tlist2 = &air_triangles;
-        for (const auto& a : node_angles.at(nh.first)) {
-            if (a.second.road_type == RoadType::STREET) {
+        for (const auto& [_, a] : node_angles.at(nid)) {
+            if (a.road_type == RoadType::STREET) {
                 road_type = RoadType::STREET;
             }
-            if (a.second.layer == 0) {
+            if (a.layer == 0) {
                 tlist2 = &ground_triangles;
             }
         }
@@ -493,22 +499,24 @@ void DrawStreets::draw_holes() {
         float uv_scale = sit->second;
         float curb_alpha = NAN;
         float curb2_alpha = NAN;
-        for (const auto& e : nh.second) {
+        for (const auto& e : nh) {
             const auto& wi = way_infos.at(e.second.way_id);
             if (std::isnan(curb_alpha)) {
                 curb_alpha = wi.curb_alpha;
-            } else if ((curb_alpha != 1) != (wi.curb_alpha != 1)) {
-                THROW_OR_ABORT("Incompatible curb alpha");
             }
             if (std::isnan(curb2_alpha)) {
                 curb2_alpha = wi.curb2_alpha;
-            } else if ((curb2_alpha != 1) != (wi.curb2_alpha != 1)) {
+            }
+            if ((curb_alpha != curb2_alpha) != (wi.curb_alpha != wi.curb2_alpha)) {
+                THROW_OR_ABORT("Incompatible curb alpha");
+            }
+            if ((curb2_alpha != 1) != (wi.curb2_alpha != 1)) {
                 THROW_OR_ABORT("Incompatible curb2 alpha");
             }
         }
         auto& crossings = *tlist2->tl_street_crossing[road_type];
         // A single triangle does not work with curbs when an angle is ~90°
-        if ((nh.second.size() == 3) && (curb_alpha_ == 1)) {
+        if ((nh.size() == 3) && (curb_alpha_ == 1)) {
             crossings.draw_triangle_wo_normals(
                 FixedArray<double, 3>{hv(0).position(0), hv(0).position(1), 0.f},
                 FixedArray<double, 3>{hv(1).position(0), hv(1).position(1), 0.f},
@@ -516,7 +524,7 @@ void DrawStreets::draw_holes() {
                 way_infos.at(hv(0).way_id).colors(0),
                 way_infos.at(hv(1).way_id).colors(0),
                 way_infos.at(hv(2).way_id).colors(0));
-        } else if (nh.second.size() >= 3) {
+        } else if (nh.size() >= 3) {
             // Draw center fan
             {
                 FixedArray<double, 2> center = mean(hv TEMPLATE applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
@@ -531,8 +539,8 @@ void DrawStreets::draw_holes() {
                         way_infos.at(hv(j).way_id).colors(0),
                         center_color);
                 }
-                if (with_height_bindings && !nodes.at(nh.first).tags.contains("bind_height", "no")) {
-                    node_height_bindings[OrderableFixedArray{ center }] = nh.first;
+                if (with_height_bindings && !nodes.at(nid).tags.contains("bind_height", "no")) {
+                    node_height_bindings[OrderableFixedArray{ center }] = nid;
                 }
             }
             // Draw corners
@@ -540,7 +548,7 @@ void DrawStreets::draw_holes() {
                 std::vector<float> angles;
                 {
                     std::set<float> angles_set;
-                    for (const auto& e : nh.second) {
+                    for (const auto& e : nh) {
                         angles_set.insert(e.first.angle);
                     }
                     angles = std::vector<float>(angles_set.begin(), angles_set.end());
@@ -548,10 +556,10 @@ void DrawStreets::draw_holes() {
                 for (size_t i = 0; i < angles.size(); ++i) {
                     size_t j = (i + 1) % angles.size();
                     auto draw_rect = [&](TriangleList<double>& tl, int curb0, int curb1, int curb2, int curb3, const FixedArray<float, 2>& uv, size_t road_id) {
-                        const auto& p00 = nh.second.at(AngleCurb{angles[i], curb0});
-                        const auto& p10 = nh.second.at(AngleCurb{angles[i], curb1});
-                        const auto& p11 = nh.second.at(AngleCurb{angles[j], curb2});
-                        const auto& p01 = nh.second.at(AngleCurb{angles[j], curb3});
+                        const auto& p00 = nh.at(AngleCurb{angles[i], curb0});
+                        const auto& p10 = nh.at(AngleCurb{angles[i], curb1});
+                        const auto& p11 = nh.at(AngleCurb{angles[j], curb2});
+                        const auto& p01 = nh.at(AngleCurb{angles[j], curb3});
                         if (way_infos.at(p00.way_id).roads_delete(road_id) &&
                             way_infos.at(p10.way_id).roads_delete(road_id) &&
                             way_infos.at(p11.way_id).roads_delete(road_id) &&
@@ -579,9 +587,9 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 2>{0.f, g  });
                     };
                     auto draw_triangle = [&](TriangleList<double>& tl, int curb0, int curb1, int curb2, const FixedArray<float, 2>& uv, size_t road_id) {
-                        auto p00 = nh.second.at(AngleCurb{angles[i], curb0});
-                        auto p10 = nh.second.at(AngleCurb{angles[i], curb1});
-                        auto p01 = nh.second.at(AngleCurb{angles[j], curb2});
+                        const auto& p00 = nh.at(AngleCurb{angles[i], curb0});
+                        const auto& p10 = nh.at(AngleCurb{angles[i], curb1});
+                        const auto& p01 = nh.at(AngleCurb{angles[j], curb2});
                         if (way_infos.at(p00.way_id).roads_delete(road_id) &&
                             way_infos.at(p10.way_id).roads_delete(road_id) &&
                             way_infos.at(p01.way_id).roads_delete(road_id))
@@ -604,8 +612,12 @@ void DrawStreets::draw_holes() {
                             FixedArray<float, 2>{0.f, g  });
                     };
                     if (curb2_alpha != 1) {
-                        draw_rect(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -2, -1, curb_uv, 1);
-                        draw_triangle(*tlist2->tl_street_curb2[RoadType::STREET], 1, 2, -2, curb2_uv, 2);
+                        if (curb_alpha != curb2_alpha) {
+                            draw_rect(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -2, -1, curb_uv, 1);
+                            draw_triangle(*tlist2->tl_street_curb2[RoadType::STREET], 1, 2, -2, curb2_uv, 2);
+                        } else {
+                            draw_triangle(*tlist2->tl_street_curb2[RoadType::STREET], 0, 2, -2, curb2_uv, 2);
+                        }
                     } else {
                         // "if (curb_alpha != 1)" already checked above.
                         draw_triangle(*tlist2->tl_street_curb[RoadType::STREET], 0, 1, -1, curb_uv, 1);
@@ -1130,7 +1142,7 @@ void DrawStreets::draw_streets_draw_ways(
         draw(*air_triangles.tl_tunnel_pipe, tunnel_pipe_triangles);
         draw(*air_triangles.tl_tunnel_bdry, tunnel_bdry_triangles);
     }
-    if ((wi.curb_alpha != 1) && !wi.roads_delete(1)) {
+    if ((wi.curb_alpha != wi.curb2_alpha) && !wi.roads_delete(1)) {
         if (!wi.roads_delete_side(angle_way.neighbor_is_second)(1)) {
             double uv_len_central = std::round(curb_uv(1) * uv_scale * (uv_len0 + uv_len1) / 2.);
             rect.draw_z0(
@@ -1291,7 +1303,7 @@ void DrawStreets::draw_streets_find_hole_contours(
         if (angle_way.layer != 0) {
             air_hole_list.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = 0}, NodeHoleVertex{rect.p00_, angle_way.way_id}));
         }
-        if (wi.curb_alpha != 1) {
+        if (wi.curb_alpha != wi.curb2_alpha) {
             CurbedStreet cN{rect, -wi.curb2_alpha, -wi.curb_alpha};
             CurbedStreet cP{rect, wi.curb_alpha, wi.curb2_alpha};
             node_hole_contours.at(node_id).insert(std::make_pair(AngleCurb{.angle = node_angle, .curb = +1}, NodeHoleVertex{cN.s(0, 0), angle_way.way_id}));
@@ -1314,7 +1326,7 @@ void DrawStreets::draw_streets_find_hole_contours(
         if (angle_way.layer != 0) {
             air_hole_list.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = 0}, NodeHoleVertex{rect.p11_, angle_way.way_id}));
         }
-        if (wi.curb_alpha != 1) {
+        if (wi.curb_alpha != wi.curb2_alpha) {
             CurbedStreet cN{rect, -wi.curb2_alpha, -wi.curb_alpha};
             CurbedStreet cP{rect, wi.curb_alpha, wi.curb2_alpha};
             node_hole_contours.at(angle_way.neighbor_id).insert(std::make_pair(AngleCurb{.angle = nn.at(node_id).angle, .curb = -1}, NodeHoleVertex{cN.s(1, 1), angle_way.way_id}));

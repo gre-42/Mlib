@@ -225,7 +225,10 @@ void triangulate_entity_list(
                     1e-5))
                 {
                     if (!contour_triangles_filename.empty()) {
-                        plot_tris(contour_triangles_filename, t, {OrderableFixedArray{v.position}});
+                        plot_tris(contour_triangles_filename + to_string(e) + ".current.obj", t, { OrderableFixedArray{v.position} });
+                        for (const auto& [e1, t1] : hole_triangles) {
+                            plot_tris(contour_triangles_filename + to_string(e1) + ".other.obj", t1, { OrderableFixedArray{v.position} });
+                        }
                     }
                     auto exception = p2t::PointException{
                         p2t::Point{v.position(0), v.position(1)},
@@ -245,7 +248,7 @@ void triangulate_entity_list(
             }
         } catch (const EdgeException<double>& ex) {
             if (!contour_triangles_filename.empty()) {
-                plot_tris(contour_triangles_filename, t, {OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b}});
+                plot_tris(contour_triangles_filename, t, { OrderableFixedArray{ex.a}, OrderableFixedArray{ex.b} });
             }
             throw;
         }

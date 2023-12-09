@@ -713,14 +713,16 @@ std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_no_grass(
     return res;
 }
 
-std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_only() const {
+std::list<std::shared_ptr<TriangleList<double>>> OsmTriangleLists::tls_curb_and_curb2() const {
     auto res = std::list<std::shared_ptr<TriangleList<double>>>{};
     for (const auto& [_, e] : tl_street_curb.map()) {res.push_back(e);}
+    for (const auto& [_, e] : tl_street_curb2.map()) {res.push_back(e);}
     return res;
 }
 
-bool OsmTriangleLists::has_curb() const {
+bool OsmTriangleLists::has_curb_or_curb2() const {
     for (const auto& [_, e] : tl_street_curb.map()) {if (!e->triangles.empty()) return true;}
+    for (const auto& [_, e] : tl_street_curb2.map()) {if (!e->triangles.empty()) return true;}
     return false;
 }
 

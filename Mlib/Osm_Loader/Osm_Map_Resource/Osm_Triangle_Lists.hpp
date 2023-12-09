@@ -92,7 +92,7 @@ struct OsmTriangleLists {
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_backfaces() const;
     std::list<std::shared_ptr<TriangleList<double>>> tls_with_vertex_normals() const;
     std::list<std::shared_ptr<TriangleList<double>>> tls_no_grass() const;
-    std::list<std::shared_ptr<TriangleList<double>>> tls_curb_only() const;
+    std::list<std::shared_ptr<TriangleList<double>>> tls_curb_and_curb2() const;
     std::list<std::shared_ptr<TriangleList<double>>> tls_crossing_only() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> all_hole_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> entrance_triangles() const;
@@ -103,7 +103,7 @@ struct OsmTriangleLists {
     std::list<FixedArray<ColoredVertex<double>, 3>> street_triangles() const;
     std::list<FixedArray<ColoredVertex<double>, 3>> street_triangles(RoadType road_type) const;
     std::list<FixedArray<ColoredVertex<double>, 3>> ditch_triangles() const;
-    bool has_curb() const;
+    bool has_curb_or_curb2() const;
 };
 
 }

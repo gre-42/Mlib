@@ -841,7 +841,7 @@ OsmMapResource::OsmMapResource(
     if (config.extrude_street_amount != 0) {
         LOG_INFO("extrude streets");
         check_curb_validity(config.curb_alpha, config.curb2_alpha);
-        if (!osm_triangle_lists.has_curb()) {  // "if (config.curb_alpha == 1)" not working for curbs from obj-models
+        if (!osm_triangle_lists.has_curb_or_curb2()) {  // "if (config.curb_alpha == 1)" not working for curbs from obj-models
             TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[config.default_terrain_type],
                 osm_triangle_lists.tls_street_wo_curb(),
@@ -876,7 +876,7 @@ OsmMapResource::OsmMapResource(
             auto do_extrude = [&config, &boundary_vertices]
                 (OsmTriangleLists& triangle_lists)
             {
-                std::list<std::shared_ptr<TriangleList<double>>> source_triangles{triangle_lists.tls_curb_only()};
+                std::list<std::shared_ptr<TriangleList<double>>> source_triangles{triangle_lists.tls_curb_and_curb2()};
                 TriangleList<double>::extrude(
                     *triangle_lists.tl_street_curb[RoadType::STREET],              // dest
                     triangle_lists.tls_street_wo_curb(),                           // triangle_lists
@@ -1738,7 +1738,7 @@ void OsmMapResource::handle_point_exception(
     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
     std::stringstream sstr;
     sstr.precision(15);
-    sstr << message << " at position " << m.transform(pos) << ": " << e.what() << std::endl;
+    sstr << message << " at position " << m.transform(pos) << " | " << pos << ": " << e.what() << std::endl;
     throw std::runtime_error(sstr.str());
 }
 
