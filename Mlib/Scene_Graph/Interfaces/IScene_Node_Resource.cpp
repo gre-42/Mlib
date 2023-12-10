@@ -72,6 +72,15 @@ void ISceneNodeResource::create_barrier_triangle_hitboxes(
     THROW_OR_ABORT("create_barrier_triangle_hitboxes not implemented");
 }
 
+void ISceneNodeResource::smoothen_edges(
+    SmoothnessTarget target,
+    float smoothness,
+    size_t niterations,
+    float decay)
+{
+    THROW_OR_ABORT("smoothen not implemented");
+}
+
 AggregateMode ISceneNodeResource::aggregate_mode() const {
     THROW_OR_ABORT("aggregate_mode not implemented");
 }

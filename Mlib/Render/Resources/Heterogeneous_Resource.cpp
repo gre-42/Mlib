@@ -20,10 +20,10 @@ HeterogeneousResource::HeterogeneousResource(
     const FixedArray<float, 3>& instance_rotation,
     float instance_scale,
     const TransformationMatrix<double, double, 3>& geographic_mapping)
-: bri{ std::make_unique<BatchResourceInstantiator>(instance_rotation, instance_scale) },
-  acvas{ std::make_shared<AnimatedColoredVertexArrays>() },
-  scene_node_resources_{ scene_node_resources },
-  geographic_mapping_{geographic_mapping}
+    : bri{ std::make_unique<BatchResourceInstantiator>(instance_rotation, instance_scale) }
+    , acvas{ std::make_shared<AnimatedColoredVertexArrays>() }
+    , scene_node_resources_{ scene_node_resources }
+    , geographic_mapping_{geographic_mapping}
 {}
 
 HeterogeneousResource::~HeterogeneousResource()
@@ -90,7 +90,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_physics_
 }
 
 std::list<std::shared_ptr<AnimatedColoredVertexArrays>> HeterogeneousResource::get_rendering_arrays() const {
-    return {acvas};
+    return { acvas };
 }
 
 void HeterogeneousResource::generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles) {
@@ -184,6 +184,15 @@ void HeterogeneousResource::generate_instances() {
             THROW_OR_ABORT("Instances require single precision meshes");
         }
     }
+}
+
+void HeterogeneousResource::smoothen_edges(
+    SmoothnessTarget target,
+    float smoothness,
+    size_t niterations,
+    float decay)
+{
+    acvas->smoothen_edges(target, smoothness, niterations, decay);
 }
 
 TransformationMatrix<double, double, 3> HeterogeneousResource::get_geographic_mapping(

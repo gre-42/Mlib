@@ -29,6 +29,7 @@ struct RenderableResourceFilter;
 enum class PhysicsMaterial;
 class ISupplyDepots;
 struct InstantiationOptions;
+enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
@@ -72,6 +73,11 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
+    virtual void smoothen_edges(
+        SmoothnessTarget target,
+        float smoothness,
+        size_t niterations,
+        float decay = 0.97f);
 
     // Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

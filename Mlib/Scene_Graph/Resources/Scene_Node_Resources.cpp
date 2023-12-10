@@ -415,6 +415,25 @@ void SceneNodeResources::create_barrier_triangle_hitboxes(
     );
 }
 
+void SceneNodeResources::smoothen_edges(
+    const std::string& resource_name,
+    SmoothnessTarget target,
+    float smoothness,
+    size_t niterations,
+    float decay)
+{
+    add_modifier(
+        resource_name,
+        [resource_name, target, smoothness, niterations, decay](ISceneNodeResource& dest){
+            try {
+                dest.smoothen_edges(target, smoothness, niterations, decay);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("smoothen_edges for resource \"" + resource_name + "\" failed: " + e.what());
+            }
+        }
+    );
+}
+
 void SceneNodeResources::import_bone_weights(
     const std::string& destination,
     const std::string& source,

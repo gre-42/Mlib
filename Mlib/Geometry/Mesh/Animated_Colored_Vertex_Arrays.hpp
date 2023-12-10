@@ -18,6 +18,7 @@ template <class TPos>
 class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
 enum class PhysicsMaterial;
+enum class SmoothnessTarget;
 
 struct AnimatedColoredVertexArrays {
     AnimatedColoredVertexArrays();
@@ -38,6 +39,11 @@ struct AnimatedColoredVertexArrays {
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
+    void smoothen_edges(
+        SmoothnessTarget target,
+        float smoothness,
+        size_t niterations,
+        float decay = 0.97f);
     void check_consistency() const;
     void print(std::ostream& ostr) const;
 

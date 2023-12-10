@@ -48,6 +48,11 @@ public:
         PhysicsMaterial remove,
         const ColoredVertexArrayFilter& filter) override;
     virtual void generate_instances() override;
+    virtual void smoothen_edges(
+        SmoothnessTarget target,
+        float smoothness,
+        size_t niterations,
+        float decay = 0.97f) override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(

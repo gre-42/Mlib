@@ -5,6 +5,8 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Modifiers/Smoothen_Edges.hpp>
+#include <Mlib/Geometry/Mesh/Smoothness_Target.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 
@@ -88,6 +90,38 @@ void AnimatedColoredVertexArrays::create_barrier_triangle_hitboxes(
         }
     }
     dcvas = std::move(new_dvcas);
+}
+
+void AnimatedColoredVertexArrays::smoothen_edges(
+    SmoothnessTarget target,
+    float smoothness,
+    size_t niterations,
+    float decay)
+{
+    if (target == SmoothnessTarget::PHYSICS) {
+        std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
+        for (const auto& l : dcvas) {
+            if (!any(l->physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+                continue;
+            }
+            new_dvcas.emplace_back(std::make_shared<ColoredVertexArray<double>>(
+                l->name + "_smooth",
+                l->material,
+                l->physics_material & ~PhysicsMaterial::ATTR_VISIBLE,
+                l->modifier_backlog,
+                std::vector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
+                std::vector<FixedArray<ColoredVertex<double>, 2>>{},
+                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
+                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
+                std::vector<FixedArray<uint8_t, 3>>{},
+                std::vector<FixedArray<uint8_t, 2>>{}));
+            l->physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
+        }
+        Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);
+        dcvas.insert(dcvas.end(), new_dvcas.begin(), new_dvcas.end());
+    } else {
+        THROW_OR_ABORT("Only physics smoothness-target is implemented");
+    }
 }
 
 void AnimatedColoredVertexArrays::check_consistency() const {

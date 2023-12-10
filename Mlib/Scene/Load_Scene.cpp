@@ -208,6 +208,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
@@ -430,6 +431,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
     register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
     register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
+    register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
 
     // Main
     register_json_user_function(ReloadScene::key, ReloadScene::json_user_function);

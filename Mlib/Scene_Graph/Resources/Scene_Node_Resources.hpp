@@ -34,6 +34,7 @@ struct InstantiationOptions;
 enum class AggregateMode;
 enum class WayPointLocation;
 enum class PhysicsMaterial;
+enum class SmoothnessTarget;
 
 class SceneNodeResources {
 public:
@@ -116,6 +117,12 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter);
+    void smoothen_edges(
+        const std::string& resource_name,
+        SmoothnessTarget target,
+        float smoothness,
+        size_t niterations,
+        float decay = 0.97f);
 
     // Transformations
     void generate_grind_lines(

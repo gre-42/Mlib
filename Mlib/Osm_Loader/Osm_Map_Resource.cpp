@@ -1636,6 +1636,15 @@ void OsmMapResource::create_barrier_triangle_hitboxes(
     }
 }
 
+void OsmMapResource::smoothen_edges(
+    SmoothnessTarget target,
+    float smoothness,
+    size_t niterations,
+    float decay)
+{
+    hri_.smoothen_edges(target, smoothness, niterations, decay);
+}
+
 TransformationMatrix<double, double, 3> OsmMapResource::get_geographic_mapping(
     const TransformationMatrix<double, double, 3>& absolute_model_matrix) const
 {

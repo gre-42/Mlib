@@ -78,6 +78,11 @@ public:
         float depth,
         PhysicsMaterial destination_physics_material,
         const ColoredVertexArrayFilter& filter) override;
+    virtual void smoothen_edges(
+        SmoothnessTarget target,
+        float smoothness,
+        size_t niterations,
+        float decay = 0.97f) override;
 
     // ISceneNodeResource, Transformations
     virtual std::shared_ptr<ISceneNodeResource> generate_grind_lines(
