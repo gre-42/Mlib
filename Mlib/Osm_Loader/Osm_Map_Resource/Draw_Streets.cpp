@@ -458,7 +458,9 @@ void DrawStreets::draw_holes() {
     };
     draw_air_holes(air_support_node_hole_contours, air_triangles.tl_air_support);
     draw_air_holes(tunnel_node_hole_contours, air_triangles.tl_tunnel_crossing);
-    for (const auto& [nid, nh] : node_hole_contours) {
+    for (const auto& nit : node_hole_contours) {
+        const auto& nid = nit.first;
+        const auto& nh = nit.second;
         if (nh.empty()) {
             continue;
         }
@@ -555,7 +557,7 @@ void DrawStreets::draw_holes() {
                 }
                 for (size_t i = 0; i < angles.size(); ++i) {
                     size_t j = (i + 1) % angles.size();
-                    auto draw_rect = [&, &nh=nh](TriangleList<double>& tl, int curb0, int curb1, int curb2, int curb3, const FixedArray<float, 2>& uv, size_t road_id) {
+                    auto draw_rect = [&](TriangleList<double>& tl, int curb0, int curb1, int curb2, int curb3, const FixedArray<float, 2>& uv, size_t road_id) {
                         const auto& p00 = nh.at(AngleCurb{angles[i], curb0});
                         const auto& p10 = nh.at(AngleCurb{angles[i], curb1});
                         const auto& p11 = nh.at(AngleCurb{angles[j], curb2});
