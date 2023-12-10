@@ -88,6 +88,12 @@ public:
     }
     // Specialized access operators to avoid compiler warning
     // for signed-ness of second/third index parameter
+    const TData& operator() (size_t id0) const {
+        return data_[id0]();
+    }
+    TData& operator() (size_t id0) {
+        return data_[id0]();
+    }
     const TData& operator() (size_t id0, size_t id1) const {
         return data_[id0](id1);
     }
@@ -100,14 +106,14 @@ public:
     TData& operator() (size_t id0, size_t id1, size_t id2) {
         return data_[id0](id1, id2);
     }
-    // Generic () access operators
+    // Generic at(...) access operators
     template <typename... Ids>
-    const TData& operator() (size_t id0, Ids... ids) const {
-        return data_[id0](ids...);
+    const TData& at(size_t id0, Ids... ids) const {
+        return data_[id0].at(ids...);
     }
     template <typename... Ids>
-    TData& operator() (size_t id0, Ids... ids) {
-        return data_[id0](ids...);
+    TData& at(size_t id0, Ids... ids) {
+        return data_[id0].at(ids...);
     }
     // Generic [] access operators
     const FixedArray<TData, tshape...>& operator [] (size_t id) const {
