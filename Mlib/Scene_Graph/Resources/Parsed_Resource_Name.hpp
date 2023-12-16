@@ -16,6 +16,7 @@ enum class AggregateMode;
 struct ParsedResourceName {
     std::string name;
     uint32_t billboard_id;
+    float yangle;
     float probability;
     float probability1;
     float min_distance_to_bdry;
@@ -30,6 +31,7 @@ struct ParsedResourceName {
     void serialize(Archive& archive) {
         archive(name);
         archive(billboard_id);
+        archive(yangle);
         archive(probability);
         archive(probability1);
         archive(min_distance_to_bdry);

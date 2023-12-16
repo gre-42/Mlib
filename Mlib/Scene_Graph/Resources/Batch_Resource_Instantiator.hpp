@@ -29,14 +29,14 @@ public:
     void add_parsed_resource_name(
         const FixedArray<double, 3>& p,
         const ParsedResourceName& prn,
-        float yangle,
+        float dyangle,
         float scale);
 
     void add_parsed_resource_name(
         const FixedArray<double, 2>& p,
         double height,
         const ParsedResourceName& prn,
-        float yangle,
+        float dyangle,
         float scale);
 
     void add_hitbox(

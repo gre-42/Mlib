@@ -13,17 +13,15 @@ class BatchResourceInstantiator;
 class ResourceNameCycle;
 class GroundBvh;
 class StreetBvh;
+struct WaysideDistances;
 
-void draw_road_bollards(
+void draw_waysides(
     BatchResourceInstantiator& bri,
     ResourceNameCycle& rnc,
     const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
     const GroundBvh& ground_bvh,
     const StreetBvh& entrance_bvh,
     double scale,
-    double tangential_distance,
-    double normal_distance,
-    double gradient_dx,
-    double max_gradient);
+    const WaysideDistances& distances);
 
 }

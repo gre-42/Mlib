@@ -42,10 +42,10 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Ceilings.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Into_Street_Rectangles.hpp>
-#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Road_Bollards.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Roofs.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Streets.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Wall_Barriers.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Waysides.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Facade_Texture_Cycle.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Generate_Racing_Line_Playback.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Buildings_Or_Wall_Barriers.hpp>
@@ -1034,18 +1034,27 @@ OsmMapResource::OsmMapResource(
     }
     if (!config.road_bollard_resource_names.empty()) {
         ResourceNameCycle rnc{config.road_bollard_resource_names};
-        LOG_INFO("draw_road_bollards");
-        draw_road_bollards(
+        LOG_INFO("draw road-bollards");
+        draw_waysides(
             *hri_.bri,
             rnc,
             street_hole_triangles,
             *ground_bvh,
             entrance_bvh,
             config.scale,
-            config.road_bollard_tangential_distance,
-            config.road_bollard_normal_distance,
-            config.road_bollard_gradient_dx,
-            config.road_bollard_max_gradient);
+            config.road_bollard_distances);
+    }
+    if (!config.trashcan_resource_names.empty()) {
+        ResourceNameCycle rnc{config.trashcan_resource_names};
+        LOG_INFO("draw trashcans");
+        draw_waysides(
+            *hri_.bri,
+            rnc,
+            street_hole_triangles,
+            *ground_bvh,
+            entrance_bvh,
+            config.scale,
+            config.trashcan_distances);
     }
 
     {

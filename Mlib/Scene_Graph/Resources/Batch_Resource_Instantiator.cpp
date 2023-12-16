@@ -30,9 +30,10 @@ BatchResourceInstantiator::~BatchResourceInstantiator()
 void BatchResourceInstantiator::add_parsed_resource_name(
     const FixedArray<double, 3>& p,
     const ParsedResourceName& prn,
-    float yangle,
+    float dyangle,
     float scale)
 {
+    float yangle = prn.yangle + dyangle;
     ResourceInstanceDescriptor rid{
         .position = p,
         .yangle = yangle,

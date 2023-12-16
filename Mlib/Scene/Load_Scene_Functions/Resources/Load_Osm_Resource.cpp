@@ -22,7 +22,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 41;
+static uint32_t CACHE_FILE_VERSION = 42;
 
 namespace fs = std::filesystem;
 
@@ -110,6 +110,8 @@ DECLARE_ARGUMENT(path_bumps_endpoint1_resource_name);
 DECLARE_ARGUMENT(water_texture);
 DECLARE_ARGUMENT(water_height);
 DECLARE_ARGUMENT(road_bollard_resource_names);
+DECLARE_ARGUMENT(trashcan_resource_names);
+DECLARE_ARGUMENT(trashcan_distances);
 DECLARE_ARGUMENT(tree_resource_names);
 DECLARE_ARGUMENT(grass_resource_names);
 DECLARE_ARGUMENT(street_mud_grass_resource_names);
@@ -559,6 +561,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::road_bollard_resource_names)) {
             config.road_bollard_resource_names = args.arguments.at_vector<std::string>(KnownArgs::road_bollard_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::trashcan_resource_names)) {
+            config.trashcan_resource_names = args.arguments.at_vector<std::string>(KnownArgs::trashcan_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains(KnownArgs::trashcan_distances)) {
+            config.trashcan_distances = args.arguments.at<WaysideDistances>(KnownArgs::trashcan_distances);
         }
         if (args.arguments.contains_non_null(KnownArgs::tree_resource_names)) {
             config.tree_resource_names = args.arguments.at_vector<std::string>(KnownArgs::tree_resource_names, parse_resource_name_func);

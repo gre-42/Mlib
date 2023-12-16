@@ -9,6 +9,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Road_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Socle_Texture.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Vertical_Subdivision.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Wayside_Distances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Style.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
@@ -98,10 +99,17 @@ struct OsmResourceConfig {
     float water_height = 0;
     std::string roof_texture;
     std::vector<ParsedResourceName> road_bollard_resource_names;
-    double road_bollard_tangential_distance = 3.;
-    double road_bollard_normal_distance = 0.25;
-    double road_bollard_gradient_dx = 0.1;
-    double road_bollard_max_gradient = -0.1;
+    std::vector<ParsedResourceName> trashcan_resource_names;
+    WaysideDistances road_bollard_distances{
+        .tangential_distance = 3.,
+        .normal_distance = 0.25,
+        .gradient_dx = 0.1,
+        .max_gradient = -0.1 };
+    WaysideDistances trashcan_distances{
+        .tangential_distance = 30.,
+        .normal_distance = 0.25,
+        .gradient_dx = NAN,
+        .max_gradient = NAN };
     std::vector<ParsedResourceName> tree_resource_names;
     std::vector<ParsedResourceName> grass_resource_names;
     TriangleSamplerResourceConfig triangle_sampler_resource_config;
