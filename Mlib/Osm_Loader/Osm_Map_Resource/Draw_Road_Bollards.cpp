@@ -27,7 +27,7 @@ void Mlib::draw_road_bollards(
 
     for (const auto& contour_coarse : contours) {
         auto subdiv_contour = subdivided_contour(contour_coarse, scale, tangential_distance);
-        if (subdiv_contour.size() < 4) {
+        if (subdiv_contour.size() < 3) {
             continue;
         }
         auto inc_it = [&subdiv_contour](auto& it){

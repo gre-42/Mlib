@@ -65,6 +65,7 @@
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
 #include <Mlib/Time/Fps/Measure_Fps.hpp>
@@ -196,6 +197,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
 }
 
 int main(int argc, char** argv) {
+    reserve_realtime_threads(0);
     enable_floating_point_exceptions();
 
     const ArgParser parser(
@@ -469,7 +471,10 @@ int main(int argc, char** argv) {
             0.005f,
             safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
         SleeperSequence sls{{ &mf, &sleeper }};
-        SetFps set_fps{ &sls };
+        SetFps set_fps{
+            &sls,
+            std::function<std::chrono::steady_clock::time_point()>(),
+            []() { return false; }};
         Render render{
             render_config,
             num_renderings,
@@ -656,6 +661,7 @@ int main(int argc, char** argv) {
                     scene_node_resources.instantiate_renderable(
                         "objs",
                         InstantiationOptions{
+                            .rendering_resources = &rendering_resources,
                             .instance_name = "objs",
                             .scene_node = scene_node.ref(DP_LOC),
                             .renderable_resource_filter = RenderableResourceFilter{
