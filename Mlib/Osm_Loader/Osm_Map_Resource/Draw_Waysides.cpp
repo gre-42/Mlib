@@ -1,5 +1,6 @@
 #include "Draw_Waysides.hpp"
 #include <Mlib/Geometry/Mesh/Contour.hpp>
+#include <Mlib/Math/Interp.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Ground_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Street_Bvh.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Subdivided_Contour.hpp>
@@ -10,6 +11,8 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
+
+static const double dx = 0.01;
 
 void Mlib::draw_waysides(
     BatchResourceInstantiator& bri,
@@ -24,25 +27,10 @@ void Mlib::draw_waysides(
     auto contours = find_contours(inner_triangles, ContourDetectionStrategy::NODE_NEIGHBOR);
 
     for (const auto& contour_coarse : contours) {
-        auto subdiv_contour = subdivided_contour(contour_coarse, scale, distances.tangential_distance);
-        if (subdiv_contour.size() < 3) {
-            continue;
-        }
-        auto inc_it = [&subdiv_contour](auto& it){
-            if (++it == subdiv_contour.end()) {
-                it = subdiv_contour.begin();
-            }
-        };
-        auto it2 = subdiv_contour.begin();
-        auto it0 = it2++;
-        auto it1 = it2++;
-        while (it1 != subdiv_contour.begin()) {
-            const auto d3 = *it2 - *it0;
-            const auto& p3 = *it1;
-
-            inc_it(it0);
-            inc_it(it1);
-            inc_it(it2);
+        auto interp = interpolated_contour(contour_coarse);
+        for (auto t = 2 * scale * dx; t <= interp.xmax() - 2 * scale * dx; t += scale * distances.tangential_distance) {
+            auto d3 = interp(t + scale * dx) - interp(t - scale * dx);
+            auto p3 = interp(t);
 
             FixedArray<double, 2> p2{ p3(0), p3(1) };
             if (entrance_bvh.has_neighbor(p2, 1e-12)) {
