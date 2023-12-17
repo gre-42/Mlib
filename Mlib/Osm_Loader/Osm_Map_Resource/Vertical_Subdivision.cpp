@@ -1,4 +1,5 @@
 #include "Vertical_Subdivision.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
