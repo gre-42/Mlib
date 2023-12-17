@@ -3,6 +3,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Nodes_And_Ways.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Stats/Linspace.hpp>
+#include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -135,7 +136,7 @@ NodesAndWays Mlib::smoothen_ways(
                 (!iw.force_include(nd0, nd1))) {
                 continue;
             }
-            auto models_and_widths_identical = [&node_ways, &naws, &default_street_width, &default_lane_width](const std::string& i) {
+            auto models_and_widths_identical = [&](const std::string& i) {
                 const auto& iways = node_ways.at(i);
                 if (iways.size() == 1) {
                     return true;
@@ -158,7 +159,10 @@ NodesAndWays Mlib::smoothen_ways(
                     }
                     return false;
                 } else {
-                    THROW_OR_ABORT("Number of ways neither 1 or 2 despite number of neighbors check");
+                    THROW_OR_ABORT(
+                        "Number of ways neither 1 or 2 despite number of neighbors check at node \"" + i +
+                        "\". Neighbors: " + Mlib::join(", ", node_neighbors.at(i)) +
+                        ". Ways: " + Mlib::join(", ", iways));
                 }
             };
             if (!models_and_widths_identical(*i0) || !models_and_widths_identical(*i1)) {
