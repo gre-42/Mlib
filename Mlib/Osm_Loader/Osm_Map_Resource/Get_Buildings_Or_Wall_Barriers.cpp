@@ -65,16 +65,19 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         building_top = parse_meters(w.tags, "height", building_top);
         building_top = parse_meters(w.tags, "building:height", building_top);
 
-        FacadeTextureDescriptor entrance_ftd;
-        FacadeTextureDescriptor middle_ftd;
-        if (building_type == BuildingType::BUILDING) {
-            entrance_ftd = entrance_ftc(entrance_style, building_top).descriptor;
-            middle_ftd = middle_ftc(middle_style, building_top).descriptor;
-        }
         auto vss = w.tags.try_get("vertical_subdivision");
         auto vertical_subdivision = vss.has_value()
             ? vertical_subdivision_from_string(vss.value())
             : default_vertical_subdivision;
+
+        FacadeTextureDescriptor entrance_ftd;
+        FacadeTextureDescriptor middle_ftd;
+        if (building_type == BuildingType::BUILDING) {
+            if (any(vertical_subdivision & VerticalSubdivision::ANY_ENTRANCES)) {
+                entrance_ftd = entrance_ftc(entrance_style, building_top).descriptor;
+            }
+            middle_ftd = middle_ftc(middle_style, building_top).descriptor;
+        }
         float socle_height = SOCLE_HEIGHT * any(vertical_subdivision & VerticalSubdivision::ANY_SOCLE);
         float entrances_height =
             (entrance_ftd.interior_textures.interior_size(1) + 2.f * entrance_ftd.interior_textures.facade_edge_size(1))
