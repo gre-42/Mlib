@@ -274,6 +274,7 @@ void Mlib::add_beacons_to_raceways(
     ParsedResourceName prn{
         .name = resource_name,
         .billboard_id = UINT32_MAX,
+        .yangle = 0.f,
         .probability = NAN,
         .aggregate_mode = scene_node_resources.aggregate_mode(resource_name),
         .create_imposter = false,

@@ -26,10 +26,10 @@ enum class PhysicsMaterial;
 
 template <class TPos>
 class TriangleList {
-public:
     TriangleList() = delete;
     TriangleList(const TriangleList&) = delete;
     TriangleList& operator = (const TriangleList&) = delete;
+public:
     TriangleList(
         std::string name,
         Material material,

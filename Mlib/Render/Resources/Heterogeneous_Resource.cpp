@@ -162,6 +162,7 @@ void HeterogeneousResource::generate_instances() {
                 ParsedResourceName{
                     .name = match[1].str(),
                     .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
+                    .yangle = 0.f,
                     .probability = NAN,
                     .probability1 = NAN,
                     .min_distance_to_bdry = NAN,

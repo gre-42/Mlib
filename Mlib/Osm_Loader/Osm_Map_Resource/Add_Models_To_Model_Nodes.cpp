@@ -59,6 +59,7 @@ void Mlib::add_models_to_model_nodes(
             ParsedResourceName prn{
                 .name = match[1].str(),
                 .billboard_id = match[2].matched ? safe_sto<uint32_t>(match[2].str()) : UINT32_MAX,
+                .yangle = 0.f,
                 .probability = NAN,
                 .aggregate_mode = resources.aggregate_mode(match[1].str()),
                 .create_imposter = tags.contains("create_imposter", "yes"),
