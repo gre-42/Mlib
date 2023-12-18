@@ -81,7 +81,7 @@ void Mlib::draw_wall_barriers(
                     }
                     FixedArray<float, 2> uv = 1.f / scale * uv_scale * bs.uv;
                     // some buildings are clock-wise, others counter-clock-wise
-                    tls.back()->draw_rectangle_wo_normals(
+                    tl->draw_rectangle_wo_normals(
                         {p1(0), p1(1), bl.bottom * scale},
                         {p0(0), p0(1), bl.bottom * scale},
                         {p0(0), p0(1), bl.top * scale},
