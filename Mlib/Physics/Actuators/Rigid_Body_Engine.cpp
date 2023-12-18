@@ -1,4 +1,5 @@
 #include "Rigid_Body_Engine.hpp"
+#include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
@@ -174,7 +175,11 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
     engine_power_intent_ = engine_power_intent;
 }
 
-void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& position) {
+void RigidBodyEngine::advance_time(
+    float dt,
+    const FixedArray<double, 3>& position,
+    const FixedArray<float, 3>& velocity)
+{
     float average_tire_w_;
     if (tires_w_.empty()) {
         average_tire_w_ = NAN;
@@ -196,7 +201,10 @@ void RigidBodyEngine::advance_time(float dt, const FixedArray<double, 3>& positi
                 average_tire_w_,
                 engine_power_intent_,
                 engine_power.get_power());
-            audio_->set_position(position);
+            audio_->set_position(AudioSourceState<double>{
+                .position = position,
+                .velocity = velocity
+            });
         }
     }
 }

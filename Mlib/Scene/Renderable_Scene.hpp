@@ -121,7 +121,9 @@ public:
     void plot_physics_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     void stop_and_join();
     void clear();
-    void instantiate_audio_listener();
+    void instantiate_audio_listener(
+        std::chrono::steady_clock::duration delay,
+        std::chrono::steady_clock::duration velocity_dt);
 
     DeleteNodeMutex delete_node_mutex_;
 

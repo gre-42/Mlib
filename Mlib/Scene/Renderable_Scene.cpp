@@ -238,7 +238,14 @@ void RenderableScene::clear() {
     }
 }
 
-void RenderableScene::instantiate_audio_listener() {
-    audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(selected_cameras_, scene_);
+void RenderableScene::instantiate_audio_listener(
+    std::chrono::steady_clock::duration delay,
+    std::chrono::steady_clock::duration velocity_dt)
+{
+    audio_listener_updater_ = std::make_unique<AudioListenerUpdater>(
+        selected_cameras_,
+        scene_,
+        delay,
+        velocity_dt);
     physics_engine_.advance_times_.add_advance_time(*audio_listener_updater_);
 }

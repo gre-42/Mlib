@@ -212,7 +212,9 @@ std::future<void> loader_thread(
     UiFocus& ui_focus,
     LayoutConstraints& layout_constraints,
     LoadScene& load_scene,
-    std::atomic_bool& load_scene_finished)
+    std::atomic_bool& load_scene_finished,
+    std::chrono::steady_clock::duration render_delay,
+    std::chrono::steady_clock::duration velocity_dt)
 {
     return std::async(std::launch::async, [&](){
         try {
@@ -257,7 +259,9 @@ std::future<void> loader_thread(
                     }
                 }
                 load_scene_finished = true;
-                renderable_scenes["primary_scene"].instantiate_audio_listener();
+                renderable_scenes["primary_scene"].instantiate_audio_listener(
+                    render_delay,
+                    velocity_dt);
             }
 
             print_debug_info(args, renderable_scenes);
@@ -463,10 +467,14 @@ void android_main(android_app* app) {
             .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
+        auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<float>{ 1.0f * physics_dt });
+        auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
             safe_stof(args.named_value("--render_dt", "0.01667")),
-            physics_dt,
+            render_delay,
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             args.has_named("--control_render_fps"),
             args.has_named("--print_render_residual_time"),
@@ -610,7 +618,9 @@ void android_main(android_app* app) {
                     ui_focus,
                     layout_constraints,
                     load_scene,
-                    load_scene_finished)};
+                    load_scene_finished,
+                    render_delay,
+                    velocity_dt)};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));

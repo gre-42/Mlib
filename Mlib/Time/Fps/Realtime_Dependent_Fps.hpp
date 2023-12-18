@@ -12,7 +12,7 @@ struct RealtimeDependentFps {
     explicit RealtimeDependentFps(
         std::string prefix,
         float dt,
-        float physics_dt,
+        std::chrono::steady_clock::duration delay,
         float max_residual_time,
         bool control_fps,
         bool print_residual_time,

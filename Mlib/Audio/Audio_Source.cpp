@@ -3,6 +3,7 @@
 #include <Mlib/Audio/Audio_Buffer.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/CHK.hpp>
+#include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
 
@@ -49,12 +50,13 @@ void AudioSource::set_pitch(float value) {
     AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 
-void AudioSource::set_position(const FixedArray<double, 3>& position) {
+void AudioSource::set_position(const AudioSourceState<double>& position) {
     auto relpos = AudioListener::get_relative_position(position);
     if (!relpos.has_value()) {
         return;
     }
-    AL_CHK(alSourcefv(source_, AL_POSITION, relpos.value().flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_POSITION, (relpos.value().position / meters).flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_VELOCITY, (relpos.value().velocity / (meters / s)).flat_begin()));
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
             AL_CHK(alSourcef(source_, AL_GAIN, gain_));

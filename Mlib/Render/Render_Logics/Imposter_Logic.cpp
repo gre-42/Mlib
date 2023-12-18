@@ -270,7 +270,15 @@ void ImposterLogic::render(
                     la.value().near_plane,
                     la.value().far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
-        RenderedSceneDescriptor imposter_rsd{.external_render_pass = {ExternalRenderPassType::IMPOSTER_NODE, std::chrono::steady_clock::now(), "", orig_node_.ptr(), imposter_camera_node.get(DP_LOC)}, .time_id = 0};
+        RenderedSceneDescriptor imposter_rsd{
+            .external_render_pass = {
+                ExternalRenderPassType::IMPOSTER_NODE,
+                frame_id.external_render_pass.time,
+                "",
+                orig_node_.ptr(),
+                imposter_camera_node.get(DP_LOC)
+            },
+            .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }

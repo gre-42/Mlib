@@ -332,7 +332,7 @@ void RigidBodyVehicle::advance_time(
         t.second.advance_time(cfg.dt / (float)cfg.oversampling);
     }
     for (auto& [_, e] : engines_) {
-        e.advance_time(cfg.dt / (float)cfg.oversampling, abs_com());
+        e.advance_time(cfg.dt / (float)cfg.oversampling, abs_com(), rbi_.rbp_.v_);
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();

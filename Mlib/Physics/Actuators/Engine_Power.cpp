@@ -1,5 +1,4 @@
 #include "Engine_Power.hpp"
-#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 

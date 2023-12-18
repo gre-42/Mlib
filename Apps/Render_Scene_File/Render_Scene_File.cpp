@@ -158,7 +158,9 @@ std::future<void> loader_thread(
     LoadScene& load_scene,
     const RenderingContext& primary_rendering_context,
     std::atomic_bool& load_scene_finished,
-    const Render& render)
+    const Render& render,
+    std::chrono::steady_clock::duration render_delay,
+    std::chrono::steady_clock::duration velocity_dt)
 {
     return std::async(std::launch::async, [&](){
         try {
@@ -204,7 +206,9 @@ std::future<void> loader_thread(
                     }
                 }
                 load_scene_finished = true;
-                renderable_scenes["primary_scene"].instantiate_audio_listener();
+                renderable_scenes["primary_scene"].instantiate_audio_listener(
+                    render_delay,
+                    velocity_dt);
             }
 
             print_debug_info(args, renderable_scenes);
@@ -431,10 +435,14 @@ int main(int argc, char** argv) {
             .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
+        auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<float>{ 1.0f * physics_dt });
+        auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+            std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{
             "Render set FPS: ",
             safe_stof(args.named_value("--render_dt", "0.01667")),
-            physics_dt,
+            render_delay,
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             args.has_named("--control_render_fps"),
             args.has_named("--print_render_residual_time"),
@@ -543,7 +551,8 @@ int main(int argc, char** argv) {
             {
                 RenderingResources rendering_resources{
                     "primary_rendering_resources",
-                    render_config.anisotropic_filtering_level };
+                    render_config.anisotropic_filtering_level
+                };
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
@@ -591,7 +600,9 @@ int main(int argc, char** argv) {
                     load_scene,
                     primary_rendering_context,
                     load_scene_finished,
-                    render)};
+                    render,
+                    render_delay,
+                    velocity_dt)};
                 try {
                     main_func(
                         args,

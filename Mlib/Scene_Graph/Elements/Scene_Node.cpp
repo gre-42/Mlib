@@ -8,6 +8,7 @@
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -1083,6 +1084,15 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix(std::chro
     } else {
         return result;
     }
+}
+
+FixedArray<float, 3> SceneNode::velocity(
+    std::chrono::steady_clock::time_point time,
+    std::chrono::steady_clock::duration dt) const
+{
+    auto p0 = absolute_model_matrix(time - dt);
+    auto p1 = absolute_model_matrix(time + dt);
+    return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * s);
 }
 
 void SceneNode::set_absolute_pose(

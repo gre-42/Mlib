@@ -6,10 +6,13 @@ using namespace Mlib;
 
 bool AudioListener::muted_ = false;
 float AudioListener::gain_ = 1.f;
-std::optional<TransformationMatrix<float, double, 3>> AudioListener::view_matrix_ = std::nullopt;
+std::optional<AudioListenerState> AudioListener::listener_inverse_state_ = std::nullopt;
 
-void AudioListener::set_transformation(const TransformationMatrix<float, double, 3>& trafo) {
-    view_matrix_ = trafo.inverted();
+void AudioListener::set_transformation(const AudioListenerState& listener_state) {
+    listener_inverse_state_ = AudioListenerState{
+        .pose = listener_state.pose.inverted(),
+        .velocity = -listener_state.pose.irotate(listener_state.velocity)
+    };
     // AL_CHK(alListenerfv(AL_POSITION, trafo.t().flat_begin()));
     // float orientation[6] = {
     //     -trafo.R(0, 2),
@@ -22,11 +25,15 @@ void AudioListener::set_transformation(const TransformationMatrix<float, double,
     // AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
 }
 
-std::optional<FixedArray<float, 3>> AudioListener::get_relative_position(const FixedArray<double, 3>& position) {
-    if (!view_matrix_.has_value()) {
+std::optional<AudioSourceState<float>> AudioListener::get_relative_position(const AudioSourceState<double>& state) {
+    if (!listener_inverse_state_.has_value()) {
         return std::nullopt;
     }
-    return view_matrix_.value().transform(position).casted<float>();
+    const auto& il = listener_inverse_state_.value();
+    return AudioSourceState<float>{
+        .position = il.pose.transform(state.position).casted<float>(),
+        .velocity = il.velocity + il.pose.rotate(state.velocity)
+    };
 }
 
 void AudioListener::set_gain(float f) {

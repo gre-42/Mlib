@@ -25,7 +25,7 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) override;
-    virtual void set_position(const FixedArray<double, 3>& position) override;
+    virtual void set_position(const AudioSourceState<double>& position) override;
 private:
 #ifndef WITHOUT_ALUT
     std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;

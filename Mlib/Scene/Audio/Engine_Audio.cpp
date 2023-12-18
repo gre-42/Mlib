@@ -61,7 +61,7 @@ void EngineAudio::notify_rotation(
 #endif
 }
 
-void EngineAudio::set_position(const FixedArray<double, 3>& position) {
+void EngineAudio::set_position(const AudioSourceState<double>& position) {
 #ifndef WITHOUT_ALUT
     cross_fade_.set_position(position);
 #endif

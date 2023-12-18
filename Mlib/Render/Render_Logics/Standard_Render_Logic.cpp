@@ -100,7 +100,8 @@ void StandardRenderLogic::render(
             ly,
             render_config,
             scene_graph_config,
-            render_results, frame_id);
+            render_results,
+            frame_id);
 
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 

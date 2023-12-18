@@ -4,17 +4,16 @@ using namespace Mlib;
 
 RealtimeDependentFps::RealtimeDependentFps(std::string prefix,
                                            float dt,
-                                           float physics_dt,
+                                           std::chrono::steady_clock::duration delay,
                                            float max_residual_time,
                                            bool control_fps,
                                            bool print_residual_time,
                                            float alpha,
                                            unsigned int print_interval)
-    : rts{std::move(prefix), dt, max_residual_time, print_residual_time}
-    , mf{alpha, print_interval}
+    : rts{ std::move(prefix), dt, max_residual_time, print_residual_time }
+    , mf{ alpha, print_interval }
     , ft{
-        std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::duration<float>{ 1.0f * physics_dt }),
+        delay,
         [this]() {
             return std::chrono::duration_cast<std::chrono::steady_clock::duration>(
                 std::chrono::duration<float>{ mf.mean_dt() });

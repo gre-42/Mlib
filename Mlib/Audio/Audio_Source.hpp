@@ -7,6 +7,8 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 class AudioBuffer;
+template <class TPosition>
+struct AudioSourceState;
 
 enum class PositionRequirement {
     WAITING_FOR_POSITION,
@@ -24,7 +26,7 @@ public:
     void set_loop(bool value);
     void set_gain(float f);
     void set_pitch(float f);
-    void set_position(const FixedArray<double, 3> &position);
+    void set_position(const AudioSourceState<double> &position);
     void play();
     void join();
     void mute();

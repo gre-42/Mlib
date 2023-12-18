@@ -9,6 +9,8 @@
 namespace Mlib {
 
 class AudioBuffer;
+template <class TPosition>
+struct AudioSourceState;
 
 struct AudioSourceAndGain {
     const AudioBuffer* audio_buffer;
@@ -34,7 +36,7 @@ public:
               float pitch = 1.f,
               float buffer_frequency = NAN);
     void stop();
-    void set_position(const FixedArray<double, 3> &position);
+    void set_position(const AudioSourceState<double> &position);
 
 private:
     PositionRequirement position_requirement_;

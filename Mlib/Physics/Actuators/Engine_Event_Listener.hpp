@@ -3,8 +3,8 @@
 
 namespace Mlib {
 
-template <typename TData, size_t... tshape>
-class FixedArray;
+template <class TPosition>
+struct AudioSourceState;
 struct EnginePowerIntent;
 
 class EngineEventListener {
@@ -15,7 +15,7 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) = 0;
-    virtual void set_position(const FixedArray<double, 3>& position) = 0;
+    virtual void set_position(const AudioSourceState<double>& position) = 0;
 };
 
 }

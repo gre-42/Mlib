@@ -8,9 +8,9 @@ FrameTime::FrameTime(
     std::chrono::steady_clock::duration delay,
     std::function<std::chrono::steady_clock::duration()> dt,
     float alpha)
-: delay_{delay},
-  dt_{std::move(dt)},
-  alpha_{alpha}
+    : delay_{ delay }
+    , dt_{ std::move(dt) }
+    , alpha_{ alpha }
 {}
 
 FrameTime::~FrameTime() = default;

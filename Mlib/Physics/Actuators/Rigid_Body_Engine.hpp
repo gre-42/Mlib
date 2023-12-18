@@ -48,7 +48,10 @@ public:
         const float* rotor_w,
         const EnginePowerDeltaIntent& delta_intent);
     void reset_forces();
-    void advance_time(float dt, const FixedArray<double, 3>& position);
+    void advance_time(
+        float dt,
+        const FixedArray<double, 3>& position,
+        const FixedArray<float, 3>& velocity);
     float engine_w() const;
 
 private:
