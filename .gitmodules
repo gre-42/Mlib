@@ -1,3 +1,6 @@
 [submodule "recastnavigation"]
 	path = recastnavigation
 	url = https://github.com/recastnavigation/recastnavigation
+[submodule "bullet3"]
+	path = bullet3
+	url = https://github.com/bulletphysics/bullet3.git

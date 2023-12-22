@@ -31,6 +31,7 @@ option(BUILD_SFM "Build the structure from motion library" ON)
 option(BUILD_CV "Build the computer vision library" ON)
 option(BUILD_OPENCV "Build the Open Computer Vision Library" ON)
 option(BUILD_SCENE "Build the scene library" ON)
+option(BUILD_BULLET "Build the Bullet Physics SDK" ON)
 option(WITH_OPENSSL "Build against OpenSSL" ON)
 
 ####################
@@ -83,6 +84,7 @@ else()
     find_package(OpenAL)
     find_package(ALUT)
 endif()
+
 set(RECAST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/recastnavigation/Recast/Include)
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
     set(RECASTNAVIGATION_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/VSRecastBuild)
@@ -93,6 +95,15 @@ else()
     set(RECASTNAVIGATION_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/RecastBuild)
 endif()
 find_package(RecastNavigation REQUIRED)
+
+if (BUILD_BULLET)
+    set(BULLET_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bullet3/src)
+    if (CMAKE_GENERATOR MATCHES "Visual Studio")
+        set(BULLET_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/VSBullet3Build)
+    endif()
+    find_package(Bullet REQUIRED)
+    set(BULLET_DEFINITIONS "${BULLET_DEFINITIONS} BT_USE_DOUBLE_PRECISION")
+endif()
 
 ###########################
 # Add compile definitions #

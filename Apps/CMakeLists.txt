@@ -1,4 +1,7 @@
 add_subdirectory(Box_Filter)
+if (BUILD_BULLET)
+    add_subdirectory(Bullet_Contacts)
+endif()
 add_subdirectory(Cgi_Player)
 add_subdirectory(Download_Heightmap)
 add_subdirectory(Enhance_Window_Texture)
