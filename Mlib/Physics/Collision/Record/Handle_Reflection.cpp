@@ -413,6 +413,30 @@ void Mlib::handle_reflection(
                 std::to_string(-overlap));
         }
     }
+    if (!c.l1_is_normal && (
+        any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) ||
+        any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND)))
+    {
+        FixedArray<double, 3> round_normal;
+        assert_true(c.r1 != nullptr);
+        if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
+            any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
+        {
+            round_normal = c.t0.plane.normal - c.r1->normal;
+            double nl2 = sum(squared(round_normal));
+            if (nl2 < 1e-12) {
+                THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
+            }
+            round_normal /= std::sqrt(nl2);
+        } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND)) {
+            round_normal = c.t0.plane.normal;
+        } else {
+            round_normal = -c.r1->normal;
+        }
+        if (dot0d(round_normal, normal) < c.history.cfg.max_cos_round_normal) {
+            normal = round_normal;
+        }
+    }
     if ((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY)) {
         assert_true(sat_used);
         assert_true(!c.l1_is_normal);

@@ -27,6 +27,9 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
     if (s == "attr_concave") {
         return PhysicsMaterial::ATTR_CONCAVE;
     }
+    if (s == "attr_round") {
+        return PhysicsMaterial::ATTR_ROUND;
+    }
     if (s == "obj_alignment_plane") {
         return PhysicsMaterial::OBJ_ALIGNMENT_PLANE;
     }
