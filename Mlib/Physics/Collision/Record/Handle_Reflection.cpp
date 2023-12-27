@@ -438,13 +438,9 @@ void Mlib::handle_reflection(
             }
         } else {
             auto dv = c.o0.velocity_at_position(intersection_point) - c.o1.velocity_at_position(intersection_point);
-            if (auto vl2 = sum(squared(dv)); vl2 > 1e-12) {
-                float vn = dot0d(normal.casted<float>(), dv);
-                double vl = std::sqrt(vl2);
-                bool normal_is_round = (std::abs(vn) < c.history.cfg.max_cos_velocity * vl);
-                if (!normal_is_round && (overlap < vn * c.history.cfg.slide_factor)) {
-                    return;
-                }
+            float vn = dot0d(normal.casted<float>(), dv);
+            if (overlap < vn * c.history.cfg.slide_factor) {
+                return;
             }
         }
     }
