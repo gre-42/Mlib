@@ -52,6 +52,7 @@
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Threads/Realtime_Threads.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Time/Fps/Fixed_Time_Sleeper.hpp>
@@ -80,7 +81,11 @@ void test_physics_engine(unsigned int seed) {
         .window_title = "Physics test",
         .show_mouse_cursor = true};
     FixedTimeSleeper render_sleeper{ 1.f / 60.f };
-    SetFps set_fps{ &render_sleeper };
+    SetFps set_fps{
+        &render_sleeper,
+        std::function<std::chrono::steady_clock::time_point()>(), // simulated_time
+        [](){ return false; }                                     // paused
+    };
     Render render{
         render_config,
         num_renderings,
@@ -93,7 +98,7 @@ void test_physics_engine(unsigned int seed) {
         .oversampling = getenv_default_size_t("OVERSAMPLING", 20)};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
-    PhysicsEngine pe{physics_cfg};
+    PhysicsEngine pe{ physics_cfg };
 
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
@@ -117,11 +122,10 @@ void test_physics_engine(unsigned int seed) {
         .z_order = 0};
     RenderingContextGuard rcg{ primary_rendering_context };
 
-    SelectedCameras selected_cameras{scene};
+    SelectedCameras selected_cameras{ scene };
     auto scene_name = std::string{getenv_default("SCENE", "flat")};
     if (scene_name == "flat") {
         create_scene_flat(
-            scene_node_resources,
             scene,
             pe,
             selected_cameras,
@@ -129,7 +133,6 @@ void test_physics_engine(unsigned int seed) {
             seed);
     } else if (scene_name == "rod") {
         create_scene_rod(
-            scene_node_resources,
             scene,
             pe,
             selected_cameras);
@@ -148,7 +151,10 @@ void test_physics_engine(unsigned int seed) {
     SetFps physics_set_fps{
         physics_cfg.control_fps
             ? &physics_sleeper
-            : nullptr};
+            : nullptr,
+        [&]() { return physics_sleeper.simulated_time(); }, // simulated_time
+        []() { return false; }                              // paused
+    };
     PhysicsIteration pi{
         scene_node_resources,
         scene,
@@ -260,6 +266,7 @@ void test_physics_engine(unsigned int seed) {
 
 
 int main(int argc, char** argv) {
+    reserve_realtime_threads(0);
     enable_floating_point_exceptions();
 
     try {

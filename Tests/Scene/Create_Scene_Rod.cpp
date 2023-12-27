@@ -11,6 +11,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -25,7 +26,6 @@
 using namespace Mlib;
 
 void Mlib::create_scene_rod(
-    SceneNodeResources& scene_node_resources,
     Scene& scene,
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras)
@@ -60,9 +60,9 @@ void Mlib::create_scene_rod(
         {0.1f, 1.f, 0.1f},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
 
-    scene_node_resources.add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles01));
-    scene_node_resources.add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
-    scene_node_resources.add_resource("beacon", load_renderable_obj(
+    RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles01));
+    RenderingContextStack::primary_scene_node_resources().add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
+    RenderingContextStack::primary_scene_node_resources().add_resource("beacon", load_renderable_obj(
         "Data/box.obj",
         LoadMeshConfig<float>{
             .position = FixedArray<float, 3>{0.f, 0.f, 0.f},
@@ -79,18 +79,20 @@ void Mlib::create_scene_rod(
             .laplace_ao_strength = 0.f,
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
             .werror = true},
-        scene_node_resources));
+        RenderingContextStack::primary_scene_node_resources()));
     // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
     auto scene_node0 = make_dunique<SceneNode>();
     auto scene_node1_0 = make_dunique<SceneNode>();
     auto scene_nodeR = make_dunique<SceneNode>();
     auto scene_nodeL = make_dunique<SceneNode>();
 
-    scene_node_resources.instantiate_renderable("obj0", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj0", InstantiationOptions{
+        .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj0",
         .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node_resources.instantiate_renderable("obj1", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj1", InstantiationOptions{
+        .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_0",
         .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});

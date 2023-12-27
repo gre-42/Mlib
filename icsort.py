@@ -83,6 +83,7 @@ for path, dirs, files in os.walk('.'):
         'engine-sim',
         'openal-soft',
         'freealut',
+        'bullet3',
         '.cxx']]
     files[:] = [f for f in files if f not in [
         'Array.hpp',

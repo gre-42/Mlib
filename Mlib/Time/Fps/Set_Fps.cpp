@@ -56,7 +56,7 @@ bool SetFps::execute_oldest_func() {
 
 std::chrono::steady_clock::time_point SetFps::simulated_time() const {
     if (!simulated_time_) {
-        THROW_OR_ABORT("SetFps::paused called but not set");
+        THROW_OR_ABORT("SetFps::simulated_time called but not set");
     }
     return simulated_time_();
 }

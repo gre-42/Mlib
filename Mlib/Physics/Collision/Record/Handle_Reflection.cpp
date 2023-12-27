@@ -441,7 +441,7 @@ void Mlib::handle_reflection(
             if (auto vl2 = sum(squared(dv)); vl2 > 1e-12) {
                 double vl = std::sqrt(vl2);
                 bool normal_is_round = std::abs(dot0d(normal.casted<float>(), dv)) < c.history.cfg.max_cos_velocity * vl;
-                if (!normal_is_round && (overlap < c.history.cfg.max_penetraction_depth_velocity)) {
+                if (!normal_is_round && (overlap < c.history.cfg.max_penetraction_depth_velocity * vl / c.history.cfg.slide_velocity)) {
                     return;
                 }
             }

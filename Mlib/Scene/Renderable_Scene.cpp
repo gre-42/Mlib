@@ -83,9 +83,9 @@ RenderableScene::RenderableScene(
       scene_config_.physics_engine_config.control_fps
           ? &physics_sleeper_
           : nullptr,
-    scene_config_.physics_engine_config.control_fps
-        ? [this]() { return physics_sleeper_.simulated_time(); }
-        : std::function<std::chrono::steady_clock::time_point()>(),
+      scene_config_.physics_engine_config.control_fps
+          ? [this]() { return physics_sleeper_.simulated_time(); }
+          : std::function<std::chrono::steady_clock::time_point()>(),
       paused_},
   busy_state_provider_guard_{dependent_sleeper, physics_set_fps_},
   gefp_{gravity_vector},
