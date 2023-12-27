@@ -76,7 +76,7 @@ static void handle_extended_reflection(
                 .constraint{
                     .normal_impulse{.normal = normal},
                     .overlap = overlap,
-                    .slop = (c.tire_id1 != SIZE_MAX)
+                    .slop = (c.tire_id1 != SIZE_MAX)  // tires have a shock-absorber, so disable slop
                         ? 0.001f
                         : 0.f,
                     .beta = c.history.cfg.plane_inequality_beta
