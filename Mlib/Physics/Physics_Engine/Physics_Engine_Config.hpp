@@ -39,6 +39,7 @@ struct PhysicsEngineConfig {
     float max_min_cos_ridge = 1 - 1e-4f;
     float min_cos_ridge_triangle = 0.5f;
     float max_cos_round_normal = 0.8f;
+    float min_slide_velocity = 1 * kph;
     float slide_factor = 2.f;
     float intersection_point_radius = 0.03f * meters;
     float point_equality_beta = 0.05f;

@@ -439,7 +439,9 @@ void Mlib::handle_reflection(
         } else {
             auto dv = c.o0.velocity_at_position(intersection_point) - c.o1.velocity_at_position(intersection_point);
             float vn = dot0d(normal.casted<float>(), dv);
-            if (overlap < vn * c.history.cfg.slide_factor * (c.history.cfg.dt / (float)c.history.cfg.oversampling)) {
+            if ((vn > c.history.cfg.min_slide_velocity) &&
+                (overlap < vn * c.history.cfg.slide_factor * (c.history.cfg.dt / (float)c.history.cfg.oversampling)))
+            {
                 return;
             }
         }
