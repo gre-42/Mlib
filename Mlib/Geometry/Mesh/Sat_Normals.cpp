@@ -1,12 +1,70 @@
 #include "Sat_Normals.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 using namespace Mlib;
+
+template <size_t tnvertices>
+static void compute_relevant_polys(
+    const IIntersectableMesh& mesh0,
+    const IIntersectableMesh& mesh1,
+    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
+    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1,
+    CollisionVertices& vertices0,
+    CollisionVertices& vertices1)
+{
+    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
+    relevant_polys0.reserve(triangles0.size());
+    relevant_polys1.reserve(triangles1.size());
+    for (const auto& t0 : triangles0) {
+        if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.polygon.plane())) {
+            relevant_polys0.push_back(&t0);
+        }
+        vertices0.insert(t0.corners);
+    }
+    for (const auto& t1 : triangles1) {
+        if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.polygon.plane())) {
+            relevant_polys1.push_back(&t1);
+        }
+        vertices1.insert(t1.corners);
+    }
+};
+
+template <size_t tnvertices>
+static void update_sat(
+    const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
+    const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1,
+    const CollisionVertices& vertices0,
+    const CollisionVertices& vertices1,
+    double& best_min_overlap,
+    FixedArray<double, 3>& best_normal)
+{
+    for (const auto& t0 : relevant_polys0) {
+        double sat_overl = sat_overlap_signed(
+            t0->polygon.plane().normal,
+            vertices0,
+            vertices1);
+        if (sat_overl < best_min_overlap) {
+            best_min_overlap = sat_overl;
+            best_normal = t0->polygon.plane().normal;
+        }
+    }
+    for (const auto& t1 : relevant_polys1) {
+        double sat_overl = sat_overlap_signed(
+            t1->polygon.plane().normal,
+            vertices1,
+            vertices0);
+        if (sat_overl < best_min_overlap) {
+            best_min_overlap = sat_overl;
+            best_normal = -t1->polygon.plane().normal;
+        }
+    }
+}
 
 void SatTracker::get_collision_plane(
     const IIntersectableMesh& mesh0,
@@ -41,26 +99,12 @@ void SatTracker::get_collision_plane(
         CollisionVertices vertices1;
         std::vector<const CollisionLineSphere*> relevant_edges0;
         std::vector<const CollisionLineSphere*> relevant_edges1;
-        std::vector<const CollisionTriangleSphere*> relevant_triangles0;
-        std::vector<const CollisionTriangleSphere*> relevant_triangles1;
-        {
-            const std::vector<CollisionTriangleSphere>& triangles0 = mesh0.get_triangles_sphere();
-            const std::vector<CollisionTriangleSphere>& triangles1 = mesh1.get_triangles_sphere();
-            relevant_triangles0.reserve(triangles0.size());
-            relevant_triangles1.reserve(triangles1.size());
-            for (const auto& t0 : triangles0) {
-                if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.plane)) {
-                    relevant_triangles0.push_back(&t0);
-                }
-                vertices0.insert(t0.triangle);
-            }
-            for (const auto& t1 : triangles1) {
-                if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.plane)) {
-                    relevant_triangles1.push_back(&t1);
-                }
-                vertices1.insert(t1.triangle);
-            }
-        }
+        std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
+        std::vector<const CollisionPolygonSphere<3>*> relevant_triangles1;
+        std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
+        std::vector<const CollisionPolygonSphere<4>*> relevant_quads1;
+        compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1, vertices0, vertices1);
+        compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1, vertices0, vertices1);
         {
             const std::vector<CollisionLineSphere>& edges0 = mesh0.get_edges_sphere();
             const std::vector<CollisionLineSphere>& edges1 = mesh1.get_edges_sphere();
@@ -77,26 +121,8 @@ void SatTracker::get_collision_plane(
                 }
             }
         }
-        for (const auto& t0 : relevant_triangles0) {
-            double sat_overl = sat_overlap_signed(
-                t0->plane.normal,
-                vertices0,
-                vertices1);
-            if (sat_overl < best_min_overlap) {
-                best_min_overlap = sat_overl;
-                best_normal = t0->plane.normal;
-            }
-        }
-        for (const auto& t1 : relevant_triangles1) {
-            double sat_overl = sat_overlap_signed(
-                t1->plane.normal,
-                vertices1,
-                vertices0);
-            if (sat_overl < best_min_overlap) {
-                best_min_overlap = sat_overl;
-                best_normal = -t1->plane.normal;
-            }
-        }
+        update_sat(relevant_quads0, relevant_quads1, vertices0, vertices1, best_min_overlap, best_normal);
+        update_sat(relevant_triangles0, relevant_triangles1, vertices0, vertices1, best_min_overlap, best_normal);
         for (const auto& e0 : relevant_edges0) {
             for (const auto& e1 : relevant_edges1) {
                 auto n = cross(e0->line(1) - e0->line(0), e1->line(1) - e1->line(0));

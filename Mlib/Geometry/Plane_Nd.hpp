@@ -7,6 +7,9 @@
 
 namespace Mlib {
 
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
+
 template <class TData, size_t tndim>
 class PlaneNd {
 public:
@@ -21,6 +24,17 @@ public:
     explicit PlaneNd(const FixedArray<FixedArray<TData, 3>, 3>& triangle, bool compute_center = false)
     : PlaneNd{triangle_normal(triangle), compute_center ? mean(triangle) : triangle(0)}
     {}
+    template <class TDir>
+    PlaneNd transformed(const TransformationMatrix<TDir, TData, 3>& transformation_matrix) const {
+        PlaneNd result;
+        const auto& n0 = normal;
+        const auto& i0 = intercept;
+        auto& n1 = result.normal;
+        auto& i1 = result.intercept;
+        n1 = transformation_matrix.rotate(n0.casted<TDir>()).casted<TData>();
+        i1 = i0 - dot0d(n1, transformation_matrix.t());
+        // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
+    }
     FixedArray<TData, tndim> normal;
     TData intercept;
 };

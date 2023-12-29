@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Ray_Segment_3D.hpp>
 
 namespace Mlib {
 
@@ -19,6 +20,7 @@ struct CollisionRidgeSphere {
     BoundingSphere<double, 3> bounding_sphere;
     PhysicsMaterial physics_material;
     FixedArray<FixedArray<double, 3>, 2> edge;
+    RaySegment3D<double> ray;
     FixedArray<double, 3> normal;
     double min_cos;
     bool is_touchable(SingleFaceBehavior behavior) const;

@@ -61,6 +61,7 @@ void Mlib::create_scene_flat(
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONCAVE,
         ModifierBacklog{},
+        std::vector<FixedArray<ColoredVertex<float>, 4>>(),
         std::move(triangles0_raw),
         std::vector<FixedArray<ColoredVertex<float>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
@@ -88,6 +89,7 @@ void Mlib::create_scene_flat(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material = PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
+            .triangulate = true,
             .werror = true});
 
     RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
@@ -108,6 +110,7 @@ void Mlib::create_scene_flat(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+            .triangulate = true,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
     // RenderingContextStack::primary_scene_node_resources().generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});

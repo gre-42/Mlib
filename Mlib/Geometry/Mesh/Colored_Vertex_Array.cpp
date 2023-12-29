@@ -2,12 +2,13 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Line3D.hpp>
+#include <Mlib/Geometry/Line_3D.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Geometry/Triangle3D.hpp>
+#include <Mlib/Geometry/Quad_3D.hpp>
+#include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
@@ -22,6 +23,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     Material material,
     PhysicsMaterial physics_material,
     ModifierBacklog modifier_backlog,
+    std::vector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
@@ -32,12 +34,13 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
   material{std::move(material)},
   physics_material{physics_material},
   modifier_backlog{modifier_backlog},
-  triangles{std::forward<std::vector<FixedArray<ColoredVertex<TPos>, 3>>>(triangles)},
-  lines{std::forward<std::vector<FixedArray<ColoredVertex<TPos>, 2>>>(lines)},
-  triangle_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 3>>>(triangle_bone_weights)},
-  line_bone_weights{std::forward<std::vector<FixedArray<std::vector<BoneWeight>, 2>>>(line_bone_weights)},
-  triangle_texture_layers{std::forward<std::vector<FixedArray<uint8_t, 3>>>(triangle_texture_layers)},
-  line_texture_layers{std::forward<std::vector<FixedArray<uint8_t, 2>>>(line_texture_layers)}
+  quads{std::move(quads)},
+  triangles{std::move(triangles)},
+  lines{std::move(lines)},
+  triangle_bone_weights{std::move(triangle_bone_weights)},
+  line_bone_weights{std::move(line_bone_weights)},
+  triangle_texture_layers{std::move(triangle_texture_layers)},
+  line_texture_layers{std::move(line_texture_layers)}
 {
     assert_true(!name.empty());
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
@@ -66,7 +69,13 @@ ColoredVertexArray<TPos>::~ColoredVertexArray()
 template <class TPos>
 std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
     std::vector<FixedArray<TPos, 3>> res;
-    res.reserve(triangles.size() * 3 + lines.size() * 2);
+    res.reserve(quads.size() * 4 + triangles.size() * 3 + lines.size() * 2);
+    for (auto& v : quads) {
+        res.push_back(v(0).position);
+        res.push_back(v(1).position);
+        res.push_back(v(2).position);
+        res.push_back(v(3).position);
+    }
     for (auto& v : triangles) {
         res.push_back(v(0).position);
         res.push_back(v(1).position);
@@ -145,6 +154,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         material,
         physics_material,
         modifier_backlog,
+        std::vector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
         std::move(transformed_lines),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
@@ -180,6 +190,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         material,
         physics_material,
         modifier_backlog,
+        std::vector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
         std::move(transformed_lines),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
@@ -189,8 +200,27 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
 }
 
 template <class TPos>
+void ColoredVertexArray<TPos>::transformed_quads_sphere(
+    std::vector<CollisionPolygonSphere<4>>& transformed,
+    const TransformationMatrix<float, double, 3>& tm) const
+{
+    if (transformed.size() + quads.size() > transformed.capacity()) {
+        THROW_OR_ABORT("Transformed vector has insufficient capacity");
+    }
+    auto rng = welzl_rng();
+    for (const auto& q : quads) {
+        Quad3D quad{q, tm};
+        transformed.push_back(CollisionPolygonSphere<4>{
+            .bounding_sphere = quad.bounding_sphere(rng),
+            .polygon = quad.polygon(),
+            .physics_material = physics_material,
+            .corners = quad.vertices()});
+    }
+}
+
+template <class TPos>
 void ColoredVertexArray<TPos>::transformed_triangles_sphere(
-    std::vector<CollisionTriangleSphere>& transformed,
+    std::vector<CollisionPolygonSphere<3>>& transformed,
     const TransformationMatrix<float, double, 3>& tm) const
 {
     if (transformed.size() + triangles.size() > transformed.capacity()) {
@@ -199,29 +229,29 @@ void ColoredVertexArray<TPos>::transformed_triangles_sphere(
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
         Triangle3D tri{t, tm};
-        transformed.push_back(CollisionTriangleSphere{
+        transformed.push_back(CollisionPolygonSphere<3>{
             .bounding_sphere = tri.bounding_sphere(rng),
-            .plane = tri.plane(),
+            .polygon = tri.polygon(),
             .physics_material = physics_material,
-            .triangle = tri.vertices()});
+            .corners = tri.vertices()});
     }
 }
 
 template <class TPos>
-std::vector<CollisionTriangleAabb> ColoredVertexArray<TPos>::transformed_triangles_bbox(
+std::vector<CollisionPolygonAabb<3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
     const TransformationMatrix<float, double, 3>& tm) const
 {
-    std::vector<CollisionTriangleAabb> res;
+    std::vector<CollisionPolygonAabb<3>> res;
     res.reserve(triangles.size());
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
         Triangle3D tri{t, tm};
-        res.push_back(CollisionTriangleAabb{
-            .base = CollisionTriangleSphere{
+        res.push_back(CollisionPolygonAabb<3>{
+            .base = CollisionPolygonSphere<3>{
                 .bounding_sphere = tri.bounding_sphere(rng),
-                .plane = tri.plane(),
+                .polygon = tri.polygon(),
                 .physics_material = physics_material,
-                .triangle = tri.vertices()
+                .corners = tri.vertices()
             },
             .aabb = tri.aabb()});
     }
@@ -239,7 +269,8 @@ std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
         res.push_back(CollisionLineAabb{
             .base = CollisionLineSphere{
                 .bounding_sphere = line.bounding_sphere(),
-                .line = line.vertices()
+                .line = line.vertices(),
+                .ray{line.vertices()}
             },
             .aabb = line.aabb()});
     }
@@ -256,7 +287,8 @@ std::vector<CollisionLineSphere> ColoredVertexArray<TPos>::transformed_lines_sph
         Line3D line{l, tm};
         res.push_back(CollisionLineSphere{
             .bounding_sphere = line.bounding_sphere(),
-            .line = line.vertices()});
+            .line = line.vertices(),
+            .ray{line.vertices()} });
     }
     return res;
 }
@@ -328,6 +360,7 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
         PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE,
         ModifierBacklog{},
         {},
+        {},
         std::move(grind_lines),
         {},
         {},
@@ -362,6 +395,7 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
         PhysicsMaterial::ATTR_COLLIDE,
         ModifierBacklog{},
         {},
+        {},
         std::move(contour_edges),
         {},
         {},
@@ -392,6 +426,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             material,
             physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
             modifier_backlog,
+            std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::vector{triangles},
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
@@ -422,6 +457,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 },
                 destination_physics_material | (physics_material & ~removed_attributes),
                 modifier_backlog,
+                std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
                 std::move(triangle_as_list),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

@@ -25,6 +25,7 @@ void Mlib::merge_meshes(
             material,
             physics_material,
             ModifierBacklog{},
+            std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::vector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

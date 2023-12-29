@@ -9,12 +9,14 @@ class FixedArray;
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
 class IIntersectableMesh;
-struct CollisionTriangleSphere;
+template <size_t tnvertices>
+struct CollisionPolygonSphere;
 
 class CollisionVertices {
 public:
     using Vertices = std::set<OrderableFixedArray<double, 3>>;
     using const_iterator = Vertices::const_iterator;
+    void insert(const FixedArray<FixedArray<double, 3>, 4>& quad);
     void insert(const FixedArray<FixedArray<double, 3>, 3>& tri);
     void insert(const FixedArray<FixedArray<double, 3>, 2>& line);
     void insert(const FixedArray<double, 3>& vertex);

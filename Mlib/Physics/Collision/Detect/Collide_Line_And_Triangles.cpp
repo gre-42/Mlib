@@ -1,6 +1,6 @@
 #include "Collide_Line_And_Triangles.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
@@ -24,7 +24,7 @@ void Mlib::collide_line_and_triangles(
         if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
             continue;
         }
-        if (!l0.bounding_sphere.intersects(t1.plane)) {
+        if (!l0.bounding_sphere.intersects(t1.polygon.plane())) {
             continue;
         }
         handle_line_triangle_intersection(IntersectionScene{
@@ -34,7 +34,8 @@ void Mlib::collide_line_and_triangles(
             .mesh1 = nullptr, // msh0,
             .l1 = &l0,
             .r1 = nullptr,
-            .t0 = t1,
+            .q0 = nullptr,
+            .t0 = &t1,
             .tire_id1 = SIZE_MAX,
             .mesh0_material = t1.physics_material,
             .mesh1_material = l0.physics_material,

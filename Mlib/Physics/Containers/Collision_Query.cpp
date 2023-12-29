@@ -20,7 +20,7 @@ bool CollisionQuery::can_see(
     bool only_terrain,
     PhysicsMaterial collidable_mask,
     FixedArray<double, 3>* intersection_point,
-    const CollisionTriangleSphere** intersection_triangle,
+    std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
@@ -36,11 +36,15 @@ bool CollisionQuery::can_see(
         if (alpha1 - alpha0 < 1e-12) {
             break;
         }
+        RaySegment3D<double> ray{
+            start,
+            dir,
+            alpha1 - alpha0 };
         FixedArray<FixedArray<double, 3>, 2> l{
             start + alpha0 * dir,
             start + alpha1 * dir};
         double t_min = INFINITY;
-        const CollisionTriangleSphere* triangle_min;
+        std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*> triangle_min;
         BoundingSphere<double, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
@@ -56,21 +60,19 @@ bool CollisionQuery::can_see(
                     if (!msh0.mesh->intersects(bs)) {
                         continue;
                     }
-                    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-                        if (!t0.bounding_sphere.intersects(bs)) {
-                            continue;
+                    auto intersect = [&](const auto& polygon0){
+                        if (!polygon0.bounding_sphere.intersects(bs)) {
+                            return true;
                         }
                         double t;
                         FixedArray<double, 3> intersection_pt;
-                        if (line_intersects_triangle(
-                            l(0),
-                            l(1),
-                            t0.triangle,
-                            t,
+                        if (ray.intersects(
+                            polygon0.polygon,
+                            &t,
                             &intersection_pt))
                         {
                             if ((intersection_point == nullptr) &&
-                                (intersection_triangle == nullptr) &&
+                                (intersection_polygon == nullptr) &&
                                 (seen_object == nullptr) &&
                                 (seen_mesh == nullptr))
                             {
@@ -81,8 +83,8 @@ bool CollisionQuery::can_see(
                                 if (intersection_point != nullptr) {
                                     *intersection_point = intersection_pt;
                                 }
-                                if (intersection_triangle != nullptr) {
-                                    triangle_min = &t0;
+                                if (intersection_polygon != nullptr) {
+                                    triangle_min = &polygon0;
                                 }
                                 if (seen_object != nullptr) {
                                     *seen_object = &o0.rigid_body;
@@ -91,6 +93,17 @@ bool CollisionQuery::can_see(
                                     *seen_mesh = msh0.mesh.get();
                                 }
                             }
+                        }
+                        return true;
+                    };
+                    for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
+                        if (!intersect(q0)) {
+                            return false;
+                        }
+                    }
+                    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+                        if (!intersect(t0)) {
+                            return false;
                         }
                     }
                 }
@@ -104,21 +117,19 @@ bool CollisionQuery::can_see(
                 }
                 for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
                     if (!bs.intersects(t0.bounding_sphere) ||
-                        !bs.intersects(t0.plane))
+                        !bs.intersects(t0.polygon.plane()))
                     {
                         continue;
                     }
                     double t;
                     FixedArray<double, 3> intersection_pt;
-                    if (line_intersects_triangle(
-                        l(0),
-                        l(1),
-                        t0.triangle,
-                        t,
+                    if (ray.intersects(
+                        t0.polygon,
+                        &t,
                         &intersection_pt))
                     {
                         if ((intersection_point == nullptr) &&
-                            (intersection_triangle == nullptr) &&
+                            (intersection_polygon == nullptr) &&
                             (seen_object == nullptr) &&
                             (seen_mesh == nullptr))
                         {
@@ -129,7 +140,7 @@ bool CollisionQuery::can_see(
                             if (intersection_point != nullptr) {
                                 *intersection_point = intersection_pt;
                             }
-                            if (intersection_triangle != nullptr) {
+                            if (intersection_polygon != nullptr) {
                                 triangle_min = &t0;
                             }
                             if (seen_object != nullptr) {
@@ -151,15 +162,13 @@ bool CollisionQuery::can_see(
             [&](const RigidBodyAndCollisionTriangleSphere& t0){
                 double t;
                 FixedArray<double, 3> intersection_pt;
-                if (line_intersects_triangle(
-                    l(0),
-                    l(1),
-                    t0.ctp.triangle,
-                    t,
+                if (ray.intersects(
+                    t0.ctp.polygon,
+                    &t,
                     &intersection_pt))
                 {
                     if ((intersection_point == nullptr) &&
-                        (intersection_triangle == nullptr) &&
+                        (intersection_polygon == nullptr) &&
                         (seen_object == nullptr) &&
                         (seen_mesh == nullptr))
                     {
@@ -170,7 +179,7 @@ bool CollisionQuery::can_see(
                         if (intersection_point != nullptr) {
                             *intersection_point = intersection_pt;
                         }
-                        if (intersection_triangle != nullptr) {
+                        if (intersection_polygon != nullptr) {
                             triangle_min = &t0.ctp;
                         }
                         if (seen_object != nullptr) {
@@ -190,8 +199,8 @@ bool CollisionQuery::can_see(
             return false;
         }
         if (t_min != INFINITY) {
-            if (intersection_triangle != nullptr) {
-                *intersection_triangle = triangle_min;
+            if (intersection_polygon != nullptr) {
+                *intersection_polygon = triangle_min;
             }
             return false;
         }
@@ -207,7 +216,7 @@ bool CollisionQuery::can_see(
     double height_offset,
     float time_offset,
     FixedArray<double, 3>* intersection_point,
-    const CollisionTriangleSphere** intersection_triangle,
+    std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
@@ -225,7 +234,7 @@ bool CollisionQuery::can_see(
             only_terrain,
             collidable_mask,
             intersection_point,
-            intersection_triangle,
+            intersection_polygon,
             seen_object,
             seen_mesh);
     } else {
@@ -237,7 +246,7 @@ bool CollisionQuery::can_see(
             only_terrain,
             collidable_mask,
             intersection_point,
-            intersection_triangle,
+            intersection_polygon,
             seen_object,
             seen_mesh);
     }
@@ -251,7 +260,7 @@ bool CollisionQuery::can_see(
     double height_offset,
     float time_offset,
     FixedArray<double, 3>* intersection_point,
-    const CollisionTriangleSphere** intersection_triangle,
+    std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
@@ -267,7 +276,7 @@ bool CollisionQuery::can_see(
             only_terrain,
             collidable_mask,
             intersection_point,
-            intersection_triangle,
+            intersection_polygon,
             seen_object,
             seen_mesh);
     } else {
@@ -279,7 +288,7 @@ bool CollisionQuery::can_see(
             only_terrain,
             collidable_mask,
             intersection_point,
-            intersection_triangle,
+            intersection_polygon,
             seen_object,
             seen_mesh);
     }

@@ -221,6 +221,12 @@ void Mlib::handle_reflection(
     const FixedArray<double, 3>& intersection_point,
     float surface_stiction_factor)
 {
+    linfo() << "a";
+    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
+        THROW_OR_ABORT("handle_reflection: Not exactly one of q0/t0 are set");
+    }
+    const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
+
     // #############
     // # Alignment #
     // #############
@@ -233,7 +239,7 @@ void Mlib::handle_reflection(
             c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
             return;
         }
-        if ((dot0d(c.t0.plane.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
+        if ((dot0d(N0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
             !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
         {
             return;
@@ -243,22 +249,22 @@ void Mlib::handle_reflection(
         if (c.o1.align_to_surface_state_.align_to_surface_relaxation_ != 0.f) {
             if (any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                 if (!c.o1.align_to_surface_state_.touches_alignment_plane_ ||
-                    (c.t0.plane.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
+                    (N0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))
                 {
                     c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
-                    c.o1.align_to_surface_state_.surface_normal_ = c.t0.plane.normal.casted<float>();
+                    c.o1.align_to_surface_state_.surface_normal_ = N0.normal.casted<float>();
                 }
             } else if (!c.o1.align_to_surface_state_.touches_alignment_plane_ &&
-                (std::abs(c.t0.plane.normal(1)) > c.history.cfg.alignment_surface_cos) &&
+                (std::abs(N0.normal(1)) > c.history.cfg.alignment_surface_cos) &&
                 (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
-                    (c.t0.plane.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
+                    (N0.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
                 (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                 (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
-                (c.t0.plane.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
+                (N0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                 // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
                 // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
             {
-                c.o1.align_to_surface_state_.surface_normal_ = c.t0.plane.normal.casted<float>();
+                c.o1.align_to_surface_state_.surface_normal_ = N0.normal.casted<float>();
             }
         }
         // if (c.beacons != nullptr) {
@@ -280,6 +286,7 @@ void Mlib::handle_reflection(
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
+        linfo() << "b";
         sat_used = true;
         assert_true(c.mesh0 != nullptr);
         assert_true(c.mesh1 != nullptr);
@@ -289,11 +296,15 @@ void Mlib::handle_reflection(
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
         }
+        linfo() << overlap << " | " << intersection_point;
+        if (overlap < -1e-3) {
+            assert_true(false);
+        }
     } else if (!c.l1_is_normal &&
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
                any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), c.t0.plane.normal) > 0.) {
+        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), N0.normal) > 0.) {
             return;
         }
         sat_used = true;
@@ -305,39 +316,48 @@ void Mlib::handle_reflection(
 
         std::vector<CollisionRidgeSphere> ridges;
         ridges.reserve(3);
-        for (size_t i = 0; i < 3; ++i) {
-            auto a = OrderableFixedArray{c.t0.triangle(i)};
-            auto b = OrderableFixedArray{c.t0.triangle((i + 1) % 3)};
-            auto it = (a < b)
-                ? c.history.ridge_map.find({a, b})
-                : c.history.ridge_map.find({b, a});
-            if (it == c.history.ridge_map.end()) {
-                // Ridges that cannot be collided due to their angle are removed,
-                // so failure is expected.
-                continue;
+        auto reflect = [&](const auto& corners0){
+            for (size_t i = 0; i < corners0.length(); ++i) {
+                auto a = OrderableFixedArray{corners0(i)};
+                auto b = OrderableFixedArray{corners0((i + 1) % corners0.length())};
+                auto it = (a < b)
+                    ? c.history.ridge_map.find({a, b})
+                    : c.history.ridge_map.find({b, a});
+                if (it == c.history.ridge_map.end()) {
+                    // Ridges that cannot be collided due to their angle are removed,
+                    // so failure is expected.
+                    continue;
+                }
+                ridges.push_back(*it->second);
             }
-            ridges.push_back(*it->second);
-        }
-        StaticTransformedMesh stm(
-            "temp",
-            AxisAlignedBoundingBox<double, 3>{c.t0.triangle},
-            BoundingSphere<double, 3>{c.t0.triangle},
-            std::vector<CollisionTriangleSphere>{c.t0},
-            std::vector<CollisionLineSphere>(),
-            std::vector<CollisionLineSphere>(),
-            std::move(ridges));
+            StaticTransformedMesh stm(
+                "temp",
+                AxisAlignedBoundingBox<double, 3>{corners0},
+                BoundingSphere<double, 3>{corners0},
+                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<4>>{*c.q0} : std::vector<CollisionPolygonSphere<4>>(),
+                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<3>>{*c.t0} : std::vector<CollisionPolygonSphere<3>>(),
+                std::vector<CollisionLineSphere>(),
+                std::vector<CollisionLineSphere>(),
+                std::move(ridges));
 
-        assert_true(c.r1 != nullptr);
-        try {
-            get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error(
-                "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));
+            assert_true(c.r1 != nullptr);
+            try {
+                get_overlap2(stm, *c.r1, -INFINITY, overlap, normal);
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error(
+                    "Could not compute collision plane of temporary mesh and edge: " + std::string(e.what()));
+            }
+        };
+        if (c.q0 != nullptr) {
+            reflect(c.q0->corners);
+        }
+        if (c.t0 != nullptr) {
+            reflect(c.t0->corners);
         }
         if (overlap == INFINITY) {
             return;
         }
-        if (dot0d(c.t0.plane.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
+        if (dot0d(N0.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
             return;
         }
         if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), normal) > 0.) {
@@ -383,8 +403,8 @@ void Mlib::handle_reflection(
         if (c.l1 == nullptr) {
             THROW_OR_ABORT("handle_reflection: l1 not set");
         }
-        normal = c.t0.plane.normal;
-        overlap = -(dot0d(c.l1->line(1), normal) + c.t0.plane.intercept);
+        normal = N0.normal;
+        overlap = -(dot0d(c.l1->line(1), normal) + N0.intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
                 normal *= -1;
@@ -422,14 +442,14 @@ void Mlib::handle_reflection(
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
             {
-                round_normal = c.t0.plane.normal - c.r1->normal;
+                round_normal = N0.normal - c.r1->normal;
                 double nl2 = sum(squared(round_normal));
                 if (nl2 < 1e-12) {
                     THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
                 }
                 round_normal /= std::sqrt(nl2);
             } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND)) {
-                round_normal = c.t0.plane.normal;
+                round_normal = N0.normal;
             } else {
                 round_normal = -c.r1->normal;
             }

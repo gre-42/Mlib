@@ -44,6 +44,7 @@ struct LoadMeshConfig {
     bool apply_static_lighting;
     float laplace_ao_strength;
     PhysicsMaterial physics_material;
+    bool triangulate;
     bool werror;
 };
 

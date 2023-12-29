@@ -30,15 +30,15 @@ bool Mlib::ray_intersects_triangle(const FixedArray<double, 3>& ray_origin,
     if (a > -EPSILON && a < EPSILON) {
         return false;    // This ray is parallel to this triangle.
     }
-    f = 1.f / a;
+    f = 1.0 / a;
     s = ray_origin - vertex0;
     u = f * dot0d(s, h);
-    if (u < 0.f || u > 1.f) {
+    if (u < 0.0 || u > 1.0) {
         return false;
     }
     q = cross(s, edge1);
     v = f * dot0d(ray_vector, q);
-    if (v < 0.f || u + v > 1.f) {
+    if (v < 0.0 || u + v > 1.0) {
         return false;
     }
     // At this stage we can compute t to find out where the intersection point is on the line.

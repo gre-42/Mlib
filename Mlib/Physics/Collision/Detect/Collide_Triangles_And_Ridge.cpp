@@ -1,6 +1,6 @@
 #include "Collide_Triangles_And_Ridge.hpp"
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
@@ -25,15 +25,16 @@ void Mlib::collide_triangles_and_ridge(
     if (!r1.bounding_sphere.intersects(msh0.mesh->bounding_sphere())) {
         return;
     }
-    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-        if (!any(t0.physics_material & non_tire_line_mask)) {
-            continue;
+    auto collide = [&](
+        const auto& poly0,
+        const CollisionPolygonSphere<4>* q0,
+        const CollisionPolygonSphere<3>* t0)
+    {
+        if (!any(poly0.physics_material & non_tire_line_mask)) {
+            return;
         }
-        if (!r1.bounding_sphere.intersects(t0.bounding_sphere)) {
-            continue;
-        }
-        if (!r1.bounding_sphere.intersects(t0.plane)) {
-            continue;
+        if (!r1.bounding_sphere.intersects(poly0.bounding_sphere)) {
+            return;
         }
         handle_line_triangle_intersection(IntersectionScene{
             .o0 = o0,
@@ -42,12 +43,19 @@ void Mlib::collide_triangles_and_ridge(
             .mesh1 = nullptr,
             .l1 = nullptr,
             .r1 = &r1,
+            .q0 = q0,
             .t0 = t0,
             .tire_id1 = SIZE_MAX,
-            .mesh0_material = t0.physics_material,
+            .mesh0_material = poly0.physics_material,
             .mesh1_material = r1.physics_material,
             .l1_is_normal = false,
             .default_collision_type = CollisionType::REFLECT,
             .history = history});
+    };
+    for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
+        collide(q0, &q0, nullptr);
+    }
+    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+        collide(t0, nullptr, &t0);
     }
 }

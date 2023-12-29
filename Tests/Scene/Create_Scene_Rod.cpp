@@ -51,6 +51,7 @@ void Mlib::create_scene_rod(
                 .apply_static_lighting = true,
                 .laplace_ao_strength = 0.f,
                 .physics_material = physics_material,
+                .triangulate = true,
                 .werror = true});
     };
     std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_box(
@@ -78,6 +79,7 @@ void Mlib::create_scene_rod(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+            .triangulate = true,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
     // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});

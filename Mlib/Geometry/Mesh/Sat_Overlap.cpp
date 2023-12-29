@@ -1,10 +1,17 @@
 #include "Sat_Overlap.hpp"
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 using namespace Mlib;
+
+void CollisionVertices::insert(const FixedArray<FixedArray<double, 3>, 4>& quad) {
+    insert(quad(0));
+    insert(quad(1));
+    insert(quad(2));
+    insert(quad(3));
+}
 
 void CollisionVertices::insert(const FixedArray<FixedArray<double, 3>, 3>& tri) {
     insert(tri(0));

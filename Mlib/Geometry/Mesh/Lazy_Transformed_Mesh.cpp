@@ -3,12 +3,12 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Geometry/Triangle3D.hpp>
+#include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
@@ -34,21 +34,10 @@ LazyTransformedMesh::LazyTransformedMesh(
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<ColoredVertexArray<float>>& smesh,
     double max_min_cos_ridge)
-: max_min_cos_ridge_{max_min_cos_ridge},
+: max_min_cos_ridge_{ max_min_cos_ridge },
   transformation_matrix_{ transformation_matrix },
-  transformed_bounding_sphere_{bounding_sphere.transformed(transformation_matrix)},
+  transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) },
   smesh_{ smesh }
-{}
-
-LazyTransformedMesh::LazyTransformedMesh(
-    const BoundingSphere<double, 3>& transformed_bounding_sphere,
-    const std::vector<CollisionTriangleSphere>& transformed_triangles,
-    double max_min_cos_ridge)
-: max_min_cos_ridge_{max_min_cos_ridge},
-  transformation_matrix_{ fixed_nans<double, 4, 4>() },
-  transformed_bounding_sphere_{ transformed_bounding_sphere },
-  transformed_triangles_{ transformed_triangles },
-  triangles_calculated_{ true }
 {}
 
 LazyTransformedMesh::~LazyTransformedMesh()
@@ -62,10 +51,27 @@ bool LazyTransformedMesh::intersects(const PlaneNd<double, 3>& plane) const {
     return transformed_bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionTriangleSphere>& LazyTransformedMesh::get_triangles_sphere() const {
-    //if (msh.vertices->size() == 0) {
-    //    std::cerr << "Skipping mesh without triangles" << std::endl;
-    //}
+const std::vector<CollisionPolygonSphere<4>>& LazyTransformedMesh::get_quads_sphere() const {
+    if (!quads_calculated_) {
+        std::scoped_lock lock{mutex_};
+        if (!quads_calculated_) {
+            transformed_quads_.reserve(
+                (smesh_ == nullptr ? 0 : smesh_->quads.size()) +
+                (dmesh_ == nullptr ? 0 : dmesh_->quads.size()));
+            if (smesh_ != nullptr) {
+                smesh_->transformed_quads_sphere(transformed_quads_, transformation_matrix_);
+            }
+            if (dmesh_ != nullptr) {
+                dmesh_->transformed_quads_sphere(transformed_quads_, transformation_matrix_);
+            }
+            quads_calculated_ = true;
+        }
+    }
+    return transformed_quads_;
+}
+
+
+const std::vector<CollisionPolygonSphere<3>>& LazyTransformedMesh::get_triangles_sphere() const {
     if (!triangles_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!triangles_calculated_) {
@@ -125,13 +131,13 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
             if (smesh_ != nullptr) {
                 for (const auto& t : smesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_ridge_, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
                 }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
-                    ridges.insert(t3.vertices(), t3.plane().normal, max_min_cos_ridge_, smesh_->physics_material);
+                    ridges.insert(t3.vertices(), t3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
                 }
             }
             transformed_ridges_.reserve(ridges.size());

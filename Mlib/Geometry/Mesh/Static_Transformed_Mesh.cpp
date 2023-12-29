@@ -1,7 +1,7 @@
 #include "Static_Transformed_Mesh.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 
 using namespace Mlib;
@@ -15,13 +15,15 @@ StaticTransformedMesh::StaticTransformedMesh(
     const std::string& name,
     const AxisAlignedBoundingBox<double, 3>& aabb,
     const BoundingSphere<double, 3>& bounding_sphere,
-    std::vector<CollisionTriangleSphere>&& triangles,
+    std::vector<CollisionPolygonSphere<4>>&& quads,
+    std::vector<CollisionPolygonSphere<3>>&& triangles,
     std::vector<CollisionLineSphere>&& lines,
     std::vector<CollisionLineSphere>&& edges,
     std::vector<CollisionRidgeSphere>&& ridges)
 : name_{ name },
   aabb_{ aabb },
   bounding_sphere_{ bounding_sphere },
+  quads_{ std::move(quads) },
   triangles_{ std::move(triangles) },
   lines_{ std::move(lines) },
   edges_{ std::move(edges) },
@@ -39,7 +41,11 @@ bool StaticTransformedMesh::intersects(const PlaneNd<double, 3>& plane) const {
     return bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionTriangleSphere>& StaticTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<4>>& StaticTransformedMesh::get_quads_sphere() const {
+    return quads_;
+}
+
+const std::vector<CollisionPolygonSphere<3>>& StaticTransformedMesh::get_triangles_sphere() const {
     return triangles_;
 }
 

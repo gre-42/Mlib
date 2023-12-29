@@ -1,5 +1,4 @@
 #include "Handle_Line_Triangle_Intersection.hpp"
-#include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
@@ -24,22 +23,36 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     if (&c.o0 == &c.o1) {
         THROW_OR_ABORT("Collision of identical objects");
     }
+    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
+        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of q0/t0 are set");
+    }
     if ((c.l1 == nullptr) == (c.r1 == nullptr)) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/r1 are set");
     }
-    const auto& L1 = (c.l1 != nullptr) ? *c.l1->line : *c.r1->edge;
+    const auto& L1 = (c.l1 != nullptr) ? c.l1->line : c.r1->edge;
+    const auto& X1 = (c.l1 != nullptr) ? c.l1->ray : c.r1->ray;
 #define l1 DO_NOT_USE_ME
 #define r1 DO_NOT_USE_ME
     FixedArray<double, 3> intersection_point;
     double t;
-    if (!line_intersects_triangle(
-        L1(0),
-        L1(1),
-        c.t0.triangle,
-        t,
-        &intersection_point))
-    {
-        return;
+    // if (!line_intersects_triangle(
+    //     L1(0),
+    //     L1(1),
+    //     c.t0.triangle,
+    //     t,
+    //     &intersection_point))
+    // {
+    //     return;
+    // }
+    if (c.q0 != nullptr) {
+        if (!X1.intersects(c.q0->polygon, &t, &intersection_point)) {
+            return;
+        }
+    }
+    if (c.t0 != nullptr) {
+        if (!X1.intersects(c.t0->polygon, &t, &intersection_point)) {
+            return;
+        }
     }
     if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) &&
         !c.l1_is_normal)
@@ -77,10 +90,14 @@ void Mlib::handle_line_triangle_intersection(
 {
 #undef l1
 #undef r1
+    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
+        THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of q0/t0 are set");
+    }
     if ((c.l1 == nullptr) == (c.r1 == nullptr)) {
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/e1 are set");
     }
-    const auto& L1 = (c.l1 != nullptr) ? *c.l1->line : *c.r1->edge;
+    const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
+    const auto& L1 = (c.l1 != nullptr) ? c.l1->line : c.r1->edge;
 #define l1 DO_NOT_USE_ME
 #define r1 DO_NOT_USE_ME
     CollisionType collision_type = c.default_collision_type;
@@ -130,7 +147,7 @@ void Mlib::handle_line_triangle_intersection(
             THROW_OR_ABORT("Grind rail too short");
         }
         rail_direction /= std::sqrt(rail_len2);
-        if (std::abs(dot0d(rail_direction, c.t0.plane.normal)) < c.history.cfg.max_grind_cos) {
+        if (std::abs(dot0d(rail_direction, N0.normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;

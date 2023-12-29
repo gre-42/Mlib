@@ -1,6 +1,6 @@
 #include "Collide_Triangle_And_Edges.hpp"
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
@@ -14,7 +14,7 @@ void Mlib::collide_triangle_and_edges(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionTriangleSphere& t0,
+    const CollisionPolygonSphere<3>& t0,
     const CollisionHistory& history)
 {
     auto non_tire_line_mask =
@@ -26,7 +26,7 @@ void Mlib::collide_triangle_and_edges(
             if (!r1.bounding_sphere.intersects(t0.bounding_sphere)) {
                 continue;
             }
-            if (!r1.bounding_sphere.intersects(t0.plane)) {
+            if (!r1.bounding_sphere.intersects(t0.polygon.plane())) {
                 continue;
             }
             handle_line_triangle_intersection(IntersectionScene{
@@ -36,7 +36,8 @@ void Mlib::collide_triangle_and_edges(
                 .mesh1 = msh1.mesh.get(),
                 .l1 = nullptr,
                 .r1 = &r1,
-                .t0 = t0,
+                .q0 = nullptr,
+                .t0 = &t0,
                 .tire_id1 = SIZE_MAX,
                 .mesh0_material = t0.physics_material,
                 .mesh1_material = msh1.physics_material,

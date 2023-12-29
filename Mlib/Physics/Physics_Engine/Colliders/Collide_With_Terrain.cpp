@@ -62,7 +62,8 @@ void Mlib::collide_with_terrain(
                                 o1.rigid_body,
                                 nullptr,
                                 msh1,
-                                t0.ctp,
+                                nullptr,
+                                &t0.ctp,
                                 history);
                         }
                         collide_triangle_and_edges(
@@ -75,7 +76,8 @@ void Mlib::collide_with_terrain(
                             t0.rb,
                             o1.rigid_body,
                             msh1,
-                            t0.ctp,
+                            nullptr,
+                            &t0.ctp,
                             history);
                         return true;
                     });

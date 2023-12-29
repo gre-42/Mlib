@@ -73,8 +73,8 @@ void RigidBodies::add_rigid_body(
                             std::set<OrderableFixedArray<double, 3>> vertex_set;
                             std::vector<const FixedArray<double, 3>*> vertex_vector;
                             vertex_vector.reserve(3 * transformed.size());
-                            for (const CollisionTriangleAabb& t : transformed) {
-                                for (const auto& v : t.base.triangle.flat_iterable()) {
+                            for (const CollisionPolygonAabb<3>& t : transformed) {
+                                for (const auto& v : t.base.corners.flat_iterable()) {
                                     if (vertex_set.insert(OrderableFixedArray{v}).second) {
                                         vertex_vector.push_back(&v);
                                     }
@@ -82,19 +82,19 @@ void RigidBodies::add_rigid_body(
                             }
                             AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
                             BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
-                            std::vector<CollisionTriangleSphere> triangles;
+                            std::vector<CollisionPolygonSphere<3>> triangles;
                             std::vector<CollisionRidgeSphere> ridges;
                             std::vector<CollisionLineSphere> lines;
                             triangles.reserve(transformed.size());
-                            for (const CollisionTriangleAabb& t : transformed) {
+                            for (const CollisionPolygonAabb<3>& t : transformed) {
                                 triangles.push_back(t.base);
                             }
 
                             CollisionRidges collision_ridges;
                             for (const auto& t : triangles) {
                                 collision_ridges.insert(
-                                    t.triangle,
-                                    t.plane.normal,
+                                    t.corners,
+                                    t.polygon.plane().normal,
                                     cfg_.max_min_cos_ridge,
                                     t.physics_material);
                             }
@@ -115,6 +115,7 @@ void RigidBodies::add_rigid_body(
                                             m->name,
                                             aabb,
                                             bounding_sphere,
+                                            std::vector<CollisionPolygonSphere<4>>(),
                                             std::move(triangles),
                                             std::move(lines),
                                             std::vector<CollisionLineSphere>{},
@@ -132,8 +133,8 @@ void RigidBodies::add_rigid_body(
                             }
                             for (const auto& t : transformed) {
                                 collision_ridges_.insert(
-                                    t.base.triangle,
-                                    t.base.plane.normal,
+                                    t.base.corners,
+                                    t.base.polygon.plane().normal,
                                     cfg_.max_min_cos_ridge,
                                     t.base.physics_material,
                                     rb);
@@ -196,6 +197,8 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes, rbm.smeshes);
         add_hitboxes(d_hitboxes, rbm.dmeshes);
+    } else {
+        THROW_OR_ABORT("Unknown collidable mode");
     }
 }
 

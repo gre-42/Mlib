@@ -43,7 +43,8 @@ void CollisionEdges::insert(
         .collision_line_sphere{
             .bounding_sphere{BoundingSphere<double, 3>{FixedArray<FixedArray<double, 3>, 2>{a, b}}},
             .physics_material = physics_material,
-            .line{a, b}}};
+            .line{a, b},
+            .ray{{a, b}}} };
     edges_.insert(edge);
 }
 

@@ -193,6 +193,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         .apply_static_lighting = args.has_named("--apply_static_lighting"),
         .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+        .triangulate = true,
         .werror = !args.has_named("--no_werror")};
 }
 
@@ -598,6 +599,7 @@ int main(int argc, char** argv) {
                         .apply_static_lighting = false,
                         .laplace_ao_strength = 0.f,
                         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+                        .triangulate = true,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
                         scene_node_resources.add_resource("reference_bone", load_renderable_obj(
@@ -794,6 +796,7 @@ int main(int argc, char** argv) {
                 .apply_static_lighting = args.has_named("--apply_static_lighting"),
                 .laplace_ao_strength = 0.f,
                 .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
+                .triangulate = true,
                 .werror = !args.has_named("--no_werror")};
             scene_node_resources.add_resource(name, load_renderable_obj(
                 args.named_value("--light_beacon"),

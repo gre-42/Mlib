@@ -13,7 +13,8 @@ enum class CollisionType;
 enum class PhysicsMaterial;
 struct IntersectionSceneAndContact;
 struct CollisionHistory;
-struct CollisionTriangleSphere;
+template <size_t tnvertices>
+struct CollisionPolygonSphere;
 struct CollisionRidgeSphere;
 struct CollisionLineSphere;
 
@@ -24,7 +25,8 @@ struct IntersectionScene {
     const IIntersectableMesh* mesh1;
     const CollisionLineSphere* l1;
     const CollisionRidgeSphere* r1;
-    const CollisionTriangleSphere& t0;
+    const CollisionPolygonSphere<4>* q0;
+    const CollisionPolygonSphere<3>* t0;
     size_t tire_id1;
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;

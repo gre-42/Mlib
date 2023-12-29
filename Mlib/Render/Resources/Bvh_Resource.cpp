@@ -60,6 +60,7 @@ static void instantiate_bvh(
                 *material,                                                   // material
                 PhysicsMaterial::ATTR_VISIBLE,                               // physics_material
                 ModifierBacklog{},                                           // modifier_backlog
+                std::vector<FixedArray<ColoredVertex<float>, 4>>{},          // quads
                 std::move(vcva),                                             // triangles
                 std::vector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights

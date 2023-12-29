@@ -1,6 +1,7 @@
-#include "Triangle3D.hpp"
+#include "Triangle_3D.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -21,8 +22,8 @@ const FixedArray<FixedArray<double, 3>, 3>& Triangle3D::vertices() const {
     return vertices_;
 }
 
-PlaneNd<double, 3> Triangle3D::plane() const {
-    return PlaneNd<double, 3>{vertices_};
+ConvexPolygon3D<double, 3> Triangle3D::polygon() const {
+    return ConvexPolygon3D<double, 3>{ vertices_ };
 }
 
 BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) const {
@@ -30,7 +31,7 @@ BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) con
 }
 
 AxisAlignedBoundingBox<double, 3> Triangle3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{vertices_};
+    return AxisAlignedBoundingBox<double, 3>{ vertices_ };
 }
 
 

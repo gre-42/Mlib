@@ -109,6 +109,7 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 l->material,
                 l->physics_material & ~PhysicsMaterial::ATTR_VISIBLE,
                 l->modifier_backlog,
+                std::vector<FixedArray<ColoredVertex<double>, 4>>{},
                 std::vector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
                 std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

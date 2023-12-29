@@ -1,13 +1,30 @@
 #include "Sat_Overlap2.hpp"
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 using namespace Mlib;
+
+template <size_t tnvertices>
+static void compute_relevant_polygons(
+    const IIntersectableMesh& mesh0,
+    const CollisionRidgeSphere& e1,
+    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polygons0,
+    CollisionVertices& vertices0)
+{
+    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
+    relevant_polygons0.reserve(triangles0.size());
+    for (const auto& t0 : triangles0) {
+        if (e1.bounding_sphere.intersects(t0.bounding_sphere) && e1.bounding_sphere.intersects(t0.polygon.plane())) {
+            relevant_polygons0.push_back(&t0);
+        }
+        vertices0.insert(t0.corners);
+    }
+}
 
 void Mlib::get_overlap2(
     const IIntersectableMesh& mesh0,
@@ -26,17 +43,10 @@ void Mlib::get_overlap2(
     CollisionVertices vertices0;
     CollisionVertices vertices1;
     std::vector<const CollisionRidgeSphere*> relevant_edges0;
-    std::vector<const CollisionTriangleSphere*> relevant_triangles0;
-    {
-        const std::vector<CollisionTriangleSphere>& triangles0 = mesh0.get_triangles_sphere();
-        relevant_triangles0.reserve(triangles0.size());
-        for (const auto& t0 : triangles0) {
-            if (e1.bounding_sphere.intersects(t0.bounding_sphere) && e1.bounding_sphere.intersects(t0.plane)) {
-                relevant_triangles0.push_back(&t0);
-            }
-            vertices0.insert(t0.triangle);
-        }
-    }
+    std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
+    std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
+    compute_relevant_polygons(mesh0, e1, relevant_quads0, vertices0);
+    compute_relevant_polygons(mesh0, e1, relevant_triangles0, vertices0);
     {
         const std::vector<CollisionRidgeSphere>& edges0 = mesh0.get_ridges_sphere();
         relevant_edges0.reserve(edges0.size());
@@ -63,13 +73,13 @@ void Mlib::get_overlap2(
     }
     for (const auto& t0 : relevant_triangles0) {
         double sat_overl = sat_overlap_signed(
-            t0->plane.normal,
+            t0->polygon.plane().normal,
             vertices0,
             vertices1);
         if (sat_overl < best_min_overlap) {
             best_min_overlap = sat_overl;
             if (!keep_normal) {
-                best_normal = t0->plane.normal;
+                best_normal = t0->polygon.plane().normal;
             }
         }
     }

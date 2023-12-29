@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
+#include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
-#include <Mlib/Geometry/Intersection/Collision_Triangle.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
@@ -40,7 +40,7 @@ struct RigidBodyAndIntersectableMesh {
 
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
-    CollisionTriangleSphere ctp;
+    CollisionPolygonSphere<3> ctp;
 };
 
 struct RigidBodyAndCollisionLineSphere {

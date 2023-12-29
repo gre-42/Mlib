@@ -6,7 +6,8 @@ namespace Mlib {
 class RigidBodyVehicle;
 class IIntersectableMesh;
 struct CollisionLineSphere;
-struct CollisionTriangleSphere;
+template <size_t tnvertices>
+struct CollisionPolygonSphere;
 struct CollisionHistory;
 
 void collide_line_and_triangles(

@@ -34,6 +34,7 @@ public:
         std::string name,
         Material material,
         PhysicsMaterial physics_material,
+        std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
         std::list<uint8_t>&& triangle_texture_layers = {});
@@ -97,6 +98,7 @@ public:
         const std::vector<BoneWeight>& b11 = {},
         const std::vector<BoneWeight>& b01 = {},
         TriangleTangentErrorBehavior tangent_error_behavior = TriangleTangentErrorBehavior::RAISE,
+        RectangleTriangulationMode rectangle_triangulation_mode = RectangleTriangulationMode::FIRST,
         ColoredVertex<TPos>** pp00a = nullptr,
         ColoredVertex<TPos>** pp11a = nullptr,
         ColoredVertex<TPos>** pp01a = nullptr,
@@ -168,6 +170,7 @@ public:
         archive(name);
         archive(material);
         archive(physics_material);
+        archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
         archive(triangle_texture_layers);
@@ -181,6 +184,7 @@ public:
         std::string name;
         Material material;
         PhysicsMaterial physics_material;
+        std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
         std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
         std::list<uint8_t> triangle_texture_layers;
@@ -188,6 +192,7 @@ public:
         archive(name);
         archive(material);
         archive(physics_material);
+        archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
         archive(triangle_texture_layers);
@@ -196,6 +201,7 @@ public:
             name,
             material,
             physics_material,
+            std::move(quads),
             std::move(triangles),
             std::move(triangle_bone_weights),
             std::move(triangle_texture_layers));
@@ -204,6 +210,7 @@ public:
     Material material;
     PhysicsMaterial physics_material;
     ModifierBacklog modifier_backlog;
+    std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     std::list<uint8_t> triangle_texture_layers;

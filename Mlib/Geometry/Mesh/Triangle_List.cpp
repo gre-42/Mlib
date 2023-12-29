@@ -21,12 +21,14 @@ TriangleList<TPos>::TriangleList(
     std::string name,
     Material material,
     PhysicsMaterial physics_material,
+    std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     std::list<uint8_t>&& triangle_texture_layers)
 : name{ std::move(name) },
   material{ std::move(material) },
   physics_material{ physics_material },
+  quads{ std::move(quads) },
   triangles{ std::move(triangles) },
   triangle_bone_weights{ std::move(triangle_bone_weights) },
   triangle_texture_layers{ std::move(triangle_texture_layers) }
@@ -135,6 +137,7 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     const std::vector<BoneWeight>& b11,
     const std::vector<BoneWeight>& b01,
     TriangleTangentErrorBehavior tangent_error_behavior,
+    RectangleTriangulationMode rectangle_triangulation_mode,
     ColoredVertex<TPos>** pp00a,
     ColoredVertex<TPos>** pp11a,
     ColoredVertex<TPos>** pp01a, 
@@ -142,8 +145,42 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     ColoredVertex<TPos>** pp10b,
     ColoredVertex<TPos>** pp11b)
 {
-    draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
-    draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
+    if (rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) {
+        draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
+        draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
+    } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DISABLED) {
+        if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
+            THROW_OR_ABORT("Triangle positions not supported for quads");
+        }
+        quads.push_back({
+            ColoredVertex<TPos>{
+                .position = p00,
+                .color = c00,
+                .uv = u00,
+                .normal = n00,
+                .tangent = fixed_zeros<float, 3>()},
+            ColoredVertex<TPos>{
+                .position = p10,
+                .color = c10,
+                .uv = u10,
+                .normal = n10,
+                .tangent = fixed_zeros<float, 3>()},
+            ColoredVertex<TPos>{
+                .position = p11,
+                .color = c11,
+                .uv = u11,
+                .normal = n11,
+                .tangent = fixed_zeros<float, 3>()},
+            ColoredVertex<TPos>{
+                .position = p01,
+                .color = c01,
+                .uv = u01,
+                .normal = n01,
+                .tangent = fixed_zeros<float, 3>()}
+        });
+    } else {
+        THROW_OR_ABORT("Unsupported triangulation mode (0)");
+    }
 }
 
 template <class TPos>
@@ -183,12 +220,14 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     {
         draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);
-    } else {
+    } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
         }
         draw_triangle_wo_normals(p01, p10, p11, c01, c10, c11, u01, u10, u11, b01, b10, b11, normal_error_behavior, tangent_error_behavior);
         draw_triangle_wo_normals(p00, p10, p01, c00, c10, c01, u00, u10, u01, b00, b10, b01, normal_error_behavior, tangent_error_behavior);
+    } else {
+        THROW_OR_ABORT("Unsupported triangulation mode (1)");
     }
 }
 
@@ -538,6 +577,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         material,
         physics_material,
         modifier_backlog,
+        std::vector<FixedArray<ColoredVertex<TPos>, 4>>(quads.begin(), quads.end()),
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles.begin(), triangles.end()},
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights.begin(), triangle_bone_weights.end()},

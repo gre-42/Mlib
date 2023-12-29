@@ -161,6 +161,7 @@ void Mlib::merge_textures(
                         .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}},
                     PhysicsMaterial::ATTR_VISIBLE,
                     ModifierBacklog{},
+                    std::vector<FixedArray<ColoredVertex<double>, 4>>{},
                     std::vector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
                     std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                     std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},

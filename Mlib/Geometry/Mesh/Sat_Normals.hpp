@@ -7,7 +7,8 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-struct CollisionTriangleSphere;
+template <size_t tnvertices>
+struct CollisionPolygonSphere;
 class IIntersectableMesh;
 
 class SatTracker {

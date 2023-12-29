@@ -15,8 +15,10 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-struct CollisionTriangleSphere;
-struct CollisionTriangleAabb;
+template <size_t tnvertices>
+struct CollisionPolygonSphere;
+template <size_t tnvertices>
+struct CollisionPolygonAabb;
 struct CollisionLineSphere;
 struct CollisionLineAabb;
 struct BoneWeight;
@@ -41,6 +43,7 @@ public:
         Material material,
         PhysicsMaterial physics_material,
         ModifierBacklog modifier_backlog,
+        std::vector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
@@ -52,6 +55,7 @@ public:
     Material material;
     PhysicsMaterial physics_material;
     ModifierBacklog modifier_backlog;
+    std::vector<FixedArray<ColoredVertex<TPos>, 4>> quads;
     std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
     std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
@@ -70,10 +74,13 @@ public:
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
-    void transformed_triangles_sphere(
-        std::vector<CollisionTriangleSphere>& transformed,
+    void transformed_quads_sphere(
+        std::vector<CollisionPolygonSphere<4>>& transformed,
         const TransformationMatrix<float, double, 3>& tm) const;
-    std::vector<CollisionTriangleAabb> transformed_triangles_bbox(
+    void transformed_triangles_sphere(
+        std::vector<CollisionPolygonSphere<3>>& transformed,
+        const TransformationMatrix<float, double, 3>& tm) const;
+    std::vector<CollisionPolygonAabb<3>> transformed_triangles_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;
     std::vector<CollisionLineAabb> transformed_lines_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;
@@ -93,6 +100,7 @@ public:
         archive(material);
         archive(physics_material);
         archive(modifier_backlog);
+        archive(quads);
         archive(triangles);
         archive(lines);
         archive(triangle_bone_weights);
@@ -110,6 +118,7 @@ public:
         Material material;
         PhysicsMaterial physics_material;
         ModifierBacklog modifier_backlog;
+        std::vector<FixedArray<ColoredVertex<TPos>, 4>> quads;
         std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
         std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
@@ -121,6 +130,7 @@ public:
         archive(material);
         archive(physics_material);
         archive(modifier_backlog);
+        archive(quads);
         archive(triangles);
         archive(lines);
         archive(triangle_bone_weights);
@@ -133,6 +143,7 @@ public:
             material,
             physics_material,
             modifier_backlog,
+            std::move(quads),
             std::move(triangles),
             std::move(lines),
             std::move(triangle_bone_weights),
