@@ -509,7 +509,7 @@ int main(int argc, char** argv) {
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .oversampling = safe_stoz(args.named_value("--oversampling", "2"))};
+                .oversampling = safe_stoz(args.named_value("--oversampling", "4"))};
 
             SceneConfig scene_config{
                 .render_config = render_config,
