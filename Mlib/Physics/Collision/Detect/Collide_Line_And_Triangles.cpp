@@ -24,6 +24,9 @@ void Mlib::collide_line_and_triangles(
         if (!t1.bounding_sphere.intersects(l0.bounding_sphere)) {
             continue;
         }
+        if (!l0.bounding_sphere.intersects(t1.plane)) {
+            continue;
+        }
         handle_line_triangle_intersection(IntersectionScene{
             .o0 = o1,
             .o1 = o0,
