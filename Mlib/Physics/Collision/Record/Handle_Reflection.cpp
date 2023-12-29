@@ -221,7 +221,6 @@ void Mlib::handle_reflection(
     const FixedArray<double, 3>& intersection_point,
     float surface_stiction_factor)
 {
-    linfo() << "a";
     if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
         THROW_OR_ABORT("handle_reflection: Not exactly one of q0/t0 are set");
     }
@@ -286,7 +285,6 @@ void Mlib::handle_reflection(
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        linfo() << "b";
         sat_used = true;
         assert_true(c.mesh0 != nullptr);
         assert_true(c.mesh1 != nullptr);
@@ -295,10 +293,6 @@ void Mlib::handle_reflection(
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
-        }
-        linfo() << overlap << " | " << intersection_point;
-        if (overlap < -1e-3) {
-            assert_true(false);
         }
     } else if (!c.l1_is_normal &&
                any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&

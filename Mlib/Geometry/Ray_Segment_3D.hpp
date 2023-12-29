@@ -20,10 +20,10 @@ public:
     RaySegment3D(
         const FixedArray<TData, 3>& start,
         const FixedArray<TData, 3>& direction,
-        const TData& intercept_end)
+        const TData& length)
         : start{ start }
         , direction{ direction }
-        , intercept_end{ intercept_end }
+        , length{ length }
     {}
     explicit RaySegment3D(const FixedArray<FixedArray<TData, 3>, 2>& vertices) {
         direction = vertices(1) - vertices(0);
@@ -31,9 +31,9 @@ public:
         if (l2 < 1e-12) {
             THROW_OR_ABORT("Could not calculate ray direction");
         }
-        direction /= std::sqrt(l2);
+        length = std::sqrt(l2);
+        direction /= length;
         start = vertices(0);
-        intercept_end = dot0d(direction, vertices(1));
     }
     bool intersects(const PlaneNd<TData, 3>& plane, TData* t, FixedArray<TData, 3>* intersection_point) const {
         auto c = dot0d(plane.normal, direction);
@@ -41,7 +41,7 @@ public:
             return false;
         }
         *t = -(dot0d(plane.normal, start) + plane.intercept) / c;
-        if (((*t) >= 0) && ((*t) <= intercept_end)) {
+        if (((*t) >= 0) && ((*t) <= length)) {
             *intersection_point = start + direction * (*t);
             return true;
         }
@@ -60,7 +60,7 @@ public:
     }
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;
-    TData intercept_end;
+    TData length;
 };
 
 }
