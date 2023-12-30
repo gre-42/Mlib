@@ -239,12 +239,7 @@ void test_random_number_generators() {
 }
 
 void test_halton_sequence() {
-    // {
-    //     HaltonSequence<double> rng{ 200 };
-    //     for (size_t i = 0; i < 100; ++i) {
-    //         std::cerr << rng() << ", ";
-    //     }
-    // }
+    // generate_halton_lut(1000, 10);
     // {
     //     for (unsigned int seed = 0; seed < 10; ++seed) {
     //         linfo() << "seed " << seed;
