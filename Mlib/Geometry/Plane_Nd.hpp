@@ -31,7 +31,7 @@ public:
         const auto& i0 = intercept;
         auto& n1 = result.normal;
         auto& i1 = result.intercept;
-        n1 = transformation_matrix.rotate(n0.casted<TDir>()).casted<TData>();
+        n1 = transformation_matrix.rotate(n0 TEMPLATEV casted<TDir>()) TEMPLATEV casted<TData>();
         i1 = i0 - dot0d(n1, transformation_matrix.t());
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
     }
