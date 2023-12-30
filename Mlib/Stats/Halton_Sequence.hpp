@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
+#include <algorithm>
 #include <cmath>
 
 #ifdef _MSC_VER
@@ -15,7 +17,8 @@ namespace Mlib {
 
 void generate_halton_lut(size_t nnumbers, size_t block_size);
 
-MLIB_STATS_API extern double SHUFFLED_HALTON_1K[1000];
+MLIB_STATS_API extern double SHUFFLED_HALTON_1K[1'000];
+static const size_t SHUFFLED_HALTON_1K_COUNT = sizeof(SHUFFLED_HALTON_1K) / sizeof(SHUFFLED_HALTON_1K[0]);
 
 static unsigned int PRIMES_3[] = {
     2, 3
@@ -68,16 +71,43 @@ public:
         this->seed(seed);
     }
     TData operator () () {
-        index_ = (index_ + 1) % (sizeof(SHUFFLED_HALTON_1K) / sizeof(SHUFFLED_HALTON_1K[0]));
+        index_ = (index_ + 1) % SHUFFLED_HALTON_1K_COUNT;
         return TData(SHUFFLED_HALTON_1K[index_]) * (high_ - low_) + low_;
     }
     void seed(unsigned int seed) {
         index_ = seed;
     }
+    const TData& low() const {
+        return low_;
+    }
+    const TData& high() const {
+        return high_;
+    }
 private:
     size_t index_;
     TData low_;
     TData high_;
+};
+
+template <class TData>
+class HybridHaltonSequence {
+public:
+    HybridHaltonSequence(unsigned int seed, const TData& low = 0, const TData& high = 1)
+        : ph_{seed, low, high}
+        , urng_{seed, -TData(1) / SHUFFLED_HALTON_1K_COUNT, TData(1) / SHUFFLED_HALTON_1K_COUNT}
+    {
+        this->seed(seed);
+    }
+    TData operator () () {
+        return std::clamp(ph_() + urng_(), ph_.low(), ph_.high());
+    }
+    void seed(unsigned int seed) {
+        ph_.seed(seed);
+        urng_.seed(seed);
+    }
+private:
+    PrecomputedHaltonSequence<TData> ph_;
+    FastUniformRandomNumberGenerator<TData> urng_;
 };
 
 }

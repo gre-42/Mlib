@@ -37,7 +37,7 @@ public:
         rng_.seed(seed);
     }
 private:
-    PrecomputedHaltonSequence<TData> rng_;
+    HybridHaltonSequence<TData> rng_;
 };
 
 }

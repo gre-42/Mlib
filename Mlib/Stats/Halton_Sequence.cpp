@@ -29,7 +29,7 @@ void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
 	}
 }
 
-MLIB_STATS_API double Mlib::SHUFFLED_HALTON_1K[1000] = {
+MLIB_STATS_API double Mlib::SHUFFLED_HALTON_1K[1'000] = {
 	0.625, 0.5625, 0.875, 0.0625, 0.75, 0.125, 0.25, 0.3125, 0.375, 0.5,
 	0.78125, 0.9375, 0.53125, 0.03125, 0.1875, 0.6875, 0.4375, 0.8125, 0.15625, 0.28125,
 	0.21875, 0.65625, 0.84375, 0.40625, 0.59375, 0.71875, 0.09375, 0.90625, 0.34375, 0.46875,
