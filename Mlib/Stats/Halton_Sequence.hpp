@@ -94,12 +94,17 @@ class HybridHaltonSequence {
 public:
     HybridHaltonSequence(unsigned int seed, const TData& low = 0, const TData& high = 1)
         : ph_{seed, low, high}
-        , urng_{seed, -(high - low) / SHUFFLED_HALTON_1K_COUNT, (high - low) / SHUFFLED_HALTON_1K_COUNT}
-    {
-        this->seed(seed);
-    }
+        , urng_{seed, -(high - low) / (SHUFFLED_HALTON_1K_COUNT / 100), (high - low) / (SHUFFLED_HALTON_1K_COUNT / 100)}
+    {}
     TData operator () () {
-        return std::clamp(ph_() + urng_(), ph_.low(), ph_.high());
+        auto res = ph_() + urng_();
+        if (res < ph_.low()) {
+            return res + (ph_.high() - ph_.low());
+        }
+        if (res > ph_.high()) {
+            return res - (ph_.high() - ph_.low());
+        }
+        return res;
     }
     void seed(unsigned int seed) {
         ph_.seed(seed);
