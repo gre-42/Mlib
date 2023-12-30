@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
 using namespace Mlib;
@@ -18,6 +19,10 @@ Line3D::Line3D(
 
 const FixedArray<FixedArray<double, 3>, 2>& Line3D::vertices() const {
     return vertices_;
+}
+
+RaySegment3D<double> Line3D::ray() const {
+    return RaySegment3D<double>{vertices_};
 }
 
 BoundingSphere<double, 3> Line3D::bounding_sphere() const

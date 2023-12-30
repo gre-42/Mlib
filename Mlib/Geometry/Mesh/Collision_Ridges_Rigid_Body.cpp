@@ -41,7 +41,7 @@ void CollisionRidgesRigidBody::insert(
                 .bounding_sphere{BoundingSphere<double, 3>{FixedArray<FixedArray<double, 3>, 2>{a, b}}},
                 .physics_material = physics_material,
                 .edge{a, b},
-                .ray{{a, b}},
+                .ray{a, b},
                 .normal = normal,
                 .min_cos = RIDGE_SINGLE_FACE}
         },

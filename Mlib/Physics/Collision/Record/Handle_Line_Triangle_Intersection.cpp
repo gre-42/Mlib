@@ -48,11 +48,12 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
         if (!X1.intersects(c.q0->polygon, &t, &intersection_point)) {
             return;
         }
-    }
-    if (c.t0 != nullptr) {
+    } else if (c.t0 != nullptr) {
         if (!X1.intersects(c.t0->polygon, &t, &intersection_point)) {
             return;
         }
+    } else {
+        verbose_abort("handle_line_triangle_intersection internal error");
     }
     if (any(c.mesh1_material & PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT) &&
         !c.l1_is_normal)

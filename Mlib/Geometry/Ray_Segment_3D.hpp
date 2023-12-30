@@ -25,16 +25,22 @@ public:
         , direction{ direction }
         , length{ length }
     {}
-    explicit RaySegment3D(const FixedArray<FixedArray<TData, 3>, 2>& vertices) {
-        direction = vertices(1) - vertices(0);
+    RaySegment3D(
+        const FixedArray<TData, 3>& start,
+        const FixedArray<TData, 3>& end)
+    {
+        direction = end - start;
         auto l2 = sum(squared(direction));
         if (l2 < 1e-12) {
             THROW_OR_ABORT("Could not calculate ray direction");
         }
         length = std::sqrt(l2);
         direction /= length;
-        start = vertices(0);
+        this->start = start;
     }
+    explicit RaySegment3D(const FixedArray<FixedArray<TData, 3>, 2>& vertices)
+    : RaySegment3D{ vertices(0), vertices(1) }
+    {}
     bool intersects(const PlaneNd<TData, 3>& plane, TData* t, FixedArray<TData, 3>* intersection_point) const {
         auto c = dot0d(plane.normal, direction);
         if (std::abs(c) < 1e-12) {

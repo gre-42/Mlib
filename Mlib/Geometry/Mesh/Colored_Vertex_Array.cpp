@@ -269,8 +269,9 @@ std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
         res.push_back(CollisionLineAabb{
             .base = CollisionLineSphere{
                 .bounding_sphere = line.bounding_sphere(),
+                .physics_material = physics_material,
                 .line = line.vertices(),
-                .ray{line.vertices()}
+                .ray = line.ray()
             },
             .aabb = line.aabb()});
     }
@@ -287,8 +288,9 @@ std::vector<CollisionLineSphere> ColoredVertexArray<TPos>::transformed_lines_sph
         Line3D line{l, tm};
         res.push_back(CollisionLineSphere{
             .bounding_sphere = line.bounding_sphere(),
+            .physics_material = physics_material,
             .line = line.vertices(),
-            .ray{line.vertices()} });
+            .ray = line.ray()});
     }
     return res;
 }

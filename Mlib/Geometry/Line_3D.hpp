@@ -13,6 +13,8 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TPos>
 struct ColoredVertex;
+template <class TData>
+class RaySegment3D;
 
 class Line3D {
 public:
@@ -21,6 +23,7 @@ public:
         const FixedArray<ColoredVertex<TPos>, 2>& vertices,
         const TransformationMatrix<float, double, 3>& transformation);
     const FixedArray<FixedArray<double, 3>, 2>& vertices() const;
+    RaySegment3D<double> ray() const;
     BoundingSphere<double, 3> bounding_sphere() const;
     AxisAlignedBoundingBox<double, 3> aabb() const;
 private:
