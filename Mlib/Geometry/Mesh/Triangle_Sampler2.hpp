@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
+#include <Mlib/Stats/Halton_Sequence.hpp>
 #include <Mlib/Stats/N_Random_Numbers.hpp>
 #include <functional>
 
@@ -37,7 +37,7 @@ public:
         rng_.seed(seed);
     }
 private:
-    FastUniformRandomNumberGenerator<TData> rng_;
+    PrecomputedHaltonSequence<TData> rng_;
 };
 
 }

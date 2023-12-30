@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Stats/Cdf.hpp>
+#include <Mlib/Stats/Halton_Sequence.hpp>
 #include <Mlib/Stats/Histogram.hpp>
 #include <Mlib/Stats/Histogram_Matching.hpp>
 #include <Mlib/Stats/Incomplete_Beta_Distribution.hpp>
@@ -37,12 +38,13 @@ void test_robust_deviation() {
 
 void test_ransac() {
     Array<float> data{ 1, 2, 30, 2, -10, 2, 3, 2, 7, 8, 9 };
-    RansacOptions<float> ro;
-    ro.nelems_small = 3;
-    ro.ncalls = 10;
-    ro.inlier_distance_thresh = 1.f;
-    ro.inlier_count_thresh = 3;
-    ro.seed = 1;
+    RansacOptions<float> ro{
+        .nelems_small = 3,
+        .ncalls = 10,
+        .inlier_distance_thresh = 1.f,
+        .inlier_count_thresh = 3,
+        .seed = 1
+    };
     Array<size_t> best_ids = ransac<float>(
         data.length(), // nelems_large
         ro,
@@ -51,7 +53,7 @@ void test_ransac() {
             // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
             return abs(data - mean(data[indices]));
         });
-    assert_allclose<float>(best_ids.casted<float>(), Array<float>{ 1, 3, 5, 6, 7 });
+    assert_allequal(best_ids, Array<size_t>{ 0, 1, 3, 5, 6, 7 });
 }
 
 void test_sort() {
@@ -236,6 +238,30 @@ void test_random_number_generators() {
     assert_isclose(m, 500.f, 1e1f);
 }
 
+void test_halton_sequence() {
+    // {
+    //     HaltonSequence<double> rng{ 200 };
+    //     for (size_t i = 0; i < 100; ++i) {
+    //         std::cerr << rng() << ", ";
+    //     }
+    // }
+    // {
+    //     for (unsigned int seed = 0; seed < 10; ++seed) {
+    //         linfo() << "seed " << seed;
+    //         HaltonSequence<double> rng{ seed };
+    //         for (size_t i = 0; i < 5; ++i) {
+    //             linfo() << rng();
+    //         }
+    //     }
+    // }
+    // {
+    //     linfo() << "precomputed";
+    //     PrecomputedHaltonSequence<double> rng{ 50 };
+    //     for (size_t i = 0; i < 5; ++i) {
+    //         linfo() << rng();
+    //     }
+    // }
+}
 
 int main(int argc, char** argv) {
     enable_floating_point_exceptions();
@@ -259,6 +285,7 @@ int main(int argc, char** argv) {
         test_incomplete_beta();
         test_t_cdf();
         test_random_number_generators();
+        test_halton_sequence();
     } catch (const std::runtime_error& e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return 1;
