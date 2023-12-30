@@ -94,7 +94,7 @@ class HybridHaltonSequence {
 public:
     HybridHaltonSequence(unsigned int seed, const TData& low = 0, const TData& high = 1)
         : ph_{seed, low, high}
-        , urng_{seed, -TData(1) / SHUFFLED_HALTON_1K_COUNT, TData(1) / SHUFFLED_HALTON_1K_COUNT}
+        , urng_{seed, -(high - low) / SHUFFLED_HALTON_1K_COUNT, (high - low) / SHUFFLED_HALTON_1K_COUNT}
     {
         this->seed(seed);
     }
