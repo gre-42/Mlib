@@ -11,7 +11,7 @@ template <class TData>
 class TriangleSampler2 {
 public:
     explicit TriangleSampler2(unsigned int seed)
-    : rng_{ seed }
+        : rng_{ seed }
     {}
     template <size_t tsize>
     void sample_triangle_interior(
