@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Stats/Clamp_Uniform.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
 
 #ifdef _MSC_VER
 #ifdef MlibStats_EXPORTS
@@ -66,9 +67,12 @@ class PermutedHaltonSequence {
 public:
     PermutedHaltonSequence(unsigned int b, const TData& low = 0, const TData& high = 1, size_t buffer_size = 10)
         : h_{ b, low, high }
-        , irng_{ 0, 0, buffer_size }
+        , irng_{ 0, 0, buffer_size - 1 }
         , buffer_(buffer_size)
     {
+        if (buffer_size == 0) {
+            THROW_OR_ABORT("Buffer size is zero");
+        }
         reset();
     }
     TData operator () () {
