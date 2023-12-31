@@ -179,6 +179,7 @@ public:
     Inventory& inventory();
     const Inventory& inventory() const;
     WeaponCycle& weapon_cycle();
+    const WeaponCycle& weapon_cycle() const;
     bool needs_supplies() const;
     size_t nbullets_available() const;
     std::string best_weapon_in_inventory() const;

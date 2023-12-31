@@ -1,5 +1,6 @@
 #include "Set_Desired_Weapon.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -32,12 +33,9 @@ void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
-    auto wc = dynamic_cast<WeaponCycle*>(&cycle_node->get_node_modifier());
-    if (wc == nullptr) {
-        THROW_OR_ABORT("Node modifier is not a weapon inventory");
-    }
-    wc->set_desired_weapon(entry_name);
+    auto& wc = get_weapon_cycle(cycle_node);
+    wc.set_desired_weapon(entry_name);
     if (args.arguments.at<bool>(KnownArgs::equip_instantly)) {
-        wc->modify_node();
+        wc.modify_node();
     }
 }

@@ -1,5 +1,6 @@
 #include "Add_Weapon_To_Cycle.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
@@ -46,17 +47,14 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
     auto create = args.arguments.at(KnownArgs::create);
     auto capture = args.arguments.at(KnownArgs::capture);
-    WeaponCycle* wc = dynamic_cast<WeaponCycle*>(&cycle_node->get_node_modifier());
-    if (wc == nullptr) {
-        THROW_OR_ABORT("Node modifier is not a weapon inventory");
-    }
+    WeaponCycle& wc = get_weapon_cycle(cycle_node);
     std::string ammo_type = args.arguments.at<std::string>(KnownArgs::ammo_type);
     float cool_down = args.arguments.at<float>(KnownArgs::cool_down);
     float bullet_damage = args.arguments.at<float>(KnownArgs::bullet_damage);
     float bullet_damage_radius = args.arguments.at<float>(KnownArgs::bullet_damage_radius);
     float bullet_velocity = args.arguments.at<float>(KnownArgs::bullet_velocity);
     std::string bullet_rigid_body_flags = args.arguments.at<std::string>(KnownArgs::bullet_rigid_body_flags);
-    wc->add_weapon(
+    wc.add_weapon(
         entry_name,
         WeaponInfo{
             .create_weapon = [

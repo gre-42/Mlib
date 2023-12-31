@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -461,15 +462,15 @@ const Inventory& Player::inventory() const {
 }
 
 bool Player::has_weapon_cycle() const {
-    return scene_node()->has_node_modifier();
+    return Mlib::has_weapon_cycle(scene_node());
 }
 
 WeaponCycle& Player::weapon_cycle() {
-    auto wc = dynamic_cast<WeaponCycle*>(&scene_node()->get_node_modifier());
-    if (wc == nullptr) {
-        THROW_OR_ABORT("Node modifier is not a weapon inventory");
-    }
-    return *wc;
+    return Mlib::get_weapon_cycle(scene_node());
+}
+
+const WeaponCycle& Player::weapon_cycle() const {
+    return Mlib::get_weapon_cycle(scene_node());
 }
 
 bool Player::needs_supplies() const {
@@ -484,10 +485,7 @@ size_t Player::nbullets_available() const {
 }
 
 std::string Player::best_weapon_in_inventory() const {
-    auto wc = dynamic_cast<WeaponCycle*>(&scene_node()->get_node_modifier());
-    if (wc == nullptr) {
-        THROW_OR_ABORT("Node modifier is not a weapon inventory");
-    }
+    auto& wc = weapon_cycle();
     if ((target_rb_ == nullptr) ||
         !has_scene_vehicle())
     {
@@ -498,7 +496,7 @@ std::string Player::best_weapon_in_inventory() const {
         target_rb_->rbi_.abs_position() - rigid_body().rbi_.abs_position())));
     float best_score = -INFINITY;
     std::string best_weapon_name;
-    for (const auto& [name, info] : wc->weapon_infos()) {
+    for (const auto& [name, info] : wc.weapon_infos()) {
         if (inventy.navailable(info.ammo_type) == 0) {
             continue;
         }

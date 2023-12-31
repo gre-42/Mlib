@@ -23,6 +23,8 @@ struct WeaponInfo {
 };
 
 class WeaponCycle: public NodeModifier {
+    WeaponCycle(const WeaponCycle&) = delete;
+    WeaponCycle& operator = (const WeaponCycle&) = delete;
 public:
     WeaponCycle();
     ~WeaponCycle();

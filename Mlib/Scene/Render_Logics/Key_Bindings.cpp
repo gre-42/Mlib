@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Driver.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Log.hpp>
@@ -788,14 +789,11 @@ void KeyBindings::increment_external_forces(
             k.role,
             incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
-            auto wc = dynamic_cast<WeaponCycle*>(&k.node->get_node_modifier());
-            if (wc == nullptr) {
-                THROW_OR_ABORT("Node modifier is not a weapon cycle");
-            }
+            auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {
-                wc->equip_next_weapon();
+                wc.equip_next_weapon();
             } else if (k.direction == -1) {
-                wc->equip_previous_weapon();
+                wc.equip_previous_weapon();
             } else {
                 THROW_OR_ABORT("Weapon cycle direction not -1 or 1");
             }
