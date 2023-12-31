@@ -1,5 +1,6 @@
 #include "Create_Wing.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
@@ -48,10 +49,7 @@ CreateWing::CreateWing(RenderableScene& renderable_scene)
 void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
-    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node->get_absolute_movable());
-    if (vehicle_rb == nullptr) {
-        THROW_OR_ABORT("Car movable is not a rigid body");
-    }
+    auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
     auto position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position) * (double)meters;
     auto rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     size_t wing_id = args.arguments.at<size_t>(KnownArgs::wing_id);
@@ -60,7 +58,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at_vector<float>(KnownArgs::fac_v, [](float v){return v * kph;}),
         args.arguments.at<std::vector<float>>(KnownArgs::fac_c),
         OutOfRangeBehavior::CLAMP};
-    auto tp = vehicle_rb->wings_.insert({
+    auto tp = vehicle_rb.wings_.insert({
         wing_id,
         std::make_unique<Wing>(
             TransformationMatrix<float, double, 3>{ r, position },

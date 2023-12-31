@@ -1,5 +1,6 @@
 #include "Create_Crash.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Crash.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -30,12 +31,10 @@ CreateCrash::CreateCrash(RenderableScene& renderable_scene)
 
 void CreateCrash::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
     auto d = std::make_unique<Crash>(
-        *rb,
+        rb,
         args.arguments.at<float>(KnownArgs::damage));
-    rb->collision_observers_.emplace_back(std::move(d));
+    rb.collision_observers_.emplace_back(std::move(d));
 }

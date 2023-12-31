@@ -1,5 +1,6 @@
 #include "Connect_Trailer.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Record/Permanent_Point_Contact.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -33,22 +34,16 @@ ConnectTrailer::ConnectTrailer(RenderableScene& renderable_scene)
 void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> car_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::car), DP_LOC);
-    auto car_rb = dynamic_cast<RigidBodyVehicle*>(&car_node->get_absolute_movable());
-    if (car_rb == nullptr) {
-        THROW_OR_ABORT("Car absolute movable is not a rigid body");
-    }
+    auto& car_rb = get_rigid_body_vehicle(car_node);
     DanglingRef<SceneNode> trailer_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::trailer), DP_LOC);
-    auto trailer_rb = dynamic_cast<RigidBodyVehicle*>(&trailer_node->get_absolute_movable());
-    if (trailer_rb == nullptr) {
-        THROW_OR_ABORT("Trailer absolute movable is not a rigid body");
-    }
+    auto& trailer_rb = get_rigid_body_vehicle(trailer_node);
     physics_engine.permanent_contacts_.insert(std::make_unique<PermanentPointContact>(
         physics_engine.permanent_contacts_,
         car_node,
         trailer_node,
-        car_rb->rbi_.rbp_,
-        trailer_rb->rbi_.rbp_,
-        car_rb->trailer_hitches_.get_position_male().casted<double>(),
-        trailer_rb->trailer_hitches_.get_position_female().casted<double>()));
-    car_rb->vehicle_controller().set_trailer(trailer_rb->vehicle_controller());
+        car_rb.rbi_.rbp_,
+        trailer_rb.rbi_.rbp_,
+        car_rb.trailer_hitches_.get_position_male().casted<double>(),
+        trailer_rb.trailer_hitches_.get_position_female().casted<double>()));
+    car_rb.vehicle_controller().set_trailer(trailer_rb.vehicle_controller());
 }

@@ -1,6 +1,7 @@
 #include "Create_Wheel.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
@@ -62,13 +63,10 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         OutOfRangeBehavior::CLAMP};
     size_t tire_id = args.arguments.at<size_t>(KnownArgs::tire_id);
 
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(rigid_body, DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    auto& rb = get_rigid_body_vehicle(scene.get_node(rigid_body, DP_LOC));
     if (!node.empty()) {
         auto wheel = std::make_unique<Wheel>(
-            *rb,
+            rb,
             physics_engine.advance_times_,
             tire_id,
             radius);
@@ -78,7 +76,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
         // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
         // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-        auto tp = rb->tires_.insert({
+        auto tp = rb.tires_.insert({
             tire_id,
             Tire{
                 engine,

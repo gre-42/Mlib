@@ -1,5 +1,6 @@
 #include "Add_To_Inventory.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -30,11 +31,9 @@ AddToInventory::AddToInventory(RenderableScene& renderable_scene)
 
 void AddToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto* rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::inventory_node), DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body vehicle");
-    }
-    rb->inventory_.add(
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::inventory_node), DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
+    rb.inventory_.add(
         args.arguments.at<std::string>(KnownArgs::item_type),
         args.arguments.at<uint32_t>(KnownArgs::amount));
 }

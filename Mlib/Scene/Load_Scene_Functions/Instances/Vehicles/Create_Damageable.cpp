@@ -1,5 +1,6 @@
 #include "Create_Damageable.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -32,10 +33,8 @@ CreateDamageable::CreateDamageable(RenderableScene& renderable_scene)
 
 void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
     auto d = std::make_unique<DeletingDamageable>(
         scene,
         physics_engine.advance_times_,
@@ -45,8 +44,8 @@ void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
         delete_node_mutex);
     auto& p_d = *d;
     physics_engine.advance_times_.add_advance_time(std::move(d));
-    if (rb->damageable_ != nullptr) {
+    if (rb.damageable_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a damageable");
     }
-    rb->damageable_ = &p_d;
+    rb.damageable_ = &p_d;
 }

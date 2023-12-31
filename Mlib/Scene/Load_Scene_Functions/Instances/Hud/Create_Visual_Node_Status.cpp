@@ -1,5 +1,6 @@
 #include "Create_Visual_Node_Status.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
@@ -56,10 +57,7 @@ CreateVisualNodeStatus::CreateVisualNodeStatus(RenderableScene& renderable_scene
 void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
-    if (lo == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a status writer");
-    }
+    auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }

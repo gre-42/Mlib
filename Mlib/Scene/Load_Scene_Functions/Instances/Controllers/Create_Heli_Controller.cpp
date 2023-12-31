@@ -1,5 +1,6 @@
 #include "Create_Heli_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -48,11 +49,8 @@ CreateHeliController::CreateHeliController(RenderableScene& renderable_scene)
 void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Heli movable is not a rigid body");
-    }
-    if (rb->vehicle_controller_ != nullptr) {
+    auto& rb = get_rigid_body_vehicle(node);
+    if (rb.vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Heli controller already set");
     }
     std::vector<size_t> tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::tire_ids);
@@ -66,8 +64,8 @@ void CreateHeliController::execute(const LoadSceneJsonUserFunctionArgs& args)
             THROW_OR_ABORT("Duplicate tire ID");
         }
     }
-    rb->vehicle_controller_ = std::make_unique<HeliController>(
-        *rb,
+    rb.vehicle_controller_ = std::make_unique<HeliController>(
+        rb,
         tire_angles_map,
         args.arguments.at<size_t>(KnownArgs::main_rotor_id),
         FixedArray<float, 3>{

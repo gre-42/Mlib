@@ -1,5 +1,6 @@
 #include "Create_Delta_Engine.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -31,13 +32,9 @@ CreateDeltaEngine::CreateDeltaEngine(RenderableScene& renderable_scene)
 void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(
-        args.arguments.at<std::string>(KnownArgs::rigid_body),
-        DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
-    auto ep = rb->delta_engines_.try_emplace(
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::rigid_body), DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
+    auto ep = rb.delta_engines_.try_emplace(
         args.arguments.at<std::string>(KnownArgs::name));
     if (!ep.second) {
         THROW_OR_ABORT("Delta engine with name \"" + args.arguments.at<std::string>(KnownArgs::name) + "\" already exists");

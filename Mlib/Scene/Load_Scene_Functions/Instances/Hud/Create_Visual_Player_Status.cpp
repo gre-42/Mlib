@@ -1,5 +1,6 @@
 #include "Create_Visual_Player_Status.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -66,10 +67,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
 {
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     DanglingRef<SceneNode> node = player.scene_node();
-    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
-    if (lo == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a status writer");
-    }
+    auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }

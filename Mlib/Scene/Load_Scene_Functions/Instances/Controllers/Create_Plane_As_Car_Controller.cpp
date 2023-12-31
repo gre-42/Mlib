@@ -1,5 +1,6 @@
 #include "Create_Plane_As_Car_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -40,11 +41,8 @@ CreatePlaneAsCarController::CreatePlaneAsCarController(RenderableScene& renderab
 void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Plane movable is not a rigid body");
-    }
-    if (rb->vehicle_controller_ != nullptr) {
+    auto& rb = get_rigid_body_vehicle(node);
+    if (rb.vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Plane controller already set");
     }
     std::vector<size_t> tire_ids = args.arguments.at<std::vector<size_t>>(KnownArgs::tire_ids);
@@ -58,8 +56,8 @@ void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& ar
             THROW_OR_ABORT("Duplicate tire ID");
         }
     }
-    rb->vehicle_controller_ = std::make_unique<PlaneAsCarController>(
-        *rb,
+    rb.vehicle_controller_ = std::make_unique<PlaneAsCarController>(
+        rb,
         tire_angles_map,
         vehicle_domain_from_string(args.arguments.at(KnownArgs::vehicle_domain)));
 }

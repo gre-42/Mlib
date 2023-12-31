@@ -1,5 +1,6 @@
 #include "Create_Gun.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
@@ -94,10 +95,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Linker linker{ physics_engine.advance_times_ };
     DanglingRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_rigid_body_node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&parent_rb_node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    auto& rb = get_rigid_body_vehicle(parent_rb_node);
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     DanglingRef<SceneNode> punch_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC);
     float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
@@ -123,7 +121,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
         args.arguments.at<float>(KnownArgs::cool_down) * s,
-        *rb,
+        rb,
         node,
         punch_angle_node,
         args.arguments.at<std::string>(KnownArgs::bullet_renderable),

@@ -1,4 +1,5 @@
 #include "Vehicle_Changer.hpp"
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -36,14 +37,11 @@ void VehicleChanger::change_vehicles() {
         if (next_vehicle->scene_node().ptr() == p.scene_node().ptr()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
-        auto* next_rb = dynamic_cast<RigidBodyVehicle*>(&next_vehicle->scene_node()->get_absolute_movable());
-        if (next_rb == nullptr) {
-            THROW_OR_ABORT("Next movable is no rigid body");
-        }
-        if (next_rb->driver_ == nullptr) {
+        auto& next_rb = get_rigid_body_vehicle(next_vehicle->scene_node());
+        if (next_rb.driver_ == nullptr) {
             enter_vehicle(*s, *next_vehicle);
         } else {
-            Player* other_driver = dynamic_cast<Player*>(next_rb->driver_);
+            Player* other_driver = dynamic_cast<Player*>(next_rb.driver_);
             if (other_driver == nullptr) {
                 THROW_OR_ABORT("Next vehicle's driver is not a player");
             }

@@ -1,5 +1,6 @@
 #include "Spawner_Set_Nodes.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -47,11 +48,8 @@ void SpawnerSetNodes::execute(const LoadSceneJsonUserFunctionArgs& args)
     for (const auto& prefix : prefixes) {
         auto name = prefix + suffix;
         DanglingRef<SceneNode> node = scene.get_node(name, DP_LOC);
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Follower movable is not a rigid body");
-        }
-        vehicles.push_back(std::make_unique<SceneVehicle>(delete_node_mutex, name, node, *rb));
+        auto& rb = get_rigid_body_vehicle(node);
+        vehicles.push_back(std::make_unique<SceneVehicle>(delete_node_mutex, name, node, rb));
     }
     vehicle_spawners
         .get(args.arguments.at<std::string>(KnownArgs::spawner))

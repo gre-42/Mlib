@@ -8,7 +8,7 @@ using namespace Mlib;
 MovableLogger::MovableLogger(
     DanglingRef<SceneNode> scene_node,
     AdvanceTimes& advance_times,
-    StatusWriter* status_writer,
+    StatusWriter& status_writer,
     StatusComponents log_components)
 : advance_times_{advance_times},
   status_writer_{status_writer},
@@ -22,5 +22,5 @@ void MovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_obje
 }
 
 void MovableLogger::advance_time(float dt) {
-    status_writer_->write_status(std::cerr, log_components_);
+    status_writer_.write_status(std::cerr, log_components_);
 }

@@ -1,5 +1,6 @@
 #include "Visual_Node_Status_3rd.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -41,16 +42,13 @@ VisualNodeStatus3rd::VisualNodeStatus3rd(RenderableScene& renderable_scene)
 void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
-    if (lo == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a status writer");
-    }
+    auto& lo = get_status_writer(node);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto logger = std::make_shared<VisualMovable3rdLogger>(
         scene_logic,
         node,
         physics_engine.advance_times_,
-        *lo,
+        lo,
         log_components,
         args.arguments.path(KnownArgs::ttf_file),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),

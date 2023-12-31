@@ -1,5 +1,6 @@
 #include "Console_Log.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -33,10 +34,7 @@ ConsoleLog::ConsoleLog(RenderableScene& renderable_scene)
 void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto lo = dynamic_cast<StatusWriter*>(&node->get_absolute_movable());
-    if (lo == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a status writer");
-    }
+    auto& lo = get_status_writer(node);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto logger = std::make_unique<MovableLogger>(
         node,

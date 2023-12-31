@@ -1,5 +1,6 @@
 #include "Set_Skater_Style_Updater.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Animation/Skater_Animation_Updater.hpp>
@@ -34,15 +35,12 @@ void SetSkaterStyleUpdater::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> skater_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skater_node), DP_LOC);
     DanglingRef<SceneNode> skateboard_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::skateboard_node), DP_LOC);
     std::string resource = args.arguments.at<std::string>(KnownArgs::resource);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&skater_node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Styled node movable is not a rigid body");
-    }
-    if (rb->animation_state_updater_ != nullptr) {
+    auto& rb = get_rigid_body_vehicle(skater_node);
+    if (rb.animation_state_updater_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a style updater");
     }
-    auto updater = std::make_unique<SkaterAnimationUpdater>(*rb, skateboard_node, resource);
+    auto updater = std::make_unique<SkaterAnimationUpdater>(rb, skateboard_node, resource);
     AnimationStateUpdater* ptr = updater.get();
     skater_node->set_animation_state_updater(std::move(updater));
-    rb->animation_state_updater_ = ptr;
+    rb.animation_state_updater_ = ptr;
 }

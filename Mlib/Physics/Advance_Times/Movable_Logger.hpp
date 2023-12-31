@@ -17,13 +17,13 @@ public:
     MovableLogger(
         DanglingRef<SceneNode> scene_node,
         AdvanceTimes& advance_times,
-        StatusWriter* status_writer,
+        StatusWriter& status_writer,
         StatusComponents log_components);
     virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
 private:
     AdvanceTimes& advance_times_;
-    StatusWriter* status_writer_;
+    StatusWriter& status_writer_;
     StatusComponents log_components_;
 };
 

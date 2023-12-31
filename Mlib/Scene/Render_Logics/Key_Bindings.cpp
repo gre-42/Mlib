@@ -1,5 +1,7 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Driver.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Log.hpp>
@@ -495,82 +497,73 @@ void KeyBindings::increment_external_forces(
 
     // Absolute movable
     for (const auto& k : absolute_movable_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->set_surface_power("main", EnginePowerIntent{.surface_power = 0});
-        rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
-        rb->set_max_velocity(INFINITY);
-        for (auto& t : rb->tires_) {
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.set_surface_power("main", EnginePowerIntent{.surface_power = 0});
+        rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
+        rb.set_max_velocity(INFINITY);
+        for (auto& t : rb.tires_) {
             t.second.angle_y = 0;
             // t.second.accel_x = 0;
         }
-        rb->tires_z_ = k.tires_z;
+        rb.tires_z_ = k.tires_z;
     }
     for (const auto& k : absolute_movable_key_bindings_) {
         float alpha = button_press_.keys_alpha(key_configurations_.get(k.id).base_combo, k.role, 0.05f);
         if (!std::isnan(alpha)) {
-            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-            if (rb == nullptr) {
-                THROW_OR_ABORT("Absolute movable is not a rigid body");
-            }
+            auto& rb = get_rigid_body_vehicle(*k.node);
             if (any(k.force.vector != 0.f)) {
-                rb->integrate_force(rb->abs_F(k.force), cfg);
+                rb.integrate_force(rb.abs_F(k.force), cfg);
             }
             if (any(k.rotate != 0.f)) {
-                rb->rbi_.rbp_.rotation_ = dot2d(rb->rbi_.rbp_.rotation_, rodrigues1(alpha * k.rotate));
+                rb.rbi_.rbp_.rotation_ = dot2d(rb.rbi_.rbp_.rotation_, rodrigues1(alpha * k.rotate));
             }
             if (k.car_surface_power.has_value()) {
-                rb->set_surface_power("main", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
-                rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
+                rb.set_surface_power("main", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
+                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
             }
             if (k.max_velocity != INFINITY) {
-                rb->set_max_velocity(k.max_velocity);
+                rb.set_max_velocity(k.max_velocity);
             }
             if (k.tire_id != SIZE_MAX) {
                 if (false) {
                     float a = gravity_magnitude * 1.f;
                     float l = 2.55f;
-                    float r = sum(squared(rb->rbi_.rbp_.v_)) / a;
+                    float r = sum(squared(rb.rbi_.rbp_.v_)) / a;
                     float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
-                    rb->set_tire_angle_y(k.tire_id, angle * alpha * sign(k.tire_angle_interp(0)));
+                    rb.set_tire_angle_y(k.tire_id, angle * alpha * sign(k.tire_angle_interp(0)));
                 }
                 // float v = std::sqrt(sum(squared(rb->rbi_.rbp_.v_)));
                 float v = std::abs(dot0d(
-                    rb->rbi_.rbp_.v_,
-                    rb->rbi_.rbp_.rotation_.column(2)));
-                rb->set_tire_angle_y(k.tire_id, alpha * degrees * k.tire_angle_interp(v * 3.6f));
+                    rb.rbi_.rbp_.v_,
+                    rb.rbi_.rbp_.rotation_.column(2)));
+                rb.set_tire_angle_y(k.tire_id, alpha * degrees * k.tire_angle_interp(v * 3.6f));
                 // rb->set_tire_accel_x(k.tire_id, alpha * sign(k.tire_angle_interp(0)));
             }
             if (any(k.tires_z != 0.f)) {
-                rb->tires_z_ += k.tires_z;
+                rb.tires_z_ += k.tires_z;
             }
             if ((alpha == 0) && k.wants_to_jump.has_value() && k.wants_to_jump.value()) {
-                rb->set_wants_to_jump();
+                rb.set_wants_to_jump();
             }
             if (k.wants_to_grind.has_value()) {
-                rb->grind_state_.wants_to_grind_ = k.wants_to_grind.value();
+                rb.grind_state_.wants_to_grind_ = k.wants_to_grind.value();
             }
             if (k.fly_forward_factor.has_value()) {
-                rb->fly_forward_state_.wants_to_fly_forward_factor_ = k.fly_forward_factor.value();
+                rb.fly_forward_state_.wants_to_fly_forward_factor_ = k.fly_forward_factor.value();
             }
         }
     }
     for (const auto& k : absolute_movable_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        if (any(abs(rb->tires_z_) > float(1e-12))) {
-            rb->tires_z_ /= std::sqrt(sum(squared(rb->tires_z_)));
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        if (any(abs(rb.tires_z_) > float(1e-12))) {
+            rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
         } else {
-            rb->tires_z_ = { 0.f, 0.f, 1.f };
-            rb->set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
-            rb->set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
+            rb.tires_z_ = { 0.f, 0.f, 1.f };
+            rb.set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
+            rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
         }
-        if (rb->animation_state_updater_ != nullptr) {
-            rb->animation_state_updater_->notify_movement_intent();
+        if (rb.animation_state_updater_ != nullptr) {
+            rb.animation_state_updater_->notify_movement_intent();
         }
     }
     // Relative movable
@@ -678,31 +671,25 @@ void KeyBindings::increment_external_forces(
     }
     // Avatar controller
     for (const auto& k : avatar_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->avatar_controller().reset();
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.avatar_controller().reset();
     }
     for (const auto& k : avatar_controller_key_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
+        auto& rb = get_rigid_body_vehicle(*k.node);
         const auto& key_config = key_configurations_.get(k.id);
         float alpha = button_press_.keys_alpha(key_config.base_combo, k.role, 0.05f);
         if (!std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
-                rb->avatar_controller().walk(k.surface_power.value());
-                rb->avatar_controller().increment_legs_z(k.legs_z.value());
+                rb.avatar_controller().walk(k.surface_power.value());
+                rb.avatar_controller().increment_legs_z(k.legs_z.value());
             }
             if (k.angular_velocity_press.has_value() && k.angular_velocity_repeat.has_value()) {
                 float w = ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());
                 if (k.yaw) {
-                    rb->avatar_controller().increment_yaw(w * cfg.dt);
+                    rb.avatar_controller().increment_yaw(w * cfg.dt);
                 }
                 if (k.pitch) {
-                    rb->avatar_controller().increment_pitch(w * cfg.dt);
+                    rb.avatar_controller().increment_pitch(w * cfg.dt);
                 }
             }
         }
@@ -711,31 +698,25 @@ void KeyBindings::increment_external_forces(
             if (!std::isnan(beta) && k.speed_cursor.has_value()) {
                 float dangle = beta * k.speed_cursor.value();
                 if (k.yaw) {
-                    rb->avatar_controller().increment_yaw(dangle);
+                    rb.avatar_controller().increment_yaw(dangle);
                 }
                 if (k.pitch) {
-                    rb->avatar_controller().increment_pitch(dangle);
+                    rb.avatar_controller().increment_pitch(dangle);
                 }
             }
         }
     }
     for (const auto& k : avatar_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->avatar_controller().apply();
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.avatar_controller().apply();
     }
     // Vehicle controller
     for (const auto& k : car_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->vehicle_controller().reset_parameters(
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.vehicle_controller().reset_parameters(
             k.surface_power,
             k.steer_angle);
-        rb->vehicle_controller().reset_relaxation(
+        rb.vehicle_controller().reset_relaxation(
             k.drive_relaxation,
             k.steer_relaxation);
     }
@@ -745,41 +726,32 @@ void KeyBindings::increment_external_forces(
             k.role,
             incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
-            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-            if (rb == nullptr) {
-                THROW_OR_ABORT("Absolute movable is not a rigid body");
-            }
+            auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
-                rb->vehicle_controller().drive(
+                rb.vehicle_controller().drive(
                     k.surface_power.value(),
                     alpha);
             }
             if (k.tire_angle_interp.has_value()) {
                 float v = std::abs(dot0d(
-                    rb->rbi_.rbp_.v_,
-                    rb->rbi_.rbp_.rotation_.column(2)));
-                rb->vehicle_controller().steer(k.tire_angle_interp.value()(v), alpha);
+                    rb.rbi_.rbp_.v_,
+                    rb.rbi_.rbp_.rotation_.column(2)));
+                rb.vehicle_controller().steer(k.tire_angle_interp.value()(v), alpha);
             }
             if (k.ascend_velocity.has_value()) {
-                rb->vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
+                rb.vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
             }
         }
     }
     for (const auto& k : car_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->vehicle_controller().apply();
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.vehicle_controller().apply();
     }
     // Plane controller
     for (const auto& k : plane_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
-        rb->plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+        rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
     }
     for (const auto& k : plane_controller_key_bindings_) {
         float alpha = get_alpha(
@@ -787,33 +759,27 @@ void KeyBindings::increment_external_forces(
             k.role,
             incremental_alphas.get(k.id));
         if (!std::isnan(alpha)) {
-            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-            if (rb == nullptr) {
-                THROW_OR_ABORT("Absolute movable is not a rigid body");
-            }
+            auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
-                rb->plane_controller().accelerate(k.turbine_power.value(), alpha);
+                rb.plane_controller().accelerate(k.turbine_power.value(), alpha);
             }
             if (k.brake.has_value()) {
-                rb->plane_controller().brake(k.brake.value(), alpha);
+                rb.plane_controller().brake(k.brake.value(), alpha);
             }
             if (k.pitch.has_value()) {
-                rb->plane_controller().pitch(alpha * k.pitch.value(), alpha);
+                rb.plane_controller().pitch(alpha * k.pitch.value(), alpha);
             }
             if (k.yaw.has_value()) {
-                rb->plane_controller().yaw(alpha * k.yaw.value(), alpha);
+                rb.plane_controller().yaw(alpha * k.yaw.value(), alpha);
             }
             if (k.roll.has_value()) {
-                rb->plane_controller().roll(alpha * k.roll.value(), alpha);
+                rb.plane_controller().roll(alpha * k.roll.value(), alpha);
             }
         }
     }
     for (const auto& k : plane_controller_idle_bindings_) {
-        auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-        if (rb == nullptr) {
-            THROW_OR_ABORT("Absolute movable is not a rigid body");
-        }
-        rb->plane_controller().apply();
+        auto& rb = get_rigid_body_vehicle(*k.node);
+        rb.plane_controller().apply();
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
@@ -849,22 +815,16 @@ void KeyBindings::increment_external_forces(
     // Player
     for (const auto& k : player_key_bindings_) {
         if (button_press_.keys_pressed(key_configurations_.get(k.id).base_combo, k.role)) {
-            auto rb = dynamic_cast<RigidBodyVehicle*>(&k.node->get_absolute_movable());
-            if (rb == nullptr) {
-                THROW_OR_ABORT("Absolute movable is not a rigid body");
-            }
-            if (rb->driver_ == nullptr) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            if (rb.driver_ == nullptr) {
                 THROW_OR_ABORT("Rigid body has no driver");
             }
-            Player* player = dynamic_cast<Player*>(rb->driver_);
-            if (player == nullptr) {
-                THROW_OR_ABORT("Driver is not a player");
-            }
+            Player& player = get_driver(rb);
             if (k.select_next_opponent) {
-                player->select_next_opponent();
+                player.select_next_opponent();
             }
             if (k.select_next_vehicle) {
-                player->select_next_vehicle();
+                player.select_next_vehicle();
             }
         }
     }

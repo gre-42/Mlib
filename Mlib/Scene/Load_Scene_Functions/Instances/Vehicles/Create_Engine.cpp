@@ -1,5 +1,6 @@
 #include "Create_Engine.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
@@ -64,12 +65,8 @@ float stop(float v) {
 void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&scene.get_node(
-        args.arguments.at<std::string>(KnownArgs::rigid_body),
-        DP_LOC)->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::rigid_body), DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
     std::optional<EnginePower> engine_power;
     if (args.arguments.contains(KnownArgs::angular_vels) ||
         args.arguments.contains(KnownArgs::powers) ||
@@ -100,7 +97,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
 #endif
-    auto ep = rb->engines_.try_emplace(
+    auto ep = rb.engines_.try_emplace(
         args.arguments.at<std::string>(KnownArgs::name),
         engine_power,
         args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),

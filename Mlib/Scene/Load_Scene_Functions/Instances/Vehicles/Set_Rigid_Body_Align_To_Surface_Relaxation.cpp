@@ -1,5 +1,6 @@
 #include "Set_Rigid_Body_Align_To_Surface_Relaxation.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -31,9 +32,6 @@ SetRigidBodyAlignToSurfaceRelaxation::SetRigidBodyAlignToSurfaceRelaxation(Rende
 void SetRigidBodyAlignToSurfaceRelaxation::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Target movable is not a rigid body");
-    }
-    rb->align_to_surface_state_.align_to_surface_relaxation_ = args.arguments.at<float>(KnownArgs::value);
+    auto& rb = get_rigid_body_vehicle(node);
+    rb.align_to_surface_state_.align_to_surface_relaxation_ = args.arguments.at<float>(KnownArgs::value);
 }

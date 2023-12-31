@@ -1,5 +1,6 @@
 #include "Create_Car_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -40,11 +41,8 @@ CreateCarController::CreateCarController(RenderableScene& renderable_scene)
 void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Car movable is not a rigid body");
-    }
-    if (rb->vehicle_controller_ != nullptr) {
+    auto& rb = get_rigid_body_vehicle(node);
+    if (rb.vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Car controller already set");
     }
     auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
@@ -53,8 +51,8 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         .at(asset_id)
         .rp;
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
-    rb->vehicle_controller_ = std::make_unique<CarController>(
-        *rb,
+    rb.vehicle_controller_ = std::make_unique<CarController>(
+        rb,
         args.arguments.at<std::string>(KnownArgs::front_engine),
         args.arguments.at<std::string>(KnownArgs::rear_engine),
         front_tire_ids,

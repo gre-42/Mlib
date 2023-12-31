@@ -1,5 +1,6 @@
 #include "Set_Jump_Strength.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -32,9 +33,6 @@ SetJumpStrength::SetJumpStrength(RenderableScene& renderable_scene)
 void SetJumpStrength::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Car movable is not a rigid body");
-    }
-    rb->set_jump_strength(args.arguments.at<float>(KnownArgs::value) * meters);
+    auto& rb = get_rigid_body_vehicle(node);
+    rb.set_jump_strength(args.arguments.at<float>(KnownArgs::value) * meters);
 }

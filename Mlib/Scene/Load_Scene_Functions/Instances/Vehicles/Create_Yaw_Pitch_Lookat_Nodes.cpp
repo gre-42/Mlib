@@ -1,5 +1,6 @@
 #include "Create_Yaw_Pitch_Lookat_Nodes.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -59,18 +60,12 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     DanglingRef<SceneNode> yaw_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::yaw_node), DP_LOC);
     DanglingRef<SceneNode> pitch_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::pitch_node), DP_LOC);
     DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
-    auto follower_rb = dynamic_cast<RigidBodyVehicle*>(&follower_node->get_absolute_movable());
-    if (follower_rb == nullptr) {
-        THROW_OR_ABORT("Follower movable is not a rigid body");
-    }
+    auto& follower_rb = get_rigid_body_vehicle(follower_node);
     DanglingPtr<SceneNode> followed_node = nullptr;
     RigidBodyVehicle* followed_rb = nullptr;
     if (args.arguments.contains(KnownArgs::followed)) {
         followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed), DP_LOC).ptr();
-        followed_rb = dynamic_cast<RigidBodyVehicle*>(&followed_node->get_absolute_movable());
-        if (followed_rb == nullptr) {
-            THROW_OR_ABORT("Followed movable is not a rigid body");
-        }
+        followed_rb = &get_rigid_body_vehicle(*followed_node);
     }
     float velocity_error_std = args.arguments.at<float>(KnownArgs::velocity_error_std);
     float yaw_error_std = args.arguments.at<float>(KnownArgs::yaw_error_std);
@@ -98,7 +93,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
 
     auto follower_pitch = std::make_unique<PitchLookAtNode>(
         physics_engine.advance_times_,
-        *follower_rb,
+        follower_rb,
         bullet_start_offset,
         bullet_velocity,
         bullet_feels_gravity,
@@ -112,7 +107,7 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto follower = std::make_unique<YawPitchLookAtNodes>(
         *follower_pitch,
         physics_engine.advance_times_,
-        *follower_rb,
+        follower_rb,
         bullet_start_offset,
         bullet_velocity,
         bullet_feels_gravity,

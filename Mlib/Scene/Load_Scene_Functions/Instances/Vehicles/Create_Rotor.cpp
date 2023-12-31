@@ -1,5 +1,6 @@
 #include "Create_Rotor.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
@@ -68,10 +69,7 @@ CreateRotor::CreateRotor(RenderableScene& renderable_scene)
 void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
-    auto vehicle_rb = dynamic_cast<RigidBodyVehicle*>(&vehicle_node->get_absolute_movable());
-    if (vehicle_rb == nullptr) {
-        THROW_OR_ABORT("Car movable is not a rigid body");
-    }
+    auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
     FixedArray<float, 3> vehicle_mount_0(NAN);
     FixedArray<float, 3> vehicle_mount_1(NAN);
     FixedArray<float, 3> blades_mount_0(NAN);
@@ -82,10 +80,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto c = args.arguments.child(KnownArgs::blades);
         blades_node_name = c.at<std::string>(BladesArgs::node);
         DanglingRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
-        blades_rb = dynamic_cast<RigidBodyVehicle*>(&blades_node->get_absolute_movable());
-        if (blades_rb == nullptr) {
-            THROW_OR_ABORT("Blades movable is not a rigid body");
-        }
+        blades_rb = &get_rigid_body_vehicle(blades_node);
         vehicle_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
         vehicle_mount_1 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_1);
         blades_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::blades_mount_0);
@@ -117,7 +112,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid_params(1),
         pid_params(2),
         pid_child.has_value() ? pid_child->at<float>(PidArgs::alpha) : NAN};
-    auto tp = vehicle_rb->rotors_.insert({
+    auto tp = vehicle_rb.rotors_.insert({
         rotor_id,
         std::make_unique<Rotor>(
             engine,

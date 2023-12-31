@@ -1,5 +1,6 @@
 #include "Set_RigidBody_Grind_Point.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -30,12 +31,9 @@ SetRigidBodyGrindPoint::SetRigidBodyGrindPoint(RenderableScene& renderable_scene
 void SetRigidBodyGrindPoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Target movable is not a rigid body");
-    }
-    if (rb->grind_state_.grind_point_.has_value()) {
+    auto& rb = get_rigid_body_vehicle(node);
+    if (rb.grind_state_.grind_point_.has_value()) {
         THROW_OR_ABORT("Rigid body grind point already set");
     }
-    rb->grind_state_.grind_point_ = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position);
+    rb.grind_state_.grind_point_ = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position);
 }

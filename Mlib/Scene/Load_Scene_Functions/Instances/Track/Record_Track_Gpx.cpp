@@ -1,5 +1,6 @@
 #include "Record_Track_Gpx.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -34,15 +35,12 @@ RecordTrackGpx::RecordTrackGpx(RenderableScene& renderable_scene)
 void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto rb = dynamic_cast<RigidBodyVehicle*>(&recorder_node->get_absolute_movable());
-    if (rb == nullptr) {
-        THROW_OR_ABORT("Absolute movable is not a rigid body");
-    }
+    auto& rb = get_rigid_body_vehicle(recorder_node);
     physics_engine.advance_times_.add_advance_time(std::make_unique<RigidBodyRecorderGpx>(
         args.arguments.path(KnownArgs::filename),
         physics_engine.advance_times_,
         recorder_node,
-        &rb->rbi_,
+        &rb.rbi_,
         scene_node_resources.get_geographic_mapping("world"),
         args.ui_focus.focuses));
 }
