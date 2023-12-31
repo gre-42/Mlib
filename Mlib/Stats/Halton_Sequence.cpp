@@ -1,4 +1,5 @@
 #include "Halton_Sequence.hpp"
+#include <algorithm>
 #include <iostream>
 #include <random>
 #include <vector>
