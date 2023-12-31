@@ -27,18 +27,19 @@ void CollidableTriangleSampler::add_near_hitboxes(
     HeterogeneousResource& hri)
 {
     std::list<std::pair<const TerrainStyle&, const std::list<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
-    if (auto tris = tl_terrain.wayside1_grass; tris != nullptr)
-    {
-        grass_triangles.push_back({ terrain_styles_.near_wayside1_grass_terrain_style, tris });
+    if (const auto& style = terrain_styles_.near_wayside1_grass_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.wayside1_grass; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
+        }
     }
-    if (auto tris = tl_terrain.wayside2_grass; tris != nullptr)
-    {
-        grass_triangles.push_back({ terrain_styles_.near_wayside2_grass_terrain_style, tris });
+    if (const auto& style = terrain_styles_.near_wayside2_grass_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.wayside2_grass; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
+        }
     }
-    if (auto tris = tl_terrain.trees; tris != nullptr)
-    {
-        if (terrain_styles_.near_trees_terrain_style.is_visible()) {
-            grass_triangles.push_back({ terrain_styles_.near_trees_terrain_style, tris });
+    if (const auto& style = terrain_styles_.near_trees_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.trees; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
     auto add_triangles = [this, &street_bvh, &hri](
@@ -86,34 +87,29 @@ void CollidableTriangleSampler::add_far_hitboxes(
     HeterogeneousResource& hri)
 {
     std::list<std::pair<const TerrainStyle&, const std::list<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
-    if (terrain_styles_.far_grass_terrain_style.config.is_visible()) {
-        if (auto tris = tl_terrain.grass; tris != nullptr)
-        {
-            grass_triangles.push_back({ terrain_styles_.far_grass_terrain_style, tris });
+    if (const auto& style = terrain_styles_.far_grass_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.grass; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
-    if (terrain_styles_.far_grass_terrain_style.config.is_visible()) {
-        if (auto tris = tl_terrain.wayside1_grass; tris != nullptr)
-        {
-            grass_triangles.push_back({ terrain_styles_.far_grass_terrain_style, tris });
+    if (const auto& style = terrain_styles_.far_grass_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.wayside1_grass; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
-    if (terrain_styles_.far_grass_terrain_style.config.is_visible()) {
-        if (auto tris = tl_terrain.wayside2_grass; tris != nullptr)
-        {
-            grass_triangles.push_back({ terrain_styles_.far_grass_terrain_style, tris });
+    if (const auto& style = terrain_styles_.far_grass_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.wayside2_grass; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
-    if (terrain_styles_.far_flowers_terrain_style.config.is_visible()) {
-        if (auto tris = tl_terrain.flowers; tris != nullptr)
-        {
-            grass_triangles.push_back({ terrain_styles_.far_flowers_terrain_style, tris });
+    if (const auto& style = terrain_styles_.far_flowers_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.flowers; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
-    if (terrain_styles_.far_trees_terrain_style.config.is_visible()) {
-        if (auto tris = tl_terrain.trees; tris != nullptr)
-        {
-            grass_triangles.push_back({ terrain_styles_.far_trees_terrain_style, tris });
+    if (const auto& style = terrain_styles_.far_trees_terrain_style; style.is_visible()) {
+        if (auto tris = tl_terrain.trees; tris != nullptr) {
+            grass_triangles.push_back({ style, tris });
         }
     }
     auto add_triangles = [this, &street_bvh, &hri](
