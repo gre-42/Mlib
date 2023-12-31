@@ -7,7 +7,7 @@ using namespace Mlib;
 
 void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
 	std::vector<double> random_numbers(nnumbers);
-	HaltonSequence<double> rng{ 2 };
+	HaltonSequence<double> rng{ HALTON_LUT_B };
 	for (auto& n : random_numbers) {
 		n = rng();
 	}

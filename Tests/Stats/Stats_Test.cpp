@@ -256,6 +256,12 @@ void test_halton_sequence() {
     //         linfo() << rng();
     //     }
     // }
+    // {
+    //     HybridHaltonSequence<double> rng{ 12, -1.5, 3.5 };
+    //     for (size_t i = 0; i < 1000; ++i) {
+    //         std::cerr << rng() << ", ";
+    //     }
+    // }
 }
 
 int main(int argc, char** argv) {
