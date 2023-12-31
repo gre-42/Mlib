@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Stats/Clamp_Uniform.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 
 #ifdef _MSC_VER
@@ -43,7 +44,10 @@ public:
             }
             n_ = (b_ + 1) * y - x;
         }
-        return (TData(n_) / TData(d_)) * (high_ - low_) + low_;
+        return clamp_uniform(
+            (TData(n_) / TData(d_)) * (high_ - low_) + low_,
+            low_,
+            high_);
     }
     void reset() {
         n_ = 0;
@@ -98,7 +102,10 @@ public:
     TData operator () () {
         ++ncalls_;
         index_ = (index_ + 1) % SHUFFLED_HALTON_1K_COUNT;
-        return TData(SHUFFLED_HALTON_1K[index_]) * (high_ - low_) + low_;
+        return clamp_uniform(
+            TData(SHUFFLED_HALTON_1K[index_]) * (high_ - low_) + low_,
+            low_,
+            high_);
     }
     void seed(unsigned int seed) {
         index_ = seed;
@@ -134,7 +141,10 @@ public:
         if (res < 0) {
             res += 1;
         }
-        return low_ + res * (high_ - low_);
+        return clamp_uniform(
+            low_ + res * (high_ - low_),
+            low_,
+            high_);
     }
     void seed(unsigned int seed) {
         lut_.seed(seed);
