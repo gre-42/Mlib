@@ -15,7 +15,7 @@ void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
 	for (size_t i = 0; i < random_numbers.size(); i += block_size) {
 		std::shuffle(
 			random_numbers.begin() + i,
-			std::min(random_numbers.end(), random_numbers.begin() + i + block_size),
+			random_numbers.begin() + std::min(random_numbers.size(), i + block_size),
 			g);
 	}
 	{
