@@ -1,4 +1,5 @@
 #include "Avatar_Animation_Updater.hpp"
+#include <Mlib/Components/Gun.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -33,16 +34,8 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 }
 
 void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
-    Gun* gun;
-    try {
-        gun = dynamic_cast<Gun*>(&gun_node_->get_absolute_observer());
-    } catch (const std::runtime_error& e) {
-        THROW_OR_ABORT("AvatarAnimationUpdater could not get absolute observer of gun node: " + std::string(e.what()));
-    }
-    if (gun == nullptr) {
-        THROW_OR_ABORT("AvatarAnimationUpdater received absolute observer that is not a gun");
-    }
-    std::string resource_name = gun->is_none_gun()
+    Gun& gun = get_gun(gun_node_);
+    std::string resource_name = gun.is_none_gun()
         ? resource_wo_gun_
         : resource_w_gun_;
     if ((rb_.damageable_ != nullptr) && (rb_.damageable_->health() <= 0.f)) {
@@ -58,7 +51,7 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
         }
     } else {
         std::string new_animation;
-        if (gun->is_none_gun()) {
+        if (gun.is_none_gun()) {
             new_animation = resource_name + ".walking";
         } else {
             if (std::isnan(surface_power_) || (surface_power_ == 0)) {

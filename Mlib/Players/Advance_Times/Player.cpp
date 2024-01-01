@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Images/Svg.hpp>
@@ -527,11 +528,8 @@ const Gun& Player::gun() const {
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }
-    Gun* gun = dynamic_cast<Gun*>(&controlled_.gun_node->get_absolute_observer());
-    if (gun == nullptr) {
-        THROW_OR_ABORT("Absolute observer is not a gun");
-    }
-    return *gun;
+    Gun& gun = get_gun(*controlled_.gun_node);
+    return gun;
 }
 
 Gun& Player::gun() {

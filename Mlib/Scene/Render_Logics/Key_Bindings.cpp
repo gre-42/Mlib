@@ -1,6 +1,7 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Driver.hpp>
+#include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
@@ -803,11 +804,8 @@ void KeyBindings::increment_external_forces(
     for (const auto& k : gun_key_bindings_) {
         const auto& key_config = key_configurations_.get(k.id);
         if (button_press_.keys_down(key_config.base_combo, k.role)) {
-            auto gun = dynamic_cast<Gun*>(&k.node->get_absolute_observer());
-            if (gun == nullptr) {
-                THROW_OR_ABORT("Absolute observer is not a gun");
-            }
-            gun->trigger(k.player, &players_.get_team(k.player->team_name()));
+            auto& gun = get_gun(*k.node);
+            gun.trigger(k.player, &players_.get_team(k.player->team_name()));
         }
     }
     // Player
