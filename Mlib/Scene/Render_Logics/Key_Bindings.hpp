@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Map/Map.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -21,25 +20,22 @@ struct WeaponCycleKeyBinding;
 struct GunKeyBinding;
 struct PlayerKeyBinding;
 class SelectedCameras;
-class ButtonPress;
 class GamepadAnalogAxesPosition;
-class CursorStates;
 class Scene;
 class Focuses;
 class Players;
 struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
 struct KeyConfiguration;
-class IncrementalAlpha;
+class KeyConfigurations;
+class ButtonPress;
+class CursorMovement;
 
 class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
-        ButtonPress& button_press,
-        bool print_gamepad_buttons,
         GamepadAnalogAxesPosition& gamepad_analog_axes_position,
-        CursorStates& cursor_states,
-        CursorStates& scroll_wheel_states,
+        KeyConfigurations& key_configurations,
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
@@ -59,10 +55,6 @@ public:
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
-
-    void load_key_configurations(
-        const std::string& filename,
-        const std::string& fallback_filename);
 
     void add_camera_key_binding(const CameraKeyBinding& b);
     const AbsoluteMovableIdleBinding& add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
@@ -93,7 +85,12 @@ public:
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
     void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
 private:
-    float get_alpha(const KeyConfiguration& key_config, const std::string& role, IncrementalAlpha& incremental_alpha);
+    float get_alpha(
+        ButtonPress& button_press,
+        CursorMovement* cursor_movement,
+        CursorMovement* scroll_wheel_movement,
+        const KeyConfiguration& key_config,
+        const std::string& role);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
@@ -110,13 +107,8 @@ private:
     std::list<PlayerKeyBinding> player_key_bindings_;
     std::list<PrintNodeInfoKeyBinding> print_node_info_key_bindings_;
 
-    Map<std::string, KeyConfiguration> key_configurations_;
-
-    ButtonPress& button_press_;
-    bool print_gamepad_buttons_;
     GamepadAnalogAxesPosition& gamepad_analog_axes_position_;
-    CursorStates& cursor_states_;
-    CursorStates& scroll_wheel_states_;
+    KeyConfigurations& key_configurations_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;

@@ -59,5 +59,11 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         .velocity_repeat = args.arguments.at<double>(KnownArgs::velocity_repeat, 0.) * kph,
         .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / s,
         .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat, 0.f) * radians / s,
-        .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor)});
+        .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)},
+        .cursor_movement = std::make_shared<CursorMovement>(args.cursor_states)});
 }

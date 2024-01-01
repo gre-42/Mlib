@@ -46,7 +46,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
     ThreadSafeString& next_scene_filename,
-    ButtonPress& button_press,
+    ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : renderable_text_{std::make_unique<TextResource>(
@@ -61,7 +61,7 @@ SceneSelectorLogic::SceneSelectorLogic(
   substitutions_{ substitutions },
   next_scene_filename_{ next_scene_filename },
   list_view_{
-    button_press,
+    button_states,
     selection_index,
     contents_,
     ListViewOrientation::VERTICAL,

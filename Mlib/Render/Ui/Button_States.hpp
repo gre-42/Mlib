@@ -1,5 +1,4 @@
 #pragma once
-#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 
 #ifdef __ANDROID__
 #include <unordered_map>
@@ -9,10 +8,13 @@
 #include <GLFW/glfw3.h>
 #endif
 
-#include <set>
+#include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <set>
 
 namespace Mlib {
+
+struct BaseKeyBinding;
 
 class ButtonStates {
     ButtonStates(const ButtonStates&) = delete;
@@ -34,6 +36,7 @@ public:
     void update_gamepad_state();
 #endif
     void print(bool physical = false, bool only_pressed = false) const;
+    bool key_down(const BaseKeyBinding& k, const std::string& role = "") const;
     TapButtonsStates tap_buttons_;
 private:
 #ifdef __ANDROID__

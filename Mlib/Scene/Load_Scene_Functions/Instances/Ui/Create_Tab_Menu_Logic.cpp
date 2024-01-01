@@ -86,7 +86,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.asset_references,
         args.ui_focus,
         args.num_renderings,
-        button_press,
+        args.button_states,
         args.ui_focus.selection_ids.at(id),
         [macro_line_executor = args.macro_line_executor, reload_transient_objects]() {
             if (!reload_transient_objects.empty()) {

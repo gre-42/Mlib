@@ -116,14 +116,10 @@ RenderableScene::RenderableScene(
         config.fly,
         config.rotate)
       : nullptr},
-  button_press_{button_states},
   gamepad_analog_axes_position_{button_states},
   key_bindings_{std::make_shared<KeyBindings>(
-      button_press_,
-      config.print_gamepad_buttons,
       gamepad_analog_axes_position_,
-      cursor_states,
-      scroll_wheel_states,
+      key_configurations_,
       selected_cameras_,
       ui_focus.focuses,
       players_)},

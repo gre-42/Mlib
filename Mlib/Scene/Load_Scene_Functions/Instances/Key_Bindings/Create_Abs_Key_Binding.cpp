@@ -88,7 +88,12 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             : std::optional<bool>(),
         .fly_forward_factor = args.arguments.contains(KnownArgs::fly_forward_factor)
             ? args.arguments.at<float>(KnownArgs::fly_forward_factor) * N
-            : std::optional<float>()});
+            : std::optional<float>(),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)} });
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

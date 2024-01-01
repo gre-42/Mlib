@@ -45,7 +45,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     FocusFilter focus_filter,
     NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
-    ButtonPress& button_press,
+    ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
 : options_{ std::move(options) },
@@ -59,7 +59,7 @@ ParameterSetterLogic::ParameterSetterLogic(
   focus_filter_{ std::move(focus_filter) },
   substitutions_{ substitutions },
   list_view_{
-    button_press,
+    button_states,
     selection_index,
     contents_,
     ListViewOrientation::VERTICAL,

@@ -65,7 +65,13 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             : std::optional<float>(),
         .legs_z = args.arguments.contains(KnownArgs::legs_z)
             ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::legs_z)
-            : std::optional<FixedArray<float, 3>>()});
+            : std::optional<FixedArray<float, 3>>(),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)},
+        .cursor_movement = std::make_shared<CursorMovement>(args.cursor_states)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

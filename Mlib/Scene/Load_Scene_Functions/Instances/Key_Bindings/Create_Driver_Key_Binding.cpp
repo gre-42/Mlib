@@ -48,7 +48,12 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
-        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false)});
+        .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)} });
     driver.append_delete_externals(
         node.ptr(),
         [&kbs=key_bindings, &kb](){

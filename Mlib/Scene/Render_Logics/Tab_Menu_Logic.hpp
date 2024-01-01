@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/List_View.hpp>
@@ -12,6 +13,7 @@ namespace Mlib {
 struct UiFocus;
 struct SubmenuHeader;
 class ButtonPress;
+class ButtonStates;
 class ThreadSafeString;
 class NotifyingJsonMacroArguments;
 class AssetReferences;
@@ -56,7 +58,7 @@ public:
         const AssetReferences& asset_references,
         UiFocus& ui_focus,
         std::atomic_size_t& num_renderings,
-        ButtonPress& button_press,
+        ButtonStates& button_states,
         std::atomic_size_t& selection_index,
         std::function<void()> reload_transient_objects,
         const std::function<void()>& on_change = [](){});
@@ -74,7 +76,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    BaseKeyCombination key_binding_;
+    ButtonPress confirm_button_press_;
     std::unique_ptr<TextResource> renderable_text_;
     const std::vector<SubmenuHeader>& options_;
     SubmenuHeaderContents contents_;
@@ -86,7 +88,7 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     const NotifyingJsonMacroArguments& substitutions_;
-    ButtonPress& button_press_;
+    KeyConfigurations key_configurations_;
     std::string previous_level_id_;
     std::atomic_size_t& num_renderings_;
     std::function<void()> reload_transient_objects_;

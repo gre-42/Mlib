@@ -11,7 +11,7 @@
 
 namespace Mlib {
 
-class ButtonPress;
+class ButtonStates;
 class ThreadSafeString;
 class JsonMacroArguments;
 class IWidget;
@@ -58,7 +58,7 @@ public:
         NotifyingJsonMacroArguments& substitutions,
         const AssetReferences& asset_references,
         ThreadSafeString& next_scene_filename,
-        ButtonPress& button_press,
+        ButtonStates& button_states,
         std::atomic_size_t& selection_index,
         const std::function<void()>& on_change = [](){});
     ~SceneSelectorLogic();

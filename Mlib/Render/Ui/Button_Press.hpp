@@ -1,34 +1,37 @@
 #pragma once
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <chrono>
-#include <map>
 #include <string>
 
 namespace Mlib {
 
 struct BaseKeyBinding;
-struct BaseKeyCombination;
+class KeyConfigurations;
 class ButtonStates;
 
-class ButtonPress: public DestructionObserver<const BaseKeyCombination&> {
+class ButtonPress {
     ButtonPress& operator = (const ButtonPress&) = delete;
 public:
-    explicit ButtonPress(const ButtonStates& button_states);
+    ButtonPress(
+        const ButtonStates& button_states,
+        const KeyConfigurations& key_configurations,
+        std::string id,
+        std::string role);
     ~ButtonPress();
-
-    virtual void notify_destroyed(const BaseKeyCombination& destroyed_object) override;
 
     void print(bool physical = false, bool only_pressed = false) const;
 
-    bool key_down(const BaseKeyBinding& k, const std::string& role = "") const;
+    bool keys_down() const;
+    bool keys_pressed();
+    float keys_alpha(float max_duration = 1.f);
 
-    bool keys_down(const BaseKeyCombination& k, const std::string& role = "") const;
-    bool keys_pressed(const BaseKeyCombination& k, const std::string& role = "");
-    float keys_alpha(const BaseKeyCombination& k, const std::string& role = "", float max_duration = 1);
 private:
     const ButtonStates& button_states_;
-    std::map<const BaseKeyCombination*, std::chrono::time_point<std::chrono::steady_clock>> keys_down_times_;
-    std::map<const BaseKeyCombination*, bool> keys_down_;
+    const KeyConfigurations& key_configurations_;
+    std::chrono::time_point<std::chrono::steady_clock> keys_down_time_;
+    bool key_was_up_;
+    bool keys_down_;
+    std::string id_;
+    std::string role_;
 };
 
 }

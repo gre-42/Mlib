@@ -11,7 +11,7 @@
 
 namespace Mlib {
 
-class ButtonPress;
+class ButtonStates;
 class IWidget;
 class ILayoutPixels;
 struct ReplacementParameter;
@@ -46,7 +46,7 @@ public:
         FocusFilter focus_filter,
         NotifyingJsonMacroArguments& substitutions,
         const AssetReferences& asset_references,
-        ButtonPress& button_press,
+        ButtonStates& button_states,
         std::atomic_size_t& selection_index,
         const std::function<void()>& on_change = [](){});
     ~ParameterSetterLogic();

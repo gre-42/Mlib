@@ -14,7 +14,7 @@ class ButtonStates;
 class CursorStates;
 enum class BoolRenderOption;
 class DeleteNodeMutex;
-struct FlyingCameraLogicKeys;
+class FlyingCameraLogicKeys;
 
 class FlyingCameraUserClass {
 public:
@@ -55,7 +55,6 @@ public:
 private:
     const Scene& scene_;
     FlyingCameraUserClass& user_object_;
-    ButtonPress button_press_;
     bool fly_;
     bool rotate_;
     std::unique_ptr<FlyingCameraLogicKeys> keys_;

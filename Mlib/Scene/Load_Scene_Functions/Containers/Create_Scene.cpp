@@ -25,7 +25,6 @@ DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(fly);
 DECLARE_ARGUMENT(rotate);
-DECLARE_ARGUMENT(print_gamepad_buttons);
 DECLARE_ARGUMENT(depth_fog);
 DECLARE_ARGUMENT(low_pass);
 DECLARE_ARGUMENT(high_pass);
@@ -62,7 +61,6 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         SceneConfigResource{
             .fly = args.arguments.at<bool>(KnownArgs::fly),
             .rotate = args.arguments.at<bool>(KnownArgs::rotate),
-            .print_gamepad_buttons = args.arguments.at<bool>(KnownArgs::print_gamepad_buttons),
             .depth_fog = args.arguments.at<bool>(KnownArgs::depth_fog),
             .low_pass = args.arguments.at<bool>(KnownArgs::low_pass),
             .high_pass = args.arguments.at<bool>(KnownArgs::high_pass),

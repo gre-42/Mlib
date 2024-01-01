@@ -5,6 +5,7 @@
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -59,11 +60,11 @@ TabMenuLogic::TabMenuLogic(
     const AssetReferences& asset_references,
     UiFocus& ui_focus,
     std::atomic_size_t& num_renderings,
-    ButtonPress& button_press,
+    ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-: key_binding_{ std::move(key_binding) },
+: confirm_button_press_{ button_states, key_configurations_, "confirm", "" },
   renderable_text_{std::make_unique<TextResource>(
     ttf_filename,
     FixedArray<float, 3>{1.f, 1.f, 1.f})},
@@ -77,17 +78,18 @@ TabMenuLogic::TabMenuLogic(
   font_height_{font_height},
   line_distance_{line_distance},
   substitutions_{substitutions},
-  button_press_{ button_press },
   previous_level_id_{ substitutions.at<std::string>("LEVEL_ID", "") },
   num_renderings_{ num_renderings },
   reload_transient_objects_{ std::move(reload_transient_objects) },
   list_view_{
-      button_press,
+      button_states,
       ui_focus.submenu_number,
       contents_,
       ListViewOrientation::HORIZONTAL,
       on_change}
-{}
+{
+    key_configurations_.insert("confirm", { key_binding });
+}
 
 TabMenuLogic::~TabMenuLogic() = default;
 
@@ -100,7 +102,7 @@ void TabMenuLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("TabMenuLogic::render");
-    if (button_press_.keys_pressed(key_binding_)) {
+    if (confirm_button_press_.keys_pressed()) {
         // ui_focus_.focus.pop_back();
         if (previous_level_id_ != substitutions_.at<std::string>("LEVEL_ID")) {
             num_renderings_ = 0;

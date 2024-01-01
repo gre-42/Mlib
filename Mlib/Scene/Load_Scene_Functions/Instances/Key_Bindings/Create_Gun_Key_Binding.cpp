@@ -39,7 +39,12 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
-        .player = &player});
+        .player = &player,
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)} });
     player.append_delete_externals(
         node.ptr(),
         [&kbs=key_bindings, &kb](){

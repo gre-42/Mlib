@@ -7,7 +7,7 @@ namespace Mlib {
 
 class ButtonStates;
 class Focuses;
-struct MenuLogicKeys;
+class MenuLogicKeys;
 
 class MenuUserClass {
 public:
@@ -24,7 +24,6 @@ public:
 
 private:
     MenuUserClass &user_object_;
-    ButtonPress button_press_;
     std::unique_ptr<MenuLogicKeys> keys_;
 };
 

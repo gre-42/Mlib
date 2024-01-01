@@ -1,11 +1,9 @@
 #include "Key_Bindings.hpp"
-#include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Driver.hpp>
 #include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
-#include <Mlib/Json/Misc.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -34,6 +32,8 @@
 #include <Mlib/Render/Key_Bindings/Car_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Car_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Gun_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
@@ -53,126 +53,19 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 
-using json = nlohmann::json;
-
-namespace KeyConfigurationArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(unique);
-DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(key);
-DECLARE_ARGUMENT(mouse_button);
-DECLARE_ARGUMENT(gamepad_button);
-DECLARE_ARGUMENT(joystick_digital_axes);
-DECLARE_ARGUMENT(tap_button);
-DECLARE_ARGUMENT(cursor_axis);
-DECLARE_ARGUMENT(cursor_sign_and_scale);
-DECLARE_ARGUMENT(scroll_wheel_axis);
-DECLARE_ARGUMENT(scroll_wheel_sign_and_scale);
-DECLARE_ARGUMENT(not_key);
-DECLARE_ARGUMENT(not_mouse_button);
-DECLARE_ARGUMENT(not_gamepad_button);
-DECLARE_ARGUMENT(not_joystick_digital_axes);
-DECLARE_ARGUMENT(not_tap_button);
-DECLARE_ARGUMENT(not_tap_button2);
-DECLARE_ARGUMENT(joystick_analog_axes);
-DECLARE_ARGUMENT(key2);
-DECLARE_ARGUMENT(gamepad_button2);
-DECLARE_ARGUMENT(joystick_digital_axes2);
-}
-
-namespace JoystickDigitalAxisArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(axis);
-DECLARE_ARGUMENT(sign);
-}
-
-namespace BaseGamepadAnalogAxisBindingArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(axis);
-DECLARE_ARGUMENT(sign_and_scale);
-}
-
-namespace Mlib {
-
-struct KeyConfiguration {
-    BaseKeyCombination base_combo;
-    BaseGamepadAnalogAxesBinding base_gamepad_analog_axes;
-    BaseCursorAxisBinding base_cursor_axis;
-    BaseCursorAxisBinding base_scroll_wheel_axis;
-    std::shared_ptr<CursorMovement> cursor_movement;
-    std::shared_ptr<CursorMovement> scroll_wheel_movement;
-};
-
-class IncrementalAlpha {
-public:
-    explicit IncrementalAlpha(const KeyConfiguration& key_config)
-        : key_config_{ key_config }
-        , cursor_consumed_{ false }
-        , scroll_wheel_consumed_{ false }
-    {}
-    ~IncrementalAlpha() {
-        if (!cursor_consumed_ && (key_config_.cursor_movement != nullptr)) {
-            key_config_.cursor_movement->axis_alpha(key_config_.base_cursor_axis);
-        }
-        if (!scroll_wheel_consumed_ && (key_config_.scroll_wheel_movement != nullptr)) {
-            key_config_.scroll_wheel_movement->axis_alpha(key_config_.base_scroll_wheel_axis);
-        }
-    }
-    float cursor_alpha() {
-        cursor_consumed_ = true;
-        if (key_config_.cursor_movement == nullptr) {
-            return NAN;
-        }
-        return key_config_.cursor_movement->axis_alpha(key_config_.base_cursor_axis);
-    }
-    float scroll_wheel_alpha() {
-        scroll_wheel_consumed_ = true;
-        if (key_config_.scroll_wheel_movement == nullptr) {
-            return NAN;
-        }
-        return key_config_.scroll_wheel_movement->axis_alpha(key_config_.base_scroll_wheel_axis);
-    }
-private:
-    const KeyConfiguration& key_config_;
-    bool cursor_consumed_;
-    bool scroll_wheel_consumed_;
-};
-
-void from_json(const json& j, JoystickDigitalAxis& obj)
-{
-    validate(j, JoystickDigitalAxisArgs::options);
-    j.at(JoystickDigitalAxisArgs::axis).get_to(obj.joystick_axis);
-    j.at(JoystickDigitalAxisArgs::sign).get_to(obj.joystick_axis_sign);
-}
-
-void from_json(const json& j, BaseGamepadAnalogAxisBinding& obj)
-{
-    validate(j, BaseGamepadAnalogAxisBindingArgs::options);
-    j.at(BaseGamepadAnalogAxisBindingArgs::axis).get_to(obj.axis);
-    j.at(BaseGamepadAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
-}
-
-}
-
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
-    ButtonPress& button_press,
-    bool print_gamepad_buttons,
     GamepadAnalogAxesPosition& gamepad_analog_axes_position,
-    CursorStates& cursor_states,
-    CursorStates& scroll_wheel_states,
+    KeyConfigurations& key_configurations,
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     Players& players)
-: button_press_{button_press},
-  print_gamepad_buttons_{print_gamepad_buttons},
-  gamepad_analog_axes_position_{gamepad_analog_axes_position},
-  cursor_states_{cursor_states},
-  scroll_wheel_states_{scroll_wheel_states},
-  selected_cameras_{selected_cameras},
-  focuses_{focuses},
-  players_{players}
+    : gamepad_analog_axes_position_{ gamepad_analog_axes_position }
+    , key_configurations_{ key_configurations }
+    , selected_cameras_{ selected_cameras }
+    , focuses_{ focuses }
+    , players_{ players }
 {}
 
 KeyBindings::~KeyBindings() {
@@ -196,107 +89,18 @@ KeyBindings::~KeyBindings() {
 
 void KeyBindings::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
     auto dop = destroyed_object.ptr();
-    absolute_movable_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    absolute_movable_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    relative_movable_key_bindings_.remove_if([&dop](const auto& b){return b.fixed_node == dop;});
-    car_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    car_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    plane_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    plane_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    avatar_controller_idle_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    avatar_controller_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    weapon_cycle_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    gun_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-    player_key_bindings_.remove_if([&dop](const auto& b){return b.node == dop;});
-}
-
-void KeyBindings::load_key_configurations(
-        const std::string& filename,
-        const std::string& fallback_filename)
-{
-    const std::string& fn = path_exists(filename)
-        ? filename
-        : fallback_filename;
-    if (!path_exists(fn)) {
-        THROW_OR_ABORT("Neither \"" + filename + "\" nor \"" + fallback_filename + "\" exist");
-    }
-    json j;
-    {
-        auto f = create_ifstream(fn);
-        if (f->fail()) {
-            THROW_OR_ABORT("Could not open file " + fn);
-        }
-        *f >> j;
-        if (f->fail()) {
-            THROW_OR_ABORT("Could not read from file " + fn);
-        }
-    }
-    for (const auto& e : j) {
-        validate(e, KeyConfigurationArgs::options);
-        auto str = [&e](const std::string& key){
-            return e.contains(key)
-                ? e[key]
-                : "";
-        };
-        auto digital_axes = [&e](const std::string& key){
-            if (e.contains(key)) {
-                return e[key].get<std::map<std::string, JoystickDigitalAxis>>();
-            }
-            return std::map<std::string, JoystickDigitalAxis>{};
-        };
-        auto analog_axes = [&e](const std::string& key){
-            std::map<std::string, BaseGamepadAnalogAxisBinding> result;
-            if (e.contains(key)) {
-                return e[key].get<std::map<std::string, BaseGamepadAnalogAxisBinding>>();
-            }
-            return result;
-        };
-        std::string id = e.at(KeyConfigurationArgs::id);
-        KeyConfiguration key_config{
-            .base_combo = BaseKeyCombination{
-                {{
-                    BaseKeyBinding{
-                        .key = str(KeyConfigurationArgs::key),
-                        .mouse_button = str(KeyConfigurationArgs::mouse_button),
-                        .gamepad_button = str(KeyConfigurationArgs::gamepad_button),
-                        .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes),
-                        .tap_button = str(KeyConfigurationArgs::tap_button)}}},
-                BaseKeyBinding{
-                    .key = str(KeyConfigurationArgs::not_key),
-                    .mouse_button = str(KeyConfigurationArgs::not_mouse_button),
-                    .gamepad_button = str(KeyConfigurationArgs::not_gamepad_button),
-                    .joystick_axes = digital_axes(KeyConfigurationArgs::not_joystick_digital_axes),
-                    .tap_button = str(KeyConfigurationArgs::not_tap_button)}},
-            .base_gamepad_analog_axes = {analog_axes(KeyConfigurationArgs::joystick_analog_axes)},
-            .base_cursor_axis = {
-                .axis = e.contains(KeyConfigurationArgs::cursor_axis) ? e[KeyConfigurationArgs::cursor_axis].get<size_t>() : SIZE_MAX,
-                .sign_and_scale = e.contains(KeyConfigurationArgs::cursor_sign_and_scale) ? e[KeyConfigurationArgs::cursor_sign_and_scale].get<float>() : NAN,
-            },
-            .base_scroll_wheel_axis = {
-                .axis = e.contains(KeyConfigurationArgs::scroll_wheel_axis) ? e[KeyConfigurationArgs::scroll_wheel_axis].get<size_t>() : SIZE_MAX,
-                .sign_and_scale = e.contains(KeyConfigurationArgs::scroll_wheel_sign_and_scale) ? e[KeyConfigurationArgs::scroll_wheel_sign_and_scale].get<float>() : NAN,
-            },
-            .cursor_movement = e.contains(KeyConfigurationArgs::cursor_axis)
-                ? std::make_shared<CursorMovement>(cursor_states_)
-                : nullptr,
-            .scroll_wheel_movement = e.contains(KeyConfigurationArgs::scroll_wheel_axis)
-                ? std::make_shared<CursorMovement>(scroll_wheel_states_)
-                : nullptr
-        };
-        if (e.contains(KeyConfigurationArgs::key2) ||
-            e.contains(KeyConfigurationArgs::gamepad_button2) ||
-            e.contains(KeyConfigurationArgs::joystick_digital_axes2))
-        {
-            key_config.base_combo.key_bindings.push_back(BaseKeyBinding{
-                .key = str(KeyConfigurationArgs::key2),
-                .gamepad_button = str(KeyConfigurationArgs::gamepad_button2),
-                .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes2),
-                .tap_button = str(KeyConfigurationArgs::not_tap_button2)});
-        }
-        if (!key_configurations_.insert({id, std::move(key_config)}).second) {
-            THROW_OR_ABORT("Duplicate key config: \"" + id + '"');
-        }
-    }
+    absolute_movable_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    absolute_movable_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    relative_movable_key_bindings_.remove_if([&dop](const auto& b) {return b.fixed_node == dop; });
+    car_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    car_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    plane_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    plane_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    avatar_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    avatar_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    weapon_cycle_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    gun_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
+    player_key_bindings_.remove_if([&dop, this](const auto& b) {return b.node == dop;});
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
@@ -417,44 +221,43 @@ void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_bindin
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding, this](const auto& b){
-        if (&b == &deleted_key_binding) {
-            key_configurations_.get(b.id).base_combo.destruction_observers.reset();
-            return true;
-        }
-        return false;
-    });
+    player_key_bindings_.remove_if([&deleted_key_binding, this](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding) {
     print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
-float KeyBindings::get_alpha(const KeyConfiguration& key_config, const std::string& role, IncrementalAlpha& incremental_alpha)
+float KeyBindings::get_alpha(
+    ButtonPress& button_press,
+    CursorMovement* cursor_movement,
+    CursorMovement* scroll_wheel_movement,
+    const KeyConfiguration& key_config,
+    const std::string& role)
 {
     // Analog gamepad axis
     float alpha = gamepad_analog_axes_position_.axis_alpha(key_config.base_gamepad_analog_axes, role);
+    float alpha_digital = button_press.keys_alpha(0.05f);
+    float alpha_cursor = NAN;
+    if (cursor_movement != nullptr) {
+        alpha_cursor = cursor_movement->axis_alpha(key_config.base_cursor_axis);
+    }
+    float alpha_scroll_wheel = NAN;
+    if (scroll_wheel_movement != nullptr) {
+        alpha_scroll_wheel = scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
+    }
     if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
         // Digital button
-        {
-            float alpha_digital = button_press_.keys_alpha(key_config.base_combo, role, 0.05f);
-            if (!std::isnan(alpha_digital)) {
-                return alpha_digital;
-            }
+        if (!std::isnan(alpha_digital)) {
+            return alpha_digital;
         }
         // Analog cursor
-        {
-            float alpha_digital = incremental_alpha.cursor_alpha();
-            if (!std::isnan(alpha_digital)) {
-                return alpha_digital;
-            }
+        if (!std::isnan(alpha_cursor)) {
+            return alpha_cursor;
         }
         // Analog scroll wheel
-        {
-            float alpha_digital = incremental_alpha.scroll_wheel_alpha();
-            if (!std::isnan(alpha_digital)) {
-                return alpha_digital;
-            }
+        if (!std::isnan(alpha_scroll_wheel)) {
+            return alpha_scroll_wheel;
         }
     }
     return alpha;
@@ -477,15 +280,6 @@ void KeyBindings::increment_external_forces(
     // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
     // }
-    if (print_gamepad_buttons_) {
-        button_press_.print();
-    }
-    Map<std::string, IncrementalAlpha> incremental_alphas;
-    for (const auto& [k, v] : key_configurations_) {
-        if (!incremental_alphas.try_emplace(k, v).second) {
-            verbose_abort("KeyBindings::increment_external_forces: Internal error");
-        }
-    }
     // std::cerr << std::endl;
     // std::cerr << std::endl;
     // for (size_t i = 0; i < 15; ++i) {
@@ -509,8 +303,8 @@ void KeyBindings::increment_external_forces(
         }
         rb.tires_z_ = k.tires_z;
     }
-    for (const auto& k : absolute_movable_key_bindings_) {
-        float alpha = button_press_.keys_alpha(key_configurations_.get(k.id).base_combo, k.role, 0.05f);
+    for (auto& k : absolute_movable_key_bindings_) {
+        float alpha = k.button_press.keys_alpha(0.05f);
         if (!std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (any(k.force.vector != 0.f)) {
@@ -570,7 +364,7 @@ void KeyBindings::increment_external_forces(
     }
     // Relative movable
     {
-        std::vector<std::pair<const RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> v;
+        std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> v;
         v.reserve(relative_movable_key_bindings_.size());
         for (auto& k : relative_movable_key_bindings_) {
             auto node = k.dynamic_node();
@@ -593,7 +387,7 @@ void KeyBindings::increment_external_forces(
                 THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
             }
         }
-        for (const auto& [k, node] : v) {
+        for (auto& [k, node] : v) {
             auto& m = node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(&m);
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
@@ -639,15 +433,15 @@ void KeyBindings::increment_external_forces(
 
             // Apply key binding
             const auto& key_config = key_configurations_.get(k.id);
-            float alpha = button_press_.keys_alpha(key_config.base_combo, k.role);
+            float alpha = k.button_press.keys_alpha();
             if (!std::isnan(alpha)) {
                 double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
                 translate(v * cfg.dt);
                 rotate(w * cfg.dt);
             }
-            if (key_config.cursor_movement != nullptr) {
-                float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+            if (k.cursor_movement != nullptr) {
+                float beta = k.cursor_movement->axis_alpha(key_config.base_cursor_axis);
                 if (!std::isnan(beta)) {
                     rotate(beta * k.speed_cursor);
                     translate(beta * k.speed_cursor);
@@ -656,13 +450,13 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Node info
-    for (const auto& k : print_node_info_key_bindings_) {
+    for (auto& k : print_node_info_key_bindings_) {
         auto node = k.dynamic_node();
         if (node == nullptr) {
             continue;
         }
         const auto& key_config = key_configurations_.get(k.id);
-        if (button_press_.keys_pressed(key_config.base_combo, k.role)) {
+        if (k.button_press.keys_pressed()) {
             linfo() << "Key ID: " << k.id;
             auto trafo = node->absolute_model_matrix();
             auto z = trafo.R().column(2);
@@ -676,10 +470,10 @@ void KeyBindings::increment_external_forces(
         auto& rb = get_rigid_body_vehicle(*k.node);
         rb.avatar_controller().reset();
     }
-    for (const auto& k : avatar_controller_key_bindings_) {
+    for (auto& k : avatar_controller_key_bindings_) {
         auto& rb = get_rigid_body_vehicle(*k.node);
         const auto& key_config = key_configurations_.get(k.id);
-        float alpha = button_press_.keys_alpha(key_config.base_combo, k.role, 0.05f);
+        float alpha = k.button_press.keys_alpha(0.05f);
         if (!std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
                 rb.avatar_controller().walk(k.surface_power.value());
@@ -695,8 +489,8 @@ void KeyBindings::increment_external_forces(
                 }
             }
         }
-        if (key_config.cursor_movement != nullptr) {
-            float beta = key_config.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+        if (k.cursor_movement != nullptr) {
+            float beta = k.cursor_movement->axis_alpha(key_config.base_cursor_axis);
             if (!std::isnan(beta) && k.speed_cursor.has_value()) {
                 float dangle = beta * k.speed_cursor.value();
                 if (k.yaw) {
@@ -722,11 +516,13 @@ void KeyBindings::increment_external_forces(
             k.drive_relaxation,
             k.steer_relaxation);
     }
-    for (const auto& k : car_controller_key_bindings_) {
+    for (auto& k : car_controller_key_bindings_) {
         float alpha = get_alpha(
+            k.button_press,
+            nullptr,
+            nullptr,
             key_configurations_.get(k.id),
-            k.role,
-            incremental_alphas.get(k.id));
+            k.role);
         if (!std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
@@ -755,11 +551,13 @@ void KeyBindings::increment_external_forces(
         rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
         rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
     }
-    for (const auto& k : plane_controller_key_bindings_) {
+    for (auto& k : plane_controller_key_bindings_) {
         float alpha = get_alpha(
+            k.button_press,
+            k.cursor_movement.get(),
+            nullptr,
             key_configurations_.get(k.id),
-            k.role,
-            incremental_alphas.get(k.id));
+            k.role);
         if (!std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
@@ -786,9 +584,11 @@ void KeyBindings::increment_external_forces(
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
         float alpha = get_alpha(
+            k.button_press,
+            nullptr,
+            k.scroll_wheel_movement.get(),
             key_configurations_.get(k.id),
-            k.role,
-            incremental_alphas.get(k.id));
+            k.role);
         if (!std::isnan(alpha)) {
             auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {
@@ -801,16 +601,16 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Gun
-    for (const auto& k : gun_key_bindings_) {
+    for (auto& k : gun_key_bindings_) {
         const auto& key_config = key_configurations_.get(k.id);
-        if (button_press_.keys_down(key_config.base_combo, k.role)) {
+        if (k.button_press.keys_down()) {
             auto& gun = get_gun(*k.node);
             gun.trigger(k.player, &players_.get_team(k.player->team_name()));
         }
     }
     // Player
-    for (const auto& k : player_key_bindings_) {
-        if (button_press_.keys_pressed(key_configurations_.get(k.id).base_combo, k.role)) {
+    for (auto& k : player_key_bindings_) {
+        if (k.button_press.keys_pressed()) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (rb.driver_ == nullptr) {
                 THROW_OR_ABORT("Rigid body has no driver");
@@ -836,12 +636,11 @@ void KeyBindings::render(
 {
     LOG_FUNCTION("KeyBindings::render");
     // Near camera
-    for (const auto& k : camera_key_bindings_) {
+    for (auto& k : camera_key_bindings_) {
         if (k.tpe == CameraCycleType::FAR) {
             continue;
         }
-        const auto& key_config = key_configurations_.get(k.id);
-        if (button_press_.keys_pressed(key_config.base_combo, k.role)) {
+        if (k.button_press.keys_pressed()) {
             selected_cameras_.cycle_camera(k.tpe);
         }
     }

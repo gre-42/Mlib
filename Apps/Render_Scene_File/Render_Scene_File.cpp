@@ -309,7 +309,6 @@ int main(int argc, char** argv) {
         "    [--save_playback]\n"
         "    [--optimize_search_time]\n"
         "    [--plot_triangle_bvh]\n"
-        "    [--print_gamepad_buttons]\n"
         "    [--show_mouse_cursor]\n"
         "    [--oversampling]\n"
         "    [--bvh_max_size <r>]\n"
@@ -343,7 +342,6 @@ int main(int argc, char** argv) {
          "--plot_triangle_bvh",
          "--record_track",
          "--devel_mode",
-         "--print_gamepad_buttons",
          "--show_mouse_cursor",
          "--no_slip",
          "--no_avoid_burnout",
@@ -524,7 +522,6 @@ int main(int argc, char** argv) {
                 nlohmann::json j{
                     {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
                     {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
-                    {"PRIMARY_SCENE_PRINT_GAMEPAD_BUTTONS", args.has_named("--print_gamepad_buttons")},
                     {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
                     {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},

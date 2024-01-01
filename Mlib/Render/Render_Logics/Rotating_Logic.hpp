@@ -10,7 +10,7 @@
 namespace Mlib {
 
 class Scene;
-struct RotatingLogicKeys;
+class RotatingLogicKeys;
 
 class RotatingLogicUserClass: public WindowPosition {
 public:
@@ -50,9 +50,9 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    ButtonPress button_press_;
     GLFWwindow& window_;
     const Scene& scene_;
+    ButtonStates& button_states_;
     RotatingLogicUserClass user_object_;
     bool rotate_;
     FixedArray<float, 3> background_color_;

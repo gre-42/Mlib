@@ -16,7 +16,6 @@ class VehicleSpawners;
 class Players;
 class Scene;
 class PhysicsEngine;
-class ButtonPress;
 class CursorStates;
 class KeyBindings;
 class SelectedCameras;
@@ -35,6 +34,7 @@ class PostProcessingLogic;
 class Imposters;
 class SupplyDepots;
 class RenderingResources;
+class KeyConfigurations;
 
 class LoadSceneInstanceFunction {
 public:
@@ -54,7 +54,7 @@ protected:
     PhysicsEngine &physics_engine;
     Imposters &imposters;
     SupplyDepots &supply_depots;
-    ButtonPress &button_press;
+    KeyConfigurations& key_configurations;
     KeyBindings &key_bindings;
     SelectedCameras &selected_cameras;
     const SceneConfig &scene_config;

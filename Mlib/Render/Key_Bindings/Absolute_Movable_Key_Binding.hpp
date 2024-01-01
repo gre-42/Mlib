@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <optional>
 #include <string>
 
@@ -23,6 +24,7 @@ struct AbsoluteMovableKeyBinding {
     std::optional<bool> wants_to_jump;
     std::optional<bool> wants_to_grind;
     std::optional<float> fly_forward_factor;
+    ButtonPress button_press;
 };
 
 }

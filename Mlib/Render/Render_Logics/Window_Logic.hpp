@@ -12,7 +12,7 @@ struct WindowPosition;
 class ButtonStates;
 class CursorStates;
 class Focuses;
-struct WindowLogicKeys;
+class WindowLogicKeys;
 
 class WindowUserClass {
 public:
@@ -32,7 +32,6 @@ public:
 
 private:
     WindowUserClass &user_object_;
-    ButtonPress button_press_;
     GLFWwindow& window_;
     std::unique_ptr<WindowLogicKeys> keys_;
 };

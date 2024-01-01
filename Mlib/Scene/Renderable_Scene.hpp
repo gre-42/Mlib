@@ -12,6 +12,7 @@
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Imposters.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -65,7 +66,6 @@ struct FocusFilter;
 struct SceneConfigResource {
     bool fly;
     bool rotate;
-    bool print_gamepad_buttons;
     bool depth_fog;
     bool low_pass;
     bool high_pass;
@@ -154,7 +154,7 @@ public:
     SkyboxLogic skybox_logic_;
     std::shared_ptr<StandardRenderLogic> standard_render_logic_;
     std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
-    ButtonPress button_press_;
+    KeyConfigurations key_configurations_;
     GamepadAnalogAxesPosition gamepad_analog_axes_position_;
     std::shared_ptr<KeyBindings> key_bindings_;
     ReadPixelsLogic read_pixels_logic_;

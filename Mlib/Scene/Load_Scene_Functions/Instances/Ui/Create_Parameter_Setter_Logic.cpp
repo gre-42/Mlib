@@ -92,7 +92,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             .submenu_ids = { id } },
         args.external_json_macro_arguments,
         args.asset_references,
-        button_press,
+        args.button_states,
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {
             if (on_change.has_value() ) {

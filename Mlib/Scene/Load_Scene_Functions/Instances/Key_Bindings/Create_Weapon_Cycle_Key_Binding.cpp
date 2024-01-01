@@ -43,7 +43,13 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
-        .direction = args.arguments.at<int>(KnownArgs::weapon_increment)});
+        .direction = args.arguments.at<int>(KnownArgs::weapon_increment),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)},
+        .scroll_wheel_movement = std::make_shared<CursorMovement>(args.cursor_states)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

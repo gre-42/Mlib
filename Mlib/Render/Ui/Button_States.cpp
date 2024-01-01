@@ -4,6 +4,9 @@
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Events.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
+#include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
+#include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <iostream>
@@ -172,4 +175,23 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
         std::cerr << "No gamepad attached." << std::endl;
     }
 #endif
+}
+
+bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) const {
+    if (auto joystick_axis = k.get_joystick_axis(role); joystick_axis != nullptr) {
+        auto axis = joystick_axes_map.get(joystick_axis->joystick_axis);
+        if (axis.has_value() && get_gamepad_digital_axis(axis.value(), joystick_axis->joystick_axis_sign)) {
+            return true;
+        }
+    }
+    if (!k.gamepad_button.empty()) {
+        auto button = gamepad_buttons_map.get(k.gamepad_button);
+        if (button.has_value() && get_gamepad_button_down(button.value())) {
+            return true;
+        }
+    }
+    return
+        (!k.key.empty() && get_key_down(keys_map.get(k.key))) ||
+        (!k.mouse_button.empty() && get_mouse_button_down(mouse_buttons_map.get(k.mouse_button))) ||
+        (!k.tap_button.empty() && get_tap_button_down(tap_buttons_map.get((k.tap_button))));
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <Mlib/Render/Ui/Button_Press.hpp>
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -8,7 +9,6 @@
 namespace Mlib {
 
 class TextResource;
-class ButtonPress;
 class IListViewContents;
 class IListViewDrawer;
 enum class ListViewOrientation;
@@ -17,7 +17,7 @@ struct LayoutConstraintParameters;
 class ListView {
 public:
     ListView(
-        ButtonPress& button_press,
+        ButtonStates& button_states,
         std::atomic_size_t& selection_index,
         const IListViewContents& contents,
         ListViewOrientation orientation,
@@ -39,14 +39,14 @@ private:
     void handle_input(size_t left, size_t right);
     std::atomic_size_t& selection_index_;
     const IListViewContents& contents_;
-    ButtonPress& button_press_;
     const std::function<void()> on_change_;
-    BaseKeyCombination previous_;
-    BaseKeyCombination next_;
-    BaseKeyCombination previous_fast_;
-    BaseKeyCombination next_fast_;
-    BaseKeyCombination first_;
-    BaseKeyCombination last_;
+    ButtonPress previous_;
+    ButtonPress next_;
+    ButtonPress previous_fast_;
+    ButtonPress next_fast_;
+    ButtonPress first_;
+    ButtonPress last_;
+    KeyConfigurations key_configurations_;
 };
 
 }

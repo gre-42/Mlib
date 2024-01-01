@@ -33,6 +33,11 @@ void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     key_bindings.add_camera_key_binding({
         .id = args.arguments.at<std::string>(KnownArgs::id),
         .role = "",
-        .tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::tpe))
+        .tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::tpe)),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            "" }
     });
 }

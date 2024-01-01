@@ -10,4 +10,4 @@ endif()
 
 target_include_directories(MlibRender PUBLIC ${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibRender Mlib MlibImages MlibSceneGraph MlibStb MlibTime MlibLayout MlibGlad MlibMemory)
+target_link_libraries(MlibRender Mlib MlibStats MlibImages MlibSceneGraph MlibStb MlibTime MlibLayout MlibGlad MlibMemory)

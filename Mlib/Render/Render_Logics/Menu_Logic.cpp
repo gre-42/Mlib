@@ -1,14 +1,24 @@
 #include "Menu_Logic.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 namespace Mlib {
-struct MenuLogicKeys {
-    BaseKeyCombination start{{{.key = "ESCAPE", .gamepad_button = "START", .tap_button="ESCAPE"}}};
+class MenuLogicKeys {
+public:
+    explicit MenuLogicKeys(ButtonStates& button_states)
+        : start{ button_states, key_configurations, "escape", "" }
+    {
+        key_configurations.insert("escape", { {{{.key = "ESCAPE", .gamepad_button = "START", .tap_button = "ESCAPE"}}} });
+    }
+    ButtonPress start;
+private:
+    KeyConfigurations key_configurations;
 };
 }
 
@@ -17,15 +27,14 @@ using namespace Mlib;
 MenuLogic::MenuLogic(
     MenuUserClass &user_object)
     : user_object_{user_object}
-    , button_press_{user_object.button_states}
-    , keys_{std::make_unique<MenuLogicKeys>()}
+    , keys_{ std::make_unique<MenuLogicKeys>(user_object.button_states) }
 {}
 
 MenuLogic::~MenuLogic() = default;
 
 void MenuLogic::handle_events() {
     LOG_FUNCTION("FlyingCameraLogic::render");
-    if (button_press_.keys_pressed(keys_->start)) {
+    if (keys_->start.keys_pressed()) {
         std::scoped_lock lock{user_object_.focuses.mutex};
         Focus focus = user_object_.focuses.focus();
         if (focus == Focus::MENU) {

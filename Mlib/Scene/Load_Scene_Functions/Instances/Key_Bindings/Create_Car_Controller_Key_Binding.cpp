@@ -65,7 +65,12 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             : std::optional<Interp<float>>(),
         .ascend_velocity = args.arguments.contains(KnownArgs::ascend_velocity)
             ? stov(args.arguments.at<float>(KnownArgs::ascend_velocity))
-            : std::optional<float>()});
+            : std::optional<float>(),
+        .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role) } });
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

@@ -1,6 +1,8 @@
 #include "List_View.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
 #include <Mlib/Render/Ui/IList_View_Drawer.hpp>
@@ -10,32 +12,29 @@
 namespace Mlib {
 
 ListView::ListView(
-    ButtonPress& button_press,
+    ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const IListViewContents& contents,
     ListViewOrientation orientation,
     std::function<void()> on_change)
-: selection_index_{selection_index},
-  contents_{contents},
-  button_press_{button_press},
-  on_change_{std::move(on_change)}
+    : selection_index_{ selection_index }
+    , contents_{ contents }
+    , on_change_{ std::move(on_change) }
+    , previous_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "left" : "up", "" }
+    , next_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "right" : "down", "" }
+    , previous_fast_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_up", "" }
+    , next_fast_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "page_down", "" }
+    , first_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "home", "" }
+    , last_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "end", "" }
 {
-    switch (orientation) {
-        case ListViewOrientation::HORIZONTAL:
-            previous_ = {{{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}}};
-            next_ = {{{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}}};
-            break;
-        case ListViewOrientation::VERTICAL:
-            previous_ = {{{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}}};
-            next_ = {{{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}}};
-            previous_fast_ = {{{.key = "PAGE_UP"}}};
-            next_fast_ = {{{.key = "PAGE_DOWN"}}};
-            first_ = {{{.key = "HOME"}}};
-            last_ = {{{.key = "END"}}};
-            break;
-        default:
-            THROW_OR_ABORT("Unknown listview orientation");
-    }
+    key_configurations_.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}} } });
+    key_configurations_.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}} } });
+    key_configurations_.insert("up", { { {{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}} } });
+    key_configurations_.insert("down", { { {{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}} } });
+    key_configurations_.insert("page_up", { { {{.key = "PAGE_UP"}} } });
+    key_configurations_.insert("page_down", { { {{.key = "PAGE_DOWN"}} } });
+    key_configurations_.insert("home", { { {{.key = "HOME"}} } });
+    key_configurations_.insert("end", { { {{.key = "END"}} } });
     if (has_selected_element()) {
         on_change_();
     } else {
@@ -113,22 +112,22 @@ void ListView::handle_input(size_t left, size_t right) {
         }
     };
     size_t old_selection_index = selection_index_;
-    if (button_press_.keys_pressed(previous_)) {
+    if (previous_.keys_pressed()) {
         go_to_previous();
     }
-    if (button_press_.keys_pressed(next_)) {
+    if (next_.keys_pressed()) {
         go_to_next();
     }
-    if (button_press_.keys_pressed(previous_fast_)) {
+    if (previous_fast_.keys_pressed()) {
         go_to_previous_fast();
     }
-    if (button_press_.keys_pressed(next_fast_)) {
+    if (next_fast_.keys_pressed()) {
         go_to_next_fast();
     }
-    if (button_press_.keys_pressed(first_)) {
+    if (first_.keys_pressed()) {
         go_to_first();
     }
-    if (button_press_.keys_pressed(last_)) {
+    if (last_.keys_pressed()) {
         go_to_last();
     }
     if ((selection_index_ != old_selection_index) && on_change_) {

@@ -92,7 +92,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         args.external_json_macro_arguments,
         args.asset_references,
         args.next_scene_filename,
-        button_press,
+        args.button_states,
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at(KnownArgs::on_change)]()
         {
