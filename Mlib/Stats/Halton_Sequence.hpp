@@ -65,15 +65,15 @@ private:
 template <class TData>
 class PermutedHaltonSequence {
 public:
-    PermutedHaltonSequence(unsigned int b, const TData& low = 0, const TData& high = 1, size_t buffer_size = 10)
+    PermutedHaltonSequence(unsigned int seed, unsigned int b, const TData& low, const TData& high, size_t buffer_size)
         : h_{ b, low, high }
-        , irng_{ 0, 0, buffer_size - 1 }
+        , irng_{ seed, 0, buffer_size - 1 }
         , buffer_(buffer_size)
     {
         if (buffer_size == 0) {
             THROW_OR_ABORT("Buffer size is zero");
         }
-        reset();
+        this->seed(seed);
     }
     TData operator () () {
         size_t i = irng_();
@@ -81,9 +81,9 @@ public:
         buffer_[i] = h_();
         return result;
     }
-    void reset() {
+    void seed(unsigned int seed) {
         h_.reset();
-        irng_.seed(0);
+        irng_.seed(seed);
         for (auto& v : buffer_) {
             v = h_();
         }
@@ -134,9 +134,9 @@ private:
 template <class TData>
 class HybridHaltonSequence {
 public:
-    HybridHaltonSequence(unsigned int seed, const TData& low = 0, const TData& high = 1)
+    HybridHaltonSequence(unsigned int seed, const TData& low = 0, const TData& high = 1, size_t buffer_size = 10)
         : lut_{ seed, -0.5, 0.5 }
-        , phs_{ HALTON_SEQUENCE_B, -0.5, 0.5 }
+        , phs_{ seed, HALTON_SEQUENCE_B, -0.5, 0.5, buffer_size }
         , low_{ low }
         , high_{ high }
     {}
@@ -152,7 +152,7 @@ public:
     }
     void seed(unsigned int seed) {
         lut_.seed(seed);
-        phs_.reset();
+        phs_.seed(seed);
     }
 private:
     PrecomputedHaltonSequence<TData> lut_;
