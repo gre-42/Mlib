@@ -277,6 +277,7 @@ public:
     void set_debug_message(std::string message);
     std::string debug_message() const;
     PoseInterpolationMode pose_interpolation_mode() const;
+    void invalidate_transformation_history();
     mutable DestructionObservers<DanglingRef<const SceneNode>> clearing_observers;
     mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
@@ -307,6 +308,7 @@ private:
     std::list<std::unique_ptr<Light>> lights_;
     OffsetAndQuaternion<float, double> trafo_;
     QuaternionSeries<float, double, 3> trafo_history_;
+    bool trafo_history_invalidated_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
     PoseInterpolationMode interpolation_mode_;

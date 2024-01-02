@@ -56,6 +56,7 @@ SceneNode::SceneNode(
     , trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
     , scale_{ scale }
+    , trafo_history_invalidated_{ false }
     , rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) }
     , interpolation_mode_{interpolation_mode}
     , state_{ SceneNodeState::DETACHED }
@@ -652,8 +653,11 @@ void SceneNode::move(
             ++it;
         }
     }
-    if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
+    if ((interpolation_mode_ == PoseInterpolationMode::DISABLED) ||
+        trafo_history_invalidated_)
+    {
         trafo_history_.clear();
+        trafo_history_invalidated_ = false;
     }
     trafo_history_.append(trafo_, time);
 }
@@ -1261,6 +1265,11 @@ std::string SceneNode::debug_message() const {
 PoseInterpolationMode SceneNode::pose_interpolation_mode() const {
     std::shared_lock lock{mutex_};
     return interpolation_mode_;
+}
+
+void SceneNode::invalidate_transformation_history() {
+    std::scoped_lock lock{mutex_};
+    trafo_history_invalidated_ = true;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, DanglingPtr<const SceneNode> node) {
