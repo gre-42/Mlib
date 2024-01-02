@@ -40,7 +40,7 @@ void benchmark()
     int j;
     for (j = 0; j < 10; j++)
     {
-        std::chrono::time_point<std::chrono::steady_clock> start, end;
+        std::chrono::steady_clock::time_point start, end;
         start = std::chrono::steady_clock::now();
         int i;
         for (i = 0; i < n; i++)

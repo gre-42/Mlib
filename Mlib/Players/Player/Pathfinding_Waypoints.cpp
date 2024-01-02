@@ -102,7 +102,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                 set_waypoint(best_id);
             } else {
                 // If we already have two waypoints, pick oldest neighbor.
-                auto deflt = std::chrono::time_point<std::chrono::steady_clock>();
+                auto deflt = std::chrono::steady_clock::time_point();
                 size_t best_id = SIZE_MAX;
                 auto best_time = deflt;
                 for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.waypoint_id_)) {

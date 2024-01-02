@@ -7,7 +7,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <cmath>
 
-static const auto default_time = std::chrono::time_point<std::chrono::steady_clock>();
+static const auto default_time = std::chrono::steady_clock::time_point();
 
 using namespace Mlib;
 

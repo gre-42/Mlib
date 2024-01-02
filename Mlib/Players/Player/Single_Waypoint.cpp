@@ -232,14 +232,14 @@ void SingleWaypoint::move_to_waypoint() {
 }
 
 void SingleWaypoint::notify_set_waypoints(size_t nwaypoints) {
-    last_visited_ = std::vector<std::chrono::time_point<std::chrono::steady_clock>>(nwaypoints);
+    last_visited_ = std::vector<std::chrono::steady_clock::time_point>(nwaypoints);
     waypoint_id_ = SIZE_MAX;
     nwaypoints_reached_ = 0;
 }
 
 void SingleWaypoint::notify_spawn() {
     for (auto& l : last_visited_) {
-        l = std::chrono::time_point<std::chrono::steady_clock>();
+        l = std::chrono::steady_clock::time_point();
     }
     set_waypoint(fixed_nans<double, 3>());
     nwaypoints_reached_ = 0;

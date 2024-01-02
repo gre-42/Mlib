@@ -32,7 +32,7 @@ private:
     size_t previous_waypoint_id_;
     bool waypoint_reached_;
     size_t nwaypoints_reached_;
-    std::vector<std::chrono::time_point<std::chrono::steady_clock>> last_visited_;
+    std::vector<std::chrono::steady_clock::time_point> last_visited_;
     std::list<FixedArray<double, 3>> waypoint_history_;
     bool record_waypoints_;
 };

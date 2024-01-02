@@ -32,7 +32,7 @@ private:
     DanglingPtr<SceneNode> recorded_node_;
     RigidBodyIntegrator* rbi_;
     TrackWriter track_writer_;
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::steady_clock::time_point start_time_;
 };
 
 }

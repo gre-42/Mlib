@@ -35,7 +35,7 @@ private:
     RigidBodyIntegrator* rbi_;
     const TransformationMatrix<double, double, 3>* geographic_coordinates_;
     TrackWriterGpx track_writer_;
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::steady_clock::time_point start_time_;
 };
 
 }

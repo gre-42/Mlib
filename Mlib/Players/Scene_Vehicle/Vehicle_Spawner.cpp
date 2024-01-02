@@ -147,7 +147,7 @@ void VehicleSpawner::notify_spawn() {
 
 float VehicleSpawner::seconds_since_spawn() const {
     scene_.delete_node_mutex().notify_reading();
-    if (spawn_time_ == std::chrono::time_point<std::chrono::steady_clock>()) {
+    if (spawn_time_ == std::chrono::steady_clock::time_point()) {
         THROW_OR_ABORT("Seconds since spawn requires previous call to notify_spawn");
     }
     return std::chrono::duration<float>(std::chrono::steady_clock::now() - spawn_time_).count();

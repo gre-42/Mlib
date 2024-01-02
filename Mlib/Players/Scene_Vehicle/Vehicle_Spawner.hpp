@@ -50,7 +50,7 @@ private:
     std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
     Player* player_;
     std::string team_name_;
-    std::chrono::time_point<std::chrono::steady_clock> spawn_time_;
+    std::chrono::steady_clock::time_point spawn_time_;
     bool spotted_by_vip_;
 };
 

@@ -27,7 +27,7 @@ public:
 private:
     const ButtonStates& button_states_;
     const KeyConfigurations& key_configurations_;
-    std::chrono::time_point<std::chrono::steady_clock> keys_down_time_;
+    std::chrono::steady_clock::time_point keys_down_time_;
     bool key_was_up_;
     bool keys_down_;
     std::string id_;

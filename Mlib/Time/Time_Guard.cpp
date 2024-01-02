@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-std::chrono::time_point<std::chrono::steady_clock> TimeGuard::init_time_;
+std::chrono::steady_clock::time_point TimeGuard::init_time_;
 std::map<std::thread::id, ThreadTimeInfo> TimeGuard::thread_time_infos_;
 size_t TimeGuard::max_log_length_ = 0;
 MaxLogLengthExceededBehavior TimeGuard::max_log_length_exceeded_behavior_;

@@ -8,7 +8,7 @@ public:
     ElapsedGuard();
     ~ElapsedGuard();
 private:
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::steady_clock::time_point start_time_;
 };
 
 }

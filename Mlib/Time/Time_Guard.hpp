@@ -14,7 +14,7 @@ class Svg;
 
 struct TimeEvent {
     size_t event_id;
-    std::chrono::time_point<std::chrono::steady_clock> time;
+    std::chrono::steady_clock::time_point time;
     const char* message = nullptr;
     size_t stack_size = SIZE_MAX;
     std::strong_ordering operator <=> (const TimeEvent& other) const {
@@ -23,8 +23,8 @@ struct TimeEvent {
 };
 
 struct CalledFunction {
-    std::chrono::time_point<std::chrono::steady_clock> start_time;
-    std::chrono::time_point<std::chrono::steady_clock> end_time;
+    std::chrono::steady_clock::time_point start_time;
+    std::chrono::steady_clock::time_point end_time;
     const char* message = nullptr;
     std::string group;
     size_t stack_size = SIZE_MAX;
@@ -58,7 +58,7 @@ public:
 private:
     static void insert_event(const TimeEvent& e);
     static void insert_called_function(const CalledFunction& e);
-    static std::chrono::time_point<std::chrono::steady_clock> init_time_;
+    static std::chrono::steady_clock::time_point init_time_;
     static std::map<std::thread::id, ThreadTimeInfo> thread_time_infos_;
     static size_t max_log_length_;
     static MaxLogLengthExceededBehavior max_log_length_exceeded_behavior_;

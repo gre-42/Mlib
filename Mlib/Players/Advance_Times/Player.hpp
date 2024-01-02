@@ -242,8 +242,8 @@ private:
     RigidBodyVehicle* target_rb_;
     PlayerStats stats_;
     GameMode game_mode_;
-    std::chrono::time_point<std::chrono::steady_clock> stuck_start_;
-    std::chrono::time_point<std::chrono::steady_clock> unstuck_start_;
+    std::chrono::steady_clock::time_point stuck_start_;
+    std::chrono::steady_clock::time_point unstuck_start_;
     UnstuckMode unstuck_mode_;
     DrivingMode driving_mode_;
     DrivingDirection driving_direction_;
