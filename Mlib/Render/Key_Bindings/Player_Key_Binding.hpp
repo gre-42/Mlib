@@ -8,8 +8,6 @@ namespace Mlib {
 class SceneNode;
 
 struct PlayerKeyBinding {
-    std::string id;
-    std::string role;
     DanglingPtr<SceneNode> node;
     bool select_next_opponent;
     bool select_next_vehicle;

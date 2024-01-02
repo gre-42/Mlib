@@ -10,8 +10,6 @@ namespace Mlib {
 class SceneNode;
 
 struct AvatarControllerKeyBinding {
-    std::string id;
-    std::string role;
     DanglingPtr<SceneNode> node;
     std::optional<float> surface_power;
     bool yaw;

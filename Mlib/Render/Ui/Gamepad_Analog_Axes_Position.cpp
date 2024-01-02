@@ -2,23 +2,35 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
+#include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
 using namespace Mlib;
 
-GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(const ButtonStates& button_states)
-: button_states_{button_states}
+GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(
+    const ButtonStates& button_states,
+    const KeyConfigurations& key_configurations,
+    std::string id,
+    std::string role)
+    : button_states_{ button_states }
+    , key_configurations_{ key_configurations }
+    , id_{ std::move(id) }
+    , role_{ std::move(role) }
 {}
 
 GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
-float GamepadAnalogAxesPosition::axis_alpha(
-    const BaseGamepadAnalogAxesBinding& binding,
-    const std::string& role)
+float GamepadAnalogAxesPosition::axis_alpha()
 {
-    auto* b = binding.get_joystick_axis(role);
+    if (id_.empty()) {
+        return NAN;
+    }
+    const auto& key_combination = key_configurations_.get(id_);
+
+    auto* b = key_combination.base_gamepad_analog_axes.get_joystick_axis(role_);
     if (b == nullptr) {
         return NAN;
     }

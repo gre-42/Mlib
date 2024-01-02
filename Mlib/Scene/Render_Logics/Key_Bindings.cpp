@@ -57,14 +57,10 @@
 using namespace Mlib;
 
 KeyBindings::KeyBindings(
-    GamepadAnalogAxesPosition& gamepad_analog_axes_position,
-    KeyConfigurations& key_configurations,
     SelectedCameras& selected_cameras,
     const Focuses& focuses,
     Players& players)
-    : gamepad_analog_axes_position_{ gamepad_analog_axes_position }
-    , key_configurations_{ key_configurations }
-    , selected_cameras_{ selected_cameras }
+    : selected_cameras_{ selected_cameras }
     , focuses_{ focuses }
     , players_{ players }
 {}
@@ -233,11 +229,13 @@ float KeyBindings::get_alpha(
     ButtonPress& button_press,
     CursorMovement* cursor_movement,
     ScrollWheelMovement* scroll_wheel_movement,
-    const KeyConfiguration& key_config,
-    const std::string& role)
+    GamepadAnalogAxesPosition* gamepad_analog_axes_position)
 {
     // Analog gamepad axis
-    float alpha = gamepad_analog_axes_position_.axis_alpha(key_config.base_gamepad_analog_axes, role);
+    float alpha = NAN;
+    if (gamepad_analog_axes_position != nullptr) {
+        alpha = gamepad_analog_axes_position->axis_alpha();
+    }
     float alpha_digital = button_press.keys_alpha(0.05f);
     float alpha_cursor = NAN;
     if (cursor_movement != nullptr) {
@@ -456,7 +454,6 @@ void KeyBindings::increment_external_forces(
             continue;
         }
         if (k.button_press.keys_pressed()) {
-            linfo() << "Key ID: " << k.id;
             auto trafo = node->absolute_model_matrix();
             auto z = trafo.R().column(2);
             linfo() << "Position: " << trafo.t() / (double)meters;
@@ -519,8 +516,7 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             nullptr,
             nullptr,
-            key_configurations_.get(k.id),
-            k.role);
+            &k.gamepad_analog_axes_position);
         if (!std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
@@ -554,8 +550,7 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             k.cursor_movement.get(),
             nullptr,
-            key_configurations_.get(k.id),
-            k.role);
+            &k.gamepad_analog_axes_position);
         if (!std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
@@ -585,8 +580,7 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             nullptr,
             k.scroll_wheel_movement.get(),
-            key_configurations_.get(k.id),
-            k.role);
+            nullptr);
         if (!std::isnan(alpha)) {
             auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {

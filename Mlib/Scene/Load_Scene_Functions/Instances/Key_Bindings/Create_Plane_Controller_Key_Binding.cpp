@@ -43,8 +43,6 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .turbine_power = args.arguments.contains(KnownArgs::turbine_power)
             ? args.arguments.at<float>(KnownArgs::turbine_power) * W
@@ -69,7 +67,12 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             key_configurations,
-            args.arguments.at<std::string>(KnownArgs::id))});
+            args.arguments.at<std::string>(KnownArgs::id)),
+        .gamepad_analog_axes_position{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role) }});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

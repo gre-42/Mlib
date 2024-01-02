@@ -51,8 +51,6 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
@@ -67,6 +65,11 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             ? stov(args.arguments.at<float>(KnownArgs::ascend_velocity))
             : std::optional<float>(),
         .button_press{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role) },
+        .gamepad_analog_axes_position{
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),

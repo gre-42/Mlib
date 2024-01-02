@@ -1,12 +1,10 @@
 #include "Create_Camera_Key_Binding.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Camera_Key_Binding.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
@@ -31,8 +29,6 @@ CreateCameraKeyBinding::CreateCameraKeyBinding(RenderableScene& renderable_scene
 void CreateCameraKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     key_bindings.add_camera_key_binding({
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = "",
         .tpe = camera_cycle_type_from_string(args.arguments.at<std::string>(KnownArgs::tpe)),
         .button_press{
             args.button_states,

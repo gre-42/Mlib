@@ -4,15 +4,12 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <optional>
-#include <string>
 
 namespace Mlib {
 
 class SceneNode;
 
 struct AbsoluteMovableKeyBinding {
-    std::string id;
-    std::string role;
     DanglingPtr<SceneNode> node;
     VectorAtPosition<float, double, 3> force;
     FixedArray<float, 3> rotate;

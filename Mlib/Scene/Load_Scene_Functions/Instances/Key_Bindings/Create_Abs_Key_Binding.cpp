@@ -63,8 +63,6 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     auto& kb = key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .force = {
             .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,

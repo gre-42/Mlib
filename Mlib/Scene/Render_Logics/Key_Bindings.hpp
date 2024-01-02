@@ -26,8 +26,6 @@ class Focuses;
 class Players;
 struct BaseKeyCombination;
 struct BaseGamepadAnalogAxesBinding;
-struct KeyConfiguration;
-class KeyConfigurations;
 class ButtonPress;
 class CursorMovement;
 class ScrollWheelMovement;
@@ -35,8 +33,6 @@ class ScrollWheelMovement;
 class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
-        GamepadAnalogAxesPosition& gamepad_analog_axes_position,
-        KeyConfigurations& key_configurations,
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
@@ -90,8 +86,7 @@ private:
         ButtonPress& button_press,
         CursorMovement* cursor_movement,
         ScrollWheelMovement* scroll_wheel_movement,
-        const KeyConfiguration& key_config,
-        const std::string& role);
+        GamepadAnalogAxesPosition* gamepad_analog_axes_position);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
@@ -108,8 +103,6 @@ private:
     std::list<PlayerKeyBinding> player_key_bindings_;
     std::list<PrintNodeInfoKeyBinding> print_node_info_key_bindings_;
 
-    GamepadAnalogAxesPosition& gamepad_analog_axes_position_;
-    KeyConfigurations& key_configurations_;
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;
     Players& players_;

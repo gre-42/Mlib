@@ -46,8 +46,6 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_avatar_controller_key_binding(AvatarControllerKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W

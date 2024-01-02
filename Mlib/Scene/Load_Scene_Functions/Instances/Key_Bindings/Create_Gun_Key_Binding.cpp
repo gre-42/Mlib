@@ -36,8 +36,6 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& kb = key_bindings.add_gun_key_binding(GunKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .player = &player,
         .button_press{

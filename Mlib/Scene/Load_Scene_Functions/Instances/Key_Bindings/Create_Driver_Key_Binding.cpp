@@ -44,8 +44,6 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& rb = get_rigid_body_vehicle(node);
     auto& driver = get_driver(rb);
     auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
-        .id = args.arguments.at<std::string>(KnownArgs::id),
-        .role = args.arguments.at<std::string>(KnownArgs::role),
         .node = node.ptr(),
         .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
         .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false),
