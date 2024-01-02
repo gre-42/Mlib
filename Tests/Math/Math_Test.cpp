@@ -455,16 +455,20 @@ void test_quaternion_series() {
     auto d3 = std::chrono::steady_clock::duration{ std::chrono::nanoseconds{170} };
     {
         QuaternionSeries<float, double, 3> qs;
-        // linfo() << qs.get(now);
-        qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.1, 0.2, 0.3}, Quaternion<float>::identity()}, now + d0);
-        linfo() << qs.get(now);
-        linfo() << qs.get(now + d1);
-        qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.5, 0.6, 0.7}, Quaternion<float>::identity()}, now + d2);
-        linfo() << qs.get(now);
-        linfo() << qs.get(now + d0);
-        linfo() << qs.get(now + d1);
-        linfo() << qs.get(now + d2);
-        linfo() << qs.get(now + d3);
+        for (size_t i = 0; i < 2; ++i) {
+            linfo() << "i=" << i;
+            // linfo() << qs.get(now);
+            qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.1, 0.2, 0.3}, Quaternion<float>::identity()}, now + d0);
+            linfo() << qs.get(now);
+            linfo() << qs.get(now + d1);
+            qs.append(OffsetAndQuaternion<float, double>{FixedArray<double, 3>{0.5, 0.6, 0.7}, Quaternion<float>::identity()}, now + d2);
+            linfo() << qs.get(now);
+            linfo() << qs.get(now + d0);
+            linfo() << qs.get(now + d1);
+            linfo() << qs.get(now + d2);
+            linfo() << qs.get(now + d3);
+            qs.clear();
+        }
     }
 }
 
