@@ -23,6 +23,7 @@ DECLARE_ARGUMENT(with_depth_texture);
 DECLARE_ARGUMENT(ambience);
 DECLARE_ARGUMENT(diffusivity);
 DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(fresnel_ambience);
 DECLARE_ARGUMENT(lightmap_width);
 DECLARE_ARGUMENT(lightmap_height);
 }
@@ -69,6 +70,7 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
         .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),
+        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience),
         .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

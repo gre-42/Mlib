@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(ambience);
 DECLARE_ARGUMENT(diffusivity);
 DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(fresnel_ambience);
 }
 
 const std::string CreateLightWithoutShadow::key = "light_without_shadow";
@@ -42,6 +43,7 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
         .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
         .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
         .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),
+        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience),
         .resource_suffix = "",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

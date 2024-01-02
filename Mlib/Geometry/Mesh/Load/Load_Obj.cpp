@@ -55,13 +55,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .reflection_map = cfg.reflection_map,
             .occluded_pass = cfg.occluded_pass,
             .occluder_pass = cfg.occluder_pass,
-            .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
+            .alpha_distances = OrderableFixedArray{ cfg.alpha_distances },
             .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .center_distances = cfg.center_distances,
             .max_triangle_distance = cfg.max_triangle_distance,
-            .cull_faces = cfg.cull_faces_default},
+            .cull_faces = cfg.cull_faces_default,
+            .fresnel_ambience = OrderableFixedArray{ cfg.fresnel_ambience },
+            .fresnel_ambience_exponent = cfg.fresnel_ambience_exponent},
         cfg.physics_material};
     tl.material.compute_color_mode();
     StaticFaceLighting sfl;

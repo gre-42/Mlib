@@ -15,6 +15,12 @@ void ColorStyle::insert(const ColorStyle& other) {
     if (!all(other.specularity == -1.f)) {
         this->specularity = other.specularity;
     }
+    if (!all(other.fresnel_ambience == -1.f)) {
+        this->fresnel_ambience = other.fresnel_ambience;
+    }
+    if (other.fresnel_ambience_exponent != -1.f) {
+        this->fresnel_ambience_exponent = other.fresnel_ambience_exponent;
+    }
     if (other.reflection_strength != -1.f) {
         this->reflection_strength = other.reflection_strength;
     }

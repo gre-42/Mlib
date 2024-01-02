@@ -63,6 +63,8 @@ struct Material {
     OrderableFixedArray<float, 3> diffusivity{0.8f, 0.8f, 0.8f};
     OrderableFixedArray<float, 3> specularity{0.5f, 0.5f, 0.5f};
     float specular_exponent = 4.f;
+    OrderableFixedArray<float, 3> fresnel_ambience{1.f, 1.f, 1.f};
+    float fresnel_ambience_exponent = 4.f;
     float alpha = 1.f;
     bool reflect_only_y = false;
     float draw_distance_add = 500;
@@ -109,6 +111,8 @@ struct Material {
         archive(diffusivity);
         archive(specularity);
         archive(specular_exponent);
+        archive(fresnel_ambience);
+        archive(fresnel_ambience_exponent);
         archive(alpha);
         archive(reflect_only_y);
         archive(draw_distance_add);

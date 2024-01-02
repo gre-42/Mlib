@@ -56,22 +56,22 @@ static void flying_key_callback(
 #endif
     if (user_object.button_states.key_down({.key = "LEFT_CONTROL"})) {
         if (user_object.button_states.key_down({.key = "UP"})) {
-            user_object.obj_angles(2) += 0.01f;
+            user_object.obj_angles(2) += 0.001f;
         }
         if (user_object.button_states.key_down({.key = "DOWN"})) {
-            user_object.obj_angles(2) -= 0.01f;
+            user_object.obj_angles(2) -= 0.001f;
         }
         if (user_object.button_states.key_down({.key = "LEFT"})) {
-            user_object.obj_angles(1) += 0.01f;
+            user_object.obj_angles(1) += 0.001f;
         }
         if (user_object.button_states.key_down({.key = "RIGHT"})) {
-            user_object.obj_angles(1) -= 0.01f;
+            user_object.obj_angles(1) -= 0.001f;
         }
         if (user_object.button_states.key_down({.key = "PAGE_UP"})) {
-            user_object.obj_angles(0) += 0.01f;
+            user_object.obj_angles(0) += 0.001f;
         }
         if (user_object.button_states.key_down({.key = "PAGE_DOWN"})) {
-            user_object.obj_angles(0) -= 0.01f;
+            user_object.obj_angles(0) -= 0.001f;
         }
         if (user_object.button_states.key_down({.key = "KP_ADD"})) {
             user_object.obj_position(1) += 0.04f;
@@ -89,16 +89,16 @@ static void flying_key_callback(
             // user_object.position(2) += 0.04f;
         }
         if (user_object.button_states.key_down({.key = "LEFT"})) {
-            user_object.angles(1) += 0.01f;
+            user_object.angles(1) += 0.001f;
         }
         if (user_object.button_states.key_down({.key = "RIGHT"})) {
-            user_object.angles(1) -= 0.01f;
+            user_object.angles(1) -= 0.001f;
         }
         if (user_object.button_states.key_down({.key = "PAGE_UP"})) {
-            user_object.angles(0) += 0.01f;
+            user_object.angles(0) += 0.001f;
         }
         if (user_object.button_states.key_down({.key = "PAGE_DOWN"})) {
-            user_object.angles(0) -= 0.01f;
+            user_object.angles(0) -= 0.001f;
         }
         if (user_object.button_states.key_down({.key = "KP_ADD"})) {
             user_object.position(1) += 0.2f;

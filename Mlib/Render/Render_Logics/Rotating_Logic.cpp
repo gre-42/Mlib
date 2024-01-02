@@ -86,16 +86,16 @@ static void key_callback(
             user_object.camera_z += 0.1f;
         }
         if (button_states.key_down({.key = "LEFT"})) {
-            user_object.angle_y += 0.04f;
+            user_object.angle_y += 0.004f;
         }
         if (button_states.key_down({.key = "RIGHT"})) {
-            user_object.angle_y -= 0.04f;
+            user_object.angle_y -= 0.004f;
         }
         if (button_states.key_down({.key = "PAGE_UP"})) {
-            user_object.angle_x += 0.04f;
+            user_object.angle_x += 0.004f;
         }
         if (button_states.key_down({.key = "PAGE_DOWN"})) {
-            user_object.angle_x -= 0.04f;
+            user_object.angle_x -= 0.004f;
         }
         if (button_states.key_down({.key = "KP_ADD"})) {
             user_object.scale += 0.04f;

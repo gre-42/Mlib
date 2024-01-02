@@ -368,10 +368,19 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
+    FixedArray<float, 3> sum_light_fresnel_ambience = fixed_zeros<float, 3>();
+    for (const auto& [_, light] : filtered_lights) {
+        if (!any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            sum_light_fresnel_ambience += light->fresnel_ambience;
+        }
+    }
     FixedArray<float, 3> emissivity;
     FixedArray<float, 3> ambience;
     FixedArray<float, 3> diffusivity;
     FixedArray<float, 3> specularity;
+    float specular_exponent;
+    FixedArray<float, 3> fresnel_emissivity;
+    float fresnel_emissivity_exponent;
     if (!is_lightmap) {
         emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
     } else {
@@ -379,17 +388,30 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (!filtered_lights.empty() && !is_lightmap) {
         ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience * cva->material.ambience : cva->material.ambience;
-        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity * cva->material.diffusivity : cva->material.diffusivity;
-        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity * cva->material.specularity : cva->material.specularity;
+        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
+        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
+        specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.specular_exponent;
+        FixedArray<float, 3> fresnel_ambience = color_style && !all(color_style->fresnel_ambience == -1.f) ? color_style->fresnel_ambience : cva->material.fresnel_ambience;
+        fresnel_emissivity = sum_light_fresnel_ambience * fresnel_ambience;
+        fresnel_emissivity_exponent = color_style && (color_style->fresnel_ambience_exponent != -1.f) ? color_style->fresnel_ambience_exponent : cva->material.fresnel_ambience_exponent;
     } else {
         ambience = 0.f;
         diffusivity = 0.f;
         specularity = 0.f;
+        specular_exponent = 0.f;
+        fresnel_emissivity = 0.f;
+        fresnel_emissivity_exponent = 0.f;
     }
     if (filtered_lights.size() == 1) {
         ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
         diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
         specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
+    }
+    if (all(specularity == 0.f)) {
+        specular_exponent = 0.f;
+    }
+    if (all(fresnel_emissivity == 0.f)) {
+        fresnel_emissivity_exponent = 0.f;
     }
     bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
     TextureIndexCalculator tic;
@@ -524,7 +546,9 @@ void RenderableColoredVertexArray::render_cva(
             .ambience = OrderableFixedArray{ambience},
             .diffusivity = OrderableFixedArray{diffusivity},
             .specularity = OrderableFixedArray{specularity},
-            .specular_exponent = cva->material.specular_exponent,
+            .specular_exponent = specular_exponent,
+            .fresnel_emissivity = OrderableFixedArray{fresnel_emissivity},
+            .fresnel_emissivity_exponent = fresnel_emissivity_exponent,
             .alpha = cva->material.alpha,
             .orthographic = vc.orthographic(),
             .fragments_depend_on_distance = fragments_depend_on_distance,
@@ -666,16 +690,17 @@ void RenderableColoredVertexArray::render_cva(
         }
     }
     {
-        bool pred0 = has_lookat || (any(specularity != 0.f) && (cva->material.specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
-        if (pred0 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
+        bool pred0 = has_lookat || (any(specularity != 0.f) && (specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        bool pred1 = any(fresnel_emissivity != 0.f) && (fresnel_emissivity_exponent != 0.f);
+        if (pred0 || pred1 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;
-            if ((pred0 || reorient_uv0 || reorient_normals) && ortho) {
+            if ((pred0 || pred1 || reorient_uv0 || reorient_normals) && ortho) {
                 auto d = z3_from_3x3(miv.R());
                 d /= std::sqrt(sum(squared(d)));
                 CHK(glUniform3fv(rp.view_dir, 1, d.flat_begin()));
             }
-            if ((pred0 && !ortho) || (tic.ntextures_interior != 0)) {
+            if (((pred0 || pred1) && !ortho) || (tic.ntextures_interior != 0)) {
                 CHK(glUniform3fv(rp.view_pos, 1, miv.t().casted<float>().flat_begin()));
             }
         }
