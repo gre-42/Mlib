@@ -5,7 +5,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
+#include <Mlib/Render/Ui/Scroll_Wheel_Movement.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -49,7 +49,10 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .scroll_wheel_movement = std::make_shared<CursorMovement>(args.cursor_states)});
+        .scroll_wheel_movement = std::make_shared<ScrollWheelMovement>(
+            args.scroll_wheel_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id))});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

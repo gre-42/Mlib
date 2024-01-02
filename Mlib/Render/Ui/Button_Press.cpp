@@ -17,9 +17,9 @@ ButtonPress::ButtonPress(
     std::string id,
     std::string role)
     : button_states_{ button_states }
-    , key_configurations_{ key_configurations }
     , key_was_up_{ false }
     , keys_down_{ false }
+    , key_configurations_{ key_configurations }
     , id_{ std::move(id) }
     , role_{ std::move(role) }
 {}

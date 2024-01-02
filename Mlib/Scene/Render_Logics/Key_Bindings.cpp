@@ -46,6 +46,7 @@
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
+#include <Mlib/Render/Ui/Scroll_Wheel_Movement.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -231,7 +232,7 @@ void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBindi
 float KeyBindings::get_alpha(
     ButtonPress& button_press,
     CursorMovement* cursor_movement,
-    CursorMovement* scroll_wheel_movement,
+    ScrollWheelMovement* scroll_wheel_movement,
     const KeyConfiguration& key_config,
     const std::string& role)
 {
@@ -240,11 +241,11 @@ float KeyBindings::get_alpha(
     float alpha_digital = button_press.keys_alpha(0.05f);
     float alpha_cursor = NAN;
     if (cursor_movement != nullptr) {
-        alpha_cursor = cursor_movement->axis_alpha(key_config.base_cursor_axis);
+        alpha_cursor = cursor_movement->axis_alpha();
     }
     float alpha_scroll_wheel = NAN;
     if (scroll_wheel_movement != nullptr) {
-        alpha_scroll_wheel = scroll_wheel_movement->axis_alpha(key_config.base_scroll_wheel_axis);
+        alpha_scroll_wheel = scroll_wheel_movement->axis_alpha();
     }
     if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
         // Digital button
@@ -432,7 +433,6 @@ void KeyBindings::increment_external_forces(
             };
 
             // Apply key binding
-            const auto& key_config = key_configurations_.get(k.id);
             float alpha = k.button_press.keys_alpha();
             if (!std::isnan(alpha)) {
                 double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
@@ -441,7 +441,7 @@ void KeyBindings::increment_external_forces(
                 rotate(w * cfg.dt);
             }
             if (k.cursor_movement != nullptr) {
-                float beta = k.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+                float beta = k.cursor_movement->axis_alpha();
                 if (!std::isnan(beta)) {
                     rotate(beta * k.speed_cursor);
                     translate(beta * k.speed_cursor);
@@ -455,7 +455,6 @@ void KeyBindings::increment_external_forces(
         if (node == nullptr) {
             continue;
         }
-        const auto& key_config = key_configurations_.get(k.id);
         if (k.button_press.keys_pressed()) {
             linfo() << "Key ID: " << k.id;
             auto trafo = node->absolute_model_matrix();
@@ -472,7 +471,6 @@ void KeyBindings::increment_external_forces(
     }
     for (auto& k : avatar_controller_key_bindings_) {
         auto& rb = get_rigid_body_vehicle(*k.node);
-        const auto& key_config = key_configurations_.get(k.id);
         float alpha = k.button_press.keys_alpha(0.05f);
         if (!std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
@@ -490,7 +488,7 @@ void KeyBindings::increment_external_forces(
             }
         }
         if (k.cursor_movement != nullptr) {
-            float beta = k.cursor_movement->axis_alpha(key_config.base_cursor_axis);
+            float beta = k.cursor_movement->axis_alpha();
             if (!std::isnan(beta) && k.speed_cursor.has_value()) {
                 float dangle = beta * k.speed_cursor.value();
                 if (k.yaw) {
@@ -602,7 +600,6 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (auto& k : gun_key_bindings_) {
-        const auto& key_config = key_configurations_.get(k.id);
         if (k.button_press.keys_down()) {
             auto& gun = get_gun(*k.node);
             gun.trigger(k.player, &players_.get_team(k.player->team_name()));

@@ -26,10 +26,11 @@ public:
 
 private:
     const ButtonStates& button_states_;
-    const KeyConfigurations& key_configurations_;
     std::chrono::steady_clock::time_point keys_down_time_;
     bool key_was_up_;
     bool keys_down_;
+
+    const KeyConfigurations& key_configurations_;
     std::string id_;
     std::string role_;
 };

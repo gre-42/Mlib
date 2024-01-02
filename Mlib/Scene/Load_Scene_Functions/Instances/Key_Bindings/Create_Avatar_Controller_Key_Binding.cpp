@@ -71,7 +71,10 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .cursor_movement = std::make_shared<CursorMovement>(args.cursor_states)});
+        .cursor_movement = std::make_shared<CursorMovement>(
+            args.cursor_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id))});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

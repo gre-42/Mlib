@@ -1,10 +1,10 @@
-#include "Cursor_Movement.hpp"
+#include "Scroll_Wheel_Movement.hpp"
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 
 using namespace Mlib;
 
-CursorMovement::CursorMovement(
+ScrollWheelMovement::ScrollWheelMovement(
     CursorStates& cursor_states,
     const KeyConfigurations& key_configurations,
     std::string id)
@@ -13,12 +13,12 @@ CursorMovement::CursorMovement(
     , id_{ std::move(id) }
 {}
 
-CursorMovement::~CursorMovement() = default;
+ScrollWheelMovement::~ScrollWheelMovement() = default;
 
-float CursorMovement::axis_alpha() {
+float ScrollWheelMovement::axis_alpha() {
     if (id_.empty()) {
         return NAN;
     }
     const auto& key_combination = key_configurations_.get(id_);
-    return incremental_movement_.axis_alpha(key_combination.base_cursor_axis);
+    return incremental_movement_.axis_alpha(key_combination.base_scroll_wheel_axis);
 }

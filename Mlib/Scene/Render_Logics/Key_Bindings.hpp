@@ -30,6 +30,7 @@ struct KeyConfiguration;
 class KeyConfigurations;
 class ButtonPress;
 class CursorMovement;
+class ScrollWheelMovement;
 
 class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
 public:
@@ -88,7 +89,7 @@ private:
     float get_alpha(
         ButtonPress& button_press,
         CursorMovement* cursor_movement,
-        CursorMovement* scroll_wheel_movement,
+        ScrollWheelMovement* scroll_wheel_movement,
         const KeyConfiguration& key_config,
         const std::string& role);
 

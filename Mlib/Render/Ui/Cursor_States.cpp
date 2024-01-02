@@ -1,6 +1,6 @@
 #include "Cursor_States.hpp"
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
+#include <Mlib/Render/Ui/Incremental_Movement.hpp>
 #include <algorithm>
 
 using namespace Mlib;
@@ -8,12 +8,12 @@ using namespace Mlib;
 CursorStates::CursorStates()
 {}
 
-void CursorStates::register_cursor_movement(CursorMovement* cursor_movement) {
+void CursorStates::register_cursor_movement(IncrementalMovement* cursor_movement) {
     std::scoped_lock lock{cursor_movements_mutex_};
     cursor_movements_.push_back(cursor_movement);
 }
 
-void CursorStates::unregister_cursor_movement(CursorMovement* cursor_movement) {
+void CursorStates::unregister_cursor_movement(IncrementalMovement* cursor_movement) {
     std::scoped_lock lock{cursor_movements_mutex_};
     auto it = std::find(cursor_movements_.begin(), cursor_movements_.end(), cursor_movement);
     if (it == cursor_movements_.end()) {

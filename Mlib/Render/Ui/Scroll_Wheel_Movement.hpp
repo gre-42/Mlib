@@ -6,14 +6,14 @@ namespace Mlib {
 class CursorStates;
 class KeyConfigurations;
 
-class CursorMovement {
-    CursorMovement& operator = (const CursorMovement&) = delete;
+class ScrollWheelMovement {
+    ScrollWheelMovement& operator = (const ScrollWheelMovement&) = delete;
 public:
-    explicit CursorMovement(
+    explicit ScrollWheelMovement(
         CursorStates& cursor_states,
         const KeyConfigurations& key_configurations,
         std::string id);
-    ~CursorMovement();
+    ~ScrollWheelMovement();
     float axis_alpha();
 private:
     IncrementalMovement incremental_movement_;

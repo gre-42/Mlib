@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
-#include <Mlib/Render/Ui/Cursor_Movement.hpp>
+#include <Mlib/Render/Ui/Scroll_Wheel_Movement.hpp>
 #include <string>
 
 namespace Mlib {
@@ -14,7 +14,7 @@ struct WeaponCycleKeyBinding {
     DanglingPtr<SceneNode> node;
     int direction;
     ButtonPress button_press;
-    std::shared_ptr<CursorMovement> scroll_wheel_movement;
+    std::shared_ptr<ScrollWheelMovement> scroll_wheel_movement;
 };
 
 }
