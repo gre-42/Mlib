@@ -55,8 +55,8 @@ SceneNode::SceneNode(
     , absolute_destruction_observer_{ nullptr }
     , trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
-    , scale_{ scale }
     , trafo_history_invalidated_{ false }
+    , scale_{ scale }
     , rotation_matrix_{ tait_bryan_angles_2_matrix(rotation) }
     , interpolation_mode_{interpolation_mode}
     , state_{ SceneNodeState::DETACHED }
