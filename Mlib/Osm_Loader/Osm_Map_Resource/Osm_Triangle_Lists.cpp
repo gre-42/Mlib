@@ -14,7 +14,7 @@
 
 using namespace Mlib;
 
-static Shading material_specularity(PhysicsMaterial material) {
+static Shading material_specularity_raw(PhysicsMaterial material) {
     if (any(material & PhysicsMaterial::SURFACE_BASE_TARMAC)) {
         return TARMAC_REFLECTANCE;
     }
@@ -52,7 +52,7 @@ static Shading material_specularity(Shading res, const OsmResourceConfig& config
 }
 
 static Shading material_specularity(PhysicsMaterial material, const OsmResourceConfig& config) {
-    return material_specularity(material_specularity(material), config);
+    return material_specularity(material_specularity_raw(material), config);
 }
 
 static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
@@ -247,7 +247,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = material_specularity(pmit->second),
+                .shading = material_specularity(pmit->second, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
     }
@@ -293,7 +293,9 @@ OsmTriangleLists::OsmTriangleLists(
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
                             .aggregate_mode = AggregateMode::ONCE,
-                            .shading = material_specularity((road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE),
+                            .shading = material_specularity(
+                                (road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE,
+                                config),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
                         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
