@@ -298,10 +298,7 @@ OsmMapResource::OsmMapResource(
             Material{
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
+                .shading = STONE_REFLECTANCE,
                 .draw_distance_noperations = 1000},
             buildings,
             nodes,
@@ -363,10 +360,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .cull_faces = false,
                 .reorient_uv0 = true,
-                .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
+                .shading = STONE_REFLECTANCE,
                 .draw_distance_noperations = 1000},
             wall_barriers,
             nodes,
@@ -386,10 +380,7 @@ OsmMapResource::OsmMapResource(
                     .aggregate_mode = AggregateMode::ONCE,
                     .cull_faces = false,
                     .reorient_uv0 = true,
-                    .emissivity = OrderableFixedArray{WALL_EMISSIVITY * config.emissivity_factor},
-                    .ambience = OrderableFixedArray{WALL_AMBIENCE * config.ambience_factor},
-                    .diffusivity = OrderableFixedArray{WALL_DIFFUSIVITY * config.diffusivity_factor},
-                    .specularity = OrderableFixedArray{WALL_SPECULARITY * config.specularity_factor},
+                    .shading = STONE_REFLECTANCE,
                     .draw_distance_noperations = 1000},
                 config.scale,
                 config.uv_scale_barrier_wall,
@@ -565,10 +556,7 @@ OsmMapResource::OsmMapResource(
                 .textures_color = { primary_rendering_resources.get_blend_map_texture(config.roof_texture) },
                 .occluder_pass = ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray{ROOF_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{ROOF_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{ROOF_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{ROOF_SPECULARITY * config.specularity_factor},
+                .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             roof_color,
             buildings,
@@ -1519,9 +1507,9 @@ void OsmMapResource::save_to_obj_file(
         mdcvas,  // get_physics_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
-                .ambience = m.ambience,
-                .diffusivity = m.diffusivity,
-                .specularity = m.specularity};
+                .ambience = m.shading.ambience,
+                .diffusivity = m.shading.diffusivity,
+                .specularity = m.shading.specularity};
             if (!m.textures_color.empty()) {
                 const auto& desc = m.textures_color[0].texture_descriptor;
                 result.color_texture = get_filename(desc.color, TextureRole::COLOR);
@@ -1536,9 +1524,10 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
     TriangleList<double> bad_triangles{
         "bad_trinalges",
         Material{
-            .ambience = {1.f, 0.f, 0.f},
-            .diffusivity = {1.f, 0.f, 0.f},
-            .specularity = {1.f, 0.f, 0.f}},
+            .shading{
+                .ambience = {1.f, 0.f, 0.f},
+                .diffusivity = {1.f, 0.f, 0.f},
+                .specularity = {1.f, 0.f, 0.f}}},
         PhysicsMaterial::NONE};
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
@@ -1557,9 +1546,9 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
         {bad_triangles.triangle_array()},
         [&](const Material& m){
             return ObjMaterial{
-                .ambience = m.ambience,
-                .diffusivity = m.diffusivity,
-                .specularity = m.specularity};
+                .ambience = m.shading.ambience,
+                .diffusivity = m.shading.diffusivity,
+                .specularity = m.shading.specularity};
         });
 }
 

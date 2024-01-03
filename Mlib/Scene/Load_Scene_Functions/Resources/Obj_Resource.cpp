@@ -168,11 +168,13 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, fixed_ones<float, 3>()),
         .diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, fixed_ones<float, 3>()),
         .specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, fixed_ones<float, 3>()),
-        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience, fixed_zeros<float, 3>()),
-        .fresnel = {
-            .min = args.arguments.at<float>(KnownArgs::fresnel_min, 0.f),
-            .max = args.arguments.at<float>(KnownArgs::fresnel_max, 0.f),
-            .exponent = args.arguments.at<float>(KnownArgs::fresnel_exponent, 0.f)
+        .fresnel{
+            .reflectance = {
+                .min = args.arguments.at<float>(KnownArgs::fresnel_min, 0.f),
+                .max = args.arguments.at<float>(KnownArgs::fresnel_max, 0.f),
+                .exponent = args.arguments.at<float>(KnownArgs::fresnel_exponent, 0.f)
+            },
+            .ambience = OrderableFixedArray{args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience, fixed_zeros<float, 3>())}
         },
         .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,

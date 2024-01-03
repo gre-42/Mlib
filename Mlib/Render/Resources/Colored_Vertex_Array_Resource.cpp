@@ -345,7 +345,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& specularity,
     float specular_exponent,
     const OrderableFixedArray<float, 3>& fresnel_emissivity,
-    const Fresnel& fresnel,
+    const FresnelReflectance& fresnel,
     float alpha,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
@@ -1699,7 +1699,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     CHK(glEnableVertexAttribArray(IDX_UV));
     CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
+    if (!cva->material.shading.diffusivity.all_equal(0) || !cva->material.shading.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
         CHK(glEnableVertexAttribArray(IDX_NORMAL));
         CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
     }

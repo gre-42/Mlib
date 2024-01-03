@@ -59,9 +59,9 @@ void Mlib::draw_wall_barriers(
             tl->material.blend_mode = bs.blend_mode;
             // tl->material.wrap_mode_t = bs.wrap_mode_t;
             tl->material.reorient_uv0 = bs.reorient_uv0;
-            tl->material.ambience *= bs.ambience;
-            tl->material.diffusivity *= bs.diffusivity;
-            tl->material.specularity *= bs.specularity;
+            tl->material.shading.ambience *= bs.ambience;
+            tl->material.shading.diffusivity *= bs.diffusivity;
+            tl->material.shading.specularity *= bs.specularity;
             tl->material.compute_color_mode();
             FixedArray<float, 3> color = parse_color(bu.way.tags, "color", building_color);
             auto sw = subdivided_way(nodes, bu.way.nd, scale, max_width);

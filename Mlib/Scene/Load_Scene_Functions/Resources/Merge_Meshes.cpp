@@ -40,9 +40,10 @@ LoadSceneJsonUserFunction MergeMeshes::json_user_function = [](const LoadSceneJs
                     name,
                     Material{
                         .aggregate_mode = AggregateMode::ONCE,
-                        .ambience = {0.2f, 0.2f, 0.2f},
-                        .diffusivity = {0.2f, 0.2f, 0.2f},
-                        .specularity = {0.f, 0.f, 0.f}},
+                        .shading{
+                            .ambience = {0.2f, 0.2f, 0.2f},
+                            .diffusivity = {0.2f, 0.2f, 0.2f},
+                            .specularity = {0.f, 0.f, 0.f}}},
                     physics_material);
             }
         });

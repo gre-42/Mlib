@@ -275,7 +275,13 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
-    if (!is_lightmap && (!cva->material.ambience.all_equal(0) || !cva->material.diffusivity.all_equal(0) || !cva->material.specularity.all_equal(0))) {
+    if (!is_lightmap &&
+        (
+            !cva->material.shading.ambience.all_equal(0) ||
+            !cva->material.shading.diffusivity.all_equal(0) ||
+            !cva->material.shading.specularity.all_equal(0) ||
+            !cva->material.shading.fresnel.ambience.all_equal(0)))
+    {
         filtered_lights.reserve(lights.size());
         light_noshadow_indices.reserve(lights.size());
         light_shadow_indices.reserve(lights.size());
@@ -380,20 +386,20 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> specularity;
     float specular_exponent;
     FixedArray<float, 3> fresnel_emissivity;
-    Fresnel fresnel;
+    FresnelReflectance fresnel;
     if (!is_lightmap) {
-        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
+        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.shading.emissivity;
     } else {
         emissivity = 1.f;
     }
     if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience * cva->material.ambience : cva->material.ambience;
-        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.diffusivity;
-        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.specularity;
-        specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.specular_exponent;
-        FixedArray<float, 3> fresnel_ambience = color_style && !all(color_style->fresnel_ambience == -1.f) ? color_style->fresnel_ambience : cva->material.fresnel_ambience;
+        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience * cva->material.shading.ambience : cva->material.shading.ambience;
+        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.shading.diffusivity;
+        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.shading.specularity;
+        specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
+        FixedArray<float, 3> fresnel_ambience = color_style && !all(color_style->fresnel_ambience == -1.f) ? color_style->fresnel_ambience : cva->material.shading.fresnel.ambience;
         fresnel_emissivity = sum_light_fresnel_ambience * fresnel_ambience;
-        fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.fresnel;
+        fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
     } else {
         ambience = 0.f;
         diffusivity = 0.f;

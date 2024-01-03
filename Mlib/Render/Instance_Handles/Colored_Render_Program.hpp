@@ -78,7 +78,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> specularity;
     float specular_exponent;
     OrderableFixedArray<float, 3> fresnel_emissivity;
-    Fresnel fresnel;
+    FresnelReflectance fresnel;
     float alpha;
     bool orthographic;
     bool fragments_depend_on_distance;

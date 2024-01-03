@@ -103,10 +103,11 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
                 KnownArgs::center_distances,
                 FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
-        .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
-        .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
-        .diffusivity = {0.f, 0.f, 0.f},
-        .specularity = {0.f, 0.f, 0.f}};
+        .shading{
+            .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
+            .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
+            .diffusivity = {0.f, 0.f, 0.f},
+            .specularity = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),

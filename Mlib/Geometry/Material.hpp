@@ -3,9 +3,9 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
-#include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
+#include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
@@ -59,17 +59,7 @@ struct Material {
     float max_triangle_distance = INFINITY;
     bool cull_faces = true;
     bool reorient_uv0 = false;
-    OrderableFixedArray<float, 3> emissivity{0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> ambience{1.f, 1.f, 1.f};
-    OrderableFixedArray<float, 3> diffusivity{0.8f, 0.8f, 0.8f};
-    OrderableFixedArray<float, 3> specularity{0.5f, 0.5f, 0.5f};
-    float specular_exponent = 4.f;
-    OrderableFixedArray<float, 3> fresnel_ambience{0.f, 0.f, 0.f};
-    Fresnel fresnel = {
-        .min = 0.f,
-        .max = 0.f,
-        .exponent = 0.f
-    };
+    Shading shading;
     float alpha = 1.f;
     bool reflect_only_y = false;
     float draw_distance_add = 500;
@@ -111,13 +101,7 @@ struct Material {
         archive(max_triangle_distance);
         archive(cull_faces);
         archive(reorient_uv0);
-        archive(emissivity);
-        archive(ambience);
-        archive(diffusivity);
-        archive(specularity);
-        archive(specular_exponent);
-        archive(fresnel_ambience);
-        archive(fresnel);
+        archive(shading);
         archive(alpha);
         archive(reflect_only_y);
         archive(draw_distance_add);

@@ -37,11 +37,13 @@ struct LoadMeshConfig {
     FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> fresnel_ambience = FixedArray<float, 3>(0.f);
-    Fresnel fresnel{
-        .min = 0.f,
-        .max = 0.f,
-        .exponent = 0.f
+    FresnelAndAmbience fresnel{
+        .reflectance = {
+            .min = 0.f,
+            .max = 0.f,
+            .exponent = 0.f
+        },
+        .ambience = {0.f, 0.f, 0.f}
     };
     float desaturate = 0.f;
     std::string histogram;

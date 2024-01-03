@@ -62,8 +62,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .center_distances = cfg.center_distances,
             .max_triangle_distance = cfg.max_triangle_distance,
             .cull_faces = cfg.cull_faces_default,
-            .fresnel_ambience = OrderableFixedArray{ cfg.fresnel_ambience },
-            .fresnel = cfg.fresnel},
+            .shading{.fresnel = cfg.fresnel}},
         cfg.physics_material};
     tl.material.compute_color_mode();
     StaticFaceLighting sfl;
@@ -376,11 +375,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 } else {
                     tl.material.occluder_pass = cfg.occluder_pass;
                 }
-                tl.material.emissivity = cfg.emissivity_factor * current_mtl.emissivity;
-                tl.material.ambience = cfg.ambience_factor * current_mtl.ambience;
-                tl.material.diffusivity = cfg.diffusivity_factor * current_mtl.diffusivity;
-                tl.material.specularity = cfg.specularity_factor * current_mtl.specularity;
-                tl.material.specular_exponent = current_mtl.specular_exponent;
+                tl.material.shading.emissivity = cfg.emissivity_factor * current_mtl.emissivity;
+                tl.material.shading.ambience = cfg.ambience_factor * current_mtl.ambience;
+                tl.material.shading.diffusivity = cfg.diffusivity_factor * current_mtl.diffusivity;
+                tl.material.shading.specularity = cfg.specularity_factor * current_mtl.specularity;
+                tl.material.shading.specular_exponent = current_mtl.specular_exponent;
                 tl.material.alpha = current_mtl.alpha;
                 tl.material.compute_color_mode();
             } else if (regex_match(line, match, smooth_shading_reg)) {

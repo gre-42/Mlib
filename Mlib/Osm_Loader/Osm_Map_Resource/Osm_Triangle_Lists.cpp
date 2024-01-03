@@ -14,32 +14,45 @@
 
 using namespace Mlib;
 
-static float material_specularity(PhysicsMaterial material) {
+static Shading material_specularity(PhysicsMaterial material) {
     if (any(material & PhysicsMaterial::SURFACE_BASE_TARMAC)) {
-        return TARMAC_SPECULARITY;
+        return TARMAC_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_GRAVEL)) {
-        return GRAVEL_SPECULARITY;
+        return GRAVEL_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_SNOW)) {
-        return SNOW_SPECULARITY;
+        return SNOW_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_ICE)) {
-        return ICE_SPECULARITY;
+        return ICE_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_SAND)) {
-        return SAND_SPECULARITY;
+        return SAND_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_GRASS)) {
-        return GRASS_SPECULARITY;
+        return GRASS_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_DIRT)) {
-        return DIRT_SPECULARITY;
+        return DIRT_REFLECTANCE;
     }
     if (any(material & PhysicsMaterial::SURFACE_BASE_STONE)) {
-        return STONE_SPECULARITY;
+        return STONE_REFLECTANCE;
     }
-    THROW_OR_ABORT("Unknown specularity for material with number " + std::to_string((unsigned int)material));
+    THROW_OR_ABORT("Unknown reflectance for material with number " + std::to_string((unsigned int)material));
+}
+
+static Shading material_specularity(Shading res, const OsmResourceConfig& config) {
+    res.emissivity *= config.emissivity_factor;
+    res.ambience *= config.ambience_factor;
+    res.diffusivity *= config.diffusivity_factor;
+    res.specularity *= config.specularity_factor;
+    res.fresnel.ambience *= config.fresnel_ambience_factor;
+    return res;
+}
+
+static Shading material_specularity(PhysicsMaterial material, const OsmResourceConfig& config) {
+    return material_specularity(material_specularity(material), config);
 }
 
 static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
@@ -69,10 +82,10 @@ static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMateria
     }
 }
 
-static float terrain_type_specularity(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
+static Shading terrain_type_specularity(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material, const OsmResourceConfig& config) {
     auto pm = physics_material(terrain_type, terrain_undefined_material);
     try {
-        return material_specularity(pm);
+        return material_specularity(pm, config);
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("Error determinging specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
     }
@@ -169,12 +182,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
-                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
-                .fresnel = TERRAIN_FRESNEL,
+                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
@@ -188,12 +196,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
-                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
-                .fresnel = TERRAIN_FRESNEL,
+                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<double>>(
@@ -207,12 +210,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
-                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
-                .fresnel = TERRAIN_FRESNEL,
+                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
         for (auto& t : ttt) {
@@ -249,10 +247,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{config.specularity_factor * material_specularity(pmit->second)},
+                .shading = material_specularity(pmit->second),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
     }
@@ -298,10 +293,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.
                             .aggregate_mode = AggregateMode::ONCE,
-                            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                            .specularity = OrderableFixedArray{config.specularity_factor * material_specularity(pmit->second) * (float)(road_properties.type != RoadType::WALL)},
+                            .shading = material_specularity((road_properties.type != RoadType::WALL) ? pmit->second : PhysicsMaterial::SURFACE_BASE_STONE),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
                         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
@@ -339,10 +331,7 @@ OsmTriangleLists::OsmTriangleLists(
                     .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                     // depth-func==equal requires aggregation, because the terrain is also aggregated.
                     .aggregate_mode = AggregateMode::ONCE,
-                    .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                    .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                    .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                    .specularity = {0.f, 0.f, 0.f},
+                    .shading = material_specularity(MUD_REFLECTANCE, config),
                     // .reflect_only_y = true,
                     .draw_distance_noperations = 1000}.compute_color_mode(),
                 PhysicsMaterial::ATTR_VISIBLE));
@@ -368,10 +357,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{CURB_SPECULARITY * config.specularity_factor * (float)(config.extrude_curb_amount == 0 && tpe != RoadType::WALL)},
+                .shading = material_specularity((config.extrude_curb_amount == 0 && tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
     }
@@ -391,10 +377,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{CURB_SPECULARITY * config.specularity_factor * (float)(tpe != RoadType::WALL)},
+                .shading = material_specularity((tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
     }
@@ -415,10 +398,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 // .wrap_mode_s = curb_wrap_mode_s,
                 .aggregate_mode = AggregateMode::ONCE,
-                .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-                .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-                .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = {0.f, 0.f, 0.f},
+                .shading = material_specularity(DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
     }
@@ -433,10 +413,7 @@ OsmTriangleLists::OsmTriangleLists(
             // .wrap_mode_t = WrapMode::REPEAT,
             // depth-func==equal requires aggregation, because the terrain is also aggregated.
             .aggregate_mode = AggregateMode::ONCE,
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = {0.f, 0.f, 0.f},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE);
     tl_ditch = std::make_shared<TriangleList<double>>(
@@ -450,10 +427,7 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = {0.f, 0.f, 0.f},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_tunnel_crossing = std::make_shared<TriangleList<double>>(
@@ -463,10 +437,7 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = {0.f, 0.f, 0.f},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_tunnel_pipe = std::make_shared<TriangleList<double>>(
@@ -476,35 +447,23 @@ OsmTriangleLists::OsmTriangleLists(
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
             .occluder_pass = ExternalRenderPassType::NONE,
             .aggregate_mode = AggregateMode::ONCE,
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = {0.f, 0.f, 0.f},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_tunnel_bdry = std::make_shared<TriangleList<double>>(
         "tunnel_bdry" + name_suffix,
         Material{
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor}},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<double>>(
         "tunnel_entrance" + name_suffix,
         Material{
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor}},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<double>>(
         "bridge_entrance" + name_suffix,
         Material{
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor}},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
@@ -513,10 +472,7 @@ OsmTriangleLists::OsmTriangleLists(
         Material{
             .textures_color = {primary_rendering_resources.get_blend_map_texture(config.water_texture)},
             .aggregate_mode = AggregateMode::ONCE,
-            .emissivity = OrderableFixedArray<float, 3>{DEFAULT_EMISSIVITY * config.emissivity_factor},
-            .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-            .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-            .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor},
+            .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
         PhysicsMaterial::ATTR_VISIBLE));
 }

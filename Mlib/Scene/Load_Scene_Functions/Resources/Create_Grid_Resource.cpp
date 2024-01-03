@@ -92,9 +92,10 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                     KnownArgs::center_distances,
                     FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
-            .emissivity = OrderableFixedArray{emissivity * emissivity_factor},
-            .ambience = OrderableFixedArray{ambience * ambience_factor},
-            .diffusivity = OrderableFixedArray{diffusivity * diffusivity_factor},
-            .specularity = OrderableFixedArray{specularity * specularity_factor}
+            .shading{
+                .emissivity = OrderableFixedArray{emissivity * emissivity_factor},
+                .ambience = OrderableFixedArray{ambience * ambience_factor},
+                .diffusivity = OrderableFixedArray{diffusivity * diffusivity_factor},
+                .specularity = OrderableFixedArray{specularity * specularity_factor}}
             }.compute_color_mode()));
 };

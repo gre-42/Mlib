@@ -1,47 +1,26 @@
 #pragma once
+#include <Mlib/Geometry/Material/Shading.hpp>
 
 namespace Mlib {
 
-static const float TARMAC_SPECULARITY = 0.2f;
-static const float GRAVEL_SPECULARITY = 0.f;
-static const float SNOW_SPECULARITY = 0.4f;
-static const float ICE_SPECULARITY = 0.5f;
-static const float SAND_SPECULARITY = 0.1f;
-static const float GRASS_SPECULARITY = 0.f;
-static const float DIRT_SPECULARITY = 0.2f;
-static const float STONE_SPECULARITY = 0.f;
+static const OrderableFixedArray<float, 3> o3(float f) {
+    return OrderableFixedArray<float, 3>(f);
+}
 
-static const float CURB_SPECULARITY = 0.f;
+static const Shading TARMAC_REFLECTANCE{ .specularity = 0.2f, .fresnel = {.reflectance = {.min = 0.2f, .max = 0.5f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading GRAVEL_REFLECTANCE{ .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f }} };
+static const Shading SNOW_REFLECTANCE{ .specularity = 0.4f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading ICE_REFLECTANCE{ .specularity = 0.5f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading SAND_REFLECTANCE{ .specularity = 0.1f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading GRASS_REFLECTANCE{ .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading DIRT_REFLECTANCE{ .specularity = 0.2f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading STONE_REFLECTANCE{ .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
 
-static const float DEFAULT_EMISSIVITY = 0.f;
-static const float DEFAULT_AMBIENCE = 1.f;
-static const float DEFAULT_DIFFUSIVITY = 0.8f;
-static const float DEFAULT_SPECULARITY = 0.5f;
+static const Shading CURB_REFLECTANCE{ .specularity = 0.5f, .fresnel = {.reflectance = {.min = 0.3f, .max = 0.7f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading MUD_REFLECTANCE{ .specularity = 0.5f, .fresnel = {.reflectance = {.min = 0.3f, .max = 0.7f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
 
-static const float TERRAIN_EMISSIVITY = 0.f;
-static const float TERRAIN_AMBIENCE = 1.2f;
-static const float TERRAIN_DIFFUSIVITY = 0.5f;
-// static const float TERRAIN_SPECULARITY = 0.f;
-static const float TERRAIN_FRESNEL_AMBIENCE = 1.f;
-static const Fresnel TERRAIN_FRESNEL{
-	.min = 0.f,
-	.max = 0.2f,
-	.exponent = 4.f
-};
-
-static const float WALL_EMISSIVITY = 0.f;
-static const float WALL_AMBIENCE = 1.2f;
-static const float WALL_DIFFUSIVITY = 0.8f;
-static const float WALL_SPECULARITY = 0.f;
-
-static const float ROOF_EMISSIVITY = 0.f;
-static const float ROOF_AMBIENCE = 1.f;
-static const float ROOF_DIFFUSIVITY = 0.8f;
-static const float ROOF_SPECULARITY = 0.2f;
-
-static const float CEILING_EMISSIVITY = 0.f;
-static const float CEILING_AMBIENCE = 1.f;
-static const float CEILING_DIFFUSIVITY = 0.8f;
-static const float CEILING_SPECULARITY = 0.2f;
+static const Shading ROOF_REFLECTANCE{ .specularity = 0.2f, .fresnel = {.reflectance = {.min = 0.3f, .max = 0.7f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading CEILING_REFLECTANCE{ .specularity = 0.2f, .fresnel = {.reflectance = {.min = 0.3f, .max = 0.7f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
+static const Shading DEFAULT_REFLECTANCE{ .fresnel = {.reflectance = {.min = 0.3f, .max = 0.7f, .exponent = 4.f}, .ambience = {1.f, 1.f, 1.f}} };
 
 }

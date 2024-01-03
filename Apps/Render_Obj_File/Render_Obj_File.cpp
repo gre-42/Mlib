@@ -187,14 +187,16 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_value("--magnifying_interpolation_mode", "nearest")),
         .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
         .transformation_mode = TransformationMode::ALL,
-        .fresnel_ambience = FixedArray<float, 3>{
-            safe_stof(args.named_value("--fresnel_r", "0")),
-            safe_stof(args.named_value("--fresnel_g", "0")),
-            safe_stof(args.named_value("--fresnel_b", "0"))},
         .fresnel = {
-            .min = safe_stof(args.named_value("--min", "0")),
-            .max = safe_stof(args.named_value("--max", "0")),
-            .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
+            .reflectance = {
+                .min = safe_stof(args.named_value("--min", "0")),
+                .max = safe_stof(args.named_value("--max", "0")),
+                .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
+            },
+            .ambience = {
+                safe_stof(args.named_value("--fresnel_r", "0")),
+                safe_stof(args.named_value("--fresnel_g", "0")),
+                safe_stof(args.named_value("--fresnel_b", "0"))}
         },
         .textures = textures,
         .period_world = period_world,

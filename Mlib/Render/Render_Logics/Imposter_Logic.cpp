@@ -124,9 +124,10 @@ void ImposterLogic::add_imposter(
         .textures_color = { {.texture_descriptor = TextureDescriptor{.color = {
             .filename = texture_id_,
             .color_mode = ColorMode::RGBA}}} },
-        .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
-        .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
-        .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}};
+        .shading{
+            .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
+            .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
+            .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}};
     material.compute_color_mode();
     SquareResource res{
         FixedArray<float, 2, 2>::init(ips.pos.min()(0), ips.pos.min()(1), ips.pos.max()(0), ips.pos.max()(1)),

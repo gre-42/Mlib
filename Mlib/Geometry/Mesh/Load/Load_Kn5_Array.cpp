@@ -486,26 +486,26 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material->shader + '"');
                     }
                 }
-                tl.material.emissivity = OrderableFixedArray{
+                tl.material.shading.emissivity = OrderableFixedArray{
                     cfg.emissivity_factor *
                     material->ksEmissive.value_or_default()};
-                tl.material.ambience = OrderableFixedArray{
+                tl.material.shading.ambience = OrderableFixedArray{
                     cfg.ambience_factor *
                     material->ksAmbient.value_or_default() *
                     lit_mult};
-                tl.material.diffusivity = OrderableFixedArray{
+                tl.material.shading.diffusivity = OrderableFixedArray{
                     cfg.diffusivity_factor *
                     material->diffuseMult.value_or_default() *
                     material->ksDiffuse.value_or_default() *
                     lit_mult};
-                tl.material.specularity = OrderableFixedArray{
+                tl.material.shading.specularity = OrderableFixedArray{
                     cfg.specularity_factor *
                     material->ksSpecular.value_or_default() *
                     lit_mult *
                     specular_mult};
-                tl.material.specular_exponent = material->ksSpecularEXP.value_or_default();
-                if (tl.material.specular_exponent == 0.f) {
-                    tl.material.specularity = 0.f;
+                tl.material.shading.specular_exponent = material->ksSpecularEXP.value_or_default();
+                if (tl.material.shading.specular_exponent == 0.f) {
+                    tl.material.shading.specularity = 0.f;
                 }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material->shader == "ksGrass") &&
