@@ -186,6 +186,7 @@ struct OsmResourceConfig {
     FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> fresnel_ambience_factor = FixedArray<float, 3>(1.f);
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{std::vector<double>{}, std::vector<double>{}};

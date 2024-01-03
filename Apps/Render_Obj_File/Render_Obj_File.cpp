@@ -191,7 +191,11 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             safe_stof(args.named_value("--fresnel_r", "0")),
             safe_stof(args.named_value("--fresnel_g", "0")),
             safe_stof(args.named_value("--fresnel_b", "0"))},
-        .fresnel_ambience_exponent = safe_stof(args.named_value("--fresnel_exponent", "0")),
+        .fresnel = {
+            .min = safe_stof(args.named_value("--min", "0")),
+            .max = safe_stof(args.named_value("--max", "0")),
+            .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
+        },
         .textures = textures,
         .period_world = period_world,
         .triangle_tangent_error_behavior = triangle_tangent_error_behavior_from_string(args.named_value("--triangle_tangent_error_behavior", "warn")),
@@ -308,6 +312,8 @@ int main(int argc, char** argv) {
         "    [--fresnel_r] <value>\n"
         "    [--fresnel_g] <value>\n"
         "    [--fresnel_b] <value>\n"
+        "    [--fresnel_min] <value>\n"
+        "    [--fresnel_min] <value>\n"
         "    [--fresnel_exponent] <value>\n"
         "    [--no_shadows]\n"
         "    [--light_configuration {none, emissive, one, shifted_circle, circle}]\n"
@@ -424,6 +430,8 @@ int main(int argc, char** argv) {
          "--fresnel_r",
          "--fresnel_g",
          "--fresnel_b",
+         "--fresnel_min",
+         "--fresnel_max",
          "--fresnel_exponent",
          "--triangle_tangent_error_behavior",
          "--light_beacon",

@@ -63,7 +63,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .max_triangle_distance = cfg.max_triangle_distance,
             .cull_faces = cfg.cull_faces_default,
             .fresnel_ambience = OrderableFixedArray{ cfg.fresnel_ambience },
-            .fresnel_ambience_exponent = cfg.fresnel_ambience_exponent},
+            .fresnel = cfg.fresnel},
         cfg.physics_material};
     tl.material.compute_color_mode();
     StaticFaceLighting sfl;

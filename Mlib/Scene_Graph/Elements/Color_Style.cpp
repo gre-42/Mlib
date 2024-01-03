@@ -18,8 +18,8 @@ void ColorStyle::insert(const ColorStyle& other) {
     if (!all(other.fresnel_ambience == -1.f)) {
         this->fresnel_ambience = other.fresnel_ambience;
     }
-    if (other.fresnel_ambience_exponent != -1.f) {
-        this->fresnel_ambience_exponent = other.fresnel_ambience_exponent;
+    if (other.fresnel.exponent != -1.f) {
+        this->fresnel = other.fresnel;
     }
     if (other.reflection_strength != -1.f) {
         this->reflection_strength = other.reflection_strength;

@@ -172,7 +172,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
                 .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{config.specularity_factor * terrain_type_specularity(tt, config.terrain_undefined_material)},
+                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
+                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
+                .fresnel = TERRAIN_FRESNEL,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
@@ -189,7 +191,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
                 .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{config.specularity_factor * terrain_type_specularity(tt, config.terrain_undefined_material)},
+                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
+                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
+                .fresnel = TERRAIN_FRESNEL,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<double>>(
@@ -206,7 +210,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .emissivity = OrderableFixedArray<float, 3>{TERRAIN_EMISSIVITY * config.emissivity_factor},
                 .ambience = OrderableFixedArray{TERRAIN_AMBIENCE * config.ambience_factor},
                 .diffusivity = OrderableFixedArray{TERRAIN_DIFFUSIVITY * config.diffusivity_factor},
-                .specularity = OrderableFixedArray{config.specularity_factor * terrain_type_specularity(tt, config.terrain_undefined_material)},
+                .specularity = OrderableFixedArray{terrain_type_specularity(tt, config.terrain_undefined_material) * config.specularity_factor},
+                .fresnel_ambience = OrderableFixedArray{TERRAIN_FRESNEL_AMBIENCE * config.fresnel_ambience_factor},
+                .fresnel = TERRAIN_FRESNEL,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
         for (auto& t : ttt) {

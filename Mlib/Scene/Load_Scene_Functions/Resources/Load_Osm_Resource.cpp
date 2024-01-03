@@ -224,6 +224,7 @@ DECLARE_ARGUMENT(emissivity_factor);
 DECLARE_ARGUMENT(ambience_factor);
 DECLARE_ARGUMENT(diffusivity_factor);
 DECLARE_ARGUMENT(specularity_factor);
+DECLARE_ARGUMENT(fresnel_ambience_factor);
 DECLARE_ARGUMENT(layer_heights_layer);
 DECLARE_ARGUMENT(layer_heights_height);
 DECLARE_ARGUMENT(game_level);
@@ -911,6 +912,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::specularity_factor)) {
             config.specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor);
+        }
+        if (args.arguments.contains(KnownArgs::fresnel_ambience_factor)) {
+            config.fresnel_ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience_factor);
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
+#include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <vector>
@@ -36,8 +37,12 @@ struct LoadMeshConfig {
     FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> fresnel_ambience = FixedArray<float, 3>(1.f);
-    float fresnel_ambience_exponent = 4.f;
+    FixedArray<float, 3> fresnel_ambience = FixedArray<float, 3>(0.f);
+    Fresnel fresnel{
+        .min = 0.f,
+        .max = 0.f,
+        .exponent = 0.f
+    };
     float desaturate = 0.f;
     std::string histogram;
     std::vector<BlendMapTexture> textures;

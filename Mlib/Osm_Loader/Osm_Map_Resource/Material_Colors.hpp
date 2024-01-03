@@ -22,6 +22,12 @@ static const float TERRAIN_EMISSIVITY = 0.f;
 static const float TERRAIN_AMBIENCE = 1.2f;
 static const float TERRAIN_DIFFUSIVITY = 0.5f;
 // static const float TERRAIN_SPECULARITY = 0.f;
+static const float TERRAIN_FRESNEL_AMBIENCE = 1.f;
+static const Fresnel TERRAIN_FRESNEL{
+	.min = 0.f,
+	.max = 0.2f,
+	.exponent = 4.f
+};
 
 static const float WALL_EMISSIVITY = 0.f;
 static const float WALL_AMBIENCE = 1.2f;

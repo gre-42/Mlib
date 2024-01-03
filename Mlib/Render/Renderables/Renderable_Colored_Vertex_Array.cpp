@@ -380,7 +380,7 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> specularity;
     float specular_exponent;
     FixedArray<float, 3> fresnel_emissivity;
-    float fresnel_emissivity_exponent;
+    Fresnel fresnel;
     if (!is_lightmap) {
         emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.emissivity;
     } else {
@@ -393,14 +393,18 @@ void RenderableColoredVertexArray::render_cva(
         specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.specular_exponent;
         FixedArray<float, 3> fresnel_ambience = color_style && !all(color_style->fresnel_ambience == -1.f) ? color_style->fresnel_ambience : cva->material.fresnel_ambience;
         fresnel_emissivity = sum_light_fresnel_ambience * fresnel_ambience;
-        fresnel_emissivity_exponent = color_style && (color_style->fresnel_ambience_exponent != -1.f) ? color_style->fresnel_ambience_exponent : cva->material.fresnel_ambience_exponent;
+        fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.fresnel;
     } else {
         ambience = 0.f;
         diffusivity = 0.f;
         specularity = 0.f;
         specular_exponent = 0.f;
         fresnel_emissivity = 0.f;
-        fresnel_emissivity_exponent = 0.f;
+        fresnel = {
+            .min = 0.f,
+            .max = 0.f,
+            .exponent = 0.f
+        };
     }
     if (filtered_lights.size() == 1) {
         ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
@@ -410,8 +414,12 @@ void RenderableColoredVertexArray::render_cva(
     if (all(specularity == 0.f)) {
         specular_exponent = 0.f;
     }
-    if (all(fresnel_emissivity == 0.f)) {
-        fresnel_emissivity_exponent = 0.f;
+    if (all(fresnel_emissivity == 0.f) && all(specularity == 0.f)) {
+        fresnel = {
+            .min = 0.f,
+            .max = 0.f,
+            .exponent = 0.f
+        };
     }
     bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
     TextureIndexCalculator tic;
@@ -548,7 +556,7 @@ void RenderableColoredVertexArray::render_cva(
             .specularity = OrderableFixedArray{specularity},
             .specular_exponent = specular_exponent,
             .fresnel_emissivity = OrderableFixedArray{fresnel_emissivity},
-            .fresnel_emissivity_exponent = fresnel_emissivity_exponent,
+            .fresnel = fresnel,
             .alpha = cva->material.alpha,
             .orthographic = vc.orthographic(),
             .fragments_depend_on_distance = fragments_depend_on_distance,
@@ -691,7 +699,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     {
         bool pred0 = has_lookat || (any(specularity != 0.f) && (specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
-        bool pred1 = any(fresnel_emissivity != 0.f) && (fresnel_emissivity_exponent != 0.f);
+        bool pred1 = (fresnel.exponent != 0.f);
         if (pred0 || pred1 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
             auto miv = m.inverted() * iv;

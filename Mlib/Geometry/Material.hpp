@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Depth_Func.hpp>
+#include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
@@ -63,8 +64,12 @@ struct Material {
     OrderableFixedArray<float, 3> diffusivity{0.8f, 0.8f, 0.8f};
     OrderableFixedArray<float, 3> specularity{0.5f, 0.5f, 0.5f};
     float specular_exponent = 4.f;
-    OrderableFixedArray<float, 3> fresnel_ambience{1.f, 1.f, 1.f};
-    float fresnel_ambience_exponent = 4.f;
+    OrderableFixedArray<float, 3> fresnel_ambience{0.f, 0.f, 0.f};
+    Fresnel fresnel = {
+        .min = 0.f,
+        .max = 0.f,
+        .exponent = 0.f
+    };
     float alpha = 1.f;
     bool reflect_only_y = false;
     float draw_distance_add = 500;
@@ -112,7 +117,7 @@ struct Material {
         archive(specularity);
         archive(specular_exponent);
         archive(fresnel_ambience);
-        archive(fresnel_ambience_exponent);
+        archive(fresnel);
         archive(alpha);
         archive(reflect_only_y);
         archive(draw_distance_add);

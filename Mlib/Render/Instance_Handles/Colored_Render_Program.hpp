@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -77,7 +78,7 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 3> specularity;
     float specular_exponent;
     OrderableFixedArray<float, 3> fresnel_emissivity;
-    float fresnel_emissivity_exponent;
+    Fresnel fresnel;
     float alpha;
     bool orthographic;
     bool fragments_depend_on_distance;

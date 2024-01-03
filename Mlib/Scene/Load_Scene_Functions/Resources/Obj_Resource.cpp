@@ -52,6 +52,10 @@ DECLARE_ARGUMENT(emissivity_factor);
 DECLARE_ARGUMENT(ambience_factor);
 DECLARE_ARGUMENT(diffusivity_factor);
 DECLARE_ARGUMENT(specularity_factor);
+DECLARE_ARGUMENT(fresnel_ambience);
+DECLARE_ARGUMENT(fresnel_min);
+DECLARE_ARGUMENT(fresnel_max);
+DECLARE_ARGUMENT(fresnel_exponent);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
@@ -164,6 +168,12 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, fixed_ones<float, 3>()),
         .diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, fixed_ones<float, 3>()),
         .specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, fixed_ones<float, 3>()),
+        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience, fixed_zeros<float, 3>()),
+        .fresnel = {
+            .min = args.arguments.at<float>(KnownArgs::fresnel_min, 0.f),
+            .max = args.arguments.at<float>(KnownArgs::fresnel_max, 0.f),
+            .exponent = args.arguments.at<float>(KnownArgs::fresnel_exponent, 0.f)
+        },
         .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
         .triangle_tangent_error_behavior = args.arguments.contains(KnownArgs::triangle_tangent_error_behavior)
