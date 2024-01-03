@@ -1021,8 +1021,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    frag_brightness_specular *= fragSpecularity;" << std::endl;
     if (!fresnel_emissivity.all_equal(0.f)) {
-        sstr << "    vec3 fresnel_ambience = vec3(" << fresnel_emissivity(0) << ", " << fresnel_emissivity(1) << ", " << fresnel_emissivity(2) << ");" << std::endl;
-        sstr << "    frag_brightness_specular += fresnel_ambience;" << std::endl;
+        sstr << "    vec3 fresnelEmissivity = vec3(" << fresnel_emissivity(0) << ", " << fresnel_emissivity(1) << ", " << fresnel_emissivity(2) << ");" << std::endl;
+        sstr << "    frag_brightness_specular += fresnelEmissivity;" << std::endl;
     }
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;

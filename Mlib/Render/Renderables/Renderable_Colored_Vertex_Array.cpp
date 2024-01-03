@@ -427,8 +427,11 @@ void RenderableColoredVertexArray::render_cva(
             .exponent = 0.f
         };
     }
-    if ((fresnel.exponent != 0.f) && (fresnel.max == fresnel.min)) {
+    if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
+    }
+    if ((fresnel.exponent == 0.f) && ((fresnel.max != 0.f) || (fresnel.min != 0.f))) {
+        THROW_OR_ABORT("Zero fresnel exponent requires zero fresnel coefficients");
     }
     bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
     TextureIndexCalculator tic;
