@@ -189,8 +189,8 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         .transformation_mode = TransformationMode::ALL,
         .fresnel = {
             .reflectance = {
-                .min = safe_stof(args.named_value("--min", "0")),
-                .max = safe_stof(args.named_value("--max", "0")),
+                .min = safe_stof(args.named_value("--fresnel_min", "0")),
+                .max = safe_stof(args.named_value("--fresnel_max", "0")),
                 .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
             },
             .ambience = {

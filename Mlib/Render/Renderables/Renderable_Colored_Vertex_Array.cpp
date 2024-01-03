@@ -427,6 +427,9 @@ void RenderableColoredVertexArray::render_cva(
             .exponent = 0.f
         };
     }
+    if ((fresnel.exponent != 0.f) && (fresnel.max == fresnel.min)) {
+        THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
+    }
     bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
     TextureIndexCalculator tic;
     if (!is_lightmap ||
