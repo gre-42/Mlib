@@ -359,6 +359,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float dirtmap_discreteness,
     float dirt_scale)
 {
+    // Mipmapping does not work unless all textures are actually sampled everywhere.
+    bool compute_interiormap_at_end = true;
     assert_true(nlights == lights.size());
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
@@ -647,9 +649,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_interiormap) {
         compute_normal_and_reorient_uv0();
         compute_TBN();
-        sstr << "    if (is_in_interior(TBN, alpha_fac)) {" << std::endl;
-        sstr << "        return;" << std::endl;
-        sstr << "    }" << std::endl;
+        if (!compute_interiormap_at_end) {
+            sstr << "    if (is_in_interior(TBN, alpha_fac)) {" << std::endl;
+            sstr << "        return;" << std::endl;
+            sstr << "    }" << std::endl;
+        }
     }
     if (((ntextures_color != 0) ||
         !diffusivity.all_equal(0) ||
@@ -1067,6 +1071,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
+    }
+    if (has_interiormap && compute_interiormap_at_end) {
+        sstr << "    is_in_interior(TBN, alpha_fac);" << std::endl;
     }
     sstr << "}" << std::endl;
     if (getenv_default_bool("PRINT_SHADERS", false)) {
