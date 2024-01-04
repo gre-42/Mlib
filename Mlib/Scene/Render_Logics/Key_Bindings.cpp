@@ -218,7 +218,7 @@ void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_bindin
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding, this](const auto& b){return &b == &deleted_key_binding;});
+    player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
 }
 
 void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding) {
