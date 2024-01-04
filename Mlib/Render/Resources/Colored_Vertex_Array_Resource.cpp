@@ -691,7 +691,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    float sum_weights = 0.0;" << std::endl;
             if (has_normalmap) {
                 if (textures_color[0]->texture_descriptor.normal.filename.empty()) {
-                    sstr << "    vec3 tnorm = vec3(0.0, 0.0, 0.0);" << std::endl;
+                    sstr << "    vec3 tnorm = vec3(0.0, 0.0, 1.0);" << std::endl;
                 } else {
                     sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], " << tex_coords(*textures_color[0]) << ").rgb - 1.0;" << std::endl;
                 }
@@ -1009,8 +1009,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (fresnel.exponent != 0.f) {
-        // Clamping at 1 is necessary because normalmaps can generate opposing normals.
-        sstr << "    float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * pow(clamp(1.0 - dot(viewDir, norm), 0.0, 1.0), " << fresnel.exponent << ");" << std::endl;
+        // Note that normalmaps can generate opposing normals (which the abs(...) kind of deals with).
+        sstr << "    float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0), " << fresnel.exponent << ");" << std::endl;
+        sstr << "    float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnelFactor0;" << std::endl;
     } else if (has_specularmap) {
         sstr << "    float fresnelFactor = 0.5;" << std::endl;
     }
