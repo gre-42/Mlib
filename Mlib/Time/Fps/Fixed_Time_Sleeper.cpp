@@ -12,7 +12,9 @@ FixedTimeSleeper::FixedTimeSleeper(float dt)
 FixedTimeSleeper::~FixedTimeSleeper() = default;
 
 void FixedTimeSleeper::tick() {
-    auto end_time = std::chrono::steady_clock::now() + std::chrono::duration<float>(dt_);
+    std::chrono::steady_clock::time_point end_time =
+        std::chrono::steady_clock::now() +
+        std::chrono::nanoseconds((uint64_t)(dt_ * 1000.f * 1000.f * 1000.f));
     while (std::chrono::steady_clock::now() < end_time);
     // Mlib::sleep_for(std::chrono::duration<float>(dt_));
 }
