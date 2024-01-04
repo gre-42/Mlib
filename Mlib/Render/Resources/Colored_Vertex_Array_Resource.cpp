@@ -996,12 +996,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
-    sstr << "    vec3 fragSpecularity = vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
+    sstr << "    frag_brightness_specular *= vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
     if (has_specularmap) {
         if (textures_color.size() != 1) {
             THROW_OR_ABORT("Specular maps not supported for blended textures");
         }
-        sstr << "    fragSpecularity *= texture(texture_specularmap, " << tex_coords(*textures_color[0]) << ").rgb;" << std::endl;
+        sstr << "    vec3 fragSpecularity = texture(texture_specularmap, " << tex_coords(*textures_color[0]) << ").rgb;" << std::endl;
+    } else {
+        sstr << "    float fragSpecularity = 1.0;" << std::endl;
     }
     if ((reflection_strength != 0.f) || (fresnel.exponent != 0.f)) {
         if (!orthographic) {
@@ -1009,11 +1011,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (fresnel.exponent != 0.f) {
+        sstr << "    {" << std::endl;
         // Note that normalmaps can generate opposing normals (which the abs(...) kind of deals with).
-        sstr << "    float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0), " << fresnel.exponent << ");" << std::endl;
-        sstr << "    float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnelFactor0;" << std::endl;
-    } else if (has_specularmap) {
-        sstr << "    float fresnelFactor = 0.5;" << std::endl;
+        sstr << "        float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0), " << fresnel.exponent << ");" << std::endl;
+        sstr << "        float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnelFactor0;" << std::endl;
+        sstr << "        fragSpecularity *= fresnelFactor;" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if (reflection_strength != 0.f) {
         if (reflect_only_y) {
@@ -1023,9 +1026,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         // Modification proposed in https://learnopengl.com/Advanced-OpenGL/Cubemaps#comment-5197766106
         // This works in combination with not flipping the y-coordinate when loading the texture.
-        sstr << "    frag_brightness_specular = (1.0 - " << reflection_strength << ") * frag_brightness_specular + " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
+        sstr << "    frag_brightness_specular += " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
-    sstr << "    frag_brightness_specular *= fragSpecularity;" << std::endl;
     if (!fresnel_emissivity.all_equal(0.f)) {
         sstr << "    vec3 fresnelEmissivity = vec3(" << fresnel_emissivity(0) << ", " << fresnel_emissivity(1) << ", " << fresnel_emissivity(2) << ");" << std::endl;
         sstr << "    frag_brightness_specular += fresnelEmissivity;" << std::endl;
@@ -1063,7 +1065,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
-        sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, fresnelFactor);" << std::endl;
+        sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, fragSpecularity);" << std::endl;
     } else {
         sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
     }
