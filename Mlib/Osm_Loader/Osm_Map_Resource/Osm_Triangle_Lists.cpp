@@ -15,31 +15,27 @@
 using namespace Mlib;
 
 static Shading material_specularity_raw(PhysicsMaterial material) {
-    if (any(material & PhysicsMaterial::SURFACE_BASE_TARMAC)) {
+    auto mat = material & PhysicsMaterial::SURFACE_BASE_MASK;
+    switch (mat) {
+    case PhysicsMaterial::SURFACE_BASE_TARMAC:
         return TARMAC_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_GRAVEL)) {
+    case PhysicsMaterial::SURFACE_BASE_GRAVEL:
         return GRAVEL_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_SNOW)) {
+    case PhysicsMaterial::SURFACE_BASE_SNOW:
         return SNOW_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_ICE)) {
+    case PhysicsMaterial::SURFACE_BASE_ICE:
         return ICE_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_SAND)) {
+    case PhysicsMaterial::SURFACE_BASE_SAND:
         return SAND_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_GRASS)) {
+    case PhysicsMaterial::SURFACE_BASE_GRASS:
         return GRASS_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_DIRT)) {
+    case PhysicsMaterial::SURFACE_BASE_DIRT:
         return DIRT_REFLECTANCE;
-    }
-    if (any(material & PhysicsMaterial::SURFACE_BASE_STONE)) {
+    case PhysicsMaterial::SURFACE_BASE_STONE:
         return STONE_REFLECTANCE;
+    default:
+        THROW_OR_ABORT("Unknown reflectance for material with number " + std::to_string((unsigned int)material));
     }
-    THROW_OR_ABORT("Unknown reflectance for material with number " + std::to_string((unsigned int)material));
 }
 
 static Shading material_specularity(Shading res, const OsmResourceConfig& config) {
