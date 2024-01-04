@@ -145,14 +145,15 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             .texture_descriptor = {
                 .color = {.filename = args.named_value("--multilayer_diffuse"), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 .normal = {.filename = args.named_value("--multilayer_normal", ""), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-            .role = BlendMapRole::DETAIL_BASE}};
+            .role = BlendMapRole::DETAIL_BASE,
+            .reweight_mode = BlendMapReweightMode::DISABLED}};
         std::vector<float> lcm_world_args;
         for (uint32_t i = 0; i < 4; ++i) {
             auto detail = args.named_value("--multilayer_detail" + std::to_string(i), "");
             if (detail.empty()) {
                 continue;
             }
-            float multilayer_mult = safe_stof(args.named_value("--multilayer_mult" + std::to_string(i)));
+            float multilayer_scale = safe_stof(args.named_value("--multilayer_scale" + std::to_string(i)));
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
@@ -162,13 +163,18 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
                     .color = {.filename = detail, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                    .normal = {.filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
-                .scale = multilayer_mult,
+                    .normal = {
+                        .filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""),
+                        .color_mode = ColorMode::RGB,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                .scale = multilayer_scale,
                 .role = BlendMapRole::DETAIL_COLOR,
-                .uv_source = BlendMapUvSource::HORIZONTAL});
-            lcm_world_args.push_back(multilayer_mult);
+                .uv_source = BlendMapUvSource::VERTICAL});
+            lcm_world_args.push_back(multilayer_scale);
         }
-        period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
+        if (!lcm_world_args.empty()) {
+            period_world = least_common_multiple(lcm_world_args.begin(), lcm_world_args.end(), 1e-6f, 10'000);
+        }
     }
     return LoadMeshConfig<TPos>{
         .position = fixed_zeros<TPos, 3>(),
@@ -271,7 +277,7 @@ int main(int argc, char** argv) {
         "    [--output_width <width>]\n"
         "    [--output_height <height>]\n"
         "    [--no_normalmaps]\n"
-        "    [--double_buffer]\n"
+        "    [--no_double_buffer]\n"
         "    [--large_object_mode]\n"
         "    [--output <file.png>]\n"
         "    [--output_pass <pass>]\n"
@@ -328,7 +334,7 @@ int main(int argc, char** argv) {
         "    [--multilayer_mask <value>]\n"
         "    [--multilayer_detail0-3 <value>]\n"
         "    [--multilayer_detail_normal0-3 <value>]\n"
-        "    [--multilayer_mult0-3 <value>]\n"
+        "    [--multilayer_scale0-3 <value>]\n"
         "    [--magnifying_interpolation_mode <value>]\n"
         "Keys: Left, Right, Up, Down, PgUp, PgDown, Ctrl as modifier",
         {"--hide_object",
@@ -336,7 +342,7 @@ int main(int argc, char** argv) {
          "--no_cull_faces_default",
          "--cull_faces_alpha",
          "--wire_frame",
-         "--double_buffer",
+         "--no_double_buffer",
          "--large_object_mode",
          "--no_normalmaps",
          "--no_werror",
@@ -450,10 +456,10 @@ int main(int argc, char** argv) {
          "--multilayer_detail_normal1",
          "--multilayer_detail_normal2",
          "--multilayer_detail_normal3",
-         "--multilayer_mult0",
-         "--multilayer_mult1",
-         "--multilayer_mult2",
-         "--multilayer_mult3",
+         "--multilayer_scale0",
+         "--multilayer_scale1",
+         "--multilayer_scale2",
+         "--multilayer_scale3",
          "--magnifying_interpolation_mode"});
     try {
         const auto args = parser.parsed(argc, argv);
@@ -487,7 +493,7 @@ int main(int argc, char** argv) {
                 : BoolRenderOption::UNCHANGED,
             .windowed_width = safe_stoi(args.named_value("--width", "640")),
             .windowed_height = safe_stoi(args.named_value("--height", "480")),
-            .double_buffer = args.has_named("--double_buffer"),
+            .double_buffer = !args.has_named("--no_double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true};
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
@@ -998,11 +1004,7 @@ int main(int argc, char** argv) {
             },
             .button_states = button_states,
             .exit_on_escape = true};
-        MenuUserClass menu_user_object{
-            .button_states = button_states,
-            .focuses = focuses};
         WindowLogic window_logic{render.glfw_window(), window_user_object};
-        MenuLogic menu_logic(menu_user_object);
         FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,
             .cursor_states = cursor_states,
@@ -1051,7 +1053,7 @@ int main(int argc, char** argv) {
                 safe_stof(args.named_value("--speed", "1"))),
             0 /* z_order */);
         LambdaRenderLogic lrl{
-            [&delete_node_mutex, &render_logics, &menu_logic](
+            [&delete_node_mutex, &render_logics](
                 const LayoutConstraintParameters& lx,
                 const LayoutConstraintParameters& ly,
                 const RenderConfig& render_config,
@@ -1060,7 +1062,6 @@ int main(int argc, char** argv) {
                 const RenderedSceneDescriptor& frame_id)
             {
                 std::scoped_lock lock{delete_node_mutex};
-                menu_logic.handle_events();
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };
