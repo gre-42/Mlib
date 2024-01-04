@@ -190,7 +190,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
             ? ExternalRenderPassType::NONE
             : ExternalRenderPassType::LIGHTMAP_DEPTH,
         .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
-        .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_value("--magnifying_interpolation_mode", "nearest")),
+        .magnifying_interpolation_mode = interpolation_mode_from_string(args.named_value("--magnifying_interpolation_mode", "linear")),
         .aggregate_mode = aggregate_mode_from_string(args.named_value("--aggregate_mode", "none")),
         .transformation_mode = TransformationMode::ALL,
         .fresnel = {
