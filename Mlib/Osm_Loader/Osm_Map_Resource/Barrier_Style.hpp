@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Shading.hpp>
 #include <string>
 
 namespace Mlib {
@@ -12,9 +13,7 @@ struct BarrierStyle {
     FixedArray<float, 2> uv;
     BlendMode blend_mode;
     bool reorient_uv0;
-    float ambience;
-    float diffusivity;
-    float specularity;
+    Shading shading;
 };
 
 }

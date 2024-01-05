@@ -259,6 +259,10 @@ DECLARE_ARGUMENT(reorient_uv0);
 DECLARE_ARGUMENT(ambience);
 DECLARE_ARGUMENT(diffusivity);
 DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(fresnel_min);
+DECLARE_ARGUMENT(fresnel_max);
+DECLARE_ARGUMENT(fresnel_exponent);
+DECLARE_ARGUMENT(fresnel_ambience);
 }
 
 namespace WaysideKnownArgs {
@@ -313,9 +317,18 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
                     // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
-                    .ambience = barrier_style.at<float>(BS::ambience),
-                    .diffusivity = barrier_style.at<float>(BS::diffusivity),
-                    .specularity = barrier_style.at<float>(BS::specularity)};
+                    .shading = {
+                        .ambience = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::ambience) },
+                        .diffusivity = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::diffusivity) },
+                        .specularity = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::specularity) },
+                        .fresnel = {
+                            .reflectance = {
+                                .min = barrier_style.at<float>(BS::fresnel_min, 0.f),
+                                .max = barrier_style.at<float>(BS::fresnel_max, 0.f),
+                                .exponent = barrier_style.at<float>(BS::fresnel_exponent, 0.f)
+                            },
+                            .ambience = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::fresnel_ambience, fixed_zeros<float, 3>()) }
+                        }} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
                 }

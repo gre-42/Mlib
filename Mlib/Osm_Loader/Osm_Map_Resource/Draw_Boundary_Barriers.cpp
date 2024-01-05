@@ -67,9 +67,7 @@ void Mlib::draw_boundary_barriers(
     tl->material.blend_mode = barrier_style.blend_mode;
     // tl->material.wrap_mode_t = barrier_style.wrap_mode_t;
     tl->material.reorient_uv0 = barrier_style.reorient_uv0;
-    tl->material.shading.ambience *= barrier_style.ambience;
-    tl->material.shading.diffusivity *= barrier_style.diffusivity;
-    tl->material.shading.specularity *= barrier_style.specularity;
+    tl->material.shading = barrier_style.shading;
     tl->material.compute_color_mode();
     for (const auto& contour : contours) {
         if (contour.size() < 4) {
