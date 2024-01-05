@@ -14,7 +14,7 @@ public:
         : h_{ h }
     {}
     TFloat operator () () {
-        return h_().as_float<TFloat>();
+        return h_().template as_float<TFloat>();
     }
 private:
     TRationalSequence h_;

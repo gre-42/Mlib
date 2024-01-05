@@ -2,13 +2,13 @@
 
 namespace Mlib {
 
-template <class T>
+template <class TInt>
 struct RationalNumber {
-    T n;
-    T d;
-    template <class T>
-    T as_float() const {
-        return T(n) / T(d);
+    TInt n;
+    TInt d;
+    template <class TFloat>
+    TFloat as_float() const {
+        return TFloat(n) / TFloat(d);
     }
 };
 
