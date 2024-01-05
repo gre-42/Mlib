@@ -13,7 +13,7 @@ Shading Mlib::material_shading(PhysicsMaterial material) {
 		{PhysicsMaterial::SURFACE_BASE_SNOW, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_ICE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_SAND, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_GRASS, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.1f, .exponent = 5.f}, .ambience = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_GRASS, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.1f, .exponent = 10.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_DIRT, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_STONE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_FOLIAGE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.5f, .exponent = 5.f}, .ambience = 1.f} }}
