@@ -27,15 +27,16 @@ enum class PhysicsMaterial {
     OBJ_HITBOX = (1 << 15),
     OBJ_DISTANCEBOX = (1 << 16),
     OBJ_GRASS = (1 << 17),
-    SURFACE_BASE_TARMAC = (1 << SURFACE_BASE_OFFSET),  //    1
-    SURFACE_BASE_GRAVEL = (2 << SURFACE_BASE_OFFSET),  //   10
-    SURFACE_BASE_SNOW = (3 << SURFACE_BASE_OFFSET),    //   11
-    SURFACE_BASE_ICE = (4 << SURFACE_BASE_OFFSET),     //  100
-    SURFACE_BASE_SAND = (5 << SURFACE_BASE_OFFSET),    //  101
-    SURFACE_BASE_GRASS = (6 << SURFACE_BASE_OFFSET),   //  110
-    SURFACE_BASE_DIRT = (7 << SURFACE_BASE_OFFSET),    //  111
-    SURFACE_BASE_TIRE = (8 << SURFACE_BASE_OFFSET),    // 1000
-    SURFACE_BASE_STONE = (9 << SURFACE_BASE_OFFSET),   // 1001
+    SURFACE_BASE_TARMAC = (1 << SURFACE_BASE_OFFSET),     //    1
+    SURFACE_BASE_GRAVEL = (2 << SURFACE_BASE_OFFSET),     //   10
+    SURFACE_BASE_SNOW = (3 << SURFACE_BASE_OFFSET),       //   11
+    SURFACE_BASE_ICE = (4 << SURFACE_BASE_OFFSET),        //  100
+    SURFACE_BASE_SAND = (5 << SURFACE_BASE_OFFSET),       //  101
+    SURFACE_BASE_GRASS = (6 << SURFACE_BASE_OFFSET),      //  110
+    SURFACE_BASE_DIRT = (7 << SURFACE_BASE_OFFSET),       //  111
+    SURFACE_BASE_TIRE = (8 << SURFACE_BASE_OFFSET),       // 1000
+    SURFACE_BASE_STONE = (9 << SURFACE_BASE_OFFSET),      // 1001
+    SURFACE_BASE_FOLIAGE = (10 << SURFACE_BASE_OFFSET),   // 1010
     SURFACE_MODIFIER_WET = (1 << (SURFACE_BASE_OFFSET + SURFACE_BASE_NBITS)),
 
     OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,
@@ -71,6 +72,7 @@ inline PhysicsMaterial operator ~ (PhysicsMaterial a) {
 }
 
 PhysicsMaterial physics_material_from_string(const std::string& s);
+std::string physics_material_to_string(PhysicsMaterial p);
 
 void from_json(const nlohmann::json& j, PhysicsMaterial& p);
 

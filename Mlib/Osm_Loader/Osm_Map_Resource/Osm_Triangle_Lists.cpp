@@ -14,30 +14,6 @@
 
 using namespace Mlib;
 
-static Shading material_specularity_raw(PhysicsMaterial material) {
-    auto mat = material & PhysicsMaterial::SURFACE_BASE_MASK;
-    switch (mat) {
-    case PhysicsMaterial::SURFACE_BASE_TARMAC:
-        return TARMAC_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_GRAVEL:
-        return GRAVEL_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_SNOW:
-        return SNOW_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_ICE:
-        return ICE_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_SAND:
-        return SAND_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_GRASS:
-        return GRASS_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_DIRT:
-        return DIRT_REFLECTANCE;
-    case PhysicsMaterial::SURFACE_BASE_STONE:
-        return STONE_REFLECTANCE;
-    default:
-        THROW_OR_ABORT("Unknown reflectance for material with number " + std::to_string((unsigned int)material));
-    }
-}
-
 static Shading material_specularity(Shading res, const OsmResourceConfig& config) {
     res.emissivity *= config.emissivity_factor;
     res.ambience *= config.ambience_factor;
@@ -48,7 +24,7 @@ static Shading material_specularity(Shading res, const OsmResourceConfig& config
 }
 
 static Shading material_specularity(PhysicsMaterial material, const OsmResourceConfig& config) {
-    return material_specularity(material_specularity_raw(material), config);
+    return material_specularity(material_shading(material), config);
 }
 
 static PhysicsMaterial physics_material(
