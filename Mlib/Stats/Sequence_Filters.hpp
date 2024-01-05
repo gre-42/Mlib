@@ -10,18 +10,14 @@ class FloatSequence {
 public:
     using value_type = TFloat;
 
-    FloatSequence(const TRationalSequence& h, const TFloat& low = 0, const TFloat& high = 1)
+    FloatSequence(const TRationalSequence& h)
         : h_{ h }
-        , low_{ low }
-        , high_{ high }
     {}
     TFloat operator () () {
         return h_().as_float<TFloat>();
     }
 private:
     TRationalSequence h_;
-    TFloat low_;
-    TFloat high_;
 };
 
 template <class TSourceSequence>
@@ -49,7 +45,7 @@ private:
 template <class TSourceSequence>
 class BlockPermutedSequence {
 public:
-    using value_type = TSourceSequence::value_type;
+    using value_type = std::remove_reference_t<TSourceSequence>::value_type;
 
     BlockPermutedSequence(const TSourceSequence& s, unsigned int seed, size_t buffer_size)
         : s_{ s }
