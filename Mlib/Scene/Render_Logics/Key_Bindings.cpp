@@ -97,7 +97,7 @@ void KeyBindings::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
     avatar_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
     weapon_cycle_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
     gun_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    player_key_bindings_.remove_if([&dop, this](const auto& b) {return b.node == dop;});
+    player_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop;});
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
