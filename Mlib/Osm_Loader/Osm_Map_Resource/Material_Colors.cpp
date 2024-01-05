@@ -7,6 +7,7 @@ using namespace Mlib;
 Shading Mlib::material_shading(PhysicsMaterial material) {
 	auto mat = material & PhysicsMaterial::SURFACE_BASE_MASK;
 	static const std::map<PhysicsMaterial, Shading> m{
+		{PhysicsMaterial::NONE, { .emissivity = {1.f, 0.f, 1.f}, .ambience = 0.f, .diffusivity = 0.f, .specularity = 0.f }},
 		{PhysicsMaterial::SURFACE_BASE_TARMAC, { .specularity = 0.5f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_GRAVEL, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
 		{PhysicsMaterial::SURFACE_BASE_SNOW, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
