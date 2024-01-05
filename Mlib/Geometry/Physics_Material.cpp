@@ -1,4 +1,5 @@
 #include "Physics_Material.hpp"
+#include <Mlib/Json/Base.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stdexcept>
@@ -103,4 +104,24 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
         result |= single_physics_material_from_string(m);
     }
     return result;
+}
+
+void Mlib::from_json(const nlohmann::json& j, PhysicsMaterial& p) {
+    static const std::map<std::string, PhysicsMaterial> m{
+        {"none", PhysicsMaterial::NONE},
+        {"tarmac", PhysicsMaterial::SURFACE_BASE_TARMAC},
+        {"gravel", PhysicsMaterial::SURFACE_BASE_GRAVEL},
+        {"snow", PhysicsMaterial::SURFACE_BASE_SNOW},
+        {"ice", PhysicsMaterial::SURFACE_BASE_ICE},
+        {"sand", PhysicsMaterial::SURFACE_BASE_SAND},
+        {"grass", PhysicsMaterial::SURFACE_BASE_GRASS},
+        {"dirt", PhysicsMaterial::SURFACE_BASE_DIRT},
+        {"tire", PhysicsMaterial::SURFACE_BASE_TIRE},
+        {"stone", PhysicsMaterial::SURFACE_BASE_STONE}
+    };
+    auto it = m.find(j.get<std::string>());
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown physics material: \"" + j.get<std::string>() + '"');
+    }
+    p = it->second;
 }

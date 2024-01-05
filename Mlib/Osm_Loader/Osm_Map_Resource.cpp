@@ -119,10 +119,10 @@ OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const OsmResourceConfig& config,
     const std::string& debug_prefix)
-: hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale },
-  scene_node_resources_{ scene_node_resources },
-  scale_{ config.scale },
-  terrain_styles_{ config.triangle_sampler_resource_config }
+    : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
+    , scene_node_resources_{ scene_node_resources }
+    , scale_{ config.scale }
+    , terrain_styles_{ config.triangle_sampler_resource_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
     NodesAndWays naws_or;

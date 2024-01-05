@@ -40,7 +40,7 @@ DECLARE_ARGUMENT(grass_foliagemap);
 DECLARE_ARGUMENT(grass_foliagemap_period);
 DECLARE_ARGUMENT(street_mudmap);
 DECLARE_ARGUMENT(path_mudmap);
-DECLARE_ARGUMENT(terrain_undefined_materials);
+DECLARE_ARGUMENT(terrain_materials);
 DECLARE_ARGUMENT(street_materials);
 DECLARE_ARGUMENT(path_materials);
 DECLARE_ARGUMENT(wall_materials);
@@ -349,8 +349,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::path_mudmap)) {
             tconfig.path_mud_config.mudmap_filename = args.arguments.path(KnownArgs::path_mudmap);
         }
-        if (args.arguments.contains(KnownArgs::terrain_undefined_materials)) {
-            config.terrain_undefined_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::terrain_undefined_materials));
+        if (args.arguments.contains(KnownArgs::terrain_materials)) {
+            config.terrain_materials = args.arguments.at<std::map<TerrainType, PhysicsMaterial>>(KnownArgs::terrain_materials);
         }
         if (args.arguments.contains(KnownArgs::street_materials)) {
             config.street_materials[RoadType::STREET] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::street_materials));

@@ -1,4 +1,5 @@
 #pragma once
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {
@@ -70,5 +71,7 @@ inline PhysicsMaterial operator ~ (PhysicsMaterial a) {
 }
 
 PhysicsMaterial physics_material_from_string(const std::string& s);
+
+void from_json(const nlohmann::json& j, PhysicsMaterial& p);
 
 }

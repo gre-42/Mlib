@@ -50,7 +50,7 @@ struct OsmResourceConfig {
     double displacementmap_min = 0;
     double displacementmap_uv_scale = 1;
     Interp<float> displacementmap_distance_2_z_scale{std::vector<float>{}, std::vector<float>{}};
-    PhysicsMaterial terrain_undefined_material = PhysicsMaterial::NONE;
+    std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
     std::map<TerrainType, std::string> terrain_dirt_textures;

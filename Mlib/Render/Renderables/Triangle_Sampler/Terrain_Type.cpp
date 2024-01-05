@@ -1,4 +1,5 @@
 #include "Terrain_Type.hpp"
+#include <Mlib/Json/Base.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -75,4 +76,28 @@ std::string Mlib::terrain_type_to_string(TerrainType tt) {
 
 std::string Mlib::to_string(TerrainType tt) {
     return terrain_type_to_string(tt);
+}
+
+void Mlib::from_json(const nlohmann::json& j, TerrainType& t) {
+    static std::map<std::string, TerrainType> m{
+        {"grass", TerrainType::GRASS },
+        {"wayside1_grass", TerrainType::WAYSIDE1_GRASS },
+        {"wayside2_grass", TerrainType::WAYSIDE2_GRASS },
+        {"flowers", TerrainType::FLOWERS },
+        {"trees", TerrainType::TREES },
+        {"stone", TerrainType::STONE },
+        {"asphalt", TerrainType::ASPHALT },
+        {"elevated_grass", TerrainType::ELEVATED_GRASS },
+        {"elevated_grass_base", TerrainType::ELEVATED_GRASS_BASE },
+        {"water_floor", TerrainType::WATER_FLOOR },
+        {"water_floor_base", TerrainType::WATER_FLOOR_BASE },
+        {"street_hole", TerrainType::STREET_HOLE },
+        {"building_hole", TerrainType::BUILDING_HOLE },
+        {"ocean_ground", TerrainType::OCEAN_GROUND },
+        {"undefined", TerrainType::UNDEFINED } };
+    auto it = m.find(j.get<std::string>());
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown terrain type: \"" + j.get<std::string>() + '"');
+    }
+    t = it->second;
 }

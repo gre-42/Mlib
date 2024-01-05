@@ -18,7 +18,7 @@ bool TerrainStyleConfig::is_visible() const {
 }
 
 TerrainStyle::TerrainStyle(const TerrainStyleConfig &config)
-: config{config}
+    : config{ config }
 {}
 
 bool TerrainStyle::is_visible() const {

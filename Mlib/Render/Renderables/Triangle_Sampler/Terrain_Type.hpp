@@ -1,4 +1,5 @@
 #pragma once
+#include <nlohmann/json_fwd.hpp>
 #include <string>
 
 namespace Mlib {
@@ -26,5 +27,7 @@ TerrainType terrain_type_from_string(const std::string& tt);
 std::string terrain_type_to_string(TerrainType tt);
 
 std::string to_string(TerrainType tt);
+
+void from_json(const nlohmann::json& j, TerrainType& e);
 
 }

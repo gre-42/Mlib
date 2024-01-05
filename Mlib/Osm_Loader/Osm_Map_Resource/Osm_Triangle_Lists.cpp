@@ -51,35 +51,23 @@ static Shading material_specularity(PhysicsMaterial material, const OsmResourceC
     return material_specularity(material_specularity_raw(material), config);
 }
 
-static PhysicsMaterial physics_material(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material) {
-    switch (terrain_type) {
-        case TerrainType::GRASS:
-        case TerrainType::WAYSIDE1_GRASS:
-        case TerrainType::WAYSIDE2_GRASS:
-        case TerrainType::FLOWERS:
-        case TerrainType::TREES:
-        case TerrainType::ELEVATED_GRASS:
-        case TerrainType::ELEVATED_GRASS_BASE:
-            return PhysicsMaterial::SURFACE_BASE_GRASS;
-        case TerrainType::STONE:
-            return PhysicsMaterial::SURFACE_BASE_STONE;
-        case TerrainType::ASPHALT:
-            return PhysicsMaterial::SURFACE_BASE_TARMAC;
-        case TerrainType::WATER_FLOOR:
-        case TerrainType::WATER_FLOOR_BASE:
-        case TerrainType::STREET_HOLE:
-        case TerrainType::BUILDING_HOLE:
-        case TerrainType::OCEAN_GROUND:
-            return PhysicsMaterial::NONE;
-        case TerrainType::UNDEFINED:
-            return terrain_undefined_material;
-        default:
-            THROW_OR_ABORT("Unknown terrain type: " + std::to_string((int)terrain_type));
+static PhysicsMaterial physics_material(
+    const std::map<TerrainType, PhysicsMaterial>& m,
+    TerrainType terrain_type)
+{
+    auto it = m.find(terrain_type);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Could not find physics material for terrain type \"" + terrain_type_to_string(terrain_type) + '"');
     }
+    return it->second;
 }
 
-static Shading terrain_type_specularity(TerrainType terrain_type, PhysicsMaterial terrain_undefined_material, const OsmResourceConfig& config) {
-    auto pm = physics_material(terrain_type, terrain_undefined_material);
+static Shading terrain_type_specularity(
+    const std::map<TerrainType, PhysicsMaterial>& m,
+    TerrainType terrain_type,
+    const OsmResourceConfig& config)
+{
+    auto pm = physics_material(m, terrain_type);
     try {
         return material_specularity(pm, config);
     } catch (const std::runtime_error& e) {
@@ -178,9 +166,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
+                .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(config.terrain_materials, tt)));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
@@ -192,7 +180,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
+                .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE));
         tl_terrain_extrusion.insert(tt, std::make_shared<TriangleList<double>>(
@@ -206,9 +194,9 @@ OsmTriangleLists::OsmTriangleLists(
                 .occluder_pass = ExternalRenderPassType::NONE,
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
-                .shading = terrain_type_specularity(tt, config.terrain_undefined_material, config),
+                .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(tt, config.terrain_undefined_material)));
+            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(config.terrain_materials, tt)));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
