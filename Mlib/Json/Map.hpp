@@ -15,7 +15,7 @@ void from_json(const nlohmann::json& j, std::map<TKey, TValue>& m) {
         TValue v;
         from_json(key, k);
         from_json(value, v);
-        if (!m.try_emplace(k, v).second) {
+        if (!m.try_emplace(std::move(k), std::move(v)).second) {
             THROW_OR_ABORT("JSON dictionary contains duplicate keys after conversion");
         }
     }
