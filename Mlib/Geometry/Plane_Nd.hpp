@@ -14,15 +14,18 @@ template <class TData, size_t tndim>
 class PlaneNd {
 public:
     PlaneNd() = default;
+    PlaneNd(const FixedArray<TData, tndim>& normal, const TData& intercept)
+        : normal{ normal }
+        , intercept{ intercept }
+    {}
     PlaneNd(const FixedArray<TData, tndim>& normal, const FixedArray<TData, tndim>& point_on_plane)
-    : normal{normal},
-      intercept{-dot0d(normal, point_on_plane)}
+        : PlaneNd{ normal, -dot0d(normal, point_on_plane) }
     {}
     explicit PlaneNd(const FixedArray<FixedArray<TData, 2>, 2>& line, bool compute_center = false)
-    : PlaneNd{line_normal(line), compute_center ? mean(line) : line(0)}
+        : PlaneNd{ line_normal(line), compute_center ? mean(line) : line(0) }
     {}
     explicit PlaneNd(const FixedArray<FixedArray<TData, 3>, 3>& triangle, bool compute_center = false)
-    : PlaneNd{triangle_normal(triangle), compute_center ? mean(triangle) : triangle(0)}
+        : PlaneNd{ triangle_normal(triangle), compute_center ? mean(triangle) : triangle(0) }
     {}
     template <class TDir>
     PlaneNd transformed(const TransformationMatrix<TDir, TData, 3>& transformation_matrix) const {
@@ -34,6 +37,9 @@ public:
         n1 = transformation_matrix.rotate(n0 TEMPLATEV casted<TDir>()) TEMPLATEV casted<TData>();
         i1 = i0 - dot0d(n1, transformation_matrix.t());
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
+    }
+    PlaneNd operator - () const {
+        return { -normal, -intercept };
     }
     FixedArray<TData, tndim> normal;
     TData intercept;
