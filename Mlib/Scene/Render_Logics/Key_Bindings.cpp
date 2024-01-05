@@ -267,15 +267,18 @@ void KeyBindings::increment_external_forces(
     bool burn_in,
     const PhysicsEngineConfig& cfg)
 {
-    if (burn_in) {
-        return;
-    }
-    {
-        std::shared_lock lock{focuses_.mutex};
-        if (focuses_.focus() != Focus::SCENE) {
-            return;
+    bool enable_controls = [&]() {
+        if (burn_in) {
+            return false;
         }
-    }
+        {
+            std::shared_lock lock{ focuses_.mutex };
+            if (focuses_.focus() != Focus::SCENE) {
+                return false;
+            }
+        }
+        return true;
+    }();
     // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
     // }
@@ -291,20 +294,22 @@ void KeyBindings::increment_external_forces(
     // std::cerr << std::endl;
 
     // Absolute movable
-    for (const auto& k : absolute_movable_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.set_surface_power("main", EnginePowerIntent{.surface_power = 0});
-        rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
-        rb.set_max_velocity(INFINITY);
-        for (auto& t : rb.tires_) {
-            t.second.angle_y = 0;
-            // t.second.accel_x = 0;
+    if (enable_controls) {
+        for (const auto& k : absolute_movable_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.set_surface_power("main", EnginePowerIntent{.surface_power = 0});
+            rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
+            rb.set_max_velocity(INFINITY);
+            for (auto& t : rb.tires_) {
+                t.second.angle_y = 0;
+                // t.second.accel_x = 0;
+            }
+            rb.tires_z_ = k.tires_z;
         }
-        rb.tires_z_ = k.tires_z;
     }
     for (auto& k : absolute_movable_key_bindings_) {
         float alpha = k.button_press.keys_alpha(0.05f);
-        if (!std::isnan(alpha)) {
+        if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (any(k.force.vector != 0.f)) {
                 rb.integrate_force(rb.abs_F(k.force), cfg);
@@ -348,17 +353,19 @@ void KeyBindings::increment_external_forces(
             }
         }
     }
-    for (const auto& k : absolute_movable_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        if (any(abs(rb.tires_z_) > float(1e-12))) {
-            rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
-        } else {
-            rb.tires_z_ = { 0.f, 0.f, 1.f };
-            rb.set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
-            rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
-        }
-        if (rb.animation_state_updater_ != nullptr) {
-            rb.animation_state_updater_->notify_movement_intent();
+    if (enable_controls) {
+        for (const auto& k : absolute_movable_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            if (any(abs(rb.tires_z_) > float(1e-12))) {
+                rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
+            } else {
+                rb.tires_z_ = { 0.f, 0.f, 1.f };
+                rb.set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
+                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
+            }
+            if (rb.animation_state_updater_ != nullptr) {
+                rb.animation_state_updater_->notify_movement_intent();
+            }
         }
     }
     // Relative movable
@@ -372,18 +379,20 @@ void KeyBindings::increment_external_forces(
             }
             v.emplace_back(k, *node);
         }
-        for (const auto& [k, node] : v) {
-            auto& m = node->get_relative_movable();
-            auto rt = dynamic_cast<RelativeTransformer*>(&m);
-            auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
+        if (enable_controls) {
+            for (const auto& [k, node] : v) {
+                auto& m = node->get_relative_movable();
+                auto rt = dynamic_cast<RelativeTransformer*>(&m);
+                auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
 
-            // Reset to defaults
-            if (rt != nullptr) {
-                rt->w_ = 0.f;
-            } else if (ypln != nullptr) {
-                // Do nothing (yet)
-            } else {
-                THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                // Reset to defaults
+                if (rt != nullptr) {
+                    rt->w_ = 0.f;
+                } else if (ypln != nullptr) {
+                    // Do nothing (yet)
+                } else {
+                    THROW_OR_ABORT("Relative movable is neither a relative transformer nor yaw/pitch-look-at-nodes");
+                }
             }
         }
         for (auto& [k, node] : v) {
@@ -432,7 +441,7 @@ void KeyBindings::increment_external_forces(
 
             // Apply key binding
             float alpha = k.button_press.keys_alpha();
-            if (!std::isnan(alpha)) {
+            if (enable_controls && !std::isnan(alpha)) {
                 double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
                 translate(v * cfg.dt);
@@ -440,7 +449,7 @@ void KeyBindings::increment_external_forces(
             }
             if (k.cursor_movement != nullptr) {
                 float beta = k.cursor_movement->axis_alpha();
-                if (!std::isnan(beta)) {
+                if (enable_controls && !std::isnan(beta)) {
                     rotate(beta * k.speed_cursor);
                     translate(beta * k.speed_cursor);
                 }
@@ -462,14 +471,16 @@ void KeyBindings::increment_external_forces(
         }
     }
     // Avatar controller
-    for (const auto& k : avatar_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.avatar_controller().reset();
+    if (enable_controls) {
+        for (const auto& k : avatar_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.avatar_controller().reset();
+        }
     }
     for (auto& k : avatar_controller_key_bindings_) {
         auto& rb = get_rigid_body_vehicle(*k.node);
         float alpha = k.button_press.keys_alpha(0.05f);
-        if (!std::isnan(alpha)) {
+        if (enable_controls && !std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
                 rb.avatar_controller().walk(k.surface_power.value());
                 rb.avatar_controller().increment_legs_z(k.legs_z.value());
@@ -486,7 +497,7 @@ void KeyBindings::increment_external_forces(
         }
         if (k.cursor_movement != nullptr) {
             float beta = k.cursor_movement->axis_alpha();
-            if (!std::isnan(beta) && k.speed_cursor.has_value()) {
+            if (enable_controls && !std::isnan(beta) && k.speed_cursor.has_value()) {
                 float dangle = beta * k.speed_cursor.value();
                 if (k.yaw) {
                     rb.avatar_controller().increment_yaw(dangle);
@@ -497,19 +508,23 @@ void KeyBindings::increment_external_forces(
             }
         }
     }
-    for (const auto& k : avatar_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.avatar_controller().apply();
+    if (enable_controls) {
+        for (const auto& k : avatar_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.avatar_controller().apply();
+        }
     }
     // Vehicle controller
-    for (const auto& k : car_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.vehicle_controller().reset_parameters(
-            k.surface_power,
-            k.steer_angle);
-        rb.vehicle_controller().reset_relaxation(
-            k.drive_relaxation,
-            k.steer_relaxation);
+    if (enable_controls) {
+        for (const auto& k : car_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.vehicle_controller().reset_parameters(
+                k.surface_power,
+                k.steer_angle);
+            rb.vehicle_controller().reset_relaxation(
+                k.drive_relaxation,
+                k.steer_relaxation);
+        }
     }
     for (auto& k : car_controller_key_bindings_) {
         float alpha = get_alpha(
@@ -517,7 +532,7 @@ void KeyBindings::increment_external_forces(
             nullptr,
             nullptr,
             &k.gamepad_analog_axes_position);
-        if (!std::isnan(alpha)) {
+        if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
                 rb.vehicle_controller().drive(
@@ -535,15 +550,19 @@ void KeyBindings::increment_external_forces(
             }
         }
     }
-    for (const auto& k : car_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.vehicle_controller().apply();
+    if (enable_controls) {
+        for (const auto& k : car_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.vehicle_controller().apply();
+        }
     }
     // Plane controller
-    for (const auto& k : plane_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
-        rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
+    if (enable_controls) {
+        for (const auto& k : plane_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
+            rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
+        }
     }
     for (auto& k : plane_controller_key_bindings_) {
         float alpha = get_alpha(
@@ -551,7 +570,7 @@ void KeyBindings::increment_external_forces(
             k.cursor_movement.get(),
             nullptr,
             &k.gamepad_analog_axes_position);
-        if (!std::isnan(alpha)) {
+        if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
                 rb.plane_controller().accelerate(k.turbine_power.value(), alpha);
@@ -570,9 +589,11 @@ void KeyBindings::increment_external_forces(
             }
         }
     }
-    for (const auto& k : plane_controller_idle_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
-        rb.plane_controller().apply();
+    if (enable_controls) {
+        for (const auto& k : plane_controller_idle_bindings_) {
+            auto& rb = get_rigid_body_vehicle(*k.node);
+            rb.plane_controller().apply();
+        }
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
@@ -581,7 +602,7 @@ void KeyBindings::increment_external_forces(
             nullptr,
             k.scroll_wheel_movement.get(),
             nullptr);
-        if (!std::isnan(alpha)) {
+        if (enable_controls && !std::isnan(alpha)) {
             auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {
                 wc.equip_next_weapon();
@@ -594,14 +615,14 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (auto& k : gun_key_bindings_) {
-        if (k.button_press.keys_down()) {
+        if (k.button_press.keys_down() && enable_controls) {
             auto& gun = get_gun(*k.node);
             gun.trigger(k.player, &players_.get_team(k.player->team_name()));
         }
     }
     // Player
     for (auto& k : player_key_bindings_) {
-        if (k.button_press.keys_pressed()) {
+        if (k.button_press.keys_pressed() && enable_controls) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (rb.driver_ == nullptr) {
                 THROW_OR_ABORT("Rigid body has no driver");
