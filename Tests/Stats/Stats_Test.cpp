@@ -240,6 +240,7 @@ void test_random_number_generators() {
 
 void test_halton_sequence() {
     // generate_halton_lut(1000, 10);
+    // generate_rational_halton_lut(RATIONAL_HALTON_B, HALTON_BLOCK_SEED, 1000, RATIONAL_HALTON_BLOCK_SIZE);
     // {
     //     for (unsigned int seed = 0; seed < 10; ++seed) {
     //         linfo() << "seed " << seed;
@@ -258,7 +259,23 @@ void test_halton_sequence() {
     // }
     // {
     //     HybridHaltonSequence<double> rng{ 12, -1.5, 3.5 };
-    //     for (size_t i = 0; i < 1000; ++i) {
+    //     for (size_t i = 0; i < 10; ++i) {
+    //         std::cerr << rng() << ", ";
+    //     }
+    //     linfo() << "---";
+    //     rng.seed(12);
+    //     for (size_t i = 0; i < 10; ++i) {
+    //         std::cerr << rng() << ", ";
+    //     }
+    // }
+    // {
+    //     SeedHaltonSequence<double> rng{ 12 , -1.5, 3.5 };
+    //     for (size_t i = 0; i < 100; ++i) {
+    //         std::cerr << rng() << ", ";
+    //     }
+    //     linfo() << "---";
+    //     rng.seed(12);
+    //     for (size_t i = 0; i < 100; ++i) {
     //         std::cerr << rng() << ", ";
     //     }
     // }
