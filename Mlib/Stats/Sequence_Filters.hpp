@@ -23,7 +23,7 @@ private:
 template <class TSourceSequence>
 class UniformSequence {
 public:
-    using value_type = std::remove_reference_t<TSourceSequence>::value_type;
+    using value_type = typename std::remove_reference_t<TSourceSequence>::value_type;
 
     UniformSequence(const TSourceSequence& s, const value_type& low = 0, const value_type& high = 1)
         : s_{ s }
@@ -45,7 +45,7 @@ private:
 template <class TSourceSequence>
 class BlockPermutedSequence {
 public:
-    using value_type = std::remove_reference_t<TSourceSequence>::value_type;
+    using value_type = typename std::remove_reference_t<TSourceSequence>::value_type;
 
     BlockPermutedSequence(const TSourceSequence& s, unsigned int seed, size_t buffer_size)
         : s_{ s }
