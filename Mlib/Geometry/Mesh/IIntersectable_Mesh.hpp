@@ -1,5 +1,7 @@
 #pragma once
 #include <cstddef>
+#include <set>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -15,10 +17,12 @@ struct CollisionRidgeSphere;
 struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
+class CollisionVertices;
 
 class IIntersectableMesh {
 public:
-    virtual ~IIntersectableMesh() = default;
+    IIntersectableMesh();
+    virtual ~IIntersectableMesh();
     virtual std::string name() const = 0;
     bool intersects(const IIntersectableMesh& other) const;
     virtual bool intersects(const BoundingSphere<double, 3>& sphere) const = 0;
@@ -39,8 +43,12 @@ public:
     virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const = 0;
     virtual const std::vector<CollisionLineSphere>& get_edges_sphere() const = 0;
     virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const = 0;
+    const std::set<OrderableFixedArray<double, 3>>& get_vertices() const;
     virtual BoundingSphere<double, 3> bounding_sphere() const = 0;
     virtual AxisAlignedBoundingBox<double, 3> aabb() const = 0;
+private:
+    mutable std::unique_ptr<CollisionVertices> collision_vertices_;
+    mutable std::shared_mutex mutex_;
 };
 
 }

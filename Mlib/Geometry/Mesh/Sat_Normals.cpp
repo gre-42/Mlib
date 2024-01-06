@@ -13,9 +13,7 @@ static void compute_relevant_polys(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
     std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
-    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1,
-    CollisionVertices& vertices0,
-    CollisionVertices& vertices1)
+    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1)
 {
     const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
     const std::vector<CollisionPolygonSphere<tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
@@ -25,13 +23,11 @@ static void compute_relevant_polys(
         if (mesh1.intersects(t0.bounding_sphere) && mesh1.intersects(t0.polygon.plane())) {
             relevant_polys0.push_back(&t0);
         }
-        vertices0.insert(t0.corners);
     }
     for (const auto& t1 : triangles1) {
         if (mesh0.intersects(t1.bounding_sphere) && mesh0.intersects(t1.polygon.plane())) {
             relevant_polys1.push_back(&t1);
         }
-        vertices1.insert(t1.corners);
     }
 };
 
@@ -39,8 +35,8 @@ template <size_t tnvertices>
 static void update_sat(
     const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys0,
     const std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polys1,
-    const CollisionVertices& vertices0,
-    const CollisionVertices& vertices1,
+    const std::set<OrderableFixedArray<double, 3>>& vertices0,
+    const std::set<OrderableFixedArray<double, 3>>& vertices1,
     double& best_min_overlap,
     FixedArray<double, 3>& best_normal)
 {
@@ -95,16 +91,14 @@ void SatTracker::get_collision_plane(
         #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         FixedArray<double, 3> best_normal;
         #pragma GCC diagnostic pop
-        CollisionVertices vertices0;
-        CollisionVertices vertices1;
         std::vector<const CollisionLineSphere*> relevant_edges0;
         std::vector<const CollisionLineSphere*> relevant_edges1;
         std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
         std::vector<const CollisionPolygonSphere<3>*> relevant_triangles1;
         std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
         std::vector<const CollisionPolygonSphere<4>*> relevant_quads1;
-        compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1, vertices0, vertices1);
-        compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1, vertices0, vertices1);
+        compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1);
+        compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1);
         {
             const std::vector<CollisionLineSphere>& edges0 = mesh0.get_edges_sphere();
             const std::vector<CollisionLineSphere>& edges1 = mesh1.get_edges_sphere();
@@ -121,6 +115,8 @@ void SatTracker::get_collision_plane(
                 }
             }
         }
+        const auto& vertices0 = mesh0.get_vertices();
+        const auto& vertices1 = mesh1.get_vertices();
         update_sat(relevant_quads0, relevant_quads1, vertices0, vertices1, best_min_overlap, best_normal);
         update_sat(relevant_triangles0, relevant_triangles1, vertices0, vertices1, best_min_overlap, best_normal);
         for (const auto& e0 : relevant_edges0) {

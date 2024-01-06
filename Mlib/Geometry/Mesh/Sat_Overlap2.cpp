@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Vertices.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Overlap.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -13,8 +14,7 @@ template <size_t tnvertices>
 static void compute_relevant_polygons(
     const IIntersectableMesh& mesh0,
     const CollisionRidgeSphere& e1,
-    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polygons0,
-    CollisionVertices& vertices0)
+    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polygons0)
 {
     const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
     relevant_polygons0.reserve(triangles0.size());
@@ -22,7 +22,6 @@ static void compute_relevant_polygons(
         if (e1.bounding_sphere.intersects(t0.bounding_sphere) && e1.bounding_sphere.intersects(t0.polygon.plane())) {
             relevant_polygons0.push_back(&t0);
         }
-        vertices0.insert(t0.corners);
     }
 }
 
@@ -40,13 +39,13 @@ void Mlib::get_overlap2(
     #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     FixedArray<double, 3> best_normal;
     #pragma GCC diagnostic pop
-    CollisionVertices vertices0;
+    const auto& vertices0 = mesh0.get_vertices();
     CollisionVertices vertices1;
     std::vector<const CollisionRidgeSphere*> relevant_edges0;
     std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
     std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
-    compute_relevant_polygons(mesh0, e1, relevant_quads0, vertices0);
-    compute_relevant_polygons(mesh0, e1, relevant_triangles0, vertices0);
+    compute_relevant_polygons(mesh0, e1, relevant_quads0);
+    compute_relevant_polygons(mesh0, e1, relevant_triangles0);
     {
         const std::vector<CollisionRidgeSphere>& edges0 = mesh0.get_ridges_sphere();
         relevant_edges0.reserve(edges0.size());
@@ -54,7 +53,6 @@ void Mlib::get_overlap2(
             if (e1.bounding_sphere.intersects(e0.bounding_sphere)) {
                 relevant_edges0.push_back(&e0);
             }
-            vertices0.insert(e0.edge);
         }
     }
     vertices1.insert(e1.edge);
@@ -64,7 +62,7 @@ void Mlib::get_overlap2(
         double sat_overl = sat_overlap_signed(
             -e1.normal,
             vertices0,
-            vertices1);
+            vertices1.get());
         if (sat_overl < best_min_overlap) {
             best_min_overlap = sat_overl;
             best_normal = -e1.normal;
@@ -75,7 +73,7 @@ void Mlib::get_overlap2(
         double sat_overl = sat_overlap_signed(
             t0->polygon.plane().normal,
             vertices0,
-            vertices1);
+            vertices1.get());
         if (sat_overl < best_min_overlap) {
             best_min_overlap = sat_overl;
             if (!keep_normal) {
@@ -95,7 +93,7 @@ void Mlib::get_overlap2(
         sat_overlap_unsigned(
             n,
             vertices0,
-            vertices1,
+            vertices1.get(),
             overlap0,
             overlap1);
         if (overlap0 < overlap1) {

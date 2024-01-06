@@ -18,6 +18,12 @@ template <class TData, size_t tnvertices>
 class ConvexPolygon3D {
 public:
     ConvexPolygon3D() {}
+    ConvexPolygon3D(
+        const FixedArray<PlaneNd<TData, 3>, tnvertices>& edges,
+        const PlaneNd<TData, 3>& plane)
+        : edges_{ edges }
+        , plane_{ plane }
+    {}
     ConvexPolygon3D(const FixedArray<FixedArray<TData, 3>, tnvertices>& corners)
     {
         static_assert(tnvertices >= 3);
@@ -56,6 +62,9 @@ public:
     }
     inline const PlaneNd<TData, 3>& plane() const {
         return plane_;
+    }
+    inline ConvexPolygon3D<TData, tnvertices> operator - () const {
+        return { edges_, -plane_ };
     }
 private:
     FixedArray<PlaneNd<TData, 3>, tnvertices> edges_;

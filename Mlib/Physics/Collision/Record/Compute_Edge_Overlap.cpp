@@ -18,11 +18,15 @@ using namespace Mlib;
 bool Mlib::compute_edge_overlap(
     const IntersectionScene& c,
     const FixedArray<double, 3>& intersection_point,
-    const PlaneNd<double, 3>& N0_f,
     bool& sat_used,
     double& overlap,
     FixedArray<double, 3>& normal)
 {
+    if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
+        THROW_OR_ABORT("compute_edge_overlap: Not exactly one of q0/t0 are set");
+    }
+    const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
+
     if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
@@ -39,7 +43,7 @@ bool Mlib::compute_edge_overlap(
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0_f.normal) + N0_f.intercept < 0.) {
+        if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0.normal) + N0.intercept < 0.) {
             return false;
         }
         sat_used = true;
@@ -92,7 +96,7 @@ bool Mlib::compute_edge_overlap(
         if (overlap == INFINITY) {
             return false;
         }
-        if (dot0d(N0_f.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
+        if (dot0d(N0.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
             return false;
         }
         if (dot0d(c.o1.rbi_.rbp_.abs_position() - intersection_point, normal) < 0.) {

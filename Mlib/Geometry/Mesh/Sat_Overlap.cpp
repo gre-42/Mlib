@@ -6,40 +6,10 @@
 
 using namespace Mlib;
 
-void CollisionVertices::insert(const FixedArray<FixedArray<double, 3>, 4>& quad) {
-    insert(quad(0));
-    insert(quad(1));
-    insert(quad(2));
-    insert(quad(3));
-}
-
-void CollisionVertices::insert(const FixedArray<FixedArray<double, 3>, 3>& tri) {
-    insert(tri(0));
-    insert(tri(1));
-    insert(tri(2));
-}
-
-void CollisionVertices::insert(const FixedArray<FixedArray<double, 3>, 2>& line) {
-    insert(line(0));
-    insert(line(1));
-}
-
-void CollisionVertices::insert(const FixedArray<double, 3>& vertex) {
-    vertices_.insert(OrderableFixedArray{vertex});
-}
-
-CollisionVertices::const_iterator CollisionVertices::begin() const {
-    return vertices_.begin();
-}
-
-CollisionVertices::const_iterator CollisionVertices::end() const {
-    return vertices_.end();
-}
-
 double Mlib::sat_overlap_signed(
     const FixedArray<double, 3>& n,
-    const CollisionVertices& vertices0,
-    const CollisionVertices& vertices1)
+    const std::set<OrderableFixedArray<double, 3>>& vertices0,
+    const std::set<OrderableFixedArray<double, 3>>& vertices1)
 {
     double max0 = -INFINITY;
     double min1 = INFINITY;
@@ -65,8 +35,8 @@ double Mlib::sat_overlap_signed(
  */
 void Mlib::sat_overlap_unsigned(
     const FixedArray<double, 3>& l,
-    const CollisionVertices& vertices0,
-    const CollisionVertices& vertices1,
+    const std::set<OrderableFixedArray<double, 3>>& vertices0,
+    const std::set<OrderableFixedArray<double, 3>>& vertices1,
     double& overlap0,
     double& overlap1)
 {

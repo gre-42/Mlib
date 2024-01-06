@@ -36,7 +36,7 @@ struct PhysicsEngineConfig {
     float overlap_ignored = 1.f * meters;
     float max_keep_normal = 1.f * meters;
     // float overlap_clipped = 0.01f * meters;
-    float max_min_cos_ridge = 1 - 1e-4f;
+    float max_min_cos_ridge = 1e-4f;
     float min_cos_ridge_triangle = 0.5f;
     float max_cos_round_normal = 0.8f;
     float min_slide_velocity = 1 * kph;

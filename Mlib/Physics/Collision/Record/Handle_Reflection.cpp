@@ -1,5 +1,6 @@
 #include "Handle_Reflection.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Mesh/Farthest_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
@@ -278,20 +279,39 @@ void Mlib::handle_reflection(
     double overlap = INFINITY;
     const FixedArray<double, 3>* penetrating_point = nullptr;
     if (!c.l1_is_normal) {
-        PlaneNd<double, 3> N0_f;
+        assert_true(c.r1 != nullptr);
+        IntersectionScene cf{ c };
+        std::optional<CollisionPolygonSphere<4>> q0f;
+        std::optional<CollisionPolygonSphere<3>> t0f;
+        std::optional<CollisionRidgeSphere> r1f;
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
-                THROW_OR_ABORT2("Two-sided materials require a convex collision partner. Consider using collision-normals.");
+                THROW_OR_ABORT2("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
             }
-            if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0.normal) + N0.intercept > 0.) {
-                N0_f = N0;
-            } else {
-                N0_f = -N0_f;
+            auto dist = get_farthest_distances(*c.mesh1, N0);
+            // (dist.min + dist.max) / 2. < 0  =>  dist.min < -dist.max
+            if (dist.min < -dist.max) {
+                if (c.q0 != nullptr) {
+                    q0f = -(*c.q0);
+                    cf.q0 = &q0f.value();
+                }
+                if (c.t0 != nullptr) {
+                    t0f = -(*c.t0);
+                    cf.t0 = &t0f.value();
+                }
             }
-        } else {
-            N0_f = N0;
         }
-        if (!compute_edge_overlap(c, intersection_point, N0_f, sat_used, overlap, normal)) {
+        if (any(c.mesh1_material & PhysicsMaterial::ATTR_TWO_SIDED) && c.r1->is_oriented()) {
+            if (!any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX)) {
+                THROW_OR_ABORT2("Two-sided materials require a convex collision partner (case 1). Consider using collision-normals.");
+            }
+            auto dist = get_farthest_distances(*c.mesh0, { c.r1->normal, c.r1->edge(0) });
+            // (dist.min + dist.max) / 2. < 0  =>  dist.min < -dist.max
+            if ((dist.min < -dist.max) && c.r1->is_oriented()) {
+                return;
+            }
+        }
+        if (!compute_edge_overlap(cf, intersection_point, sat_used, overlap, normal)) {
             return;
         }
     } else {

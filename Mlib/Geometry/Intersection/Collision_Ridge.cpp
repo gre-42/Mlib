@@ -1,5 +1,6 @@
 #include "Collision_Ridge.hpp"
 #include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 
 using namespace Mlib;
 
@@ -42,11 +43,22 @@ void CollisionRidgeSphere::combine(
         THROW_OR_ABORT("Unknown ridge status");
     }
     auto tangent = cross(edge(1) - edge(0), normal);
-    if (dot0d(tangent, other.normal) < 0.) {
-        min_cos = RIDGE_UNTOUCHEABLE;
-        return;
+    auto other_normal_f = other.normal;
+    if (dot0d(tangent, other_normal_f) < max_min_cos_ridge) {
+        bool ts0 = any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
+        bool ts1 = any(other.physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
+        if (ts0 != ts1) {
+            THROW_OR_ABORT("Conflicting two-sidedness in collision ridges");
+        }
+        if (!ts0) {
+            min_cos = RIDGE_UNTOUCHEABLE;
+            return;
+        } else {
+            normal = -normal;
+            other_normal_f = -other_normal_f;
+        }
     }
-    auto average_normal = (other.normal + normal);
+    auto average_normal = (other_normal_f + normal);
     auto len2 = sum(squared(average_normal));
     if (len2 < 1e-7) {
         auto tlen2 = sum(squared(tangent));
@@ -58,10 +70,7 @@ void CollisionRidgeSphere::combine(
         return;
     }
     normal = average_normal / std::sqrt(len2);
-    min_cos = dot0d(normal, other.normal);
-    if (min_cos > max_min_cos_ridge) {
-        min_cos = RIDGE_UNTOUCHEABLE;
-    }
+    min_cos = dot0d(normal, other_normal_f);
 }
 
 void CollisionRidgeSphere::finalize() {
