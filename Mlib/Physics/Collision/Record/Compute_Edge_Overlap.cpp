@@ -35,10 +35,11 @@ bool Mlib::compute_edge_overlap(
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
         }
-    } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
+    } else if (
+        any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0_f.normal) + N0_f.intercept > 0.) {
+        if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0_f.normal) + N0_f.intercept < 0.) {
             return false;
         }
         sat_used = true;
@@ -94,10 +95,11 @@ bool Mlib::compute_edge_overlap(
         if (dot0d(N0_f.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
             return false;
         }
-        if (dot0d(intersection_point - c.o1.rbi_.rbp_.abs_position(), normal) > 0.) {
+        if (dot0d(c.o1.rbi_.rbp_.abs_position() - intersection_point, normal) < 0.) {
             return false;
         }
-    } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
+    } else if (
+        any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONCAVE))
     {
         sat_used = true;
