@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Vertices.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
