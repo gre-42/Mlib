@@ -18,6 +18,8 @@ struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 class CollisionVertices;
+template <class TData, size_t... tshape>
+class OrderableFixedArray;
 
 class IIntersectableMesh {
 public:

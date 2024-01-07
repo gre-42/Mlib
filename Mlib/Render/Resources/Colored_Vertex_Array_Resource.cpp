@@ -1013,7 +1013,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (fresnel.exponent != 0.f) {
         sstr << "    {" << std::endl;
         // Note that normalmaps can generate opposing normals (which the abs(...) kind of deals with).
-        sstr << "        float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0), " << fresnel.exponent << ");" << std::endl;
+        sstr << "        float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0.0), " << fresnel.exponent << ");" << std::endl;
         sstr << "        float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnelFactor0;" << std::endl;
         sstr << "        fragSpecularity *= fresnelFactor;" << std::endl;
         sstr << "    }" << std::endl;

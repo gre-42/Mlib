@@ -45,15 +45,9 @@ private:
 using namespace Mlib;
 
 static void flying_key_callback(
-#ifndef __ANDROID__
     FlyingCameraUserClass& user_object,
     FlyingCameraLogicKeys& keys)
 {
-#else
-    ButtonStates& button_states,
-    FlyingCameraUserClass& user_object)
-{
-#endif
     if (user_object.button_states.key_down({.key = "LEFT_CONTROL"})) {
         if (user_object.button_states.key_down({.key = "UP"})) {
             user_object.obj_angles(2) += 0.01f;
@@ -146,7 +140,7 @@ FlyingCameraLogic::FlyingCameraLogic(
     , user_object_{ user_object }
     , fly_{ fly }
     , rotate_{ rotate }
-    , keys_{std::make_unique<FlyingCameraLogicKeys>(user_object.button_states) }
+    , keys_{ std::make_unique<FlyingCameraLogicKeys>(user_object.button_states) }
 {
     // GLFW_CHK(glfwGetWindowPos(window, &user_object_.windowed_x, &user_object_.windowed_y));
     // GLFW_CHK(glfwGetWindowSize(window, &user_object_.windowed_width, &user_object_.windowed_height));
@@ -175,11 +169,7 @@ void FlyingCameraLogic::render(
     LOG_FUNCTION("FlyingCameraLogic::render");
     DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name(), DP_LOC);
     if (fly_) {
-#ifdef __ANDROID__
-        flying_key_callback(user_object_);
-#else
         flying_key_callback(user_object_, *keys_);
-#endif
         cn->set_position(user_object_.position, SUCCESSOR_POSE);
         cn->set_rotation(user_object_.angles, SUCCESSOR_POSE);
     } else {
