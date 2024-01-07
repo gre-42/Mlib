@@ -52,6 +52,8 @@ struct kn5Material
         DefaultOptional<float>::from_default(1.f) };
     DefaultOptional<float> detailNMMult        = DefaultOptional<float>::from_default(1.f);
     DefaultOptional<float> magicMult           = DefaultOptional<float>::from_default(1.f);
+    DefaultOptional<float> fresnelC            = DefaultOptional<float>::from_default(0.f);
+    DefaultOptional<float> fresnelEXP          = DefaultOptional<float>::from_default(0.f);
     DefaultOptional<float> fresnelMaxLevel     = DefaultOptional<float>::from_default(0.f);
 
     std::string txDiffuse;

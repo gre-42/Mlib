@@ -507,6 +507,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if (tl.material.shading.specular_exponent == 0.f) {
                     tl.material.shading.specularity = 0.f;
                 }
+                if (material->fresnelMaxLevel.value_or_default() != 0.f) {
+                    tl.material.shading.fresnel.reflectance.min = material->fresnelC.value_or_default();
+                    tl.material.shading.fresnel.reflectance.max = std::min(0.3f, material->fresnelMaxLevel.value_or_default());
+                    tl.material.shading.fresnel.reflectance.exponent = material->fresnelEXP.value_or_default();
+                    tl.material.shading.fresnel.ambience = { 1.f, 1.f, 1.f };
+                }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material->shader == "ksGrass") &&
                     !material->txDiffuse.empty() &&

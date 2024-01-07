@@ -97,7 +97,9 @@ void Mlib::save_kn5(
                 { "multA", m.mult(3) },
                 { "detailNMMult", m.detailNMMult },
                 { "magicMult", m.magicMult },
-                { "fresnelMaxLevel", m.fresnelMaxLevel } };
+                { "fresnelC", m.fresnelC },
+                { "fresnelEXP", m.fresnelEXP },
+                { "fresnelMaxLevel", m.fresnelMaxLevel }};
 
             for (auto it = floats.begin(); it != floats.end();) {
                 if (!it->second.has_value()) {

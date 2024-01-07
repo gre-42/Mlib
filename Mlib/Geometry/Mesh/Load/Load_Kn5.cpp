@@ -381,6 +381,10 @@ kn5Model Mlib::load_kn5(
                 newMaterial.detailNMMult = propValue;
             } else if (propName == "magicMult") {
                 newMaterial.magicMult = propValue;
+            } else if (propName == "fresnelC") {
+                newMaterial.fresnelC = propValue;
+            } else if (propName == "fresnelEXP") {
+                newMaterial.fresnelEXP = propValue;
             } else if (propName == "fresnelMaxLevel") {
                 newMaterial.fresnelMaxLevel = propValue;
             } else {
