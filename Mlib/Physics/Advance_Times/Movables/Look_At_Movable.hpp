@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -13,7 +13,7 @@ class AdvanceTimes;
 class Scene;
 class SceneNode;
 
-class LookAtMovable: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public AdvanceTime {
+class LookAtMovable: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public AdvanceTime {
 public:
     LookAtMovable(
         AdvanceTimes& advance_times,
@@ -21,7 +21,7 @@ public:
         std::string follower_name,
         DanglingRef<SceneNode> follower_node,
         DanglingRef<SceneNode> followed_node,
-        AbsoluteMovable& followed);
+        IAbsoluteMovable& followed);
     ~LookAtMovable();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -34,7 +34,7 @@ private:
     std::string follower_name_;
     DanglingPtr<SceneNode> follower_node_;
     DanglingPtr<SceneNode> followed_node_;
-    AbsoluteMovable* followed_;
+    IAbsoluteMovable* followed_;
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 

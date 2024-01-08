@@ -14,9 +14,9 @@
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Format.hpp>
 

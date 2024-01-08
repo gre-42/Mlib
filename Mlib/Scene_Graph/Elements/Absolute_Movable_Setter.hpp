@@ -14,7 +14,7 @@ public:
         DanglingRef<SceneNode> node,
         std::unique_ptr<TAbsoluteMovable>&& absolute_movable,
         DestructionObserver<DanglingRef<const SceneNode>>* destruction_observer,
-        NodeHider* node_hider)
+        INodeHider* node_hider)
     : absolute_movable{std::move(absolute_movable)},
       absolute_movable_ptr_{this->absolute_movable.get()},
       destruction_observer_{destruction_observer},
@@ -34,7 +34,7 @@ public:
         node,
         std::move(absolute_movable),
         absolute_movable.get(),
-        optional_cast<NodeHider*>(absolute_movable.get())}
+        optional_cast<INodeHider*>(absolute_movable.get())}
     {}
     AbsoluteMovableSetter(
         DanglingRef<SceneNode> node,
@@ -61,9 +61,9 @@ public:
     }
     std::unique_ptr<TAbsoluteMovable> absolute_movable;
 private:
-    AbsoluteMovable* absolute_movable_ptr_;
+    IAbsoluteMovable* absolute_movable_ptr_;
     DestructionObserver<DanglingRef<const SceneNode>>* destruction_observer_;
-    NodeHider* node_hider_;
+    INodeHider* node_hider_;
     DanglingRef<SceneNode> node_;
     std::scoped_lock<SafeRecursiveSharedMutex> lock_;
 };

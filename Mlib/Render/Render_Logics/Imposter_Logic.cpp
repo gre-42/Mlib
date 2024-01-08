@@ -27,9 +27,9 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 

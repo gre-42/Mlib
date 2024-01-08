@@ -2,9 +2,9 @@
 
 namespace Mlib {
 
-class NodeModifier {
+class INodeModifier {
 public:
-    virtual ~NodeModifier() = default;
+    virtual ~INodeModifier() = default;
     virtual void modify_node() = 0;
 };
 

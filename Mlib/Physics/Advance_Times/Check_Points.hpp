@@ -10,7 +10,7 @@
 namespace Mlib {
 
 class Focuses;
-class AbsoluteMovable;
+class IAbsoluteMovable;
 class AdvanceTimes;
 class SceneNode;
 class IPlayer;
@@ -70,7 +70,7 @@ private:
     size_t nlaps_;
     std::string asset_id_;
     std::vector<DanglingPtr<SceneNode>> moving_nodes_;
-    std::vector<AbsoluteMovable*> movings_;
+    std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;
     IPlayer& player_;

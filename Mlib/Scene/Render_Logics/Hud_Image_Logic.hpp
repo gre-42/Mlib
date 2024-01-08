@@ -4,7 +4,7 @@
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <mutex>
 
@@ -23,7 +23,7 @@ enum class HudErrorBehavior {
 
 HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
 
-class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public NodeHider, public AdvanceTime {
+class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public INodeHider, public AdvanceTime {
 public:
     HudImageLogic(
         RenderLogic* scene_logic,
@@ -53,7 +53,7 @@ public:
 
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    // NodeHider
+    // INodeHider
     virtual bool node_shall_be_hidden(
         DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;

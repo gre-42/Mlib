@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
 #include <functional>
 #include <map>
 #include <string>
@@ -22,7 +22,7 @@ struct WeaponInfo {
     float score(double distance_to_target) const;
 };
 
-class WeaponCycle: public NodeModifier {
+class WeaponCycle: public INodeModifier {
     WeaponCycle(const WeaponCycle&) = delete;
     WeaponCycle& operator = (const WeaponCycle&) = delete;
 public:

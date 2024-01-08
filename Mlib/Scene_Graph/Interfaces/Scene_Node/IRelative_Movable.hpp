@@ -7,9 +7,9 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class SceneNode;
 
-class RelativeMovable {
+class IRelativeMovable {
 public:
-    virtual ~RelativeMovable() = default;
+    virtual ~IRelativeMovable() = default;
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) = 0;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) = 0;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) = 0;

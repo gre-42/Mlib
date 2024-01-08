@@ -4,7 +4,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <chrono>
 #include <fstream>
 #include <memory>
@@ -19,7 +19,7 @@ class Focuses;
 class ITrackElementSequence;
 class RigidBodyPlayback;
 
-class RigidBodySinglePlayback: public AbsoluteMovable {
+class RigidBodySinglePlayback: public IAbsoluteMovable {
     friend RigidBodyPlayback;
 public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -39,7 +39,7 @@ public:
         size_t ntransformations);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
-    AbsoluteMovable& get_playback_object(size_t i);
+    IAbsoluteMovable& get_playback_object(size_t i);
 private:
     AdvanceTimes& advance_times_;
     const Focuses& focuses_;

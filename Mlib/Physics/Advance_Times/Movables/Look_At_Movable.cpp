@@ -13,7 +13,7 @@ LookAtMovable::LookAtMovable(
     std::string follower_name,
     DanglingRef<SceneNode> follower_node,
     DanglingRef<SceneNode> followed_node,
-    AbsoluteMovable& followed)
+    IAbsoluteMovable& followed)
 : advance_times_{advance_times},
   scene_{scene},
   follower_name_{std::move(follower_name)},

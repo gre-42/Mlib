@@ -15,16 +15,16 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Modifier.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
-#include <Mlib/Scene_Graph/Transformation/Node_Modifier.hpp>
-#include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -147,7 +147,7 @@ void SceneNode::setup_child_unsafe(
     }
 }
 
-NodeModifier& SceneNode::get_node_modifier() const {
+INodeModifier& SceneNode::get_node_modifier() const {
     std::shared_lock lock{mutex_};
     if (node_modifier_ == nullptr) {
         THROW_OR_ABORT("Node modifier not set");
@@ -155,7 +155,7 @@ NodeModifier& SceneNode::get_node_modifier() const {
     return *node_modifier_;
 }
 
-void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
+void SceneNode::set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier)
 {
     std::scoped_lock lock{mutex_};
     if (node_modifier_ != nullptr) {
@@ -164,21 +164,21 @@ void SceneNode::set_node_modifier(std::unique_ptr<NodeModifier>&& node_modifier)
     node_modifier_ = std::move(node_modifier);
 }
 
-void SceneNode::insert_node_hider(NodeHider& node_hider) {
+void SceneNode::insert_node_hider(INodeHider& node_hider) {
     std::scoped_lock lock{mutex_};
     if (!node_hiders_.insert(&node_hider).second) {
         THROW_OR_ABORT("Node hider already inserted");
     }
 }
 
-void SceneNode::remove_node_hider(NodeHider& node_hider) {
+void SceneNode::remove_node_hider(INodeHider& node_hider) {
     std::scoped_lock lock{mutex_};
     if (node_hiders_.erase(&node_hider) != 1) {
         THROW_OR_ABORT("Could not remove node hider");
     }
 }
 
-AbsoluteMovable& SceneNode::get_absolute_movable() const {
+IAbsoluteMovable& SceneNode::get_absolute_movable() const {
     std::shared_lock lock{mutex_};
     if (absolute_movable_ == nullptr) {
         THROW_OR_ABORT("Absolute movable not set");
@@ -186,7 +186,7 @@ AbsoluteMovable& SceneNode::get_absolute_movable() const {
     return *absolute_movable_;
 }
 
-RelativeMovable& SceneNode::get_relative_movable() const {
+IRelativeMovable& SceneNode::get_relative_movable() const {
     std::shared_lock lock{mutex_};
     if (relative_movable_ == nullptr) {
         THROW_OR_ABORT("Relative movable not set");
@@ -194,7 +194,7 @@ RelativeMovable& SceneNode::get_relative_movable() const {
     return *relative_movable_;
 }
 
-void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>& relative_movable)
+void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>& relative_movable)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
@@ -209,7 +209,7 @@ void SceneNode::set_relative_movable(const observer_ptr<RelativeMovable, Danglin
     }
 }
 
-AbsoluteObserver& SceneNode::get_absolute_observer() const {
+IAbsoluteObserver& SceneNode::get_absolute_observer() const {
     std::shared_lock lock{mutex_};
     if (absolute_observer_ == nullptr) {
         THROW_OR_ABORT("Absolute observer not set");
@@ -217,7 +217,7 @@ AbsoluteObserver& SceneNode::get_absolute_observer() const {
     return *absolute_observer_;
 }
 
-void SceneNode::set_absolute_observer(const observer_ptr<AbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer)
+void SceneNode::set_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{mutex_};
@@ -734,7 +734,7 @@ void SceneNode::render(
         THROW_OR_ABORT("Cannot render detached node");
     }
     for (const auto& nh : node_hiders_) {
-        // Note that the NodeHider may depend on this function being called,
+        // Note that the INodeHider may depend on this function being called,
         // so there should not be any additional check above this line.
         if (nh->node_shall_be_hidden(camera_node, external_render_pass)) {
             visibility = SceneNodeVisibility::INVISIBLE;

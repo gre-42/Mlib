@@ -5,7 +5,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Signal/Kalman_Filter.hpp>
 #include <memory>
@@ -15,12 +15,12 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 
-class FollowMovable: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public AdvanceTime {
+class FollowMovable: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public AdvanceTime {
 public:
     FollowMovable(
         AdvanceTimes& advance_times,
         DanglingRef<const SceneNode> followed_node,
-        AbsoluteMovable& followed,
+        IAbsoluteMovable& followed,
         float attachment_distance,
         const FixedArray<float, 3>& node_displacement,
         const FixedArray<float, 3>& look_at_displacement,
@@ -39,7 +39,7 @@ public:
 private:
     AdvanceTimes& advance_times_;
     DanglingPtr<const SceneNode> followed_node_;
-    AbsoluteMovable* followed_;
+    IAbsoluteMovable* followed_;
     float attachment_distance_;
     FixedArray<double, 2> attachment_position_;
     FixedArray<float, 3> node_displacement_;

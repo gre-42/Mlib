@@ -7,8 +7,8 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -38,7 +38,7 @@ SetNodeHider::SetNodeHider(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-class NodeHiderWithEvent: public NodeHider, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
+class NodeHiderWithEvent: public INodeHider, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
 public:
     NodeHiderWithEvent(
         AdvanceTimes& advance_times,

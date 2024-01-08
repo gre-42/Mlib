@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 
 namespace Mlib {
 
@@ -20,7 +20,7 @@ struct ImposterParameters;
 
 class ImposterLogic;
 
-class OriginalNodeHider: public NodeHider {
+class OriginalNodeHider: public INodeHider {
 public:
     explicit OriginalNodeHider(ImposterLogic& imposter_logic);
     virtual bool node_shall_be_hidden(
@@ -30,7 +30,7 @@ private:
     ImposterLogic& imposter_logic_;
 };
 
-class ImposterNodeHider: public NodeHider {
+class ImposterNodeHider: public INodeHider {
 public:
     virtual bool node_shall_be_hidden(
         DanglingRef<const SceneNode> camera_node,

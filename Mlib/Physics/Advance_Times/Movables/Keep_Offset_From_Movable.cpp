@@ -10,7 +10,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     Scene& scene,
     const std::string& follower_name,
     DanglingRef<SceneNode> followed_node,
-    AbsoluteMovable& followed,
+    IAbsoluteMovable& followed,
     const FixedArray<float, 3>& offset)
 : advance_times_{advance_times},
   scene_{scene},

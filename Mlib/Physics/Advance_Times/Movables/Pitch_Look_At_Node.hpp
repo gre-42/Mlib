@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
 #include <functional>
 
 namespace Mlib {
@@ -12,7 +12,7 @@ class AdvanceTimes;
 struct PhysicsEngineConfig;
 class RigidBodyVehicle;
 
-class PitchLookAtNode: public DestructionObserver<DanglingRef<const SceneNode>>, public RelativeMovable, public AdvanceTime {
+class PitchLookAtNode: public DestructionObserver<DanglingRef<const SceneNode>>, public IRelativeMovable, public AdvanceTime {
 public:
     PitchLookAtNode(
         AdvanceTimes& advance_times,

@@ -15,7 +15,7 @@ using namespace Mlib;
 FollowMovable::FollowMovable(
     AdvanceTimes& advance_times,
     DanglingRef<const SceneNode> followed_node,
-    AbsoluteMovable& followed,
+    IAbsoluteMovable& followed,
     float attachment_distance,
     const FixedArray<float, 3>& node_displacement,
     const FixedArray<float, 3>& look_at_displacement,

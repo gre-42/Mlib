@@ -9,9 +9,9 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
-#include <Mlib/Scene_Graph/Elements/Node_Hider.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <map>
 #include <memory>
 #include <optional>
@@ -83,7 +83,7 @@ struct TrailerHitches {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public StatusWriter, public NodeHider {
+class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public StatusWriter, public INodeHider {
 public:
     RigidBodyVehicle(
         const RigidBodyIntegrator& rbi,
@@ -166,7 +166,7 @@ public:
     void set_wants_to_jump();
     void set_jump_strength(float value);
 
-    // AbsoluteMovable
+    // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 
@@ -178,7 +178,7 @@ public:
     virtual float get_value(StatusComponents status_components) const override;
     virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
 
-    // NodeHider
+    // INodeHider
     virtual bool node_shall_be_hidden(
         DanglingRef<const SceneNode> camera_node,
         const ExternalRenderPass& external_render_pass) const override;

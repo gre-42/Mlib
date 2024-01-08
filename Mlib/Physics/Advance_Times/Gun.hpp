@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Observer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <mutex>
 
@@ -23,7 +23,7 @@ class Player;
 class Team;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteObserver, public AdvanceTime {
+class Gun final: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteObserver, public AdvanceTime {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,

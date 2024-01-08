@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -17,7 +17,7 @@ class Scene;
 class SelectedCameras;
 class EventReceiverDeletionToken;
 
-class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<const SceneNode>>, public AbsoluteMovable, public AdvanceTime {
+class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public AdvanceTime {
 public:
     KeepOffsetFromCamera(
         AdvanceTimes& advance_times,

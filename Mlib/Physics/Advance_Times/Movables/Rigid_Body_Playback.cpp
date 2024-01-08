@@ -47,7 +47,7 @@ void RigidBodyPlayback::advance_time(float dt) {
     }
 }
 
-AbsoluteMovable& RigidBodyPlayback::get_playback_object(size_t i) {
+IAbsoluteMovable& RigidBodyPlayback::get_playback_object(size_t i) {
     if (i >= playback_objects_.size()) {
         THROW_OR_ABORT("Playback-object index out of bounds");
     }

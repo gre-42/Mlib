@@ -3,7 +3,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Scene_Graph/Transformation/Relative_Movable.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IRelative_Movable.hpp>
 
 namespace Mlib {
 
@@ -12,7 +12,7 @@ class DanglingRef;
 class AdvanceTimes;
 class RigidBodyVehicle;
 
-class Wheel: public DestructionObserver<DanglingRef<const SceneNode>>, public RelativeMovable, public AdvanceTime {
+class Wheel: public DestructionObserver<DanglingRef<const SceneNode>>, public IRelativeMovable, public AdvanceTime {
 public:
     explicit Wheel(
         RigidBodyVehicle& rigid_body,

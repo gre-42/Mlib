@@ -7,7 +7,7 @@ class DanglingRef;
 class SceneNode;
 struct ExternalRenderPass;
 
-class NodeHider {
+class INodeHider {
 public:
     virtual bool node_shall_be_hidden(
         DanglingRef<const SceneNode> camera_node,

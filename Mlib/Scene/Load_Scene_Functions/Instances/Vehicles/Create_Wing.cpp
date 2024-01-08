@@ -74,10 +74,10 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
         scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node), DP_LOC)->set_relative_movable(
-            observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->angle_of_attack_movable, nullptr});
+            observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->angle_of_attack_movable, nullptr});
     }
     if (args.arguments.contains(KnownArgs::brake_angle_node)) {
         scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node), DP_LOC)->set_relative_movable(
-            observer_ptr<RelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->brake_angle_movable, nullptr});
+            observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->brake_angle_movable, nullptr});
     }
 }

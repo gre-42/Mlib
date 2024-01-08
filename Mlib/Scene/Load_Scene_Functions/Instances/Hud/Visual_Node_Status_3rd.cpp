@@ -11,8 +11,8 @@
 #include <Mlib/Scene/Render_Logics/Visual_Movable_3rd_Logger.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Scene_Graph/Transformation/Absolute_Movable.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;

@@ -5,12 +5,12 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+class IAbsoluteMovable;
 
-class AbsoluteMovable {
+class IAbsoluteObserver {
 public:
-    virtual ~AbsoluteMovable() = default;
+    virtual ~IAbsoluteObserver() = default;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) = 0;
-    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const = 0;
 };
 
 }
