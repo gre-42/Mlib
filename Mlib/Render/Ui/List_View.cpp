@@ -29,10 +29,10 @@ ListView::ListView(
 {
     key_configurations_.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}} } });
     key_configurations_.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}} } });
-    key_configurations_.insert("up", { { {{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}} } });
-    key_configurations_.insert("down", { { {{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}} } });
-    key_configurations_.insert("page_up", { { {{.key = "PAGE_UP"}} } });
-    key_configurations_.insert("page_down", { { {{.key = "PAGE_DOWN"}} } });
+    key_configurations_.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    key_configurations_.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    key_configurations_.insert("page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    key_configurations_.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
     key_configurations_.insert("home", { { {{.key = "HOME"}} } });
     key_configurations_.insert("end", { { {{.key = "END"}} } });
     if (has_selected_element()) {

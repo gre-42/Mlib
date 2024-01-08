@@ -55,7 +55,6 @@ class AudioListenerUpdater;
 class PhysicsLoop;
 class ButtonStates;
 class CursorStates;
-class PodBots;
 
 enum class ThreadAffinity;
 enum class ClearMode;

@@ -43,108 +43,108 @@ RenderableScene::RenderableScene(
     const std::function<void()>& setup_new_round,
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
-: scene_node_resources_{scene_node_resources},
-  particle_resources_{particle_resources},
-  rendering_resources_{
-    rendering_resources_name,
-    max_anisotropic_filtering_level},
-  particle_renderer_{std::make_unique<ParticleRenderer>(particle_resources)},
-  scene_config_{scene_config},
+    : scene_node_resources_{ scene_node_resources }
+    , particle_resources_{ particle_resources }
+    , rendering_resources_{
+        rendering_resources_name,
+        max_anisotropic_filtering_level }
+    , particle_renderer_{ std::make_unique<ParticleRenderer>(particle_resources) }
+    , scene_config_{ scene_config }
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
-  physics_engine_{scene_config.physics_engine_config},
-  scene_{
-      delete_node_mutex_,
-      &scene_node_resources,
-      particle_renderer_.get()},
-  selected_cameras_{scene_},
-  user_object_{
-      .button_states = button_states,
-      .cursor_states = cursor_states,
-      .scroll_wheel_states = scroll_wheel_states,
-      .cameras = selected_cameras_,
-      .wire_frame = scene_config.render_config.wire_frame,
-      .depth_test = scene_config.render_config.depth_test,
-      .cull_faces = scene_config.render_config.cull_faces,
-      .delete_node_mutex = delete_node_mutex_,
-      .physics_set_fps = &physics_set_fps_},
-  smoke_particle_generator_{&rendering_resources_, scene_node_resources, scene_},
-  contact_smoke_generator_{surface_contact_db, smoke_particle_generator_},
-  paused_{[&ui_focus, focus_filter](){
-    std::shared_lock lock{ui_focus.focuses.mutex};
-    return !ui_focus.has_focus(focus_filter);
-  }},
-  physics_sleeper_{
-      "Physics FPS: ",
-      scene_config_.physics_engine_config.dt / s,
-      scene_config_.physics_engine_config.max_residual_time / s,
-      scene_config_.physics_engine_config.print_residual_time},
-  physics_set_fps_{
-      scene_config_.physics_engine_config.control_fps
-          ? &physics_sleeper_
-          : nullptr,
-      scene_config_.physics_engine_config.control_fps
-          ? [this]() { return physics_sleeper_.simulated_time(); }
-          : std::function<std::chrono::steady_clock::time_point()>(),
-      paused_},
-  busy_state_provider_guard_{dependent_sleeper, physics_set_fps_},
-  gefp_{gravity_vector},
-  physics_iteration_{
-      scene_node_resources,
-      scene_,
-      physics_engine_,
-      delete_node_mutex_,
-      scene_config_.physics_engine_config,
-      &fifo_log_},
-  standard_camera_logic_{
-      scene_,
-      selected_cameras_,
-      delete_node_mutex_},
-  skybox_logic_{standard_camera_logic_},
-  standard_render_logic_{std::make_shared<StandardRenderLogic>(
-      rendering_resources_,
-      scene_,
-      config.with_skybox
-        ? (RenderLogic&)skybox_logic_
-        : (RenderLogic&)standard_camera_logic_,
-      config.background_color,
-      config.clear_mode)},
-  flying_camera_logic_{config.with_flying_logic
-      ? std::make_shared<FlyingCameraLogic>(
-        scene_,
-        user_object_,
-        config.fly,
-        config.rotate)
-      : nullptr},
-  key_bindings_{std::make_shared<KeyBindings>(
-      selected_cameras_,
-      ui_focus.focuses,
-      players_)},
-  read_pixels_logic_{*standard_render_logic_},
-  dirtmap_logic_{std::make_shared<DirtmapLogic>(rendering_resources_, read_pixels_logic_)},
-  motion_interp_logic_{std::make_shared<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW)},
-  post_processing_logic_{std::make_shared<PostProcessingLogic>(
-      *motion_interp_logic_,
-      config.background_color,
-      config.depth_fog,
-      config.low_pass,
-      config.high_pass)},
-  fxaa_logic_{std::make_shared<FxaaLogic>(*post_processing_logic_)},
-  imposter_render_logics_{std::make_shared<RenderLogics>(ui_focus)},
-  render_logics_{ui_focus},
-  imposters_{rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_},
-  players_{physics_engine_.advance_times_, level_name, max_tracks, save_playback, scene_node_resources, race_identfier},
-  supply_depots_{physics_engine_.advance_times_, players_, scene_config.physics_engine_config},
-  game_logic_{
-      scene_,
-      physics_engine_.advance_times_,
-      vehicle_spawners_,
-      players_,
-      supply_depots_,
-      delete_node_mutex_,
-      setup_new_round}
+    , physics_engine_{ scene_config.physics_engine_config }
+    , scene_{
+          delete_node_mutex_,
+          &scene_node_resources,
+          particle_renderer_.get()}
+    , selected_cameras_{ scene_ }
+    , user_object_{
+          .button_states = button_states,
+          .cursor_states = cursor_states,
+          .scroll_wheel_states = scroll_wheel_states,
+          .cameras = selected_cameras_,
+          .wire_frame = scene_config.render_config.wire_frame,
+          .depth_test = scene_config.render_config.depth_test,
+          .cull_faces = scene_config.render_config.cull_faces,
+          .delete_node_mutex = delete_node_mutex_,
+          .physics_set_fps = &physics_set_fps_}
+    , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
+    , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
+    , paused_{[&ui_focus, focus_filter](){
+        std::shared_lock lock{ui_focus.focuses.mutex};
+        return !ui_focus.has_focus(focus_filter);
+      }}
+    , physics_sleeper_{
+          "Physics FPS: ",
+          scene_config_.physics_engine_config.dt / s,
+          scene_config_.physics_engine_config.max_residual_time / s,
+          scene_config_.physics_engine_config.print_residual_time}
+    , physics_set_fps_{
+          scene_config_.physics_engine_config.control_fps
+              ? &physics_sleeper_
+              : nullptr,
+          scene_config_.physics_engine_config.control_fps
+              ? [this]() { return physics_sleeper_.simulated_time(); }
+              : std::function<std::chrono::steady_clock::time_point()>(),
+          paused_}
+    , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
+    , gefp_{ gravity_vector }
+    , physics_iteration_{
+          scene_node_resources,
+          scene_,
+          physics_engine_,
+          delete_node_mutex_,
+          scene_config_.physics_engine_config,
+          &fifo_log_}
+    , standard_camera_logic_{
+          scene_,
+          selected_cameras_,
+          delete_node_mutex_}
+    , skybox_logic_{ standard_camera_logic_ }
+    , standard_render_logic_{std::make_shared<StandardRenderLogic>(
+          rendering_resources_,
+          scene_,
+          config.with_skybox
+            ? (RenderLogic&)skybox_logic_
+            : (RenderLogic&)standard_camera_logic_,
+          config.background_color,
+          config.clear_mode)}
+    , flying_camera_logic_{config.with_flying_logic
+          ? std::make_shared<FlyingCameraLogic>(
+            scene_,
+            user_object_,
+            config.fly,
+            config.rotate)
+          : nullptr}
+    , key_bindings_{std::make_shared<KeyBindings>(
+          selected_cameras_,
+          ui_focus.focuses,
+          players_)}
+    , read_pixels_logic_{ *standard_render_logic_ }
+    , dirtmap_logic_{ std::make_shared<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
+    , motion_interp_logic_{ std::make_shared<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
+    , post_processing_logic_{std::make_shared<PostProcessingLogic>(
+          *motion_interp_logic_,
+          config.background_color,
+          config.depth_fog,
+          config.low_pass,
+          config.high_pass)}
+    , fxaa_logic_{ std::make_shared<FxaaLogic>(*post_processing_logic_) }
+    , imposter_render_logics_{ std::make_shared<RenderLogics>(ui_focus) }
+    , render_logics_{ ui_focus }
+    , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
+    , players_{ physics_engine_.advance_times_, level_name, max_tracks, save_playback, scene_node_resources, race_identfier }
+    , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
+    , game_logic_{
+          scene_,
+          physics_engine_.advance_times_,
+          vehicle_spawners_,
+          players_,
+          supply_depots_,
+          delete_node_mutex_,
+          setup_new_round}
 #ifndef WITHOUT_ALUT
-  ,primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
+    , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 #endif
 {
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);

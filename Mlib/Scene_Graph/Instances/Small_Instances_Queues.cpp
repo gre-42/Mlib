@@ -33,7 +33,7 @@ void SmallInstancesQueues::insert(
     TransformationMatrix<float, float, 3> m_shifted{m.R(), (m.t() - offset).casted<float>()};
     VisibilityCheck vc{ mvp };
     for (const auto& scva : scvas) {
-        if (vc.is_visible(scva->material, billboard_id, scene_graph_config, main_render_pass_))
+        if (vc.is_visible(scva->name, scva->material, billboard_id, scene_graph_config, main_render_pass_))
         {
             TransformedColoredVertexArray* tcva;
             if (scva->material.blend_mode == BlendMode::INVISIBLE) {

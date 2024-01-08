@@ -17,6 +17,7 @@ class VisibilityCheck {
 public:
     explicit VisibilityCheck(const FixedArray<TData, 4, 4>& mvp);
     bool is_visible(
+        const std::string& object_name,
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,

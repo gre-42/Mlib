@@ -17,6 +17,7 @@ class VisibilityCheck;
 template <class TData>
 bool is_visible(
     const VisibilityCheck<TData>& vc,
+    const std::string& object_name,
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,

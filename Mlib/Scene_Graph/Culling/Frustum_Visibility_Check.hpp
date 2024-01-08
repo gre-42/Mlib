@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace Mlib {
 
@@ -19,6 +20,7 @@ class FrustumVisibilityCheck {
 public:
     explicit FrustumVisibilityCheck(const VisibilityCheck<TData>& vc);
     bool is_visible(
+        const std::string& object_name,
         const Material& m,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,

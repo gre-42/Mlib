@@ -26,6 +26,7 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
+#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -63,6 +64,9 @@ std::future<void> render_thread(
                     RenderResults* render_results,
                     const RenderedSceneDescriptor& frame_id)
                 {
+                    if (scene_graph_config.renderable_hider != nullptr) {
+                        scene_graph_config.renderable_hider->process_input();
+                    }
                     menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
@@ -319,6 +323,7 @@ int main(int argc, char** argv) {
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
+        "    [--with_hider]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -348,6 +353,7 @@ int main(int argc, char** argv) {
          "--print_search_time",
          "--no_control_physics_fps",
          "--fxaa",
+         "--with_hider",
          "--verbose"},
         {"--app_reldir",
          "--swap_interval",
@@ -483,10 +489,13 @@ int main(int argc, char** argv) {
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();
 
+            TtyRenderableHider tty_renderable_hider{ button_states };
+
             SceneGraphConfig scene_graph_config{
                 .max_distance_black = safe_stof(args.named_value("--max_distance_black", "200")),
                 .small_aggregate_update_interval = safe_stoz(args.named_value("--small_aggregate_update_interval", "60")),
-                .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600"))};
+                .large_aggregate_update_interval = safe_stoz(args.named_value("--large_aggregate_update_interval", "3600")),
+                .renderable_hider = args.has_named("--with_hider") ? &tty_renderable_hider : nullptr };
 
             PhysicsEngineConfig physics_engine_config{
                 .dt = physics_dt * s,

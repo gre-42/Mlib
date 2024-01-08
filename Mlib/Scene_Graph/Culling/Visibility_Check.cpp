@@ -19,12 +19,13 @@ VisibilityCheck<TData>::VisibilityCheck(const FixedArray<TData, 4, 4>& mvp)
 
 template <class TData>
 bool VisibilityCheck<TData>::is_visible(
+    const std::string& object_name,
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass) const
 {
-    return Mlib::is_visible<TData>(*this, m, billboard_id, scene_graph_config, external_render_pass, nullptr, nullptr);
+    return Mlib::is_visible<TData>(*this, object_name, m, billboard_id, scene_graph_config, external_render_pass, nullptr, nullptr);
 }
 
 template <class TData>

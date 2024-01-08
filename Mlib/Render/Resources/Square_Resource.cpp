@@ -54,7 +54,7 @@ SquareResource::SquareResource(
 
     rva_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
-            "SquareResource",
+            "SquareResource_" + material.identifier(),
             material,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},

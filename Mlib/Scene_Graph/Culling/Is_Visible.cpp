@@ -2,6 +2,8 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IRenderable_Hider.hpp>
+#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -9,6 +11,7 @@ using namespace Mlib;
 template <class TData>
 bool Mlib::is_visible(
     const VisibilityCheck<TData>& vc,
+    const std::string& object_name,
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
@@ -17,6 +20,11 @@ bool Mlib::is_visible(
     const AxisAlignedBoundingBox<TData, 3>* aabb)
 {
     assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
+    if ((scene_graph_config.renderable_hider != nullptr) &&
+        !scene_graph_config.renderable_hider->is_visible(object_name))
+    {
+        return false;
+    }
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
         any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
     {
@@ -49,6 +57,7 @@ bool Mlib::is_visible(
 
 template bool Mlib::is_visible<float>(
     const VisibilityCheck<float>& vc,
+    const std::string& object_name,
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
@@ -58,6 +67,7 @@ template bool Mlib::is_visible<float>(
 
 template bool Mlib::is_visible<double>(
     const VisibilityCheck<double>& vc,
+    const std::string& object_name,
     const Material& m,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,

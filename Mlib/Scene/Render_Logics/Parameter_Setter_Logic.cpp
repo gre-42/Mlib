@@ -48,25 +48,25 @@ ParameterSetterLogic::ParameterSetterLogic(
     ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-: options_{ std::move(options) },
-  contents_{options_, substitutions, asset_references},
-  renderable_text_{std::make_unique<TextResource>(
-    ttf_filename,
-    FixedArray<float, 3>{1.f, 1.f, 1.f})},
-  widget_{std::move(widget)},
-  font_height_{font_height},
-  line_distance_{line_distance},
-  focus_filter_{ std::move(focus_filter) },
-  substitutions_{ substitutions },
-  list_view_{
-    button_states,
-    selection_index,
-    contents_,
-    ListViewOrientation::VERTICAL,
-    [this, on_change](){
-        merge_substitutions();
-        on_change();
-    }}
+    : options_{ std::move(options) }
+    , contents_{options_, substitutions, asset_references}
+    , renderable_text_{std::make_unique<TextResource>(
+        ttf_filename,
+        FixedArray<float, 3>{1.f, 1.f, 1.f})}
+    , widget_{std::move(widget)}
+    , font_height_{font_height}
+    , line_distance_{line_distance}
+    , focus_filter_{ std::move(focus_filter) }
+    , substitutions_{ substitutions }
+    , list_view_{
+        button_states,
+        selection_index,
+        contents_,
+        ListViewOrientation::VERTICAL,
+        [this, on_change](){
+            merge_substitutions();
+            on_change();
+        }}
 {
     substitutions_.add_observer([this](){
         list_view_.notify_change_visibility();
