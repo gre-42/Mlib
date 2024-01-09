@@ -508,7 +508,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.shading.specularity = 0.f;
                 }
                 if ((material->fresnelEXP.value_or_default() != 0.f) &&
-                    (material->fresnelMaxLevel.value_or_default() != 0.f))
+                    (material->fresnelMaxLevel.value_or_default() > material->fresnelC.value_or_default() + 1e-3))
                 {
                     tl.material.shading.fresnel.reflectance.min = material->fresnelC.value_or_default();
                     tl.material.shading.fresnel.reflectance.max = std::min(0.3f, material->fresnelMaxLevel.value_or_default());
