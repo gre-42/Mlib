@@ -35,10 +35,10 @@ TData cc_2(
     const FixedArray<TData, tndim>& a,
     const FixedArray<TData, tndim>& b)
 {
-    return sum(squared(a)) * sum(squared(b)) - squared(dot0d(a, b));
+    return ssq(a) * ssq(b) - squared(dot0d(a, b));
 }
 
-/** From: https://en.wikipedia.org/wiki/Circumscribed_circle#Higher_dimensions
+/** From: https://en.wikipedia.org/wiki/Circumcircle#Higher_dimensions
  */
 template <class TData, size_t tndim, class TRng>
 BoundingSphere<TData, tndim> circumscribed_sphere(
@@ -51,12 +51,12 @@ BoundingSphere<TData, tndim> circumscribed_sphere(
     FixedArray<TData, tndim> a = A - C;
     FixedArray<TData, tndim> b = B - C;
     TData denom = cc_2(a, b);
-    if (std::abs(denom) < 1e-6) {
+    if (denom < 1e-6) {
         return welzl_from_fixed(x, rng, tndim - 3 + 2);
     }
     TData radius = std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
     FixedArray<TData, tndim> center = cc_1(ssq(a) * b - ssq(b) * a, a, b) / (TData(2) * denom) + C;
-    return BoundingSphere<TData, tndim>{center, radius};
+    return BoundingSphere<TData, tndim>{ center, radius };
 }
 
 /** From: https://en.wikipedia.org/wiki/Tetrahedron#Circumradius
