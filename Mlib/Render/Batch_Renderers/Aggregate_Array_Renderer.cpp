@@ -1,5 +1,6 @@
 #include "Aggregate_Array_Renderer.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -79,6 +80,7 @@ void AggregateArrayRenderer::update_aggregates(
     std::map<Material, AggregateTriangles> mat_lists;
     OptionalMaterialHider mhd;
     OptionalMeshHider nhd;
+    auto rng = welzl_rng();
     for (const auto& a : aggregate_queue) {
         if (a->triangles.empty()) {
             THROW_OR_ABORT("Aggregate triangle list is empty");
@@ -106,19 +108,21 @@ void AggregateArrayRenderer::update_aggregates(
         {
             THROW_OR_ABORT("Layer information differs from triangle list length");
         }
-        auto max_distance2 = squared(mat.max_triangle_distance);
+        auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), mat.max_triangle_distance };
         for (size_t i = 0; i < a->triangles.size(); ++i) {
             if (i % THREAD_YIELD_INTERVAL == 0) {
                 std::this_thread::yield();
             }
             const auto& c = a->triangles[i];
-            auto distance_to_origin2 = sum(squared(c(0).position + c(1).position + c(2).position));
-            if ((max_distance2 != INFINITY) &&
-                (distance_to_origin2 > max_distance2) &&
+            auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
+            // auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
+            if ((mat.max_triangle_distance != INFINITY) &&
+                !camera_sphere.intersects(triangle_sphere) &&
                 !any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
             {
                 continue;
             }
+            auto distance_to_origin2 = sum(squared(triangle_sphere.center()));
             if (l.has_texture_layers) {
                 l.atriangles.push_back({c, a->triangle_texture_layers[i], distance_to_origin2});
             } else {

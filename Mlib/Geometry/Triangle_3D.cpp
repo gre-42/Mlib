@@ -27,7 +27,7 @@ ConvexPolygon3D<double, 3> Triangle3D::polygon() const {
 }
 
 BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) const {
-    return circumscribed_sphere<double, 3>(vertices_, rng);
+    return welzl_from_fixed(vertices_, rng);
 }
 
 AxisAlignedBoundingBox<double, 3> Triangle3D::aabb() const {
