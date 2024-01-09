@@ -49,7 +49,7 @@ def patch_file(filename):
         #print('--------------')
         #print(new)
         #print('--------------')
-        with open(filename, 'w') as f:
+        with open(filename, 'w', encoding='utf-8') as f:
             f.write(new)
 
 for path, dirs, files in os.walk('.'):
