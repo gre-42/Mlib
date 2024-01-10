@@ -16,6 +16,7 @@ public:
     void drive(float surface_power, float relaxation);
     void roll_tires();
     void steer(float angle, float relaxation);
+    virtual void set_stearing_wheel_amount(float left_amount, float relaxation);
     void ascend_to(double target_height);
     void ascend_by(double delta_height);
     void reset_parameters(

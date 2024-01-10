@@ -539,11 +539,8 @@ void KeyBindings::increment_external_forces(
                     k.surface_power.value(),
                     alpha);
             }
-            if (k.tire_angle_interp.has_value()) {
-                float v = std::abs(dot0d(
-                    rb.rbi_.rbp_.v_,
-                    rb.rbi_.rbp_.rotation_.column(2)));
-                rb.vehicle_controller().steer(k.tire_angle_interp.value()(v), alpha);
+            if (k.steer_left_amount.has_value()) {
+                rb.vehicle_controller().set_stearing_wheel_amount(k.steer_left_amount.value(), alpha);
             }
             if (k.ascend_velocity.has_value()) {
                 rb.vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);

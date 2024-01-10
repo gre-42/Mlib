@@ -16,7 +16,7 @@ Tire::Tire(
     , magic_formula{ magic_formula }
     , shock_absorber_position{ 0 }
     , angle_x{ 0 }
-    , angle_y_{ 0 }
+    , angle_y{ 0 }
     // accel_x{0}
     , brake_force{ brake_force }
     , sKs{ sKs }

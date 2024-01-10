@@ -1,4 +1,5 @@
 #include "Rigid_Body_Vehicle_Controller.hpp"
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -68,6 +69,10 @@ void RigidBodyVehicleController::steer(float angle, float relaxation) {
         RecursionGuard rg{recursion_counter};
         trailer_->steer(angle, relaxation);
     }
+}
+
+void RigidBodyVehicleController::set_stearing_wheel_amount(float left_amount, float relaxation) {
+    steer(left_amount * 45.f * degrees, relaxation);
 }
 
 void RigidBodyVehicleController::ascend_to(double target_height) {

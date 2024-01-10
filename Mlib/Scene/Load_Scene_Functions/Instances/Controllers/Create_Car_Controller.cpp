@@ -23,6 +23,8 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(front_engine);
 DECLARE_ARGUMENT(rear_engine);
 DECLARE_ARGUMENT(front_tire_ids);
+DECLARE_ARGUMENT(tire_angle_velocities);
+DECLARE_ARGUMENT(tire_angles);
 DECLARE_ARGUMENT(asset_id);
 }
 
@@ -37,6 +39,14 @@ LoadSceneJsonUserFunction CreateCarController::json_user_function = [](const Loa
 CreateCarController::CreateCarController(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
+
+inline float stov(float v) {
+    return v * kph;
+}
+
+inline float stoa(float v) {
+    return v * degrees;
+}
 
 void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -59,5 +69,9 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         front_tire_ids.empty()
             ? NAN
             : vars.database.at<float>("MAX_TIRE_ANGLE") * degrees,
+        Interp<float>{
+            args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, stov),
+            args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
+            OutOfRangeBehavior::CLAMP},
         physics_engine);
 }

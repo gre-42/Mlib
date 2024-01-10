@@ -22,8 +22,7 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 
 DECLARE_ARGUMENT(surface_power);
-DECLARE_ARGUMENT(tire_angle_velocities);
-DECLARE_ARGUMENT(tire_angles);
+DECLARE_ARGUMENT(steer_left_amount);
 DECLARE_ARGUMENT(ascend_velocity);
 }
 
@@ -39,12 +38,8 @@ CreateCarControllerKeyBinding::CreateCarControllerKeyBinding(RenderableScene& re
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-float stov(float v) {
+inline float stov(float v) {
     return v * kph;
-}
-
-float stoa(float v) {
-    return v * degrees;
 }
 
 void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -55,12 +50,7 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
-        .tire_angle_interp = args.arguments.contains(KnownArgs::tire_angle_velocities)
-            ? Interp<float>{
-                args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, stov),
-                args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
-                OutOfRangeBehavior::CLAMP}
-            : std::optional<Interp<float>>(),
+        .steer_left_amount = args.arguments.try_at<float>(KnownArgs::steer_left_amount),
         .ascend_velocity = args.arguments.contains(KnownArgs::ascend_velocity)
             ? stov(args.arguments.at<float>(KnownArgs::ascend_velocity))
             : std::optional<float>(),

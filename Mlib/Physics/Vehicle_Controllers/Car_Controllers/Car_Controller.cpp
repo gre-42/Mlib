@@ -13,16 +13,18 @@ CarController::CarController(
     RigidBodyVehicle& rb,
     std::string front_engine,
     std::string rear_engine,
-    const std::vector<size_t>& front_tire_ids,
+    std::vector<size_t> front_tire_ids,
     float max_tire_angle,
+    Interp<float> tire_angle_interp,
     PhysicsEngine& physics_engine)
-: RigidBodyVehicleController{ rb, SteeringType::CAR },
-  front_engine_{front_engine},
-  rear_engine_{rear_engine},
-  front_tire_ids_{front_tire_ids},
-  max_tire_angle_{max_tire_angle},
-  applied_{false},
-  physics_engine_{physics_engine}
+    : RigidBodyVehicleController{ rb, SteeringType::CAR }
+    , front_engine_{front_engine}
+    , rear_engine_{rear_engine}
+    , front_tire_ids_{std::move(front_tire_ids)}
+    , max_tire_angle_{max_tire_angle}
+    , tire_angle_interp_{std::move(tire_angle_interp)}
+    , applied_{false}
+    , physics_engine_{physics_engine}
 {
     physics_engine_.add_controllable(*this);
 }
@@ -30,6 +32,13 @@ CarController::CarController(
 CarController::~CarController()
 {
     physics_engine_.remove_controllable(*this);
+}
+
+void CarController::set_stearing_wheel_amount(float left_amount, float relaxation) {
+    float v = std::abs(dot0d(
+        rb_.rbi_.rbp_.v_,
+        rb_.rbi_.rbp_.rotation_.column(2)));
+    steer(left_amount * tire_angle_interp_(v), relaxation);
 }
 
 void CarController::apply() {
