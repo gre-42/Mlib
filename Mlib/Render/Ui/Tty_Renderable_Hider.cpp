@@ -1,4 +1,5 @@
 #include "Tty_Renderable_Hider.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Batch_Renderers/Special_Renderable_Names.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <mutex>
