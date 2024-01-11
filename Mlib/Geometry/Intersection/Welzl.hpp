@@ -47,17 +47,29 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
     const FixedArray<FixedArray<TData, tndim>, 3>& x,
     TRng& rng)
 {
-    const FixedArray<TData, tndim>& A = x(0);
-    const FixedArray<TData, tndim>& B = x(1);
-    const FixedArray<TData, tndim>& C = x(2);
-    FixedArray<TData, tndim> a = A - C;
-    FixedArray<TData, tndim> b = B - C;
-    TData denom = cc_2(a, b);
+    const auto& A = x(0);
+    const auto& B = x(1);
+    const auto& C = x(2);
+    auto a = A - C;
+    auto b = B - C;
+    auto mac = max(abs(a));
+    auto mbc = max(abs(b));
+    if ((mac < 1e-10) || (mbc < 1e-10)) {
+        return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, B }};
+    }
+    auto mab = max(abs(A - B));
+    if (mab < 1e-10) {
+        return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, C }};
+    }
+    auto scale = std::max({ mac, mbc, mab });
+    a /= scale;
+    b /= scale;
+    auto denom = cc_2(a, b);
     if (denom < 1e-10) {
         return std::nullopt;
     }
-    TData radius = std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
-    FixedArray<TData, tndim> center = cc_1(ssq(a) * b - ssq(b) * a, a, b) / (TData(2) * denom) + C;
+    auto radius = scale * std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
+    auto center = scale * cc_1(ssq(a) * b - ssq(b) * a, a, b) / (TData(2) * denom) + C;
     return BoundingSphere<TData, tndim>{ center, radius };
 }
 
@@ -72,12 +84,29 @@ std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
     A[0] = x(1) - x(0);
     A[1] = x(2) - x(0);
     A[2] = x(3) - x(0);
+    auto m10 = max(abs(A[0]));
+    auto m20 = max(abs(A[1]));
+    auto m30 = max(abs(A[2]));
+    if ((m10 < 1e-10) || (m20 < 1e-10) || (m30 < 1e-10)) {
+        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(1), x(2), x(3) }, rng);
+    }
+    auto m21 = max(abs(x(2) - x(1)));
+    auto m31 = max(abs(x(3) - x(1)));
+    if ((m21 < 1e-10) || (m31 < 1e-10)) {
+        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(2), x(3) }, rng);
+    }
+    auto m32 = max(abs(x(3) - x(2)));
+    if (m32 < 1e-10) {
+        return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(1), x(3) }, rng);
+    }
+    auto scale = std::max({ m10, m20, m30, m21, m31, m32 });
+    A /= scale;
     auto B = TData(0.5) * FixedArray<TData, 3>{ssq(A[0]), ssq(A[1]), ssq(A[2])};
     auto optional_center = lstsq_chol_1d<TData, 3, 3>(A, B, 0, 0, nullptr, nullptr, TData(1e-10));
     if (!optional_center.has_value()) {
         return std::nullopt;
     }
-    auto center = optional_center.value() + x(0);
+    auto center = scale * optional_center.value() + x(0);
     return BoundingSphere<TData, 3>::from_center_and_iterator(center, x.flat_begin(), x.flat_end());
 }
 
