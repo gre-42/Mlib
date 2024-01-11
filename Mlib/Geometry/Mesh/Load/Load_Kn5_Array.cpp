@@ -510,8 +510,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if ((material->fresnelEXP.value_or_default() != 0.f) &&
                     (material->fresnelMaxLevel.value_or_default() > material->fresnelC.value_or_default() + 1e-3))
                 {
-                    tl.material.shading.fresnel.reflectance.min = material->fresnelC.value_or_default();
-                    tl.material.shading.fresnel.reflectance.max = std::min(0.3f, material->fresnelMaxLevel.value_or_default());
+                    auto fac = std::min(1.f, 0.3f / material->fresnelMaxLevel.value_or_default());
+                    tl.material.shading.fresnel.reflectance.min = fac * material->fresnelC.value_or_default();
+                    tl.material.shading.fresnel.reflectance.max = fac * material->fresnelMaxLevel.value_or_default();
                     tl.material.shading.fresnel.reflectance.exponent = material->fresnelEXP.value_or_default();
                     tl.material.shading.fresnel.ambience = cfg.fresnel.ambience;
                 }
