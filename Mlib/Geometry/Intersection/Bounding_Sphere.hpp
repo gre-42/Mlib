@@ -62,8 +62,8 @@ public:
         center /= (TData)nelements;
         return from_center_and_iterator(center, iterator_begin, iterator_end);
     }
-    bool contains(const FixedArray<TData, tndim>& other) const {
-        return sum(squared(other - center_)) <= squared(radius_);
+    bool contains(const FixedArray<TData, tndim>& other, const TData& tolerance = TData(0)) const {
+        return sum(squared(other - center_)) <= squared(radius_ + tolerance);
     }
     bool intersects(const BoundingSphere& other) const {
         return sum(squared(other.center_ - center_)) <= squared(other.radius_ + radius_);

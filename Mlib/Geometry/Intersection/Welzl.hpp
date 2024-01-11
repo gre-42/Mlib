@@ -131,7 +131,7 @@ std::optional<BoundingSphere<TData, tndim>> welzl(
         if (!D.has_value()) {
             return std::nullopt;
         }
-        if (D.value().contains(*p_c)) {
+        if (D.value().contains(*p_c, TData(1e-10))) {
             P.resize(P.size() + 1);
             P[P.size() - 1] = P[p_i];
             P[p_i] = p_c;
