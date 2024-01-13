@@ -65,8 +65,8 @@ public:
     virtual void extend_aabb(
         const TransformationMatrix<float, double, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<float, 3>& aabb) const override;
-    virtual AxisAlignedBoundingBox<float, 3> aabb() const override;
+        AxisAlignedBoundingBox<double, 3>& aabb) const override;
+    virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
     virtual double max_center_distance(uint32_t billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
@@ -94,7 +94,7 @@ private:
     bool requires_blending_pass_;
     int continuous_blending_z_order_;
     RenderingResources& secondary_rendering_resources_;
-    AxisAlignedBoundingBox<float, 3> aabb_;
+    AxisAlignedBoundingBox<double, 3> aabb_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

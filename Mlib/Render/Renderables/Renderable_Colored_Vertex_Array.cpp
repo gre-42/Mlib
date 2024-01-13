@@ -160,6 +160,12 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     add_cvas(rcva->triangles_res_->dcvas);
 
     for (auto& cva : aggregate_off_) {
+        aabb_.extend(cva->aabb().casted<double>());
+    }
+    for (auto& cva : aggregate_once_) {
+        aabb_.extend(cva->aabb());
+    }
+    for (auto& cva : aggregate_sorted_continuously_) {
         aabb_.extend(cva->aabb());
     }
 }
@@ -1122,7 +1128,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
 void RenderableColoredVertexArray::extend_aabb(
     const TransformationMatrix<float, double, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<float, 3>& aabb) const
+    AxisAlignedBoundingBox<double, 3>& aabb) const
 {
     auto extend = [&](auto& cvas){
         for (const auto& cva : cvas) {
@@ -1131,7 +1137,7 @@ void RenderableColoredVertexArray::extend_aabb(
             }
             for (const auto& t : cva->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    aabb.extend(mv.transform(v.position TEMPLATEV casted<double>()) TEMPLATEV casted<float>());
+                    aabb.extend(mv.transform(v.position TEMPLATEV casted<double>()));
                 }
             }
         }
@@ -1143,7 +1149,7 @@ void RenderableColoredVertexArray::extend_aabb(
     extend(instances_sorted_continuously_);
 }
 
-AxisAlignedBoundingBox<float, 3> RenderableColoredVertexArray::aabb() const {
+AxisAlignedBoundingBox<double, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }
 

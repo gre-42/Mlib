@@ -70,8 +70,8 @@ public:
     virtual void extend_aabb(
         const TransformationMatrix<float, double, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<float, 3>& aabb) const;
-    virtual AxisAlignedBoundingBox<float, 3> aabb() const;
+        AxisAlignedBoundingBox<double, 3>& aabb) const;
+    virtual AxisAlignedBoundingBox<double, 3> aabb() const;
     virtual double max_center_distance(uint32_t billboard_id) const;
 };
 

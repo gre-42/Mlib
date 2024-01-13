@@ -596,10 +596,10 @@ void test_frustum3() {
     assert_isclose(frustum3.near_plane().intercept, -2.f);
     assert_allclose(frustum3.far_plane().normal, FixedArray<float, 3>{0.f, 0.f, 1.f});
     assert_isclose(frustum3.far_plane().intercept, 100.f, (float)1e-3);
-    assert_isequal(frustum3.contains(AxisAlignedBoundingBox{
+    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox{
         FixedArray<float, 3>{-1.f, -1.f, 1.f},
         FixedArray<float, 3>{1.f, 1.f, 2.f}}), false);
-    assert_isequal(frustum3.contains(AxisAlignedBoundingBox{
+    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox{
         FixedArray<float, 3>{-1.f, -1.f, -2.1f},
         FixedArray<float, 3>{1.f, 1.f, -3.1f}}), true);
 }

@@ -258,7 +258,7 @@ public:
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
-    std::optional<AxisAlignedBoundingBox<float, 3>> relative_aabb() const;
+    std::optional<AxisAlignedBoundingBox<double, 3>> relative_aabb() const;
     double max_center_distance(uint32_t billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;

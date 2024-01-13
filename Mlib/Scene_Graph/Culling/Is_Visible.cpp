@@ -49,7 +49,7 @@ bool Mlib::is_visible(
         if (frustum == nullptr) {
             return true;
         } else {
-            return frustum->contains(*aabb);
+            return frustum->intersects(*aabb);
         }
     }
     THROW_OR_ABORT("VisibilityCheck::is_visible received unknown render pass type");

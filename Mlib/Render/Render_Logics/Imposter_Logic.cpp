@@ -174,14 +174,14 @@ void ImposterLogic::render(
     {
         auto cam_cp = camera_node->get_camera().copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
-        auto mvp = dot2d(cam_cp->projection_matrix(), (v * m).casted<float, float>().affine());
-        VisibilityCheck<float> vc{mvp};
+        auto mvp = dot2d(cam_cp->projection_matrix().casted<double>(), (v * m).affine());
+        VisibilityCheck<double> vc{mvp};
         if (vc.orthographic()) {
             delete_imposter_if_exists();
             return;
         }
-        auto frustum = Frustum3<float>::from_projection_matrix(mvp);
-        if (!frustum.contains(obj_relative_aabb_)) {
+        auto frustum = Frustum3<double>::from_projection_matrix(mvp);
+        if (!frustum.intersects(obj_relative_aabb_)) {
             return;
         }
     }
@@ -201,10 +201,10 @@ void ImposterLogic::render(
 
     bool imposter_outdated;
     if (imposter_node_ != nullptr) {
-        auto mv = (v * m).casted<float, float>();
+        auto mv = v * m;
         size_t i = 0;
-        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
-            auto pc = mv.transform(corner);
+        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
+            auto pc = mv.transform(corner).casted<float>();
             auto pc_old = v.transform(old_projected_bbox_(i)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
                 return true;
@@ -235,15 +235,15 @@ void ImposterLogic::render(
                 la.value().extrinsic_R, camera_position);
             auto mv = (TransformationMatrix<float, double, 3>::inverse(
                 la.value().extrinsic_R, camera_position) *
-                m).casted<float, float>();
+                m);
             size_t i = 0;
-            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<float, 3>& corner){
+            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
                 auto pc = mv.transform(corner);
                 if (pc(2) > -1e-12) {
                     return false;
                 }
                 auto pc_proj = pc / (-pc(2));
-                old_projected_bbox_(i) = iv.transform(pc_proj.casted<double>() * cam_to_obj2_len);
+                old_projected_bbox_(i) = iv.transform(pc_proj * cam_to_obj2_len);
                 ++i;
                 return true;
             }))

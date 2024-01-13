@@ -58,12 +58,12 @@ void Renderable::append_large_instances_to_queue(
 void Renderable::extend_aabb(
     const TransformationMatrix<float, double, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<float, 3>& aabb) const
+    AxisAlignedBoundingBox<double, 3>& aabb) const
 {
     THROW_OR_ABORT("Renderable::extend_aabb not implemented");
 }
 
-AxisAlignedBoundingBox<float, 3> Renderable::aabb() const {
+AxisAlignedBoundingBox<double, 3> Renderable::aabb() const {
     THROW_OR_ABORT("Renderable::aabb not implemented");
 }
 

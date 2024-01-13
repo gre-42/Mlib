@@ -60,7 +60,7 @@ public:
             plane.intercept /= len;
         }
     }
-    bool contains(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
         // From: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         auto center = (aabb.min() + aabb.max()) / (TData)2;
         auto extents = aabb.max() - center;

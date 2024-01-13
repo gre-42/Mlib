@@ -597,8 +597,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     for (uint32_t i = 0; i < 4; ++i) {
-                        if (material->txDetail4(i).empty() ||
-                            (material->mult(i).value_or_default() == 0.f))
+                        if (material->txDetail4(i).empty()) // ||
+                            // (material->mult(i).value_or_default() == 0.f))
                         {
                             continue;
                         }

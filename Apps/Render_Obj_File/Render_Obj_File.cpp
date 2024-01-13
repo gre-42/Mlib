@@ -951,7 +951,7 @@ int main(int argc, char** argv) {
                 scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
                 aabb.value());
             if (!la.has_value()) {
-                throw std::runtime_error("Could not compute frustum");
+                throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
             }
             auto npixels = npixels_for_dpi(
                 la.value().sensor_aabb,

@@ -10,7 +10,6 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
 struct GlLookatAabb {
-    bool is_valid;
     FixedArray<float, 3, 3> extrinsic_R;
     AxisAlignedBoundingBox<float, 2> sensor_aabb;
     float near_plane;
@@ -20,6 +19,6 @@ struct GlLookatAabb {
 std::optional<GlLookatAabb> gl_lookat_aabb(
     const FixedArray<double, 3>& camera_position,
     const TransformationMatrix<float, double, 3>& object_model_matrix,
-    const AxisAlignedBoundingBox<float, 3>& object_aabb);
+    const AxisAlignedBoundingBox<double, 3>& object_aabb);
 
 }
