@@ -5,7 +5,6 @@
 #include <mutex>
 
 using namespace Mlib;
-using namespace std::string_literals;
 
 
 TtyRenderableHider::TtyRenderableHider(const ButtonStates& button_states)
@@ -14,10 +13,10 @@ TtyRenderableHider::TtyRenderableHider(const ButtonStates& button_states)
 	, decrease_much_{ button_states, key_configurations_, "decrease_much", "" }
 	, increase_much_{ button_states, key_configurations_, "increase_much", "" }
 {
-	key_configurations_.insert("decrease", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"s}, {.key = "UP"s}}}} });
-	key_configurations_.insert("increase", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"s}, {.key = "DOWN"s}}}} });
-	key_configurations_.insert("decrease_much", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"s}, {.key = "PAGE_UP"s}}}} });
-	key_configurations_.insert("increase_much", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"s}, {.key = "PAGE_DOWN"s}}}} });
+	key_configurations_.insert("decrease", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"}, {.key = "UP"}}}} });
+	key_configurations_.insert("increase", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"}, {.key = "DOWN"}}}} });
+	key_configurations_.insert("decrease_much", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"}, {.key = "PAGE_UP"}}}} });
+	key_configurations_.insert("increase_much", KeyConfiguration{ .base_combo{.key_bindings{{{.key = "LEFT_CONTROL"}, {.key = "PAGE_DOWN"}}}} });
 }
 
 void TtyRenderableHider::process_input() {
