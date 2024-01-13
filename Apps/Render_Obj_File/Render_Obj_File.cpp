@@ -24,6 +24,7 @@
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
@@ -58,6 +59,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -329,6 +331,7 @@ int main(int argc, char** argv) {
         "    [--light_beacon] <filename>\n"
         "    [--light_beacon_scale] <scale>\n"
         "    [--look_at_aabb]\n"
+        "    [--cleanup_mesh]\n"
         "    [--multilayer_diffuse <value>]\n"
         "    [--multilayer_normal <value>]\n"
         "    [--multilayer_mask <value>]\n"
@@ -349,7 +352,8 @@ int main(int argc, char** argv) {
          "--apply_static_lighting",
          "--no_shadows",
          "--bvh_demean",
-         "--look_at_aabb"},
+         "--look_at_aabb",
+         "--cleanup_mesh"},
         {"--bvh",
          "--bvh_rotation_0",
          "--bvh_rotation_1",
@@ -672,6 +676,14 @@ int main(int argc, char** argv) {
                 }
             }
             scene_node_resources.add_resource("objs", std::make_shared<CompoundResource>(scene_node_resources, resource_names));
+            if (args.has_named("--cleanup_mesh")) {
+                add_cleanup_mesh_modifier(
+                    "objs",
+                    scene_node_resources,
+                    0.f,                    // min_vertex_distance
+                    PhysicsMaterial::NONE,  // min_distance_filter
+                    true);                  // modulo_uv (this computes the material.period_world)
+            }
             merge_textures(
                 "objs",
                 MergedTexturesConfig{
@@ -1061,6 +1073,7 @@ int main(int argc, char** argv) {
                 RenderResults* render_results,
                 const RenderedSceneDescriptor& frame_id)
             {
+                execute_render_allocators();
                 std::scoped_lock lock{delete_node_mutex};
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }

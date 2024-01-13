@@ -732,7 +732,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     } else {
         append_kn5(filename);
     }
-    race_logic->set_circularity(raceway_is_circular);
+    if (race_logic != nullptr) {
+        race_logic->set_circularity(raceway_is_circular);
+    }
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {

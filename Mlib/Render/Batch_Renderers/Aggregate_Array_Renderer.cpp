@@ -83,7 +83,7 @@ void AggregateArrayRenderer::update_aggregates(
     auto rng = welzl_rng();
     for (const auto& a : aggregate_queue) {
         if (a->triangles.empty()) {
-            THROW_OR_ABORT("Aggregate triangle list is empty");
+            THROW_OR_ABORT("Aggregate triangle list is empty: \"" + a->name + '"');
         }
         if (nhd.is_hidden(a->name)) {
             continue;
