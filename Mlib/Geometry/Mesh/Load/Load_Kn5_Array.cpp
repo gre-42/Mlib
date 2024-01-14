@@ -479,7 +479,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                (material->shader == "ksPerPixelReflection") ||
                                (material->shader == "ksPerPixelSimpleRefl") ||
                                (material->shader == "ksMultilayer") ||
-                               (material->shader == "ksMultilayer_fresnel_nm"))
+                               (material->shader == "ksMultilayer_fresnel_nm") ||
+                               (material->shader == "ksMultilayer_objsp"))
                     {
                         tl.material.blend_mode = BlendMode::OFF;
                     } else {
@@ -580,7 +581,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     !material->txMask.empty() &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
                     ((material->shader == "ksMultilayer") ||
-                     (material->shader == "ksMultilayer_fresnel_nm")))
+                     (material->shader == "ksMultilayer_fresnel_nm") ||
+                     (material->shader == "ksMultilayer_objsp")))
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {

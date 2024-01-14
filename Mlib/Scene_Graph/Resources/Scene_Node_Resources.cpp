@@ -70,7 +70,7 @@ void SceneNodeResources::preload_single(
     try {
         resource->preload(filter);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Could not preload \"" + name + "\": " + e.what());
+        throw std::runtime_error("Could not preload resource \"" + name + "\": " + e.what());
     }
 }
 

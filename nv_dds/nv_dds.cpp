@@ -615,10 +615,12 @@ void CDDSImage::load(istream& is, bool flipImage) {
     }
 
     // store primary surface width/height/depth
-    unsigned int width, height, depth;
-    width = ddsh.dwWidth;
-    height = ddsh.dwHeight;
-    depth = clamp_size(ddsh.dwDepth);   // set to 1 if 0
+    unsigned int width = ddsh.dwWidth;
+    unsigned int height = ddsh.dwHeight;
+    unsigned int depth = clamp_size(ddsh.dwDepth);   // set to 1 if 0
+    if ((ddsh.dwFlags & DDSF_DEPTH) == 0) {
+        depth = 1;
+    }
 
     // use correct size calculation function depending on whether image is
     // compressed
@@ -628,10 +630,8 @@ void CDDSImage::load(istream& is, bool flipImage) {
     // load all surfaces for the image (6 surfaces for cubemaps)
     for (unsigned int n = 0; n < (unsigned int) (m_type == TextureCubemap ? 6 : 1); n++) {
         // add empty texture object
-        m_images.push_back(CTexture());
-
         // get reference to newly added texture object
-        CTexture &img = m_images[n];
+        CTexture &img = m_images.emplace_back();
 
         // calculate surface size
         unsigned int size = (this->*sizefunc)(width, height) * depth;
@@ -1005,10 +1005,7 @@ bool CDDSImage::is_compressed() {
 ///////////////////////////////////////////////////////////////////////////////
 // clamps input size to [1-size]
 inline unsigned int CDDSImage::clamp_size(unsigned int size) {
-    if (size <= 0)
-        size = 1;
-
-    return size;
+    return std::max(1u, size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
