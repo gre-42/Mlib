@@ -336,13 +336,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             static const size_t NAME = 2;
             Mlib::re::smatch match;
             if (Mlib::re::regex_search(node.name, match, name_reg)) {
-                static const DECLARE_REGEX(grass_reg, "^(?:grass|(?:GR|GRASS)(?:\\b|_|\\d))");
-                static const DECLARE_REGEX(road_reg, "^(?:road|ROAD(?:\\b|_|\\d))");
-                static const DECLARE_REGEX(gravel_reg, "^(?:sandgravel|SAND|GRAVEL(?:\\b|_|\\d))");
+                static const DECLARE_REGEX(grass_reg, "^(?:grass|GR|GRASS)(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(road_reg, "^(?:road|ROAD)(?:\\b|_|\\d)");
+                static const DECLARE_REGEX(gravel_reg, "^(?:sandgravel|SAND|GRA|GRAV|GRAVEL)(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(side_reg, "^SIDE(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(skids_reg, "^SKIDS(?:\\b|_|\\d)");
                 static const DECLARE_REGEX(tree_reg, "^(?:tree|STREE|bush|bushes)(?:\\b|_|\\d)");
-                static const DECLARE_REGEX(vertical_reg, "^(?:wall|(?:WALL|KERB|ROCKS)(?:\\b|_|\\d))");
+                static const DECLARE_REGEX(vertical_reg, "^(?:wall|WALL|KERB|ROCKS)(?:\\b|_|\\d)");
                 auto number = match[NUMBER].matched
                     ? std::optional{ safe_stou(match[NUMBER].str()) }
                     : std::nullopt;
@@ -579,6 +579,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 } else if (
                     !material->txDiffuse.empty() &&
                     !material->txMask.empty() &&
+                    any(material->mult.applied<bool>([](const auto& v) { return v.value_or_default() != 0.f; })) &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
                     ((material->shader == "ksMultilayer") ||
                      (material->shader == "ksMultilayer_fresnel_nm") ||
