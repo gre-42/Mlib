@@ -596,13 +596,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     };
     auto tex_coords = [](const BlendMapTexture& t) {
         std::stringstream sstr;
+        sstr << std::scientific;
         sstr << '(';
         if (t.uv_source == BlendMapUvSource::HORIZONTAL) {
             sstr << "(FragPos.xz + horizontal_detailmap_remainder)";
         } else {
             sstr << "tex_coord_flipped";
         }
-        sstr << " * float(" << t.scale << "))";
+        sstr << " * " << t.scale << ")";
         return sstr.str();
     };
     sstr << "void main()" << std::endl;
@@ -833,7 +834,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                         if (t->reduction == BlendMapReductionOperation::REPLACE_COLOR) {
                             sstr << "            float brightness = dot(texture_color_ambient_diffuse.rgb, vec3(0.2989, 0.5870, 0.1140));" << std::endl;
                             sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight);" << std::endl;
-                            sstr << "            texture_color_ambient_diffuse.rgb += bcolor.rgb * (final_weight * brightness * float(" << t->discreteness << "));" << std::endl;
+                            sstr << "            texture_color_ambient_diffuse.rgb += bcolor.rgb * (final_weight * brightness * " << t->discreteness << ");" << std::endl;
                         } else if (t->reduction == BlendMapReductionOperation::COLORIZE) {
                             sstr << "            texture_color_ambient_diffuse.rgb *= (1 - final_weight) + bcolor.rgb * (final_weight * " << t->discreteness << ");" << std::endl;
                         } else {
@@ -933,13 +934,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
                 sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                 sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[" << i << "], proj_coords01.xy).r) {" << std::endl;
-                if (!ambience.all_equal(0)) {
+                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0)) {
+                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0)) {
+                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
                     if (specular_exponent == 0.f) {
                         sstr << "            frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
                     } else {
@@ -960,13 +961,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 } else {
                     sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
                 }
-                if (!ambience.all_equal(0)) {
+                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0)) {
+                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0)) {
+                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
                     if (specular_exponent == 0.f) {
                         sstr << "        frag_brightness_specular += light_fac * lightSpecularity[" << i << "];" << std::endl;
                     } else {
@@ -979,13 +980,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!light_noshadow_indices.empty()) {
             for (size_t i : light_noshadow_indices) {
                 sstr << "    {" << std::endl;
-                if (!ambience.all_equal(0)) {
+                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0)) {
+                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0)) {
+                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
                     if (specular_exponent == 0.f) {
                         sstr << "        frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
                     } else {
