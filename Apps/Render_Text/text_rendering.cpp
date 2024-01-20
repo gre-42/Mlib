@@ -77,6 +77,7 @@ int main(int argc, char** argv)
         // ------------
         ConstantConstraint large_font_height{100, ScreenUnits::PIXELS};
         ConstantConstraint small_font_height{20, ScreenUnits::PIXELS};
+        ConstantConstraint line_distance{100.f, ScreenUnits::PIXELS};
         LayoutConstraintParameters ly{
             .dpi = 96.f,
             .min_pixel = 0.f,
@@ -123,7 +124,6 @@ int main(int argc, char** argv)
 
             {
                 PixelRegion ew{0.f, 400, 0.f, 100};
-                ConstantConstraint line_distance{100.f, ScreenUnits::PIXELS};
                 renderable_text.render(large_font_height.to_pixels(ly), ew, "This is sample text", line_distance.to_pixels(ly));
             }
             {

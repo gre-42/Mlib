@@ -19,7 +19,11 @@ PixelRegion::PixelRegion(
 PixelRegion::PixelRegion(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly)
-: PixelRegion{lx.min_pixel, lx.end_pixel, ly.min_pixel, ly.end_pixel}
+    : PixelRegion{
+        lx.min_pixel,
+        lx.end_pixel,
+        ly.min_pixel,
+        ly.end_pixel}
 {}
 
 PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {

@@ -1,14 +1,13 @@
 #include "Screen_Units.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <unordered_map>
+#include <map>
 
 using namespace Mlib;
 
 ScreenUnits Mlib::screen_units_from_string(const std::string& str) {
-    static const std::unordered_map<std::string, ScreenUnits> m{
+    static const std::map<std::string, ScreenUnits> m{
         {"pixels", ScreenUnits::PIXELS},
-        {"pixels_fp", ScreenUnits::PIXELS_FP},
         {"inches", ScreenUnits::INCHES}
     };
     auto it = m.find(str);
@@ -21,8 +20,6 @@ ScreenUnits Mlib::screen_units_from_string(const std::string& str) {
 float Mlib::to_pixels(ScreenUnits units, float value, float dpi) {
     switch (units) {
     case ScreenUnits::PIXELS:
-        return std::round(value);
-    case ScreenUnits::PIXELS_FP:
         return value;
     case ScreenUnits::INCHES:
         return dpi * value;
@@ -38,8 +35,6 @@ FixedArray<float, 2> Mlib::to_pixels(
 {
     switch (units) {
     case ScreenUnits::PIXELS:
-        return round(value);
-    case ScreenUnits::PIXELS_FP:
         return value;
     case ScreenUnits::INCHES:
         return dpi * value;

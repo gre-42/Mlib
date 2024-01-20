@@ -187,8 +187,6 @@ void TextResource::render(
     AlignText align,
     float line_distance)
 {
-    ConstantConstraint x{position(0), ScreenUnits::PIXELS};
-    ConstantConstraint y{position(1), ScreenUnits::PIXELS};
     set_contents(
         font_height,
         canvas_size,
