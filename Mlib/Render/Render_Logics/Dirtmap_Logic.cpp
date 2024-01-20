@@ -50,11 +50,11 @@ void DirtmapLogic::render(
                 LayoutConstraintParameters{
                     .dpi = 96.f,
                     .min_pixel = 0.f,
-                    .max_pixel = 639.f},
+                    .end_pixel = 640},
                 LayoutConstraintParameters{
                     .dpi = 96.f,
                     .min_pixel = 0.f,
-                    .max_pixel = 479.f},
+                    .end_pixel = 480},
                 render_config,
                 scene_graph_config,
                 render_results,
