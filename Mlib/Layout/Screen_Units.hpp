@@ -9,6 +9,7 @@ class FixedArray;
 
 enum class ScreenUnits {
     PIXELS,
+    PIXELS_FP,
     INCHES
 };
 

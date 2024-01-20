@@ -23,8 +23,8 @@ float MaximumConstraint::to_pixels(const LayoutConstraintParameters& params) con
 ConstantConstraint::ConstantConstraint(
     float f,
     ScreenUnits screen_units)
-: f_{f},
-  screen_units_{screen_units}
+    : f_{ f }
+    , screen_units_{ screen_units }
 {}
 
 float ConstantConstraint::to_pixels(const LayoutConstraintParameters& params) const {
@@ -35,9 +35,9 @@ AdditiveConstraint::AdditiveConstraint(
     float f,
     ScreenUnits screen_units,
     ILayoutPixels& a)
-: f_{f},
-  screen_units_{screen_units},
-  a_{a}
+    : f_{ f }
+    , screen_units_{ screen_units }
+    , a_{ a }
 {}
 
 float AdditiveConstraint::to_pixels(const LayoutConstraintParameters& params) const {
@@ -48,9 +48,9 @@ FractionalConstraint::FractionalConstraint(
     float f,
     ILayoutPixels& a,
     ILayoutPixels& b)
-: f_{f},
-  a_{a},
-  b_{b}
+    : f_{ f }
+    , a_{ a }
+    , b_{ b }
 {}
     
 float FractionalConstraint::to_pixels(const LayoutConstraintParameters& params) const {

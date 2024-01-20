@@ -59,13 +59,13 @@ FillWithTextureLogic::FillWithTextureLogic(
     AlphaChannelRole alpha_channel_role,
     const float* quad_vertices,
     std::optional<size_t> layer)
-: GenericPostProcessingLogic{quad_vertices},
-  rendering_resources_{rendering_resources},
-  image_resource_name_{rendering_resources_.colormap(image_resource_name)},
-  update_cycle_{update_cycle},
-  cull_face_mode_{cull_face_mode},
-  alpha_channel_role_{alpha_channel_role},
-  layer_{layer}
+    : GenericPostProcessingLogic{ quad_vertices }
+    , rendering_resources_{ rendering_resources }
+    , image_resource_name_{ rendering_resources_.colormap(image_resource_name) }
+    , update_cycle_{ update_cycle }
+    , cull_face_mode_{ cull_face_mode }
+    , alpha_channel_role_{ alpha_channel_role }
+    , layer_{ layer }
 {}
 
 FillWithTextureLogic::~FillWithTextureLogic() = default;
@@ -155,7 +155,7 @@ void FillWithTextureLogic::render(
     const LayoutConstraintParameters& ly)
 {
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
-    auto vg = ViewportGuard::from_widget(PixelRegion{lx, ly});
+    auto vg = ViewportGuard::from_widget(PixelRegion{ lx, ly });
     if (vg.has_value()) {
         render();
     }

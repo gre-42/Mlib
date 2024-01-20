@@ -10,10 +10,10 @@ PixelRegion::PixelRegion(
     float right,
     float bottom,
     float top)
-: left_{left},
-  right_{right},
-  bottom_{bottom},
-  top_{top}
+    : left_{ left }
+    , right_{ right }
+    , bottom_{ bottom }
+    , top_{ top }
 {}
 
 PixelRegion::PixelRegion(
@@ -31,11 +31,11 @@ PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy)
 }
 
 float PixelRegion::width() const {
-    return right_ - left_ + 1;
+    return right_ - left_;
 }
 
 float PixelRegion::height() const {
-    return top_ - bottom_ + 1;
+    return top_ - bottom_;
 }
 
 float PixelRegion::left() const {
@@ -59,10 +59,10 @@ Widget::Widget(
     const ILayoutPixels& right,
     const ILayoutPixels& bottom,
     const ILayoutPixels& top)
-: left_{left},
-  right_{right},
-  bottom_{bottom},
-  top_{top}
+    : left_{ left }
+    , right_{ right }
+    , bottom_{ bottom }
+    , top_{ top }
 {}
 
 std::unique_ptr<IPixelRegion> Widget::evaluate(
