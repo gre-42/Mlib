@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Collision/Record/Compute_Edge_Overlap.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
+#include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -114,13 +115,13 @@ static void handle_extended_reflection(
             if (penetrating_point == nullptr) {
                 THROW_OR_ABORT("Penetrating point not set");
             }
-            float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
             if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
             {
-                penetration_depth -= c.o1.jump_strength_ * (float)c.history.cfg.oversampling;
+                jump(c.o0.rbi_.rbp_, c.o1.rbi_.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
+            float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
             float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
             c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;
             auto ci = std::make_unique<ShockAbsorberContactInfo1>(

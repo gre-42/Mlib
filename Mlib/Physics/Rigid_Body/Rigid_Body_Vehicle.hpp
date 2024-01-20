@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -164,7 +165,7 @@ public:
     const std::string& asset_id() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();
-    void set_jump_strength(float value);
+    void set_jump_dv(float value);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -228,7 +229,7 @@ public:
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
-    float jump_strength_ = 0.25f;
+    float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;
     AlignToSurfaceState align_to_surface_state_;

@@ -143,8 +143,8 @@ void RigidBodyVehicle::set_wants_to_jump() {
     jump_state_.jumping_counter_ = 0;
 }
 
-void RigidBodyVehicle::set_jump_strength(float value) {
-    jump_strength_ = value;
+void RigidBodyVehicle::set_jump_dv(float value) {
+    jump_dv_ = value;
 }
 
 void RigidBodyVehicle::integrate_force(

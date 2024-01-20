@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class SetJumpStrength: public LoadSceneInstanceFunction {
+class SetJumpDv: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit SetJumpStrength(RenderableScene& renderable_scene);
+    explicit SetJumpDv(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

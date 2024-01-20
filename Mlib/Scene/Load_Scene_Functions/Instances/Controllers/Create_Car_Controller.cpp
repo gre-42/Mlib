@@ -1,10 +1,7 @@
 #include "Create_Car_Controller.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
-#include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Car_Controller.hpp>
@@ -23,9 +20,9 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(front_engine);
 DECLARE_ARGUMENT(rear_engine);
 DECLARE_ARGUMENT(front_tire_ids);
+DECLARE_ARGUMENT(max_tire_angle);
 DECLARE_ARGUMENT(tire_angle_velocities);
 DECLARE_ARGUMENT(tire_angles);
-DECLARE_ARGUMENT(asset_id);
 }
 
 const std::string CreateCarController::key = "create_car_controller";
@@ -55,11 +52,6 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (rb.vehicle_controller_ != nullptr) {
         THROW_OR_ABORT("Car controller already set");
     }
-    auto asset_id = args.arguments.at<std::string>(KnownArgs::asset_id);
-    const auto& vars = args
-        .asset_references["vehicles"]
-        .at(asset_id)
-        .rp;
     auto front_tire_ids = args.arguments.at_non_null<std::vector<size_t>>(KnownArgs::front_tire_ids, {});
     rb.vehicle_controller_ = std::make_unique<CarController>(
         rb,
@@ -68,10 +60,12 @@ void CreateCarController::execute(const LoadSceneJsonUserFunctionArgs& args)
         front_tire_ids,
         front_tire_ids.empty()
             ? NAN
-            : vars.database.at<float>("MAX_TIRE_ANGLE") * degrees,
-        Interp<float>{
-            args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, stov),
-            args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
-            OutOfRangeBehavior::CLAMP},
+            : stoa(args.arguments.at<float>(KnownArgs::max_tire_angle)),
+        front_tire_ids.empty()
+            ? Interp<float>{{}, {}}
+            : Interp<float>{
+                args.arguments.at_vector<float>(KnownArgs::tire_angle_velocities, stov),
+                args.arguments.at_vector<float>(KnownArgs::tire_angles, stoa),
+                OutOfRangeBehavior::CLAMP},
         physics_engine);
 }

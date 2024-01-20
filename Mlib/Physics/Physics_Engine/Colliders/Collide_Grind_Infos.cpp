@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
+#include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -21,30 +22,14 @@ void Mlib::collide_grind_infos(
             rb->grind_state_.grind_axis_ = 2;
         }
         if (rb->jump_state_.wants_to_jump_oversampled_) {
-            auto& o0 = *rb;
-            auto& o1 = *p.rail_rb;
-            auto point_dir = o0.rbi_.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
-            point_dir *= sign(dot0d(point_dir, o0.rbi_.rbp_.v_));
+            auto& o0 = *p.rail_rb;
+            auto& o1 = *rb;
+            auto point_dir = o1.rbi_.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
+            point_dir *= sign(dot0d(point_dir, o1.rbi_.rbp_.v_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
             auto n = -gravity_direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
-            if (o1.mass() == INFINITY) {
-                float mc = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, mc * cfg.grind_jump_dv);
-                o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda,
-                    .position = p.intersection_point});
-            } else {
-                float mc0 = o0.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float mc1 = o1.rbi_.rbp_.effective_mass({ .vector = n, .position = p.intersection_point });
-                float lambda = - std::max(0.f, (mc0 * mc1 / (mc0 + mc1)) * cfg.grind_jump_dv);
-                o0.rbi_.rbp_.integrate_impulse({
-                    .vector = -n * lambda,
-                    .position = p.intersection_point});
-                o1.rbi_.rbp_.integrate_impulse({
-                    .vector = n * lambda,
-                    .position = p.intersection_point});
-            }
+            jump(o0.rbi_.rbp_, o1.rbi_.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.oversampling) {
             auto n = cross(p.rail_direction, FixedArray<double, 3>{ 0., 1., 0. });
             double l2 = sum(squared(n));

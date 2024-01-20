@@ -155,7 +155,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Follow_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Strength.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Dv.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Door_Distance.hpp>
@@ -356,7 +356,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
     register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
     register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
-    register_json_user_function(SetJumpStrength::key, SetJumpStrength::json_user_function);
+    register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
     register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
     register_json_user_function(SetNodeHider::key, SetNodeHider::json_user_function);
     register_json_user_function(SetNodeRotation::key, SetNodeRotation::json_user_function);

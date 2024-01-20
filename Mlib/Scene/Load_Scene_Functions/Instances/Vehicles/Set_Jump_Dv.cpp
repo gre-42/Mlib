@@ -1,4 +1,4 @@
-#include "Set_Jump_Strength.hpp"
+#include "Set_Jump_Dv.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -18,21 +18,21 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(value);
 }
 
-const std::string SetJumpStrength::key = "set_jump_strength";
+const std::string SetJumpDv::key = "set_jump_dv";
 
-LoadSceneJsonUserFunction SetJumpStrength::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+LoadSceneJsonUserFunction SetJumpDv::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    SetJumpStrength(args.renderable_scene()).execute(args);
+    SetJumpDv(args.renderable_scene()).execute(args);
 };
 
-SetJumpStrength::SetJumpStrength(RenderableScene& renderable_scene) 
+SetJumpDv::SetJumpDv(RenderableScene& renderable_scene) 
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void SetJumpStrength::execute(const LoadSceneJsonUserFunctionArgs& args)
+void SetJumpDv::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
-    rb.set_jump_strength(args.arguments.at<float>(KnownArgs::value) * meters);
+    rb.set_jump_dv(args.arguments.at<float>(KnownArgs::value) * kph);
 }
