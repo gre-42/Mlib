@@ -19,7 +19,7 @@ PixelRegion::PixelRegion(
 PixelRegion::PixelRegion(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly)
-: PixelRegion{lx.min_pixel, lx.max_pixel, ly.min_pixel, ly.max_pixel}
+: PixelRegion{lx.min_pixel, lx.end_pixel, ly.min_pixel, ly.end_pixel}
 {}
 
 PixelRegion PixelRegion::transformed(const IPixelRegion& ew, float dx, float dy) {
@@ -81,8 +81,8 @@ std::unique_ptr<IPixelRegion> Widget::evaluate(
         return std::make_unique<PixelRegion>(
             left_.to_pixels(lx),
             right_.to_pixels(lx),
-            ly.max_pixel - top_.to_pixels(ly),
-            ly.max_pixel - bottom_.to_pixels(ly));
+            ly.end_pixel - top_.to_pixels(ly),
+            ly.end_pixel - bottom_.to_pixels(ly));
     }
     THROW_OR_ABORT("Unknown y-orientation");
 }

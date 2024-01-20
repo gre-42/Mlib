@@ -12,11 +12,11 @@ RenderToPercentageRegionLogic::RenderToPercentageRegionLogic(
     const FixedArray<float, 2>& size,
     FocusFilter focus_filter,
     bool flip_y)
-: render_logic_{render_logic},
-  position_{position},
-  size_{size},
-  focus_filter_{std::move(focus_filter)},
-  flip_y_{flip_y}
+    : render_logic_{ render_logic }
+    , position_{ position }
+    , size_{ size }
+    , focus_filter_{ std::move(focus_filter) }
+    , flip_y_{ flip_y }
 {}
 
 void RenderToPercentageRegionLogic::render(
@@ -36,19 +36,19 @@ void RenderToPercentageRegionLogic::render(
         size_(1) * ly.flength()};
     ViewportGuard vg{
         pix_position(0),
-        flip_y_ ? ly.max_pixel - pix_position(1) - pix_size(1) : pix_position(1),
+        flip_y_ ? ly.end_pixel - pix_position(1) - pix_size(1) : pix_position(1),
         pix_size(0),
         pix_size(1)};
     render_logic_.render(
         LayoutConstraintParameters{
             .dpi = lx.dpi,
             .min_pixel = pix_position(0),
-            .max_pixel = pix_position(0) + pix_size(0) - 1.f,
+            .end_pixel = pix_position(0) + pix_size(0),
         },
         LayoutConstraintParameters{
             .dpi = ly.dpi,
             .min_pixel = pix_position(1),
-            .max_pixel = pix_position(1) + pix_size(1) - 1.f,
+            .end_pixel = pix_position(1) + pix_size(1),
         },
         render_config,
         scene_graph_config,

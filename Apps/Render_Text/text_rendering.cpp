@@ -80,7 +80,7 @@ int main(int argc, char** argv)
         LayoutConstraintParameters ly{
             .dpi = 96.f,
             .min_pixel = 0.f,
-            .max_pixel = 799.f};
+            .end_pixel = 800.f};
         TextResource renderable_text{argv[1], {1.f, 0.5f, 0.5f}};
 
         TextResource circular_renderable_text{argv[1], {0.5f, 1.f, 0.5f}};
@@ -122,12 +122,12 @@ int main(int argc, char** argv)
             glClear(GL_COLOR_BUFFER_BIT);
 
             {
-                PixelRegion ew{0.f, 399.f, 0.f, 99.f};
+                PixelRegion ew{0.f, 400, 0.f, 100};
                 ConstantConstraint line_distance{100.f, ScreenUnits::PIXELS};
                 renderable_text.render(large_font_height.to_pixels(ly), ew, "This is sample text", line_distance.to_pixels(ly));
             }
             {
-                PixelRegion ew{10.f, 399.f, 120.f, 500.f};
+                PixelRegion ew{10.f, 400, 120.f, 500.f};
                 circular_data_display.render(
                     value,          // value
                     20.f,           // font_height

@@ -10,7 +10,7 @@ public:
     virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 };
 
-class MaximumConstraint: public ILayoutPixels {
+class EndConstraint: public ILayoutPixels {
 public:
     virtual float to_pixels(const LayoutConstraintParameters& params) const override;
 };

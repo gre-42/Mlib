@@ -305,11 +305,11 @@ void ImposterLogic::render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)npixels.value().width - 1},
+                    .end_pixel = (float)npixels.value().width},
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)npixels.value().height - 1},
+                    .end_pixel = (float)npixels.value().height},
                 render_config,
                 scene_graph_config,
                 render_results,

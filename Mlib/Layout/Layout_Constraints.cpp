@@ -8,7 +8,7 @@ using namespace Mlib;
 
 LayoutConstraints::LayoutConstraints() {
     set_pixels("min", std::make_unique<MinimumConstraint>());
-    set_pixels("max", std::make_unique<MaximumConstraint>());
+    set_pixels("end", std::make_unique<EndConstraint>());
 }
 
 LayoutConstraints::~LayoutConstraints() = default;

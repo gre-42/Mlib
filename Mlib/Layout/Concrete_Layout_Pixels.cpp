@@ -13,11 +13,11 @@ float MinimumConstraint::to_pixels(const LayoutConstraintParameters& params) con
     return params.min_pixel;
 }
 
-float MaximumConstraint::to_pixels(const LayoutConstraintParameters& params) const {
-    if (std::isnan(params.max_pixel)) {
-        THROW_OR_ABORT("Maximum pixel requested, but max_pixel is NAN");
+float EndConstraint::to_pixels(const LayoutConstraintParameters& params) const {
+    if (std::isnan(params.end_pixel)) {
+        THROW_OR_ABORT("End pixel requested, but max_pixel is NAN");
     }
-    return params.max_pixel;
+    return params.end_pixel;
 }
 
 ConstantConstraint::ConstantConstraint(

@@ -51,11 +51,11 @@ void ReadPixelsLogic::render(
                     LayoutConstraintParameters{
                         .dpi = o.dpi,
                         .min_pixel = 0.f,
-                        .max_pixel = (float)o.width - 1},
+                        .end_pixel = (float)o.width},
                     LayoutConstraintParameters{
                         .dpi = o.dpi,
                         .min_pixel = 0.f,
-                        .max_pixel = (float)o.height - 1},
+                        .end_pixel = (float)o.height},
                     render_config,
                     scene_graph_config,
                     render_results,

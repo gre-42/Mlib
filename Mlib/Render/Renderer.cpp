@@ -96,11 +96,11 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                     LayoutConstraintParameters{
                         .dpi = dpi(0),
                         .min_pixel = 0.f,
-                        .max_pixel = (float)width - 1.f},
+                        .end_pixel = (float)width},
                     LayoutConstraintParameters{
                         .dpi = dpi(1),
                         .min_pixel = 0.f,
-                        .max_pixel = (float)height - 1.f},
+                        .end_pixel = (float)height},
                     render_config_,
                     scene_graph_config,
                     render_results_,

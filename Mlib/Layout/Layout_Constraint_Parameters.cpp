@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 float LayoutConstraintParameters::flength() const {
-    return max_pixel - min_pixel + 1;
+    return end_pixel - min_pixel;
 }
 
 int LayoutConstraintParameters::ilength() const {
@@ -24,7 +24,7 @@ LayoutConstraintParameters LayoutConstraintParameters::child_x(
     return LayoutConstraintParameters{
         .dpi = lx.dpi,
         .min_pixel = region.left(),
-        .max_pixel = region.right()};
+        .end_pixel = region.right()};
 }
 
 LayoutConstraintParameters LayoutConstraintParameters::child_y(
@@ -34,5 +34,5 @@ LayoutConstraintParameters LayoutConstraintParameters::child_y(
     return LayoutConstraintParameters{
         .dpi = ly.dpi,
         .min_pixel = region.bottom(),
-        .max_pixel = region.top()};
+        .end_pixel = region.top()};
 }

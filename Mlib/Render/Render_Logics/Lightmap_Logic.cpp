@@ -110,11 +110,11 @@ void LightmapLogic::render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)lightmap_width_ - 1.f},
+                    .end_pixel = (float)lightmap_width_},
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)lightmap_width_ - 1.f},
+                    .end_pixel = (float)lightmap_width_},
                 render_config,
                 scene_graph_config,
                 render_results,

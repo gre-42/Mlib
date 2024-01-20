@@ -71,11 +71,11 @@ void RenderToTextureLogic::render(
                 LayoutConstraintParameters{
                     .dpi = lx.dpi,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)texture_size_(0) - 1.f},
+                    .end_pixel = (float)texture_size_(0)},
                 LayoutConstraintParameters{
                     .dpi = ly.dpi,
                     .min_pixel = 0.f,
-                    .max_pixel = (float)texture_size_(1) - 1.f},
+                    .end_pixel = (float)texture_size_(1)},
                 render_config,
                 scene_graph_config,
                 render_results,

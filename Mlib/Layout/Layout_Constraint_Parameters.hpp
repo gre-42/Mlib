@@ -15,7 +15,7 @@ struct LayoutConstraintParameters {
     int ilength() const;
     float dpi;
     float min_pixel;
-    float max_pixel;
+    float end_pixel;
 };
 
 }
