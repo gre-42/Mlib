@@ -330,12 +330,12 @@ Mlib::LayoutConstraintParameters AEngine::LayoutParametersX() const {
     return Mlib::LayoutConstraintParameters{
         .dpi = xdpi_,
         .min_pixel = 0.f,
-        .max_pixel = (float)gl_context_->GetScreenWidth() - 1.f};
+        .end_pixel = (float)gl_context_->GetScreenWidth()};
 }
 
 Mlib::LayoutConstraintParameters AEngine::LayoutParametersY() const {
     return Mlib::LayoutConstraintParameters{
         .dpi = ydpi_,
         .min_pixel = 0.f,
-        .max_pixel = (float)gl_context_->GetScreenHeight() - 1.f};
+        .end_pixel = (float)gl_context_->GetScreenHeight()};
 }
