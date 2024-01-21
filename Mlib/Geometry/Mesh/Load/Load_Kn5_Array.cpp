@@ -487,26 +487,26 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         THROW_OR_ABORT("Unknown shader: \"" + material->shader + '"');
                     }
                 }
-                tl.material.shading.emissivity = OrderableFixedArray{
-                    cfg.emissivity_factor *
+                tl.material.shading.emissive = OrderableFixedArray{
+                    cfg.emissive_factor *
                     material->ksEmissive.value_or_default()};
-                tl.material.shading.ambience = OrderableFixedArray{
-                    cfg.ambience_factor *
+                tl.material.shading.ambient = OrderableFixedArray{
+                    cfg.ambient_factor *
                     material->ksAmbient.value_or_default() *
                     lit_mult};
-                tl.material.shading.diffusivity = OrderableFixedArray{
-                    cfg.diffusivity_factor *
+                tl.material.shading.diffuse = OrderableFixedArray{
+                    cfg.diffuse_factor *
                     material->diffuseMult.value_or_default() *
                     material->ksDiffuse.value_or_default() *
                     lit_mult};
-                tl.material.shading.specularity = OrderableFixedArray{
-                    cfg.specularity_factor *
+                tl.material.shading.specular = OrderableFixedArray{
+                    cfg.specular_factor *
                     material->ksSpecular.value_or_default() *
                     lit_mult *
                     specular_mult};
                 tl.material.shading.specular_exponent = material->ksSpecularEXP.value_or_default();
                 if (tl.material.shading.specular_exponent == 0.f) {
-                    tl.material.shading.specularity = 0.f;
+                    tl.material.shading.specular = 0.f;
                 }
                 if ((material->fresnelEXP.value_or_default() != 0.f) &&
                     (material->fresnelMaxLevel.value_or_default() > material->fresnelC.value_or_default() + 1e-3))
@@ -515,7 +515,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     tl.material.shading.fresnel.reflectance.min = fac * material->fresnelC.value_or_default();
                     tl.material.shading.fresnel.reflectance.max = fac * material->fresnelMaxLevel.value_or_default();
                     tl.material.shading.fresnel.reflectance.exponent = material->fresnelEXP.value_or_default();
-                    tl.material.shading.fresnel.ambience = cfg.fresnel.ambience;
+                    tl.material.shading.fresnel.ambient = cfg.fresnel.ambient;
                 }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material->shader == "ksGrass") &&

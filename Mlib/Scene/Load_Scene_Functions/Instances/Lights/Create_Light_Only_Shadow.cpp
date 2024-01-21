@@ -63,10 +63,10 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<int>(KnownArgs::lightmap_height)),
         0 /* z_order */);
     node->add_light(std::make_unique<Light>(Light{
-        .ambience = {1.f, 1.f, 1.f},
-        .diffusivity = {1.f, 1.f, 1.f},
-        .specularity = {1.f, 1.f, 1.f},
-        .fresnel_ambience = {1.f, 1.f, 1.f},
+        .ambient = {1.f, 1.f, 1.f},
+        .diffuse = {1.f, 1.f, 1.f},
+        .specular = {1.f, 1.f, 1.f},
+        .fresnel_ambient = {1.f, 1.f, 1.f},
         .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

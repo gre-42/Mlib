@@ -42,8 +42,8 @@ CheckPoints::CheckPoints(
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses,
     bool enable_height_changed_mode,
-    const FixedArray<float, 3>& selection_emissivity,
-    const FixedArray<float, 3>& deselection_emissivity,
+    const FixedArray<float, 3>& selection_emissive,
+    const FixedArray<float, 3>& deselection_emissive,
     const std::function<void()>& on_finish)
 : advance_times_{advance_times},
   track_reader_{
@@ -75,8 +75,8 @@ CheckPoints::CheckPoints(
   lap_elapsed_seconds_{NAN},
   race_state_{RaceState::COUNTDOWN},
   enable_height_changed_mode_{enable_height_changed_mode},
-  selection_emissivity_{selection_emissivity},
-  deselection_emissivity_{deselection_emissivity},
+  selection_emissive_{selection_emissive},
+  deselection_emissive_{deselection_emissive},
   on_finish_{on_finish},
   shutting_down_{false}
 {
@@ -171,7 +171,7 @@ void CheckPoints::advance_time(float dt) {
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
         }
-        beacon_nodes_[i01_].beacon_node->color_style("").emissivity = selection_emissivity_;
+        beacon_nodes_[i01_].beacon_node->color_style("").emissive = selection_emissive_;
         checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
         beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
         const auto& t = track_reader_.track_element().transformation();
@@ -199,7 +199,7 @@ void CheckPoints::advance_time(float dt) {
         if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
-                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissivity = deselection_emissivity_;
+                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissive = deselection_emissive_;
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();
@@ -218,10 +218,10 @@ void CheckPoints::advance_time(float dt) {
                         continue;
                     }
                     const auto& style = n->color_style(chassis);
-                    if (!all(style.ambience == style.diffusivity)) {
+                    if (!all(style.ambient == style.diffuse)) {
                         THROW_OR_ABORT("Could not determine unique vehicle color");
                     }
-                    vehicle_colors.push_back(style.ambience);
+                    vehicle_colors.push_back(style.ambient);
                 }
             }
             race_state_ = player_.notify_lap_finished(

@@ -33,17 +33,17 @@ struct LoadMeshConfig {
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
     std::string reflection_map;
-    FixedArray<float, 3> emissivity_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> ambience_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> diffusivity_factor = FixedArray<float, 3>(1.f);
-    FixedArray<float, 3> specularity_factor = FixedArray<float, 3>(1.f);
-    FresnelAndAmbience fresnel{
+    FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
+    FresnelAndAmbient fresnel{
         .reflectance = {
             .min = 0.f,
             .max = 0.f,
             .exponent = 0.f
         },
-        .ambience = {0.f, 0.f, 0.f}
+        .ambient = {0.f, 0.f, 0.f}
     };
     float desaturate = 0.f;
     std::string histogram;

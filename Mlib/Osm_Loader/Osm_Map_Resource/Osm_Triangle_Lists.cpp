@@ -15,11 +15,11 @@
 using namespace Mlib;
 
 static Shading material_specularity(Shading res, const OsmResourceConfig& config) {
-    res.emissivity *= config.emissivity_factor;
-    res.ambience *= config.ambience_factor;
-    res.diffusivity *= config.diffusivity_factor;
-    res.specularity *= config.specularity_factor;
-    res.fresnel.ambience *= config.fresnel_ambience_factor;
+    res.emissive *= config.emissive_factor;
+    res.ambient *= config.ambient_factor;
+    res.diffuse *= config.diffuse_factor;
+    res.specular *= config.specular_factor;
+    res.fresnel.ambient *= config.fresnel_ambient_factor;
     return res;
 }
 

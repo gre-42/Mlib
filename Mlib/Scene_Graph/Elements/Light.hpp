@@ -7,10 +7,10 @@ namespace Mlib {
 enum class ExternalRenderPassType;
 
 struct Light {
-    FixedArray<float, 3> ambience{1.f, 1.f, 1.f};
-    FixedArray<float, 3> diffusivity{1.f, 1.f, 1.f};
-    FixedArray<float, 3> specularity{1.f, 1.f, 1.f};
-    FixedArray<float, 3> fresnel_ambience{1.f, 1.f, 1.f};
+    FixedArray<float, 3> ambient{1.f, 1.f, 1.f};
+    FixedArray<float, 3> diffuse{1.f, 1.f, 1.f};
+    FixedArray<float, 3> specular{1.f, 1.f, 1.f};
+    FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
     std::string resource_suffix;
     ExternalRenderPassType shadow_render_pass;
 };

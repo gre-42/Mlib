@@ -7,16 +7,16 @@ using namespace Mlib;
 Shading Mlib::material_shading(PhysicsMaterial material) {
 	auto mat = material & PhysicsMaterial::SURFACE_BASE_MASK;
 	static const std::map<PhysicsMaterial, Shading> m{
-		{PhysicsMaterial::NONE, { .emissivity = {1.f, 0.f, 1.f}, .ambience = 0.f, .diffusivity = 0.f, .specularity = 0.f }},
-		{PhysicsMaterial::SURFACE_BASE_TARMAC, { .specularity = 0.5f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_GRAVEL, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_SNOW, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_ICE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_SAND, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_GRASS, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.1f, .exponent = 10.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_DIRT, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_STONE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambience = 1.f} }},
-		{PhysicsMaterial::SURFACE_BASE_FOLIAGE, { .specularity = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.5f, .exponent = 5.f}, .ambience = 1.f} }}
+		{PhysicsMaterial::NONE, { .emissive = {1.f, 0.f, 1.f}, .ambient = 0.f, .diffuse = 0.f, .specular = 0.f }},
+		{PhysicsMaterial::SURFACE_BASE_TARMAC, { .specular = 0.5f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 4.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_GRAVEL, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_SNOW, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_ICE, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_SAND, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_GRASS, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.1f, .exponent = 10.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_DIRT, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.3f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_STONE, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.15f, .exponent = 5.f}, .ambient = 1.f} }},
+		{PhysicsMaterial::SURFACE_BASE_FOLIAGE, { .specular = 0.f, .fresnel = {.reflectance = {.min = 0.f, .max = 0.5f, .exponent = 5.f}, .ambient = 1.f} }}
 	};
 	auto it = m.find(mat);
 	if (it == m.end()) {

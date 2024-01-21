@@ -201,7 +201,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
                 .max = safe_stof(args.named_value("--fresnel_max", "0")),
                 .exponent = safe_stof(args.named_value("--fresnel_exponent", "0"))
             },
-            .ambience = {
+            .ambient = {
                 safe_stof(args.named_value("--fresnel_r", "0")),
                 safe_stof(args.named_value("--fresnel_g", "0")),
                 safe_stof(args.named_value("--fresnel_b", "0"))}
@@ -316,9 +316,9 @@ int main(int argc, char** argv) {
         "    [--background_g] <value>\n"
         "    [--background_b] <value>\n"
         "    [--background_light_ambience <background_light_ambience>]\n"
-        "    [--ambience] <value>\n"
-        "    [--diffusivity] <value>\n"
-        "    [--specularity] <value>\n"
+        "    [--ambient] <value>\n"
+        "    [--diffuse] <value>\n"
+        "    [--specular] <value>\n"
         "    [--fresnel_r] <value>\n"
         "    [--fresnel_g] <value>\n"
         "    [--fresnel_b] <value>\n"
@@ -436,9 +436,9 @@ int main(int argc, char** argv) {
          "--background_r",
          "--background_g",
          "--background_b",
-         "--ambience",
-         "--diffusivity",
-         "--specularity",
+         "--ambient",
+         "--diffuse",
+         "--specular",
          "--fresnel_r",
          "--fresnel_g",
          "--fresnel_b",
@@ -556,14 +556,14 @@ int main(int argc, char** argv) {
         if (light_configuration == "emissive") {
             scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{
                 .selector = Mlib::compile_regex(""),
-                .emissivity = {1.f, 1.f, 1.f}}));
+                .emissive = {1.f, 1.f, 1.f}}));
         }
         auto create_light = [&args](const std::string& resource_suffix) {
             if (args.has_named("--no_shadows")) {
                 return std::unique_ptr<Light>(new Light{
-                    .ambience = fixed_full<float, 3>(safe_stof(args.named_value("--ambience", "1"))),
-                    .diffusivity = fixed_full<float, 3>(safe_stof(args.named_value("--diffusivity", "1"))),
-                    .specularity = fixed_full<float, 3>(safe_stof(args.named_value("--specularity", "1")))});
+                    .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
+                    .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
+                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1")))});
             } else {
                 return std::unique_ptr<Light>(new Light{
                     .resource_suffix = resource_suffix,
@@ -899,9 +899,9 @@ int main(int argc, char** argv) {
                     std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                lights.back().light.ambience *= 2.f / float(n * size_t(1 + (int)with_diffusivity));
-                lights.back().light.diffusivity = 0.f;
-                lights.back().light.specularity = 0.f;
+                lights.back().light.ambient *= 2.f / float(n * size_t(1 + (int)with_diffusivity));
+                lights.back().light.diffuse = 0.f;
+                lights.back().light.specular = 0.f;
             }
             if (with_diffusivity) {
                 for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
@@ -918,9 +918,9 @@ int main(int argc, char** argv) {
                     scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                         PerspectiveCameraConfig(),
                         PerspectiveCamera::Postprocessing::ENABLED));
-                    lights.back().light.ambience = 0.f;
-                    lights.back().light.diffusivity /= (float)(2 * n);
-                    lights.back().light.specularity = 0.f;
+                    lights.back().light.ambient = 0.f;
+                    lights.back().light.diffuse /= (float)(2 * n);
+                    lights.back().light.specular = 0.f;
                 }
             }
         } else if ((light_configuration != "none") && (light_configuration != "emissive")) {
@@ -935,9 +935,9 @@ int main(int argc, char** argv) {
             scene.get_node(name, DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig(),
                 PerspectiveCamera::Postprocessing::ENABLED));
-            lights.back().light.ambience = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
-            lights.back().light.diffusivity = 0.f;
-            lights.back().light.specularity = 0.f;
+            lights.back().light.ambient = FixedArray<float, 3>{1.f, 1.f, 1.f} * safe_stof(args.named_value("--background_light_ambience"));
+            lights.back().light.diffuse = 0.f;
+            lights.back().light.specular = 0.f;
         }
         
         if (args.has_named("--look_at_aabb")) {

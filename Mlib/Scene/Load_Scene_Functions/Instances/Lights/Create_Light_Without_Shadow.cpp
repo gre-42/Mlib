@@ -16,10 +16,10 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
-DECLARE_ARGUMENT(ambience);
-DECLARE_ARGUMENT(diffusivity);
-DECLARE_ARGUMENT(specularity);
-DECLARE_ARGUMENT(fresnel_ambience);
+DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
+DECLARE_ARGUMENT(fresnel_ambient);
 }
 
 const std::string CreateLightWithoutShadow::key = "light_without_shadow";
@@ -40,10 +40,10 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
     std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
     DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     node->add_light(std::make_unique<Light>(Light{
-        .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
-        .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
-        .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),
-        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience),
+        .ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient),
         .resource_suffix = "",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

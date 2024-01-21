@@ -20,10 +20,10 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(black_node);
 DECLARE_ARGUMENT(render_pass);
 DECLARE_ARGUMENT(with_depth_texture);
-DECLARE_ARGUMENT(ambience);
-DECLARE_ARGUMENT(diffusivity);
-DECLARE_ARGUMENT(specularity);
-DECLARE_ARGUMENT(fresnel_ambience);
+DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
+DECLARE_ARGUMENT(fresnel_ambient);
 DECLARE_ARGUMENT(lightmap_width);
 DECLARE_ARGUMENT(lightmap_height);
 }
@@ -67,10 +67,10 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<int>(KnownArgs::lightmap_height)),
         0 /* z_order */);
     node->add_light(std::make_unique<Light>(Light{
-        .ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience),
-        .diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity),
-        .specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity),
-        .fresnel_ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience),
+        .ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient),
         .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

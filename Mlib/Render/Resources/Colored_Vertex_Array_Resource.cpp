@@ -339,12 +339,12 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const OrderableFixedArray<float, 3>& interior_size,
     bool has_horizontal_detailmap,
     ColorMode dirt_color_mode,
-    const OrderableFixedArray<float, 3>& emissivity,
-    const OrderableFixedArray<float, 3>& ambience,
-    const OrderableFixedArray<float, 3>& diffusivity,
-    const OrderableFixedArray<float, 3>& specularity,
+    const OrderableFixedArray<float, 3>& emissive,
+    const OrderableFixedArray<float, 3>& ambient,
+    const OrderableFixedArray<float, 3>& diffuse,
+    const OrderableFixedArray<float, 3>& specular,
     float specular_exponent,
-    const OrderableFixedArray<float, 3>& fresnel_emissivity,
+    const OrderableFixedArray<float, 3>& fresnel_emissive,
     const FresnelReflectance& fresnel,
     float alpha,
     float alpha_threshold,
@@ -432,33 +432,33 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_specularmap) {
         sstr << "uniform sampler2D texture_specularmap;" << std::endl;
     }
-    if (!diffusivity.all_equal(0) ||
-        (!specularity.all_equal(0) && specular_exponent != 0.f) ||
+    if (!diffuse.all_equal(0) ||
+        (!specular.all_equal(0) && specular_exponent != 0.f) ||
         (fresnel.exponent != 0.f) ||
         fragments_depend_on_normal)
     {
         sstr << "in vec3 Normal;" << std::endl;
     }
-    if (!diffusivity.all_equal(0) ||
-        (!specularity.all_equal(0) && specular_exponent != 0.f))
+    if (!diffuse.all_equal(0) ||
+        (!specular.all_equal(0) && specular_exponent != 0.f))
     {
         // sstr << "uniform vec3 lightPos;" << std::endl;
         sstr << "uniform vec3 lightDir[" << lights.size() << "];" << std::endl;
     }
-    if (!ambience.all_equal(0)) {
-        sstr << "uniform vec3 lightAmbience[" << lights.size() << "];" << std::endl;
+    if (!ambient.all_equal(0)) {
+        sstr << "uniform vec3 lightAmbient[" << lights.size() << "];" << std::endl;
     }
-    if (!diffusivity.all_equal(0)) {
-        sstr << "uniform vec3 lightDiffusivity[" << lights.size() << "];" << std::endl;
+    if (!diffuse.all_equal(0)) {
+        sstr << "uniform vec3 lightDiffuse[" << lights.size() << "];" << std::endl;
     }
-    if (!specularity.all_equal(0)) {
-        sstr << "uniform vec3 lightSpecularity[" << lights.size() << "];" << std::endl;
+    if (!specular.all_equal(0)) {
+        sstr << "uniform vec3 lightSpecular[" << lights.size() << "];" << std::endl;
     }
     if (has_horizontal_detailmap) {
         sstr << "uniform vec2 horizontal_detailmap_remainder;" << std::endl;
     }
     {
-        bool pred0 = (!specularity.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
+        bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         bool pred1 = (fresnel.exponent != 0.f);
         if (pred0 || pred1 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
@@ -471,27 +471,27 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (!lights.empty()) {
-        if (!ambience.all_equal(0)) {
+        if (!ambient.all_equal(0)) {
             sstr << "vec3 phong_ambient(in int i) {" << std::endl;
-            sstr << "    vec3 fragAmbience = vec3(" << ambience(0) << ", " << ambience(1) << ", " << ambience(2) << ");" << std::endl;
-            sstr << "    return fragAmbience * lightAmbience[i];" << std::endl;
+            sstr << "    vec3 fragAmbient = vec3(" << ambient(0) << ", " << ambient(1) << ", " << ambient(2) << ");" << std::endl;
+            sstr << "    return fragAmbient * lightAmbient[i];" << std::endl;
             sstr << "}" << std::endl;
         }
-        if (!diffusivity.all_equal(0)) {
+        if (!diffuse.all_equal(0)) {
             sstr << "vec3 phong_diffuse(in int i, in vec3 norm) {" << std::endl;
-            sstr << "    vec3 fragDiffusivity = vec3(" << diffusivity(0) << ", " << diffusivity(1) << ", " << diffusivity(2) << ");" << std::endl;
+            sstr << "    vec3 fragDiffuse = vec3(" << diffuse(0) << ", " << diffuse(1) << ", " << diffuse(2) << ");" << std::endl;
             sstr << "    float diff = max(dot(norm, lightDir[i]), 0.0);" << std::endl;
-            sstr << "    return fragDiffusivity * diff * lightDiffusivity[i];" << std::endl;
+            sstr << "    return fragDiffuse * diff * lightDiffuse[i];" << std::endl;
             sstr << "}" << std::endl;
         }
-        if (!specularity.all_equal(0) && (specular_exponent != 0.f)) {
+        if (!specular.all_equal(0) && (specular_exponent != 0.f)) {
             sstr << "vec3 phong_specular(in int i, in vec3 norm) {" << std::endl;
             if (!orthographic) {
                 sstr << "    vec3 viewDir = normalize(viewPos - FragPos);" << std::endl;
             }
             sstr << "    vec3 reflectDir = reflect(-lightDir[i], norm);  " << std::endl;
             sstr << "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), " << specular_exponent << ");" << std::endl;
-            sstr << "    return spec * lightSpecularity[i];" << std::endl;
+            sstr << "    return spec * lightSpecular[i];" << std::endl;
             sstr << "}" << std::endl;
         }
     }
@@ -564,8 +564,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "}" << std::endl;
     }
     auto compute_normal_and_reorient_uv0 = [&](){
-        if (!diffusivity.all_equal(0) ||
-            (!specularity.all_equal(0) && (specular_exponent != 0.f)) ||
+        if (!diffuse.all_equal(0) ||
+            (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
             (fresnel.exponent != 0.f) ||
             fragments_depend_on_normal) {
             // sstr << "    vec3 norm = normalize(Normal);" << std::endl;
@@ -657,8 +657,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
     }
     if (((ntextures_color != 0) ||
-        !diffusivity.all_equal(0) ||
-        (!specularity.all_equal(0) && (specular_exponent != 0.f)) ||
+        !diffuse.all_equal(0) ||
+        (!specular.all_equal(0) && (specular_exponent != 0.f)) ||
         (fresnel.exponent != 0.f)) &&
         !has_interiormap)
     {
@@ -912,7 +912,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    vec3 frag_brightness_emissive_ambient_diffuse = vec3(0.0, 0.0, 0.0);" << std::endl;
     sstr << "    vec3 frag_brightness_specular = vec3(0.0, 0.0, 0.0);" << std::endl;
-    if (!ambience.all_equal(0) || !diffusivity.all_equal(0) || !specularity.all_equal(0)) {
+    if (!ambient.all_equal(0) || !diffuse.all_equal(0) || !specular.all_equal(0)) {
         if (has_lightmap_color && !black_shadow_indices.empty()) {
             sstr << "    vec3 black_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
         }
@@ -934,15 +934,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
                 sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                 sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[" << i << "], proj_coords01.xy).r) {" << std::endl;
-                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
+                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
+                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
+                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
                     if (specular_exponent == 0.f) {
-                        sstr << "            frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
+                        sstr << "            frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
                     } else {
                         sstr << "            frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
                     }
@@ -961,15 +961,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 } else {
                     sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
                 }
-                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
+                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
+                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += light_fac * phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
+                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
                     if (specular_exponent == 0.f) {
-                        sstr << "        frag_brightness_specular += light_fac * lightSpecularity[" << i << "];" << std::endl;
+                        sstr << "        frag_brightness_specular += light_fac * lightSpecular[" << i << "];" << std::endl;
                     } else {
                         sstr << "        frag_brightness_specular += light_fac * phong_specular(" << i << ", norm);" << std::endl;
                     }
@@ -980,15 +980,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!light_noshadow_indices.empty()) {
             for (size_t i : light_noshadow_indices) {
                 sstr << "    {" << std::endl;
-                if (!ambience.all_equal(0) && any(lights[i].second->ambience != 0.f)) {
+                if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
                 }
-                if (!diffusivity.all_equal(0) && any(lights[i].second->diffusivity != 0.f)) {
+                if (!diffuse.all_equal(0) && any(lights[i].second->diffuse != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_diffuse(" << i << ", norm);" << std::endl;
                 }
-                if (!specularity.all_equal(0) && any(lights[i].second->specularity != 0.f)) {
+                if (!specular.all_equal(0) && any(lights[i].second->specular != 0.f)) {
                     if (specular_exponent == 0.f) {
-                        sstr << "        frag_brightness_specular += lightSpecularity[" << i << "];" << std::endl;
+                        sstr << "        frag_brightness_specular += lightSpecular[" << i << "];" << std::endl;
                     } else {
                         sstr << "        frag_brightness_specular += phong_specular(" << i << ", norm);" << std::endl;
                     }
@@ -997,7 +997,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             }
         }
     }
-    sstr << "    frag_brightness_specular *= vec3(" << specularity(0) << ", " << specularity(1) << ", " << specularity(2) << ");" << std::endl;
+    sstr << "    frag_brightness_specular *= vec3(" << specular(0) << ", " << specular(1) << ", " << specular(2) << ");" << std::endl;
     if (has_specularmap) {
         if (textures_color.size() != 1) {
             THROW_OR_ABORT("Specular maps not supported for blended textures");
@@ -1029,8 +1029,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         // This works in combination with not flipping the y-coordinate when loading the texture.
         sstr << "    frag_brightness_specular += " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
-    if (!fresnel_emissivity.all_equal(0.f)) {
-        sstr << "    vec3 fresnelEmissivity = vec3(" << fresnel_emissivity(0) << ", " << fresnel_emissivity(1) << ", " << fresnel_emissivity(2) << ");" << std::endl;
+    if (!fresnel_emissive.all_equal(0.f)) {
+        sstr << "    vec3 fresnelEmissivity = vec3(" << fresnel_emissive(0) << ", " << fresnel_emissive(1) << ", " << fresnel_emissive(2) << ");" << std::endl;
         sstr << "    frag_brightness_specular += fresnelEmissivity;" << std::endl;
     }
     if (has_lightmap_color && !black_shadow_indices.empty()) {
@@ -1061,8 +1061,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    frag_color = vec4(color, alpha_fac);" << std::endl;
     }
-    if (!emissivity.all_equal(0.f)) {
-        sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissivity(0) << ", " << emissivity(1) << ", " << emissivity(2) << ");" << std::endl;
+    if (!emissive.all_equal(0.f)) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissive(0) << ", " << emissive(1) << ", " << emissive(2) << ");" << std::endl;
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
@@ -1435,8 +1435,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.ntextures_dirt != 0,
         id.ntextures_interior != 0,
         id.has_horizontal_detailmap,
-        !id.diffusivity.all_equal(0),
-        !id.specularity.all_equal(0) && (id.specular_exponent != 0.f),
+        !id.diffuse.all_equal(0),
+        !id.specular.all_equal(0) && (id.specular_exponent != 0.f),
         (id.fresnel.exponent != 0.f),
         id.has_instances,
         id.has_lookat,
@@ -1475,12 +1475,12 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.interior_size,
         id.has_horizontal_detailmap,
         id.dirt_color_mode,
-        id.emissivity,
-        id.ambience,
-        id.diffusivity,
-        id.specularity,
+        id.emissive,
+        id.ambient,
+        id.diffuse,
+        id.specular,
         id.specular_exponent,
-        id.fresnel_emissivity,
+        id.fresnel_emissive,
         id.fresnel,
         any(id.blend_mode & BlendMode::ANY_CONTINUOUS)
             ? id.alpha
@@ -1600,7 +1600,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->r_location = 0;
         }
         {
-            bool light_dir_required = !id.diffusivity.all_equal(0) || !id.specularity.all_equal(0);
+            bool light_dir_required = !id.diffuse.all_equal(0) || !id.specular.all_equal(0);
             if (id.reorient_uv0 || light_dir_required || (id.fragments_depend_on_distance && !id.orthographic) || id.fragments_depend_on_normal || (id.ntextures_interior != 0)) {
                 if (light_dir_required) {
                     for (size_t i = 0; i < filtered_lights.size(); ++i) {
@@ -1618,18 +1618,18 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
         }
         for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            if (!id.ambience.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                rp->light_ambiences[i] = checked_glGetUniformLocation(rp->program, ("lightAmbience[" + std::to_string(i) + "]").c_str());
+            if (!id.ambient.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                rp->light_ambients[i] = checked_glGetUniformLocation(rp->program, ("lightAmbient[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.diffusivity.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                rp->light_diffusivities[i] = checked_glGetUniformLocation(rp->program, ("lightDiffusivity[" + std::to_string(i) + "]").c_str());
+            if (!id.diffuse.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                rp->light_diffuses[i] = checked_glGetUniformLocation(rp->program, ("lightDiffuse[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.specularity.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                rp->light_specularities[i] = checked_glGetUniformLocation(rp->program, ("lightSpecularity[" + std::to_string(i) + "]").c_str());
+            if (!id.specular.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+                rp->light_speculars[i] = checked_glGetUniformLocation(rp->program, ("lightSpecular[" + std::to_string(i) + "]").c_str());
             }
         }
         {
-            bool pred0 = id.has_lookat || (!id.specularity.all_equal(0) && (id.specular_exponent != 0.f)) || (id.fragments_depend_on_distance && !id.orthographic);
+            bool pred0 = id.has_lookat || (!id.specular.all_equal(0) && (id.specular_exponent != 0.f)) || (id.fragments_depend_on_distance && !id.orthographic);
             bool pred1 = (id.fresnel.exponent != 0.f);
             if (pred0 || pred1 || id.reorient_uv0 || id.reorient_normals || (id.ntextures_interior != 0)) {
                 if (((pred0 || pred1 || id.reorient_uv0 || id.reorient_normals) && id.orthographic)) {
@@ -1711,7 +1711,7 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     CHK(glEnableVertexAttribArray(IDX_UV));
     CHK(glVertexAttribPointer(IDX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->uv));
     // The vertex array is cached by cva => Use material properties, not the RenderProgramIdentifier.
-    if (!cva->material.shading.diffusivity.all_equal(0) || !cva->material.shading.specularity.all_equal(0) || cva->material.fragments_depend_on_normal()) {
+    if (!cva->material.shading.diffuse.all_equal(0) || !cva->material.shading.specular.all_equal(0) || cva->material.fragments_depend_on_normal()) {
         CHK(glEnableVertexAttribArray(IDX_NORMAL));
         CHK(glVertexAttribPointer(IDX_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ColoredVertex<float>), &cv->normal));
     }

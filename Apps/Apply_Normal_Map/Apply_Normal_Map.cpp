@@ -185,9 +185,9 @@ int main(int argc, char** argv) {
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
                 scene.get_node(name, DP_LOC)->add_light(std::move(light));
-                lights.back()->ambience *= 2.f / float(n);
-                lights.back()->diffusivity *= 2.f / float(n);
-                lights.back()->specularity *= 2.f / float(n);
+                lights.back()->ambient *= 2.f / float(n);
+                lights.back()->diffuse *= 2.f / float(n);
+                lights.back()->specular *= 2.f / float(n);
             }
         } else if (light_configuration != "none") {
             throw std::runtime_error("Unknown light configuration");

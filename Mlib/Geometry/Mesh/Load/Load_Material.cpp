@@ -59,22 +59,22 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
         } else if (Mlib::re::regex_match(line, match, comment_reg)) {
             // do nothing
         } else if (Mlib::re::regex_match(line, match, Ke_reg)) {
-            mtllib.at(mtl).emissivity = FixedArray<float, 3>{
+            mtllib.at(mtl).emissive = FixedArray<float, 3>{
                 safe_stof(match[1].str()),
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())};
         } else if (Mlib::re::regex_match(line, match, Ka_reg)) {
-            mtllib.at(mtl).ambience = FixedArray<float, 3>{
+            mtllib.at(mtl).ambient = FixedArray<float, 3>{
                 safe_stof(match[1].str()),
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())};
         } else if (Mlib::re::regex_match(line, match, Kd_reg)) {
-            mtllib.at(mtl).diffusivity = FixedArray<float, 3>{
+            mtllib.at(mtl).diffuse = FixedArray<float, 3>{
                 safe_stof(match[1].str()),
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())};
         } else if (Mlib::re::regex_match(line, match, Ks_reg)) {
-            mtllib.at(mtl).specularity = FixedArray<float, 3>{
+            mtllib.at(mtl).specular = FixedArray<float, 3>{
                 safe_stof(match[1].str()),
                 safe_stof(match[2].str()),
                 safe_stof(match[3].str())};

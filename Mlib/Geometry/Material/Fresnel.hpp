@@ -17,15 +17,15 @@ struct FresnelReflectance {
     std::partial_ordering operator <=> (const FresnelReflectance&) const = default;
 };
 
-struct FresnelAndAmbience {
+struct FresnelAndAmbient {
     FresnelReflectance reflectance;
-    OrderableFixedArray<float, 3> ambience{ 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> ambient{ 0.f, 0.f, 0.f };
     template <class Archive>
     void serialize(Archive& archive) {
         archive(reflectance);
-        archive(ambience);
+        archive(ambient);
     }
-    std::partial_ordering operator <=> (const FresnelAndAmbience&) const = default;
+    std::partial_ordering operator <=> (const FresnelAndAmbient&) const = default;
 };
 
 }

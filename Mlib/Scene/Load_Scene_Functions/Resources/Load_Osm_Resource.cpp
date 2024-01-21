@@ -221,11 +221,11 @@ DECLARE_ARGUMENT(bump_height);
 DECLARE_ARGUMENT(driving_direction);
 DECLARE_ARGUMENT(blend_street);
 DECLARE_ARGUMENT(blend_path);
-DECLARE_ARGUMENT(emissivity_factor);
-DECLARE_ARGUMENT(ambience_factor);
-DECLARE_ARGUMENT(diffusivity_factor);
-DECLARE_ARGUMENT(specularity_factor);
-DECLARE_ARGUMENT(fresnel_ambience_factor);
+DECLARE_ARGUMENT(emissive_factor);
+DECLARE_ARGUMENT(ambient_factor);
+DECLARE_ARGUMENT(diffuse_factor);
+DECLARE_ARGUMENT(specular_factor);
+DECLARE_ARGUMENT(fresnel_ambient_factor);
 DECLARE_ARGUMENT(layer_heights_layer);
 DECLARE_ARGUMENT(layer_heights_height);
 DECLARE_ARGUMENT(game_level);
@@ -256,13 +256,13 @@ DECLARE_ARGUMENT(uv);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(wrap_mode_t);
 DECLARE_ARGUMENT(reorient_uv0);
-DECLARE_ARGUMENT(ambience);
-DECLARE_ARGUMENT(diffusivity);
-DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(fresnel_min);
 DECLARE_ARGUMENT(fresnel_max);
 DECLARE_ARGUMENT(fresnel_exponent);
-DECLARE_ARGUMENT(fresnel_ambience);
+DECLARE_ARGUMENT(fresnel_ambient);
 }
 
 namespace WaysideKnownArgs {
@@ -318,16 +318,16 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                     // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
                     .shading = {
-                        .ambience = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::ambience) },
-                        .diffusivity = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::diffusivity) },
-                        .specularity = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::specularity) },
+                        .ambient = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::ambient) },
+                        .diffuse = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::diffuse) },
+                        .specular = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::specular) },
                         .fresnel = {
                             .reflectance = {
                                 .min = barrier_style.at<float>(BS::fresnel_min, 0.f),
                                 .max = barrier_style.at<float>(BS::fresnel_max, 0.f),
                                 .exponent = barrier_style.at<float>(BS::fresnel_exponent, 0.f)
                             },
-                            .ambience = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::fresnel_ambience, fixed_zeros<float, 3>()) }
+                            .ambient = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::fresnel_ambient, fixed_zeros<float, 3>()) }
                         }} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
@@ -915,20 +915,20 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::blend_path)) {
             config.blend_street[RoadType::PATH] = args.arguments.at<bool>(KnownArgs::blend_path);
         }
-        if (args.arguments.contains(KnownArgs::emissivity_factor)) {
-            config.emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor);
+        if (args.arguments.contains(KnownArgs::emissive_factor)) {
+            config.emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor);
         }
-        if (args.arguments.contains(KnownArgs::ambience_factor)) {
-            config.ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor);
+        if (args.arguments.contains(KnownArgs::ambient_factor)) {
+            config.ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient_factor);
         }
-        if (args.arguments.contains(KnownArgs::diffusivity_factor)) {
-            config.diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor);
+        if (args.arguments.contains(KnownArgs::diffuse_factor)) {
+            config.diffuse_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse_factor);
         }
-        if (args.arguments.contains(KnownArgs::specularity_factor)) {
-            config.specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor);
+        if (args.arguments.contains(KnownArgs::specular_factor)) {
+            config.specular_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular_factor);
         }
-        if (args.arguments.contains(KnownArgs::fresnel_ambience_factor)) {
-            config.fresnel_ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambience_factor);
+        if (args.arguments.contains(KnownArgs::fresnel_ambient_factor)) {
+            config.fresnel_ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);

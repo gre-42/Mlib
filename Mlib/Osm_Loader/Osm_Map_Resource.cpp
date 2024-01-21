@@ -1010,10 +1010,10 @@ OsmMapResource::OsmMapResource(
         //         .wrap_mode: WrapMode::CLAMP_TO_EDGE,
         //         .collide: false,
         //         .aggregate_mode: AggregateMode::ONCE,
-        //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissivity_factor},
-        //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambience_factor},
-        //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffusivity_factor},
-        //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specularity_factor},},
+        //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissive_factor},
+        //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambient_factor},
+        //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffuse_factor},
+        //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specular_factor},},
         //     grass_texture,
         //     tree_texture,
         //     tree_texture_2,
@@ -1507,9 +1507,9 @@ void OsmMapResource::save_to_obj_file(
         mdcvas,  // get_physics_arrays()->cvas
         [&](const Material& m){
             ObjMaterial result{
-                .ambience = m.shading.ambience,
-                .diffusivity = m.shading.diffusivity,
-                .specularity = m.shading.specularity};
+                .ambient = m.shading.ambient,
+                .diffuse = m.shading.diffuse,
+                .specular = m.shading.specular};
             if (!m.textures_color.empty()) {
                 const auto& desc = m.textures_color[0].texture_descriptor;
                 result.color_texture = get_filename(desc.color, TextureRole::COLOR);
@@ -1525,9 +1525,9 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
         "bad_trinalges",
         Material{
             .shading{
-                .ambience = {1.f, 0.f, 0.f},
-                .diffusivity = {1.f, 0.f, 0.f},
-                .specularity = {1.f, 0.f, 0.f}}},
+                .ambient = {1.f, 0.f, 0.f},
+                .diffuse = {1.f, 0.f, 0.f},
+                .specular = {1.f, 0.f, 0.f}}},
         PhysicsMaterial::NONE};
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
@@ -1546,9 +1546,9 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
         {bad_triangles.triangle_array()},
         [&](const Material& m){
             return ObjMaterial{
-                .ambience = m.shading.ambience,
-                .diffusivity = m.shading.diffusivity,
-                .specularity = m.shading.specularity};
+                .ambient = m.shading.ambient,
+                .diffuse = m.shading.diffuse,
+                .specular = m.shading.specular};
         });
 }
 

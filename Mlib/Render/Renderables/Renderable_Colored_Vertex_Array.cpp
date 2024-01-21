@@ -283,10 +283,10 @@ void RenderableColoredVertexArray::render_cva(
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap &&
         (
-            !cva->material.shading.ambience.all_equal(0) ||
-            !cva->material.shading.diffusivity.all_equal(0) ||
-            !cva->material.shading.specularity.all_equal(0) ||
-            !cva->material.shading.fresnel.ambience.all_equal(0)))
+            !cva->material.shading.ambient.all_equal(0) ||
+            !cva->material.shading.diffuse.all_equal(0) ||
+            !cva->material.shading.specular.all_equal(0) ||
+            !cva->material.shading.fresnel.ambient.all_equal(0)))
     {
         filtered_lights.reserve(lights.size());
         light_noshadow_indices.reserve(lights.size());
@@ -380,10 +380,10 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    FixedArray<float, 3> sum_light_fresnel_ambience = fixed_zeros<float, 3>();
+    FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
     for (const auto& [_, light] : filtered_lights) {
         if (!any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-            sum_light_fresnel_ambience += light->fresnel_ambience;
+            sum_light_fresnel_ambient += light->fresnel_ambient;
         }
     }
     FixedArray<float, 3> emissivity;
@@ -391,27 +391,27 @@ void RenderableColoredVertexArray::render_cva(
     FixedArray<float, 3> diffusivity;
     FixedArray<float, 3> specularity;
     float specular_exponent;
-    FixedArray<float, 3> fresnel_emissivity;
+    FixedArray<float, 3> fresnel_emissive;
     FresnelReflectance fresnel;
     if (!is_lightmap) {
-        emissivity = color_style && !all(color_style->emissivity == -1.f) ? color_style->emissivity : cva->material.shading.emissivity;
+        emissivity = color_style && !all(color_style->emissive == -1.f) ? color_style->emissive : cva->material.shading.emissive;
     } else {
         emissivity = 1.f;
     }
     if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = color_style && !all(color_style->ambience == -1.f) ? color_style->ambience * cva->material.shading.ambience : cva->material.shading.ambience;
-        diffusivity = color_style && !all(color_style->diffusivity == -1.f) ? color_style->diffusivity : cva->material.shading.diffusivity;
-        specularity = color_style && !all(color_style->specularity == -1.f) ? color_style->specularity : cva->material.shading.specularity;
+        ambience = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
+        diffusivity = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse : cva->material.shading.diffuse;
+        specularity = color_style && !all(color_style->specular == -1.f) ? color_style->specular : cva->material.shading.specular;
         specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
-        FixedArray<float, 3> fresnel_ambience = color_style && !all(color_style->fresnel_ambience == -1.f) ? color_style->fresnel_ambience : cva->material.shading.fresnel.ambience;
-        fresnel_emissivity = sum_light_fresnel_ambience * fresnel_ambience;
+        FixedArray<float, 3> fresnel_ambient = color_style && !all(color_style->fresnel_ambient == -1.f) ? color_style->fresnel_ambient : cva->material.shading.fresnel.ambient;
+        fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
     } else {
         ambience = 0.f;
         diffusivity = 0.f;
         specularity = 0.f;
         specular_exponent = 0.f;
-        fresnel_emissivity = 0.f;
+        fresnel_emissive = 0.f;
         fresnel = {
             .min = 0.f,
             .max = 0.f,
@@ -419,13 +419,13 @@ void RenderableColoredVertexArray::render_cva(
         };
     }
     if (filtered_lights.size() == 1) {
-        ambience *= (filtered_lights.front().second->ambience != 0.f).casted<float>();
-        diffusivity *= (filtered_lights.front().second->diffusivity != 0.f).casted<float>();
-        specularity *= (filtered_lights.front().second->specularity != 0.f).casted<float>();
+        ambience *= (filtered_lights.front().second->ambient != 0.f).casted<float>();
+        diffusivity *= (filtered_lights.front().second->diffuse != 0.f).casted<float>();
+        specularity *= (filtered_lights.front().second->specular != 0.f).casted<float>();
     }
     if (all(specularity == 0.f)) {
         specular_exponent = 0.f;
-        fresnel_emissivity = 0.f;
+        fresnel_emissive = 0.f;
         fresnel = {
             .min = 0.f,
             .max = 0.f,
@@ -567,12 +567,12 @@ void RenderableColoredVertexArray::render_cva(
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
-            .emissivity = OrderableFixedArray{emissivity},
-            .ambience = OrderableFixedArray{ambience},
-            .diffusivity = OrderableFixedArray{diffusivity},
-            .specularity = OrderableFixedArray{specularity},
+            .emissive = OrderableFixedArray{emissivity},
+            .ambient = OrderableFixedArray{ambience},
+            .diffuse = OrderableFixedArray{diffusivity},
+            .specular = OrderableFixedArray{specularity},
             .specular_exponent = specular_exponent,
-            .fresnel_emissivity = OrderableFixedArray{fresnel_emissivity},
+            .fresnel_emissive = OrderableFixedArray{fresnel_emissive},
             .fresnel = fresnel,
             .alpha = cva->material.alpha,
             .orthographic = vc.orthographic(),
@@ -703,13 +703,13 @@ void RenderableColoredVertexArray::render_cva(
         size_t i = 0;
         for (const auto& [_, light] : filtered_lights) {
             if (any(ambience != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                CHK(glUniform3fv(rp.light_ambiences.at(i), 1, light->ambience.flat_begin()));
+                CHK(glUniform3fv(rp.light_ambients.at(i), 1, light->ambient.flat_begin()));
             }
             if (any(diffusivity != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                CHK(glUniform3fv(rp.light_diffusivities.at(i), 1, light->diffusivity.flat_begin()));
+                CHK(glUniform3fv(rp.light_diffuses.at(i), 1, light->diffuse.flat_begin()));
             }
             if (any(specularity != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-                CHK(glUniform3fv(rp.light_specularities.at(i), 1, light->specularity.flat_begin()));
+                CHK(glUniform3fv(rp.light_speculars.at(i), 1, light->specular.flat_begin()));
             }
             ++i;
         }

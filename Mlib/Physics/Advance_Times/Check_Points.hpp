@@ -55,8 +55,8 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         const Focuses& focuses,
         bool enable_height_changed_mode = false,
-        const FixedArray<float, 3>& selection_emissivity = { -1.f, -1.f, -1.f },
-        const FixedArray<float, 3>& deselection_emissivity = { -1.f, -1.f, -1.f },
+        const FixedArray<float, 3>& selection_emissive = { -1.f, -1.f, -1.f },
+        const FixedArray<float, 3>& deselection_emissive = { -1.f, -1.f, -1.f },
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt) override;
@@ -93,8 +93,8 @@ private:
     std::list<TrackElement> movable_track_;
     std::list<CheckPointPose> checkpoints_ahead_;
     bool enable_height_changed_mode_;
-    FixedArray<float, 3> selection_emissivity_;
-    FixedArray<float, 3> deselection_emissivity_;
+    FixedArray<float, 3> selection_emissive_;
+    FixedArray<float, 3> deselection_emissive_;
     std::function<void()> on_finish_;
     bool shutting_down_;
 };

@@ -175,9 +175,9 @@ void Render::render_node(
     scene.get_node("camera", DP_LOC)->set_camera(std::move(camera));
     scene.add_root_node("light", make_dunique<SceneNode>());
     scene.get_node("light", DP_LOC)->add_light(std::make_unique<Light>(Light{
-        .ambience = {0.5f, 0.5f, 0.5f},
-        .diffusivity = {1.f, 1.f, 1.f},
-        .specularity = {1.f, 1.f, 1.f},
+        .ambient = {0.5f, 0.5f, 0.5f},
+        .diffuse = {1.f, 1.f, 1.f},
+        .specular = {1.f, 1.f, 1.f},
         .shadow_render_pass = ExternalRenderPassType::NONE}));
     render_scene(scene, background_color, rotate, scale, camera_z, scene_graph_config, beacon_locations);
 }

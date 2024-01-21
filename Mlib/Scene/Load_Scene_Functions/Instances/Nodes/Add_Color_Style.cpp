@@ -16,9 +16,9 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(selector);
 DECLARE_ARGUMENT(node);
-DECLARE_ARGUMENT(ambience);
-DECLARE_ARGUMENT(diffusivity);
-DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(reflection_strength);
 DECLARE_ARGUMENT(reflection_maps);
 }
@@ -43,14 +43,14 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
         .selector = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::selector, "")),
-        .ambience = args.arguments.contains(KnownArgs::ambience)
-            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience)
+        .ambient = args.arguments.contains(KnownArgs::ambient)
+            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient)
             : fixed_full<float, 3>(-1),
-        .diffusivity = args.arguments.contains(KnownArgs::diffusivity)
-            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity)
+        .diffuse = args.arguments.contains(KnownArgs::diffuse)
+            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse)
             : fixed_full<float, 3>(-1),
-        .specularity = args.arguments.contains(KnownArgs::specularity)
-            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity)
+        .specular = args.arguments.contains(KnownArgs::specular)
+            ? args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular)
             : fixed_full<float, 3>(-1),
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});

@@ -22,7 +22,7 @@ DECLARE_ARGUMENT(max);
 DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
-DECLARE_ARGUMENT(ambience);
+DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces);
@@ -57,9 +57,9 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
                 FixedArray<float, 2>{0.f, INFINITY })* meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
-            .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
-            .diffusivity = {0.f, 0.f, 0.f},
-            .specularity = {0.f, 0.f, 0.f}}};
+            .ambient = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambient),
+            .diffuse = {0.f, 0.f, 0.f},
+            .specular = {0.f, 0.f, 0.f}}};
     Material material_0{material};
     Material material_90{material};
     material_0.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };

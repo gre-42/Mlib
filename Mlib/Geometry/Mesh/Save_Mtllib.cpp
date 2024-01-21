@@ -14,14 +14,14 @@ void Mlib::save_mtllib(
     ostr << std::scientific;
     for (const auto& [name, material] : materials) {
         ostr << "newmtl " << name << '\n';
-        if (all(material.ambience != -1.f)) {
-            ostr << "Ka " << material.ambience << '\n';
+        if (all(material.ambient != -1.f)) {
+            ostr << "Ka " << material.ambient << '\n';
         }
-        if (all(material.ambience != -1.f)) {
-            ostr << "Kd " << material.diffusivity << '\n';
+        if (all(material.diffuse != -1.f)) {
+            ostr << "Kd " << material.diffuse << '\n';
         }
-        if (all(material.ambience != -1.f)) {
-            ostr << "Ks " << material.specularity << '\n';
+        if (all(material.specular != -1.f)) {
+            ostr << "Ks " << material.specular << '\n';
         }
         if (!material.color_texture.empty()) {
             ostr << "map_Kd " << material.color_texture << '\n';

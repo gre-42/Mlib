@@ -24,9 +24,9 @@ DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
 DECLARE_ARGUMENT(emissivity);
-DECLARE_ARGUMENT(ambience);
-DECLARE_ARGUMENT(diffusivity);
-DECLARE_ARGUMENT(specularity);
+DECLARE_ARGUMENT(ambient);
+DECLARE_ARGUMENT(diffuse);
+DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(depth_func);
 DECLARE_ARGUMENT(alpha_distances);
@@ -38,10 +38,10 @@ DECLARE_ARGUMENT(uv_scale);
 DECLARE_ARGUMENT(period);
 DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
-DECLARE_ARGUMENT(emissivity_factor);
-DECLARE_ARGUMENT(ambience_factor);
-DECLARE_ARGUMENT(diffusivity_factor);
-DECLARE_ARGUMENT(specularity_factor);
+DECLARE_ARGUMENT(emissive_factor);
+DECLARE_ARGUMENT(ambient_factor);
+DECLARE_ARGUMENT(diffuse_factor);
+DECLARE_ARGUMENT(specular_factor);
 }
 
 const std::string CreateGridResource::key = "grid_resource";
@@ -52,15 +52,15 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
 
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
-    auto emissivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
-    auto ambience = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience);
-    auto diffusivity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity);
-    auto specularity = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity);
+    auto emissive = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
+    auto ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient);
+    auto diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse);
+    auto specular = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular);
 
-    auto emissivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity_factor, FixedArray<float, 3>(1.f));
-    auto ambience_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambience_factor, FixedArray<float, 3>(1.f));
-    auto diffusivity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffusivity_factor, FixedArray<float, 3>(1.f));
-    auto specularity_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specularity_factor, FixedArray<float, 3>(1.f));
+    auto emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
+    auto ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
+    auto diffuse_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
+    auto specular_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
     RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
         args.arguments.at<FixedArray<size_t, 2>>(KnownArgs::size),
@@ -93,9 +93,9 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                     FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
             .shading{
-                .emissivity = OrderableFixedArray{emissivity * emissivity_factor},
-                .ambience = OrderableFixedArray{ambience * ambience_factor},
-                .diffusivity = OrderableFixedArray{diffusivity * diffusivity_factor},
-                .specularity = OrderableFixedArray{specularity * specularity_factor}}
+                .emissive = OrderableFixedArray{emissive * emissive_factor},
+                .ambient = OrderableFixedArray{ambient * ambient_factor},
+                .diffuse = OrderableFixedArray{diffuse * diffuse_factor},
+                .specular = OrderableFixedArray{specular * specular_factor}}
             }.compute_color_mode()));
 };

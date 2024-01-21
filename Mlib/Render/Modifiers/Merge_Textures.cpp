@@ -120,7 +120,7 @@ void Mlib::merge_textures(
                                 assert_true(all(v.uv >= UV_ATLAS_MIN));
                                 assert_true(all(v.uv <= UV_ATLAS_MAX));
                                 v.uv = tile.position + v.uv * tile.size;
-                                v.color = cva->material.shading.ambience + cva->material.shading.diffusivity;
+                                v.color = cva->material.shading.ambient + cva->material.shading.diffuse;
                             }
                         }
                         {
@@ -156,10 +156,10 @@ void Mlib::merge_textures(
                         .max_triangle_distance = merged_materials_config.max_triangle_distance,
                         .cull_faces = merged_materials_config.cull_faces,
                         .shading {
-                            .emissivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
-                            .ambience = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
-                            .diffusivity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
-                            .specularity = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}},
+                            .emissive = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
+                            .ambient = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
+                            .diffuse = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
+                            .specular = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}},
                     PhysicsMaterial::ATTR_VISIBLE,
                     ModifierBacklog{},
                     std::vector<FixedArray<ColoredVertex<double>, 4>>{},

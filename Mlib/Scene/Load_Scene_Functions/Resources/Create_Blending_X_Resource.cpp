@@ -44,9 +44,9 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
         .number_of_frames = args.arguments.at<size_t>(KnownArgs::number_of_frames, 1),
         .cull_faces = false,
         .shading{
-            .ambience = {2.f, 2.f, 2.f},
-            .diffusivity = {0.f, 0.f, 0.f},
-            .specularity = {0.f, 0.f, 0.f}}};
+            .ambient = {2.f, 2.f, 2.f},
+            .diffuse = {0.f, 0.f, 0.f},
+            .specular = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),

@@ -26,8 +26,8 @@ DECLARE_ARGUMENT(max);
 DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
-DECLARE_ARGUMENT(emissivity);
-DECLARE_ARGUMENT(ambience);
+DECLARE_ARGUMENT(emissive);
+DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(z_order);
 DECLARE_ARGUMENT(depth_func);
@@ -104,10 +104,10 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
                 FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
-            .emissivity = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissivity, OrderableFixedArray<float, 3>(0.f)),
-            .ambience = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambience),
-            .diffusivity = {0.f, 0.f, 0.f},
-            .specularity = {0.f, 0.f, 0.f}}};
+            .emissive = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
+            .ambient = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::ambient),
+            .diffuse = {0.f, 0.f, 0.f},
+            .specular = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),

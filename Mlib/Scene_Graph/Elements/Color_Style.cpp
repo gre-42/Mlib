@@ -3,20 +3,20 @@
 using namespace Mlib;
 
 void ColorStyle::insert(const ColorStyle& other) {
-    if (!all(other.emissivity == -1.f)) {
-        this->emissivity = other.emissivity;
+    if (!all(other.emissive == -1.f)) {
+        this->emissive = other.emissive;
     }
-    if (!all(other.ambience == -1.f)) {
-        this->ambience = other.ambience;
+    if (!all(other.ambient == -1.f)) {
+        this->ambient = other.ambient;
     }
-    if (!all(other.diffusivity == -1.f)) {
-        this->diffusivity = other.diffusivity;
+    if (!all(other.diffuse == -1.f)) {
+        this->diffuse = other.diffuse;
     }
-    if (!all(other.specularity == -1.f)) {
-        this->specularity = other.specularity;
+    if (!all(other.specular == -1.f)) {
+        this->specular = other.specular;
     }
-    if (!all(other.fresnel_ambience == -1.f)) {
-        this->fresnel_ambience = other.fresnel_ambience;
+    if (!all(other.fresnel_ambient == -1.f)) {
+        this->fresnel_ambient = other.fresnel_ambient;
     }
     if (other.fresnel.exponent != -1.f) {
         this->fresnel = other.fresnel;
