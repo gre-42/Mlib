@@ -386,30 +386,30 @@ void RenderableColoredVertexArray::render_cva(
             sum_light_fresnel_ambient += light->fresnel_ambient;
         }
     }
-    FixedArray<float, 3> emissivity;
-    FixedArray<float, 3> ambience;
-    FixedArray<float, 3> diffusivity;
-    FixedArray<float, 3> specularity;
+    FixedArray<float, 3> emissive;
+    FixedArray<float, 3> ambient;
+    FixedArray<float, 3> diffuse;
+    FixedArray<float, 3> specular;
     float specular_exponent;
     FixedArray<float, 3> fresnel_emissive;
     FresnelReflectance fresnel;
     if (!is_lightmap) {
-        emissivity = color_style && !all(color_style->emissive == -1.f) ? color_style->emissive : cva->material.shading.emissive;
+        emissive = color_style && !all(color_style->emissive == -1.f) ? color_style->emissive : cva->material.shading.emissive;
     } else {
-        emissivity = 1.f;
+        emissive = 1.f;
     }
     if (!filtered_lights.empty() && !is_lightmap) {
-        ambience = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
-        diffusivity = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse : cva->material.shading.diffuse;
-        specularity = color_style && !all(color_style->specular == -1.f) ? color_style->specular : cva->material.shading.specular;
+        ambient = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
+        diffuse = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse : cva->material.shading.diffuse;
+        specular = color_style && !all(color_style->specular == -1.f) ? color_style->specular : cva->material.shading.specular;
         specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
         FixedArray<float, 3> fresnel_ambient = color_style && !all(color_style->fresnel_ambient == -1.f) ? color_style->fresnel_ambient : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
     } else {
-        ambience = 0.f;
-        diffusivity = 0.f;
-        specularity = 0.f;
+        ambient = 0.f;
+        diffuse = 0.f;
+        specular = 0.f;
         specular_exponent = 0.f;
         fresnel_emissive = 0.f;
         fresnel = {
@@ -419,18 +419,9 @@ void RenderableColoredVertexArray::render_cva(
         };
     }
     if (filtered_lights.size() == 1) {
-        ambience *= (filtered_lights.front().second->ambient != 0.f).casted<float>();
-        diffusivity *= (filtered_lights.front().second->diffuse != 0.f).casted<float>();
-        specularity *= (filtered_lights.front().second->specular != 0.f).casted<float>();
-    }
-    if (all(specularity == 0.f)) {
-        specular_exponent = 0.f;
-        fresnel_emissive = 0.f;
-        fresnel = {
-            .min = 0.f,
-            .max = 0.f,
-            .exponent = 0.f
-        };
+        ambient *= (filtered_lights.front().second->ambient != 0.f).casted<float>();
+        diffuse *= (filtered_lights.front().second->diffuse != 0.f).casted<float>();
+        specular *= (filtered_lights.front().second->specular != 0.f).casted<float>();
     }
     if ((fresnel.exponent != 0.f) && (std::abs(fresnel.max - fresnel.min) < 1e-12)) {
         THROW_OR_ABORT("Nonzero fresnel exponent requires nonzero fresnel range");
@@ -438,7 +429,7 @@ void RenderableColoredVertexArray::render_cva(
     if ((fresnel.exponent == 0.f) && ((fresnel.max != 0.f) || (fresnel.min != 0.f))) {
         THROW_OR_ABORT("Zero fresnel exponent requires zero fresnel coefficients");
     }
-    bool color_requires_normal = any(diffusivity != 0.f) || any(specularity != 0.f);
+    bool color_requires_normal = any(diffuse != 0.f) || any(specular != 0.f);
     TextureIndexCalculator tic;
     if (!is_lightmap ||
         ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
@@ -469,7 +460,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::string reflection_map;
     float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty() && any(specularity != 0.f)) {
+    if (!is_lightmap && !cva->material.reflection_map.empty() && any(specular != 0.f)) {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
         }
@@ -489,7 +480,7 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
-    if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specularity == 0.f)) {
+    if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specular == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures_color.size() == 1) {
         tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename.empty();
@@ -525,7 +516,7 @@ void RenderableColoredVertexArray::render_cva(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
             join(" ", cva->material.textures_color, [](const auto& v) { return v.texture_descriptor.color.filename; }));
     }
-    bool reorient_normals = !cva->material.cull_faces && (any(diffusivity != 0.f) || any(specularity != 0.f));
+    bool reorient_normals = !cva->material.cull_faces && (any(diffuse != 0.f) || any(specular != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
         THROW_OR_ABORT("reorient_uv0 requires disabled face culling");
     }
@@ -567,10 +558,10 @@ void RenderableColoredVertexArray::render_cva(
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
-            .emissive = OrderableFixedArray{emissivity},
-            .ambient = OrderableFixedArray{ambience},
-            .diffuse = OrderableFixedArray{diffusivity},
-            .specular = OrderableFixedArray{specularity},
+            .emissive = OrderableFixedArray{emissive},
+            .ambient = OrderableFixedArray{ambient},
+            .diffuse = OrderableFixedArray{diffuse},
+            .specular = OrderableFixedArray{specular},
             .specular_exponent = specular_exponent,
             .fresnel_emissive = OrderableFixedArray{fresnel_emissive},
             .fresnel = fresnel,
@@ -683,7 +674,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva lights");
     {
-        bool light_dir_required = (any(diffusivity != 0.f) || any(specularity != 0.f));
+        bool light_dir_required = (any(diffuse != 0.f) || any(specular != 0.f));
         if (light_dir_required || fragments_depend_on_distance || fragments_depend_on_normal || (tic.ntextures_interior != 0)) {
             // CHK(glUniform3fv(rp.light_position_location, 1, t3_from_4x4(filtered_lights.front().first).flat_begin()));
             if (light_dir_required) {
@@ -702,20 +693,20 @@ void RenderableColoredVertexArray::render_cva(
     {
         size_t i = 0;
         for (const auto& [_, light] : filtered_lights) {
-            if (any(ambience != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(ambient != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_ambients.at(i), 1, light->ambient.flat_begin()));
             }
-            if (any(diffusivity != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(diffuse != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_diffuses.at(i), 1, light->diffuse.flat_begin()));
             }
-            if (any(specularity != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(specular != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
                 CHK(glUniform3fv(rp.light_speculars.at(i), 1, light->specular.flat_begin()));
             }
             ++i;
         }
     }
     {
-        bool pred0 = has_lookat || (any(specularity != 0.f) && (specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
+        bool pred0 = has_lookat || (any(specular != 0.f) && (specular_exponent != 0.f)) || (reflection_strength != 0.f) || (fragments_depend_on_distance && !vc.orthographic());
         bool pred1 = (fresnel.exponent != 0.f);
         if (pred0 || pred1 || reorient_uv0 || (tic.ntextures_interior != 0) || reorient_normals) {
             bool ortho = vc.orthographic();
