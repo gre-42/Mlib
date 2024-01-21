@@ -30,7 +30,7 @@ SupplyDepots::~SupplyDepots()
 void SupplyDepots::reset_cooldown() {
     bvh_.visit_all([](const auto& aabb, SupplyDepot& supply_depot){
         supply_depot.time_since_last_visit = supply_depot.cooldown;
-        supply_depot.node->color_style("").emissivity = -1.f;
+        supply_depot.node->color_style("").emissive = -1.f;
         return true;
     });
 }
@@ -69,7 +69,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         bool old_cd = supply_depot.is_cooling_down();
         supply_depot.time_since_last_visit += dt;
         if (old_cd && !supply_depot.is_cooling_down()) {
-            supply_depot.node->color_style("").emissivity = -1.f;
+            supply_depot.node->color_style("").emissive = -1.f;
         }
         return true;
     });
@@ -90,7 +90,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }
                 supply_depot.time_since_last_visit = 0.f;
-                supply_depot.node->color_style("").emissivity = 2.f;
+                supply_depot.node->color_style("").emissive = 2.f;
                 return true;
             });
     }
