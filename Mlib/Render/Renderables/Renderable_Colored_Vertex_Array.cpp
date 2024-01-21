@@ -425,8 +425,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (all(specularity == 0.f)) {
         specular_exponent = 0.f;
-    }
-    if (all(fresnel_emissivity == 0.f) && all(specularity == 0.f)) {
+        fresnel_emissivity = 0.f;
         fresnel = {
             .min = 0.f,
             .max = 0.f,
@@ -439,7 +438,7 @@ void RenderableColoredVertexArray::render_cva(
     if ((fresnel.exponent == 0.f) && ((fresnel.max != 0.f) || (fresnel.min != 0.f))) {
         THROW_OR_ABORT("Zero fresnel exponent requires zero fresnel coefficients");
     }
-    bool color_requires_normal = !all(diffusivity == 0.f) || !all(specularity == 0.f);
+    bool color_requires_normal = any(diffusivity != 0.f) || any(specularity != 0.f);
     TextureIndexCalculator tic;
     if (!is_lightmap ||
         ((cva->material.blend_mode != BlendMode::OFF) && (cva->material.depth_func != DepthFunc::EQUAL)))
@@ -470,7 +469,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::string reflection_map;
     float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty() && !all(specularity == 0.f)) {
+    if (!is_lightmap && !cva->material.reflection_map.empty() && any(specularity != 0.f)) {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
         }
