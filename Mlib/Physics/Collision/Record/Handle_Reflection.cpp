@@ -304,10 +304,6 @@ void Mlib::handle_reflection(
         if (!compute_edge_overlap(cf, intersection_point, sat_used, overlap, normal)) {
             return;
         }
-        const auto& cfg = c.history.cfg;
-        if (overlap > (double)(cfg.max_supported_velocity * cfg.dt / (float)cfg.nsubsteps)) {
-            return;
-        }
     } else {
         if (c.l1 == nullptr) {
             THROW_OR_ABORT("handle_reflection: l1 not set");
@@ -368,10 +364,13 @@ void Mlib::handle_reflection(
         } else {
             auto dv = c.o0.velocity_at_position(intersection_point) - c.o1.velocity_at_position(intersection_point);
             float vn = dot0d(normal.casted<float>(), dv);
-            if ((vn > c.history.cfg.min_slide_velocity) &&
-                (overlap < vn * c.history.cfg.slide_factor * (c.history.cfg.dt / (float)c.history.cfg.nsubsteps)))
-            {
-                return;
+            if (vn > c.history.cfg.min_skip_velocity) {
+                float ds = vn * (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
+                if ((overlap < ds * c.history.cfg.slide_factor) ||
+                    (overlap > ds * c.history.cfg.ignore_factor))
+                {
+                    return;
+                }
             }
         }
     }
