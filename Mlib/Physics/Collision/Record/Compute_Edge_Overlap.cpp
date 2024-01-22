@@ -121,9 +121,9 @@ bool Mlib::compute_edge_overlap(
         if (dot0d(intersection_point - c.o0.rbi_.rbp_.abs_position(), normal) < 0.) {
             return false;
         }
-        // if (overlap > (double)c.history.cfg.overlap_ignored) {
-        //     return;
-        // }
+        if (overlap > (double)c.history.cfg.overlap_ignored) {
+            return false;
+        }
         // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
         c.history.ridge_intersection_points[&c.o0].push_back(intersection_point);
     } else {
