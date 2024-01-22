@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 GravityEfp::GravityEfp(const FixedArray<float, 3>& gravity)
-: gravity_{gravity}
+    : gravity_{ gravity }
 {}
 
 void GravityEfp::increment_external_forces(
@@ -17,7 +17,7 @@ void GravityEfp::increment_external_forces(
 {
     for (auto& rb : olist) {
         if (rb->feels_gravity() && (rb->mass() != INFINITY)) {
-            rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / (float)cfg.oversampling);
+            rb->rbi_.rbp_.integrate_gravity(gravity_, cfg.dt / (float)cfg.nsubsteps);
         }
     }
 }

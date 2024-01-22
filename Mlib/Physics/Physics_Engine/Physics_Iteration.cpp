@@ -41,8 +41,8 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
 #else
     std::list<Beacon> beacons;
 #endif
-    for (size_t i = 0; i < physics_cfg_.oversampling; ++i) {
-        std::list<Beacon>* bcns = (i == physics_cfg_.oversampling - 1)
+    for (size_t i = 0; i < physics_cfg_.nsubsteps; ++i) {
+        std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
             ? &beacons
             : nullptr;
         physics_engine_.collide(

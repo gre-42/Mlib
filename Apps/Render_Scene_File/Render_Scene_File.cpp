@@ -314,7 +314,7 @@ int main(int argc, char** argv) {
         "    [--optimize_search_time]\n"
         "    [--plot_triangle_bvh]\n"
         "    [--show_mouse_cursor]\n"
-        "    [--oversampling]\n"
+        "    [--nsubsteps]\n"
         "    [--bvh_max_size <r>]\n"
         "    [--static_radius <r>]\n"
         "    [--print_search_time]\n"
@@ -377,7 +377,7 @@ int main(int argc, char** argv) {
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
-         "--oversampling",
+         "--nsubsteps",
          "--render_dt",
          "--render_max_residual_time",
          "--stiction_coefficient",
@@ -516,7 +516,7 @@ int main(int argc, char** argv) {
                 .lateral_friction_steepness = safe_stof(args.named_value("--lateral_friction_steepness", "7")),
                 // Collision
                 .wheel_penetration_depth = safe_stof(args.named_value("--wheel_penetration_depth", "0.25")),
-                .oversampling = safe_stoz(args.named_value("--oversampling", "4"))};
+                .nsubsteps = safe_stoz(args.named_value("--nsubsteps", "4"))};
 
             SceneConfig scene_config{
                 .render_config = render_config,

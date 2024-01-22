@@ -30,7 +30,7 @@ void Mlib::collide_grind_infos(
             auto n = -gravity_direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
             jump(o0.rbi_.rbp_, o1.rbi_.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
-        } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.oversampling) {
+        } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {
             auto n = cross(p.rail_direction, FixedArray<double, 3>{ 0., 1., 0. });
             double l2 = sum(squared(n));
             if (l2 < 1e-12) {

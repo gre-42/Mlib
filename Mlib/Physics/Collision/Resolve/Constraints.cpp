@@ -448,7 +448,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     //     rb_.rbi_.rbp_.rotation_(2, 0)};
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
-    // fci_.set_b(v - 1000.f * x3 * tire.accel_x * (cfg_.dt / cfg_.oversampling));
+    // fci_.set_b(v - 1000.f * x3 * tire.accel_x * (cfg_.dt / cfg_.nsubsteps));
     fci_.set_b(b0_ - tv);
     FixedArray<float, 3> vv = rb_.get_velocity_at_tire_contact(fci_.normal_impulse().normal.casted<float>(), tire_id_) - b0_;
     float slip;
@@ -482,7 +482,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     float lambda_max =
         (-fci_.normal_impulse().lambda_total) *
         tire.stiction_coefficient(
-            -fci_.normal_impulse().lambda_total / cfg_.dt * (float)cfg_.oversampling) *
+            -fci_.normal_impulse().lambda_total / cfg_.dt * (float)cfg_.nsubsteps) *
         surface_stiction_factor_;
     FixedArray<float, 2> r = tire.magic_formula(
         {
@@ -492,8 +492,8 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     // std::cerr << tire_id_ << " | " << r << std::endl;
     fci_.set_clamping(
         n3_,
-        signed_min(force_min * cfg_.dt / (float)cfg_.oversampling, std::abs(r(0))),
-        signed_min(force_max * cfg_.dt / (float)cfg_.oversampling, std::abs(r(0))),
+        signed_min(force_min * cfg_.dt / (float)cfg_.nsubsteps, std::abs(r(0))),
+        signed_min(force_max * cfg_.dt / (float)cfg_.nsubsteps, std::abs(r(0))),
         std::abs(r(1)));
     fci_.solve(dt, relaxation);
 }

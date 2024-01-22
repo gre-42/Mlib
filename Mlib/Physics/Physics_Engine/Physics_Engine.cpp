@@ -160,7 +160,7 @@ void PhysicsEngine::collide(
     collide_raycast_intersections(raycast_intersections);
     collide_grind_infos(cfg_, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
-    solve_contacts(contact_infos, cfg_.dt / (float)cfg_.oversampling);
+    solve_contacts(contact_infos, cfg_.dt / (float)cfg_.nsubsteps);
 }
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
@@ -178,7 +178,7 @@ void PhysicsEngine::advance_smoke_generator_lifetimes() {
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
-    contact_smoke_generator_->advance_time(cfg_.dt / (float)cfg_.oversampling);
+    contact_smoke_generator_->advance_time(cfg_.dt / (float)cfg_.nsubsteps);
 }
 
 void PhysicsEngine::move_advance_times() {
@@ -205,7 +205,7 @@ void PhysicsEngine::burn_in(float duration) {
                 .surface_power = NAN});
         }
     }
-    for (float time = 0; time < duration; time += cfg_.dt / (float)cfg_.oversampling) {
+    for (float time = 0; time < duration; time += cfg_.dt / (float)cfg_.nsubsteps) {
         collide(
             nullptr,        // beacons
             true,           // true = burn_in

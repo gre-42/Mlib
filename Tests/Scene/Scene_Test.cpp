@@ -95,7 +95,7 @@ void test_physics_engine(unsigned int seed) {
 
     PhysicsEngineConfig physics_cfg{
         .dt = getenv_default_float("DT", 0.01667f) * s,
-        .oversampling = getenv_default_size_t("OVERSAMPLING", 20)};
+        .nsubsteps = getenv_default_size_t("NSUBSTEPS", 20)};
     // SceneNode destructors require that physics engine is destroyed after scene,
     // => Create PhysicsEngine before Scene
     PhysicsEngine pe{ physics_cfg };
