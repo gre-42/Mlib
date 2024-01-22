@@ -304,6 +304,10 @@ void Mlib::handle_reflection(
         if (!compute_edge_overlap(cf, intersection_point, sat_used, overlap, normal)) {
             return;
         }
+        const auto& cfg = c.history.cfg;
+        if (overlap > (double)(cfg.max_supported_velocity * cfg.dt / (float)cfg.nsubsteps)) {
+            return;
+        }
     } else {
         if (c.l1 == nullptr) {
             THROW_OR_ABORT("handle_reflection: l1 not set");
