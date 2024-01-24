@@ -25,7 +25,7 @@ bool RenderProgram::allocated() const {
     return vertex_shader != (GLuint)-1;
 }
 
-void RenderProgram::allocate(const char * vertex_shader_text, const char * fragment_shader_text) {
+void RenderProgram::allocate(const char* vertex_shader_text, const char* fragment_shader_text) {
     if (allocated()) {
         THROW_OR_ABORT("Multiple calls to RenderProgram::allocate");
     }

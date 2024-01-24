@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
+#include <Mlib/Hash.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -523,6 +524,13 @@ void RenderableColoredVertexArray::render_cva(
     bool reorient_uv0 = cva->material.reorient_uv0 && (tic.ntextures_color != 0);
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
+    Hasher texture_modifiers_hash;
+    for (const auto& t : cva->material.textures_color) {
+        texture_modifiers_hash.combine(t.modifiers_hash());
+    }
+    for (const auto& t : cva->material.textures_alpha) {
+        texture_modifiers_hash.combine(t.modifiers_hash());
+    }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
@@ -572,7 +580,8 @@ void RenderableColoredVertexArray::render_cva(
             // Not using NAN for ordering.
             .dirtmap_offset = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_offset("dirtmap") : -1234,
             .dirtmap_discreteness = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_discreteness("dirtmap") : -1234,
-            .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale("dirtmap") : -1234},
+            .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale("dirtmap") : -1234,
+            .texture_modifiers_hash = texture_modifiers_hash},
         filtered_lights,
         lightmap_indices,
         light_noshadow_indices,
@@ -740,8 +749,8 @@ void RenderableColoredVertexArray::render_cva(
             THROW_OR_ABORT("Horizontal detailmap requires aggregation");
         }
         FixedArray<float, 2> rem{
-            (float)std::fmod(m.t(0), cva->material.period_world),
-            (float)std::fmod(m.t(2), cva->material.period_world)};
+            (float)std::remainder(m.t(0), cva->material.period_world),
+            (float)std::remainder(m.t(2), cva->material.period_world)};
         CHK(glUniform2fv(rp.horizontal_detailmap_remainder, 1, rem.flat_begin()));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind texture");

@@ -78,6 +78,8 @@ struct BlendMapTexture {
     BlendMapUvSource uv_source = BlendMapUvSource::VERTICAL;
     BlendMapReductionOperation reduction = BlendMapReductionOperation::PLUS;
     BlendMapReweightMode reweight_mode = BlendMapReweightMode::UNDEFINED;
+    // Don't forget to update "modifiers_hash" and "serialize" when adding parameters.
+    size_t modifiers_hash() const;
     std::partial_ordering operator <=> (const BlendMapTexture&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {

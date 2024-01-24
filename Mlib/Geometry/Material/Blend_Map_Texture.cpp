@@ -1,4 +1,5 @@
 #include "Blend_Map_Texture.hpp"
+#include <Mlib/Math/Orderable_Fixed_Array_Hash.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace std::string_view_literals;
@@ -64,4 +65,22 @@ BlendMapReweightMode Mlib::blend_map_reweight_mode_from_string(std::string_view 
     } else {
         THROW_OR_ABORT("Unknown blend map reweight mode: \"" + std::string{ s } + '"');
     }
+}
+
+size_t BlendMapTexture::modifiers_hash() const {
+    return hash_combine(
+        min_height,
+        max_height,
+        distances,
+        normal,
+        cosines,
+        discreteness,
+        scale,
+        weight,
+        plus,
+        min_detail_weight,
+        role,
+        uv_source,
+        reduction,
+        reweight_mode);
 }
