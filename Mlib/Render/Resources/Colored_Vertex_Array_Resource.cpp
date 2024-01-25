@@ -39,6 +39,43 @@
 
 using namespace Mlib;
 
+template <class T>
+class NotSortedArray {
+public:
+    NotSortedArray(const T& value)
+        : value_{ value }
+    {}
+    auto begin() const {
+        return value_.begin();
+    }
+    auto end() const {
+        return value_.end();
+    }
+    operator const T&() const {
+        return value_;
+    }
+    const T& operator * () const {
+        return value_;
+    }
+    const T* operator -> () const {
+        return &value_;
+    }
+    size_t size() const {
+        return value_.size();
+    }
+    bool empty() const {
+        return value_.empty();
+    }
+    auto operator [] (size_t i) const {
+        return value_[i];
+    }
+    std::strong_ordering operator <=> (const NotSortedArray&) const {
+        return std::strong_ordering::equal;
+    }
+private:
+    const T& value_;
+};
+
 static const size_t ANIMATION_NINTERPOLATED = 4;
 struct ShaderBoneWeight {
     unsigned char indices[ANIMATION_NINTERPOLATED];
@@ -69,8 +106,9 @@ static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
 static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
 
 static GenShaderText vertex_shader_text_gen{[](
-    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::vector<BlendMapTexture*>& textures_color,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
+    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
+    size_t texture_modifier_hash,
     size_t nlights,
     size_t ntextures_color,
     uint32_t nbillboard_ids,
@@ -314,12 +352,13 @@ static GenShaderText vertex_shader_text_gen{[](
 }};
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
-    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::vector<BlendMapTexture*>& textures_color,
-    const std::vector<BlendMapTexture*>& textures_alpha,
-    const std::vector<size_t>& light_noshadow_indices,
-    const std::vector<size_t>& light_shadow_indices,
-    const std::vector<size_t>& black_shadow_indices,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
+    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
+    const NotSortedArray<std::vector<BlendMapTexture*>>& textures_alpha,
+    const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
+    const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
+    const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
+    size_t texture_modifier_hash,
     size_t nlights,
     size_t ntextures_color,
     size_t ntextures_alpha,
@@ -1423,8 +1462,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     auto rp = std::make_unique<ColoredRenderProgram>();
     assert_true(triangles_res_->bone_indices.empty() == !triangles_res_->skeleton);
     const char* vs_text = vertex_shader_text_gen(
-        filtered_lights,
-        textures_color,
+        NotSortedArray{ filtered_lights },
+        NotSortedArray{ textures_color },
+        id.texture_modifiers_hash,
         filtered_lights.size(),
         id.ntextures_color,
         id.nbillboard_ids,
@@ -1450,12 +1490,13 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_distance,
         id.fragments_depend_on_normal);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
-        filtered_lights,
-        textures_color,
-        textures_alpha,
-        light_noshadow_indices,
-        light_shadow_indices,
-        black_shadow_indices,
+        NotSortedArray{ filtered_lights },
+        NotSortedArray{ textures_color },
+        NotSortedArray{ textures_alpha },
+        NotSortedArray{ light_noshadow_indices },
+        NotSortedArray{ light_shadow_indices },
+        NotSortedArray{ black_shadow_indices },
+        id.texture_modifiers_hash,
         filtered_lights.size(),
         id.ntextures_color,
         id.ntextures_alpha,

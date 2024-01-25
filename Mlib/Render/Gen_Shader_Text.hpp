@@ -1,14 +1,8 @@
 #pragma once
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
-#include <vector>
 
 namespace Mlib {
-
-struct Light;
-struct BlendMapTexture;
-template <class TDir, class TPos, size_t n>
-class TransformationMatrix;
 
 template <class Func>
 class GenShaderText {
@@ -17,17 +11,13 @@ public:
     : func_{func}
     {}
     template <class... Args>
-    const char* operator() (
-        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const std::vector<BlendMapTexture*>& textures,
-        const Args... args) {
+    const char* operator() (const Args... args) {
         static std::map<std::tuple<Args...>, std::pair<std::string, const char*>> texts;
         auto key = std::tuple(args...);
-        auto it = texts.find(key);
-        if (it != texts.end()) {
+        if (auto it = texts.find(key); it != texts.end()) {
             return it->second.second;
         }
-        std::string text = func_(lights, textures, args...);
+        std::string text = func_(args...);
         if (!texts.insert(std::make_pair(key, std::make_pair(std::move(text), text.c_str()))).second) {
             THROW_OR_ABORT("Could not insert shader text");
         }
