@@ -40,7 +40,7 @@ struct PhysicsEngineConfig {
     float max_cos_round_normal = 0.8f;
     float min_skip_velocity = 1 * kph;
     float slide_factor = 2.f;
-    float ignore_factor = 4.f;
+    float ignore_factor = 16.f;
     float intersection_point_radius = 0.03f * meters;
     float point_equality_beta = 0.05f;
     float plane_equality_beta = 0.05f;
