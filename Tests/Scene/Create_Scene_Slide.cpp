@@ -1,4 +1,4 @@
-#include "Create_Scene_Rod.hpp"
+#include "Create_Scene_Slide.hpp"
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
@@ -25,14 +25,35 @@
 
 using namespace Mlib;
 
-void Mlib::create_scene_rod(
+void Mlib::create_scene_slide(
     Scene& scene,
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras)
 {
-    auto rb0 = rigid_cuboid("rb0", "ground_no_id", INFINITY, { 1.f, 2.f, 3.f });
-    auto rb1_0 = rigid_cuboid("rb1_0", "rb1_0_no_id", 3.f * kg, { 2.f, 3.f, 4.f });
+    auto rb_slide = rigid_cuboid("slide", "slide_no_id", INFINITY, {1.f, 2.f, 3.f});
+    auto rb_box = rigid_cuboid("box", "box_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
+    auto load_slide = [](
+        const FixedArray<float, 3>& scale,
+        PhysicsMaterial physics_material)
+        {
+            return load_obj(
+                getenv_default("SLIDE", "Data/slide.obj"),
+                LoadMeshConfig<float>{
+                .scale = scale,
+                    .blend_mode = BlendMode::OFF,
+                    .cull_faces_default = false,
+                    .cull_faces_alpha = false,
+                    .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+                    .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+                    .aggregate_mode = AggregateMode::NONE,
+                    .transformation_mode = TransformationMode::ALL,
+                    .apply_static_lighting = true,
+                    .laplace_ao_strength = 0.f,
+                    .physics_material = physics_material,
+                    .triangulate = true,
+                    .werror = true});
+        };
     auto load_box = [](
         const FixedArray<float, 3>& scale,
         PhysicsMaterial physics_material)
@@ -54,15 +75,15 @@ void Mlib::create_scene_rod(
                 .triangulate = true,
                 .werror = true});
     };
-    std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_box(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles_slide = load_slide(
+        {5.f, 1.f, 5.f},
+        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles_box = load_box(
         {1.f, 1.f, 1.f},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX);
-    std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles01 = load_box(
-        {0.1f, 1.f, 0.1f},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
 
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles01));
-    RenderingContextStack::primary_scene_node_resources().add_resource("obj1", std::make_shared<ColoredVertexArrayResource>(triangles1));
+    RenderingContextStack::primary_scene_node_resources().add_resource("obj_slide", std::make_shared<ColoredVertexArrayResource>(triangles_slide));
+    RenderingContextStack::primary_scene_node_resources().add_resource("obj_box", std::make_shared<ColoredVertexArrayResource>(triangles_box));
     RenderingContextStack::primary_scene_node_resources().add_resource("beacon", load_renderable_obj(
         "Data/box.obj",
         LoadMeshConfig<float>{
@@ -82,40 +103,37 @@ void Mlib::create_scene_rod(
             .triangulate = true,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
-    // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
-    auto scene_node0 = make_dunique<SceneNode>();
-    auto scene_node1_0 = make_dunique<SceneNode>();
-    auto scene_nodeR = make_dunique<SceneNode>();
-    auto scene_nodeL = make_dunique<SceneNode>();
+    auto scene_node_slide = make_dunique<SceneNode>();
+    auto scene_node_box = make_dunique<SceneNode>();
+    auto scene_node_light = make_dunique<SceneNode>();
 
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj0", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj_slide", InstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj0",
-        .scene_node = scene_node0.ref(DP_LOC),
+        .scene_node = scene_node_slide.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj1", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj_box", InstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_0",
-        .scene_node = scene_node1_0.ref(DP_LOC),
+        .scene_node = scene_node_box.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
-    scene_node0->set_position({0., -4., 0.}, INITIAL_POSE);
-    scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)}, INITIAL_POSE);
+    scene_node_slide->set_rotation({0.f, -90.f * degrees, 0.f}, INITIAL_POSE);
+    scene_node_slide->set_position({-5., 0., -90.}, INITIAL_POSE);
+    scene_node_box->set_rotation({0.f, 0.f, 10.f * degrees}, INITIAL_POSE);
+    scene_node_box->set_position({-10., 10., -90.}, INITIAL_POSE);
 
-    scene_nodeR->add_child("n0", std::move(scene_node0));
-    scene_nodeR->add_child("n1_0", std::move(scene_node1_0));
-    scene_nodeR->set_position({0.f, -1.f, -40.f}, INITIAL_POSE);
-    scene_nodeL->set_position({0.f, 50.f, -40.f}, INITIAL_POSE);
-    scene_nodeL->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
-    scene_nodeL->add_light(std::make_unique<Light>(Light{
+    scene_node_light->set_position({0., 50., -90.}, INITIAL_POSE);
+    scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
+    scene_node_light->add_light(std::make_unique<Light>(Light{
         .resource_suffix = "light_node",
         .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH}));
-    scene_nodeL->add_light(std::make_unique<Light>(Light{
+    scene_node_light->add_light(std::make_unique<Light>(Light{
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 
-    scene.add_root_node("obj", std::move(scene_nodeR));
+    scene.add_root_node("obj_slide", std::move(scene_node_slide));
+    scene.add_root_node("obj_box", std::move(scene_node_box));
     scene.add_root_node("follower_camera", make_dunique<SceneNode>());
-    scene.add_root_node("light_node", std::move(scene_nodeL));
+    scene.add_root_node("light_node", std::move(scene_node_light));
     scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));
@@ -125,10 +143,10 @@ void Mlib::create_scene_rod(
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene.get_node("obj", DP_LOC)->get_child("n0"), std::move(rb0)};
-        AbsoluteMovableSetter ams1_0{scene.get_node("obj", DP_LOC)->get_child("n1_0"), std::move(rb1_0)};
+        AbsoluteMovableSetter ams_slide{scene.get_node("obj_slide", DP_LOC), std::move(rb_slide)};
+        AbsoluteMovableSetter ams_box{scene.get_node("obj_box", DP_LOC), std::move(rb_box)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), triangles01, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams_slide.absolute_movable), triangles_slide, {}, CollidableMode::STATIC);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams_box.absolute_movable), triangles_box, {}, CollidableMode::MOVING);
     }
 }

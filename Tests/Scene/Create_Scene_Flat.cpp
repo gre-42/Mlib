@@ -38,9 +38,9 @@ void Mlib::create_scene_flat(
     FastUniformRandomNumberGenerator<float> prng{seed, -1.f, 1.f};
     FastUniformRandomNumberGenerator<float> rrng{seed + 1, -0.1f * (float)M_PI, 0.1f * (float)M_PI};
     auto rb0 = rigid_cuboid("ground", "ground_no_id", INFINITY, {1.f, 2.f, 3.f});
-    auto rb1_0 = rigid_cuboid("rb0", "rb0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_1 = rigid_cuboid("rb1", "rb1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
-    auto rb1_2 = rigid_cuboid("rb2", "rb2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_0 = rigid_cuboid("rb1_0", "rb1_0_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_1 = rigid_cuboid("rb1_1", "rb1_1_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb1_2 = rigid_cuboid("rb1_2", "rb1_2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
     const auto z2 = fixed_zeros<float, 2>();
     const auto z3 = fixed_zeros<float, 3>();
@@ -183,7 +183,7 @@ void Mlib::create_scene_flat(
         AbsoluteMovableSetter ams1_1{scene.get_node("obj", DP_LOC)->get_child("n1_1"), std::move(rb1_1)};
         AbsoluteMovableSetter ams1_2{scene.get_node("obj", DP_LOC)->get_child("n1_2"), std::move(rb1_2)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), {triangles0}, {}, CollidableMode::STATIC);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), { triangles0 }, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING);
