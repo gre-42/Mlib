@@ -30,8 +30,8 @@ void ReadPixelsLogic::render(
 {
     LOG_FUNCTION("ReadPixelsLogic::render");
     if (render_results != nullptr) {
-        auto oit = render_results->outputs.find(frame_id);
-        if (oit != render_results->outputs.end()) {
+        if (auto oit = render_results->outputs.find(frame_id); oit != render_results->outputs.end())
+        {
             auto& o = oit->second;
             if (o.rgb.initialized() || o.depth.initialized()) {
                 THROW_OR_ABORT("ReadPixelsLogic::render detected multiple rendering calls");

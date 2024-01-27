@@ -90,7 +90,13 @@ void test_physics_engine(unsigned int seed) {
         render_config,
         num_renderings,
         set_fps,
-        []() { return std::chrono::steady_clock::now(); },
+        [is_interactive]() {
+            if (is_interactive) {
+                return std::chrono::steady_clock::now();
+            } else {
+                return std::chrono::steady_clock::time_point();
+            }
+        },
         &render_results };
 
     PhysicsEngineConfig physics_cfg{
@@ -250,7 +256,7 @@ void test_physics_engine(unsigned int seed) {
     }
 
     if (!is_interactive) {
-        Array<float>& rgb = render_results.outputs.at(rsd).rgb;
+        const Array<float>& rgb = render_results.outputs.at(rsd).rgb;
         if (!rgb.initialized()) {
             throw std::runtime_error("Render output not set");
         }
@@ -270,9 +276,9 @@ int main(int argc, char** argv) {
     enable_floating_point_exceptions();
 
     try {
-        unsigned int seed_min = getenv_default_uint("SEED_MIN", 0);
-        unsigned int seed_count = getenv_default_uint("SEED_COUNT", 1);
-        for (unsigned int seed = seed_min; seed < seed_min + seed_count; ++seed) {
+        auto seed_min = getenv_default_uint("SEED_MIN", 0);
+        auto seed_count = getenv_default_uint("SEED_COUNT", 1);
+        for (auto seed = seed_min; seed < seed_min + seed_count; ++seed) {
             linfo() << "seed: " << seed;
             test_physics_engine(seed);
         }
