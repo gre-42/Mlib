@@ -17,9 +17,9 @@ NormalContactInfo1::NormalContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<double, 3>& p)
-: rbp_{ rbp },
-  pc_{ pc },
-  p_{ p }
+    : rbp_{ rbp }
+    , pc_{ pc }
+    , p_{ p }
 {}
 
 /**
@@ -47,11 +47,11 @@ NormalContactInfo2::NormalContactInfo2(
     const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<double, 3>& p,
     const std::function<void(float)>& notify_lambda_final)
-: rbp0_{ rbp0 },
-  rbp1_{ rbp1 },
-  pc_{ pc },
-  p_{ p },
-  notify_lambda_final_{ notify_lambda_final }
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , pc_{ pc }
+    , p_{ p }
+    , notify_lambda_final_{ notify_lambda_final }
 {}
 
 void NormalContactInfo2::solve(float dt, float relaxation) {
@@ -80,9 +80,9 @@ PointContactInfo1::PointContactInfo1(
     RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
     const PointEqualityConstraint& pc)
-: rbp0_{ rbp0 },
-  v1_{ v1 },
-  pc_{ pc }
+    : rbp0_{ rbp0 }
+    , v1_{ v1 }
+    , pc_{ pc }
 {}
 
 void PointContactInfo1::solve(float dt, float relaxation) {
@@ -103,9 +103,9 @@ PointContactInfo2::PointContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const PointEqualityConstraint& pc)
-: rbp0_{ rbp0 },
-  rbp1_{ rbp1 },
-  pc_{ pc }
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , pc_{ pc }
 {}
 
 void PointContactInfo2::solve(float dt, float relaxation) {
@@ -131,9 +131,9 @@ LineContactInfo1::LineContactInfo1(
     RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
     const LineEqualityConstraint& lec)
-: rbp0_{ rbp0 },
-  v1_{ v1 },
-  lec_{ lec }
+    : rbp0_{ rbp0 }
+    , v1_{ v1 }
+    , lec_{ lec }
 {}
 
 void LineContactInfo1::solve(float dt, float relaxation) {
@@ -155,9 +155,9 @@ LineContactInfo2::LineContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const LineEqualityConstraint& lec)
-: rbp0_{ rbp0 },
-  rbp1_{ rbp1 },
-  lec_{ lec }
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , lec_{ lec }
 {}
 
 void LineContactInfo2::solve(float dt, float relaxation) {
@@ -184,9 +184,9 @@ PlaneContactInfo1::PlaneContactInfo1(
     RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
     const BoundedPlaneEqualityConstraint& pec)
-: rbp0_{ rbp0 },
-  v1_{ v1 },
-  pec_{ pec }
+    : rbp0_{ rbp0 }
+    , v1_{ v1 }
+    , pec_{ pec }
 {}
 
 void PlaneContactInfo1::solve(float dt, float relaxation) {
@@ -206,9 +206,9 @@ PlaneContactInfo2::PlaneContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedPlaneEqualityConstraint& pec)
-: rbp0_{ rbp0 },
-  rbp1_{ rbp1 },
-  pec_{ pec }
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , pec_{ pec }
 {}
 
 void PlaneContactInfo2::solve(float dt, float relaxation) {
@@ -243,20 +243,20 @@ FrictionContactInfo1::FrictionContactInfo1(
     float extra_stiction,
     float extra_friction,
     float extra_w)
-: lambda_total_{ 0 },
-  b_{ b },
-  rbp_{ rbp },
-  normal_impulse_{ normal_impulse },
-  p_{ p },
-  stiction_coefficient_{ stiction_coefficient },
-  friction_coefficient_{ friction_coefficient },
-  clamping_direction_{ clamping_direction },
-  clamping_min_{ clamping_min },
-  clamping_max_{ clamping_max },
-  ortho_clamping_max_l2_{ ortho_clamping_max_l2 },
-  extra_stiction_{ extra_stiction },
-  extra_friction_{ extra_friction },
-  extra_w_{ extra_w }
+    : lambda_total_{ 0 }
+    , b_{ b }
+    , rbp_{ rbp }
+    , normal_impulse_{ normal_impulse }
+    , p_{ p }
+    , stiction_coefficient_{ stiction_coefficient }
+    , friction_coefficient_{ friction_coefficient }
+    , clamping_direction_{ clamping_direction }
+    , clamping_min_{ clamping_min }
+    , clamping_max_{ clamping_max }
+    , ortho_clamping_max_l2_{ ortho_clamping_max_l2 }
+    , extra_stiction_{ extra_stiction }
+    , extra_friction_{ extra_friction }
+    , extra_w_{ extra_w }
 {}
 
 void FrictionContactInfo1::solve(float dt, float relaxation) {
@@ -354,14 +354,14 @@ FrictionContactInfo2::FrictionContactInfo2(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-: lambda_total_{ 0 },
-  b_{ b },
-  rbp0_{ rbp0 },
-  rbp1_{ rbp1 },
-  normal_impulse_{ normal_impulse },
-  p_{ p },
-  stiction_coefficient_{ stiction_coefficient },
-  friction_coefficient_{ friction_coefficient }
+    : lambda_total_{ 0 }
+    , b_{ b }
+    , rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , normal_impulse_{ normal_impulse }
+    , p_{ p }
+    , stiction_coefficient_{ stiction_coefficient }
+    , friction_coefficient_{ friction_coefficient }
 {}
 
 void FrictionContactInfo2::solve(float dt, float relaxation) {
@@ -407,21 +407,21 @@ TireContactInfo1::TireContactInfo1(
     const FixedArray<float, 3>& n3,
     float v0,
     const PhysicsEngineConfig& cfg)
-: fci_{ fci },
-  surface_stiction_factor_{ surface_stiction_factor },
-  rb_{ rb },
-  P_{ rb.consume_tire_surface_power(
+    : fci_{ fci }
+    , surface_stiction_factor_{ surface_stiction_factor }
+    , rb_{ rb }
+    , P_{ rb.consume_tire_surface_power(
         tire_id,
         std::abs(v0) > cfg.hand_brake_velocity
             ? VelocityClassification::FAST
-            : VelocityClassification::SLOW) },
-  tire_id_{ tire_id },
-  vc_street_{ vc_street },
-  vc_{ vc },
-  n3_{ n3 },
-  v0_{ v0 },
-  b0_{ fci.get_b() },
-  cfg_{ cfg }
+            : VelocityClassification::SLOW) }
+    , tire_id_{ tire_id }
+    , vc_street_{ vc_street }
+    , vc_{ vc }
+    , n3_{ n3 }
+    , v0_{ v0 }
+    , b0_{ fci.get_b() }
+    , cfg_{ cfg }
 {}
 
 void TireContactInfo1::solve(float dt, float relaxation) {
@@ -506,9 +506,9 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedShockAbsorberConstraint& sc,
     const FixedArray<double, 3>& p)
-: rbp_{ rbp },
-  sc_{ sc },
-  p_{ p }
+    : rbp_{ rbp }
+    , sc_{ sc }
+    , p_{ p }
 {}
 
 void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
