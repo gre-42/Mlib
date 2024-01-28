@@ -9,6 +9,7 @@ enum class OptionalState {
 
 template <class T>
 class Optional {
+    Optional& operator = (const Optional&) = delete;
 public:
     template <typename... Args>
     explicit Optional(OptionalState state, Args&&... args)
