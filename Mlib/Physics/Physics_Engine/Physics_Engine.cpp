@@ -216,8 +216,7 @@ void PhysicsEngine::burn_in(float duration) {
                 if (o.rigid_body.is_deactivated_avatar()) {
                     continue;
                 }
-                o.rigid_body.rbi_.T_ = 0;
-                o.rigid_body.rbi_.rbp_.w_ = 0;
+                o.rigid_body.rbp_.w_ = 0;
             }
         }
         move_rigid_bodies(nullptr);  // nullptr=beacons

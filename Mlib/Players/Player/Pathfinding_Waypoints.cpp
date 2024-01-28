@@ -56,8 +56,8 @@ void PathfindingWaypoints::select_next_waypoint() {
     if (!player_.has_scene_vehicle()) {
         return;
     }
-    FixedArray<float, 3> z3 = player_.rigid_body().rbi_.abs_z();
-    FixedArray<double, 3> pos3 = player_.rigid_body().rbi_.abs_position();
+    FixedArray<float, 3> z3 = player_.rigid_body().rbp_.abs_z();
+    FixedArray<double, 3> pos3 = player_.rigid_body().rbp_.abs_position();
     if (player_.single_waypoint_.waypoint_id_ == SIZE_MAX) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;

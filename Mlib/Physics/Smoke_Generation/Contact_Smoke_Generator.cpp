@@ -38,8 +38,8 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     if (surface_contact_info->smoke_particle_resource_name.empty()) {
         return surface_contact_info;
     }
-    auto v0 = c.o0.rbi_.rbp_.velocity_at_position(intersection_point);
-    auto v1 = c.o1.rbi_.rbp_.velocity_at_position(intersection_point);
+    auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
+    auto v1 = c.o1.rbp_.velocity_at_position(intersection_point);
     auto dvel2 = sum(squared(v0 - v1));
     if (dvel2 < squared(surface_contact_info->minimum_velocity_for_smoke)) {
         return surface_contact_info;

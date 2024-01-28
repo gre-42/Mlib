@@ -24,7 +24,7 @@ HeliController::HeliController(
   angle_multipliers_{ angle_multipliers },
   vehicle_domain_{ vehicle_domain }
 {
-    ascend_to(rb.rbi_.abs_position()(1));
+    ascend_to(rb.rbp_.abs_position()(1));
 }
 
 HeliController::~HeliController() = default;
@@ -44,7 +44,7 @@ void HeliController::apply() {
             EnginePowerIntent{
                 .surface_power = std::isnan(target_height_)
                     ? 0.f
-                    : (float)std::min(0., height_pid_(rb_.rbi_.abs_position()(1) - target_height_))});
+                    : (float)std::min(0., height_pid_(rb_.rbp_.abs_position()(1) - target_height_))});
         rb_.set_rotor_movement_y(main_rotor_id_, std::isnan(surface_power_)
             ? 0.f
             : angle_multipliers_(PITCH) * sign(surface_power_));

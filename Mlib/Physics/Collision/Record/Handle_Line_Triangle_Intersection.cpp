@@ -120,10 +120,10 @@ void Mlib::handle_line_triangle_intersection(
         if (c.o0.mass() == INFINITY || c.o1.mass() == INFINITY) {
             v = 0;
         } else {
-            v = (c.o0.rbi_.rbp_.v_ * c.o0.mass() + c.o1.rbi_.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
+            v = (c.o0.rbp_.v_ * c.o0.mass() + c.o1.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
         }
-        auto a0 = (v - c.o0.rbi_.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
-        auto a1 = (v - c.o1.rbi_.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
+        auto a0 = (v - c.o0.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
+        auto a1 = (v - c.o1.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
         if (c.o0.mass() != INFINITY) {
             c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.history.cfg);
         }
@@ -160,9 +160,9 @@ void Mlib::handle_line_triangle_intersection(
         }
         if (!direction_ok) {
             if (c.o0.grind_state_.wants_to_grind_counter_ > c.history.cfg.nframes_straight_grind) {
-                float v_len2 = sum(squared(c.o0.rbi_.rbp_.v_));
+                float v_len2 = sum(squared(c.o0.rbp_.v_));
                 if (v_len2 > squared(c.history.cfg.continuos_grind_velocity_threshold)) {
-                    float vl = std::abs(dot0d(c.o0.rbi_.rbp_.v_, rail_direction.casted<float>()) / std::sqrt(v_len2));
+                    float vl = std::abs(dot0d(c.o0.rbp_.v_, rail_direction.casted<float>()) / std::sqrt(v_len2));
                     if (vl < c.history.cfg.continuos_grind_cos_threshold) {
                         return;
                     }

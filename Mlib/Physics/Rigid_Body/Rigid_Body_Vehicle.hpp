@@ -8,7 +8,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -87,7 +87,7 @@ struct TrailerHitches {
 class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public StatusWriter, public INodeHider {
 public:
     RigidBodyVehicle(
-        const RigidBodyIntegrator& rbi,
+        const RigidBodyPulses& rbp,
         const std::string& name,
         const std::string& asset_id,
         const TransformationMatrix<double, double, 3>* geographic_mapping = nullptr);
@@ -104,7 +104,6 @@ public:
         float damping,
         float friction,
         const PhysicsEngineConfig& cfg);
-    void integrate_gravity(const FixedArray<float, 3>& g);
     void collide_with_air(
         const PhysicsEngineConfig& cfg,
         std::list<std::unique_ptr<ContactInfo>>& contact_infos);
@@ -215,7 +214,7 @@ public:
     // The relative offset when this object is targeted.
     FixedArray<float, 3> target_;
 
-    RigidBodyIntegrator rbi_;
+    RigidBodyPulses rbp_;
     std::list<std::unique_ptr<CollisionObserver>> collision_observers_;
 
     std::string name_;

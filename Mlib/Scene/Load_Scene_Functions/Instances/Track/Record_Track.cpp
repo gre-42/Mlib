@@ -41,6 +41,6 @@ void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources.get_geographic_mapping("world"),
         physics_engine.advance_times_,
         recorder_node,
-        &rb.rbi_,
+        &rb.rbp_,
         args.ui_focus.focuses));
 }

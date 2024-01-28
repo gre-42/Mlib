@@ -132,46 +132,45 @@ void test_power_to_force_stiction_normal() {
 void test_com() {
     PhysicsEngineConfig cfg;
 
-    RigidBodies rbs{cfg};
+    RigidBodies rbs{ cfg };
     float mass = 123.f * kg;
     FixedArray<float, 3> size{2 * meters, 3 * meters, 4 * meters};
     FixedArray<float, 3> com0{0 * meters, 0 * meters, 0 * meters};
     FixedArray<float, 3> com1{0 * meters, 1 * meters, 0 * meters};
     std::shared_ptr<RigidBodyVehicle> r0 = rigid_cuboid("r0", "r0_no_id", mass, size, com0);
     std::shared_ptr<RigidBodyVehicle> r1 = rigid_cuboid("r1", "r1_no_id", mass, size, com1);
-    r0->rbi_.rbp_.abs_com_ = 0;
-    r1->rbi_.rbp_.abs_com_ = com1.casted<double>();
-    r0->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
-    r1->rbi_.rbp_.rotation_ = fixed_identity_array<float, 3>();
+    r0->rbp_.abs_com_ = 0;
+    r1->rbp_.abs_com_ = com1.casted<double>();
+    r0->rbp_.rotation_ = fixed_identity_array<float, 3>();
+    r1->rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
-    r1->rbi_.rbp_.I_ = r0->rbi_.rbp_.I_;
-    r0->integrate_gravity({0.f, -9.8f * meters / (s * s), 0.f});
-    r1->integrate_gravity({0.f, -9.8f * meters / (s * s), 0.f});
+    r1->rbp_.I_ = r0->rbp_.I_;
+    float dt = cfg.dt / (float)cfg.nsubsteps;
+    r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
+    r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
     {
-        r0->rbi_.advance_time(cfg.dt);
+        r0->rbp_.advance_time(dt);
     }
     {
-        r1->rbi_.advance_time(cfg.dt);
+        r1->rbp_.advance_time(dt);
     }
     
-    // std::cerr << r0->rbi_.rbp_.v_ << std::endl;
-    // std::cerr << r1->rbi_.rbp_.v_ << std::endl;
-    assert_allclose(r0->rbi_.rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
-    assert_allclose(r1->rbi_.rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
+    // std::cerr << r0->rbp_.v_ << std::endl;
+    // std::cerr << r1->rbp_.v_ << std::endl;
+    assert_allclose(r0->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
+    assert_allclose(r1->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     {
-        r0->rbi_.advance_time(cfg.dt);
+        r0->rbp_.advance_time(dt);
     }
     {
-        r1->rbi_.advance_time(cfg.dt);
+        r1->rbp_.advance_time(dt);
     }
-    assert_allclose(r0->rbi_.rbp_.v_.to_array(), r1->rbi_.rbp_.v_.to_array());
-    assert_allclose(r0->rbi_.a_.to_array(), r1->rbi_.a_.to_array());
-    assert_allclose(r0->rbi_.T_.to_array(), r1->rbi_.T_.to_array());
+    assert_allclose(r0->rbp_.v_, r1->rbp_.v_);
     assert_allclose(
-        r0->velocity_at_position(com0.casted<double>()).to_array(),
-        r1->velocity_at_position(com1.casted<double>()).to_array());
+        r0->velocity_at_position(com0.casted<double>()),
+        r1->velocity_at_position(com1.casted<double>()));
     {
         r0->advance_time(cfg, nullptr);
     }
@@ -179,8 +178,8 @@ void test_com() {
         r1->advance_time(cfg, nullptr);
     }
     assert_allclose(
-        r0->velocity_at_position(com0.casted<double>()).to_array(),
-        r1->velocity_at_position(com1.casted<double>()).to_array());
+        r0->velocity_at_position(com0.casted<double>()),
+        r1->velocity_at_position(com1.casted<double>()));
 }
 
 void test_magic_formula() {

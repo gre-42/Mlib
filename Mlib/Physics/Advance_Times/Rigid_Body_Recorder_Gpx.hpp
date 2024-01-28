@@ -12,7 +12,7 @@ namespace Mlib {
 class Focuses;
 class AdvanceTimes;
 class SceneNode;
-struct RigidBodyIntegrator;
+class RigidBodyPulses;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
@@ -22,7 +22,7 @@ public:
         const std::string& filename,
         AdvanceTimes& advance_times,
         DanglingRef<SceneNode> recorded_node,
-        RigidBodyIntegrator* rbi,
+        RigidBodyPulses* rbp,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const Focuses& focuses);
     virtual void advance_time(float dt) override;
@@ -32,7 +32,7 @@ private:
     const Focuses& focuses_;
     AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> recorded_node_;
-    RigidBodyIntegrator* rbi_;
+    RigidBodyPulses* rbp_;
     const TransformationMatrix<double, double, 3>* geographic_coordinates_;
     TrackWriterGpx track_writer_;
     std::chrono::steady_clock::time_point start_time_;

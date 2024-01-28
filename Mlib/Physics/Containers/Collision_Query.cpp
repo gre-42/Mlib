@@ -222,8 +222,8 @@ bool CollisionQuery::can_see(
 {
     FixedArray<double, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
-        RigidBodyPulses watcher_rbp = watcher.rbi_.rbp_;
-        RigidBodyPulses watched_rbp = watched.rbi_.rbp_;
+        RigidBodyPulses watcher_rbp = watcher.rbp_;
+        RigidBodyPulses watched_rbp = watched.rbp_;
         watcher_rbp.advance_time(time_offset);
         watched_rbp.advance_time(time_offset);
         return can_see(
@@ -266,7 +266,7 @@ bool CollisionQuery::can_see(
 {
     FixedArray<double, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
-        RigidBodyPulses rbp = watcher.rbi_.rbp_;
+        RigidBodyPulses rbp = watcher.rbp_;
         rbp.advance_time(time_offset);
         return can_see(
             rbp.transform_to_world_coordinates(watcher.target_) + d,

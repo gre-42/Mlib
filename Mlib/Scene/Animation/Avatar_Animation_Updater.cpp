@@ -55,7 +55,7 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
             new_animation = resource_name + ".walking";
         } else {
             if (std::isnan(surface_power_) || (surface_power_ == 0)) {
-                auto v = dot(rb_.rbi_.rbp_.v_, rb_.rbi_.rbp_.rotation_);
+                auto v = dot(rb_.rbp_.v_, rb_.rbp_.rotation_);
                 if (std::abs(v(0)) > std::abs(v(2))) {
                     if (v(0) <= -1.f * kph) {
                         new_animation = resource_name + ".strafe_left";

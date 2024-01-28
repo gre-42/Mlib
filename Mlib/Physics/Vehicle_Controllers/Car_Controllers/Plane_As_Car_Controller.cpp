@@ -17,7 +17,7 @@ PlaneAsCarController::PlaneAsCarController(
   tire_angles_{ tire_angles },
   vehicle_domain_{ vehicle_domain }
 {
-    ascend_to(rb.rbi_.abs_position()(1));
+    ascend_to(rb.rbp_.abs_position()(1));
 }
 
 PlaneAsCarController::~PlaneAsCarController()

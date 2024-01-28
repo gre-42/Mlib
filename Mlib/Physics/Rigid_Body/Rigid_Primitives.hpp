@@ -7,7 +7,6 @@ namespace Mlib {
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class RigidBodyPulses;
-struct RigidBodyIntegrator;
 class RigidBodyVehicle;
 class RigidBodies;
 
@@ -20,15 +19,7 @@ RigidBodyPulses rigid_cuboid_pulses(
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
 
 // Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-RigidBodyIntegrator rigid_cuboid_integrator(
-    float mass,
-    const FixedArray<float, 3>& size,
-    const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
-    const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
-    const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
-
-// Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-RigidBodyIntegrator rigid_disk_integrator(
+RigidBodyPulses rigid_disk_pulses(
     float mass,
     float radius,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),

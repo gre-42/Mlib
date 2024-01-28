@@ -79,7 +79,7 @@ void SupplyDepots::handle_supply_depots(float dt) {
         }
         auto& rb = player->rigid_body();
         visit_supply_depots(
-            rb.rbi_.abs_position(),
+            rb.rbp_.abs_position(),
             [&rb](SupplyDepot& supply_depot)
             {
                 for (const auto& [item_type, navail] : supply_depot.supplies) {

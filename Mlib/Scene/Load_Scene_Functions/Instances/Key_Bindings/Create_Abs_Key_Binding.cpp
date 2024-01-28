@@ -66,7 +66,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .node = node.ptr(),
         .force = {
             .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
-            .position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, rb.rbi_.rbp_.com_.casted<double>()) * (double)meters},
+            .position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, rb.rbp_.com_.casted<double>()) * (double)meters},
         .rotate = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotate, fixed_zeros<float, 3>()),
         .car_surface_power = args.arguments.contains(KnownArgs::car_surface_power)
             ? args.arguments.at<float>(KnownArgs::car_surface_power) * W

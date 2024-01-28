@@ -30,7 +30,7 @@ static void handle_standard_reflection(
 
     // Normal force
     auto ci = std::make_unique<NormalContactInfo1>(
-        c.o0.rbi_.rbp_,
+        c.o0.rbp_,
         BoundedPlaneInequalityConstraint{
             .constraint{
                 .normal_impulse{.normal = -normal},
@@ -46,7 +46,7 @@ static void handle_standard_reflection(
 
     // Tangential force
     c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-        c.o0.rbi_.rbp_,
+        c.o0.rbp_,
         *normal_impulse,
         intersection_point,
         c.history.cfg.stiction_coefficient,
@@ -68,8 +68,8 @@ static void handle_extended_reflection(
     const NormalImpulse* normal_impulse = nullptr;
     if (c.o0.mass() != INFINITY) {
         auto ci = std::make_unique<NormalContactInfo2>(
-            c.o1.rbi_.rbp_,
-            c.o0.rbi_.rbp_,
+            c.o1.rbp_,
+            c.o0.rbp_,
             BoundedPlaneInequalityConstraint{
                 .constraint{
                     .normal_impulse{.normal = normal},
@@ -98,7 +98,7 @@ static void handle_extended_reflection(
     } else {
         if (c.tire_id1 == SIZE_MAX) {
             auto ci = std::make_unique<NormalContactInfo1>(
-                c.o1.rbi_.rbp_,
+                c.o1.rbp_,
                 BoundedPlaneInequalityConstraint{
                     .constraint{
                         .normal_impulse{.normal = normal},
@@ -119,13 +119,13 @@ static void handle_extended_reflection(
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
             {
-                jump(c.o0.rbi_.rbp_, c.o1.rbi_.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
+                jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
             float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
             float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
             c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;
             auto ci = std::make_unique<ShockAbsorberContactInfo1>(
-                c.o1.rbi_.rbp_,
+                c.o1.rbp_,
                 BoundedShockAbsorberConstraint{
                     .constraint{
                         .normal_impulse{.normal = normal},
@@ -161,14 +161,14 @@ static void handle_extended_reflection(
             if (float len2 = sum(squared(n3)); len2 > 1e-12) {
                 n3 /= std::sqrt(len2);
                 if (normal_impulse != nullptr) {
-                    FixedArray<float, 3> vc = c.o1.rbi_.rbp_.v_;
+                    FixedArray<float, 3> vc = c.o1.rbp_.v_;
                     vc -= normal.casted<float>() * dot0d(normal.casted<float>(), vc);
                     FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                     FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
                     c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
                         FrictionContactInfo1{
-                            c.o1.rbi_.rbp_,
+                            c.o1.rbp_,
                             *normal_impulse,
                             contact_position,
                             NAN, // clamping handled by "TireContactInfo1" // c.o1.tires_.at(c.tire_id1).stiction_coefficient(-force_n1),
@@ -192,7 +192,7 @@ static void handle_extended_reflection(
             }
         } else {
             c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
-                c.o1.rbi_.rbp_,
+                c.o1.rbp_,
                 *normal_impulse,
                 intersection_point,
                 align ? 0.f : c.history.cfg.stiction_coefficient,
@@ -201,8 +201,8 @@ static void handle_extended_reflection(
         }
     } else {
         c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
-            c.o1.rbi_.rbp_,
-            c.o0.rbi_.rbp_,
+            c.o1.rbp_,
+            c.o0.rbp_,
             *normal_impulse,
             intersection_point,
             align ? 0.f : c.history.cfg.stiction_coefficient,
@@ -236,7 +236,7 @@ void Mlib::handle_reflection(
             c.o1.align_to_surface_state_.touches_alignment_plane_ = true;
             return;
         }
-        if ((dot0d(N0.normal.casted<float>(), c.o1.rbi_.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
+        if ((dot0d(N0.normal.casted<float>(), c.o1.rbp_.rotation_.column(1)) < c.history.cfg.alignment_plane_cos) ||
             !std::isnan(c.o1.fly_forward_state_.wants_to_fly_forward_factor_))
         {
             return;
@@ -255,11 +255,11 @@ void Mlib::handle_reflection(
                 (std::abs(N0.normal(1)) > c.history.cfg.alignment_surface_cos) &&
                 (!any(c.mesh0_material & PhysicsMaterial::ATTR_ALIGN_STRICT) ||
                     (N0.normal(1) > c.history.cfg.alignment_surface_cos_strict)) &&
-                (// (dot0d(plane.normal, c.o1.rbi_.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
+                (// (dot0d(plane.normal, c.o1.rbp_.rotation_.column(1)) > c.cfg.alignment_cos) &&
                 (any(Mlib::isnan(c.o1.align_to_surface_state_.surface_normal_)) ||
                 (N0.normal(1) > c.o1.align_to_surface_state_.surface_normal_(1)))))
                 // (c.o1.wants_to_grind_ && (plane.normal(1) > c.o1.surface_normal_(1))) ||
-                // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbi_.rbp_.rotation_.column(1)) > 0.f))))
+                // (!c.o1.wants_to_grind_ && (dot0d(plane.normal - c.o1.surface_normal_, c.o1.rbp_.rotation_.column(1)) > 0.f))))
             {
                 c.o1.align_to_surface_state_.surface_normal_ = N0.normal.casted<float>();
             }

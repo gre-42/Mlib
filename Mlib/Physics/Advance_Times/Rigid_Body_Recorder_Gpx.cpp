@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -13,16 +13,16 @@ RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
     AdvanceTimes& advance_times,
     DanglingRef<SceneNode> recorded_node,
-    RigidBodyIntegrator* rbi,
+    RigidBodyPulses* rbp,
     const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const Focuses& focuses)
-: focuses_{focuses},
-  advance_times_{advance_times},
-  recorded_node_{recorded_node.ptr()},
-  rbi_{rbi},
-  geographic_coordinates_{geographic_coordinates},
-  track_writer_{filename},
-  start_time_{std::chrono::steady_clock::now()}
+    : focuses_{ focuses }
+    , advance_times_{ advance_times }
+    , recorded_node_{ recorded_node.ptr() }
+    , rbp_{ rbp }
+    , geographic_coordinates_{ geographic_coordinates }
+    , track_writer_{ filename }
+    , start_time_{ std::chrono::steady_clock::now() }
 {
     recorded_node_->clearing_observers.add(*this);
 }
@@ -40,11 +40,11 @@ void RigidBodyRecorderGpx::advance_time(float dt) {
     if (geographic_coordinates_ == nullptr) {
         THROW_OR_ABORT("RigidBodyRecorderGpx::advance_time without geographic mapping");
     }
-    track_writer_.write(geographic_coordinates_->transform(rbi_->abs_position().casted<double>()));
+    track_writer_.write(geographic_coordinates_->transform(rbp_->abs_position().casted<double>()));
 }
 
 void RigidBodyRecorderGpx::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    rbi_ = nullptr;
+    rbp_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

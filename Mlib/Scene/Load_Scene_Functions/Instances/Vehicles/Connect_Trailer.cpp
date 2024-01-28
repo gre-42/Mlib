@@ -41,8 +41,8 @@ void ConnectTrailer::execute(const LoadSceneJsonUserFunctionArgs& args)
         physics_engine.permanent_contacts_,
         car_node,
         trailer_node,
-        car_rb.rbi_.rbp_,
-        trailer_rb.rbi_.rbp_,
+        car_rb.rbp_,
+        trailer_rb.rbp_,
         car_rb.trailer_hitches_.get_position_male().casted<double>(),
         trailer_rb.trailer_hitches_.get_position_female().casted<double>()));
     car_rb.vehicle_controller().set_trailer(trailer_rb.vehicle_controller());

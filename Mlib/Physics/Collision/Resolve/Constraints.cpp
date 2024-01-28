@@ -399,14 +399,14 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     FixedArray<float, 3> tv = n3_ * tv_len;
 
     // {
-    //     FixedArray<float, 3> v3 = rb_.rbi_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
+    //     FixedArray<float, 3> v3 = rb_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
     //     std::cerr << tire_id_ << " v " << std::sqrt(sum(squared(v))) << " " << dot0d(n3_, v3) << std::endl;
     // }
     // FixedArray<float, 3> x3{
-    //     rb_.rbi_.rbp_.rotation_(0, 0),
-    //     rb_.rbi_.rbp_.rotation_(1, 0),
-    //     rb_.rbi_.rbp_.rotation_(2, 0)};
+    //     rb_.rbp_.rotation_(0, 0),
+    //     rb_.rbp_.rotation_(1, 0),
+    //     rb_.rbp_.rotation_(2, 0)};
     // x3 -= fci_.normal_impulse().normal * dot0d(fci_.normal_impulse().normal, x3);
     // x3 /= std::sqrt(sum(squared(x3)));
     // fci_.set_b(v - 1000.f * x3 * tire.accel_x * (cfg_.dt / cfg_.nsubsteps));

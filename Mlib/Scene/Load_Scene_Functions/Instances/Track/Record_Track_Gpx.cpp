@@ -40,7 +40,7 @@ void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(KnownArgs::filename),
         physics_engine.advance_times_,
         recorder_node,
-        &rb.rbi_,
+        &rb.rbp_,
         scene_node_resources.get_geographic_mapping("world"),
         args.ui_focus.focuses));
 }

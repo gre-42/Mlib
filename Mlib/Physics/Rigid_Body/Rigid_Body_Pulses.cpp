@@ -19,14 +19,14 @@ RigidBodyPulses::RigidBodyPulses(
     const FixedArray<double, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
-: mass_{mass},
-  I_{I},
-  com_{com},
-  v_{v},
-  w_{w},
-  rotation_{tait_bryan_angles_2_matrix(rotation)},
-  abs_com_{dot1d(rotation_, com_).casted<double>() + position},
-  I_is_diagonal_{I_is_diagonal}
+    : mass_{mass}
+    , I_{I}
+    , com_{com}
+    , v_{v}
+    , w_{w}
+    , rotation_{tait_bryan_angles_2_matrix(rotation)}
+    , abs_com_{dot1d(rotation_, com_).casted<double>() + position}
+    , I_is_diagonal_{I_is_diagonal}
 {}
 
 void RigidBodyPulses::advance_time(float dt)
@@ -124,8 +124,12 @@ FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x)
     }
 }
 
-void RigidBodyPulses::integrate_gravity(const FixedArray<float, 3>& g, float dt) {
-    v_ += dt * g;
+void RigidBodyPulses::integrate_delta_v(const FixedArray<float, 3>& dv) {
+    v_ += dv;
+}
+
+void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w) {
+    w_ += (1 + extra_w) * solve_abs_I(dL);
 }
 
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w)
@@ -133,8 +137,8 @@ void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, double, 3>
     if (any(abs(J.vector) > float{1e5})) {
         THROW_OR_ABORT("J.vector out of bounds");
     }
-    v_ += J.vector / mass_;
-    w_ += (1 + extra_w) * solve_abs_I(cross((J.position - abs_com_).casted<float>(), J.vector));
+    integrate_delta_v(J.vector / mass_);
+    integrate_delta_angular_momentum(cross((J.position - abs_com_).casted<float>(), J.vector), extra_w);
 }
 
 float RigidBodyPulses::energy() const {

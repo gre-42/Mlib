@@ -3,7 +3,7 @@
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Integrator.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
@@ -14,14 +14,14 @@ RigidBodyRecorder::RigidBodyRecorder(
     const TransformationMatrix<double, double, 3>* geographic_mapping,
     AdvanceTimes& advance_times,
     DanglingRef<SceneNode> recorded_node,
-    RigidBodyIntegrator* rbi,
+    RigidBodyPulses* rbp,
     const Focuses& focuses)
-: focuses_{focuses},
-  advance_times_{advance_times},
-  recorded_node_{recorded_node.ptr()},
-  rbi_{rbi},
-  track_writer_{filename, geographic_mapping},
-  start_time_{std::chrono::steady_clock::now()}
+    : focuses_{focuses}
+    , advance_times_{advance_times}
+    , recorded_node_{recorded_node.ptr()}
+    , rbp_{rbp}
+    , track_writer_{filename, geographic_mapping}
+    , start_time_{std::chrono::steady_clock::now()}
 {
     recorded_node_->clearing_observers.add(*this);
 }
@@ -38,11 +38,11 @@ void RigidBodyRecorder::advance_time(float dt) {
     }
     track_writer_.write(TrackElement{
         .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
-        .transformations = {OffsetAndTaitBryanAngles<float, double, 3>{rbi_->rbp_.rotation_, rbi_->abs_position()}}});
+        .transformations = {OffsetAndTaitBryanAngles<float, double, 3>{rbp_->rotation_, rbp_->abs_position()}}});
 }
 
 void RigidBodyRecorder::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    rbi_ = nullptr;
+    rbp_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

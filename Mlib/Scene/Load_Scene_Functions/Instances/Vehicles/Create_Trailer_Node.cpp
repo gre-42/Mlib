@@ -45,7 +45,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto pose0 = TranslationMatrix<double, 3>(
         rb.trailer_hitches_.get_position_male().casted<double>() -
         vars.database.at<FixedArray<double, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
-    auto pose1 = rb.rbi_.rbp_.abs_transformation() * pose0;
+    auto pose1 = rb.rbp_.abs_transformation() * pose0;
     auto node = make_dunique<SceneNode>(
         pose1.t(),
         matrix_2_tait_bryan_angles(pose1.R()),

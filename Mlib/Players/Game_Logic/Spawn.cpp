@@ -139,7 +139,7 @@ void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
     for (auto& [_, p] : vehicle_spawners_.spawners()) {
         if (p->has_scene_vehicle()) {
             for (const auto& v : p->get_scene_vehicles()) {
-                auto pos = v->rb().rbi_.abs_position();
+                auto pos = v->rb().rbp_.abs_position();
                 spawn_points_bvh_singular_->visit(
                     AxisAlignedBoundingBox<double, 3>(pos, cfg_.r_occupied_spawn_point),
                     [&](const SpawnPoint* sp) {

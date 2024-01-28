@@ -43,7 +43,7 @@ bool Mlib::compute_edge_overlap(
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
     {
-        if (dot0d(c.o1.rbi_.rbp_.abs_position(), N0.normal) + N0.intercept < 0.) {
+        if (dot0d(c.o1.rbp_.abs_position(), N0.normal) + N0.intercept < 0.) {
             return false;
         }
         sat_used = true;
@@ -99,7 +99,7 @@ bool Mlib::compute_edge_overlap(
         if (dot0d(N0.normal, normal) < c.history.cfg.min_cos_ridge_triangle) {
             return false;
         }
-        if (dot0d(c.o1.rbi_.rbp_.abs_position() - intersection_point, normal) < 0.) {
+        if (dot0d(c.o1.rbp_.abs_position() - intersection_point, normal) < 0.) {
             return false;
         }
     } else if (
@@ -118,7 +118,7 @@ bool Mlib::compute_edge_overlap(
         if (overlap == INFINITY) {
             return false;
         }
-        if (dot0d(intersection_point - c.o0.rbi_.rbp_.abs_position(), normal) < 0.) {
+        if (dot0d(intersection_point - c.o0.rbp_.abs_position(), normal) < 0.) {
             return false;
         }
         // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);

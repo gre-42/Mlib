@@ -389,7 +389,7 @@ bool Player::unstuck() {
     if (!has_scene_vehicle()) {
         return false;
     }
-    if ((sum(squared(vehicle_->rb().rbi_.rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
+    if ((sum(squared(vehicle_->rb().rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
@@ -494,7 +494,7 @@ std::string Player::best_weapon_in_inventory() const {
     }
     const auto& inventy = inventory();
     double distance_to_target = std::sqrt(sum(squared(
-        target_rb_->rbi_.abs_position() - rigid_body().rbi_.abs_position())));
+        target_rb_->rbp_.abs_position() - rigid_body().rbp_.abs_position())));
     float best_score = -INFINITY;
     std::string best_weapon_name;
     for (const auto& [name, info] : wc.weapon_infos()) {
@@ -725,7 +725,7 @@ void Player::select_next_vehicle() {
             set_next_scene_vehicle();
             break;
         }
-        double dist2 = sum(squared(v.rb().rbi_.abs_position() - vehicle_->rb().rbi_.abs_position()));
+        double dist2 = sum(squared(v.rb().rbp_.abs_position() - vehicle_->rb().rbp_.abs_position()));
         if (dist2 < closest_distance2) {
             set_next_scene_vehicle();
             closest_distance2 = dist2;

@@ -43,11 +43,11 @@ void Crash::notify_impact(
                 if (!std::isnan(damage0)) {
                     THROW_OR_ABORT("List contains multiple crashes");
                 }
-                damage0 = calculate_damage(rigid_body_.rbi_.rbp_, d->damage_, normal, lambda_final);
+                damage0 = calculate_damage(rigid_body_.rbp_, d->damage_, normal, lambda_final);
             }
         }
         if (!std::isnan(damage0)) {
-            float damage1 = calculate_damage(rigid_body.rbi_.rbp_, damage_, normal, lambda_final);
+            float damage1 = calculate_damage(rigid_body.rbp_, damage_, normal, lambda_final);
             float min_damage = std::min(damage0, damage1);
             damage0 -= min_damage;
             damage1 -= min_damage;

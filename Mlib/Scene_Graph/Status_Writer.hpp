@@ -11,14 +11,12 @@ enum class StatusComponents {
     POSITION = 1 << 1,
     SPEED = 1 << 2,
     HEALTH = 1 << 3,
-    ACCELERATION = 1 << 4,
-    DIAMETER = 1 << 5,
-    DIAMETER2 = 1 << 6,
-    ENERGY = 1 << 7,
-    DRIVER_NAME = 1 << 8,
-    ANGULAR_VELOCITY = 1 << 9,
-    WHEEL_ANGULAR_VELOCITY = 1 << 10,
-    ABS_ANGULAR_VELOCITY = 1 << 11
+    DIAMETER = 1 << 4,
+    ENERGY = 1 << 5,
+    DRIVER_NAME = 1 << 6,
+    ANGULAR_VELOCITY = 1 << 7,
+    WHEEL_ANGULAR_VELOCITY = 1 << 8,
+    ABS_ANGULAR_VELOCITY = 1 << 9
 };
 
 inline bool operator & (StatusComponents a, StatusComponents b) {

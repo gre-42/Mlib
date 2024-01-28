@@ -17,10 +17,10 @@ class RigidBodyPulses {
 public:
     RigidBodyPulses(
         float mass,
-        const FixedArray<float, 3, 3>& I,  // inertia tensor
-        const FixedArray<float, 3>& com,  // center of mass
-        const FixedArray<float, 3>& v,     // velocity
-        const FixedArray<float, 3>& w,     // angular velocity
+        const FixedArray<float, 3, 3>& I,   // inertia tensor
+        const FixedArray<float, 3>& com,    // center of mass
+        const FixedArray<float, 3>& v,      // velocity
+        const FixedArray<float, 3>& w,      // angular velocity
         const FixedArray<double, 3>& position,
         const FixedArray<float, 3>& rotation,
         bool I_is_diagonal);
@@ -35,8 +35,9 @@ public:
     FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<double, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
     void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<double, 3>& position);
-    void integrate_gravity(const FixedArray<float, 3>& g, float dt);
-    void integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w = 0);
+    void integrate_delta_v(const FixedArray<float, 3>& dv);
+    void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w = 0.f);
+    void integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w = 0.f);
     float energy() const;
     float effective_mass(const VectorAtPosition<float, double, 3>& vp) const;
 

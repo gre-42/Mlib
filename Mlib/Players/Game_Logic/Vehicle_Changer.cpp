@@ -97,7 +97,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         if (std::isnan(a_rb_old.door_distance_)) {
             THROW_OR_ABORT("Door distance not set");
         }
-        auto a_trafo = a_rb_old.rbi_.rbp_.abs_transformation();
+        auto a_trafo = a_rb_old.rbp_.abs_transformation();
         FixedArray<float, 3> a_dir = (std::abs(a_trafo.R(0, 1)) > 0.9f)
             ? a_trafo.R().column(2)
             : a_trafo.R().column(0);
@@ -106,11 +106,11 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         // Subtract PI/2 because we want to set the angle in z-direction,
         // while the angle computed by atan2 is measured along the x-direction.
         float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
-        b_rb.rbi_.rbp_.set_pose(
+        b_rb.rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
             a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<double>());
-        b_rb.rbi_.rbp_.v_ = 0.f;
-        b_rb.rbi_.rbp_.w_ = 0.f;
+        b_rb.rbp_.v_ = 0.f;
+        b_rb.rbp_.w_ = 0.f;
         b.scene_node()->invalidate_transformation_history();
     }
     ExternalsMode a_ec_old = ap.externals_mode();

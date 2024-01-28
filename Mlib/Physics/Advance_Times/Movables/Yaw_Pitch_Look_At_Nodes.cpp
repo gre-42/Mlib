@@ -63,8 +63,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
         auto offset = fixed_zeros<double, 3>();
         float t = 0;
         for (size_t i = 0; i < 10; ++i) {
-            RigidBodyPulses rbp = followed_->rbi_.rbp_;
-            rbp.v_ -= follower_.rbi_.rbp_.v_;
+            RigidBodyPulses rbp = followed_->rbp_;
+            rbp.v_ -= follower_.rbp_.v_;
             rbp.v_ *= (1 + verr);
             rbp.advance_time(t);
             Aim aim{
@@ -81,8 +81,8 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
             t = (float)aim.time;
             offset(1) = aim.aim_offset;
         }
-        RigidBodyPulses rbp = followed_->rbi_.rbp_;
-        rbp.v_ -= follower_.rbi_.rbp_.v_;
+        RigidBodyPulses rbp = followed_->rbp_;
+        rbp.v_ -= follower_.rbp_.v_;
         rbp.v_ *= (1 + verr);
         rbp.advance_time(t);
         FixedArray<double, 3> p = absolute_model_matrix.itransform(

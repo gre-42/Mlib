@@ -77,11 +77,11 @@ void SingleWaypoint::move_to_waypoint() {
     }
     // Stop when distance to waypoint is small enough (break).
     if (!player_.ramming()) {
-        FixedArray<double, 3> pos3 = player_rb.rbi_.abs_position();
+        FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
         double distance_to_waypoint2 = sum(squared(pos3 - waypoint_));
         float lookahead_fac2 = std::max(
             1.f,
-            sum(squared(player_rb.rbi_.rbp_.v_)) /
+            sum(squared(player_rb.rbp_.v_)) /
             squared(player_.driving_mode_.lookahead_velocity));
         if (distance_to_waypoint2 < squared(player_.driving_mode_.waypoint_reached_radius) * lookahead_fac2) {
             if (waypoint_id_ != SIZE_MAX) {
@@ -112,10 +112,10 @@ void SingleWaypoint::move_to_waypoint() {
         {
             continue;
         }
-        FixedArray<double, 3> d = p_rb.rbi_.abs_position() - player_rb.rbi_.abs_position();
+        FixedArray<double, 3> d = p_rb.rbp_.abs_position() - player_rb.rbp_.abs_position();
         double dl2 = sum(squared(d));
         if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_brake)) {
-            auto z = player_rb.rbi_.abs_z();
+            auto z = player_rb.rbp_.abs_z();
             if (dot0d(d, z.casted<double>()) < 0) {
                 player_.car_movement.step_on_brakes();
                 player_.car_movement.steer(0.f);
@@ -124,7 +124,7 @@ void SingleWaypoint::move_to_waypoint() {
             }
         } else if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
-                auto z = player_rb.rbi_.abs_z();
+                auto z = player_rb.rbp_.abs_z();
                 if (dot0d(d, z.casted<double>()) / std::sqrt(dl2) < -player_.driving_mode_.collision_avoidance_cos) {
                     if (player_.driving_direction_ == DrivingDirection::CENTER || player_.driving_direction_ == DrivingDirection::RIGHT) {
                         d_wpt = player_.driving_mode_.collision_avoidance_delta;
@@ -145,7 +145,7 @@ void SingleWaypoint::move_to_waypoint() {
         float target_vel = std::isnan(target_velocity_)
             ? player_.driving_mode_.max_velocity
             : target_velocity_;
-        float dvel = -dot0d(player_rb.rbi_.rbp_.v_, player_rb.rbi_.abs_z()) - target_vel;
+        float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {
                 player_rb.avatar_controller_->walk(player_.vehicle_movement.surface_power_forward());
@@ -171,12 +171,12 @@ void SingleWaypoint::move_to_waypoint() {
     // auto m = vehicle_.rb->get_new_absolute_model_matrix();
     // auto v = inverted_scaled_se3(m);
     // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
-    auto z3 = player_rb.rbi_.rbp_.abs_z();
+    auto z3 = player_rb.rbp_.abs_z();
     FixedArray<float, 2> z{z3(0), z3(2)};
     float zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
-        auto p = player_rb.rbi_.rbp_.abs_position();
+        auto p = player_rb.rbp_.abs_position();
         auto wpt = FixedArray<double, 2>{waypoint_(0), waypoint_(2)} - FixedArray<double, 2>{p(0), p(2)};
         auto m = FixedArray<double, 2, 2>::init(
             z(1), -z(0),

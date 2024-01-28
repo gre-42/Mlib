@@ -39,7 +39,7 @@ Bullet::Bullet(
 : scene_{ scene },
   smoke_generator_{smoke_generator},
   advance_times_{ advance_times },
-  rigid_body_pulses_{ rigid_body.rbi_.rbp_ },
+  rigid_body_pulses_{ rigid_body.rbp_ },
   rigid_bodies_{ rigid_bodies },
   gunner_{ gunner },
   team_{ team },
@@ -166,7 +166,7 @@ void Bullet::cause_damage(
             {
                 continue;
             }
-            double dist2 = sum(squared(rb.rbi_.abs_position() - intersection_point));
+            double dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
             if (dist2 > squared(damage_radius_)) {
                 continue;
             }

@@ -15,7 +15,7 @@ void Mlib::collide_grind_infos(
     const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
 {
     for (const auto& [rb, p] : grind_infos) {
-        rb->grind_state_.grind_pv_ = dot1d(rb->rbi_.rbp_.rotation_.T(), p.rail_direction.casted<float>());
+        rb->grind_state_.grind_pv_ = dot1d(rb->rbp_.rotation_.T(), p.rail_direction.casted<float>());
         if (std::abs(rb->grind_state_.grind_pv_(0)) > std::abs(rb->grind_state_.grind_pv_(2))) {
             rb->grind_state_.grind_axis_ = 0;
         } else {
@@ -24,12 +24,12 @@ void Mlib::collide_grind_infos(
         if (rb->jump_state_.wants_to_jump_oversampled_) {
             auto& o0 = *p.rail_rb;
             auto& o1 = *rb;
-            auto point_dir = o1.rbi_.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
-            point_dir *= sign(dot0d(point_dir, o1.rbi_.rbp_.v_));
+            auto point_dir = o1.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
+            point_dir *= sign(dot0d(point_dir, o1.rbp_.v_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
             auto n = -gravity_direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
-            jump(o0.rbi_.rbp_, o1.rbi_.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
+            jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {
             auto n = cross(p.rail_direction, FixedArray<double, 3>{ 0., 1., 0. });
             double l2 = sum(squared(n));
@@ -40,7 +40,7 @@ void Mlib::collide_grind_infos(
             if (p.rail_rb->mass() == INFINITY) {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
-                        rb->rbi_.rbp_,
+                        rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         BoundedPlaneEqualityConstraint{
                             .constraint =
@@ -57,7 +57,7 @@ void Mlib::collide_grind_infos(
                         cross(n, p.rail_direction),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo1{
-                        rb->rbi_.rbp_,
+                        rb->rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
@@ -67,7 +67,7 @@ void Mlib::collide_grind_infos(
                         rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1<1>{
-                        rb->rbi_.rbp_,
+                        rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         LineEqualityConstraint<1>{
                             .pec = PointEqualityConstraint{
@@ -79,8 +79,8 @@ void Mlib::collide_grind_infos(
             } else {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
-                        rb->rbi_.rbp_,
-                        p.rail_rb->rbi_.rbp_,
+                        rb->rbp_,
+                        p.rail_rb->rbp_,
                         BoundedPlaneEqualityConstraint{
                             .constraint =
                                 PlaneEqualityConstraint{
@@ -96,8 +96,8 @@ void Mlib::collide_grind_infos(
                         cross(n, p.rail_direction).casted<double>(),
                         p.intersection_point};
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo2{
-                        rb->rbi_.rbp_,
-                        p.rail_rb->rbi_.rbp_,
+                        rb->rbp_,
+                        p.rail_rb->rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
                                 .normal_impulse = NormalImpulse{.normal = plane.normal},
@@ -107,8 +107,8 @@ void Mlib::collide_grind_infos(
                         rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2<1>{
-                        rb->rbi_.rbp_,
-                        p.rail_rb->rbi_.rbp_,
+                        rb->rbp_,
+                        p.rail_rb->rbp_,
                         LineEqualityConstraint<1>{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),

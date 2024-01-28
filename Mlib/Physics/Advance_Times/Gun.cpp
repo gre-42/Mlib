@@ -132,9 +132,9 @@ bool Gun::maybe_generate_bullet() {
 void Gun::generate_bullet() {
     std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_mass_, bullet_size_);
     rcu->flags_ = bullet_rigid_body_flags_;
-    rcu->rbi_.rbp_.v_ =
+    rcu->rbp_.v_ =
         - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rb_.rbi_.rbp_.v_;
+        + parent_rb_.rbp_.v_;
     auto node = make_dunique<SceneNode>(
         absolute_model_matrix_.t(),
         matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),

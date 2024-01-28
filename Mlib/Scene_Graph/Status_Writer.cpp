@@ -13,43 +13,23 @@ float StatusWriter::get_value(StatusComponents status_components) const {
 }
 
 StatusComponents single_status_component_from_string(const std::string& s) {
-    if (s == "time") {
-        return StatusComponents::TIME;
+    static const std::map<std::string, StatusComponents> map{
+        {"time", StatusComponents::TIME},
+        {"position", StatusComponents::POSITION},
+        {"speed", StatusComponents::SPEED},
+        {"health", StatusComponents::HEALTH},
+        {"diameter", StatusComponents::DIAMETER},
+        {"energy", StatusComponents::ENERGY},
+        {"driver_name", StatusComponents::DRIVER_NAME},
+        {"angular_velocity", StatusComponents::ANGULAR_VELOCITY},
+        {"wheel_angular_velocity", StatusComponents::WHEEL_ANGULAR_VELOCITY},
+        {"abs_angular_velocity", StatusComponents::ABS_ANGULAR_VELOCITY}
+    };
+    auto it = map.find(s);
+    if (it == map.end()) {
+        throw std::runtime_error("Unknown status component: \"" + s + '"');
     }
-    if (s == "position") {
-        return StatusComponents::POSITION;
-    }
-    if (s == "speed") {
-        return StatusComponents::SPEED;
-    }
-    if (s == "health") {
-        return StatusComponents::HEALTH;
-    }
-    if (s == "acceleration") {
-        return StatusComponents::ACCELERATION;
-    }
-    if (s == "diameter") {
-        return StatusComponents::DIAMETER;
-    }
-    if (s == "diameter2") {
-        return StatusComponents::DIAMETER2;
-    }
-    if (s == "energy") {
-        return StatusComponents::ENERGY;
-    }
-    if (s == "driver_name") {
-        return StatusComponents::DRIVER_NAME;
-    }
-    if (s == "angular_velocity") {
-        return StatusComponents::ANGULAR_VELOCITY;
-    }
-    if (s == "wheel_angular_velocity") {
-        return StatusComponents::WHEEL_ANGULAR_VELOCITY;
-    }
-    if (s == "abs_angular_velocity") {
-        return StatusComponents::ABS_ANGULAR_VELOCITY;
-    }
-    throw std::runtime_error("Unknown status component: \"" + s + '"');
+    return it->second;
 }
 
 StatusComponents Mlib::status_components_from_string(const std::string& s) {
