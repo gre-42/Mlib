@@ -124,21 +124,27 @@ public:
         assert(id < tshape0);
         return data_[id];
     }
+    constexpr PointerIterable<const FixedArray<TData, tshape...>> row_iterable() const {
+        return { data_ + 0, data_ + tshape0 };
+    }
+    constexpr PointerIterable<FixedArray<TData, tshape...>> row_iterable() {
+        return { data_ + 0, data_ + tshape0 };
+    }
     constexpr PointerIterable<const TData> flat_iterable() const {
-        return PointerIterable<const TData>{flat_begin(), flat_end()};
+        return { flat_begin(), flat_end() };
     }
     constexpr PointerIterable<TData> flat_iterable() {
-        return PointerIterable<TData>{flat_begin(), flat_end()};
+        return { flat_begin(), flat_end() };
     }
     constexpr TData* flat_begin() {
-        if (tshape0 == 0) {
+        if constexpr (tshape0 == 0) {
             return nullptr;
         } else {
             return data_[0].flat_begin();
         }
     }
     constexpr TData* flat_end() {
-        if (tshape0 == 0) {
+        if constexpr (tshape0 == 0) {
             return nullptr;
         } else {
             return data_[tshape0 - 1].flat_end();
