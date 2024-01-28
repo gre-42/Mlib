@@ -66,15 +66,15 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1{
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1<1>{
                         rb->rbi_.rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
-                        LineEqualityConstraint{
+                        LineEqualityConstraint<1>{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg.point_equality_beta},
-                            .line_direction = p.rail_direction.casted<float>()}}));
+                            .null_space = p.rail_direction.casted<float>()}}));
                 }
             } else {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
@@ -106,15 +106,15 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2{
+                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2<1>{
                         rb->rbi_.rbp_,
                         p.rail_rb->rbi_.rbp_,
-                        LineEqualityConstraint{
+                        LineEqualityConstraint<1>{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg.point_equality_beta},
-                            .line_direction = p.rail_direction.casted<float>()}}));
+                            .null_space = p.rail_direction.casted<float>()}}));
                 }
             }
             rb->grind_state_.grinding_ = true;

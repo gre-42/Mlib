@@ -21,9 +21,19 @@ struct PointEqualityConstraint {
     }
 };
 
-struct LineEqualityConstraint {
+template <size_t ndim>
+struct LineEqualityConstraint {};
+
+template <>
+struct LineEqualityConstraint<0> {
+    LineEqualityConstraint(PointEqualityConstraint pec) : pec{ std::move(pec) } {}
     PointEqualityConstraint pec;
-    FixedArray<float, 3> line_direction;
+};
+
+template <>
+struct LineEqualityConstraint<1> {
+    PointEqualityConstraint pec;
+    FixedArray<float, 1, 3> null_space;
 };
 
 struct PlaneEqualityConstraint {
@@ -118,56 +128,32 @@ public:
     virtual void finalize() {}
 };
 
-class PointContactInfo1: public ContactInfo {
-public:
-    PointContactInfo1(
-        RigidBodyPulses& rbp0,
-        const FixedArray<float, 3>& v1,
-        const PointEqualityConstraint& pc);
-    virtual void solve(float dt, float relaxation) override;
-private:
-    RigidBodyPulses& rbp0_;
-    FixedArray<float, 3> v1_;
-    PointEqualityConstraint pc_;
-};
-
-class PointContactInfo2: public ContactInfo {
-public:
-    PointContactInfo2(
-        RigidBodyPulses& rbp0,
-        RigidBodyPulses& rbp1,
-        const PointEqualityConstraint& pc);
-    virtual void solve(float dt, float relaxation) override;
-private:
-    RigidBodyPulses& rbp0_;
-    RigidBodyPulses& rbp1_;
-    PointEqualityConstraint pc_;
-};
-
+template <size_t tnullspace>
 class LineContactInfo1: public ContactInfo {
 public:
     LineContactInfo1(
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
-        const LineEqualityConstraint& lec);
+        const LineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
-    LineEqualityConstraint lec_;
+    LineEqualityConstraint<tnullspace> lec_;
 };
 
+template <size_t tnullspace>
 class LineContactInfo2: public ContactInfo {
 public:
     LineContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const LineEqualityConstraint& lec);
+        const LineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    LineEqualityConstraint lec_;
+    LineEqualityConstraint<tnullspace> lec_;
 };
 
 class PlaneContactInfo1: public ContactInfo {

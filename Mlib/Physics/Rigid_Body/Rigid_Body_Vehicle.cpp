@@ -213,14 +213,14 @@ void RigidBodyVehicle::collide_with_air(
             rotor->blades_rb->rbi_.rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->blades_rb->rbi_.rbp_.rotation_);
             auto T0 = rbi_.rbp_.abs_transformation();
             auto T1 = rotor->blades_rb->rbi_.rbp_.abs_transformation();
-            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+            contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
                 rbi_.rbp_,
                 rotor->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
-            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+            contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
                 rbi_.rbp_,
                 rotor->blades_rb->rbi_.rbp_,
                 PointEqualityConstraint{

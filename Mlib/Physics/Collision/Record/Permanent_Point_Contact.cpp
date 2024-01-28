@@ -40,10 +40,11 @@ void PermanentPointContact::notify_destroyed(DanglingRef<const SceneNode> destro
 
 void PermanentPointContact::extend_contact_infos(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos) {
+    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+{
     auto T0 = rbp0_.abs_transformation();
     auto T1 = rbp1_.abs_transformation();
-    contact_infos.push_back(std::make_unique<PointContactInfo2>(
+    contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
         rbp0_,
         rbp1_,
         PointEqualityConstraint{
