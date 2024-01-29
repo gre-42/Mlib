@@ -5,6 +5,7 @@
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -33,6 +34,7 @@ void RigidBodyPulses::advance_time(float dt)
 {
     abs_com_ += (dt * v_).casted<double>();
     rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
+    rotation_ = Quaternion<float>{ rotation_ }.to_rotation_matrix();
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
