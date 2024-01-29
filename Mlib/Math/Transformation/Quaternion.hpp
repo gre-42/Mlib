@@ -58,6 +58,7 @@ public:
                 v_(1) = (m(1, 2) + m(2, 1) ) / k;
                 v_(2) = TData{0.25} * k;
             }
+            *this /= length();
         }
     }
     Quaternion(const FixedArray<TData, 3>& axis, const TData& angle) {
