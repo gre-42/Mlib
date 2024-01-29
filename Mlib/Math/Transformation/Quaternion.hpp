@@ -29,37 +29,52 @@ public:
     {}
     /**
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+     * The case "trace <= 0" did not work properly.
      */
+    // explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
+    //     TData trace = m(0, 0) + m(1, 1) + m(2, 2);
+    //     if (trace > 0) {
+    //         TData k = TData{0.5} / std::sqrt(trace + (TData)1);
+    //         s_ = TData{0.25} / k;
+    //         v_(0) = (m(2, 1) - m(1, 2) ) * k;
+    //         v_(1) = (m(0, 2) - m(2, 0) ) * k;
+    //         v_(2) = (m(1, 0) - m(0, 1) ) * k;
+    //     } else {
+    //         if (m(0, 0) > m(1, 1) && m(0, 0) > m(2, 2) ) {
+    //             TData k = (TData)2 * std::sqrt(1 + m(0, 0) - m(1, 1) - m(2, 2));
+    //             s_ = (m(2, 1) - m(1, 2) ) / k;
+    //             v_(0) = TData{0.25} * k;
+    //             v_(1) = (m(0, 1) + m(1, 0) ) / k;
+    //             v_(2) = (m(0, 2) + m(2, 0) ) / k;
+    //         } else if (m(1, 1) > m(2, 2)) {
+    //             TData k = (TData)2 * std::sqrt(1 + m(1, 1) - m(0, 0) - m(2, 2));
+    //             s_ = (m(0, 2) - m(2, 0) ) / k;
+    //             v_(0) = (m(0, 1) + m(1, 0) ) / k;
+    //             v_(1) = TData{0.25} * k;
+    //             v_(2) = (m(1, 2) + m(2, 1) ) / k;
+    //         } else {
+    //             TData k = (TData)2 * std::sqrt(1 + m(2, 2) - m(0, 0) - m(1, 1));
+    //             s_ = (m(1, 0) - m(0, 1) ) / k;
+    //             v_(0) = (m(0, 2) + m(2, 0) ) / k;
+    //             v_(1) = (m(1, 2) + m(2, 1) ) / k;
+    //             v_(2) = TData{0.25} * k;
+    //         }
+    //         *this /= length();
+    //     }
+    // }
+    /**
+    * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+    * Christian's alternative method
+    */
     explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
-        TData trace = m(0, 0) + m(1, 1) + m(2, 2);
-        if (trace > 0) {
-            TData k = TData{0.5} / std::sqrt(trace + (TData)1);
-            s_ = TData{0.25} / k;
-            v_(0) = (m(2, 1) - m(1, 2) ) * k;
-            v_(1) = (m(0, 2) - m(2, 0) ) * k;
-            v_(2) = (m(1, 0) - m(0, 1) ) * k;
-        } else {
-            if (m(0, 0) > m(1, 1) && m(0, 0) > m(2, 2) ) {
-                TData k = (TData)2 * std::sqrt(1 + m(0, 0) - m(1, 1) - m(2, 2));
-                s_ = (m(2, 1) - m(1, 2) ) / k;
-                v_(0) = TData{0.25} * k;
-                v_(1) = (m(0, 1) + m(1, 0) ) / k;
-                v_(2) = (m(0, 2) + m(2, 0) ) / k;
-            } else if (m(1, 1) > m(2, 2)) {
-                TData k = (TData)2 * std::sqrt(1 + m(1, 1) - m(0, 0) - m(2, 2));
-                s_ = (m(0, 2) - m(2, 0) ) / k;
-                v_(0) = (m(0, 1) + m(1, 0) ) / k;
-                v_(1) = TData{0.25} * k;
-                v_(2) = (m(1, 2) + m(2, 1) ) / k;
-            } else {
-                TData k = (TData)2 * std::sqrt(1 + m(2, 2) - m(0, 0) - m(1, 1));
-                s_ = (m(1, 0) - m(0, 1) ) / k;
-                v_(0) = (m(0, 2) + m(2, 0) ) / k;
-                v_(1) = (m(1, 2) + m(2, 1) ) / k;
-                v_(2) = TData{0.25} * k;
-            }
-            *this /= length();
-        }
+        s_ = std::sqrt(std::max<TData>(0, 1 + m(0, 0) + m(1, 1) + m(2, 2))) / 2;
+        v_(0) = std::sqrt(std::max<TData>(0, 1 + m(0, 0) - m(1, 1) - m(2, 2))) / 2;
+        v_(1) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) + m(1, 1) - m(2, 2))) / 2;
+        v_(2) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) - m(1, 1) + m(2, 2))) / 2;
+
+        v_(0) = std::copysign(v_(0), m(2, 1) - m(1, 2));
+        v_(1) = std::copysign(v_(1), m(0, 2) - m(2, 0));
+        v_(2) = std::copysign(v_(2), m(1, 0) - m(0, 1));
     }
     Quaternion(const FixedArray<TData, 3>& axis, const TData& angle) {
         s_ = std::cos(angle / TData{2});
