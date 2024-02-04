@@ -59,7 +59,6 @@ static void handle_extended_reflection(
     const IntersectionScene& c,
     const FixedArray<double, 3>& normal,
     const FixedArray<double, 3>& intersection_point,
-    const FixedArray<double, 3>* penetrating_point,
     float overlap,
     float surface_stiction_factor)
 {
@@ -113,9 +112,6 @@ static void handle_extended_reflection(
             normal_impulse = &ci->normal_impulse();
             c.history.contact_infos.push_back(std::move(ci));
         } else {
-            if (penetrating_point == nullptr) {
-                THROW_OR_ABORT("Penetrating point not set");
-            }
             if (c.o1.jump_state_.wants_to_jump_oversampled_ &&
                 !c.o1.grind_state_.grinding_ &&
                 !any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE))
@@ -123,12 +119,8 @@ static void handle_extended_reflection(
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
             auto& tire = c.o1.tires_.at(c.tire_id1);
-            float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
-            if (std::abs(penetration_depth + overlap) > 1e-12) {
-                THROW_OR_ABORT("penetration_depth: " + std::to_string(penetration_depth) + ". overlap: " + std::to_string(overlap));
-            }
             if (tire.rbp != nullptr) {
-                float sap = c.history.cfg.wheel_penetration_depth + penetration_depth;
+                float sap = c.history.cfg.wheel_penetration_depth - overlap;
                 if (sap < 0.f) {
                     auto ci = std::make_unique<NormalContactInfo1>(
                         *tire.rbp,
@@ -151,7 +143,7 @@ static void handle_extended_reflection(
                 }
                 normal_impulse = tire.normal_impulse;
             } else {
-                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
+                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth - overlap);
                 tire.shock_absorber_position = -sap;
                 auto ci = std::make_unique<ShockAbsorberContactInfo1>(
                     c.o1.rbp_,
@@ -308,7 +300,6 @@ void Mlib::handle_reflection(
     // }
     FixedArray<double, 3> normal;
     double overlap = INFINITY;
-    const FixedArray<double, 3>* penetrating_point = nullptr;
     if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
@@ -350,7 +341,6 @@ void Mlib::handle_reflection(
             // opposing normals.
             return;
         }
-        penetrating_point = &c.l1->line(1);
     }
     // if (c.history.beacons != nullptr) {
     //     c.history.beacons->push_back(Beacon::create(intersection_point, "beacon"));
@@ -419,7 +409,6 @@ void Mlib::handle_reflection(
             c,
             normal,
             intersection_point,
-            penetrating_point,
             (float)overlap,
             surface_stiction_factor);
     }
