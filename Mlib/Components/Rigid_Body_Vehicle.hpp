@@ -13,4 +13,8 @@ inline RigidBodyVehicle& get_rigid_body_vehicle(DanglingRef<SceneNode> node) {
     return *rb;
 }
 
+inline bool has_rigid_body_vehicle(DanglingRef<SceneNode> node) {
+    return node->has_absolute_movable();
+}
+
 }

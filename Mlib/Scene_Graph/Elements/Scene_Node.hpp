@@ -128,6 +128,7 @@ public:
     ~SceneNode();
     bool shutting_down() const;
     IAbsoluteMovable& get_absolute_movable() const;
+    bool has_absolute_movable() const;
     IRelativeMovable& get_relative_movable() const;
     INodeModifier& get_node_modifier() const;
     IAbsoluteObserver& get_absolute_observer() const;

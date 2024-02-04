@@ -28,7 +28,7 @@ FixedArray<TData, 3, 3> rodrigues2(
     }
     FixedArray<TData, 3, 3> K{cross(k)};
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();
-    return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot(K, K);
+    return I + std::sin(theta) * K + (1 - std::cos(theta)) * dot2d(K, K);
 }
 
 template <class TData>
@@ -136,7 +136,7 @@ FixedArray<TData, 3> rodrigues_gradient_dtheta(
 {
     auto R = rodrigues2(k, theta);
     auto v = cross(k, x);
-    return dot(R, v);
+    return dot2d(R, v);
 }
 
 template <class TData>

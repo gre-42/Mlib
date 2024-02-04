@@ -186,6 +186,10 @@ IAbsoluteMovable& SceneNode::get_absolute_movable() const {
     return *absolute_movable_;
 }
 
+bool SceneNode::has_absolute_movable() const {
+    return (absolute_movable_ != nullptr);
+}
+
 IRelativeMovable& SceneNode::get_relative_movable() const {
     std::shared_lock lock{mutex_};
     if (relative_movable_ == nullptr) {
