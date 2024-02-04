@@ -6,23 +6,32 @@
 
 namespace Mlib {
 
+class RigidBodyPulses;
+struct NormalImpulse;
+
 /**
  * Represents a tire.
  *
  * References: https://en.wikipedia.org/wiki/Tire_load_sensitivity
  */
-struct Tire: public BaseRotor {
+class Tire: public BaseRotor {
+public:
     Tire(
         const std::string& engine,
-        const std::optional<std::string>& delta_engine,
+        std::optional<std::string> delta_engine,
+        RigidBodyPulses* rbp,
         float brake_force,
+        float brake_torque,
         float sKs,
         float sKa,
         const Interp<float>& stiction_coefficient,
         const CombinedMagicFormula<float>& magic_formula,
-        const FixedArray<float, 3>& position,
+        const FixedArray<float, 3>& vehicle_mount_0,
+        const FixedArray<float, 3>& vehicle_mount_1,
         float radius);
+    ~Tire();
     void advance_time(float dt);
+    FixedArray<float, 3> rotation_axis() const;
     CombinedMagicFormula<float> magic_formula;
     float shock_absorber_position;
     float angle_x;
@@ -32,8 +41,11 @@ struct Tire: public BaseRotor {
     float sKs;
     float sKa;
     Interp<float> stiction_coefficient;
-    FixedArray<float, 3> position;
+    FixedArray<float, 3> vehicle_mount_0;
+    FixedArray<float, 3> vehicle_mount_1;
+    FixedArray<float, 3> vertical_line;
     float radius;
+    const NormalImpulse* normal_impulse;
 };
 
 }

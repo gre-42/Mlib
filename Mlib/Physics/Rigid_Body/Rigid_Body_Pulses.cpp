@@ -108,7 +108,7 @@ FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x)
         // R I R^T w = L
         // => w = R I^{-1} R^T L
         // This enables support for INFINITY inside I.
-        FixedArray<float, 3> Iv{I_(0, 0), I_(1, 1), I_(2, 2)};
+        FixedArray<float, 3> Iv{ I_(0, 0), I_(1, 1), I_(2, 2) };
         return dot1d(rotation_, dot(x, rotation_) / Iv);
     } else {
         // return solve_symm_1d(abs_I(), x);
@@ -119,7 +119,7 @@ FixedArray<float, 3> RigidBodyPulses::solve_abs_I(const FixedArray<float, 3>& x)
 FixedArray<float, 3> RigidBodyPulses::dot1d_abs_I(const FixedArray<float, 3>& x) const
 {
     if (I_is_diagonal_) {
-        FixedArray<float, 3> Iv{I_(0, 0), I_(1, 1), I_(2, 2)};
+        FixedArray<float, 3> Iv{ I_(0, 0), I_(1, 1), I_(2, 2) };
         return dot1d(rotation_, Iv * dot(x, rotation_));
     } else {
         return dot1d(abs_I(), x);

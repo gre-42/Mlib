@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Arbitrary_Orthogonal.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Velocity_Classification.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -18,9 +19,14 @@ NormalContactInfo1::NormalContactInfo1(
     const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<double, 3>& p)
     : rbp_{ rbp }
+    , velocity_rbp_{ &rbp }
     , pc_{ pc }
     , p_{ p }
 {}
+
+void NormalContactInfo1::set_velocity_rbp(RigidBodyPulses& rbp) {
+    velocity_rbp_ = &rbp;
+}
 
 /**
  * From: Erin Catto, Modeling and Solving Constraints
@@ -31,7 +37,7 @@ NormalContactInfo1::NormalContactInfo1(
 void NormalContactInfo1::solve(float dt, float relaxation) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     auto snormal = pc.normal_impulse.normal.casted<float>();
-    float v = dot0d(rbp_.velocity_at_position(p_), snormal);
+    float v = dot0d(velocity_rbp_->velocity_at_position(p_), snormal);
     float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - mc * (-v + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
@@ -358,6 +364,10 @@ float FrictionContactInfo2::max_impulse_friction() const {
     return std::max(0.f, -friction_coefficient_ * normal_impulse_.lambda_total);
 }
 
+void FrictionContactInfo2::set_b(const FixedArray<float, 3>& b) {
+    b_ = b;
+}
+
 TireContactInfo1::TireContactInfo1(
     const FrictionContactInfo1& fci,
     float surface_stiction_factor,
@@ -391,7 +401,19 @@ void TireContactInfo1::solve(float dt, float relaxation) {
     }
     float force_min;
     float force_max;
-    handle_tire_triangle_intersection(P_, rb_, b0_, vc_street_, vc_, n3_, v0_, fci_.normal_impulse().normal.casted<float>(), cfg_, tire_id_, force_min, force_max);
+    handle_tire_triangle_intersection(
+        P_,
+        rb_,
+        b0_,
+        vc_street_,
+        vc_,
+        n3_,
+        v0_,
+        fci_.normal_impulse().normal.casted<float>(),
+        cfg_,
+        tire_id_,
+        force_min,
+        force_max);
 
     const auto& tire = rb_.tires_.at(tire_id_);
 
@@ -478,6 +500,33 @@ void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
     float J = sc_.clamped_lambda(relaxation * F * dt);
     rbp_.integrate_impulse({
         .vector = -sc.normal_impulse.normal.casted<float>() * J,
+        .position = p_ });
+}
+
+ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
+    RigidBodyPulses& rbp0,
+    RigidBodyPulses& rbp1,
+    const BoundedShockAbsorberConstraint& sc,
+    const FixedArray<double, 3>& p)
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , sc_{ sc }
+    , p_{ p }
+{}
+
+void ShockAbsorberContactInfo2::solve(float dt, float relaxation) {
+    ShockAbsorberConstraint& sc = sc_.constraint;
+    float F = sc.Ks * sc.distance + sc.Ka *
+        dot0d(
+            rbp1_.velocity_at_position(p_) - rbp0_.velocity_at_position(p_),
+            sc.normal_impulse.normal.casted<float>());
+    float J = sc_.clamped_lambda(relaxation * F * dt);
+    auto lambda = sc.normal_impulse.normal.casted<float>() * J;
+    rbp0_.integrate_impulse({
+        .vector = lambda,
+        .position = p_ });
+    rbp1_.integrate_impulse({
+        .vector = -lambda,
         .position = p_ });
 }
 

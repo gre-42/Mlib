@@ -31,6 +31,7 @@ DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(com);
 DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
+DECLARE_ARGUMENT(I_rotation);
 DECLARE_ARGUMENT(collidable_mode);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(asset_id);
@@ -61,13 +62,14 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s,
+        args.arguments.at<FixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
         scene_node_resources.get_geographic_mapping("world"));
     if (args.arguments.contains(KnownArgs::flags)) {
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;
-    {
+    if (args.arguments.contains_non_null(KnownArgs::hitboxes)) {
         PhysicsResourceFilter filter{
             .cva_filter = {
                 .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),

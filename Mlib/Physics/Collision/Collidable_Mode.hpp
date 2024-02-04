@@ -4,6 +4,7 @@
 namespace Mlib {
 
 enum class CollidableMode {
+    NONE,
     STATIC,
     MOVING
 };

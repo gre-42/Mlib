@@ -5,6 +5,10 @@
 namespace Mlib {
 
 struct PhysicsEngineConfig {
+    inline float dt_substeps() const {
+        return dt / (float)nsubsteps;
+    }
+
     float dt = 0.01667f * s;
     float max_residual_time = 0.5f * s;
     bool control_fps = true;

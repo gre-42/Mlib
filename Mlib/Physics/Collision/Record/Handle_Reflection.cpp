@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Farthest_Distances.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Compute_Edge_Overlap.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
@@ -121,23 +122,52 @@ static void handle_extended_reflection(
             {
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
+            auto& tire = c.o1.tires_.at(c.tire_id1);
             float penetration_depth = (float)dot0d(*penetrating_point - intersection_point, normal);
-            float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
-            c.o1.tires_.at(c.tire_id1).shock_absorber_position = -sap;
-            auto ci = std::make_unique<ShockAbsorberContactInfo1>(
-                c.o1.rbp_,
-                BoundedShockAbsorberConstraint{
-                    .constraint{
-                        .normal_impulse{.normal = normal},
-                        .distance = sap,
-                        .Ks = c.o1.tires_.at(c.tire_id1).sKs,
-                        .Ka = c.o1.tires_.at(c.tire_id1).sKa
-                    },
-                    .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
-                    .lambda_max = 0},
-                intersection_point);
-            normal_impulse = &ci->normal_impulse();
-            c.history.contact_infos.push_back(std::move(ci));
+            if (std::abs(penetration_depth + overlap) > 1e-12) {
+                THROW_OR_ABORT("penetration_depth: " + std::to_string(penetration_depth) + ". overlap: " + std::to_string(overlap));
+            }
+            if (tire.rbp != nullptr) {
+                float sap = c.history.cfg.wheel_penetration_depth + penetration_depth;
+                if (sap < 0.f) {
+                    auto ci = std::make_unique<NormalContactInfo1>(
+                        *tire.rbp,
+                        BoundedPlaneInequalityConstraint{
+                            .constraint{
+                                .normal_impulse{.normal = normal},
+                                .overlap = -sap,
+                                .slop = 0.001f,
+                                .beta = c.history.cfg.plane_inequality_beta
+                            },
+                            .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
+                            .lambda_max = 0
+                        },
+                        intersection_point);
+                    ci->set_velocity_rbp(c.o1.rbp_);
+                    c.history.contact_infos.push_back(std::move(ci));
+                }
+                if (tire.normal_impulse == nullptr) {
+                    THROW_OR_ABORT("Tire normal_impulse not set");
+                }
+                normal_impulse = tire.normal_impulse;
+            } else {
+                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth + penetration_depth);
+                tire.shock_absorber_position = -sap;
+                auto ci = std::make_unique<ShockAbsorberContactInfo1>(
+                    c.o1.rbp_,
+                    BoundedShockAbsorberConstraint{
+                        .constraint{
+                            .normal_impulse{.normal = normal},
+                            .distance = sap,
+                            .Ks = tire.sKs,
+                            .Ka = tire.sKa
+                        },
+                        .lambda_min = c.o1.mass() * c.history.cfg.velocity_lambda_min,
+                        .lambda_max = 0 },
+                    intersection_point);
+                normal_impulse = &ci->normal_impulse();
+                c.history.contact_infos.push_back(std::move(ci));
+            }
         }
     }
     // if (outness < -10) {

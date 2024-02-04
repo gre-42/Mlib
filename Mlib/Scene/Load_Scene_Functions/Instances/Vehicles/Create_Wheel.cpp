@@ -4,6 +4,7 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Wheel.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -20,18 +21,27 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(rigid_body);
-DECLARE_ARGUMENT(node);
-DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(vehicle);
+DECLARE_ARGUMENT(wheel);
+DECLARE_ARGUMENT(vehicle_mount_0);
+DECLARE_ARGUMENT(vehicle_mount_1);
 DECLARE_ARGUMENT(radius);
 DECLARE_ARGUMENT(engine);
 DECLARE_ARGUMENT(delta_engine);
 DECLARE_ARGUMENT(brake_force);
+DECLARE_ARGUMENT(brake_torque);
 DECLARE_ARGUMENT(Ks);
 DECLARE_ARGUMENT(Ka);
 DECLARE_ARGUMENT(musF);
 DECLARE_ARGUMENT(musC);
 DECLARE_ARGUMENT(tire_id);
+}
+
+namespace WheelArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(vehicle_mount_0);
+DECLARE_ARGUMENT(vehicle_mount_1);
 }
 
 const std::string CreateWheel::key = "wheel";
@@ -48,29 +58,31 @@ CreateWheel::CreateWheel(RenderableScene& renderable_scene)
 
 void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::string rigid_body = args.arguments.at<std::string>(KnownArgs::rigid_body);
-    std::string node = args.arguments.at<std::string>(KnownArgs::node);
-    auto position = args.arguments.at<FixedArray<float, 3>>(KnownArgs::position);;
+    std::string vehicle = args.arguments.at<std::string>(KnownArgs::vehicle);
+    std::string wheel_node_name = args.arguments.at<std::string>(KnownArgs::wheel);
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
     auto engine = args.arguments.at<std::string>(KnownArgs::engine);
     auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
-    float brake_force = args.arguments.at<float>(KnownArgs::brake_force) * N;
-    float Ks = args.arguments.at<float>(KnownArgs::Ks) * N;
-    float Ka = args.arguments.at<float>(KnownArgs::Ka) * N * s;
     Interp<float> mus{
         args.arguments.at<std::vector<float>>(KnownArgs::musF),
         args.arguments.at<std::vector<float>>(KnownArgs::musC),
         OutOfRangeBehavior::CLAMP};
     size_t tire_id = args.arguments.at<size_t>(KnownArgs::tire_id);
 
-    auto& rb = get_rigid_body_vehicle(scene.get_node(rigid_body, DP_LOC));
-    if (!node.empty()) {
-        auto wheel = std::make_unique<Wheel>(
-            rb,
-            physics_engine.advance_times_,
-            tire_id,
-            radius);
-        Linker{ physics_engine.advance_times_ }.link_relative_movable(scene.get_node(node, DP_LOC), std::move(wheel));
+    auto& rb = get_rigid_body_vehicle(scene.get_node(vehicle, DP_LOC));
+    RigidBodyPulses* wheel_rbp = nullptr;
+    if (!wheel_node_name.empty()) {
+        auto wheel_node = scene.get_node(wheel_node_name, DP_LOC);
+        if (has_rigid_body_vehicle(wheel_node)) {
+            wheel_rbp = &get_rigid_body_vehicle(wheel_node).rbp_;
+        } else {
+            auto wheel = std::make_unique<Wheel>(
+                rb,
+                physics_engine.advance_times_,
+                tire_id,
+                radius);
+            Linker{ physics_engine.advance_times_ }.link_relative_movable(wheel_node, std::move(wheel));
+        }
     }
     {
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
@@ -80,10 +92,12 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             tire_id,
             Tire{
                 engine,
-                delta_engine,
-                brake_force,
-                Ks,
-                Ka,
+                std::move(delta_engine),
+                wheel_rbp,
+                args.arguments.at<float>(KnownArgs::brake_force) * N,
+                args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
+                args.arguments.at<float>(KnownArgs::Ks) * N,
+                args.arguments.at<float>(KnownArgs::Ka) * N / (meters / s),
                 mus,
                 CombinedMagicFormula<float>{
                     .f = FixedArray<MagicFormulaArgmax<float>, 2>{
@@ -91,7 +105,8 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
                         MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
                     }
                 },
-                position,
+                args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
+                args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
                 radius}});
         if (!tp.second) {
             THROW_OR_ABORT("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");

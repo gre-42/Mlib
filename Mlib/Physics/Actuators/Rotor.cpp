@@ -36,34 +36,27 @@ Rotor::Rotor(
     const FixedArray<float, 3>& vehicle_mount_1,
     const FixedArray<float, 3>& blades_mount_0,
     const FixedArray<float, 3>& blades_mount_1,
-    RigidBodyVehicle* blades_rb,
-    const std::string& blades_node_name)
-: BaseRotor{ engine, delta_engine },
-  rest_location{ rest_location },
-  angles{ 0.f, 0.f, 0.f },
-  movement{ 0.f, 0.f, 0.f },
-  power2lift{ power2lift },
-  w{ w },
-  blades_rb{ blades_rb },
-  vehicle_mount_0{ vehicle_mount_0 },
-  vehicle_mount_1{ vehicle_mount_1 },
-  blades_mount_0{ blades_mount_0 },
-  blades_mount_1{ blades_mount_1 },
-  gravity_correction_{ gravity_correction },
-  radius_{ radius },
-  max_align_to_gravity_{ max_align_to_gravity },
-  align_to_gravity_pid_x_{ align_to_gravity_pid_x },
-  align_to_gravity_pid_y_{ align_to_gravity_pid_y },
-  drift_reduction_factor_{ drift_reduction_factor },
-  drift_reduction_reference_velocity_{ drift_reduction_reference_velocity },
-  blades_node_name_{ blades_node_name }
+    RigidBodyPulses* rotor_rb)
+    : BaseRotor{ engine, delta_engine, rotor_rb, NAN }  // NAN = brake_torque (currently only used for tires)
+    , rest_location{ rest_location }
+    , angles{ 0.f, 0.f, 0.f }
+    , movement{ 0.f, 0.f, 0.f }
+    , power2lift{ power2lift }
+    , w{ w }
+    , vehicle_mount_0{ vehicle_mount_0 }
+    , vehicle_mount_1{ vehicle_mount_1 }
+    , blades_mount_0{ blades_mount_0 }
+    , blades_mount_1{ blades_mount_1 }
+    , gravity_correction_{ gravity_correction }
+    , radius_{ radius }
+    , max_align_to_gravity_{ max_align_to_gravity }
+    , align_to_gravity_pid_x_{ align_to_gravity_pid_x }
+    , align_to_gravity_pid_y_{ align_to_gravity_pid_y }
+    , drift_reduction_factor_{ drift_reduction_factor }
+    , drift_reduction_reference_velocity_{ drift_reduction_reference_velocity }
 {}
 
-Rotor::~Rotor() {
-    // if (!blades_node_name_.empty()) {
-    //     scene_.schedule_delete_root_node(blades_node_name_);
-    // }
-}
+Rotor::~Rotor() = default;
 
 TransformationMatrix<float, double, 3> Rotor::rotated_location(
     const TransformationMatrix<float, double, 3>& parent_location,
@@ -146,4 +139,8 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
         }
     }
     return abs_rest_location * r_controller;
+}
+
+FixedArray<float, 3> Rotor::rotation_axis() const {
+    return rest_location.R().column(2);
 }

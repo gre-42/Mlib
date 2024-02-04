@@ -4,15 +4,18 @@ using namespace Mlib;
 
 Tire::Tire(
     const std::string& engine,
-    const std::optional<std::string>& delta_engine,
+    std::optional<std::string> delta_engine,
+    RigidBodyPulses* rbp,
     float brake_force,
+    float brake_torque,
     float sKs,
     float sKa,
     const Interp<float>& stiction_coefficient,
     const CombinedMagicFormula<float>& magic_formula,
-    const FixedArray<float, 3>& position,
+    const FixedArray<float, 3>& vehicle_mount_0,
+    const FixedArray<float, 3>& vehicle_mount_1,
     float radius)
-    : BaseRotor{ engine, delta_engine }
+    : BaseRotor{ engine, std::move(delta_engine), rbp, brake_torque }
     , magic_formula{ magic_formula }
     , shock_absorber_position{ 0 }
     , angle_x{ 0 }
@@ -22,10 +25,26 @@ Tire::Tire(
     , sKs{ sKs }
     , sKa{ sKa }
     , stiction_coefficient{ stiction_coefficient }
-    , position{ position }
+    , vehicle_mount_0{ vehicle_mount_0 }
+    , vehicle_mount_1{ vehicle_mount_1 }
     , radius{ radius }
-{}
+    , normal_impulse{ nullptr }
+{
+    vertical_line = (vehicle_mount_1 - vehicle_mount_0);
+    auto len2 = sum(squared(vertical_line));
+    if (len2 < 1e-12) {
+        THROW_OR_ABORT("Tire vehicle mount points are identical");
+    }
+    vertical_line /= std::sqrt(len2);
+}
+
+Tire::~Tire() = default;
 
 void Tire::advance_time(float dt) {
     angle_x = std::fmod(angle_x + dt * angular_velocity, float(2 * M_PI));
+    normal_impulse = nullptr;
+}
+
+FixedArray<float, 3> Tire::rotation_axis() const {
+    return FixedArray<float, 3>{ std::cos(angle_y), 0.f, -std::sin(angle_y) };
 }

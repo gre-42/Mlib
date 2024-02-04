@@ -14,6 +14,7 @@
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Actuators/Rotor.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
@@ -36,8 +37,8 @@ using namespace Mlib;
 
 RigidBodyVehicle::RigidBodyVehicle(
     const RigidBodyPulses& rbp,
-    const std::string& name,
-    const std::string& asset_id,
+    std::string name,
+    std::string asset_id,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
 : destruction_observers{ *this },
   rigid_bodies_{ nullptr },
@@ -50,8 +51,8 @@ RigidBodyVehicle::RigidBodyVehicle(
   tires_z_{ 0.f, 0.f, -1.f },
   target_{ 0.f, 0.f, 0.f },
   rbp_{ rbp },
-  name_{ name },
-  asset_id_{ asset_id },
+  name_{ std::move(name) },
+  asset_id_{ std::move(asset_id) },
   damageable_{ nullptr },
   door_distance_{ NAN },
   animation_state_updater_{ nullptr },
@@ -83,10 +84,10 @@ RigidBodyVehicle::RigidBodyVehicle(
   },
   geographic_mapping_{ geographic_mapping }
 {
-    if (name.empty()) {
+    if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
     }
-    // std::cerr << "Rigid body vehicle \"" << name << '"' << std::endl;
+    // std::cerr << "Rigid body vehicle \"" << name_ << '"' << std::endl;
     // std::cerr << "I [kg*m²]\n" << rbi.rbp_.I_ / (kg * squared(meters)) << std::endl;
 }
 
@@ -151,7 +152,7 @@ void RigidBodyVehicle::integrate_force(
     const PhysicsEngineConfig& cfg)
 {
     rbp_.integrate_impulse({
-        .vector = F.vector * (cfg.dt / (float)cfg.nsubsteps),
+        .vector = F.vector * cfg.dt_substeps(),
         .position = F.position});
     // if (float len = sum(squared(F.vector)); len > 1e-12) {
     //     auto location = TransformationMatrix<float, double, 3>::identity();
@@ -194,24 +195,22 @@ void RigidBodyVehicle::collide_with_air(
                     .vector = z3_from_3x3(abs_location.R()) * P.power * P.relaxation * rotor->power2lift,
                     .position = abs_location.t() },
                 cfg);
-        } else {
-            set_base_angular_velocity(*rotor, 0.f);
         }
-        set_base_angular_velocity(*rotor, rotor->w);
-        if (rotor->blades_rb != nullptr) {
-            rotor->blades_rb->rbp_.w_ = rotor->angular_velocity * z3_from_3x3(rotor->blades_rb->rbp_.rotation_);
+        set_rotor_angular_velocity(rotor_id, rotor->w, cfg, P.power);
+        if (rotor->rbp != nullptr) {
+            rotor->rbp->w_ = rotor->angular_velocity * z3_from_3x3(rotor->rbp->rotation_);
             auto T0 = rbp_.abs_transformation();
-            auto T1 = rotor->blades_rb->rbp_.abs_transformation();
+            auto T1 = rotor->rbp->abs_transformation();
             contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
                 rbp_,
-                rotor->blades_rb->rbp_,
+                *rotor->rbp,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
             contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
                 rbp_,
-                rotor->blades_rb->rbp_,
+                *rotor->rbp,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_1.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_1.casted<double>()),
@@ -251,6 +250,82 @@ void RigidBodyVehicle::collide_with_air(
                                 dir,
                     .position = abs_com() },
                 cfg);
+        }
+    }
+    for (auto& [tire_id, tire] : tires_) {
+        if (tire.rbp == nullptr) {
+            continue;
+        }
+        auto T0 = rbp_.abs_transformation();
+        auto T1 = tire.rbp->abs_transformation();
+        auto abs_vehicle_mount_0 = T0.transform(tire.vehicle_mount_0.casted<double>());
+        auto abs_vertical_line = T0.rotate(tire.vertical_line);
+        // Vertical constraints
+        {
+            contact_infos.push_back(std::make_unique<LineContactInfo2<1>>(
+                rbp_,
+                *tire.rbp,
+                LineEqualityConstraint<1>{
+                    .pec = PointEqualityConstraint{
+                        .p0 = abs_vehicle_mount_0,
+                        .p1 = T1.t(),
+                        .beta = cfg.point_equality_beta
+                    },
+                    .null_space = abs_vertical_line
+                }));
+            contact_infos.push_back(std::make_unique<LineContactInfo2<1>>(
+                rbp_,
+                *tire.rbp,
+                LineEqualityConstraint<1>{
+                    .pec = PointEqualityConstraint{
+                        .p0 = T0.transform(tire.vehicle_mount_1.casted<double>()),
+                        .p1 = T1.t(),
+                        .beta = cfg.point_equality_beta
+                    },
+                    .null_space = abs_vertical_line
+                }));
+        }
+        // Horizontal constraints
+        {
+            auto plane_normal = T0.rotate(tire.rotation_axis());
+            size_t npoints = 3;
+            for (size_t point_id = 0; point_id < npoints; ++point_id) {
+                float angle = (float)point_id / (float)npoints * 2 * (float)M_PI;
+                FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
+                auto p1 = T1.transform((tire.radius * p1r).casted<double>());
+                auto p0 = p1 - plane_normal.casted<double>() * dot0d(plane_normal.casted<double>(), p1 - abs_vehicle_mount_0);
+                contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                    rbp_,
+                    *tire.rbp,
+                    BoundedPlaneEqualityConstraint{
+                        PlaneEqualityConstraint{
+                            .pec = PointEqualityConstraint{
+                                .p0 = p0,
+                                .p1 = p1,
+                                .beta = cfg.plane_equality_beta
+                            },
+                            .plane_normal = plane_normal
+                        }
+                    }));
+            }
+        }
+        // Shock absorber constraint
+        {
+            auto ci = std::make_unique<ShockAbsorberContactInfo2>(
+                rbp_,
+                *tire.rbp,
+                BoundedShockAbsorberConstraint{
+                    .constraint{
+                        .normal_impulse{.normal = -abs_vertical_line.casted<double>()},
+                        .distance = dot0d((abs_vehicle_mount_0 - tire.rbp->abs_position()).casted<float>(), abs_vertical_line),
+                        .Ks = tire.sKs,
+                        .Ka = tire.sKa
+                    },
+                    .lambda_min = tire.rbp->mass_ * cfg.velocity_lambda_min,
+                    .lambda_max = -tire.rbp->mass_ * cfg.velocity_lambda_min },
+                tire.rbp->abs_position());
+            tire.normal_impulse = &ci->normal_impulse();
+            contact_infos.push_back(std::move(ci));
         }
     }
 }
@@ -315,13 +390,18 @@ void RigidBodyVehicle::advance_time(
     const PhysicsEngineConfig& cfg,
     std::list<Beacon>* beacons)
 {
+    auto dt_substeps = cfg.dt_substeps();
     advance_time_skate(cfg);
-    rbp_.advance_time(cfg.dt / (float)cfg.nsubsteps);
-    for (auto& t : tires_) {
-        t.second.advance_time(cfg.dt / (float)cfg.nsubsteps);
+    rbp_.advance_time(dt_substeps);
+    for (auto& [_, t] : tires_) {
+        t.advance_time(dt_substeps);
+        if (t.rbp != nullptr) {
+            auto rel_tire_pos = rbp_.abs_transformation().itransform(t.rbp->abs_position()).casted<float>();
+            t.shock_absorber_position = dot0d(rel_tire_pos - t.vehicle_mount_0, t.vertical_line);
+        }
     }
     for (auto& [_, e] : engines_) {
-        e.advance_time(cfg.dt / (float)cfg.nsubsteps, abs_com(), rbp_.v_);
+        e.advance_time(dt_substeps, abs_com(), rbp_.v_);
     }
 #ifdef COMPUTE_POWER
     float nrg = energy();
@@ -435,33 +515,93 @@ void RigidBodyVehicle::set_wing_brake_angle(size_t id, float angle) {
     get_wing(id).brake_angle = angle;
 }
 
-FixedArray<float, 3, 3> RigidBodyVehicle::get_abs_tire_rotation_matrix(size_t id) const {
-    if (auto t = tires_.find(id); t != tires_.end()) {
-        return dot2d(rbp_.rotation_, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y));
-    } else {
-        return rbp_.rotation_;
-    }
-}
-
 FixedArray<float, 3> RigidBodyVehicle::get_abs_tire_z(size_t id) const {
-    FixedArray<float, 3> z{tires_z_};
-    if (auto t = tires_.find(id); t != tires_.end()) {
-        z = dot1d(rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, t->second.angle_y), z);
+    FixedArray<float, 3> z{ tires_z_ };
+    auto t = tires_.find(id);
+    if (t == tires_.end()) {
+        THROW_OR_ABORT("Could not find tire with ID \"" + std::to_string(id) + '"');
     }
-    z = dot1d(rbp_.rotation_, z);
-    return z;
+    z = dot1d(rodrigues2(t->second.vertical_line, t->second.angle_y), z);
+    return dot1d(rbp_.rotation_, z);
 }
 
 float RigidBodyVehicle::get_tire_angular_velocity(size_t id) const {
     return get_tire(id).angular_velocity;
 }
 
-void RigidBodyVehicle::set_tire_angular_velocity(size_t id, float w) {
-    set_base_angular_velocity(get_tire(id), w);
+void RigidBodyVehicle::set_tire_angular_velocity(
+    size_t id,
+    float w,
+    const PhysicsEngineConfig& cfg,
+    float& available_power)
+{
+    auto& tire = get_tire(id);
+    set_base_angular_velocity(tire, tire.rotation_axis(), w, cfg, available_power);
 }
 
-void RigidBodyVehicle::set_base_angular_velocity(BaseRotor& base_rotor, float w) {
-    base_rotor.angular_velocity = w;
+void RigidBodyVehicle::set_rotor_angular_velocity(
+    size_t id,
+    float w,
+    const PhysicsEngineConfig& cfg,
+    float& available_power)
+{
+    auto& rotor = get_rotor(id);
+    set_base_angular_velocity(rotor, rotor.rotation_axis(), w, cfg, available_power);
+}
+
+void RigidBodyVehicle::set_base_angular_velocity(
+    BaseRotor& base_rotor,
+    const FixedArray<float, 3>& rotation_axis,
+    float w,
+    const PhysicsEngineConfig& cfg,
+    float& available_power)
+{
+    if (base_rotor.rbp != nullptr) {
+        auto abs_rotation_axis = dot1d(rbp_.rotation_, rotation_axis);
+        if (false) {
+            auto I = dot0d(abs_rotation_axis, base_rotor.rbp->dot1d_abs_I(abs_rotation_axis));
+            float dw = w - base_rotor.angular_velocity;
+            if (sign(dw) != sign(available_power)) {
+                THROW_OR_ABORT("Sign mismatch between dw and available power");
+            }
+            float available_torque;
+            bool requires_power = (sign(dw) == sign(base_rotor.angular_velocity));
+            if (requires_power) {
+                // tau = r * F = dL / dt
+                // dE = F * r * dQ          // dQ: Angle
+                // P * dt = dL / dt * dQ
+                //        = dL * dQ / dt
+                //        = dL * w
+                // P = dL / dt * w
+                //   = tau * w
+                available_torque = std::abs(available_power) / std::max((float)1e-6, std::abs(base_rotor.angular_velocity));
+            } else {
+                available_torque = base_rotor.brake_torque;
+            }
+            auto available_dL = std::copysign(
+                std::min(
+                    std::abs(dw) / I,
+                    available_torque * cfg.dt_substeps()),
+                dw);
+            if (requires_power) {
+                auto ap = std::abs(available_power) - available_dL / cfg.dt_substeps() * base_rotor.angular_velocity;
+                if (ap < 1e-12) {
+                    THROW_OR_ABORT("available_power too strongly negative");
+                }
+                available_power = std::copysign(ap, available_power);
+            }
+            auto dL_vec = available_dL * abs_rotation_axis;
+            base_rotor.rbp->integrate_delta_angular_momentum(dL_vec);
+            rbp_.integrate_delta_angular_momentum(dL_vec);
+            base_rotor.angular_velocity = dot0d(base_rotor.rbp->w_, abs_rotation_axis);
+        } else {
+            base_rotor.rbp->w_ -= abs_rotation_axis * dot0d(base_rotor.rbp->w_, abs_rotation_axis);
+            base_rotor.rbp->w_ += w * abs_rotation_axis;
+            base_rotor.angular_velocity = w;
+        }
+    } else {
+        base_rotor.angular_velocity = w;
+    }
 }
 
 FixedArray<float, 3> RigidBodyVehicle::get_velocity_at_tire_contact(
@@ -570,8 +710,8 @@ float RigidBodyVehicle::get_tire_break_force(size_t id) const {
 FixedArray<double, 3> RigidBodyVehicle::get_abs_tire_contact_position(size_t id) const {
     const Tire& tire = get_tire(id);
     return rbp_.transform_to_world_coordinates(
-        get_tire(id).position +
-        FixedArray<float, 3>{0.f, tire.shock_absorber_position - tire.radius, 0.f});
+        tire.vehicle_mount_0 +
+        tire.vertical_line * (tire.shock_absorber_position - tire.radius));
 }
 
 const Tire& RigidBodyVehicle::get_tire(size_t id) const {

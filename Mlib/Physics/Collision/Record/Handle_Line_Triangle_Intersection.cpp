@@ -115,21 +115,6 @@ void Mlib::handle_line_triangle_intersection(
     }
     if (collision_type == CollisionType::GO_THROUGH) {
         // do nothing
-    } else if (collision_type == CollisionType::STICK_TOGETHER) {
-        FixedArray<float, 3> v;
-        if (c.o0.mass() == INFINITY || c.o1.mass() == INFINITY) {
-            v = 0;
-        } else {
-            v = (c.o0.rbp_.v_ * c.o0.mass() + c.o1.rbp_.v_ * c.o1.mass()) / (c.o0.mass() + c.o1.mass());
-        }
-        auto a0 = (v - c.o0.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
-        auto a1 = (v - c.o1.rbp_.v_) / (c.history.cfg.dt / (float)c.history.cfg.nsubsteps);
-        if (c.o0.mass() != INFINITY) {
-            c.o0.integrate_force({c.o0.mass() * a0, intersection_point}, c.history.cfg);
-        }
-        if (c.o1.mass() != INFINITY) {
-            c.o1.integrate_force({c.o1.mass() * a1, intersection_point}, c.history.cfg);
-        }
     } else if (collision_type == CollisionType::REFLECT) {
         handle_reflection(
             c,

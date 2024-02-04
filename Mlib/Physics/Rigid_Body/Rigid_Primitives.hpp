@@ -16,7 +16,8 @@ RigidBodyPulses rigid_cuboid_pulses(
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
-    const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
+    const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
+    const FixedArray<float, 3>& I_rotation = fixed_zeros<float, 3>());
 
 // Source: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
 RigidBodyPulses rigid_disk_pulses(
@@ -24,26 +25,29 @@ RigidBodyPulses rigid_disk_pulses(
     float radius,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
-    const FixedArray<float, 3>& w = fixed_zeros<float, 3>());
+    const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
+    const FixedArray<float, 3>& I_rotation = fixed_zeros<float, 3>());
 
 std::unique_ptr<RigidBodyVehicle> rigid_cuboid(
-    const std::string& name,
-    const std::string& asset_id,
+    std::string name,
+    std::string asset_id,
     float mass,
     const FixedArray<float, 3>& size,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
+    const FixedArray<float, 3>& I_rotation = fixed_zeros<float, 3>(),
     const TransformationMatrix<double, double, 3>* geographic_coordinates = nullptr);
 
 std::unique_ptr<RigidBodyVehicle> rigid_disk(
-    const std::string& name,
-    const std::string& asset_id,
+    std::string name,
+    std::string asset_id,
     float mass,
     float radius,
     const FixedArray<float, 3>& com = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& v = fixed_zeros<float, 3>(),
     const FixedArray<float, 3>& w = fixed_zeros<float, 3>(),
+    const FixedArray<float, 3>& I_rotation = fixed_zeros<float, 3>(),
     const TransformationMatrix<double, double, 3>* geographic_coordinates = nullptr);
 
 }

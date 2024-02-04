@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
@@ -12,15 +13,15 @@ Wheel::Wheel(
     AdvanceTimes& advance_times,
     size_t tire_id,
     float radius)
-: rigid_body_{rigid_body},
-  advance_times_{advance_times},
-  transformation_matrix_{
-      fixed_nans<float, 3, 3>(),
-      fixed_nans<double, 3>()},
-  tire_id_{tire_id},
-  angle_x_{0},
-  radius_{radius},
-  y0_{NAN}
+    : rigid_body_{ rigid_body }
+    , advance_times_{ advance_times }
+    , transformation_matrix_{
+          fixed_nans<float, 3, 3>(),
+          fixed_nans<double, 3>() }
+          , tire_id_{ tire_id }
+    , angle_x_{ 0 }
+    , radius_{ radius }
+    , y0_{ NAN }
 {}
 
 Wheel::~Wheel()

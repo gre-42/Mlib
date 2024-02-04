@@ -34,8 +34,12 @@ void RigidBodies::add_rigid_body(
     CollidableMode collidable_mode)
 {
     auto& rb = *rigid_body;
-    if (s_hitboxes.empty() && d_hitboxes.empty()) {
-        THROW_OR_ABORT("Attempt to add rigid body \"" + rb.name() + "\" without hitboxes");
+    bool has_meshes = !s_hitboxes.empty() || !d_hitboxes.empty();
+    if ((collidable_mode == CollidableMode::NONE) && has_meshes) {
+        THROW_OR_ABORT("Non-collidable has meshes: \"" + rb.name() + '"');
+    }
+    if ((collidable_mode != CollidableMode::NONE) && !has_meshes) {
+        THROW_OR_ABORT("Collidable has no meshes: \"" + rb.name() + '"');
     }
     if (!rigid_bodies_.try_emplace(&rb, std::move(rigid_body)).second) {
         THROW_OR_ABORT("Rigid body already exists");
@@ -145,7 +149,9 @@ void RigidBodies::add_rigid_body(
         };
         add_hitboxes(s_hitboxes);
         add_hitboxes(d_hitboxes);
-    } else if (collidable_mode == CollidableMode::MOVING) {
+    } else if ((collidable_mode == CollidableMode::MOVING) ||
+               (collidable_mode == CollidableMode::NONE))
+    {
         if (!std::isfinite(rb.mass())) {
             THROW_OR_ABORT("Moving object requires finite mass");
         }
@@ -219,7 +225,9 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
         } else {
             THROW_OR_ABORT("Could not delete rigid body (3)");
         }
-    } else if (it->second == CollidableMode::MOVING) {
+    } else if ((it->second == CollidableMode::MOVING) ||
+               (it->second == CollidableMode::NONE))
+    {
         {
             auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body == rigid_body; });
             if (it == objects_.end()) {
@@ -238,6 +246,9 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
 }
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
+    if (!o.has_meshes()) {
+        THROW_OR_ABORT("Attempt to add rigid body \"" + o.rigid_body.name() + "\" without meshes");
+    }
     auto m = o.rigid_body.get_new_absolute_model_matrix();
     std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> transformed_meshes;
     auto add_meshes = [&](const auto& meshes){

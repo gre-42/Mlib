@@ -8,16 +8,17 @@ class RigidBodyPulses;
 class PermanentContacts;
 class SceneNode;
 
-class PermanentPointContact: public PermanentNodeContact {
+class PermanentLineContact: public PermanentNodeContact {
 public:
-    PermanentPointContact(
+    PermanentLineContact(
         PermanentContacts& permanent_contacts,
         DanglingRef<SceneNode> scene_node0,
         DanglingRef<SceneNode> scene_node1,
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const FixedArray<double, 3>& p0,
-        const FixedArray<double, 3>& p1);
+        const FixedArray<double, 3>& p1,
+        const FixedArray<float, 3>& line0);
     
     // IPermanentContact
     virtual void extend_contact_infos(
@@ -26,6 +27,7 @@ public:
 private:
     FixedArray<double, 3> p0_;
     FixedArray<double, 3> p1_;
+    FixedArray<float, 3> line0_;
 };
 
 }

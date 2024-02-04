@@ -192,8 +192,10 @@ public:
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
+    void set_velocity_rbp(RigidBodyPulses& rbp);
 private:
     RigidBodyPulses& rbp_;
+    RigidBodyPulses* velocity_rbp_;
     BoundedPlaneInequalityConstraint pc_;
     FixedArray<double, 3> p_;
 };
@@ -235,6 +237,24 @@ private:
     FixedArray<double, 3> p_;
 };
 
+class ShockAbsorberContactInfo2: public ContactInfo {
+public:
+    ShockAbsorberContactInfo2(
+        RigidBodyPulses& rbp0,
+        RigidBodyPulses& rbp1,
+        const BoundedShockAbsorberConstraint& sc,
+        const FixedArray<double, 3>& p);
+    virtual void solve(float dt, float relaxation) override;
+    const NormalImpulse& normal_impulse() const {
+        return sc_.constraint.normal_impulse;
+    }
+private:
+    RigidBodyPulses& rbp0_;
+    RigidBodyPulses& rbp1_;
+    BoundedShockAbsorberConstraint sc_;
+    FixedArray<double, 3> p_;
+};
+
 class FrictionContactInfo1: public ContactInfo {
     friend std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);
 public:
@@ -266,10 +286,10 @@ public:
         float extra_stiction,
         float extra_friction,
         float extra_w);
-    const NormalImpulse& normal_impulse() {
+    const NormalImpulse& normal_impulse() const {
         return normal_impulse_;
     }
-    const FixedArray<float, 3>& lambda_total() {
+    const FixedArray<float, 3>& lambda_total() const {
         return lambda_total_;
     }
 private:

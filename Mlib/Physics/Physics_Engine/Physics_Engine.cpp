@@ -117,10 +117,9 @@ void PhysicsEngine::collide(
         {
             continue;
         }
-        if (o.smeshes.empty() && o.dmeshes.empty()) {
-            THROW_OR_ABORT("Object \"" + o.rigid_body.name() + "\" has no meshes");
+        if (o.has_meshes()) {
+            rigid_bodies_.transform_object_and_add(o);
         }
-        rigid_bodies_.transform_object_and_add(o);
         o.rigid_body.collide_with_air(cfg_, contact_infos);
     }
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;

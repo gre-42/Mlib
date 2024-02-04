@@ -4,7 +4,6 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
-#include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
@@ -35,9 +34,10 @@ class RigidBodyAvatarController;
 class RigidBodyPlaneController;
 class RigidBodyVehicleController;
 struct BaseRotor;
+class Tire;
+class Rotor;
 class ContactInfo;
 class Wing;
-class Rotor;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 
@@ -88,8 +88,8 @@ class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>
 public:
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
-        const std::string& name,
-        const std::string& asset_id,
+        std::string name,
+        std::string asset_id,
         const TransformationMatrix<double, double, 3>* geographic_mapping = nullptr);
     RigidBodyVehicle(const RigidBodyVehicle&) = delete;
     RigidBodyVehicle& operator = (const RigidBodyVehicle&) = delete;
@@ -128,11 +128,24 @@ public:
     void set_rotor_movement_z(size_t id, float movement_z);
     void set_wing_angle_of_attack(size_t id, float angle);
     void set_wing_brake_angle(size_t id, float angle);
-    FixedArray<float, 3, 3> get_abs_tire_rotation_matrix(size_t id) const;
     FixedArray<float, 3> get_abs_tire_z(size_t id) const;
     float get_tire_angular_velocity(size_t id) const;
-    void set_tire_angular_velocity(size_t id, float w);
-    void set_base_angular_velocity(BaseRotor& base_rotor, float w);
+    void set_tire_angular_velocity(
+        size_t id,
+        float w,
+        const PhysicsEngineConfig& cfg,
+        float& available_power);
+    void set_rotor_angular_velocity(
+        size_t id,
+        float w,
+        const PhysicsEngineConfig& cfg,
+        float& available_power);
+    void set_base_angular_velocity(
+        BaseRotor& base_rotor,
+        const FixedArray<float, 3>& rotation_axis,
+        float w,
+        const PhysicsEngineConfig& cfg,
+        float& available_power);
     FixedArray<float, 3> get_velocity_at_tire_contact(
         const FixedArray<float, 3>& surface_normal,
         size_t id) const;
@@ -161,6 +174,7 @@ public:
     // bool get_tire_sliding(size_t id) const;
     float energy() const;
     const std::string& name() const;
+    // This method is currently just a debugging feature.
     const std::string& asset_id() const;
     void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();

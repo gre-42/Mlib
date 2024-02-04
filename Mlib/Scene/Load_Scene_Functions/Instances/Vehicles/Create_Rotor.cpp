@@ -18,6 +18,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(vehicle);
+DECLARE_ARGUMENT(blades);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(engine);
@@ -26,7 +27,6 @@ DECLARE_ARGUMENT(power2lift);
 DECLARE_ARGUMENT(rpm);
 DECLARE_ARGUMENT(gravity_correction);
 DECLARE_ARGUMENT(radius);
-DECLARE_ARGUMENT(blades);
 DECLARE_ARGUMENT(max_align_to_gravity);
 DECLARE_ARGUMENT(align_to_gravity_pid);
 DECLARE_ARGUMENT(drift_reduction_factor);
@@ -42,6 +42,7 @@ DECLARE_ARGUMENT(vehicle_mount_1);
 DECLARE_ARGUMENT(blades_mount_0);
 DECLARE_ARGUMENT(blades_mount_1);
 }
+
 namespace PidArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(pid);
@@ -75,10 +76,9 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     FixedArray<float, 3> blades_mount_0(NAN);
     FixedArray<float, 3> blades_mount_1(NAN);
     RigidBodyVehicle* blades_rb = nullptr;
-    std::string blades_node_name;
     if (args.arguments.contains(KnownArgs::blades)) {
         auto c = args.arguments.child(KnownArgs::blades);
-        blades_node_name = c.at<std::string>(BladesArgs::node);
+        auto blades_node_name = c.at<std::string>(BladesArgs::node);
         DanglingRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
         blades_rb = &get_rigid_body_vehicle(blades_node);
         vehicle_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
@@ -135,8 +135,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
             vehicle_mount_1,
             blades_mount_0,
             blades_mount_1,
-            blades_rb,
-            blades_node_name)});
+            (blades_rb == nullptr) ? nullptr : &blades_rb->rbp_)});
     if (!tp.second) {
         THROW_OR_ABORT("Rotor with ID \"" + std::to_string(rotor_id) + "\" already exists");
     }

@@ -6,8 +6,6 @@
 
 namespace Mlib {
 
-class RigidBodyVehicle;
-
 enum class GravityCorrection {
     NONE,
     GIMBAL,
@@ -35,20 +33,19 @@ public:
         const FixedArray<float, 3>& vehicle_mount_1,
         const FixedArray<float, 3>& blades_mount_0,
         const FixedArray<float, 3>& blades_mount_1,
-        RigidBodyVehicle* blades_rb,
-        const std::string& blades_node_name);
+        RigidBodyPulses* rotor_rb);
     Rotor(const Rotor&) = delete;
     Rotor& operator = (const Rotor&) = delete;
     ~Rotor();
     TransformationMatrix<float, double, 3> rotated_location(
         const TransformationMatrix<float, double, 3>& parent_location,
         const FixedArray<float, 3>& parent_velocity);
+    FixedArray<float, 3> rotation_axis() const;
     TransformationMatrix<float, double, 3> rest_location;
     FixedArray<float, 3> angles;
     FixedArray<double, 3> movement;
     float power2lift;
     float w;
-    RigidBodyVehicle* blades_rb;
     FixedArray<float, 3> vehicle_mount_0;
     FixedArray<float, 3> vehicle_mount_1;
     FixedArray<float, 3> blades_mount_0;
@@ -61,7 +58,6 @@ private:
     PidController<float, float> align_to_gravity_pid_y_;
     float drift_reduction_factor_;
     float drift_reduction_reference_velocity_;
-    std::string blades_node_name_;
 };
 
 }

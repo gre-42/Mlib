@@ -26,6 +26,9 @@ struct RigidBodyAndMeshes {
     RigidBodyVehicle& rigid_body;
     std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray<float>>>>> smeshes;
     std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
+    inline bool has_meshes() const {
+        return !smeshes.empty() || !dmeshes.empty();
+    }
 };
 
 struct RigidBodyAndIntersectableMeshes {
