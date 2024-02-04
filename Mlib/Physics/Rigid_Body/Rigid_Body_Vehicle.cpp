@@ -183,7 +183,7 @@ void RigidBodyVehicle::integrate_force(
 
 void RigidBodyVehicle::collide_with_air(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+    std::list<std::unique_ptr<IContactInfo>>& contact_infos)
 {
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);

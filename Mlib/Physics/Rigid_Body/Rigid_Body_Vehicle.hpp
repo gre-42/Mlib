@@ -36,7 +36,7 @@ class RigidBodyVehicleController;
 struct BaseRotor;
 class Tire;
 class Rotor;
-class ContactInfo;
+class IContactInfo;
 class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
@@ -106,7 +106,7 @@ public:
         const PhysicsEngineConfig& cfg);
     void collide_with_air(
         const PhysicsEngineConfig& cfg,
-        std::list<std::unique_ptr<ContactInfo>>& contact_infos);
+        std::list<std::unique_ptr<IContactInfo>>& contact_infos);
     void advance_time(
         const PhysicsEngineConfig& cfg,
         std::list<Beacon>* beacons);

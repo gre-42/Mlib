@@ -34,7 +34,7 @@ void NormalContactInfo1::set_velocity_rbp(RigidBodyPulses& rbp) {
  *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
-void NormalContactInfo1::solve(float dt, float relaxation) {
+void NormalContactInfo1::solve(float dt, float relaxation, size_t niterations) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     auto snormal = pc.normal_impulse.normal.casted<float>();
     float v = dot0d(velocity_rbp_->velocity_at_position(p_), snormal);
@@ -60,7 +60,7 @@ NormalContactInfo2::NormalContactInfo2(
     , notify_lambda_final_{ notify_lambda_final }
 {}
 
-void NormalContactInfo2::solve(float dt, float relaxation) {
+void NormalContactInfo2::solve(float dt, float relaxation, size_t niterations) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     auto snormal = pc.normal_impulse.normal.casted<float>();
     float v0 = dot0d(rbp0_.velocity_at_position(p_), snormal);
@@ -93,7 +93,7 @@ LineContactInfo1<tnullspace>::LineContactInfo1(
 {}
 
 template <size_t tnullspace>
-void LineContactInfo1<tnullspace>::solve(float dt, float relaxation) {
+void LineContactInfo1<tnullspace>::solve(float dt, float relaxation, size_t niterations) {
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + lec_.pec.v(dt);
     if constexpr (tnullspace > 0) {
@@ -123,7 +123,7 @@ LineContactInfo2<tnullspace>::LineContactInfo2(
 {}
 
 template <size_t tnullspace>
-void LineContactInfo2<tnullspace>::solve(float dt, float relaxation) {
+void LineContactInfo2<tnullspace>::solve(float dt, float relaxation, size_t niterations) {
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
     FixedArray<float, 3> v1 = rbp1_.velocity_at_position(lec_.pec.p1);
     FixedArray<float, 3> dv = -v0 + v1 + lec_.pec.v(dt);
@@ -156,7 +156,7 @@ PlaneContactInfo1::PlaneContactInfo1(
     , pec_{ pec }
 {}
 
-void PlaneContactInfo1::solve(float dt, float relaxation) {
+void PlaneContactInfo1::solve(float dt, float relaxation, size_t niterations) {
     auto& pec = pec_.constraint;
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + pec.pec.v(dt);
@@ -178,7 +178,7 @@ PlaneContactInfo2::PlaneContactInfo2(
     , pec_{ pec }
 {}
 
-void PlaneContactInfo2::solve(float dt, float relaxation) {
+void PlaneContactInfo2::solve(float dt, float relaxation, size_t niterations) {
     auto& pec = pec_.constraint;
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
     FixedArray<float, 3> v1 = rbp1_.velocity_at_position(pec.pec.p1);
@@ -226,7 +226,7 @@ FrictionContactInfo1::FrictionContactInfo1(
     , extra_w_{ extra_w }
 {}
 
-void FrictionContactInfo1::solve(float dt, float relaxation) {
+void FrictionContactInfo1::solve(float dt, float relaxation, size_t niterations) {
     FixedArray<float, 3> v3 = rbp_.velocity_at_position(p_) - b_;
     auto snormal = normal_impulse_.normal.casted<float>();
     v3 -= snormal * dot0d(v3, snormal);
@@ -331,7 +331,7 @@ FrictionContactInfo2::FrictionContactInfo2(
     , friction_coefficient_{ friction_coefficient }
 {}
 
-void FrictionContactInfo2::solve(float dt, float relaxation) {
+void FrictionContactInfo2::solve(float dt, float relaxation, size_t niterations) {
     FixedArray<float, 3> v3 = rbp0_.velocity_at_position(p_) - rbp1_.velocity_at_position(p_) - b_;
     auto snormal = normal_impulse_.normal.casted<float>();
     v3 -= snormal * dot0d(v3, snormal);
@@ -395,7 +395,7 @@ TireContactInfo1::TireContactInfo1(
     , cfg_{ cfg }
 {}
 
-void TireContactInfo1::solve(float dt, float relaxation) {
+void TireContactInfo1::solve(float dt, float relaxation, size_t niterations) {
     if (rb_.grind_state_.grinding_) {
         return;
     }
@@ -478,7 +478,7 @@ void TireContactInfo1::solve(float dt, float relaxation) {
         signed_min(force_min * cfg_.dt / (float)cfg_.nsubsteps, std::abs(r(0))),
         signed_min(force_max * cfg_.dt / (float)cfg_.nsubsteps, std::abs(r(0))),
         std::abs(r(1)));
-    fci_.solve(dt, relaxation);
+    fci_.solve(dt, relaxation, niterations);
 }
 
 // void TireContactInfo1::finalize() {
@@ -494,7 +494,7 @@ ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
     , p_{ p }
 {}
 
-void ShockAbsorberContactInfo1::solve(float dt, float relaxation) {
+void ShockAbsorberContactInfo1::solve(float dt, float relaxation, size_t niterations) {
     ShockAbsorberConstraint& sc = sc_.constraint;
     float F = sc.Ks * sc.distance + sc.Ka * dot0d(rbp_.velocity_at_position(p_), sc.normal_impulse.normal.casted<float>());
     float J = sc_.clamped_lambda(relaxation * F * dt);
@@ -514,13 +514,13 @@ ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
     , p_{ p }
 {}
 
-void ShockAbsorberContactInfo2::solve(float dt, float relaxation) {
+void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t niterations) {
     ShockAbsorberConstraint& sc = sc_.constraint;
     float F = sc.Ks * sc.distance + sc.Ka *
         dot0d(
             rbp1_.velocity_at_position(p_) - rbp0_.velocity_at_position(p_),
             sc.normal_impulse.normal.casted<float>());
-    float J = sc_.clamped_lambda(relaxation * F * dt);
+    float J = sc_.clamped_lambda(relaxation / (float)niterations * F * dt);
     auto lambda = sc.normal_impulse.normal.casted<float>() * J;
     rbp0_.integrate_impulse({
         .vector = lambda,
@@ -530,14 +530,15 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation) {
         .position = p_ });
 }
 
-void Mlib::solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt) {
-    for (size_t i = 0; i < 10; ++i) {
+void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt) {
+    size_t niterations = 10;
+    for (size_t i = 0; i < niterations; ++i) {
         // linfo() << "solve_contacts " << i;
-        for (const std::unique_ptr<ContactInfo>& ci : cis) {
-            ci->solve(dt, i < 1 ? 0.2f : 1.f);
+        for (const auto& ci : cis) {
+            ci->solve(dt, i < 1 ? 0.2f : 1.f, niterations);
         }
     }
-    for (const std::unique_ptr<ContactInfo>& ci : cis) {
+    for (const auto& ci : cis) {
         ci->finalize();
     }
 }

@@ -46,7 +46,7 @@ static void handle_standard_reflection(
     c.history.contact_infos.push_back(std::move(ci));
 
     // Tangential force
-    c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
+    c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new FrictionContactInfo1{
         c.o0.rbp_,
         *normal_impulse,
         intersection_point,
@@ -188,7 +188,7 @@ static void handle_extended_reflection(
                     FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                     FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
-                    c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new TireContactInfo1{
+                    c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new TireContactInfo1{
                         FrictionContactInfo1{
                             c.o1.rbp_,
                             *normal_impulse,
@@ -213,7 +213,7 @@ static void handle_extended_reflection(
                 tangential_force = 0;
             }
         } else {
-            c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo1{
+            c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new FrictionContactInfo1{
                 c.o1.rbp_,
                 *normal_impulse,
                 intersection_point,
@@ -222,7 +222,7 @@ static void handle_extended_reflection(
                 c.o0.velocity_at_position(intersection_point)}));
         }
     } else {
-        c.history.contact_infos.push_back(std::unique_ptr<ContactInfo>(new FrictionContactInfo2{
+        c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new FrictionContactInfo2{
             c.o1.rbp_,
             c.o0.rbp_,
             *normal_impulse,

@@ -6,7 +6,7 @@
 namespace Mlib {
 
 class IPermanentContact;
-class ContactInfo;
+class IContactInfo;
 struct PhysicsEngineConfig;
 
 struct PermanentContactComparator {
@@ -30,7 +30,7 @@ public:
     void remove(const IPermanentContact& permanent_contact);
     void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
-        std::list<std::unique_ptr<ContactInfo>>& contact_infos) const;
+        std::list<std::unique_ptr<IContactInfo>>& contact_infos) const;
 private:
     std::set<std::unique_ptr<IPermanentContact>, PermanentContactComparator> permanent_contacts_;
 };

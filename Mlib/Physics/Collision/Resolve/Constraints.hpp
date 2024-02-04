@@ -121,21 +121,21 @@ typedef BoundedFreeConstraint1D<PlaneEqualityConstraint> BoundedPlaneEqualityCon
 typedef BoundedNormalConstraint1D<PlaneInequalityConstraint> BoundedPlaneInequalityConstraint;
 typedef BoundedNormalConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
 
-class ContactInfo {
+class IContactInfo {
 public:
-    virtual ~ContactInfo() = default;
-    virtual void solve(float dt, float relaxation) = 0;
+    virtual ~IContactInfo() = default;
+    virtual void solve(float dt, float relaxation, size_t niterations) = 0;
     virtual void finalize() {}
 };
 
 template <size_t tnullspace>
-class LineContactInfo1: public ContactInfo {
+class LineContactInfo1: public IContactInfo {
 public:
     LineContactInfo1(
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const LineEqualityConstraint<tnullspace>& lec);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
@@ -143,52 +143,52 @@ private:
 };
 
 template <size_t tnullspace>
-class LineContactInfo2: public ContactInfo {
+class LineContactInfo2: public IContactInfo {
 public:
     LineContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const LineEqualityConstraint<tnullspace>& lec);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     LineEqualityConstraint<tnullspace> lec_;
 };
 
-class PlaneContactInfo1: public ContactInfo {
+class PlaneContactInfo1: public IContactInfo {
 public:
     PlaneContactInfo1(
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const BoundedPlaneEqualityConstraint& pec);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
     BoundedPlaneEqualityConstraint pec_;
 };
 
-class PlaneContactInfo2: public ContactInfo {
+class PlaneContactInfo2: public IContactInfo {
 public:
     PlaneContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedPlaneEqualityConstraint& pec);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     BoundedPlaneEqualityConstraint pec_;
 };
 
-class NormalContactInfo1: public ContactInfo {
+class NormalContactInfo1: public IContactInfo {
 public:
     NormalContactInfo1(
         RigidBodyPulses& rbp,
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
@@ -200,7 +200,7 @@ private:
     FixedArray<double, 3> p_;
 };
 
-class NormalContactInfo2: public ContactInfo {
+class NormalContactInfo2: public IContactInfo {
 public:
     NormalContactInfo2(
         RigidBodyPulses& rbp0,
@@ -208,7 +208,7 @@ public:
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<double, 3>& p,
         const std::function<void(float)>& notify_lambda_final = [](float){});
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     virtual void finalize() override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
@@ -221,13 +221,13 @@ private:
     std::function<void(float)> notify_lambda_final_;
 };
 
-class ShockAbsorberContactInfo1: public ContactInfo {
+class ShockAbsorberContactInfo1: public IContactInfo {
 public:
     ShockAbsorberContactInfo1(
         RigidBodyPulses& rbp,
         const BoundedShockAbsorberConstraint& sc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
     }
@@ -237,14 +237,14 @@ private:
     FixedArray<double, 3> p_;
 };
 
-class ShockAbsorberContactInfo2: public ContactInfo {
+class ShockAbsorberContactInfo2: public IContactInfo {
 public:
     ShockAbsorberContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedShockAbsorberConstraint& sc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
     }
@@ -255,7 +255,7 @@ private:
     FixedArray<double, 3> p_;
 };
 
-class FrictionContactInfo1: public ContactInfo {
+class FrictionContactInfo1: public IContactInfo {
     friend std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);
 public:
     FrictionContactInfo1(
@@ -272,7 +272,7 @@ public:
         float extra_stiction = 0,
         float extra_friction = 0,
         float extra_w = 0);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     const FixedArray<float, 3>& get_b() const;
@@ -311,7 +311,7 @@ private:
 
 std::ostream& operator << (std::ostream& ostr, const FrictionContactInfo1& fci1);
 
-class FrictionContactInfo2: public ContactInfo {
+class FrictionContactInfo2: public IContactInfo {
 public:
     FrictionContactInfo2(
         RigidBodyPulses& rbp0,
@@ -321,7 +321,7 @@ public:
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     void set_b(const FixedArray<float, 3>& b);
@@ -336,7 +336,7 @@ private:
     float friction_coefficient_;
 };
 
-class TireContactInfo1: public ContactInfo {
+class TireContactInfo1: public IContactInfo {
 public:
     TireContactInfo1(
         const FrictionContactInfo1& fci,
@@ -348,7 +348,7 @@ public:
         const FixedArray<float, 3>& n3,
         float v0,
         const PhysicsEngineConfig& cfg);
-    virtual void solve(float dt, float relaxation) override;
+    virtual void solve(float dt, float relaxation, size_t niterations) override;
 private:
     FrictionContactInfo1 fci_;
     float surface_stiction_factor_;
@@ -363,6 +363,6 @@ private:
     const PhysicsEngineConfig& cfg_;
 };
 
-void solve_contacts(std::list<std::unique_ptr<ContactInfo>>& cis, float dt);
+void solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float dt);
 
 }

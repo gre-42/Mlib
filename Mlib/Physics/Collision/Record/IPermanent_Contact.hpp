@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class ContactInfo;
+class IContactInfo;
 struct PhysicsEngineConfig;
 
 class IPermanentContact {
@@ -12,7 +12,7 @@ public:
     virtual ~IPermanentContact() = default;
     virtual void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
-        std::list<std::unique_ptr<ContactInfo>>& contact_infos) = 0;
+        std::list<std::unique_ptr<IContactInfo>>& contact_infos) = 0;
 };
 
 }

@@ -11,7 +11,7 @@ using namespace Mlib;
 
 void Mlib::collide_grind_infos(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos,
+    std::list<std::unique_ptr<IContactInfo>>& contact_infos,
     const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
 {
     for (const auto& [rb, p] : grind_infos) {
@@ -39,7 +39,7 @@ void Mlib::collide_grind_infos(
             n /= std::sqrt(l2);
             if (p.rail_rb->mass() == INFINITY) {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo1{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new PlaneContactInfo1{
                         rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         BoundedPlaneEqualityConstraint{
@@ -56,7 +56,7 @@ void Mlib::collide_grind_infos(
                     PlaneNd<double, 3> plane{
                         cross(n, p.rail_direction),
                         p.intersection_point};
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo1{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new NormalContactInfo1{
                         rb->rbp_,
                         BoundedPlaneInequalityConstraint{
                             .constraint = PlaneInequalityConstraint{
@@ -66,7 +66,7 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo1<1>{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo1<1>{
                         rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         LineEqualityConstraint<1>{
@@ -78,7 +78,7 @@ void Mlib::collide_grind_infos(
                 }
             } else {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new PlaneContactInfo2{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new PlaneContactInfo2{
                         rb->rbp_,
                         p.rail_rb->rbp_,
                         BoundedPlaneEqualityConstraint{
@@ -95,7 +95,7 @@ void Mlib::collide_grind_infos(
                     PlaneNd<double, 3> plane{
                         cross(n, p.rail_direction).casted<double>(),
                         p.intersection_point};
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new NormalContactInfo2{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new NormalContactInfo2{
                         rb->rbp_,
                         p.rail_rb->rbp_,
                         BoundedPlaneInequalityConstraint{
@@ -106,7 +106,7 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<ContactInfo>(new LineContactInfo2<1>{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo2<1>{
                         rb->rbp_,
                         p.rail_rb->rbp_,
                         LineEqualityConstraint<1>{

@@ -29,7 +29,7 @@ PermanentPointContact::PermanentPointContact(
 
 void PermanentPointContact::extend_contact_infos(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos)
+    std::list<std::unique_ptr<IContactInfo>>& contact_infos)
 {
     auto T0 = rbp0_.abs_transformation();
     auto T1 = rbp1_.abs_transformation();

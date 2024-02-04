@@ -110,7 +110,7 @@ void PhysicsEngine::collide(
             efp->increment_external_forces(olist, burn_in, cfg_);
         }
     }
-    std::list<std::unique_ptr<ContactInfo>> contact_infos;
+    std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
     for (const auto& o : rigid_bodies_.objects_) {
         if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())

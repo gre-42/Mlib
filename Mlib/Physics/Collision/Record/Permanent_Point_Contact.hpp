@@ -22,7 +22,7 @@ public:
     // IPermanentContact
     virtual void extend_contact_infos(
         const PhysicsEngineConfig& cfg,
-        std::list<std::unique_ptr<ContactInfo>>& contact_infos) override;
+        std::list<std::unique_ptr<IContactInfo>>& contact_infos) override;
 private:
     FixedArray<double, 3> p0_;
     FixedArray<double, 3> p1_;

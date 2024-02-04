@@ -25,7 +25,7 @@ void PermanentContacts::remove(const IPermanentContact& permanent_contact) {
 
 void PermanentContacts::extend_contact_infos(
     const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<ContactInfo>>& contact_infos) const
+    std::list<std::unique_ptr<IContactInfo>>& contact_infos) const
 {
     for (const auto& pc : permanent_contacts_) {
         pc->extend_contact_infos(cfg, contact_infos);
