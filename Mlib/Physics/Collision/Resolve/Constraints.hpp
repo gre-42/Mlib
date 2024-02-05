@@ -124,7 +124,7 @@ typedef BoundedNormalConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberC
 class IContactInfo {
 public:
     virtual ~IContactInfo() = default;
-    virtual void solve(float dt, float relaxation, size_t niterations) = 0;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) = 0;
     virtual void finalize() {}
 };
 
@@ -135,7 +135,7 @@ public:
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const LineEqualityConstraint<tnullspace>& lec);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
@@ -149,7 +149,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const LineEqualityConstraint<tnullspace>& lec);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
@@ -162,7 +162,7 @@ public:
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const BoundedPlaneEqualityConstraint& pec);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
@@ -175,7 +175,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedPlaneEqualityConstraint& pec);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
@@ -188,7 +188,7 @@ public:
         RigidBodyPulses& rbp,
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
@@ -208,7 +208,7 @@ public:
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<double, 3>& p,
         const std::function<void(float)>& notify_lambda_final = [](float){});
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     virtual void finalize() override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
@@ -227,7 +227,7 @@ public:
         RigidBodyPulses& rbp,
         const BoundedShockAbsorberConstraint& sc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
     }
@@ -244,7 +244,7 @@ public:
         RigidBodyPulses& rbp1,
         const BoundedShockAbsorberConstraint& sc,
         const FixedArray<double, 3>& p);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
     }
@@ -272,7 +272,7 @@ public:
         float extra_stiction = 0,
         float extra_friction = 0,
         float extra_w = 0);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     const FixedArray<float, 3>& get_b() const;
@@ -321,7 +321,7 @@ public:
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     float max_impulse_stiction() const;
     float max_impulse_friction() const;
     void set_b(const FixedArray<float, 3>& b);
@@ -348,7 +348,7 @@ public:
         const FixedArray<float, 3>& n3,
         float v0,
         const PhysicsEngineConfig& cfg);
-    virtual void solve(float dt, float relaxation, size_t niterations) override;
+    virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     FrictionContactInfo1 fci_;
     float surface_stiction_factor_;
