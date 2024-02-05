@@ -13,12 +13,13 @@ class RigidBodyPulses;
 struct PhysicsEngineConfig;
 
 struct PointEqualityConstraint {
+    RigidBodyPulses& rbp0;
+    RigidBodyPulses& rbp1;
     FixedArray<double, 3> p0;
     FixedArray<double, 3> p1;
     float beta = 0.5;
-    inline FixedArray<float, 3> v(float dt) const {
-        return beta / dt * (p1 - p0).casted<float>();
-    }
+    float gamma = 0.7f;
+    FixedArray<float, 3> v(float dt) const;
 };
 
 template <size_t ndim>
@@ -134,12 +135,10 @@ template <size_t tnullspace>
 class GenericLineContactInfo1: public IContactInfo {
 public:
     GenericLineContactInfo1(
-        RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const GenericLineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
-    RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
     GenericLineEqualityConstraint<tnullspace> lec_;
 };
@@ -150,14 +149,9 @@ using LineContactInfo1 = GenericLineContactInfo1<1>;
 template <size_t tnullspace>
 class GenericLineContactInfo2: public IContactInfo {
 public:
-    GenericLineContactInfo2(
-        RigidBodyPulses& rbp0,
-        RigidBodyPulses& rbp1,
-        const GenericLineEqualityConstraint<tnullspace>& lec);
+    explicit GenericLineContactInfo2(const GenericLineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
-    RigidBodyPulses& rbp0_;
-    RigidBodyPulses& rbp1_;
     GenericLineEqualityConstraint<tnullspace> lec_;
 };
 
@@ -167,26 +161,19 @@ using LineContactInfo2 = GenericLineContactInfo2<1>;
 class PlaneContactInfo1: public IContactInfo {
 public:
     PlaneContactInfo1(
-        RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
         const BoundedPlaneEqualityConstraint& pec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
-    RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
     BoundedPlaneEqualityConstraint pec_;
 };
 
 class PlaneContactInfo2: public IContactInfo {
 public:
-    PlaneContactInfo2(
-        RigidBodyPulses& rbp0,
-        RigidBodyPulses& rbp1,
-        const BoundedPlaneEqualityConstraint& pec);
+    explicit PlaneContactInfo2(const BoundedPlaneEqualityConstraint& pec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
-    RigidBodyPulses& rbp0_;
-    RigidBodyPulses& rbp1_;
     BoundedPlaneEqualityConstraint pec_;
 };
 
