@@ -159,7 +159,7 @@ void PhysicsEngine::collide(
     collide_raycast_intersections(raycast_intersections);
     collide_grind_infos(cfg_, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
-    solve_contacts(contact_infos, cfg_.dt / (float)cfg_.nsubsteps);
+    solve_contacts(contact_infos, cfg_.dt_substeps());
 }
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {

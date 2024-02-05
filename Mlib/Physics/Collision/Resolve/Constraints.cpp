@@ -520,7 +520,7 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t niterat
         dot0d(
             rbp1_.velocity_at_position(p_) - rbp0_.velocity_at_position(p_),
             sc.normal_impulse.normal.casted<float>());
-    float J = sc_.clamped_lambda(relaxation / (float)niterations * F * dt);
+    float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
     auto lambda = sc.normal_impulse.normal.casted<float>() * J;
     rbp0_.integrate_impulse({
         .vector = lambda,

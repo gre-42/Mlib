@@ -65,17 +65,21 @@ public:
     /**
     * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
     * Christian's alternative method
+    * Does not work properly
     */
-    explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
-        s_ = std::sqrt(std::max<TData>(0, 1 + m(0, 0) + m(1, 1) + m(2, 2))) / 2;
-        v_(0) = std::sqrt(std::max<TData>(0, 1 + m(0, 0) - m(1, 1) - m(2, 2))) / 2;
-        v_(1) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) + m(1, 1) - m(2, 2))) / 2;
-        v_(2) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) - m(1, 1) + m(2, 2))) / 2;
-
-        v_(0) = std::copysign(v_(0), m(2, 1) - m(1, 2));
-        v_(1) = std::copysign(v_(1), m(0, 2) - m(2, 0));
-        v_(2) = std::copysign(v_(2), m(1, 0) - m(0, 1));
-    }
+    // explicit Quaternion(const FixedArray<TData, 3, 3>& m) {
+    //     s_ = std::sqrt(std::max<TData>(0, 1 + m(0, 0) + m(1, 1) + m(2, 2))) / 2;
+    //     v_(0) = std::sqrt(std::max<TData>(0, 1 + m(0, 0) - m(1, 1) - m(2, 2))) / 2;
+    //     v_(1) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) + m(1, 1) - m(2, 2))) / 2;
+    //     v_(2) = std::sqrt(std::max<TData>(0, 1 - m(0, 0) - m(1, 1) + m(2, 2))) / 2;
+    // 
+    //     v_(0) = std::copysign(v_(0), m(2, 1) - m(1, 2));
+    //     v_(1) = std::copysign(v_(1), m(0, 2) - m(2, 0));
+    //     v_(2) = std::copysign(v_(2), m(1, 0) - m(0, 1));
+    // }
+    explicit Quaternion(const FixedArray<TData, 3, 3>& m)
+        : Quaternion{ from_tait_bryan_angles(matrix_2_tait_bryan_angles(m)) }
+    {}
     Quaternion(const FixedArray<TData, 3>& axis, const TData& angle) {
         s_ = std::cos(angle / TData{2});
         v_ = axis * std::sin(angle / TData{2});

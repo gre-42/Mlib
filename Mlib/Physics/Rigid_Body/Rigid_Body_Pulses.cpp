@@ -5,7 +5,6 @@
 #include <Mlib/Math/Fixed_Inverse.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -34,7 +33,7 @@ void RigidBodyPulses::advance_time(float dt)
 {
     abs_com_ += (dt * v_).casted<double>();
     rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
-    rotation_ = Quaternion<float>{ rotation_ }.to_rotation_matrix();
+    rotation_ = tait_bryan_angles_2_matrix(matrix_2_tait_bryan_angles(rotation_));
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
@@ -136,7 +135,7 @@ void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3
 
 void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w)
 {
-    if (any(abs(J.vector) > float{1e5})) {
+    if (any(abs(J.vector) > 1e5f)) {
         THROW_OR_ABORT("J.vector out of bounds");
     }
     integrate_delta_v(J.vector / mass_);
