@@ -200,10 +200,8 @@ public:
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
     }
-    void set_velocity_rbp(RigidBodyPulses& rbp);
 private:
     RigidBodyPulses& rbp_;
-    RigidBodyPulses* velocity_rbp_;
     BoundedPlaneInequalityConstraint pc_;
     FixedArray<double, 3> p_;
 };

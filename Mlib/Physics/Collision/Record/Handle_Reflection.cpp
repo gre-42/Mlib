@@ -135,7 +135,6 @@ static void handle_extended_reflection(
                             .lambda_max = 0
                         },
                         intersection_point);
-                    ci->set_velocity_rbp(c.o1.rbp_);
                     c.history.contact_infos.push_back(std::move(ci));
                 }
                 if (tire.normal_impulse == nullptr) {

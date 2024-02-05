@@ -19,14 +19,9 @@ NormalContactInfo1::NormalContactInfo1(
     const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<double, 3>& p)
     : rbp_{ rbp }
-    , velocity_rbp_{ &rbp }
     , pc_{ pc }
     , p_{ p }
 {}
-
-void NormalContactInfo1::set_velocity_rbp(RigidBodyPulses& rbp) {
-    velocity_rbp_ = &rbp;
-}
 
 /**
  * From: Erin Catto, Modeling and Solving Constraints
@@ -37,7 +32,7 @@ void NormalContactInfo1::set_velocity_rbp(RigidBodyPulses& rbp) {
 void NormalContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     auto snormal = pc.normal_impulse.normal.casted<float>();
-    float v = dot0d(velocity_rbp_->velocity_at_position(p_), snormal);
+    float v = dot0d(rbp_.velocity_at_position(p_), snormal);
     float mc = rbp_.effective_mass({ .vector = snormal, .position = p_ });
     float lambda = - mc * (-v + pc.v(dt));
     lambda = pc_.clamped_lambda(relaxation * lambda);
