@@ -201,14 +201,14 @@ void RigidBodyVehicle::collide_with_air(
             rotor->rbp->w_ = rotor->angular_velocity * z3_from_3x3(rotor->rbp->rotation_);
             auto T0 = rbp_.abs_transformation();
             auto T1 = rotor->rbp->abs_transformation();
-            contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
+            contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
                 *rotor->rbp,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
-            contact_infos.push_back(std::make_unique<LineContactInfo2<0>>(
+            contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
                 *rotor->rbp,
                 PointEqualityConstraint{
@@ -262,10 +262,10 @@ void RigidBodyVehicle::collide_with_air(
         auto abs_vertical_line = T0.rotate(tire.vertical_line);
         // Vertical constraints
         {
-            contact_infos.push_back(std::make_unique<LineContactInfo2<1>>(
+            contact_infos.push_back(std::make_unique<LineContactInfo2>(
                 rbp_,
                 *tire.rbp,
-                LineEqualityConstraint<1>{
+                LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = abs_vehicle_mount_0,
                         .p1 = T1.t(),
@@ -273,10 +273,10 @@ void RigidBodyVehicle::collide_with_air(
                     },
                     .null_space = abs_vertical_line
                 }));
-            contact_infos.push_back(std::make_unique<LineContactInfo2<1>>(
+            contact_infos.push_back(std::make_unique<LineContactInfo2>(
                 rbp_,
                 *tire.rbp,
-                LineEqualityConstraint<1>{
+                LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = T0.transform(tire.vehicle_mount_1.casted<double>()),
                         .p1 = T1.t(),

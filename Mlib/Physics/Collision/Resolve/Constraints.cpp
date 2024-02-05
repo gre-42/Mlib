@@ -83,17 +83,17 @@ void NormalContactInfo2::finalize() {
 }
 
 template <size_t tnullspace>
-LineContactInfo1<tnullspace>::LineContactInfo1(
+GenericLineContactInfo1<tnullspace>::GenericLineContactInfo1(
     RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
-    const LineEqualityConstraint<tnullspace>& lec)
+    const GenericLineEqualityConstraint<tnullspace>& lec)
     : rbp0_{ rbp0 }
     , v1_{ v1 }
     , lec_{ lec }
 {}
 
 template <size_t tnullspace>
-void LineContactInfo1<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
+void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + lec_.pec.v(dt);
     if constexpr (tnullspace > 0) {
@@ -113,17 +113,17 @@ void LineContactInfo1<tnullspace>::solve(float dt, float relaxation, size_t iter
 }
 
 template <size_t tnullspace>
-LineContactInfo2<tnullspace>::LineContactInfo2(
+GenericLineContactInfo2<tnullspace>::GenericLineContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
-    const LineEqualityConstraint<tnullspace>& lec)
+    const GenericLineEqualityConstraint<tnullspace>& lec)
     : rbp0_{ rbp0 }
     , rbp1_{ rbp1 }
     , lec_{ lec }
 {}
 
 template <size_t tnullspace>
-void LineContactInfo2<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
+void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
     FixedArray<float, 3> v1 = rbp1_.velocity_at_position(lec_.pec.p1);
     FixedArray<float, 3> dv = -v0 + v1 + lec_.pec.v(dt);
@@ -543,7 +543,7 @@ void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float d
     }
 }
 
-template class LineContactInfo1<0>;
-template class LineContactInfo1<1>;
-template class LineContactInfo2<0>;
-template class LineContactInfo2<1>;
+template class GenericLineContactInfo1<0>;
+template class GenericLineContactInfo1<1>;
+template class GenericLineContactInfo2<0>;
+template class GenericLineContactInfo2<1>;

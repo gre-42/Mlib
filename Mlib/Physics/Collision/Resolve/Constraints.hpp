@@ -22,19 +22,21 @@ struct PointEqualityConstraint {
 };
 
 template <size_t ndim>
-struct LineEqualityConstraint {};
+struct GenericLineEqualityConstraint {};
 
 template <>
-struct LineEqualityConstraint<0> {
-    LineEqualityConstraint(PointEqualityConstraint pec) : pec{ std::move(pec) } {}
+struct GenericLineEqualityConstraint<0> {
+    GenericLineEqualityConstraint(PointEqualityConstraint pec) : pec{ std::move(pec) } {}
     PointEqualityConstraint pec;
 };
 
 template <>
-struct LineEqualityConstraint<1> {
+struct GenericLineEqualityConstraint<1> {
     PointEqualityConstraint pec;
     FixedArray<float, 1, 3> null_space;
 };
+
+using LineEqualityConstraint = GenericLineEqualityConstraint<1>;
 
 struct PlaneEqualityConstraint {
     PointEqualityConstraint pec;
@@ -117,9 +119,9 @@ struct ShockAbsorberConstraint {
     float Ka;  // K_absorber
 };
 
-typedef BoundedFreeConstraint1D<PlaneEqualityConstraint> BoundedPlaneEqualityConstraint;
-typedef BoundedNormalConstraint1D<PlaneInequalityConstraint> BoundedPlaneInequalityConstraint;
-typedef BoundedNormalConstraint1D<ShockAbsorberConstraint> BoundedShockAbsorberConstraint;
+using BoundedPlaneEqualityConstraint = BoundedFreeConstraint1D<PlaneEqualityConstraint>;
+using BoundedPlaneInequalityConstraint = BoundedNormalConstraint1D<PlaneInequalityConstraint>;
+using BoundedShockAbsorberConstraint = BoundedNormalConstraint1D<ShockAbsorberConstraint>;
 
 class IContactInfo {
 public:
@@ -129,32 +131,38 @@ public:
 };
 
 template <size_t tnullspace>
-class LineContactInfo1: public IContactInfo {
+class GenericLineContactInfo1: public IContactInfo {
 public:
-    LineContactInfo1(
+    GenericLineContactInfo1(
         RigidBodyPulses& rbp0,
         const FixedArray<float, 3>& v1,
-        const LineEqualityConstraint<tnullspace>& lec);
+        const GenericLineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     FixedArray<float, 3> v1_;
-    LineEqualityConstraint<tnullspace> lec_;
+    GenericLineEqualityConstraint<tnullspace> lec_;
 };
 
+using PointContactInfo1 = GenericLineContactInfo1<0>;
+using LineContactInfo1 = GenericLineContactInfo1<1>;
+
 template <size_t tnullspace>
-class LineContactInfo2: public IContactInfo {
+class GenericLineContactInfo2: public IContactInfo {
 public:
-    LineContactInfo2(
+    GenericLineContactInfo2(
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
-        const LineEqualityConstraint<tnullspace>& lec);
+        const GenericLineEqualityConstraint<tnullspace>& lec);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
 private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
-    LineEqualityConstraint<tnullspace> lec_;
+    GenericLineEqualityConstraint<tnullspace> lec_;
 };
+
+using PointContactInfo2 = GenericLineContactInfo2<0>;
+using LineContactInfo2 = GenericLineContactInfo2<1>;
 
 class PlaneContactInfo1: public IContactInfo {
 public:

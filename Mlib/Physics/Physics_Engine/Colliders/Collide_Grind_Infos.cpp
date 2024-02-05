@@ -66,10 +66,10 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo1<1>{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo1{
                         rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
-                        LineEqualityConstraint<1>{
+                        LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
@@ -106,10 +106,10 @@ void Mlib::collide_grind_infos(
                             .lambda_max = 0},
                         rb->abs_grind_point()}));
                 } else {
-                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo2<1>{
+                    contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo2{
                         rb->rbp_,
                         p.rail_rb->rbp_,
-                        LineEqualityConstraint<1>{
+                        LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,

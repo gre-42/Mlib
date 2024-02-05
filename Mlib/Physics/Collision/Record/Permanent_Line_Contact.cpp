@@ -35,10 +35,10 @@ void PermanentLineContact::extend_contact_infos(
 {
     auto T0 = rbp0_.abs_transformation();
     auto T1 = rbp1_.abs_transformation();
-    contact_infos.push_back(std::make_unique<LineContactInfo2<1>>(
+    contact_infos.push_back(std::make_unique<LineContactInfo2>(
         rbp0_,
         rbp1_,
-        LineEqualityConstraint<1>{
+        LineEqualityConstraint{
             .pec = PointEqualityConstraint{
                 .p0 = T0.transform(p0_),
                 .p1 = T1.transform(p1_),
