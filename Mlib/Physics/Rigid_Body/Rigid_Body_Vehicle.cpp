@@ -202,16 +202,16 @@ void RigidBodyVehicle::collide_with_air(
             auto T0 = rbp_.abs_transformation();
             auto T1 = rotor->rbp->abs_transformation();
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
+                rbp_,
+                *rotor->rbp,
                 PointEqualityConstraint{
-                    .rbp0 = rbp_,
-                    .rbp1 = *rotor->rbp,
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
                     .beta = cfg.point_equality_beta}));
             contact_infos.push_back(std::make_unique<PointContactInfo2>(
+                rbp_,
+                *rotor->rbp,
                 PointEqualityConstraint{
-                    .rbp0 = rbp_,
-                    .rbp1 = *rotor->rbp,
                     .p0 = T0.transform(rotor->vehicle_mount_1.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_1.casted<double>()),
                     .beta = cfg.point_equality_beta}));
@@ -263,10 +263,10 @@ void RigidBodyVehicle::collide_with_air(
         // Vertical constraints
         {
             contact_infos.push_back(std::make_unique<LineContactInfo2>(
+                rbp_,
+                *tire.rbp,
                 LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
-                        .rbp0 = rbp_,
-                        .rbp1 = *tire.rbp,
                         .p0 = abs_vehicle_mount_0,
                         .p1 = T1.t(),
                         .beta = cfg.point_equality_beta
@@ -274,10 +274,10 @@ void RigidBodyVehicle::collide_with_air(
                     .null_space = abs_vertical_line
                 }));
             contact_infos.push_back(std::make_unique<LineContactInfo2>(
+                rbp_,
+                *tire.rbp,
                 LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
-                        .rbp0 = rbp_,
-                        .rbp1 = *tire.rbp,
                         .p0 = T0.transform(tire.vehicle_mount_1.casted<double>()),
                         .p1 = T1.t(),
                         .beta = cfg.point_equality_beta
@@ -295,11 +295,11 @@ void RigidBodyVehicle::collide_with_air(
                 auto p1 = T1.transform((tire.radius * p1r).casted<double>());
                 auto p0 = p1 - plane_normal.casted<double>() * dot0d(plane_normal.casted<double>(), p1 - abs_vehicle_mount_0);
                 contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                    rbp_,
+                    *tire.rbp,
                     BoundedPlaneEqualityConstraint{
                         PlaneEqualityConstraint{
                             .pec = PointEqualityConstraint{
-                                .rbp0 = rbp_,
-                                .rbp1 = *tire.rbp,
                                 .p0 = p0,
                                 .p1 = p1,
                                 .beta = cfg.plane_equality_beta

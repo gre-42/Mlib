@@ -34,9 +34,9 @@ void PermanentPointContact::extend_contact_infos(
     auto T0 = rbp0_.abs_transformation();
     auto T1 = rbp1_.abs_transformation();
     contact_infos.push_back(std::make_unique<PointContactInfo2>(
+        rbp0_,
+        rbp1_,
         PointEqualityConstraint{
-            .rbp0 = rbp0_,
-            .rbp1 = rbp1_,
             .p0 = T0.transform(p0_),
             .p1 = T1.transform(p1_),
             .beta = cfg.point_equality_beta}));

@@ -40,13 +40,12 @@ void Mlib::collide_grind_infos(
             if (p.rail_rb->mass() == INFINITY) {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new PlaneContactInfo1{
+                        rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         BoundedPlaneEqualityConstraint{
                             .constraint =
                                 PlaneEqualityConstraint{
                                 .pec = PointEqualityConstraint{
-                                    .rbp0 = rb->rbp_,
-                                    .rbp1 = p.rail_rb->rbp_,
                                     .p0 = rb->abs_grind_point(),
                                     .p1 = p.intersection_point,
                                     .beta = cfg.plane_equality_beta},
@@ -68,11 +67,10 @@ void Mlib::collide_grind_infos(
                         rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo1{
+                        rb->rbp_,
                         p.rail_rb->velocity_at_position(p.intersection_point),
                         LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
-                                .rbp0 = rb->rbp_,
-                                .rbp1 = p.rail_rb->rbp_,
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg.point_equality_beta},
@@ -81,12 +79,12 @@ void Mlib::collide_grind_infos(
             } else {
                 if (!rb->align_to_surface_state_.touches_alignment_plane_) {
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new PlaneContactInfo2{
+                        rb->rbp_,
+                        p.rail_rb->rbp_,
                         BoundedPlaneEqualityConstraint{
                             .constraint =
                                 PlaneEqualityConstraint{
                                     .pec = PointEqualityConstraint{
-                                        .rbp0 = rb->rbp_,
-                                        .rbp1 = p.rail_rb->rbp_,
                                         .p0 = rb->abs_grind_point(),
                                         .p1 = p.intersection_point,
                                         .beta = cfg.plane_equality_beta},
@@ -109,10 +107,10 @@ void Mlib::collide_grind_infos(
                         rb->abs_grind_point()}));
                 } else {
                     contact_infos.push_back(std::unique_ptr<IContactInfo>(new LineContactInfo2{
+                        rb->rbp_,
+                        p.rail_rb->rbp_,
                         LineEqualityConstraint{
                             .pec = PointEqualityConstraint{
-                                .rbp0 = rb->rbp_,
-                                .rbp1 = p.rail_rb->rbp_,
                                 .p0 = rb->abs_grind_point(),
                                 .p1 = p.intersection_point,
                                 .beta = cfg.point_equality_beta},

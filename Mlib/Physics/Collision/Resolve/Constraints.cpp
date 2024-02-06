@@ -14,12 +14,6 @@
 
 using namespace Mlib;
 
-FixedArray<float, 3> PointEqualityConstraint::v(float dt) const {
-    return
-        beta / dt * (p1 - p0).casted<float>() +
-        gamma * (rbp0.velocity_at_position(p0) - rbp1.velocity_at_position(p1));
-}
-
 NormalContactInfo1::NormalContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedPlaneInequalityConstraint& pc,
@@ -85,15 +79,17 @@ void NormalContactInfo2::finalize() {
 
 template <size_t tnullspace>
 GenericLineContactInfo1<tnullspace>::GenericLineContactInfo1(
+    RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
     const GenericLineEqualityConstraint<tnullspace>& lec)
-    : v1_{ v1 }
+    : rbp0_{ rbp0 }
+    , v1_{ v1 }
     , lec_{ lec }
 {}
 
 template <size_t tnullspace>
 void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
-    FixedArray<float, 3> v0 = lec_.pec.rbp0.velocity_at_position(lec_.pec.p0);
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + lec_.pec.v(dt);
     if constexpr (tnullspace > 0) {
         for (const auto& line_direction : lec_.null_space.row_iterable()) {
@@ -103,9 +99,9 @@ void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size
     float len2 = sum(squared(dv));
     if (len2 > 1e-12) {
         FixedArray<float, 3> n = dv / std::sqrt(len2);
-        float mc0 = lec_.pec.rbp0.effective_mass({ .vector = n, .position = lec_.pec.p0 });
+        float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         FixedArray<float, 3> lambda = - mc0 * dv;
-        lec_.pec.rbp0.integrate_impulse({
+        rbp0_.integrate_impulse({
             .vector = -lambda,
             .position = lec_.pec.p0});
     }
@@ -113,14 +109,18 @@ void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size
 
 template <size_t tnullspace>
 GenericLineContactInfo2<tnullspace>::GenericLineContactInfo2(
+    RigidBodyPulses& rbp0,
+    RigidBodyPulses& rbp1,
     const GenericLineEqualityConstraint<tnullspace>& lec)
-    : lec_{ lec }
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , lec_{ lec }
 {}
 
 template <size_t tnullspace>
 void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
-    FixedArray<float, 3> v0 = lec_.pec.rbp0.velocity_at_position(lec_.pec.p0);
-    FixedArray<float, 3> v1 = lec_.pec.rbp1.velocity_at_position(lec_.pec.p1);
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(lec_.pec.p0);
+    FixedArray<float, 3> v1 = rbp1_.velocity_at_position(lec_.pec.p1);
     FixedArray<float, 3> dv = -v0 + v1 + lec_.pec.v(dt);
     if constexpr (tnullspace > 0) {
         for (const auto& line_direction : lec_.null_space.row_iterable()) {
@@ -130,56 +130,63 @@ void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size
     float len2 = sum(squared(dv));
     if (len2 > 1e-12) {
         FixedArray<float, 3> n = dv / std::sqrt(len2);
-        float mc0 = lec_.pec.rbp0.effective_mass({ .vector = n, .position = lec_.pec.p0 });
-        float mc1 = lec_.pec.rbp1.effective_mass({ .vector = n, .position = lec_.pec.p1 });
+        float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
+        float mc1 = rbp1_.effective_mass({ .vector = n, .position = lec_.pec.p1 });
         FixedArray<float, 3> lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv;
-        lec_.pec.rbp0.integrate_impulse({
+        rbp0_.integrate_impulse({
             .vector = -lambda,
             .position = lec_.pec.p0});
-        lec_.pec.rbp1.integrate_impulse({
+        rbp1_.integrate_impulse({
             .vector = lambda,
             .position = lec_.pec.p1});
     }
 }
 
 PlaneContactInfo1::PlaneContactInfo1(
+    RigidBodyPulses& rbp0,
     const FixedArray<float, 3>& v1,
     const BoundedPlaneEqualityConstraint& pec)
-    : v1_{ v1 }
+    : rbp0_{ rbp0 }
+    , v1_{ v1 }
     , pec_{ pec }
 {}
 
 void PlaneContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     auto& pec = pec_.constraint;
-    FixedArray<float, 3> v0 = pec_.constraint.pec.rbp0.velocity_at_position(pec.pec.p0);
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
     FixedArray<float, 3> dv = -v0 + v1_ + pec.pec.v(dt);
     float dv_len = dot0d(dv, pec.plane_normal);
-    float mc0 = pec_.constraint.pec.rbp0.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
+    float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
     float lambda = - mc0 * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    pec_.constraint.pec.rbp0.integrate_impulse({
+    rbp0_.integrate_impulse({
         .vector = - pec.plane_normal * lambda,
         .position = pec.pec.p0});
 }
 
-PlaneContactInfo2::PlaneContactInfo2(const BoundedPlaneEqualityConstraint& pec)
-    : pec_{ pec }
+PlaneContactInfo2::PlaneContactInfo2(
+    RigidBodyPulses& rbp0,
+    RigidBodyPulses& rbp1,
+    const BoundedPlaneEqualityConstraint& pec)
+    : rbp0_{ rbp0 }
+    , rbp1_{ rbp1 }
+    , pec_{ pec }
 {}
 
 void PlaneContactInfo2::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     auto& pec = pec_.constraint;
-    FixedArray<float, 3> v0 = pec.pec.rbp0.velocity_at_position(pec.pec.p0);
-    FixedArray<float, 3> v1 = pec.pec.rbp1.velocity_at_position(pec.pec.p1);
+    FixedArray<float, 3> v0 = rbp0_.velocity_at_position(pec.pec.p0);
+    FixedArray<float, 3> v1 = rbp1_.velocity_at_position(pec.pec.p1);
     FixedArray<float, 3> dv = -v0 + v1 + pec.pec.v(dt);
     float dv_len = dot0d(dv, pec.plane_normal);
-    float mc0 = pec.pec.rbp0.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
-    float mc1 = pec.pec.rbp1.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p1 });
+    float mc0 = rbp0_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p0 });
+    float mc1 = rbp1_.effective_mass({ .vector = pec.plane_normal, .position = pec.pec.p1 });
     float lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv_len;
     lambda = pec_.clamped_lambda(relaxation * lambda);
-    pec.pec.rbp0.integrate_impulse({
+    rbp0_.integrate_impulse({
         .vector = - pec.plane_normal * lambda,
         .position = pec.pec.p0});
-    pec.pec.rbp1.integrate_impulse({
+    rbp1_.integrate_impulse({
         .vector = pec.plane_normal * lambda,
         .position = pec.pec.p1});
 }
