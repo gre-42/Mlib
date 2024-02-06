@@ -46,8 +46,8 @@ struct PhysicsEngineConfig {
     float slide_factor = 2.f;
     float ignore_factor = 16.f;
     float intersection_point_radius = 0.03f * meters;
-    float point_equality_beta = 0.05f;
-    float plane_equality_beta = 0.05f;
+    float point_equality_beta = 0.15f;
+    float plane_equality_beta = 0.15f;
     float plane_inequality_beta = 0.02f;
     size_t nsubsteps = 20;
 
