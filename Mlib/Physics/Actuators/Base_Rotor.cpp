@@ -10,6 +10,6 @@ BaseRotor::BaseRotor(
     : engine{ std::move(engine) }
     , delta_engine{ std::move(delta_engine) }
     , rbp{ rbp }
-    , brake_torque{ brake_torque }
     , angular_velocity{ 0.f }
+    , brake_torque{ brake_torque }
 {}
