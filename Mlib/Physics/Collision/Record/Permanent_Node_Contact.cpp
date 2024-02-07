@@ -10,9 +10,9 @@ PermanentNodeContact::PermanentNodeContact(
     DanglingRef<SceneNode> scene_node1,
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1)
-    : permanent_contacts_{ permanent_contacts }
-    , rbp0_{ rbp0 }
+    : rbp0_{ rbp0 }
     , rbp1_{ rbp1 }
+    , permanent_contacts_{ permanent_contacts }
     , scene_node0_{ scene_node0 }
     , scene_node1_{ scene_node1 }
 {
