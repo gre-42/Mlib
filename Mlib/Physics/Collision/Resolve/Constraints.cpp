@@ -538,7 +538,11 @@ void Mlib::solve_contacts(std::list<std::unique_ptr<IContactInfo>>& cis, float d
     }
 }
 
+namespace Mlib {
+
 template class GenericLineContactInfo1<0>;
 template class GenericLineContactInfo1<1>;
 template class GenericLineContactInfo2<0>;
 template class GenericLineContactInfo2<1>;
+
+}
