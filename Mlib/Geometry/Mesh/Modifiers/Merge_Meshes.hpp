@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <list>
 #include <memory>
 #include <string>
@@ -8,7 +9,7 @@ namespace Mlib {
 template <class TPos>
 class ColoredVertexArray;
 struct Material;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 void merge_meshes(

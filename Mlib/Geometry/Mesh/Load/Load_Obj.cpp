@@ -334,6 +334,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string(),
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
+                        .lighten = OrderableFixedArray(cfg.lighten),
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level };
                 }

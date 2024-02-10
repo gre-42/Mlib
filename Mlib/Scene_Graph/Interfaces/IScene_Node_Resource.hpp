@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -26,7 +27,7 @@ enum class AggregateMode;
 struct SpawnPoint;
 struct ColoredVertexArrayFilter;
 struct RenderableResourceFilter;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 class ISupplyDepots;
 struct InstantiationOptions;
 enum class SmoothnessTarget;

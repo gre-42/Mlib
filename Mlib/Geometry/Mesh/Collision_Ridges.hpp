@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.hpp>
+#include <cstdint>
 
 namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 class CollisionRidges: public CollisionRidgesBase<OrderableRidgeSphereBase> {
 public:

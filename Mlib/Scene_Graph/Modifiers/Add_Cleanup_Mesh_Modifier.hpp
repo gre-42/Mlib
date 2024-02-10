@@ -1,10 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <string>
 
 namespace Mlib {
 
 class SceneNodeResources;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 void add_cleanup_mesh_modifier(
     const std::string& resource_name,

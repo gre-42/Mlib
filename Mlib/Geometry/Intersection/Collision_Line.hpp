@@ -2,10 +2,11 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
+#include <cstdint>
 
 namespace Mlib {
 
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 struct CollisionLineSphere {
     BoundingSphere<double, 3> bounding_sphere;

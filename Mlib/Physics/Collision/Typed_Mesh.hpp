@@ -1,9 +1,10 @@
 #pragma once
 #include <compare>
+#include <cstdint>
 
 namespace Mlib {
 
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <class T>
 struct TypedMesh {

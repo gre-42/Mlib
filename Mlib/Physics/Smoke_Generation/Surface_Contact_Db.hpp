@@ -1,5 +1,6 @@
 #pragma once
 #include <compare>
+#include <cstdint>
 #include <map>
 
 namespace Mlib {
@@ -7,7 +8,7 @@ namespace Mlib {
 class SmokeParticleGenerator;
 class RigidBodyVehicle;
 struct IntersectionScene;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 struct SurfaceContactInfo;
 
 class CommutativeMaterialPair {

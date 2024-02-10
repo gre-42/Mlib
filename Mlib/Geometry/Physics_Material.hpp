@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 
@@ -7,7 +8,7 @@ namespace Mlib {
 static const size_t SURFACE_BASE_OFFSET = 18;
 static const size_t SURFACE_BASE_NBITS = 4;
 
-enum class PhysicsMaterial {
+enum class PhysicsMaterial: uint32_t {
     NONE = 0,
     ATTR_VISIBLE = (1 << 0),
     ATTR_COLLIDE = (1 << 1),
@@ -50,11 +51,11 @@ inline bool any(PhysicsMaterial a) {
 }
 
 inline PhysicsMaterial operator & (PhysicsMaterial a, PhysicsMaterial b) {
-    return (PhysicsMaterial)((unsigned int)a & (unsigned int)b);
+    return (PhysicsMaterial)((uint32_t)a & (uint32_t)b);
 }
 
 inline PhysicsMaterial operator | (PhysicsMaterial a, PhysicsMaterial b) {
-    return (PhysicsMaterial)((unsigned int)a | (unsigned int)b);
+    return (PhysicsMaterial)((uint32_t)a | (uint32_t)b);
 }
 
 inline PhysicsMaterial& operator |= (PhysicsMaterial& a, PhysicsMaterial b) {
@@ -68,7 +69,7 @@ inline PhysicsMaterial& operator &= (PhysicsMaterial& a, PhysicsMaterial b) {
 }
 
 inline PhysicsMaterial operator ~ (PhysicsMaterial a) {
-    return (PhysicsMaterial)(~(unsigned int)a);
+    return (PhysicsMaterial)(~(uint32_t)a);
 }
 
 PhysicsMaterial physics_material_from_string(const std::string& s);

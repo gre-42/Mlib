@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -33,7 +34,7 @@ struct InstantiationOptions;
 
 enum class AggregateMode;
 enum class WayPointLocation;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
 
 class SceneNodeResources {

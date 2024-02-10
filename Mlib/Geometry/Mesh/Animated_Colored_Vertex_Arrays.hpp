@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -17,7 +18,7 @@ struct Bone;
 template <class TPos>
 class ColoredVertexArray;
 struct ColoredVertexArrayFilter;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
 
 struct AnimatedColoredVertexArrays {

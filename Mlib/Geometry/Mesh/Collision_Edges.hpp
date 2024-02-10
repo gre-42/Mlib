@@ -1,13 +1,14 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Collision_Line.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <set>
 
 namespace Mlib {
 
 template <class TData, size_t... tshape>
 class OrderableFixedArray;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 struct OrderableEdgeSphere {
     CollisionLineSphere collision_line_sphere;

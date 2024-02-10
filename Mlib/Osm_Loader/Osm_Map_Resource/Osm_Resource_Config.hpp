@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <cmath>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <set>
@@ -30,7 +31,7 @@ struct WaysideResourceNames;
 struct RoadProperties;
 enum class TerrainType;
 enum class WrapMode;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 struct RoadStyle {
     std::vector<std::string> textures;

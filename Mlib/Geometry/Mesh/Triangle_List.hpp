@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
 #include <cereal/access.hpp>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -22,7 +23,7 @@ template <class TPos>
 class ColoredVertexArray;
 template <class TPos>
 class VertexHeightBinding;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 class TriangleList {

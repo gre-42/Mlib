@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace Mlib {
@@ -13,7 +14,7 @@ enum class BlendMode;
 enum class AggregateMode;
 enum class TransformationMode;
 enum class ExternalRenderPassType;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 struct LoadMeshConfig {
@@ -47,6 +48,7 @@ struct LoadMeshConfig {
     };
     float desaturate = 0.f;
     std::string histogram;
+    FixedArray<float, 3> lighten = FixedArray<float, 3>(0.f);
     std::vector<BlendMapTexture> textures;
     float period_world;
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;

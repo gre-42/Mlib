@@ -3,10 +3,11 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <cstdint>
 
 namespace Mlib {
 
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <size_t tnvertices>
 struct CollisionPolygonSphere {

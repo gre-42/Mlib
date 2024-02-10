@@ -28,7 +28,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 class ColoredVertexArray {

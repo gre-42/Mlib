@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <memory>
 #include <vector>
@@ -8,7 +9,7 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 template <typename TData, size_t... tshape>
 class FixedArray;
 

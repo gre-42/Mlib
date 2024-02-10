@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -10,7 +11,7 @@ class IIntersectableMesh;
 template <class TData, size_t n>
 class PlaneNd;
 enum class CollisionType;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 struct IntersectionSceneAndContact;
 struct CollisionHistory;
 template <size_t tnvertices>

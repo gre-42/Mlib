@@ -58,6 +58,7 @@ DECLARE_ARGUMENT(fresnel_max);
 DECLARE_ARGUMENT(fresnel_exponent);
 DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
+DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
 DECLARE_ARGUMENT(physics_material);
 DECLARE_ARGUMENT(double_precision);
@@ -178,6 +179,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         },
         .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
+        .lighten = args.arguments.at<FixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .triangle_tangent_error_behavior = args.arguments.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::triangle_tangent_error_behavior))
             : TriangleTangentErrorBehavior::RAISE,

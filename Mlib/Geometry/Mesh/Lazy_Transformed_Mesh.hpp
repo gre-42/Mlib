@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <atomic>
+#include <cstdint>
 #include <mutex>
 #include <vector>
 
@@ -12,7 +13,7 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
-enum class PhysicsMaterial;
+enum class PhysicsMaterial: uint32_t;
 template <size_t tnvertices>
 struct CollisionPolygonSphere;
 struct CollisionLineSphere;
