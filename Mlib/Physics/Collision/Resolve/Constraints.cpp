@@ -8,14 +8,16 @@
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
 #include <Mlib/Physics/Collision/Resolve/Handle_Tire_Triangle_Intersection.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Rigid_Body/Attached_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
-NormalContactInfo1::NormalContactInfo1(
-    RigidBodyPulses& rbp,
+template <class TRigidBodyPulsesArg, class TRigidBodyPulsesField>
+GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::GenericNormalContactInfo1(
+    TRigidBodyPulsesArg rbp,
     const BoundedPlaneInequalityConstraint& pc,
     const FixedArray<double, 3>& p)
     : rbp_{ rbp }
@@ -29,7 +31,8 @@ NormalContactInfo1::NormalContactInfo1(
  *       Marijn Tamis, Giuseppe Maggiore, Constraint based physics solver
  *       Marijn Tamis, Sequential Impulse Solver for Rigid Body Dynamics
  */
-void NormalContactInfo1::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
+template <class TRigidBodyPulsesArg, class TRigidBodyPulsesField>
+void GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::solve(float dt, float relaxation, size_t iteration, size_t niterations) {
     PlaneInequalityConstraint& pc = pc_.constraint;
     auto snormal = pc.normal_impulse.normal.casted<float>();
     float v = dot0d(rbp_.velocity_at_position(p_), snormal);
@@ -544,5 +547,7 @@ template class GenericLineContactInfo1<0>;
 template class GenericLineContactInfo1<1>;
 template class GenericLineContactInfo2<0>;
 template class GenericLineContactInfo2<1>;
+template class GenericNormalContactInfo1<RigidBodyPulses&, RigidBodyPulses&>;
+template class GenericNormalContactInfo1<const AttachedWheel&, AttachedWheel>;
 
 }

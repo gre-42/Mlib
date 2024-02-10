@@ -595,8 +595,7 @@ void RigidBodyVehicle::set_base_angular_velocity(
             rbp_.integrate_delta_angular_momentum(dL_vec);
             base_rotor.angular_velocity = dot0d(base_rotor.rbp->w_, abs_rotation_axis);
         } else {
-            base_rotor.rbp->w_ -= abs_rotation_axis * dot0d(base_rotor.rbp->w_, abs_rotation_axis);
-            base_rotor.rbp->w_ += w * abs_rotation_axis;
+            base_rotor.rbp->w_ += abs_rotation_axis * (w - dot0d(base_rotor.rbp->w_, abs_rotation_axis));
             base_rotor.angular_velocity = w;
         }
     } else {

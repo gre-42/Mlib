@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Rigid_Body/Attached_Wheel.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -123,8 +124,8 @@ static void handle_extended_reflection(
             if (tire.rbp != nullptr) {
                 float fsap = fit * c.history.cfg.wheel_penetration_depth - overlap;
                 if (fsap < 0.f) {
-                    auto ci = std::make_unique<NormalContactInfo1>(
-                        *tire.rbp,
+                    auto ci = std::make_unique<AttachedWheelNormalContactInfo1>(
+                        AttachedWheel{ c.o1.rbp_, *tire.rbp, tire.vertical_line },
                         BoundedPlaneInequalityConstraint{
                             .constraint{
                                 .normal_impulse{.normal = normal},

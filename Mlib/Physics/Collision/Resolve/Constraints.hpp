@@ -10,6 +10,7 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 class RigidBodyPulses;
+class AttachedWheel;
 struct PhysicsEngineConfig;
 
 struct PointEqualityConstraint {
@@ -190,10 +191,11 @@ private:
     BoundedPlaneEqualityConstraint pec_;
 };
 
-class NormalContactInfo1: public IContactInfo {
+template <class TRigidBodyPulsesArg, class TRigidBodyPulsesField>
+class GenericNormalContactInfo1: public IContactInfo {
 public:
-    NormalContactInfo1(
-        RigidBodyPulses& rbp,
+    GenericNormalContactInfo1(
+        TRigidBodyPulsesArg rbp,
         const BoundedPlaneInequalityConstraint& pc,
         const FixedArray<double, 3>& p);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
@@ -201,10 +203,13 @@ public:
         return pc_.constraint.normal_impulse;
     }
 private:
-    RigidBodyPulses& rbp_;
+    TRigidBodyPulsesField rbp_;
     BoundedPlaneInequalityConstraint pc_;
     FixedArray<double, 3> p_;
 };
+
+using NormalContactInfo1 = GenericNormalContactInfo1<RigidBodyPulses&, RigidBodyPulses&>;
+using AttachedWheelNormalContactInfo1 = GenericNormalContactInfo1<const AttachedWheel&, AttachedWheel>;
 
 class NormalContactInfo2: public IContactInfo {
 public:
