@@ -118,16 +118,17 @@ static void handle_extended_reflection(
             {
                 jump(c.o0.rbp_, c.o1.rbp_, c.o1.jump_dv_, { .vector = normal.casted<float>(), .position = intersection_point });
             }
+            float fit = -dot0d(normal.casted<float>(), c.l1->ray.direction.casted<float>());
             auto& tire = c.o1.tires_.at(c.tire_id1);
             if (tire.rbp != nullptr) {
-                float sap = c.history.cfg.wheel_penetration_depth - overlap;
-                if (sap < 0.f) {
+                float fsap = fit * c.history.cfg.wheel_penetration_depth - overlap;
+                if (fsap < 0.f) {
                     auto ci = std::make_unique<NormalContactInfo1>(
                         *tire.rbp,
                         BoundedPlaneInequalityConstraint{
                             .constraint{
                                 .normal_impulse{.normal = normal},
-                                .overlap = -sap,
+                                .overlap = -fsap,
                                 .slop = 0.001f,
                                 .beta = c.history.cfg.plane_inequality_beta
                             },
@@ -142,7 +143,10 @@ static void handle_extended_reflection(
                 }
                 normal_impulse = tire.normal_impulse;
             } else {
-                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth - overlap);
+                if (fit < 1e-12) {
+                    return;
+                }
+                float sap = std::min(0.05f, c.history.cfg.wheel_penetration_depth - overlap / fit);
                 tire.shock_absorber_position = -sap;
                 auto ci = std::make_unique<ShockAbsorberContactInfo1>(
                     c.o1.rbp_,
@@ -332,8 +336,8 @@ void Mlib::handle_reflection(
         overlap = -(dot0d(c.l1->line(1), normal) + N0.intercept);
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (overlap < 0) {
-                normal *= -1;
-                overlap *= -1;
+                normal = -normal;
+                overlap = -overlap;
             }
         } else if (overlap < 1e-6) {
             // Epsilon enables two overlapping one-sided planes with
