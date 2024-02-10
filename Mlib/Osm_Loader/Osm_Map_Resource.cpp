@@ -1000,25 +1000,6 @@ OsmMapResource::OsmMapResource(
             config.forest_outline_tree_distance,
             config.forest_outline_tree_inwards_distance,
             config.scale);
-        // add_binary_vegetation(
-        //     tls,
-        //     Material{
-        //         .texture: grass_texture,
-        //         .mixed_texture: "",
-        //         .overlap_npixels: 0,
-        //         .blend_mode: BlendMode::BINARY,
-        //         .wrap_mode: WrapMode::CLAMP_TO_EDGE,
-        //         .collide: false,
-        //         .aggregate_mode: AggregateMode::ONCE,
-        //         .emissivity = OrderableFixedArray{DEFAULT_EMISSIVITY * config.emissive_factor},
-        //         .ambience = OrderableFixedArray{DEFAULT_AMBIENCE * config.ambient_factor},
-        //         .diffusivity = OrderableFixedArray{DEFAULT_DIFFUSIVITY * config.diffuse_factor},
-        //         .specularity = OrderableFixedArray{DEFAULT_SPECULARITY * config.specular_factor},},
-        //     grass_texture,
-        //     tree_texture,
-        //     tree_texture_2,
-        //     *tl_terrain,
-        //     scale);
     }
     if (!config.road_bollard_resource_names.empty()) {
         ResourceNameCycle rnc{config.road_bollard_resource_names};
