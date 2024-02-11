@@ -115,6 +115,7 @@ struct BoundedFreeConstraint1D {
 
 struct ShockAbsorberConstraint {
     NormalImpulse normal_impulse;
+    float fit;
     float distance;
     float Ks;  // K_spring
     float Ka;  // K_absorber

@@ -154,6 +154,7 @@ static void handle_extended_reflection(
                     BoundedShockAbsorberConstraint{
                         .constraint{
                             .normal_impulse{.normal = normal},
+                            .fit = fit,
                             .distance = sap,
                             .Ks = tire.sKs,
                             .Ka = tire.sKa
