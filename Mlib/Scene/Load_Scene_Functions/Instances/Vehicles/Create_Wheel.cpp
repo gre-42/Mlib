@@ -59,7 +59,7 @@ CreateWheel::CreateWheel(RenderableScene& renderable_scene)
 void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::string vehicle = args.arguments.at<std::string>(KnownArgs::vehicle);
-    std::string wheel_node_name = args.arguments.at<std::string>(KnownArgs::wheel);
+    auto wheel_node_name = args.arguments.try_at_non_null<std::string>(KnownArgs::wheel);
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
     auto engine = args.arguments.at<std::string>(KnownArgs::engine);
     auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
@@ -71,8 +71,8 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
 
     auto& rb = get_rigid_body_vehicle(scene.get_node(vehicle, DP_LOC));
     RigidBodyPulses* wheel_rbp = nullptr;
-    if (!wheel_node_name.empty()) {
-        auto wheel_node = scene.get_node(wheel_node_name, DP_LOC);
+    if (wheel_node_name.has_value()) {
+        auto wheel_node = scene.get_node(wheel_node_name.value(), DP_LOC);
         if (has_rigid_body_vehicle(wheel_node)) {
             wheel_rbp = &get_rigid_body_vehicle(wheel_node).rbp_;
         } else {
