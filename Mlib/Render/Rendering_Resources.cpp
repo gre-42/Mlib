@@ -1453,7 +1453,7 @@ void RenderingResources::initialize_non_dds_texture(const ColormapWithModifiers&
         }
         generate_texture(it->data.get(), it->width, it->height, it->nrChannels);
     } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color.filename); it != nullptr) {
-        auto si = stb_load8(color.filename, FlipMode::NONE, it);
+        auto si = stb_load8(color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
         generate_texture(si.data.get(), si.width, si.height, si.nrChannels);
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
