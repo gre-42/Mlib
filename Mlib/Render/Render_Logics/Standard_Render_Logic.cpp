@@ -1,6 +1,5 @@
 #include "Standard_Render_Logic.hpp"
 #include <Mlib/Log.hpp>
-#include <Mlib/Optional.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -25,14 +24,14 @@ StandardRenderLogic::StandardRenderLogic(
     RenderLogic& child_logic,
     const FixedArray<float, 3>& background_color,
     ClearMode clear_mode)
-: scene_{scene},
-  child_logic_{child_logic},
-  background_color_{background_color},
-  clear_mode_{clear_mode},
-  small_sorted_aggregate_renderer_{std::make_shared<AggregateArrayRenderer>(rendering_resources)},
-  small_sorted_instances_renderers_{std::make_shared<ArrayInstancesRenderers>(rendering_resources)},
-  large_aggregate_renderer_{std::make_shared<AggregateArrayRenderer>(rendering_resources)},
-  large_instances_renderer_{std::make_shared<ArrayInstancesRenderer>(rendering_resources)}
+    : scene_{ scene }
+    , child_logic_{ child_logic }
+    , background_color_{ background_color }
+    , clear_mode_{ clear_mode }
+    , small_sorted_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
+    , small_sorted_instances_renderers_{ std::make_shared<ArrayInstancesRenderers>(rendering_resources) }
+    , large_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
+    , large_instances_renderer_{ std::make_shared<ArrayInstancesRenderer>(rendering_resources) }
 {}
 
 StandardRenderLogic::~StandardRenderLogic() = default;
@@ -84,14 +83,16 @@ void StandardRenderLogic::render(
 
     {
         bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
-        Optional<AggregateRendererGuard> arg(
-            create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-            small_sorted_aggregate_renderer_,
-            large_aggregate_renderer_);
-        Optional<InstancesRendererGuard> irg(
-            create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-            small_sorted_instances_renderers_,
-            large_instances_renderer_);
+        std::optional<AggregateRendererGuard> arg;
+        std::optional<InstancesRendererGuard> irg;
+        if (create_render_guards) {
+            arg.emplace(
+                small_sorted_aggregate_renderer_,
+                large_aggregate_renderer_);
+            irg.emplace(
+                small_sorted_instances_renderers_,
+                large_instances_renderer_);
+        }
         // Acquire delete node mutex because the "child_logic_.camera_node"
         // is read below.
         std::scoped_lock lock{ scene_.delete_node_mutex() };

@@ -2,7 +2,6 @@
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
-#include <Mlib/Optional.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -28,16 +27,16 @@ LightmapLogic::LightmapLogic(
     bool with_depth_texture,
     int lightmap_width,
     int lightmap_height)
-: rendering_resources_{rendering_resources},
-  child_logic_{child_logic},
-  render_pass_type_{render_pass_type},
-  light_node_{light_node},
-  resource_suffix_{std::move(resource_suffix)},
-  black_node_name_{std::move(black_node_name)},
-  with_depth_texture_{with_depth_texture},
-  lightmap_width_{lightmap_width},
-  lightmap_height_{lightmap_height},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : rendering_resources_{ rendering_resources }
+    , child_logic_{ child_logic }
+    , render_pass_type_{ render_pass_type }
+    , light_node_{ light_node }
+    , resource_suffix_{ std::move(resource_suffix) }
+    , black_node_name_{ std::move(black_node_name) }
+    , with_depth_texture_{ with_depth_texture }
+    , lightmap_width_{ lightmap_width }
+    , lightmap_height_{ lightmap_height }
+    , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         THROW_OR_ABORT("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
@@ -74,13 +73,10 @@ void LightmapLogic::render(
     }
     if ((fbs_ == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
         ViewportGuard vg{lightmap_width_, lightmap_height_};
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         RenderedSceneDescriptor light_rsd{
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0,
             .light_resource_suffix = resource_suffix_};
-#pragma GCC diagnostic pop
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
@@ -98,14 +94,16 @@ void LightmapLogic::render(
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
             //   bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
             bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
-            Optional<AggregateRendererGuard> arg{
-                create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-                std::make_shared<AggregateArrayRenderer>(rendering_resources_),
-                std::make_shared<AggregateArrayRenderer>(rendering_resources_)};
-            Optional<InstancesRendererGuard> irg{
-                create_render_guards ? OptionalState::SOME : OptionalState::NONE,
-                std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
-                std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
+            std::optional<AggregateRendererGuard> arg;
+            std::optional<InstancesRendererGuard> irg;
+            if (create_render_guards) {
+                arg.emplace(
+                    std::make_shared<AggregateArrayRenderer>(rendering_resources_),
+                    std::make_shared<AggregateArrayRenderer>(rendering_resources_));
+                irg.emplace(
+                    std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
+                    std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
+            }
             child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
