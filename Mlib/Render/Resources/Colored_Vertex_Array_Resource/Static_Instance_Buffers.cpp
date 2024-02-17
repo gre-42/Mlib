@@ -12,12 +12,12 @@ StaticInstanceBuffers::StaticInstanceBuffers(
     std::vector<TransformationAndBillboardId>&& instances,
     uint32_t num_billboard_atlas_components,
     const std::string& name)
-: instances_{std::move(instances)},
-  position_yangles_{instances_},
-  position_{instances_},
-  billboard_ids_{instances_, num_billboard_atlas_components},
-  num_billboard_atlas_components_{num_billboard_atlas_components},
-  transformation_mode_{transformation_mode}
+    : instances_{ std::move(instances) }
+    , position_yangles_{ instances_ }
+    , position_{ instances_ }
+    , billboard_ids_{ instances_, num_billboard_atlas_components }
+    , num_billboard_atlas_components_{ num_billboard_atlas_components }
+    , transformation_mode_{ transformation_mode }
 {
     if (instances_.empty()) {
         THROW_OR_ABORT("StaticInstanceBuffers::StaticInstanceBuffers received empty instances \"" + name + '"');
