@@ -44,6 +44,10 @@ LightmapLogic::LightmapLogic(
 }
 
 LightmapLogic::~LightmapLogic() {
+    deallocate();
+}
+
+void LightmapLogic::deallocate() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
         rendering_resources_.delete_texture({ .filename = "lightmap_color." + resource_suffix_, .color_mode = ColorMode::RGB }, DeletionFailureMode::WARN);
@@ -52,11 +56,8 @@ LightmapLogic::~LightmapLogic() {
             rendering_resources_.delete_texture({ .filename = "lightmap_depth." + resource_suffix_, .color_mode = ColorMode::GRAYSCALE }, DeletionFailureMode::WARN);
             rendering_resources_.delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
         }
+        fbs_ = nullptr;
     }
-}
-
-void LightmapLogic::deallocate() {
-    fbs_ = nullptr;
 }
 
 void LightmapLogic::render(
@@ -72,7 +73,7 @@ void LightmapLogic::render(
         THROW_OR_ABORT("LightmapLogic received wrong rendering");
     }
     if ((fbs_ == nullptr) || any(render_pass_type_ & ExternalRenderPassType::LIGHTMAP_IS_DYNAMIC_MASK)) {
-        ViewportGuard vg{lightmap_width_, lightmap_height_};
+        ViewportGuard vg{ lightmap_width_, lightmap_height_ };
         RenderedSceneDescriptor light_rsd{
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0,
@@ -88,7 +89,7 @@ void LightmapLogic::render(
                 : FrameBufferChannelKind::ATTACHMENT,
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
         {
-            RenderToFrameBufferGuard rfg{*fbs_};
+            RenderToFrameBufferGuard rfg{ *fbs_ };
             // Non-static lights are not aggregated at all due to the following lines
             // in Scene::render:
             //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
@@ -112,7 +113,7 @@ void LightmapLogic::render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .end_pixel = (float)lightmap_width_},
+                    .end_pixel = (float)lightmap_height_},
                 render_config,
                 scene_graph_config,
                 render_results,
