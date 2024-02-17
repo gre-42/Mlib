@@ -14,12 +14,12 @@ LookAtMovable::LookAtMovable(
     DanglingRef<SceneNode> follower_node,
     DanglingRef<SceneNode> followed_node,
     IAbsoluteMovable& followed)
-: advance_times_{advance_times},
-  scene_{scene},
-  follower_name_{std::move(follower_name)},
-  follower_node_{follower_node.ptr()},
-  followed_node_{followed_node.ptr()},
-  followed_{&followed}
+    : advance_times_{ advance_times }
+    , scene_{ scene }
+    , follower_name_{ std::move(follower_name) }
+    , follower_node_{ follower_node.ptr() }
+    , followed_node_{ followed_node.ptr() }
+    , followed_{ &followed }
 {}
 
 LookAtMovable::~LookAtMovable()

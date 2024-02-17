@@ -14,10 +14,10 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     std::unique_ptr<IWidget>&& widget,
     DelayLoadPolicy delay_load_policy,
     FocusFilter focus_filter)
-: fill_with_texture_logic_{std::move(fill_with_texture_logic)},
-  widget_{std::move(widget)},
-  delay_load_policy_{delay_load_policy},
-  focus_filter_{std::move(focus_filter)}
+    : fill_with_texture_logic_{ std::move(fill_with_texture_logic) }
+    , widget_{ std::move(widget) }
+    , delay_load_policy_{ delay_load_policy }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
 FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() = default;

@@ -169,12 +169,12 @@ void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {
 }
 
 void StandardRenderLogic::set_background_color(const FixedArray<float, 3>& color) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     background_color_ = color;
 }
 
 void StandardRenderLogic::invalidate_aggregate_renderers() {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     small_sorted_aggregate_renderer_->invalidate();
     small_sorted_instances_renderers_->invalidate();
     large_aggregate_renderer_->invalidate();
