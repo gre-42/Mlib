@@ -10,18 +10,18 @@
 using namespace Mlib;
 
 ParticlesInstance::ParticlesInstance(
-    const std::shared_ptr<ColoredVertexArray<float>> &triangles,
+    const std::shared_ptr<ColoredVertexArray<float>>& triangles,
     size_t max_num_instances,
-    const RenderableResourceFilter &filter)
+    const RenderableResourceFilter& filter)
     : offset_(NAN)
-    , dynamic_instance_buffers_{std::make_shared<DynamicInstanceBuffers>(
+    , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
           triangles->material.transformation_mode,
           max_num_instances,
-          integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()))}
-    , cvar_{std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_)}
-    , rcva_{std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter)}
-    , filter_{filter} {
-}
+          integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size())) }
+    , cvar_{ std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_) }
+    , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
+    , filter_{ filter }
+{}
 
 ParticlesInstance::~ParticlesInstance() = default;
 
@@ -62,7 +62,7 @@ void ParticlesInstance::render(
     if (any(isnan(offset_))) {
         THROW_OR_ABORT("ParticlesInstance::render internal error");
     }
-    TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
+    TransformationMatrix<float, double, 3> m{ fixed_identity_array<float, 3>(), offset_ };
     rcva_->render(
         dot2d(vp, m.affine()),
         m,
@@ -70,7 +70,7 @@ void ParticlesInstance::render(
         lights,
         scene_graph_config,
         render_config,
-        {external_render_pass, InternalRenderPass::PARTICLES},
+        { external_render_pass, InternalRenderPass::PARTICLES },
         nullptr,        // animation_state,
         nullptr);       // color_style
 }
