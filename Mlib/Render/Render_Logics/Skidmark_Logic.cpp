@@ -116,7 +116,7 @@ void SkidmarkLogic::render(
             auto diff = (old_camera_position_ - iv.t()).casted<float>();
             ViewportGuard vg{
                 diff(0) * dpi(0),
-                -diff(1) * dpi(1),
+                -diff(2) * dpi(1),
                 (float)texture_width_,
                 (float)texture_height_ };
             old_render_texture_logic_->render_wo_update_and_bind();
