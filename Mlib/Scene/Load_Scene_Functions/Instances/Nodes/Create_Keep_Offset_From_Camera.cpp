@@ -14,8 +14,8 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(follower);
 DECLARE_ARGUMENT(offset);
-DECLARE_ARGUMENT(lightmap_width);
-DECLARE_ARGUMENT(lightmap_height);
+DECLARE_ARGUMENT(texture_width);
+DECLARE_ARGUMENT(texture_height);
 }
 
 const std::string CreateKeepOffsetFromCamera::key = "keep_offset_from_camera";
@@ -38,16 +38,15 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
     if (follower_camera == nullptr) {
         THROW_OR_ABORT("Camera is not an ortho-camera");
     }
-    auto grid = FixedArray<float, 3>{
-        (follower_camera->get_right_plane() - follower_camera->get_left_plane()) / args.arguments.at<float>(KnownArgs::lightmap_width),
-        (follower_camera->get_top_plane() - follower_camera->get_bottom_plane()) / args.arguments.at<float>(KnownArgs::lightmap_height),
-        0.f};
+    auto grid2 = follower_camera->grid(
+        args.arguments.at<float>(KnownArgs::texture_width),
+        args.arguments.at<float>(KnownArgs::texture_height));
     auto follower = std::make_unique<KeepOffsetFromCamera>(
         physics_engine.advance_times_,
         scene,
         selected_cameras,
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::offset),
-        grid,
+        FixedArray<float, 3>{ grid2(0), grid2(1), 0.f },
         follower_node);
     linker.link_absolute_movable(follower_node, std::move(follower));
 }

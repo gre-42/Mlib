@@ -179,7 +179,7 @@ void FxaaLogic::render(
         // CHK(glClear(GL_COLOR_BUFFER_BIT));
 
         {
-            RenderToScreenGuard rgb;
+            RenderToScreenGuard rsg;
             CHK(glUseProgram(rp_.program));
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));

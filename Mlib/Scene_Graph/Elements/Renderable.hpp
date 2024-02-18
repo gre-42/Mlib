@@ -14,6 +14,7 @@ template <class TPos>
 class ColoredVertexArray;
 struct TransformedColoredVertexArray;
 struct Light;
+struct Skidmark;
 struct RenderConfig;
 struct RenderPass;
 struct SceneGraphConfig;
@@ -35,6 +36,7 @@ public:
         const TransformationMatrix<float, double, 3>& m,
         const TransformationMatrix<float, double, 3>& iv,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const RenderPass& render_pass,

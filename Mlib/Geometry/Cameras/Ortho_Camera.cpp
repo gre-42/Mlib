@@ -90,11 +90,23 @@ bool OrthoCamera::get_requires_postprocessing() const {
     return (bool)postprocessing_;
 }
 
-FixedArray<float, 4, 4> OrthoCamera::projection_matrix() {
+FixedArray<float, 4, 4> OrthoCamera::projection_matrix() const {
     std::shared_lock lock{mutex_};
     mat4x4 p;
     mat4x4_ortho(p, cfg_.left_plane, cfg_.right_plane, cfg_.bottom_plane, cfg_.top_plane, cfg_.near_plane, cfg_.far_plane);
     //mat4x4_frustum(p, -ratio / 10, ratio / 10, -1.f / 10, 1.f / 10, 2.f, 10.f);
     static_assert(sizeof(p) == sizeof(FixedArray<float, 4, 4>));
     return reinterpret_cast<FixedArray<float, 4, 4>*>(&p)->T();
+}
+
+FixedArray<float, 2> OrthoCamera::dpi(float texture_width, float texture_height) const {
+    return {
+        texture_width / (get_right_plane() - get_left_plane()),
+        texture_height / (get_top_plane() - get_bottom_plane())};
+}
+
+FixedArray<float, 2> OrthoCamera::grid(float texture_width, float texture_height) const {
+    return {
+        (get_right_plane() - get_left_plane()) / texture_width,
+        (get_top_plane() - get_bottom_plane()) / texture_height};
 }

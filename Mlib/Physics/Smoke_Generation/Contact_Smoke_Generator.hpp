@@ -25,6 +25,7 @@ public:
 
     SurfaceContactInfo* notify_contact(
         const FixedArray<double, 3>& intersection_point,
+        const FixedArray<float, 3>& rotation,
         const IntersectionScene& c);
     void advance_time(float dt);
 private:

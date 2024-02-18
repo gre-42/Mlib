@@ -47,6 +47,7 @@ public:
     void set_image_resource_name(const ColormapWithModifiers& image_resource_name);
     void update_texture_id();
     bool texture_is_loaded_and_try_preload() const;
+    void render_wo_update_and_bind();
     void render();
     void render(
         const LayoutConstraintParameters& lx,

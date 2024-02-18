@@ -7,15 +7,15 @@
 using namespace Mlib;
 
 ParticleRenderer::ParticleRenderer(ParticleResources& resources)
-: resources_{resources},
-  instances_{mutex_, [&resources](const std::string &name) {
-    return resources.instantiate_particles_instance(name);
-  }},
-  instantiators_{mutex_, [this, &resources](const std::string& name){
-    return resources.instantiate_particle_instantiator(
-        name,
-        *instances_.get(resources.get_instance_for_instantiator(name)));
-  }}
+    : resources_{ resources }
+    , instances_{ mutex_, [&resources](const std::string& name) {
+        return resources.instantiate_particles_instance(name);
+      } }
+    , instantiators_{ mutex_, [this, &resources](const std::string& name) {
+        return resources.instantiate_particle_instantiator(
+            name,
+            *instances_.get(resources.get_instance_for_instantiator(name)));
+      } }
 {}
 
 ParticleRenderer::~ParticleRenderer() = default;
@@ -35,19 +35,25 @@ void ParticleRenderer::move(float dt) {
 }
 
 void ParticleRenderer::render(
+    ParticleSubstrate substrate,
     const FixedArray<double, 4, 4>& vp,
     const TransformationMatrix<float, double, 3>& iv,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     for (const auto& [_, instance] : instances_) {
+        if (instance->substrate() != substrate) {
+            continue;
+        }
         instance->render(
             vp,
             iv,
             lights,
+            skidmarks,
             scene_graph_config,
             render_config,
             external_render_pass);

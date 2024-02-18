@@ -97,12 +97,10 @@ bool FillWithTextureLogic::texture_is_loaded_and_try_preload() const {
         TextureRole::COLOR);
 }
 
-void FillWithTextureLogic::render()
+void FillWithTextureLogic::render_wo_update_and_bind()
 {
     LOG_FUNCTION("FillWithTextureLogic::render");
-    update_texture_id();
 
-    RenderToScreenGuard rsg;
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }
@@ -148,6 +146,12 @@ void FillWithTextureLogic::render()
         CHK(glDisable(GL_BLEND));
         CHK(glBlendFunc(GL_ONE, GL_ZERO));
     }
+}
+
+void FillWithTextureLogic::render() {
+    update_texture_id();
+    RenderToScreenGuard rsg;
+    render_wo_update_and_bind();
 }
 
 void FillWithTextureLogic::render(

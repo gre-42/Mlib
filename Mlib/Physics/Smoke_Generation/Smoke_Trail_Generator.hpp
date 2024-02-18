@@ -17,8 +17,9 @@ public:
     void advance_time(float dt);
     void maybe_generate(
         const FixedArray<double, 3>& position,
-        std::string resource_name,
-        std::string instance_prefix,
+        const FixedArray<float, 3>& rotation,
+        const std::string& resource_name,
+        const std::string& instance_prefix,
         float animation_duration,
         float particle_generation_dt,
         ParticleType particle_type);

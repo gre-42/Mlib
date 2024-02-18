@@ -56,11 +56,13 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                     if (!any(a->physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                         continue;
                     }
-                    auto c = args.surface_contact_db.get_contact_info(
+                    SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
                         a->physics_material,
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
-                        particle_renderer.preload(c->smoke_particle_resource_name);
+                        for (const auto& s : c->smoke_infos) {
+                            particle_renderer.preload(s.smoke_particle_resource_name);
+                        }
                         // RenderingContextStack::primary_scene_node_resources().preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});
                     }

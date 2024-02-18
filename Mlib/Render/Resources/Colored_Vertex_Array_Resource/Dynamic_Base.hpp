@@ -16,6 +16,7 @@ public:
     ~DynamicBase();
     void append(const value_type& v);
     void remove(size_t index);
+    void clear();
     void modify(size_t index, const value_type& v);
     void update();
     void bind() const;

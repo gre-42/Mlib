@@ -60,7 +60,7 @@ bool PerspectiveCamera::get_requires_postprocessing() const {
     return (bool)postprocessing_;
 }
 
-FixedArray<float, 4, 4> PerspectiveCamera::projection_matrix() {
+FixedArray<float, 4, 4> PerspectiveCamera::projection_matrix() const {
     std::shared_lock lock{mutex_};
     mat4x4 p;
     mat4x4_perspective(p, cfg_.y_fov, cfg_.aspect_ratio, cfg_.near_plane, cfg_.far_plane);

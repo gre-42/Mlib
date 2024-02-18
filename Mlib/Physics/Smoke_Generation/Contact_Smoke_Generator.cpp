@@ -26,6 +26,7 @@ void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_o
 
 SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     const FixedArray<double, 3>& intersection_point,
+    const FixedArray<float, 3>& rotation,
     const IntersectionScene& c)
 {
     if (c.history.burn_in) {
@@ -35,31 +36,34 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     if (surface_contact_info == nullptr) {
         return nullptr;
     }
-    if (surface_contact_info->smoke_particle_resource_name.empty()) {
+    if (surface_contact_info->smoke_infos.empty()) {
         return surface_contact_info;
     }
     auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
     auto v1 = c.o1.rbp_.velocity_at_position(intersection_point);
     auto dvel2 = sum(squared(v0 - v1));
-    if (dvel2 < squared(surface_contact_info->minimum_velocity_for_smoke)) {
-        return surface_contact_info;
-    }
-    c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    auto& tstg = tire_smoke_trail_generators_[&c.o1];
-    auto tstgit = tstg.find(c.tire_id1);
-    if (tstgit == tstg.end()) {
-        if (!tstg.try_emplace(c.tire_id1, smoke_particle_generator_).second)
-        {
-            THROW_OR_ABORT("Could not insert smoke trail generator");
+    for (const auto& smoke_info : surface_contact_info->smoke_infos) {
+        if (dvel2 < squared(smoke_info.minimum_velocity_for_smoke)) {
+            return surface_contact_info;
         }
+        c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+        auto& tstg = tire_smoke_trail_generators_[&c.o1];
+        auto tstgit = tstg.find(c.tire_id1);
+        if (tstgit == tstg.end()) {
+            if (!tstg.try_emplace(c.tire_id1, smoke_particle_generator_).second)
+            {
+                THROW_OR_ABORT("Could not insert smoke trail generator");
+            }
+        }
+        tstg.at(c.tire_id1).maybe_generate(
+            intersection_point,
+            rotation,
+            smoke_info.smoke_particle_resource_name,
+            smoke_info.smoke_particle_instance_prefix,
+            smoke_info.smoke_particle_animation_duration,
+            1.f / smoke_info.velocity_to_smoke_particle_frequency(std::sqrt(dvel2)),
+            ParticleType::INSTANCE);
     }
-    tstg.at(c.tire_id1).maybe_generate(
-        intersection_point,
-        surface_contact_info->smoke_particle_resource_name,
-        surface_contact_info->smoke_particle_instance_prefix,
-        surface_contact_info->smoke_particle_animation_duration,
-        1.f / surface_contact_info->velocity_to_smoke_particle_frequency(std::sqrt(dvel2)),
-        ParticleType::INSTANCE);
     return surface_contact_info;
 }
 

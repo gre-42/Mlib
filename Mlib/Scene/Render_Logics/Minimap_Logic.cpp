@@ -25,31 +25,31 @@ MinimapLogic::MinimapLogic(
     float scale,
     const FixedArray<float, 2>& size,
     const FixedArray<double, 2>& offset)
-: node_{node},
-  centered_texture_image_logic_{
-    RenderingContextStack::primary_rendering_resources(),
-    {
-        .filename = map_image_resource_name,
-        .color_mode = ColorMode::RGBA,
-        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+    : node_{ node }
+    , centered_texture_image_logic_{
+          RenderingContextStack::primary_rendering_resources(),
+          {
+              .filename = map_image_resource_name,
+              .color_mode = ColorMode::RGBA,
+              .mipmap_mode = MipmapMode::WITH_MIPMAPS
+          }
     }
-  },
-  locator_logic_{
-    RenderingContextStack::primary_rendering_resources(),
-    {
-        .filename = locator_image_resource_name,
-        .color_mode = ColorMode::RGBA,
-        .mipmap_mode = MipmapMode::WITH_MIPMAPS
-    },
-    ResourceUpdateCycle::ONCE,
-  },
-  widget_{std::move(widget)},
-  locator_size_{locator_size},
-  pointer_reference_length_{pointer_reference_length},
-  scale_{scale},
-  size_{size},
-  offset_{offset},
-  angle_{NAN}
+    , locator_logic_{
+          RenderingContextStack::primary_rendering_resources(),
+          {
+              .filename = locator_image_resource_name,
+              .color_mode = ColorMode::RGBA,
+              .mipmap_mode = MipmapMode::WITH_MIPMAPS
+          },
+          ResourceUpdateCycle::ONCE,
+    }
+    , widget_{ std::move(widget) }
+    , locator_size_{ locator_size }
+    , pointer_reference_length_{ pointer_reference_length }
+    , scale_{ scale }
+    , size_{ size }
+    , offset_{ offset }
+    , angle_{ NAN }
 {}
 
 MinimapLogic::~MinimapLogic() = default;

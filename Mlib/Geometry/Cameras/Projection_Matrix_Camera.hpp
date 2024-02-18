@@ -9,7 +9,7 @@ public:
     explicit ProjectionMatrixCamera(const FixedArray<float, 4, 4>& projection_matrix);
     virtual ~ProjectionMatrixCamera() override;
     virtual std::unique_ptr<Camera> copy() const override;
-    virtual FixedArray<float, 4, 4> projection_matrix() override;
+    virtual FixedArray<float, 4, 4> projection_matrix() const override;
 private:
     FixedArray<float, 4, 4> projection_matrix_;
 };

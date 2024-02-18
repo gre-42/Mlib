@@ -38,6 +38,17 @@ static PhysicsMaterial physics_material(
     return it->second;
 }
 
+static bool has_skidmarks(PhysicsMaterial pm) {
+    return pm == PhysicsMaterial::SURFACE_BASE_TARMAC;
+}
+
+static bool has_skidmarks(
+    const std::map<TerrainType, PhysicsMaterial>& m,
+    TerrainType terrain_type)
+{
+    return has_skidmarks(physics_material(m, terrain_type));
+}
+
 static Shading terrain_type_specularity(
     const std::map<TerrainType, PhysicsMaterial>& m,
     TerrainType terrain_type,
@@ -140,6 +151,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
+                .contains_skidmarks = has_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -154,6 +166,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
+                .contains_skidmarks = has_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -168,6 +181,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
+                .contains_skidmarks = has_skidmarks(config.terrain_materials, tt),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
@@ -205,6 +219,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                .contains_skidmarks = has_skidmarks(pmit->second),
                 .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity(pmit->second, config),
@@ -249,6 +264,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .dirt_texture = config.street_dirt_texture,
                             .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                             .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
+                            .contains_skidmarks = has_skidmarks(pmit->second),
                             // .wrap_mode_s = (road_properties.type != RoadType::WALL) && (road_style.uvx <= 1) ? WrapMode::CLAMP_TO_EDGE : WrapMode::REPEAT,
                             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                             // depth-func==equal requires aggregation, because the terrain is also aggregated.

@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -341,6 +342,7 @@ void Scene::render(
     LOG_FUNCTION("Scene::render");
     delete_node_mutex_.notify_reading();
     std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
+    std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>> skidmarks;
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
     {
@@ -358,7 +360,7 @@ void Scene::render(
             }
             return it->second.ref(DP_LOC);
         }();
-        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         std::list<DanglingPtr<const SceneNode>> nodes;
         {
@@ -368,7 +370,7 @@ void Scene::render(
             }
         }
         for (const auto& node : nodes) {
-            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
     } else {
         if (!external_render_pass.black_node_name.empty()) {
@@ -395,6 +397,18 @@ void Scene::render(
                 node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
             }
         }
+        {
+            std::list<DanglingPtr<const SceneNode>> nodes;
+            {
+                std::shared_lock lock{mutex_};
+                for (const auto& [_, node] : root_nodes_) {
+                    nodes.push_back(node.get(DP_LOC));
+                }
+            }
+            for (const auto& node : nodes) {
+                node->append_skidmarks_to_queue(TransformationMatrix<float, double, 3>::identity(), skidmarks);
+            }
+        }
         if (external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
             if (external_render_pass.singular_node == nullptr) {
                 THROW_OR_ABORT("Imposter node pass without singular node");
@@ -403,7 +417,7 @@ void Scene::render(
                 ? external_render_pass.singular_node->parent()->absolute_model_matrix()
                 : TransformationMatrix<float, double, 3>::identity();
             auto parent_mvp = dot2d(vp, parent_m.affine());
-            external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         } else {
             LOG_INFO("Scene::render non-blended");
             {
@@ -421,7 +435,7 @@ void Scene::render(
                     }
                 }
                 for (const auto& node : nodes) {
-                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
                 }
             }
             {
@@ -463,7 +477,7 @@ void Scene::render(
                         }
                     }
                     // AperiodicLagFinder lag_finder{"Large aggregates: ", std::chrono::milliseconds{5}};
-                    large_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
+                    large_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
                 std::shared_ptr<IInstancesRenderer> large_instances_renderer = IInstancesRenderer::large_instances_renderer();
@@ -501,7 +515,7 @@ void Scene::render(
                         }
                     }
                     // AperiodicLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{5}};
-                    large_instances_renderer->render_instances(vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                    large_instances_renderer->render_instances(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
 
                 std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer = IAggregateRenderer::small_sorted_aggregate_renderer();
@@ -542,7 +556,7 @@ void Scene::render(
                         }
                     }
                     // AperiodicLagFinder lag_finder{"Small sorted aggregates: ", std::chrono::milliseconds{5}};
-                    small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, scene_graph_config, render_config, external_render_pass, color_styles);
+                    small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
                 // Contains continuous alpha and must therefore be rendered late.
@@ -609,7 +623,7 @@ void Scene::render(
                     }
                     // AperiodicLagFinder lag_finder{"Small sorted instances: ", std::chrono::milliseconds{5}};
                     small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->render_instances(
-                        vp, iv, lights, scene_graph_config, render_config, external_render_pass);
+                        vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
             }
         }
@@ -619,9 +633,11 @@ void Scene::render(
     {
         // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
         particle_renderer_->render(
+            ParticleSubstrate::AIR,
             vp,
             iv,
             lights,
+            skidmarks,
             scene_graph_config,
             render_config,
             external_render_pass);
@@ -637,6 +653,7 @@ void Scene::render(
                 b.m,
                 iv,
                 lights,
+                skidmarks,
                 scene_graph_config,
                 render_config,
                 { external_render_pass, InternalRenderPass::BLENDED },

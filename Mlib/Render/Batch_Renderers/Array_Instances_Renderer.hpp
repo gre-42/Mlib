@@ -11,23 +11,25 @@ class ColoredVertexArrayResource;
 class RenderableColoredVertexArray;
 
 class ArrayInstancesRenderer : public IInstancesRenderer {
-    ArrayInstancesRenderer(const ArrayInstancesRenderer &other) = delete;
-    ArrayInstancesRenderer &operator=(const ArrayInstancesRenderer &other) = delete;
+    ArrayInstancesRenderer(const ArrayInstancesRenderer& other) = delete;
+    ArrayInstancesRenderer& operator=(const ArrayInstancesRenderer& other) = delete;
 public:
     explicit ArrayInstancesRenderer(RenderingResources& rendering_resources);
     virtual ~ArrayInstancesRenderer() override;
     virtual bool is_initialized() const override;
     virtual void invalidate() override;
-    virtual void update_instances(const FixedArray<double, 3> &offset,
-                                  const std::list<TransformedColoredVertexArray> &instances_queue,
-                                  TaskLocation task_location) override;
+    virtual void update_instances(
+        const FixedArray<double, 3>& offset,
+        const std::list<TransformedColoredVertexArray>& instances_queue,
+        TaskLocation task_location) override;
     virtual void render_instances(
-        const FixedArray<double, 4, 4> &vp,
-        const TransformationMatrix<float, double, 3> &iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light *>> &lights,
-        const SceneGraphConfig &scene_graph_config,
-        const RenderConfig &render_config,
-        const ExternalRenderPass &external_render_pass) const override;
+        const FixedArray<double, 4, 4>& vp,
+        const TransformationMatrix<float, double, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const SceneGraphConfig& scene_graph_config,
+        const RenderConfig& render_config,
+        const ExternalRenderPass& external_render_pass) const override;
 
 private:
     RenderingResources& rendering_resources_;

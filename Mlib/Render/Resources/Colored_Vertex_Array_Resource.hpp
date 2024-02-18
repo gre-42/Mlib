@@ -14,6 +14,7 @@ namespace Mlib {
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
+struct Skidmark;
 class SubstitutionInfo;
 class SceneNodeResources;
 class RenderingResources;
@@ -104,6 +105,7 @@ private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
         const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
+        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& filtered_skidmarks,
         const std::vector<size_t>& lightmap_indices,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,

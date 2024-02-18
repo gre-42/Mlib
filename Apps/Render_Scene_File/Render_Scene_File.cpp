@@ -278,6 +278,8 @@ int main(int argc, char** argv) {
         "    [--scene_lightmap_height <height>]\n"
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
+        "    [--scene_skidmarks_width <width>]\n"
+        "    [--scene_skidmarks_height <height>]\n"
         "    [--fullscreen]\n"
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
@@ -374,6 +376,8 @@ int main(int argc, char** argv) {
          "--scene_lightmap_height",
          "--black_lightmap_width",
          "--black_lightmap_height",
+         "--scene_skidmarks_width",
+         "--scene_skidmarks_height",
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
@@ -545,7 +549,9 @@ int main(int argc, char** argv) {
                     {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                     {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                     {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
-                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))}};
+                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
+                    {"SCENE_SKIDMARKS_WIDTH", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
+                    {"SCENE_SKIDMARKS_HEIGHT", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background

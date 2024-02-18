@@ -28,6 +28,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
@@ -50,6 +51,7 @@ struct TextureIndexCalculator {
     size_t ntextures_color;
     size_t ntextures_alpha;
     size_t ntextures_filtered_lights;
+    size_t ntextures_filtered_skidmarks;
     size_t ntextures_normal;
     size_t ntextures_dirt;
     size_t ntextures_interior;
@@ -60,13 +62,16 @@ struct TextureIndexCalculator {
         return i;
     }
     size_t id_alpha(size_t i) {
-        return ntextures_color + i;
+        return id_color(0) + ntextures_color + i;
     }
     size_t id_light(size_t i) {
         return id_alpha(0) + ntextures_alpha + i;
     }
-    size_t id_normal(size_t i) {
+    size_t id_skidmark(size_t i) {
         return id_light(0) + ntextures_filtered_lights + i;
+    }
+    size_t id_normal(size_t i) {
+        return id_skidmark(0) + ntextures_filtered_skidmarks + i;
     }
     size_t id_dirt(size_t i) {
         return id_normal(0) + ntextures_normal + i;
@@ -227,6 +232,7 @@ void RenderableColoredVertexArray::render_cva(
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -281,6 +287,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
+    std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>> filtered_skidmarks;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap &&
         (
@@ -296,43 +303,47 @@ void RenderableColoredVertexArray::render_cva(
         lightmap_indices.reserve(lights.size());
         {
             size_t i = 0;
-            for (const auto& l : lights) {
+            for (const auto& tl : lights) {
+                const auto& l = *tl.second;
                 // By this definition, objects are occluded/lighted (occluded_pass)
                 // by several shadowmaps/lightmaps (low-resolution and high-resolution shadowmaps).
                 // The occluder_pass is checked in the "VisibilityCheck" class.
-                if (cva->material.occluded_pass < l.second->shadow_render_pass) {
+                if (cva->material.occluded_pass < l.shadow_render_pass) {
                     continue;
                 }
                 bool light_emits_colors =
-                    (l.second->shadow_render_pass == ExternalRenderPassType::NONE) ||
-                    any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
-                bool light_casts_shadows = any(l.second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
+                    (l.shadow_render_pass == ExternalRenderPassType::NONE) ||
+                    any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+                bool light_casts_shadows = any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
                 if (!light_emits_colors && !light_casts_shadows) {
                     continue;
                 }
-                filtered_lights.push_back(l);
+                filtered_lights.push_back(tl);
                 if (light_emits_colors) {
                     if (light_casts_shadows) {
                         lightmap_indices.push_back(i);
                         light_shadow_indices.push_back(i++);
-                        if (l.second->resource_suffix.empty()) {
+                        if (l.resource_suffix.empty()) {
                             THROW_OR_ABORT("Light with shadows has no resource suffix");
                         }
                     } else {
                         light_noshadow_indices.push_back(i++);
-                        if (!l.second->resource_suffix.empty()) {
-                            THROW_OR_ABORT("Light without shadow has a resource suffix: \"" + l.second->resource_suffix + '"');
+                        if (!l.resource_suffix.empty()) {
+                            THROW_OR_ABORT("Light without shadow has a resource suffix: \"" + l.resource_suffix + '"');
                         }
                     }
                 } else {
                     lightmap_indices.push_back(i);
                     black_shadow_indices.push_back(i++);
-                    if (l.second->resource_suffix.empty()) {
+                    if (l.resource_suffix.empty()) {
                         THROW_OR_ABORT("Black shadow has no resource suffix");
                     }
                 }
             }
+        }
+        if (cva->material.contains_skidmarks) {
+            filtered_skidmarks = std::vector(skidmarks.begin(), skidmarks.end());
         }
     }
     std::vector<BlendMapTexture*> blended_textures_color(cva->material.textures_color.size());
@@ -457,6 +468,7 @@ void RenderableColoredVertexArray::render_cva(
         compute_has_horizontal_detailmap(cva->material.textures_alpha);
     }
     tic.ntextures_filtered_lights = filtered_lights.size();
+    tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::string reflection_map;
@@ -535,6 +547,7 @@ void RenderableColoredVertexArray::render_cva(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
             .nlights = filtered_lights.size(),
+            .nskidmarks = filtered_skidmarks.size(),
             .nbones = rcva_->triangles_res_->bone_indices.size(),
             .blend_mode = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)
                 ? BlendMode::CONTINUOUS
@@ -583,6 +596,7 @@ void RenderableColoredVertexArray::render_cva(
             .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale("dirtmap") : -1234,
             .texture_modifiers_hash = texture_modifiers_hash},
         filtered_lights,
+        filtered_skidmarks,
         lightmap_indices,
         light_noshadow_indices,
         light_shadow_indices,
@@ -665,6 +679,9 @@ void RenderableColoredVertexArray::render_cva(
             }
             ++i;
         }
+    }
+    for (size_t i = 0; i < tic.ntextures_filtered_skidmarks; ++i) {
+        CHK(glUniform1i(rp.texture_skidmark_locations.at(i), (GLint)tic.id_skidmark(i)));
     }
     if (tic.ntextures_reflection != 0) {
         CHK(glUniform1i(rp.texture_reflection_location, (GLint)tic.id_reflection()));
@@ -854,6 +871,23 @@ void RenderableColoredVertexArray::render_cva(
             }
         }
     }
+    LOG_INFO("RenderableColoredVertexArray::render_cva bind skidmark texture");
+    for (const auto& [i, s] : enumerate(filtered_skidmarks)) {
+        std::string mname = "skidmark." + s.second->resource_suffix;
+        const auto& skidmark_vp = secondary_rendering_resources_.get_vp(mname);
+        auto mvp_skidmark = dot2d(skidmark_vp, m.affine());
+        CHK(glUniformMatrix4fv(rp.mvp_skidmarks_locations.at(i), 1, GL_TRUE, mvp_skidmark.casted<float>().flat_begin()));
+
+        CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_skidmark(i))));
+        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::RGB})));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
+        float borderColor[] = { 1.f, 1.f, 1.f, 1.f};
+        CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+        CHK(glActiveTexture(GL_TEXTURE0));
+    }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
@@ -984,6 +1018,7 @@ void RenderableColoredVertexArray::render(
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -1013,6 +1048,7 @@ void RenderableColoredVertexArray::render(
             m,
             iv,
             lights,
+            skidmarks,
             scene_graph_config,
             render_config,
             render_pass,

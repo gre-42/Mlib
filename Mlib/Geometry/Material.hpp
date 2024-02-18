@@ -49,6 +49,7 @@ struct Material {
     InteriorTextures interior_textures;
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
+    bool contains_skidmarks = false;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     InterpolationMode magnifying_interpolation_mode = InterpolationMode::NEAREST;
     AggregateMode aggregate_mode = AggregateMode::NONE;
@@ -91,6 +92,7 @@ struct Material {
         archive(interior_textures);
         archive(occluded_pass);
         archive(occluder_pass);
+        archive(contains_skidmarks);
         archive(alpha_distances);
         archive(magnifying_interpolation_mode);
         archive(aggregate_mode);

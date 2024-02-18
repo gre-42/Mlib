@@ -2,13 +2,12 @@
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Os/Os.hpp>
 
-using json = nlohmann::json;
 namespace fs = std::filesystem;
 using namespace Mlib;
 
 namespace Mlib {
 
-void from_json(const json& j, AudioFileSequenceItem& item) {
+void from_json(const nlohmann::json& j, AudioFileSequenceItem& item) {
     j.at("filename").get_to(item.filename);
     j.at("frequency").get_to(item.frequency);
     j.at("key").get_to(item.key);
@@ -23,7 +22,7 @@ std::vector<AudioFileSequenceItem> Mlib::load_audio_file_sequence(
     if (ifs->fail()) {
         THROW_OR_ABORT("Could not open file \"" + filename + '"');
     }
-    json j;
+    nlohmann::json j;
     *ifs >> j;
     if (!ifs->eof() && ifs->fail()) {
         THROW_OR_ABORT("Error reading from file: \"" + filename + '"');

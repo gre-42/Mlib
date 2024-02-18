@@ -69,7 +69,7 @@ bool FrustumCamera::get_requires_postprocessing() const {
     return (bool)postprocessing_;
 }
 
-FixedArray<float, 4, 4> FrustumCamera::projection_matrix() {
+FixedArray<float, 4, 4> FrustumCamera::projection_matrix() const {
     std::shared_lock lock{mutex_};
     mat4x4 p;
     mat4x4_frustum(p, cfg_.left, cfg_.right, cfg_.bottom, cfg_.top, cfg_.near_plane, cfg_.far_plane);

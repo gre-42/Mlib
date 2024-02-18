@@ -109,7 +109,7 @@ void Mlib::handle_line_triangle_intersection(
     for (auto& c1 : c.o1.collision_observers_) {
         c1->notify_collided(intersection_point, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
-    auto* scinfo = c.history.scdb.notify_contact(intersection_point, c);
+    auto* scinfo = c.history.scdb.notify_contact(intersection_point, fixed_zeros<float, 3>(), c);
     if (abort) {
         return;
     }

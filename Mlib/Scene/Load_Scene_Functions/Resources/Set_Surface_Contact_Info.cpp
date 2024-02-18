@@ -9,13 +9,8 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
-using namespace Mlib;
-
-namespace KnownArgs {
+namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(material0);
-DECLARE_ARGUMENT(material1);
-DECLARE_ARGUMENT(surface_stiction_factor);
 DECLARE_ARGUMENT(minimum_velocity_for_smoke);
 DECLARE_ARGUMENT(smoke_particle_resource_name);
 DECLARE_ARGUMENT(smoke_particle_instance_prefix);
@@ -24,12 +19,40 @@ DECLARE_ARGUMENT(smoke_particle_generation_frequencies);
 DECLARE_ARGUMENT(smoke_particle_animation_duration);
 }
 
-float parse_velocity(float v) {
+namespace Mlib {
+
+static float parse_velocity(float v) {
     return v * kph;
 }
 
-float parse_frequency(float v) {
+static float parse_frequency(float v) {
     return v * Hz;
+}
+
+void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
+    JsonView jv{ j };
+    jv.validate(KnownSmokeArgs::options);
+
+    auto v = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_velocities, parse_velocity);
+    auto f = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_frequencies, parse_frequency);
+
+    item.minimum_velocity_for_smoke = jv.at<float>(KnownSmokeArgs::minimum_velocity_for_smoke) * kph;
+    item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::smoke_particle_resource_name);
+    item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::smoke_particle_instance_prefix);
+    item.velocity_to_smoke_particle_frequency = Interp<float>{v, f, OutOfRangeBehavior::CLAMP};
+    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::smoke_particle_animation_duration) * s;
+}
+
+}
+
+using namespace Mlib;
+
+namespace KnownArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(material0);
+DECLARE_ARGUMENT(material1);
+DECLARE_ARGUMENT(surface_stiction_factor);
+DECLARE_ARGUMENT(smoke);
 }
 
 const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
@@ -37,16 +60,10 @@ const std::string SetSurfaceContactInfo::key = "set_surface_contact_info";
 LoadSceneJsonUserFunction SetSurfaceContactInfo::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    auto v = args.arguments.at_vector<float>(KnownArgs::smoke_particle_generation_velocities, parse_velocity);
-    auto f = args.arguments.at_vector<float>(KnownArgs::smoke_particle_generation_frequencies, parse_frequency);
     args.surface_contact_db.store_contact_info(
         SurfaceContactInfo{
             .surface_stiction_factor = args.arguments.at<float>(KnownArgs::surface_stiction_factor),
-            .minimum_velocity_for_smoke = args.arguments.at<float>(KnownArgs::minimum_velocity_for_smoke) * kph,
-            .smoke_particle_resource_name = args.arguments.at<std::string>(KnownArgs::smoke_particle_resource_name),
-            .smoke_particle_instance_prefix = args.arguments.at<std::string>(KnownArgs::smoke_particle_instance_prefix),
-            .velocity_to_smoke_particle_frequency = Interp<float>{v, f, OutOfRangeBehavior::CLAMP},
-            .smoke_particle_animation_duration = args.arguments.at<float>(KnownArgs::smoke_particle_animation_duration) * s},
+            .smoke_infos = args.arguments.at<std::vector<SurfaceSmokeInfo>>(KnownArgs::smoke) },
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material0)),
         physics_material_from_string(args.arguments.at<std::string>(KnownArgs::material1)));
 };

@@ -10,13 +10,13 @@ using namespace Mlib;
 CenteredTextureImageLogic::CenteredTextureImageLogic(
     RenderingResources& rendering_resources,
     ColormapWithModifiers image_resource_name)
-: FillWithTextureLogic{
-    rendering_resources,
-    std::move(image_resource_name),
-    ResourceUpdateCycle::ONCE,
-    CullFaceMode::CULL,
-    AlphaChannelRole::BLEND,
-    nullptr }
+    : FillWithTextureLogic{
+        rendering_resources,
+        std::move(image_resource_name),
+        ResourceUpdateCycle::ONCE,
+        CullFaceMode::CULL,
+        AlphaChannelRole::BLEND,
+        nullptr }
 {}
 
 CenteredTextureImageLogic::~CenteredTextureImageLogic() = default;

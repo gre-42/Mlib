@@ -13,6 +13,7 @@ namespace Mlib {
 struct ColoredRenderProgram: public RenderProgram {
     GLint mvp_location;
     std::map<size_t, GLint> mvp_light_locations;
+    std::map<size_t, GLint> mvp_skidmarks_locations;
     GLint mvp_dirtmap_location;
     GLint r_location;
     std::map<size_t, GLint> light_dir_locations;
@@ -30,6 +31,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_lightmap_color_locations;
     std::map<size_t, GLint> texture_lightmap_depth_locations;
     std::map<size_t, GLint> texture_normalmap_locations;
+    std::map<size_t, GLint> texture_skidmark_locations;
     GLint texture_reflection_location;
     GLint texture_dirtmap_location;
     FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location;
@@ -45,6 +47,7 @@ struct ColoredRenderProgram: public RenderProgram {
 struct RenderProgramIdentifier {
     ExternalRenderPassType render_pass;
     size_t nlights;
+    size_t nskidmarks;
     size_t nbones;
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;

@@ -1,4 +1,5 @@
 #include "Smoke_Particle_Generator.hpp"
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
@@ -23,13 +24,14 @@ void SmokeParticleGenerator::generate_root(
     const std::string& resource_name,
     const std::string& node_name,
     const FixedArray<double, 3>& position,
+    const FixedArray<float, 3>& rotation,
     float animation_duration,
     ParticleType particle_type)
 {
     if (particle_type == ParticleType::NODE) {
         auto node = make_dunique<SceneNode>(
             position,
-            fixed_zeros<float, 3>(),
+            rotation,
             1.f);
         node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
             .aperiodic_animation_frame = AperiodicAnimationFrame{
@@ -49,7 +51,7 @@ void SmokeParticleGenerator::generate_root(
     } else if (particle_type == ParticleType::INSTANCE) {
         scene_.particle_instantiator(resource_name).add_particle(
             TransformationMatrix<float, double, 3>{
-                fixed_identity_array<float, 3>(),
+                tait_bryan_angles_2_matrix(rotation),
                 position});
     } else {
         THROW_OR_ABORT("Unknown particle type");

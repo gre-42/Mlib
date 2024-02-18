@@ -10,7 +10,7 @@ struct LoadSceneUserFunctionArgs;
 class RenderableScene;
 class SceneNodeResources;
 class ParticleResources;
-class ParticleRenderer;
+class IParticleRenderer;
 class SmokeParticleGenerator;
 class VehicleSpawners;
 class Players;
@@ -46,7 +46,7 @@ protected:
     RenderingResources& rendering_resources;
     SceneNodeResources &scene_node_resources;
     ParticleResources &particle_resources;
-    ParticleRenderer &particle_renderer;
+    IParticleRenderer &particle_renderer;
     SmokeParticleGenerator &smoke_particle_generator;
     VehicleSpawners &vehicle_spawners;
     Players &players;

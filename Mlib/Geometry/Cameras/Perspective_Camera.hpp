@@ -17,7 +17,7 @@ public:
     virtual ~PerspectiveCamera() override;
     virtual std::unique_ptr<Camera> copy() const override;
     virtual void set_aspect_ratio(float aspect_ratio) override;
-    virtual FixedArray<float, 4, 4> projection_matrix() override;
+    virtual FixedArray<float, 4, 4> projection_matrix() const override;
     virtual float get_near_plane() const override;
     virtual float get_far_plane() const override;
     virtual void set_requires_postprocessing(bool value) override;

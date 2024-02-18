@@ -110,6 +110,7 @@ static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     size_t texture_modifier_hash,
     size_t nlights,
+    size_t nskidmarks,
     size_t ntextures_color,
     uint32_t nbillboard_ids,
     bool has_lightmap_color,
@@ -188,6 +189,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_light[" << lights.size() << "];" << std::endl;
         // vec4 to avoid clipping problems
         sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
+    }
+    if (nskidmarks != 0) {
+        sstr << "uniform mat4 MVP_skidmarks[" << nskidmarks << "];" << std::endl;
+        sstr << "out vec4 FragPosSkidmarkSpace[" << nskidmarks << "];" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
         sstr << "out vec3 tangent;" << std::endl;
@@ -320,6 +325,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "        FragPosLightSpace[i] = MVP_light[i] * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    }" << std::endl;
     }
+    for (size_t i = 0; i < nskidmarks; ++i) {
+        sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
+        sstr << "        FragPosSkidmarkSpace[i] = MVP_skidmarks[i] * vec4(vPosInstance, 1.0);" << std::endl;
+        sstr << "    }" << std::endl;
+    }
     if (has_dirtmap) {
         sstr << "    vec4 pos4_dirtmap = MVP_dirtmap * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    tex_coord_dirtmap = (pos4_dirtmap.xy / pos4_dirtmap.w + 1.0) / 2.0;" << std::endl;
@@ -353,6 +363,7 @@ static GenShaderText vertex_shader_text_gen{[](
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
@@ -360,6 +371,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
     size_t texture_modifier_hash,
     size_t nlights,
+    size_t nskidmarks,
     size_t ntextures_color,
     size_t ntextures_alpha,
     size_t ntextures_normal,
@@ -438,12 +450,18 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         sstr << "in vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
     }
+    if (nskidmarks != 0) {
+        sstr << "in vec4 FragPosSkidmarkSpace[" << nskidmarks << "];" << std::endl;
+    }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color) {
         sstr << "uniform sampler2D texture_light_color[" << lights.size() << "];" << std::endl;
     }
     if (has_lightmap_depth) {
         sstr << "uniform sampler2D texture_light_depth[" << lights.size() << "];" << std::endl;
+    }
+    if (!skidmarks.empty()) {
+        sstr << "uniform sampler2D texture_skidmarks[" << skidmarks.size() << "];" << std::endl;
     }
     if (has_normalmap || has_interiormap) {
         sstr << "in vec3 tangent;" << std::endl;
@@ -959,10 +977,23 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (has_lightmap_color && !black_shadow_indices.empty()) {
             sstr << "    {" << std::endl;
             for (size_t i : black_shadow_indices) {
+                assert_true(i < lights.size());
                 sstr << "        {" << std::endl;
                 sstr << "            vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
                 sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
                 sstr << "            black_fac = min(black_fac, texture(texture_light_color[" << i << "], proj_coords01.xy).rgb);" << std::endl;
+                sstr << "        }" << std::endl;
+            }
+            sstr << "    }" << std::endl;
+        }
+        if (!skidmarks.empty()) {
+            sstr << "    vec3 skidmark_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
+            sstr << "    {" << std::endl;
+            for (const auto& [i, _]: enumerate(skidmarks)) {
+                sstr << "        {" << std::endl;
+                sstr << "            vec2 proj_coords11 = FragPosSkidmarkSpace[" << i << "].xy / FragPosSkidmarkSpace[" << i << "].w;" << std::endl;
+                sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
+                sstr << "            skidmark_fac = min(skidmark_fac, texture(texture_skidmarks[" << i << "], proj_coords01.xy).rgb);" << std::endl;
                 sstr << "        }" << std::endl;
             }
             sstr << "    }" << std::endl;
@@ -992,6 +1023,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         if (!has_lightmap_depth && !light_shadow_indices.empty()) {
             for (size_t i : light_shadow_indices) {
+                assert_true(i < lights.size());
                 sstr << "        {" << std::endl;
                 if (has_lightmap_color) {
                     sstr << "        vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
@@ -1018,6 +1050,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         }
         if (!light_noshadow_indices.empty()) {
             for (size_t i : light_noshadow_indices) {
+                assert_true(i < lights.size());
                 sstr << "    {" << std::endl;
                 if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
                     sstr << "        frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
@@ -1075,6 +1108,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
         sstr << "    frag_brightness_specular *= black_fac;" << std::endl;
+    }
+    if (!skidmarks.empty()) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse *= skidmark_fac;" << std::endl;
+        sstr << "    frag_brightness_specular *= skidmark_fac;" << std::endl;
     }
     if ((ntextures_color == 0) && has_dirtmap) {
         THROW_OR_ABORT("Combination of ((ntextures_color == 0) && has_dirtmap) is not supported");
@@ -1444,6 +1481,7 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
     const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
+    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& filtered_skidmarks,
     const std::vector<size_t>& lightmap_indices,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,
@@ -1465,7 +1503,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ textures_color },
         id.texture_modifiers_hash,
-        filtered_lights.size(),
+        id.nlights,
+        id.nskidmarks,
         id.ntextures_color,
         id.nbillboard_ids,
         !id.lightmap_indices_color.empty(),
@@ -1491,6 +1530,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.fragments_depend_on_normal);
     const char* fs_text = fragment_shader_text_textured_rgb_gen(
         NotSortedArray{ filtered_lights },
+        NotSortedArray{ filtered_skidmarks },
         NotSortedArray{ textures_color },
         NotSortedArray{ textures_alpha },
         NotSortedArray{ light_noshadow_indices },
@@ -1498,6 +1538,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ black_shadow_indices },
         id.texture_modifiers_hash,
         filtered_lights.size(),
+        filtered_skidmarks.size(),
         id.ntextures_color,
         id.ntextures_alpha,
         id.ntextures_normal,
@@ -1568,6 +1609,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             // Do nothing
             // rp->mvp_light_location = 0;
         }
+        for (size_t i = 0; i < filtered_skidmarks.size(); ++i) {
+            rp->mvp_skidmarks_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_skidmarks[" + std::to_string(i) + "]").c_str());
+        }
         if (id.nbillboard_ids != 0) {
             rp->vertex_scale_location = checked_glGetUniformLocation(rp->program, "vertex_scale");
             rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
@@ -1608,6 +1652,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                 }
                 ++i;
             }
+        }
+        for (size_t i = 0; i < id.nskidmarks; ++i) {
+            rp->texture_skidmark_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_skidmarks[" + std::to_string(i) + "]").c_str());
         }
         if (id.ntextures_reflection != 0) {
             rp->texture_reflection_location = checked_glGetUniformLocation(rp->program, "texture_reflection");

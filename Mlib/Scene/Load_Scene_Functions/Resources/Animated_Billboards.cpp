@@ -36,8 +36,8 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
     auto& pr = RenderingContextStack::primary_particle_resources();
     pr.insert_instantiator_creator(
         name,
-        [frames=args.arguments.at<std::vector<uint32_t>>(KnownArgs::frames),
-         duration=args.arguments.at<float>(KnownArgs::duration)]
+        [frames = args.arguments.at<std::vector<uint32_t>>(KnownArgs::frames),
+         duration = args.arguments.at<float>(KnownArgs::duration)]
         (ParticlesInstance& particles_instance)
         {
             return std::unique_ptr<IParticleInstantiator>(new ParticleInstantiator(

@@ -206,7 +206,7 @@ void FrameBufferStorage::bind() const {
 
 void FrameBufferStorage::unbind() const {
     if (status_ != FrameBufferStatus::BOUND) {
-        THROW_OR_ABORT("Frame buffer has not been bound");
+        verbose_abort("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));

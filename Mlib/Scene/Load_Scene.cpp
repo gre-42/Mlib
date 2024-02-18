@@ -25,6 +25,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Tank_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Check_Points.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Skidmark.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Define_Winner_Conditionals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Scheduled_Advance_Times.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
@@ -259,6 +260,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateCarControllerKeyBinding::key, CreateCarControllerKeyBinding::json_user_function);
     register_json_user_function(CreateCarController::key, CreateCarController::json_user_function);
     register_json_user_function(CreateCheckPoints::key, CreateCheckPoints::json_user_function);
+    register_json_user_function(CreateSkidmark::key, CreateSkidmark::json_user_function);
     register_json_user_function(CreateChildNode::key, CreateChildNode::json_user_function);
     register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
     register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);

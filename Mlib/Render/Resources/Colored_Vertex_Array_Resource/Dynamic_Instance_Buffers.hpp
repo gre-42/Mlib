@@ -14,6 +14,7 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct TransformationAndBillboardId;
 enum class TransformationMode;
+enum class ClearOnUpdate;
 
 class DynamicInstanceBuffers: public IInstanceBuffers {
     DynamicInstanceBuffers(const DynamicInstanceBuffers&) = delete;
@@ -22,7 +23,8 @@ public:
     DynamicInstanceBuffers(
         TransformationMode transformation_mode,
         size_t max_num_instances,
-        uint32_t num_billboard_atlas_components);
+        uint32_t num_billboard_atlas_components,
+        ClearOnUpdate clear_on_update);
     virtual ~DynamicInstanceBuffers() override;
 
     void append(
@@ -46,12 +48,14 @@ private:
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
     DynamicBillboardIds billboard_ids_;
+    size_t max_num_instances_;
     uint32_t num_billboard_atlas_components_;
     size_t tmp_num_instances_;
     GLsizei gl_num_instances_;
     TransformationMode transformation_mode_;
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
+    ClearOnUpdate clear_on_update_;
     mutable SafeSharedMutex mutex_;
 };
 

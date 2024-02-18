@@ -15,6 +15,6 @@ std::unique_ptr<Camera> ProjectionMatrixCamera::copy() const {
     return std::make_unique<ProjectionMatrixCamera>(*this);
 }
 
-FixedArray<float, 4, 4> ProjectionMatrixCamera::projection_matrix() {
+FixedArray<float, 4, 4> ProjectionMatrixCamera::projection_matrix() const {
     return projection_matrix_;
 }

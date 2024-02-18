@@ -28,6 +28,7 @@ public:
         const std::string& resource_name,
         const std::string& node_name,
         const FixedArray<double, 3>& position,
+        const FixedArray<float, 3>& rotation,
         float animation_duration,
         ParticleType particle_type);
     void generate_child(

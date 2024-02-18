@@ -37,6 +37,7 @@ class INodeModifier;
 class IRelativeMovable;
 class IAbsoluteObserver;
 struct Light;
+struct Skidmark;
 enum class ExternalRenderPassType;
 struct ExternalRenderPass;
 template <class TPos>
@@ -177,6 +178,7 @@ public:
     void set_camera(std::unique_ptr<Camera>&& camera);
     Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
+    void add_skidmark(std::unique_ptr<Skidmark>&& skidmark);
     void visit(
         const TransformationMatrix<float, double, 3>& parent_m,
         const std::function<void(
@@ -195,6 +197,7 @@ public:
         const TransformationMatrix<float, double, 3>& iv,
         DanglingRef<const SceneNode> camera_node,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -232,6 +235,9 @@ public:
     void append_lights_to_queue(
         const TransformationMatrix<float, double, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const;
+    void append_skidmarks_to_queue(
+        const TransformationMatrix<float, double, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks) const;
     const FixedArray<double, 3>& position() const;
     FixedArray<float, 3> rotation() const;
     float scale() const;
@@ -307,6 +313,7 @@ private:
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
+    std::list<std::unique_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, double> trafo_;
     QuaternionSeries<float, double, 3> trafo_history_;
     bool trafo_history_invalidated_;

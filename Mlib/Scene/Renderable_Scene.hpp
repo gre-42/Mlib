@@ -41,7 +41,7 @@ namespace Mlib {
 
 class SceneNodeResources;
 class ParticleResources;
-class ParticleRenderer;
+class IParticleRenderer;
 class SurfaceContactDb;
 
 class DirtmapLogic;
@@ -128,7 +128,7 @@ public:
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;
-    std::unique_ptr<ParticleRenderer> particle_renderer_;
+    std::unique_ptr<IParticleRenderer> particle_renderer_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     VehicleSpawners vehicle_spawners_;

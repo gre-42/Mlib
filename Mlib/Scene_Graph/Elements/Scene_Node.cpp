@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -482,6 +483,11 @@ void SceneNode::add_light(std::unique_ptr<Light>&& light) {
     lights_.push_back(std::move(light));
 }
 
+void SceneNode::add_skidmark(std::unique_ptr<Skidmark>&& skidmark) {
+    std::scoped_lock lock{mutex_};
+    skidmarks_.push_back(std::move(skidmark));
+}
+
 bool SceneNode::has_color_style(const std::string& name) const {
     std::shared_lock lock{mutex_};
     bool style_found = false;
@@ -725,6 +731,7 @@ void SceneNode::render(
     const TransformationMatrix<float, double, 3>& iv,
     DanglingRef<const SceneNode> camera_node,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -773,6 +780,7 @@ void SceneNode::render(
                     m,
                     iv,
                     lights,
+                    skidmarks,
                     scene_graph_config,
                     render_config,
                     {external_render_pass, InternalRenderPass::INITIAL},
@@ -797,6 +805,7 @@ void SceneNode::render(
             iv,
             camera_node,
             lights,
+            skidmarks,
             blended,
             render_config,
             scene_graph_config,
@@ -953,6 +962,20 @@ void SceneNode::append_lights_to_queue(
     }
     for (const auto& [_, c] : children_) {
         c.scene_node->append_lights_to_queue(m, lights);
+    }
+}
+
+void SceneNode::append_skidmarks_to_queue(
+    const TransformationMatrix<float, double, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks) const
+{
+    std::shared_lock lock{mutex_};
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    for (const auto& s : skidmarks_) {
+        skidmarks.push_back(std::make_pair(m, s.get()));
+    }
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_skidmarks_to_queue(m, skidmarks);
     }
 }
 

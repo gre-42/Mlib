@@ -12,11 +12,11 @@ namespace Mlib {
 
 template <class tvalue_type>
 DynamicBase<tvalue_type>::DynamicBase(size_t max_num_instances)
-: instances_(max_num_instances),
-  max_num_instances_{max_num_instances},
-  num_instances_{0},
-  buffer_{(GLuint)-1},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : instances_(max_num_instances)
+    , max_num_instances_{max_num_instances}
+    , num_instances_{ 0 }
+    , buffer_{ (GLuint)-1 }
+    , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     if (ContextQuery::is_initialized()) {
         allocate();
@@ -62,6 +62,11 @@ void DynamicBase<tvalue_type>::remove(size_t index) {
     if (num_instances_ != 0) {
         instances_[index] = instances_[num_instances_];
     }
+}
+
+template <class tvalue_type>
+void DynamicBase<tvalue_type>::clear() {
+    num_instances_ = 0;
 }
 
 template <class tvalue_type>
