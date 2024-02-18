@@ -7,10 +7,10 @@
 using namespace Mlib;
 
 ParticleResources::ParticleResources()
-    : instance_creators_{"Instance creator"}
-    , instantiators_{"Instantiator"}
-    , instantiator_to_instance_{"Instantiator to instance"} {
-}
+    : instance_creators_{ "Instance creator" }
+    , instantiators_{ "Instantiator" }
+    , instantiator_to_instance_{ "Instantiator to instance" }
+{}
 
 ParticleResources::~ParticleResources() = default;
 
