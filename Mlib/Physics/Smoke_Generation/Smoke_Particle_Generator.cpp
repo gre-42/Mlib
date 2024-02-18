@@ -48,8 +48,9 @@ void SmokeParticleGenerator::generate_root(
         scene_.add_root_node(node_name, std::move(node));
     } else if (particle_type == ParticleType::INSTANCE) {
         scene_.particle_instantiator(resource_name).add_particle(
-            TransformationMatrix<float, double, 3>{fixed_identity_array<float, 3>(),
-            position});
+            TransformationMatrix<float, double, 3>{
+                fixed_identity_array<float, 3>(),
+                position});
     } else {
         THROW_OR_ABORT("Unknown particle type");
     }
