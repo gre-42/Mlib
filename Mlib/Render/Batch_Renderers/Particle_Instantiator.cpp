@@ -6,8 +6,8 @@ using namespace Mlib;
 ParticleInstantiator::ParticleInstantiator(
     ParticlesInstance& particles_instance,
     const BillboardSequence& billboard_sequence)
-: particles_instance_{particles_instance},
-  billboard_sequence_{billboard_sequence}
+    : particles_instance_{ particles_instance }
+    , billboard_sequence_{ billboard_sequence }
 {}
 
 ParticleInstantiator::~ParticleInstantiator() = default;
