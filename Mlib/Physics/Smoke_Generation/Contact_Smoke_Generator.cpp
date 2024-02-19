@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
+#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -31,6 +32,7 @@ void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_o
 SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     const FixedArray<double, 3>& intersection_point,
     const FixedArray<float, 3>& rotation,
+    const FixedArray<double, 3>& surface_normal,
     const IntersectionScene& c)
 {
     if (c.history.burn_in) {
@@ -44,10 +46,31 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
         return surface_contact_info;
     }
     auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
-    auto v1 = c.o1.rbp_.velocity_at_position(intersection_point);
-    auto dvel = std::sqrt(sum(squared(v0 - v1)));
+    auto v1_a = c.o1.rbp_.velocity_at_position(intersection_point);
+    auto v1_s =
+        c.o1.get_velocity_at_tire_contact(surface_normal.casted<float>(), c.tire_id1) +
+        c.o1.get_abs_tire_z(c.tire_id1) *
+        (
+            c.o1.get_tire_angular_velocity(c.tire_id1) *
+            c.o1.get_tire_radius(c.tire_id1));
+    auto dvel_a = std::sqrt(sum(squared(v0 - v1_a)));
+    auto dvel_s = std::sqrt(sum(squared(v0 - v1_s)));
     for (const auto& smoke_info : surface_contact_info->smoke_infos) {
-        auto f = smoke_info.velocity_to_smoke_particle_frequency(dvel);
+        auto substrate = smoke_particle_generator_.particle_substrate(
+            smoke_info.smoke_particle_resource_name,
+            ParticleType::INSTANCE);
+        float dv;
+        switch (substrate) {
+        case ParticleSubstrate::AIR:
+            dv = dvel_a;
+            break;
+        case ParticleSubstrate::SKIDMARK:
+            dv = dvel_s;
+            break;
+        default:
+            THROW_OR_ABORT("Unknown particle substrate");
+        }
+        auto f = smoke_info.velocity_to_smoke_particle_frequency(dv);
         if (f < 1e-12f) {
             continue;
         }

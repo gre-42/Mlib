@@ -631,7 +631,7 @@ void RenderableColoredVertexArray::render_cva(
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
         auto ni = integral_cast<GLsizei>(n);
-        std::vector<FixedArray<float, 2>> vertex_scale(n);
+        std::vector<FixedArray<float, 3>> vertex_scale(n);
         std::vector<FixedArray<float, 2>> uv_scale(n);
         std::vector<FixedArray<float, 2>> uv_offset(n);
         std::vector<FixedArray<float, 4>> alpha_distances;
@@ -648,7 +648,7 @@ void RenderableColoredVertexArray::render_cva(
         }
         CHK(glUniform2fv(rp.uv_offset_location, ni, (const GLfloat*)uv_offset.data()));
         CHK(glUniform2fv(rp.uv_scale_location, ni, (const GLfloat*)uv_scale.data()));
-        CHK(glUniform2fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
+        CHK(glUniform3fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
         if (!vc.orthographic()) {
             CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances.data()));
         }

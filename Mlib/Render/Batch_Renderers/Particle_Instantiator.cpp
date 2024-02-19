@@ -16,3 +16,7 @@ void ParticleInstantiator::add_particle(const TransformationMatrix<float, double
 {
     particles_instance_.add_particle(transformation_matrix, billboard_sequence_);
 }
+
+ParticleSubstrate ParticleInstantiator::particle_substrate() const {
+    return particles_instance_.substrate();
+}

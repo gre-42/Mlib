@@ -160,7 +160,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (nbillboard_ids != 0) {
         sstr << "layout (location=" << IDX_BILLBOARD_IDS << ") in uint billboard_id;" << std::endl;
-        sstr << "uniform vec2 vertex_scale[" << nbillboard_ids << "];" << std::endl;
+        sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
         if (!orthographic) {
@@ -264,7 +264,7 @@ static GenShaderText vertex_shader_text_gen{[](
         }
     }
     if (nbillboard_ids != 0) {
-        sstr << "    vPosInstance.xy = vPosInstance.xy * vertex_scale[billboard_id];" << std::endl;
+        sstr << "    vPosInstance *= vertex_scale[billboard_id];" << std::endl;
         sstr << "    tex_coord = vTexCoord * uv_scale[billboard_id] + uv_offset[billboard_id];" << std::endl;
     } else {
         sstr << "    tex_coord = vTexCoord;" << std::endl;

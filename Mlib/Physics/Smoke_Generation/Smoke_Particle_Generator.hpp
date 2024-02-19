@@ -12,6 +12,7 @@ class Scene;
 class SceneNode;
 class SceneNodeResources;
 class RenderingResources;
+enum class ParticleSubstrate;
 
 enum class ParticleType {
     NODE,
@@ -38,6 +39,9 @@ public:
         const FixedArray<double, 3>& relative_position,
         float animation_duration);
     std::string generate_suffix();
+    ParticleSubstrate particle_substrate(
+        const std::string& resource_name,
+        ParticleType particle_type) const;
 private:
     RenderingResources* rendering_resources_;
     SceneNodeResources& scene_node_resources_;
