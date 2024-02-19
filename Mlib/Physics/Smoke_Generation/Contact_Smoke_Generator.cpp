@@ -12,11 +12,15 @@ using namespace Mlib;
 ContactSmokeGenerator::ContactSmokeGenerator(
     SurfaceContactDb& surface_contact_db,
     SmokeParticleGenerator& smoke_particle_generator)
-: surface_contact_db_{surface_contact_db},
-  smoke_particle_generator_{smoke_particle_generator}
+    : surface_contact_db_{ surface_contact_db }
+    , smoke_particle_generator_{ smoke_particle_generator }
 {}
 
-ContactSmokeGenerator::~ContactSmokeGenerator() = default;
+ContactSmokeGenerator::~ContactSmokeGenerator() {
+    if (!tire_smoke_trail_generators_.empty()) {
+        verbose_abort("Tire smoke generators remain during shutdown");
+    }
+}
 
 void ContactSmokeGenerator::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
     if (tire_smoke_trail_generators_.erase(const_cast<RigidBodyVehicle*>(&destroyed_object)) != 1) {
@@ -41,15 +45,17 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     }
     auto v0 = c.o0.rbp_.velocity_at_position(intersection_point);
     auto v1 = c.o1.rbp_.velocity_at_position(intersection_point);
-    auto dvel2 = sum(squared(v0 - v1));
+    auto dvel = std::sqrt(sum(squared(v0 - v1)));
     for (const auto& smoke_info : surface_contact_info->smoke_infos) {
-        if (dvel2 < squared(smoke_info.minimum_velocity_for_smoke)) {
-            return surface_contact_info;
+        auto f = smoke_info.velocity_to_smoke_particle_frequency(dvel);
+        if (f < 1e-12f) {
+            continue;
         }
-        c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
         auto& tstg = tire_smoke_trail_generators_[&c.o1];
-        auto tstgit = tstg.find(c.tire_id1);
-        if (tstgit == tstg.end()) {
+        if (tstg.empty()) {
+            c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+        }
+        if (auto tstgit = tstg.find(c.tire_id1); tstgit == tstg.end()) {
             if (!tstg.try_emplace(c.tire_id1, smoke_particle_generator_).second)
             {
                 THROW_OR_ABORT("Could not insert smoke trail generator");
@@ -61,7 +67,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
             smoke_info.smoke_particle_resource_name,
             smoke_info.smoke_particle_instance_prefix,
             smoke_info.smoke_particle_animation_duration,
-            1.f / smoke_info.velocity_to_smoke_particle_frequency(std::sqrt(dvel2)),
+            1.f / f,
             ParticleType::INSTANCE);
     }
     return surface_contact_info;

@@ -11,7 +11,6 @@
 
 namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(minimum_velocity_for_smoke);
 DECLARE_ARGUMENT(smoke_particle_resource_name);
 DECLARE_ARGUMENT(smoke_particle_instance_prefix);
 DECLARE_ARGUMENT(smoke_particle_generation_velocities);
@@ -36,7 +35,6 @@ void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     auto v = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_velocities, parse_velocity);
     auto f = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_frequencies, parse_frequency);
 
-    item.minimum_velocity_for_smoke = jv.at<float>(KnownSmokeArgs::minimum_velocity_for_smoke) * kph;
     item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::smoke_particle_resource_name);
     item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::smoke_particle_instance_prefix);
     item.velocity_to_smoke_particle_frequency = Interp<float>{v, f, OutOfRangeBehavior::CLAMP};

@@ -6,7 +6,6 @@
 namespace Mlib {
 
 struct SurfaceSmokeInfo {
-    float minimum_velocity_for_smoke;
     std::string smoke_particle_resource_name;
     std::string smoke_particle_instance_prefix;
     // Has a standard constructor for JSON parsing (needs to be default-constructible).
