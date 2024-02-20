@@ -28,11 +28,11 @@ public:
         OutOfRangeBehavior out_of_range_behavior = OutOfRangeBehavior::THROW,
         const TDataY low = TDataY(NAN),
         const TDataY high = TDataY(NAN))
-    : x_{x},
-      y_{y},
-      out_of_range_behavior_{out_of_range_behavior},
-      low_{low},
-      high_{high}
+        : x_{ x }
+        , y_{ y }
+        , out_of_range_behavior_{ out_of_range_behavior }
+        , low_{ low }
+        , high_{ high }
     {
         if (x_.size() != y_.size()) {
             THROW_OR_ABORT("size mismatch");
@@ -85,6 +85,9 @@ public:
             THROW_OR_ABORT("x is empty");
         }
         return x_.back();
+    }
+    bool empty() const {
+        return x_.empty();
     }
 private:
     std::vector<TDataX> x_;
