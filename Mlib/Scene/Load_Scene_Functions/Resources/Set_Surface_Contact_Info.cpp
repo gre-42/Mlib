@@ -11,11 +11,13 @@
 
 namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(smoke_particle_resource_name);
-DECLARE_ARGUMENT(smoke_particle_instance_prefix);
-DECLARE_ARGUMENT(smoke_particle_generation_velocities);
-DECLARE_ARGUMENT(smoke_particle_generation_frequencies);
-DECLARE_ARGUMENT(smoke_particle_animation_duration);
+DECLARE_ARGUMENT(resource_name);
+DECLARE_ARGUMENT(instance_prefix);
+DECLARE_ARGUMENT(vehicle_velocities);
+DECLARE_ARGUMENT(vehicle_frequencies);
+DECLARE_ARGUMENT(tire_velocities);
+DECLARE_ARGUMENT(tire_frequencies);
+DECLARE_ARGUMENT(animation_duration);
 }
 
 namespace Mlib {
@@ -32,13 +34,21 @@ void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     JsonView jv{ j };
     jv.validate(KnownSmokeArgs::options);
 
-    auto v = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_velocities, parse_velocity);
-    auto f = jv.at_vector<float>(KnownSmokeArgs::smoke_particle_generation_frequencies, parse_frequency);
-
-    item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::smoke_particle_resource_name);
-    item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::smoke_particle_instance_prefix);
-    item.velocity_to_smoke_particle_frequency = Interp<float>{v, f, OutOfRangeBehavior::CLAMP};
-    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::smoke_particle_animation_duration) * s;
+    if (jv.contains(KnownSmokeArgs::vehicle_velocities)) {
+        item.vehicle_velocity_to_smoke_particle_frequency = Interp<float>{
+            jv.at_vector<float>(KnownSmokeArgs::vehicle_velocities, parse_velocity),
+            jv.at_vector<float>(KnownSmokeArgs::vehicle_frequencies, parse_frequency),
+            OutOfRangeBehavior::CLAMP};
+    }
+    if (jv.contains(KnownSmokeArgs::tire_velocities)) {
+        item.tire_velocity_to_smoke_particle_frequency = Interp<float>{
+            jv.at_vector<float>(KnownSmokeArgs::tire_velocities, parse_velocity),
+            jv.at_vector<float>(KnownSmokeArgs::tire_frequencies, parse_frequency),
+            OutOfRangeBehavior::CLAMP};
+    }
+    item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::resource_name);
+    item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::instance_prefix);
+    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::animation_duration) * s;
 }
 
 }

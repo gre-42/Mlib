@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
 #include <compare>
+#include <map>
 #include <string>
 #include <unordered_map>
 
@@ -32,7 +33,7 @@ public:
 private:
     SurfaceContactDb& surface_contact_db_;
     SmokeParticleGenerator& smoke_particle_generator_;
-    std::unordered_map<RigidBodyVehicle*, std::unordered_map<size_t, SmokeTrailGenerator>> tire_smoke_trail_generators_;
+    std::unordered_map<RigidBodyVehicle*, std::map<std::pair<size_t, size_t>, SmokeTrailGenerator>> tire_smoke_trail_generators_;
 };
 
 }

@@ -16,7 +16,6 @@ public:
     ~ParticleInstantiator();
 
     virtual void add_particle(const TransformationMatrix<float, double, 3>& transformation_matrix) override;
-    virtual ParticleSubstrate particle_substrate() const override;
 private:
     ParticlesInstance &particles_instance_;
     BillboardSequence billboard_sequence_;

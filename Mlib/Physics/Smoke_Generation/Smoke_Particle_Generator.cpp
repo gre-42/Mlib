@@ -6,7 +6,6 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Instantiator.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -91,17 +90,4 @@ void SmokeParticleGenerator::generate_child(
 
 std::string SmokeParticleGenerator::generate_suffix() {
     return scene_.get_temporary_instance_suffix();
-}
-
-ParticleSubstrate SmokeParticleGenerator::particle_substrate(
-    const std::string& resource_name,
-    ParticleType particle_type) const
-{
-    switch (particle_type) {
-    case ParticleType::NODE:
-        return ParticleSubstrate::AIR;
-    case ParticleType::INSTANCE:
-        return scene_.particle_instantiator(resource_name).particle_substrate();
-    }
-    THROW_OR_ABORT("Unknown particle type");
 }
