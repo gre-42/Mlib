@@ -326,7 +326,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    }" << std::endl;
     }
     for (size_t i = 0; i < nskidmarks; ++i) {
-        sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
+        sstr << "    for (int i = 0; i < " << nskidmarks << "; ++i) {" << std::endl;
         sstr << "        FragPosSkidmarkSpace[i] = MVP_skidmarks[i] * vec4(vPosInstance, 1.0);" << std::endl;
         sstr << "    }" << std::endl;
     }
