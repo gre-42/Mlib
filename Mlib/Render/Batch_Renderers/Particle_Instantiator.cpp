@@ -8,7 +8,13 @@ ParticleInstantiator::ParticleInstantiator(
     const BillboardSequence& billboard_sequence)
     : particles_instance_{ particles_instance }
     , billboard_sequence_{ billboard_sequence }
-{}
+{
+    for (const auto& id : billboard_sequence.billboard_ids) {
+        if (id >= particles_instance.num_billboard_atlas_components()) {
+            THROW_OR_ABORT("Particle index out of bounds");
+        }
+    }
+}
 
 ParticleInstantiator::~ParticleInstantiator() = default;
 

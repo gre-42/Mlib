@@ -36,6 +36,10 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
 
 DynamicInstanceBuffers::~DynamicInstanceBuffers() = default;
 
+size_t DynamicInstanceBuffers::num_billboard_atlas_components() const {
+    return num_billboard_atlas_components_;
+}
+
 void DynamicInstanceBuffers::append(
     const TransformationMatrix<float, float, 3>& transformation_matrix,
     const BillboardSequence& sequence)

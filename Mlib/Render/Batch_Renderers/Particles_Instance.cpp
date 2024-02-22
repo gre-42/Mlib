@@ -42,6 +42,10 @@ ParticleSubstrate ParticlesInstance::substrate() const {
     return substrate_;
 }
 
+size_t ParticlesInstance::num_billboard_atlas_components() const {
+    return dynamic_instance_buffers_->num_billboard_atlas_components();
+}
+
 void ParticlesInstance::add_particle(
     const TransformationMatrix<float, double, 3>& transformation_matrix,
     const BillboardSequence& sequence)

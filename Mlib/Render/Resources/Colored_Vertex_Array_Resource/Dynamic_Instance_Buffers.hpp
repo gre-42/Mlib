@@ -27,6 +27,7 @@ public:
         ClearOnUpdate clear_on_update);
     virtual ~DynamicInstanceBuffers() override;
 
+    size_t num_billboard_atlas_components() const;
     void append(
         const TransformationMatrix<float, float, 3>& transformation_matrix,
         const BillboardSequence& sequence);

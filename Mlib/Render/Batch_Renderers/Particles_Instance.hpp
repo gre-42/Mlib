@@ -36,6 +36,8 @@ public:
 
     ParticleSubstrate substrate() const;
 
+    size_t num_billboard_atlas_components() const;
+
     void add_particle(
         const TransformationMatrix<float, double, 3>& transformation_matrix,
         const BillboardSequence& sequence);
