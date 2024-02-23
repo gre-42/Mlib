@@ -47,7 +47,7 @@ static Shading terrain_type_specularity(
     try {
         return material_specularity(pm, config);
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("Error determinging specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
+        throw std::runtime_error("Error determining specularity for terrain type \"" + to_string(terrain_type) + "\": " + e.what());
     }
 }
 
