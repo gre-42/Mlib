@@ -154,6 +154,13 @@ DECLARE_ARGUMENT(uv_scale_highway_wall);
 DECLARE_ARGUMENT(uv_scale_crossings);
 DECLARE_ARGUMENT(boundary_barrier_height);
 DECLARE_ARGUMENT(boundary_barrier_style);
+DECLARE_ARGUMENT(zonemap);
+DECLARE_ARGUMENT(zonemap_width);
+DECLARE_ARGUMENT(zonemap_height);
+DECLARE_ARGUMENT(zonemap_multiplier);
+DECLARE_ARGUMENT(zonemap_jitter);
+DECLARE_ARGUMENT(zonemap_step_size);
+DECLARE_ARGUMENT(zone_resource_names);
 DECLARE_ARGUMENT(with_roofs);
 DECLARE_ARGUMENT(with_ceilings);
 DECLARE_ARGUMENT(building_bottom);
@@ -706,6 +713,27 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::uv_scale_crossings)) {
             config.uv_scale_crossings = args.arguments.at<float>(KnownArgs::uv_scale_crossings);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap)) {
+            config.zonemap = args.arguments.path(KnownArgs::zonemap);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap_width)) {
+            config.zonemap_width = args.arguments.at<double>(KnownArgs::zonemap_width);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap_height)) {
+            config.zonemap_height = args.arguments.at<double>(KnownArgs::zonemap_height);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap_multiplier)) {
+            config.zonemap_multiplier = args.arguments.at<double>(KnownArgs::zonemap_multiplier);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap_jitter)) {
+            config.zonemap_jitter = args.arguments.at<float>(KnownArgs::zonemap_jitter);
+        }
+        if (args.arguments.contains(KnownArgs::zonemap_step_size)) {
+            config.zonemap_step_size = args.arguments.at<double>(KnownArgs::zonemap_step_size);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::zone_resource_names)) {
+            config.zone_resource_names = args.arguments.at_vector<std::string>(KnownArgs::zone_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains(KnownArgs::boundary_barrier_height)) {
             config.boundary_barrier_height = args.arguments.at<float>(KnownArgs::boundary_barrier_height);

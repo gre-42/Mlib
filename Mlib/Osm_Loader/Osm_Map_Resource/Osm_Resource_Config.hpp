@@ -50,7 +50,14 @@ struct OsmResourceConfig {
     std::string displacementmap;
     double displacementmap_min = 0;
     double displacementmap_uv_scale = 1;
-    Interp<float> displacementmap_distance_2_z_scale{std::vector<float>{}, std::vector<float>{}};
+    Interp<float> displacementmap_distance_2_z_scale{ std::vector<float>{}, std::vector<float>{} };
+    std::string zonemap;
+    double zonemap_width = NAN;
+    double zonemap_height = NAN;
+    double zonemap_multiplier = 1.f;
+    float zonemap_jitter = 0.5f;
+    double zonemap_step_size = 4.f;
+    std::vector<ParsedResourceName> zone_resource_names;
     std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
     std::map<TerrainType, std::vector<std::string>> terrain_textures;
@@ -81,7 +88,7 @@ struct OsmResourceConfig {
         std::vector<FixedArray<float, 3>>{
             FixedArray<float, 3>{ 1.f, 1.f, 1.f },
             FixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
-        OutOfRangeBehavior::CLAMP};
+        OutOfRangeBehavior::CLAMP };
     std::vector<FacadeTexture> facade_textures;
     std::string ceiling_texture;
     Map<std::string, BarrierStyle> barrier_styles;
@@ -163,8 +170,8 @@ struct OsmResourceConfig {
     std::vector<double> steiner_point_distances_steiner = { 100. };
     float curb_alpha = 0.9f;
     float curb2_alpha = 0.95f;
-    FixedArray<float, 2> curb_uv = FixedArray<float, 2>{1.f, 1.f};
-    FixedArray<float, 2> curb2_uv = FixedArray<float, 2>{1.f, 1.f};
+    FixedArray<float, 2> curb_uv = FixedArray<float, 2>{ 1.f, 1.f };
+    FixedArray<float, 2> curb2_uv = FixedArray<float, 2>{ 1.f, 1.f };
     FixedArray<float, 3> curb_color = FixedArray<float, 3>{ 1.f, 1.f, 1.f };
     float raise_streets_amount = 0.2f;
     float extrude_curb_amount = 0;
@@ -190,7 +197,7 @@ struct OsmResourceConfig {
     FixedArray<float, 3> fresnel_ambient_factor = FixedArray<float, 3>(1.f);
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     std::map<RoadType, bool> blend_street;
-    Interp<double> layer_heights{std::vector<double>{}, std::vector<double>{}};
+    Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };
     std::string game_level;
     std::string base_osm_map_resource;
     std::string navmesh_resource;

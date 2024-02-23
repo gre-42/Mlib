@@ -29,6 +29,7 @@
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Street_Steiner_Points.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Forest_Outlines.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Tree_Nodes.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Add_Trees_To_Zonemap.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Apply_Displacement_Map.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Bounding_Info.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
@@ -86,6 +87,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
@@ -107,6 +109,8 @@
 #include <fstream>
 #include <mutex>
 #include <poly2tri/point_exception.hpp>
+#include <stb_cpp/stb_array.hpp>
+#include <stb_cpp/stb_image_load.hpp>
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -394,7 +398,7 @@ OsmMapResource::OsmMapResource(
     std::vector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
-    BoundingInfo bounding_info{map_outer_contour, nodes, 0.1f};
+    BoundingInfo bounding_info{ map_outer_contour, nodes, 0.1f };
 
     auto draw_terrain_triangles = [&config](TriangleList<double>& dest, const std::list<FixedArray<ColoredVertex<double>, 3>>& source){
         for (const auto& t : source) {
@@ -972,7 +976,7 @@ OsmMapResource::OsmMapResource(
     }
 
     if (config.with_tree_nodes && !config.tree_resource_names.empty()) {
-        ResourceNameCycle rnc{config.tree_resource_names};
+        ResourceNameCycle rnc{ config.tree_resource_names };
         LOG_INFO("add_trees_to_tree_nodes");
         add_trees_to_tree_nodes(
             *hri_.bri,
@@ -982,6 +986,39 @@ OsmMapResource::OsmMapResource(
             all_holes_bvh,
             *ground_bvh,
             nodes,
+            config.scale);
+    }
+
+    if (!config.zonemap.empty()) {
+        ResourceNameCycle rnc{ config.zone_resource_names };
+        auto im = stb_load8(config.zonemap, FlipMode::VERTICAL);
+        if (im.nrChannels != 1) {
+            THROW_OR_ABORT("zonemap does not have 1 channel");
+        }
+        auto imf = gaussian_filter_NWE(
+            stb_image_2_array(im)[0].casted<double>() / 255.,
+            1.,             // sigma
+            (double)NAN,    // boundary
+            4.,             // truncate
+            FilterExtension::PERIODIC);
+        auto zonemap = 1. - 2. * abs(imf - 0.5);
+        LOG_INFO("add_trees_to_zonemap");
+        if (std::isnan(config.zonemap_width) || std::isnan(config.zonemap_height)) {
+            THROW_OR_ABORT("zonemap width or height not set");
+        }
+        add_trees_to_zonemap(
+            *hri_.bri,
+            rnc,
+            bounding_info,
+            config.min_dist_to_road,
+            all_holes_bvh,
+            *ground_bvh,
+            zonemap,
+            config.zonemap_width,
+            config.zonemap_height,
+            config.zonemap_multiplier,
+            config.zonemap_jitter,
+            config.zonemap_step_size,
             config.scale);
     }
 
