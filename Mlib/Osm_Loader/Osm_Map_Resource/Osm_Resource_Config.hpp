@@ -54,9 +54,9 @@ struct OsmResourceConfig {
     std::string zonemap;
     double zonemap_width = NAN;
     double zonemap_height = NAN;
-    double zonemap_multiplier = 1.f;
+    double zonemap_multiplier = 1.;
     float zonemap_jitter = 0.9f;
-    double zonemap_step_size = 4.f;
+    double zonemap_step_size = 4.;
     std::vector<ParsedResourceName> zone_resource_names;
     std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
