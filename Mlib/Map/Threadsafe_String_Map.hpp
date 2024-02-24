@@ -11,13 +11,13 @@ template <class TValue>
 class ThreadsafeStringMap {
 public:
     explicit ThreadsafeStringMap(std::string value_name)
-        : value_name_{std::move(value_name)} {
-    }
+        : value_name_{ std::move(value_name) }
+    {}
     ~ThreadsafeStringMap() = default;
 
     template <class... Args>
     TValue& emplace(std::string key, Args &&...args) {
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
             THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" already exists");
@@ -25,34 +25,34 @@ public:
         return res.first->second;
     }
 
-    void set(const std::string &key, const TValue &value) {
-        std::scoped_lock lock{mutex_};
+    void set(const std::string& key, const TValue& value) {
+        std::scoped_lock lock{ mutex_ };
         elements_[key] = value;
     }
 
     void clear() {
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         elements_.clear();
     }
 
-    size_t erase(const std::string &key) {
-        std::scoped_lock lock{mutex_};
+    size_t erase(const std::string& key) {
+        std::scoped_lock lock{ mutex_ };
         return elements_.erase(key);
     }
 
     template <class TPredicate>
     void erase_if(const TPredicate& predicate) {
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         std::erase_if(elements_, predicate);
     }
 
     bool contains(const std::string& key) const {
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         return elements_.contains(key);
     }
 
-    const TValue *try_get(const std::string &key) const {
-        std::shared_lock lock{mutex_};
+    const TValue* try_get(const std::string& key) const {
+        std::shared_lock lock{ mutex_ };
         auto it = elements_.find(key);
         if (it == elements_.end()) {
             return nullptr;
@@ -61,7 +61,7 @@ public:
     }
 
     typename std::map<std::string, TValue>::node_type extract(const std::string& key) {
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         auto res = elements_.extract(key);
         if (res.empty()) {
             THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
@@ -69,13 +69,13 @@ public:
         return res;
     }
 
-    typename std::map<std::string, TValue>::node_type try_extract(const std::string &key) {
-        std::shared_lock lock{mutex_};
+    typename std::map<std::string, TValue>::node_type try_extract(const std::string& key) {
+        std::shared_lock lock{ mutex_ };
         return elements_.extract(key);
     }
 
     TValue& get(const std::string& key) {
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         auto it = elements_.find(key);
         if (it == elements_.end()) {
             THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
