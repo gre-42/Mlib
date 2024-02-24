@@ -8,6 +8,8 @@ class BatchResourceInstantiator;
 class StreetBvh;
 class GroundBvh;
 struct BoundingInfo;
+template <class TData>
+class Array;
 
 void add_trees_to_zonemap(
     BatchResourceInstantiator& bri,
