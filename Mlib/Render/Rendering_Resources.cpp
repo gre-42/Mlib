@@ -1552,7 +1552,7 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
             THROW_OR_ABORT("Texture array is empty");
         }
         std::vector<uint8_t> flat_data;
-        auto layer_size = data[0].width * data[0].height * data[0].nrChannels;
+        auto layer_size = integral_cast<size_t>(data[0].width * data[0].height * data[0].nrChannels);
         flat_data.reserve(layer_size * data.size());
         for (const auto& d : data) {
             if ((data[0].width != d.width) ||
