@@ -909,9 +909,18 @@ void RenderableColoredVertexArray::render_cva(
         }
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(0))));
-        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::GRAYSCALE}, TextureRole::COLOR_FROM_DB)));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        {
+            ColormapWithModifiers cm{
+                .filename = secondary_rendering_resources_.get_alias(mname),
+                .color_mode = ColorMode::GRAYSCALE
+            };
+            GLuint texture = secondary_rendering_resources_.contains_texture(secondary_rendering_resources_.colormap(cm))
+                ? secondary_rendering_resources_.get_texture(cm, TextureRole::COLOR_FROM_DB)
+                : rcva_->rendering_resources_.get_texture(cm, TextureRole::COLOR_FROM_DB);
+            CHK(glBindTexture(GL_TEXTURE_2D, texture));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+            CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        }
         {
             GLint p = get_wrap_param(secondary_rendering_resources_.get_texture_wrap(mname));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, p));

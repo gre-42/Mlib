@@ -17,6 +17,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangles_Around.hpp>
 #include <Mlib/Geometry/Mesh/Up_Axis.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Log.hpp>
@@ -87,7 +88,6 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Sample_Triangle_Interior_Instances.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
@@ -996,12 +996,12 @@ OsmMapResource::OsmMapResource(
             THROW_OR_ABORT("zonemap does not have 1 channel");
         }
         auto imf = gaussian_filter_NWE(
-            stb_image_2_array(im)[0].casted<double>() / 255.,
-            1.,             // sigma
-            (double)NAN,    // boundary
-            4.,             // truncate
+            stb_image_2_array(im)[0].casted<float>() / 255.f,
+            1.f,                // sigma
+            NAN,                // boundary
+            4.f,                // truncate
             FilterExtension::PERIODIC);
-        auto zonemap = 1. - 2. * abs(imf - 0.5);
+        auto zonemap = 1.f - 2.f * abs(imf - 0.5f);
         LOG_INFO("add_trees_to_zonemap");
         if (std::isnan(config.zonemap_width) || std::isnan(config.zonemap_height)) {
             THROW_OR_ABORT("zonemap width or height not set");
@@ -1013,7 +1013,7 @@ OsmMapResource::OsmMapResource(
             config.min_dist_to_road,
             all_holes_bvh,
             *ground_bvh,
-            zonemap,
+            zonemap.casted<double>(),
             config.zonemap_width,
             config.zonemap_height,
             config.zonemap_multiplier,

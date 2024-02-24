@@ -34,7 +34,7 @@ void DirtmapLogic::render(
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         THROW_OR_ABORT("DirtmapLogic received dirtmap rendering");
     }
-    if (filename_.empty()) {
+    if (!rendering_resources_.contains_alias("dirtmap")) {
         return;
     }
     if (!generated_) {
@@ -62,15 +62,6 @@ void DirtmapLogic::render(
                  .time_id = 0,
                  .light_resource_suffix = ""});
         }
-        // Load texture and set alias
-        rendering_resources_.add_texture_descriptor(
-            "dirtmap",
-            TextureDescriptor{
-                .color = {
-                    .filename = filename_,
-                    .color_mode = ColorMode::GRAYSCALE,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                    .anisotropic_filtering_level = 8}});
         rendering_resources_.set_vp("dirtmap", vp());
         generated_ = true;
     }
@@ -94,13 +85,6 @@ const TransformationMatrix<float, double, 3>& DirtmapLogic::iv() const {
 
 bool DirtmapLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
-}
-
-void DirtmapLogic::set_filename(const std::string& filename) {
-    if (!filename_.empty()) {
-        THROW_OR_ABORT("DirtmapLogic::set_filename called multiple times");
-    }
-    filename_ = filename;
 }
 
 void DirtmapLogic::print(std::ostream& ostr, size_t depth) const {

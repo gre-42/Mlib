@@ -31,6 +31,7 @@ DECLARE_ARGUMENT(lighten_bottom);
 DECLARE_ARGUMENT(selected_color);
 DECLARE_ARGUMENT(selected_color_near);
 DECLARE_ARGUMENT(selected_color_far);
+DECLARE_ARGUMENT(edge_sigma);
 DECLARE_ARGUMENT(times);
 DECLARE_ARGUMENT(plus);
 DECLARE_ARGUMENT(abs);
@@ -78,6 +79,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .selected_color = args.arguments.at<OrderableFixedArray<float, 3>>(KnownArgs::selected_color, OrderableFixedArray<float, 3>(0.f)),
                 .selected_color_near = args.arguments.at<float>(KnownArgs::selected_color_near, 0),
                 .selected_color_far = args.arguments.at<float>(KnownArgs::selected_color_far, INFINITY),
+                .edge_sigma = args.arguments.at<float>(KnownArgs::edge_sigma, 0.f),
                 .times = args.arguments.at<float>(KnownArgs::times, 1.f),
                 .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
                 .abs = args.arguments.at<bool>(KnownArgs::abs, false),

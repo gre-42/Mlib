@@ -6,8 +6,10 @@
 #include <Mlib/Geometry/Texture/Pack_Boxes.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
+#include <Mlib/Images/Filters/Gaussian_Filter.hpp>
 #include <Mlib/Images/Image_Info.hpp>
 #include <Mlib/Images/Match_Rgba_Histograms.hpp>
+#include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
@@ -393,6 +395,16 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             (unsigned short)std::round(color.selected_color_far * 255.f));
         si0 = std::move(si1);
     }
+    if (color.edge_sigma != 0.f) {
+        auto imf = multichannel_gaussian_filter_NWE(
+            stb_image_2_array(si0).casted<float>() / 255.f,
+            color.edge_sigma,
+            (float)NAN,                 // boundary
+            4.f,                        // truncate
+            FilterExtension::PERIODIC);
+        auto edges = 1.f - 2.f * abs(imf - 0.5f);
+        array_2_stb_image((clipped(edges, 0.f, 1.f) * 255.f).casted<uint8_t>(), si0.data.get());
+    }
     if ((color.times != 1.f) || (color.plus != 0.f)) {
         stb_transform(
             si0.data.get(),
@@ -481,6 +493,10 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     for (const auto& x : textures_) {
         ostr << indent << "  " << x.first << '\n';
     }
+    ostr << indent << "Aliases\n";
+    for (const auto& x : aliases_) {
+        ostr << indent << "  " << x.first << '\n';
+    }
     ostr << indent << "vps\n";
     for (const auto& x : vps_) {
         ostr << indent << "  " << x.first << '\n';
@@ -496,34 +512,35 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
 }
 
 RenderingResources::RenderingResources(std::string name,
-                                       unsigned int max_anisotropic_filtering_level)
-    : preloaded_processed_texture_data_{"Preloaded processed texture data",
-                                        [](const ColormapWithModifiers &e) { return e.filename; }}
-    , preloaded_raw_texture_data_{"Preloaded raw texture data"}
-    , preloaded_texture_dds_data_{"Preloaded texture DDS data"}
-    , texture_descriptors_{"Texture descriptor"}
-    , textures_{"Texture", [](const ColormapWithModifiers &e) { return e.filename; }}
-    , manual_atlas_tile_descriptors_{"Manual atlas tile descriptor"}
-    , auto_atlas_tile_descriptors_{"Auto atlas tile descriptor"}
-    , cubemap_descriptors_{"Cubemap descriptor"}
-    , font_textures_{"Font", [](const auto &e) { return e.first; }}
-    , vps_{"VP"}
-    , offsets_{"Offset"}
-    , discreteness_{"Discreteness"}
-    , scales_{"Scale"}
-    , texture_wrap_{"Texture wrap"}
-    , blend_map_textures_{"Blend-map texture"}
-    , render_programs_{"Render program", [](const RenderProgramIdentifier &e) { return "<RPI>"; }}
-    , name_{std::move(name)}
-    , max_anisotropic_filtering_level_{max_anisotropic_filtering_level}
-    , preloader_background_loop_{"Preload_BG"}
-    , deallocation_token_{render_deallocator.insert([this]() {
+    unsigned int max_anisotropic_filtering_level)
+    : preloaded_processed_texture_data_{ "Preloaded processed texture data",
+                                        [](const ColormapWithModifiers& e) { return e.filename; } }
+    , preloaded_raw_texture_data_{ "Preloaded raw texture data" }
+    , preloaded_texture_dds_data_{ "Preloaded texture DDS data" }
+    , texture_descriptors_{ "Texture descriptor" }
+    , textures_{ "Texture", [](const ColormapWithModifiers& e) { return e.filename; } }
+    , manual_atlas_tile_descriptors_{ "Manual atlas tile descriptor" }
+    , auto_atlas_tile_descriptors_{ "Auto atlas tile descriptor" }
+    , cubemap_descriptors_{ "Cubemap descriptor" }
+    , font_textures_{ "Font", [](const auto& e) { return e.first; } }
+    , aliases_{ "Alias" }
+    , vps_{ "VP" }
+    , offsets_{ "Offset" }
+    , discreteness_{ "Discreteness" }
+    , scales_{ "Scale" }
+    , texture_wrap_{ "Texture wrap" }
+    , blend_map_textures_{ "Blend-map texture" }
+    , render_programs_{ "Render program", [](const RenderProgramIdentifier& e) { return "<RPI>"; } }
+    , name_{ std::move(name) }
+    , max_anisotropic_filtering_level_{ max_anisotropic_filtering_level }
+    , preloader_background_loop_{ "Preload_BG" }
+    , deallocation_token_{ render_deallocator.insert([this]() {
         for (const auto& [d, _] : textures_) {
-            append_render_allocator([this, d=d](){ preload(d, TextureRole::TRUSTED); });
+            append_render_allocator([this, d = d]() { preload(d, TextureRole::TRUSTED); });
         }
         deallocate();
-    })} {
-}
+    }) }
+{}
 
 RenderingResources::~RenderingResources() {
     deallocate();
@@ -1203,6 +1220,18 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &nam
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
     blend_map_textures_.emplace(name, bmt);
+}
+
+void RenderingResources::set_alias(std::string alias, std::string name) {
+    aliases_.emplace(std::move(alias), std::move(name));
+}
+
+std::string RenderingResources::get_alias(const std::string& alias) const {
+    return aliases_.get(alias);
+}
+
+bool RenderingResources::contains_alias(const std::string& alias) const {
+    return aliases_.contains(alias);
 }
 
 const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& name) const {

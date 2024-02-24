@@ -3,10 +3,8 @@
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
 
@@ -33,7 +31,7 @@ SetDirtmap::SetDirtmap(RenderableScene& renderable_scene)
 
 void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    dirtmap_logic.set_filename(args.arguments.path(KnownArgs::filename));
+    rendering_resources.set_alias("dirtmap", args.arguments.at<std::string>(KnownArgs::filename));
     rendering_resources.set_offset("dirtmap", args.arguments.at<float>(KnownArgs::offset));
     rendering_resources.set_discreteness("dirtmap", args.arguments.at<float>(KnownArgs::discreteness));
     rendering_resources.set_scale("dirtmap", args.arguments.at<float>(KnownArgs::scale));

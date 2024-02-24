@@ -149,6 +149,9 @@ public:
     BlendMapTexture get_blend_map_texture(const std::string& name) const;
     void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
 
+    void set_alias(std::string alias, std::string name);
+    std::string get_alias(const std::string& alias) const;
+    bool contains_alias(const std::string& alias) const;
     const FixedArray<double, 4, 4>& get_vp(const std::string& name) const;
     void set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp);
     float get_offset(const std::string& name) const;
@@ -201,6 +204,7 @@ private:
     mutable ThreadsafeStringMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringMap<CubemapDescriptor> cubemap_descriptors_;
     mutable ThreadsafeMap<std::pair<std::string, float>, LoadedFont> font_textures_;
+    ThreadsafeStringMap<std::string> aliases_;
     ThreadsafeStringMap<FixedArray<double, 4, 4>> vps_;
     ThreadsafeStringMap<float> offsets_;
     ThreadsafeStringMap<float> discreteness_;

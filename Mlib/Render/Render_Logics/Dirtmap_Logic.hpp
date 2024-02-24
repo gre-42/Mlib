@@ -29,12 +29,10 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void set_filename(const std::string& filename);
 private:
     RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
     bool generated_;
-    std::string filename_;
 };
 
 }

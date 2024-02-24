@@ -16,15 +16,16 @@ struct ColormapWithModifiers {
     std::string average = "";
     std::string multiply = "";
     std::string alpha_blend = "";
-    OrderableFixedArray<float, 3> mean_color = {-1.f, -1.f, -1.f};
-    OrderableFixedArray<float, 3> lighten = {0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> lighten_left = {0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> lighten_right = {0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> lighten_top = {0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> lighten_bottom = {0.f, 0.f, 0.f};
-    OrderableFixedArray<float, 3> selected_color = {-1.f, -1.f, -1.f};
+    OrderableFixedArray<float, 3> mean_color = { -1.f, -1.f, -1.f };
+    OrderableFixedArray<float, 3> lighten = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> lighten_left = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> lighten_right = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> lighten_top = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> lighten_bottom = { 0.f, 0.f, 0.f };
+    OrderableFixedArray<float, 3> selected_color = { -1.f, -1.f, -1.f };
     float selected_color_near = 0;
     float selected_color_far = INFINITY;
+    float edge_sigma = 0.f;
     float times = 1.f;
     float plus = 0.f;
     bool abs = false;
@@ -33,7 +34,7 @@ struct ColormapWithModifiers {
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
     unsigned int anisotropic_filtering_level = 0;
-    OrderableFixedArray<WrapMode, 2> wrap_modes = {WrapMode::REPEAT, WrapMode::REPEAT};
+    OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
     std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -53,6 +54,7 @@ struct ColormapWithModifiers {
         archive(selected_color);
         archive(selected_color_near);
         archive(selected_color_far);
+        archive(edge_sigma);
         archive(times);
         archive(plus);
         archive(abs);
