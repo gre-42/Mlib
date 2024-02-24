@@ -51,6 +51,7 @@ struct TextureHandleAndOwner {
 struct ManualAtlasTileDescriptor {
     int left;
     int bottom;
+    size_t layer;
     std::string filename;
 };
 
@@ -67,6 +68,7 @@ std::ostream& operator << (std::ostream& ostr, const AutoAtlasTileDescriptor& aa
 struct ManualTextureAtlasDescriptor {
     int width;
     int height;
+    size_t nlayers;
     ColorMode color_mode;
     std::vector<ManualAtlasTileDescriptor> tiles;
 };
@@ -171,6 +173,12 @@ public:
     const std::string& name() const;
     void print(std::ostream& ostr, size_t indentation = 0) const;
 
+    std::vector<StbInfo<uint8_t>> get_texture_array_data(
+        const ColormapWithModifiers& color,
+        TextureRole role,
+        FlipMode flip_mode,
+        CopyBehavior copy_behavior = CopyBehavior::RAISE) const;
+
     StbInfo<uint8_t> get_texture_data(
         const ColormapWithModifiers& color,
         TextureRole role,
@@ -180,6 +188,7 @@ public:
     const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
 
     void save_to_file(const std::string& filename, const ColormapWithModifiers& color, TextureRole role) const;
+    void save_array_to_file(const std::string& filename_prefix, const ColormapWithModifiers& color, TextureRole role) const;
 
     virtual void insert_texture(
         const std::string& name,
@@ -191,11 +200,12 @@ private:
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
-    void initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role) const;
+    GLuint initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
     TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
     mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
+    mutable ThreadsafeMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;

@@ -41,6 +41,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint vertex_scale_location;
     GLint uv_scale_location;
     GLint uv_offset_location;
+    GLint texture_layers_location;
     GLint alpha_distances_location;
 };
 

@@ -14,10 +14,10 @@ public:
 		: begin_(begin)
 		, count_{ integral_cast<size_t>(end - begin) }
 	{}
-	T* begin() {
+	T* begin() const {
 		return begin_;
 	}
-	T* end() {
+	T* end() const {
 		return begin_ + count_;
 	}
 private:

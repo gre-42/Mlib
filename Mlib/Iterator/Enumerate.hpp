@@ -7,39 +7,38 @@ namespace Mlib {
 template<typename Iterable>
 class enumerate_object
 {
-    private:
-        Iterable iter_;
-        std::size_t size_;
-        decltype(std::begin(iter_)) begin_;
-        const decltype(std::end(iter_)) end_;
+private:
+    static Iterable container();
+    std::size_t size_;
+    decltype(std::begin(container())) begin_;
+    decltype(std::end(container())) end_;
 
-    public:
-        enumerate_object(Iterable iter):
-            iter_(iter),
-            size_(0),
-            begin_(std::begin(iter)),
-            end_(std::end(iter))
-        {}
+public:
+    enumerate_object(Iterable iter)
+        : size_(0)
+        , begin_(std::begin(iter))
+        , end_(std::end(iter))
+    {}
 
-        const enumerate_object& begin() const { return *this; }
-        const enumerate_object& end()   const { return *this; }
+    const enumerate_object& begin() const { return *this; }
+    const enumerate_object& end()   const { return *this; }
 
-        bool operator!=(const enumerate_object&) const
-        {
-            return begin_ != end_;
-        }
+    bool operator!=(const enumerate_object&) const
+    {
+        return begin_ != end_;
+    }
 
-        void operator++()
-        {
-            ++begin_;
-            ++size_;
-        }
+    void operator++()
+    {
+        ++begin_;
+        ++size_;
+    }
 
-        auto operator*() const
-            -> std::pair<std::size_t, decltype(*begin_)&>
-        {
-            return { size_, *begin_ };
-        }
+    auto operator*() const
+        -> std::pair<std::size_t, decltype(*begin_)&>
+    {
+        return { size_, *begin_ };
+    }
 };
 
 template<typename Iterable>

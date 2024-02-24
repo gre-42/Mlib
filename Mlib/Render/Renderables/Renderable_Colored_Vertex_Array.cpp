@@ -543,6 +543,19 @@ void RenderableColoredVertexArray::render_cva(
     for (const auto& t : cva->material.textures_alpha) {
         texture_modifiers_hash.combine(t.modifiers_hash());
     }
+    bool has_texture_layer = false;
+    for (const auto& x : cva->material.billboard_atlas_instances) {
+        if (x.texture_layer > 0) {
+            has_texture_layer = true;
+            break;
+        }
+    }
+    if (!cva->triangle_texture_layers.empty()) {
+        if (has_texture_layer) {
+            THROW_OR_ABORT("Detected texture layer per vertex and per instance");
+        }
+        has_texture_layer = true;
+    }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
@@ -575,7 +588,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
-            .has_texture_layer = !cva->triangle_texture_layers.empty(),
+            .has_texture_layer = has_texture_layer,
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
@@ -634,7 +647,11 @@ void RenderableColoredVertexArray::render_cva(
         std::vector<FixedArray<float, 3>> vertex_scale(n);
         std::vector<FixedArray<float, 2>> uv_scale(n);
         std::vector<FixedArray<float, 2>> uv_offset(n);
+        std::vector<GLuint> texture_layers;
         std::vector<FixedArray<float, 4>> alpha_distances;
+        if (has_texture_layer) {
+            texture_layers.resize(n);
+        }
         if (!vc.orthographic()) {
             alpha_distances.resize(n);
         }
@@ -642,6 +659,9 @@ void RenderableColoredVertexArray::render_cva(
             uv_offset[i] = cva->material.billboard_atlas_instances[i].uv_offset;
             uv_scale[i] = cva->material.billboard_atlas_instances[i].uv_scale;
             vertex_scale[i] = cva->material.billboard_atlas_instances[i].vertex_scale;
+            if (has_texture_layer) {
+                texture_layers[i] = integral_cast<GLuint>(cva->material.billboard_atlas_instances[i].texture_layer);
+            }
             if (!vc.orthographic()) {
                 alpha_distances[i] = cva->material.billboard_atlas_instances[i].alpha_distances;
             }
@@ -649,6 +669,9 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.uv_offset_location, ni, (const GLfloat*)uv_offset.data()));
         CHK(glUniform2fv(rp.uv_scale_location, ni, (const GLfloat*)uv_scale.data()));
         CHK(glUniform3fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
+        if (has_texture_layer) {
+            CHK(glUniform1uiv(rp.texture_layers_location, ni, (const GLuint*)texture_layers.data()));
+        }
         if (!vc.orthographic()) {
             CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances.data()));
         }
@@ -799,9 +822,9 @@ void RenderableColoredVertexArray::render_cva(
                 : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            GLenum target = cva->triangle_texture_layers.empty()
-                ? GL_TEXTURE_2D
-                : GL_TEXTURE_2D_ARRAY;
+            GLenum target = has_texture_layer
+                ? GL_TEXTURE_2D_ARRAY
+                : GL_TEXTURE_2D;
             CHK(glBindTexture(target, texture));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color.filename + '"');
             setup_texture(t.texture_descriptor, target);

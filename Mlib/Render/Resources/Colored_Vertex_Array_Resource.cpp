@@ -163,6 +163,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
+        if (has_texture_layer) {
+            sstr << "uniform uint texture_layers[" << nbillboard_ids << "];" << std::endl;
+        }
         if (!orthographic) {
             sstr << "uniform vec4 alpha_distances[" << nbillboard_ids << "];" << std::endl;
             sstr << "out float alpha_fac_v;" << std::endl;
@@ -174,7 +177,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
-    if (has_texture_layer) {
+    if (has_texture_layer && (nbillboard_ids == 0)) {
         sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in lowp uint texture_layer;" << std::endl;
     }
     if (has_uv_offset_u) {
@@ -227,7 +230,11 @@ static GenShaderText vertex_shader_text_gen{[](
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (has_texture_layer) {
-        sstr << "    texture_layer_fs = texture_layer;" << std::endl;
+        if (nbillboard_ids != 0) {
+            sstr << "    texture_layer_fs = texture_layers[billboard_id];" << std::endl;
+        } else {
+            sstr << "    texture_layer_fs = texture_layer;" << std::endl;
+        }
     }
     if (has_interiormap) {
         sstr << "    interior_bottom_left_fs = interior_bottom_left;" << std::endl;
@@ -1616,6 +1623,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->vertex_scale_location = checked_glGetUniformLocation(rp->program, "vertex_scale");
             rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
             rp->uv_offset_location = checked_glGetUniformLocation(rp->program, "uv_offset");
+            if (id.has_texture_layer) {
+                rp->texture_layers_location = checked_glGetUniformLocation(rp->program, "texture_layers");
+            } else {
+                rp->texture_layers_location = 0;
+            }
             if (!id.orthographic) {
                 rp->alpha_distances_location = checked_glGetUniformLocation(rp->program, "alpha_distances");
             } else {
@@ -1625,6 +1637,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->vertex_scale_location = 0;
             rp->uv_scale_location = 0;
             rp->uv_offset_location = 0;
+            rp->texture_layers_location = 0;
             rp->alpha_distances_location = 0;
         }
         assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());

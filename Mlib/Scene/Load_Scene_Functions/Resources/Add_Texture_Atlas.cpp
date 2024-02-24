@@ -16,13 +16,15 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(width);
 DECLARE_ARGUMENT(height);
+DECLARE_ARGUMENT(layers);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(images);
 }
 
 namespace AtlasTileArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(texture_pos);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(layer);
 DECLARE_ARGUMENT(texture);
 }
 
@@ -38,10 +40,11 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto tiles = args.arguments.children(KnownArgs::images, [](const JsonMacroArguments& a){
         a.validate(AtlasTileArgs::options);
-        auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::texture_pos);
+        auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::position);
         return ManualAtlasTileDescriptor{
             .left = texture_pos(0),
             .bottom = texture_pos(1),
+            .layer = a.at<size_t>(AtlasTileArgs::layer, 0),
             .filename = a.path_or_variable(AtlasTileArgs::texture).path};
     });
     RenderingContextStack::primary_rendering_resources().add_manual_texture_atlas(
@@ -49,6 +52,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
         ManualTextureAtlasDescriptor{
             .width = args.arguments.at<int>(KnownArgs::width),
             .height = args.arguments.at<int>(KnownArgs::height),
+            .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             .tiles = tiles});
 }
