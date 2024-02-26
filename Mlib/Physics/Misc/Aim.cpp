@@ -46,7 +46,7 @@ Aim::Aim(
         auto yt = sa * bullet_start_offset + sa * velocity * ta - gravity / 2 * squared(ta);
         return yt - y;
     };
-    auto f = [y, bullet_start_offset, velocity, gravity, &t, &ft](double a) {
+    auto f = [&t, &ft](double a) {
         return ft(a, t(a));
     };
     auto df = [x, bullet_start_offset, velocity, gravity](double a) {
