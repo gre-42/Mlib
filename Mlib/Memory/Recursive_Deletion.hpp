@@ -36,14 +36,19 @@ void clear_list_recursively(TContainer& elements, const TFunction& deleter) {
     }
 }
 
-template <class TContainer, class TLock>
-void clear_list_recursively_with_lock(TContainer& elements, TLock& lock) {
+template <class TContainer, class TLock, class TFunction>
+void clear_list_recursively_with_lock(
+    TContainer& elements,
+    TLock& lock,
+    const TFunction& deleter)
+{
     while (!elements.empty()) {
         auto it_second = elements.begin();
         ++it_second;
         TContainer list2;
         list2.splice(list2.begin(), elements, elements.begin(), it_second);
         lock.unlock();
+        deleter(list2.front());
         list2.clear();
         lock.lock();
     }

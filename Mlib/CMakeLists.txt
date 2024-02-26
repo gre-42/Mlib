@@ -6,6 +6,7 @@ target_include_directories(Mlib PUBLIC ${Mlib_INCLUDE_DIR})
 target_link_libraries(Mlib MlibStrings)
 
 # add_subdirectory(Float128)
+add_subdirectory(Components)
 add_subdirectory(Geography)
 add_subdirectory(Geometry)
 add_subdirectory(Images)

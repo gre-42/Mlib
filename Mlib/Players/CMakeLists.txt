@@ -10,4 +10,4 @@ endif()
 
 include_directories(${Mlib_INCLUDE_DIR})
 
-target_link_libraries(MlibPlayers MlibPhysics)
+target_link_libraries(MlibPlayers MlibPhysics MlibComponents)

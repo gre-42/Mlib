@@ -1,11 +1,10 @@
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
+#include <cstddef>
 
 namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-class IAbsoluteMovable;
 
 class IAbsoluteObserver {
 public:

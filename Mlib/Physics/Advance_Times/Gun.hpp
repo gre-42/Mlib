@@ -34,7 +34,7 @@ public:
         float cool_down,
         RigidBodyVehicle& parent_rb,
         DanglingRef<SceneNode> node,
-        DanglingRef<SceneNode> punch_angle_node,
+        DanglingPtr<SceneNode> punch_angle_node,
         const std::string& bullet_renderable_resource_name,
         const std::string& bullet_hitbox_resource_name,
         const std::string& bullet_explosion_resource_name,
@@ -81,7 +81,7 @@ private:
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
     DanglingRef<SceneNode> node_;
-    DanglingRef<SceneNode> punch_angle_node_;
+    DanglingPtr<SceneNode> punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;
     std::string bullet_explosion_resource_name_;

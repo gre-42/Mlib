@@ -31,24 +31,35 @@ Aim::Aim(
     // t(a) := (x - cos(a) * bullet_start_offset) / (cos(a) * velocity);
     // yt(a) := sin(a) * bullet_start_offset + sin(a) * velocity * t(a) - gravity / 2 * t(a)^2;
     // diff(yt(a) - y, a);
-    double x = std::sqrt(
+    auto x = std::sqrt(
         squared(gun_pos(0) - target_pos(0)) +
         squared(gun_pos(2) - target_pos(2)));
-    double y = target_pos(1) - gun_pos(1);
+    auto y = target_pos(1) - gun_pos(1);
     angle0 = std::atan2(y, x);
 
-    auto t = [x, bullet_start_offset, velocity](double a){
-        return (x - cos(a) * bullet_start_offset) / (cos(a) * velocity);
+    auto t = [x, bullet_start_offset, velocity](double a) {
+        auto ca = cos(a);
+        return (x - ca * bullet_start_offset) / (ca * velocity);
     };
-    auto f = [y, bullet_start_offset, velocity, gravity, &t](double a){
-        double ta = t(a);
-        double yt = sin(a) * bullet_start_offset + sin(a) * velocity * ta - gravity / 2 * squared(ta);
+    auto ft = [y, bullet_start_offset, velocity, gravity](double a, double ta) {
+        auto sa = sin(a);
+        auto yt = sa * bullet_start_offset + sa * velocity * ta - gravity / 2 * squared(ta);
         return yt - y;
     };
-    auto df = [x, bullet_start_offset, velocity, gravity](double a){
-        return
-            -(sin(a)*gravity*squared(x-cos(a)*bullet_start_offset))/(cubed(cos(a))*squared(velocity))-(sin(a)*bullet_start_offset*gravity*(x-cos(a)*bullet_start_offset))/(squared(cos(a)*velocity))+(squared(sin(a))*(x-cos(a)*bullet_start_offset))/squared(cos(a))+x+(squared(sin(a))*bullet_start_offset)/cos(a);
+    auto f = [y, bullet_start_offset, velocity, gravity, &t, &ft](double a) {
+        return ft(a, t(a));
     };
+    auto df = [x, bullet_start_offset, velocity, gravity](double a) {
+        auto ca = std::cos(a);
+        auto sa = std::sin(a);
+        return
+            -(sa * gravity * squared(x - ca * bullet_start_offset)) /
+            (cubed(ca) * squared(velocity))
+            - (sa * bullet_start_offset * gravity * (x - ca * bullet_start_offset)) /
+            squared(ca * velocity)
+            + (squared(sa) * (x - ca * bullet_start_offset)) /
+            squared(ca) + x + (squared(sa) * bullet_start_offset) / ca;
+        };
     angle = NAN;
     for (double a = angle0; a < double(M_PI / 2); a += 0.2) {
         if (f(a) > 0) {

@@ -97,7 +97,9 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> parent_rb_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_rigid_body_node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(parent_rb_node);
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    DanglingRef<SceneNode> punch_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC);
+    DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains_non_null(KnownArgs::punch_angle_node)
+        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC).ptr()
+        : nullptr;
     float punch_angle_idle_std = args.arguments.at<float>(KnownArgs::punch_angle_idle_std) * degrees;
     float punch_angle_shoot_std = args.arguments.at<float>(KnownArgs::punch_angle_shoot_std) * degrees;
     float punch_angle_idle_alpha = 0.002f;

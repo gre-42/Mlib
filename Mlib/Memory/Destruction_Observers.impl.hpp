@@ -31,7 +31,7 @@ void DestructionObservers<T>::add(
     if (shutting_down_) {
         verbose_abort("DestructionObservers::add despite shutdown");
     }
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     auto r = observers_.insert(&destruction_observer);
     if (!r.second && (already_exists_behavior == ObserverAlreadyExistsBehavior::RAISE)) {
         verbose_abort("Destruction observer already registered");
@@ -44,7 +44,7 @@ void DestructionObservers<T>::remove(
     ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
     if (!shutting_down_) {
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         size_t nerased = observers_.erase(&destruction_observer);
         if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
             verbose_abort("Could not find destruction observer to be erased");
@@ -57,7 +57,7 @@ void DestructionObservers<T>::shutdown() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::shutdown despite active shutdown");
     }
-    std::unique_lock lock{mutex_};
+    std::unique_lock lock{ mutex_ };
     shutting_down_ = true;
     clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
         lock.unlock();
@@ -71,7 +71,7 @@ void DestructionObservers<T>::notify_destroyed() {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::notify_destroyed despite shutdown");
     }
-    std::unique_lock lock{mutex_};
+    std::unique_lock lock{ mutex_ };
     shutting_down_ = true;
     clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
         lock.unlock();

@@ -139,6 +139,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Add_Weapon_To_Cycle.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Burn_In.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Connect_Trailer.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Aim_At.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Crash.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Damageable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
@@ -262,6 +263,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateCheckPoints::key, CreateCheckPoints::json_user_function);
     register_json_user_function(CreateSkidmark::key, CreateSkidmark::json_user_function);
     register_json_user_function(CreateChildNode::key, CreateChildNode::json_user_function);
+    register_json_user_function(CreateAimAt::key, CreateAimAt::json_user_function);
     register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
     register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
     register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);

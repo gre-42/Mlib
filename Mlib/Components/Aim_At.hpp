@@ -2,11 +2,11 @@
 
 namespace Mlib {
 
-class Gun;
+class AimAt;
 class SceneNode;
 template <class T>
 class DanglingRef;
 
-Gun& get_gun(DanglingRef<SceneNode> node);
+AimAt& get_aim_at(DanglingRef<SceneNode> node);
 
 }

@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
@@ -10,8 +11,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
-#include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
-#include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
+#include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -53,38 +53,37 @@ Player::Player(
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses)
-: destruction_observers{ *this },
-  car_movement{ *this },
-  avatar_movement{ *this },
-  scene_{ scene },
-  collision_query_{ collision_query },
-  vehicle_spawners_{ vehicle_spawners },
-  players_{ players },
-  name_{ name },
-  team_{ team },
-  vehicle_{nullptr},
-  controlled_{
-      .ypln = nullptr,
-      .gun_node = nullptr
-  },
-  target_scene_node_{ nullptr },
-  target_rb_{ nullptr },
-  game_mode_{ game_mode },
-  unstuck_mode_{ unstuck_mode },
-  driving_mode_{ driving_mode },
-  driving_direction_{ driving_direction },
-  nunstucked_{ 0 },
-  skills_{
-    {ControlSource::AI, Skills{}},
-    {ControlSource::USER, Skills{}}},
-  delete_node_mutex_{ delete_node_mutex },
-  next_scene_vehicle_{ nullptr },
-  externals_mode_{ ExternalsMode::NONE },
-  single_waypoint_{ *this, },
-  pathfinding_waypoints_{ *this, cfg },
-  supply_depots_waypoints_{ *this, single_waypoint_, supply_depots },
-  playback_waypoints_{ *this },
-  focuses_{focuses}
+    : destruction_observers{ *this }
+    , car_movement{ *this }
+    , avatar_movement{ *this }
+    , scene_{ scene }
+    , collision_query_{ collision_query }
+    , vehicle_spawners_{ vehicle_spawners }
+    , players_{ players }
+    , name_{ name }
+    , team_{ team }
+    , vehicle_{ nullptr }
+    , controlled_{
+      .aim_at = nullptr,
+      .gun_node = nullptr }
+    , target_scene_node_{ nullptr }
+    , target_rb_{ nullptr }
+    , game_mode_{ game_mode }
+    , unstuck_mode_{ unstuck_mode }
+    , driving_mode_{ driving_mode }
+    , driving_direction_{ driving_direction }
+    , nunstucked_{ 0 }
+    , skills_{
+        {ControlSource::AI, Skills{}},
+        {ControlSource::USER, Skills{}} }
+    , delete_node_mutex_{ delete_node_mutex }
+    , next_scene_vehicle_{ nullptr }
+    , externals_mode_{ ExternalsMode::NONE }
+    , single_waypoint_{ *this, }
+    , pathfinding_waypoints_{ *this, cfg }
+    , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
+    , playback_waypoints_{ *this }
+    , focuses_{ focuses }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -135,11 +134,11 @@ void Player::reset_node() {
         target_scene_node_->clearing_observers.remove(*this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
-        if (controlled_.ypln != nullptr) {
-            controlled_.ypln->set_followed(nullptr, nullptr);
+        if (controlled_.aim_at != nullptr) {
+            controlled_.aim_at->set_followed(nullptr, nullptr);
         }
     }
-    controlled_.ypln = nullptr;
+    controlled_.aim_at = nullptr;
     vehicle_movement.reset_node();
     car_movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
@@ -182,16 +181,16 @@ const std::string& Player::scene_node_name() const {
     return vehicle().scene_node_name();
 }
 
-void Player::set_ypln(YawPitchLookAtNodes& ypln, DanglingPtr<SceneNode> gun_node) {
+void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (controlled_.ypln != nullptr) {
-        THROW_OR_ABORT("ypln already set");
+    if (controlled_.aim_at != nullptr) {
+        THROW_OR_ABORT("aim_at already set");
     }
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
     }
-    controlled_.ypln = &ypln;
-    controlled_.gun_node = gun_node;
+    controlled_.aim_at = &get_aim_at(gun_node);
+    controlled_.gun_node = gun_node.ptr();
 }
 
 const std::string& Player::name() const {
@@ -450,7 +449,7 @@ void Player::trigger_gun() {
 }
 
 bool Player::has_gun_node() const {
-    assert_true((controlled_.ypln == nullptr) == (controlled_.gun_node == nullptr));
+    assert_true((controlled_.aim_at == nullptr) == (controlled_.gun_node == nullptr));
     return (controlled_.gun_node != nullptr);
 }
 
@@ -528,8 +527,7 @@ const Gun& Player::gun() const {
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }
-    Gun& gun = get_gun(*controlled_.gun_node);
-    return gun;
+    return get_gun(*controlled_.gun_node);
 }
 
 Gun& Player::gun() {
@@ -554,19 +552,19 @@ void Player::aim_and_shoot() {
     if (target_rb_ == nullptr) {
         select_next_opponent();
     }
-    if (controlled_.ypln == nullptr) {
+    if (controlled_.aim_at == nullptr) {
         return;
     }
     assert_true((vehicle_ == nullptr) ||
                 (vehicle_->scene_node().ptr() != target_scene_node_));
-    controlled_.ypln->set_followed(target_scene_node_, target_rb_);
+    controlled_.aim_at->set_followed(target_scene_node_, target_rb_);
     if (controlled_.gun_node == nullptr) {
         return;
     }
     if (!skills_.at(ControlSource::AI).can_shoot) {
         return;
     }
-    if ((target_scene_node_ != nullptr) && (controlled_.ypln->target_locked_on())) {
+    if ((target_scene_node_ != nullptr) && (controlled_.aim_at->target_locked_on())) {
         gun().trigger(this, &team());
     }
 }

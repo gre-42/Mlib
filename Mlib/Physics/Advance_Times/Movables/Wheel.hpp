@@ -9,6 +9,7 @@ namespace Mlib {
 
 template <class T>
 class DanglingRef;
+class SceneNode;
 class AdvanceTimes;
 class RigidBodyVehicle;
 

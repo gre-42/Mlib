@@ -34,7 +34,7 @@ Gun::Gun(
     float cool_down,
     RigidBodyVehicle& parent_rb,
     DanglingRef<SceneNode> node,
-    DanglingRef<SceneNode> punch_angle_node,
+    DanglingPtr<SceneNode> punch_angle_node,
     const std::string& bullet_renderable_resource_name,
     const std::string& bullet_hitbox_resource_name,
     const std::string& bullet_explosion_resource_name,
@@ -99,7 +99,9 @@ void Gun::advance_time(float dt) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
     punch_angle_ = punch_angle_rng_(maybe_generate_bullet());
-    punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
+    if (punch_angle_node_ != nullptr) {
+        punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
+    }
     triggered_ = false;
 }
 

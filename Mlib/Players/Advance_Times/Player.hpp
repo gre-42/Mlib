@@ -34,7 +34,7 @@ class SceneNode;
 class Scene;
 class SupplyDepots;
 class CollisionQuery;
-class YawPitchLookAtNodes;
+class AimAt;
 class Gun;
 enum class DrivingDirection;
 enum class WayPointLocation;
@@ -91,7 +91,7 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
 enum class ControlSource;
 
 struct PlayerControlled {
-    YawPitchLookAtNodes* ypln;
+    AimAt* aim_at;
     DanglingPtr<SceneNode> gun_node;
 };
 
@@ -139,7 +139,7 @@ public:
     const std::string& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
-    void set_ypln(YawPitchLookAtNodes& ypln, DanglingPtr<SceneNode> gun_node);
+    void set_gun_node(DanglingRef<SceneNode> gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team_name() const;

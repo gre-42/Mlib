@@ -1,5 +1,6 @@
 #include "Player_Set_Aiming_Gun.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -14,7 +15,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(gun_node);
 }
 
@@ -32,14 +32,6 @@ PlayerSetAimingGun::PlayerSetAimingGun(RenderableScene& renderable_scene)
 
 void PlayerSetAimingGun::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> ypln_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::ypln_node), DP_LOC);
-    auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&ypln_node->get_relative_movable());
-    if (ypln == nullptr) {
-        THROW_OR_ABORT("Relative movable is not a ypln");
-    }
-    DanglingPtr<SceneNode> gun_node = nullptr;
-    if (args.arguments.contains(KnownArgs::gun_node)) {
-        gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC).ptr();
-    }
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_ypln(*ypln, gun_node);
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).set_gun_node(gun_node);
 }

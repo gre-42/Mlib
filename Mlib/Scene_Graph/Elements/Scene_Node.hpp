@@ -133,12 +133,14 @@ public:
     IRelativeMovable& get_relative_movable() const;
     INodeModifier& get_node_modifier() const;
     IAbsoluteObserver& get_absolute_observer() const;
+    IAbsoluteObserver& get_sticky_absolute_observer() const;
     bool has_node_modifier() const;
     void set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>& relative_movable);
     void set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier);
     void insert_node_hider(INodeHider& node_hider);
     void remove_node_hider(INodeHider& node_hider);
     void set_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer);
+    void set_sticky_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& sticky_absolute_observer);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -306,7 +308,7 @@ private:
     std::unique_ptr<INodeModifier> node_modifier_;
     std::set<INodeHider*> node_hiders_;
     IAbsoluteObserver* absolute_observer_;
-    DestructionObserver<DanglingRef<const SceneNode>>* absolute_destruction_observer_;
+    IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
     std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
