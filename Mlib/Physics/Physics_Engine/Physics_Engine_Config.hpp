@@ -15,7 +15,7 @@ struct PhysicsEngineConfig {
     bool print_residual_time = false;
 
     // BVH
-    float static_radius = 200.f * meters;
+    float static_radius = 20.f * meters;
     float bvh_max_size = 2.f * meters;
     size_t bvh_levels = 15;
     float supply_depot_attraction_radius = 10.0 * meters;
