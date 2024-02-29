@@ -543,19 +543,29 @@ void RenderableColoredVertexArray::render_cva(
     for (const auto& t : cva->material.textures_alpha) {
         texture_modifiers_hash.combine(t.modifiers_hash());
     }
-    bool has_texture_layer = false;
+    bool has_discrete_atlas_texture_layer = false;
     for (const auto& x : cva->material.billboard_atlas_instances) {
         if (x.texture_layer > 0) {
-            has_texture_layer = true;
+            has_discrete_atlas_texture_layer = true;
             break;
         }
     }
-    if (!cva->triangle_texture_layers.empty()) {
-        if (has_texture_layer) {
-            THROW_OR_ABORT("Detected texture layer per vertex and per instance");
-        }
-        has_texture_layer = true;
+    if (!cva->discrete_triangle_texture_layers.empty() &&
+        has_discrete_atlas_texture_layer)
+    {
+        THROW_OR_ABORT("Detected discrete texture layer per vertex and per instance");
     }
+    bool has_discrete_texture_layer =
+        !cva->discrete_triangle_texture_layers.empty() ||
+        has_discrete_atlas_texture_layer;
+    if (!cva->continuous_triangle_texture_layers.empty() &&
+        has_discrete_texture_layer)
+    {
+        THROW_OR_ABORT("Detected discrete and continuous texture layer");
+    }
+    bool has_texture_layer =
+        !cva->continuous_triangle_texture_layers.empty() ||
+        has_discrete_texture_layer;
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
@@ -588,7 +598,9 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
-            .has_texture_layer = has_texture_layer,
+            .has_continuous_vertex_texture_layer = !cva->continuous_triangle_texture_layers.empty(),
+            .has_discrete_vertex_texture_layer = !cva->discrete_triangle_texture_layers.empty(),
+            .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
             .reorient_uv0 = reorient_uv0,
@@ -649,7 +661,7 @@ void RenderableColoredVertexArray::render_cva(
         std::vector<FixedArray<float, 2>> uv_offset(n);
         std::vector<GLuint> texture_layers;
         std::vector<FixedArray<float, 4>> alpha_distances;
-        if (has_texture_layer) {
+        if (has_discrete_atlas_texture_layer) {
             texture_layers.resize(n);
         }
         if (!vc.orthographic()) {
@@ -659,7 +671,7 @@ void RenderableColoredVertexArray::render_cva(
             uv_offset[i] = cva->material.billboard_atlas_instances[i].uv_offset;
             uv_scale[i] = cva->material.billboard_atlas_instances[i].uv_scale;
             vertex_scale[i] = cva->material.billboard_atlas_instances[i].vertex_scale;
-            if (has_texture_layer) {
+            if (has_discrete_atlas_texture_layer) {
                 texture_layers[i] = integral_cast<GLuint>(cva->material.billboard_atlas_instances[i].texture_layer);
             }
             if (!vc.orthographic()) {
@@ -669,7 +681,7 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniform2fv(rp.uv_offset_location, ni, (const GLfloat*)uv_offset.data()));
         CHK(glUniform2fv(rp.uv_scale_location, ni, (const GLfloat*)uv_scale.data()));
         CHK(glUniform3fv(rp.vertex_scale_location, ni, (const GLfloat*)vertex_scale.data()));
-        if (has_texture_layer) {
+        if (has_discrete_atlas_texture_layer) {
             CHK(glUniform1uiv(rp.texture_layers_location, ni, (const GLuint*)texture_layers.data()));
         }
         if (!vc.orthographic()) {

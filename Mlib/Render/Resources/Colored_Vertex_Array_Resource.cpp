@@ -128,7 +128,9 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_yangle,
     bool has_uv_offset_u,
     size_t nbones,
-    bool has_texture_layer,
+    bool has_continuous_vertex_texture_layer,
+    bool has_discrete_vertex_texture_layer,
+    bool has_discrete_atlas_texture_layer,
     bool reorient_normals,
     bool reorient_uv0,
     bool orthographic,
@@ -163,7 +165,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 vertex_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_scale[" << nbillboard_ids << "];" << std::endl;
         sstr << "uniform vec2 uv_offset[" << nbillboard_ids << "];" << std::endl;
-        if (has_texture_layer) {
+        if (has_discrete_atlas_texture_layer) {
             sstr << "uniform uint texture_layers[" << nbillboard_ids << "];" << std::endl;
         }
         if (!orthographic) {
@@ -177,8 +179,11 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform vec3 bone_positions[" << nbones << "];" << std::endl;
         sstr << "uniform vec4 bone_quaternions[" << nbones << "];" << std::endl;
     }
-    if (has_texture_layer && (nbillboard_ids == 0)) {
+    if (has_discrete_vertex_texture_layer) {
         sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in lowp uint texture_layer;" << std::endl;
+    }
+    if (has_continuous_vertex_texture_layer) {
+        sstr << "layout (location=" << IDX_TEXTURE_LAYER << ") in float texture_layer;" << std::endl;
     }
     if (has_uv_offset_u) {
         sstr << "uniform float uv_offset_u;" << std::endl;
@@ -205,7 +210,10 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "uniform mat4 MVP_dirtmap;" << std::endl;
         sstr << "out vec2 tex_coord_dirtmap;" << std::endl;
     }
-    if (has_texture_layer) {
+    if (has_continuous_vertex_texture_layer) {
+        sstr << "out float texture_layer_fs;" << std::endl;
+    }
+    if (has_discrete_atlas_texture_layer || has_discrete_vertex_texture_layer) {
         sstr << "flat out lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
@@ -229,12 +237,11 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
-    if (has_texture_layer) {
-        if (nbillboard_ids != 0) {
-            sstr << "    texture_layer_fs = texture_layers[billboard_id];" << std::endl;
-        } else {
-            sstr << "    texture_layer_fs = texture_layer;" << std::endl;
-        }
+    if (has_discrete_atlas_texture_layer) {
+        sstr << "    texture_layer_fs = texture_layers[billboard_id];" << std::endl;
+    }
+    if (has_discrete_vertex_texture_layer || has_continuous_vertex_texture_layer) {
+        sstr << "    texture_layer_fs = texture_layer;" << std::endl;
     }
     if (has_interiormap) {
         sstr << "    interior_bottom_left_fs = interior_bottom_left;" << std::endl;
@@ -390,7 +397,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float reflection_strength,
     bool reflect_only_y,
     bool has_dirtmap,
-    bool has_texture_layer_color,
+    bool has_continuous_texture_layer_color,
+    bool has_discrete_texture_layer_color,
     bool has_interiormap,
     const OrderableFixedArray<float, 2>& facade_edge_size,
     const OrderableFixedArray<float, 2>& facade_inner_size,
@@ -423,6 +431,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
+    bool has_texture_layer_color = (has_continuous_texture_layer_color || has_discrete_texture_layer_color);
     const char* sampler_type_color = has_texture_layer_color
         ? "sampler2DArray"
         : "sampler2D";
@@ -485,7 +494,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform sampler2D texture_dirtmap;" << std::endl;
         sstr << "uniform sampler2D texture_dirt;" << std::endl;
     }
-    if (has_texture_layer_color) {
+    if (has_continuous_texture_layer_color) {
+        sstr << "in float texture_layer_fs;" << std::endl;
+    }
+    if (has_discrete_texture_layer_color) {
         sstr << "flat in lowp uint texture_layer_fs;" << std::endl;
     }
     if (has_interiormap) {
@@ -1529,7 +1541,9 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_yangle,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
-        id.has_texture_layer,
+        id.has_continuous_vertex_texture_layer,
+        id.has_discrete_vertex_texture_layer,
+        id.has_discrete_atlas_texture_layer,
         id.reorient_normals,
         id.reorient_uv0,
         id.orthographic,
@@ -1557,7 +1571,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.reflection_strength,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
-        id.has_texture_layer,
+        id.has_continuous_vertex_texture_layer,
+        id.has_discrete_atlas_texture_layer || id.has_discrete_vertex_texture_layer,
         id.ntextures_interior != 0,
         id.facade_edge_size,
         id.facade_inner_size,
@@ -1623,7 +1638,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->vertex_scale_location = checked_glGetUniformLocation(rp->program, "vertex_scale");
             rp->uv_scale_location = checked_glGetUniformLocation(rp->program, "uv_scale");
             rp->uv_offset_location = checked_glGetUniformLocation(rp->program, "uv_offset");
-            if (id.has_texture_layer) {
+            if (id.has_discrete_atlas_texture_layer) {
                 rp->texture_layers_location = checked_glGetUniformLocation(rp->program, "texture_layers");
             } else {
                 rp->texture_layers_location = 0;
@@ -1878,11 +1893,25 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
         CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
         CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
-    if (!cva->triangle_texture_layers.empty()) {
-        if (cva->triangle_texture_layers.size() != cva->triangles.size()) {
-            THROW_OR_ABORT("#triangle_texture_layers != #triangles");
+    if (!cva->continuous_triangle_texture_layers.empty() &&
+        !cva->discrete_triangle_texture_layers.empty())
+    {
+        THROW_OR_ABORT("Detected both, discrete and continuous texture layers");
+    }
+    if (!cva->continuous_triangle_texture_layers.empty()) {
+        if (cva->continuous_triangle_texture_layers.size() != cva->triangles.size()) {
+            THROW_OR_ABORT("#continuous_triangle_texture_layers != #triangles");
         }
-        va.texture_layer_buffer.set(cva->triangle_texture_layers);
+        va.texture_layer_buffer.set(cva->continuous_triangle_texture_layers);
+
+        CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
+        CHK(glVertexAttribPointer(IDX_TEXTURE_LAYER, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
+    }
+    if (!cva->discrete_triangle_texture_layers.empty()) {
+        if (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()) {
+            THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
+        }
+        va.texture_layer_buffer.set(cva->discrete_triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));

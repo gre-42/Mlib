@@ -1,4 +1,5 @@
 #include "Aggregate_Array_Renderer.hpp"
+#include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -20,28 +21,178 @@
 
 using namespace Mlib;
 
-struct AggregateTriangle {
-    FixedArray<ColoredVertex<float>, 3> triangle;
-    FixedArray<uint8_t, 3> layer;
-    float distance_to_origin2;
-    inline operator const FixedArray<ColoredVertex<float>, 3>&() const {
-        return triangle;
-    }
-    inline operator const FixedArray<uint8_t, 3>&() const {
-        return layer;
-    }
+enum class TextureLayerType {
+    NONE,
+    CONTINUOUS,
+    DISCRETE
 };
 
-struct AggregateTriangles {
-    std::list<AggregateTriangle> atriangles;
-    bool has_texture_layers;
+template <TextureLayerType ttexture_layer_type>
+struct AggregateTriangle;
+
+template <>
+struct AggregateTriangle<TextureLayerType::NONE> {
+    FixedArray<ColoredVertex<float>, 3> triangle;
+    float distance_to_origin2;
 };
+
+template <>
+struct AggregateTriangle<TextureLayerType::CONTINUOUS> {
+    FixedArray<ColoredVertex<float>, 3> triangle;
+    FixedArray<float, 3> continuous_layer;
+    float distance_to_origin2;
+};
+
+template <>
+struct AggregateTriangle<TextureLayerType::DISCRETE> {
+    FixedArray<ColoredVertex<float>, 3> triangle;
+    FixedArray<uint8_t, 3> discrete_layer;
+    float distance_to_origin2;
+};
+
+class IAggregateTriangles {
+public:
+    virtual ~IAggregateTriangles() = default;
+    virtual void append(
+        const ColoredVertexArray<float>& a,
+        std::minstd_rand& rng,
+        const ExternalRenderPass& external_render_pass) = 0;
+    virtual void build(
+        std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        std::vector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
+        std::vector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) = 0;
+    virtual void sort() = 0;
+    virtual bool empty() const = 0;
+};
+
+template <TextureLayerType ttexture_layer_type>
+struct AggregateTriangles: public IAggregateTriangles {
+public:
+    virtual void append(
+        const ColoredVertexArray<float>& a,
+        std::minstd_rand& rng,
+        const ExternalRenderPass& external_render_pass) override
+    {
+        if (a.triangles.empty()) {
+            THROW_OR_ABORT("Detected empty triangles in array \"" + a.name + '"');
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::NONE) {
+            if (!a.continuous_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name + '"');
+            }
+            if (!a.discrete_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name + '"');
+            }
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
+            if (a.continuous_triangle_texture_layers.size() != a.triangles.size()) {
+                THROW_OR_ABORT("Conflicting number of continuous texture layers in array \"" + a.name + '"');
+            }
+            if (!a.discrete_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected discrete texture layers in array \"" + a.name + '"');
+            }
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
+            if (!a.continuous_triangle_texture_layers.empty()) {
+                THROW_OR_ABORT("Unexpected continuous texture layers in array \"" + a.name + '"');
+            }
+            if (a.discrete_triangle_texture_layers.size() != a.triangles.size()) {
+                THROW_OR_ABORT("Conflicting number of texture layers in array \"" + a.name + '"');
+            }
+        }
+        auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), a.material.max_triangle_distance };
+        for (size_t i = 0; i < a.triangles.size(); ++i) {
+            if (i % THREAD_YIELD_INTERVAL == 0) {
+                std::this_thread::yield();
+            }
+            const auto& c = a.triangles[i];
+            auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
+            // auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
+            if ((a.material.max_triangle_distance != INFINITY) &&
+                !camera_sphere.intersects(triangle_sphere) &&
+                !any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
+            {
+                continue;
+            }
+            auto distance_to_origin2 = sum(squared(triangle_sphere.center()));
+            if constexpr (ttexture_layer_type == TextureLayerType::NONE) {
+                atriangles_.push_back({ c, distance_to_origin2 });
+            }
+            if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
+                atriangles_.push_back({ c, a.continuous_triangle_texture_layers[i], distance_to_origin2 });
+            }
+            if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
+                atriangles_.push_back({ c, a.discrete_triangle_texture_layers[i], distance_to_origin2 });
+            }
+        }
+    }
+    virtual void build(
+        std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        std::vector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
+        std::vector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) override
+    {
+        assert_true(triangles.empty());
+        assert_true(continuous_triangle_texture_layers.empty());
+        assert_true(discrete_triangle_texture_layers.empty());
+        triangles.reserve(atriangles_.size());
+        if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
+            continuous_triangle_texture_layers.reserve(atriangles_.size());
+        }
+        if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
+            discrete_triangle_texture_layers.reserve(atriangles_.size());
+        }
+        for (const auto& a : atriangles_) {
+            triangles.push_back(a.triangle);
+            if constexpr (ttexture_layer_type == TextureLayerType::CONTINUOUS) {
+                continuous_triangle_texture_layers.push_back(a.continuous_layer);
+            }
+            if constexpr (ttexture_layer_type == TextureLayerType::DISCRETE) {
+                discrete_triangle_texture_layers.push_back(a.discrete_layer);
+            }
+        }
+    }
+    virtual void sort() override {
+        atriangles_.sort([](
+            const AggregateTriangle<ttexture_layer_type>& a,
+            const AggregateTriangle<ttexture_layer_type>& b)
+            {
+                return a.distance_to_origin2 > b.distance_to_origin2;
+            });
+    }
+    virtual bool empty() const override {
+        return atriangles_.empty();
+    }
+private:
+    std::list<AggregateTriangle<ttexture_layer_type>> atriangles_;
+};
+
+static std::unique_ptr<IAggregateTriangles> construct_aggregate_triangles(
+    const ColoredVertexArray<float>& a,
+    std::minstd_rand& rng,
+    const ExternalRenderPass& external_render_pass)
+{
+    std::unique_ptr<IAggregateTriangles> result;
+    if (!a.continuous_triangle_texture_layers.empty() &&
+        !a.discrete_triangle_texture_layers.empty())
+    {
+        THROW_OR_ABORT("Detected continuous and discrete texture layers");
+    }
+    if (!a.continuous_triangle_texture_layers.empty()) {
+        result = std::make_unique<AggregateTriangles<TextureLayerType::CONTINUOUS>>();
+    } else if (!a.discrete_triangle_texture_layers.empty()) {
+        result = std::make_unique<AggregateTriangles<TextureLayerType::DISCRETE>>();
+    } else {
+        result = std::make_unique<AggregateTriangles<TextureLayerType::NONE>>();
+    }
+    result->append(a, rng, external_render_pass);
+    return result;
+}
 
 AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
     : rendering_resources_{ rendering_resources }
     , offset_(NAN)
-    , is_initialized_{false} {
-}
+    , is_initialized_{ false }
+{}
 
 AggregateArrayRenderer::~AggregateArrayRenderer() = default;
 
@@ -77,7 +228,7 @@ void AggregateArrayRenderer::update_aggregates(
     //    }
     //    ntriangles += a.second.triangles->size();
     //}
-    std::map<Material, AggregateTriangles> mat_lists;
+    std::map<Material, std::unique_ptr<IAggregateTriangles>> mat_lists;
     OptionalMaterialHider mhd;
     OptionalMeshHider nhd;
     auto rng = welzl_rng();
@@ -96,68 +247,35 @@ void AggregateArrayRenderer::update_aggregates(
         mat.center_distances = default_step_distances;
         auto it = mat_lists.find(mat);
         if (it == mat_lists.end()) {
-            it = mat_lists.insert({mat, {}}).first;
-            it->second.has_texture_layers = !a->triangle_texture_layers.empty();
-        }
-        auto& l = it->second;
-        if (a->triangle_texture_layers.empty() == l.has_texture_layers) {
-            THROW_OR_ABORT("Inconsistent aggregate triangle_texture_layers between lists");
-        }
-        if (l.has_texture_layers &&
-            (a->triangle_texture_layers.size() != a->triangles.size()))
-        {
-            THROW_OR_ABORT("Layer information differs from triangle list length");
-        }
-        auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), mat.max_triangle_distance };
-        for (size_t i = 0; i < a->triangles.size(); ++i) {
-            if (i % THREAD_YIELD_INTERVAL == 0) {
-                std::this_thread::yield();
+            auto l = construct_aggregate_triangles(*a, rng, external_render_pass);
+            if (!l->empty() && !mat_lists.insert({mat, std::move(l)}).second) {
+                verbose_abort("Internal error in AggregateArrayRenderer::update_aggregates");
             }
-            const auto& c = a->triangles[i];
-            auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
-            // auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
-            if ((mat.max_triangle_distance != INFINITY) &&
-                !camera_sphere.intersects(triangle_sphere) &&
-                !any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
-            {
-                continue;
-            }
-            auto distance_to_origin2 = sum(squared(triangle_sphere.center()));
-            if (l.has_texture_layers) {
-                l.atriangles.push_back({c, a->triangle_texture_layers[i], distance_to_origin2});
-            } else {
-                l.atriangles.push_back({c, {UINT8_MAX, UINT8_MAX, UINT8_MAX}, distance_to_origin2});
-            }
+        } else {
+            it->second->append(*a, rng, external_render_pass);
         }
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> mat_vectors;
     
     for (auto& [mat, list] : mat_lists) {
-        if (list.atriangles.empty()) {
-            continue;
-        }
         if (any(mat.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-            list.atriangles.sort([](
-                const AggregateTriangle& a,
-                const AggregateTriangle& b)
-                {
-                    return a.distance_to_origin2 > b.distance_to_origin2;
-                });
+            list->sort();
         }
+        std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
+        std::vector<FixedArray<float, 3>> continuous_texture_layers;
+        std::vector<FixedArray<uint8_t, 3>> discrete_texture_layers;
+        list->build(triangles, continuous_texture_layers, discrete_texture_layers);
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
             mat,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
             std::vector<FixedArray<ColoredVertex<float>, 4>>(),
-            std::vector<FixedArray<ColoredVertex<float>, 3>>(list.atriangles.begin(), list.atriangles.end()),
+            std::move(triangles),
             std::vector<FixedArray<ColoredVertex<float>, 2>>(),
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
-            list.has_texture_layers
-                ? std::vector<FixedArray<uint8_t, 3>>(list.atriangles.begin(), list.atriangles.end())
-                : std::vector<FixedArray<uint8_t, 3>>(),
-            std::vector<FixedArray<uint8_t, 2>>()));
+            std::move(continuous_texture_layers),
+            std::move(discrete_texture_layers)));
     }
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,

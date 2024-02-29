@@ -37,8 +37,7 @@ public:
         PhysicsMaterial physics_material,
         std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
-        std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {},
-        std::list<uint8_t>&& triangle_texture_layers = {});
+        std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
     void draw_triangle_with_normals(
         const FixedArray<TPos, 3>& p00,
         const FixedArray<TPos, 3>& p10,
@@ -174,7 +173,6 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
-        archive(triangle_texture_layers);
     }
     // From: https://github.com/USCiLab/cereal/issues/102
     template<typename Archive>
@@ -188,7 +186,6 @@ public:
         std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
         std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-        std::list<uint8_t> triangle_texture_layers;
 
         archive(name);
         archive(material);
@@ -196,7 +193,6 @@ public:
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
-        archive(triangle_texture_layers);
 
         construct(
             name,
@@ -204,8 +200,7 @@ public:
             physics_material,
             std::move(quads),
             std::move(triangles),
-            std::move(triangle_bone_weights),
-            std::move(triangle_texture_layers));
+            std::move(triangle_bone_weights));
     }
     std::string name;
     Material material;
@@ -214,7 +209,6 @@ public:
     std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
     std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
     std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-    std::list<uint8_t> triangle_texture_layers;
 };
 
 }

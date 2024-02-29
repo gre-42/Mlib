@@ -65,9 +65,8 @@ void Mlib::create_scene_flat(
         std::move(triangles0_raw),
         std::vector<FixedArray<ColoredVertex<float>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
-        std::vector<FixedArray<uint8_t, 3>>(),
-        std::vector<FixedArray<uint8_t, 2>>());
+        std::vector<FixedArray<float, 3>>(),
+        std::vector<FixedArray<uint8_t, 3>>());
 
     /*std::vector<FixedArray<ColoredVertex, 3>> triangles1{
         FixedArray<ColoredVertex, 3>{

@@ -64,9 +64,8 @@ static void instantiate_bvh(
                 std::move(vcva),                                             // triangles
                 std::vector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights
-                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},       // line_bone_weights
-                std::vector<FixedArray<uint8_t, 3>>{},                       // triangle_texture_layers
-                std::vector<FixedArray<uint8_t, 2>>{}));                     // line_texture_layers
+                std::vector<FixedArray<float, 3>>{},                         // continuous_triangle_texture_layers
+                std::vector<FixedArray<uint8_t, 3>>{}));                     // discrete_triangle_texture_layers
             // lcvas.back()->material.is_small = true;
             // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }

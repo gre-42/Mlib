@@ -23,15 +23,13 @@ TriangleList<TPos>::TriangleList(
     PhysicsMaterial physics_material,
     std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-    std::list<uint8_t>&& triangle_texture_layers)
-: name{ std::move(name) },
-  material{ std::move(material) },
-  physics_material{ physics_material },
-  quads{ std::move(quads) },
-  triangles{ std::move(triangles) },
-  triangle_bone_weights{ std::move(triangle_bone_weights) },
-  triangle_texture_layers{ std::move(triangle_texture_layers) }
+    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
+    : name{ std::move(name) }
+    , material{ std::move(material) }
+    , physics_material{ physics_material }
+    , quads{ std::move(quads) }
+    , triangles{ std::move(triangles) }
+    , triangle_bone_weights{ std::move(triangle_bone_weights) }
 {}
 
 template <class TPos>
@@ -581,9 +579,8 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles.begin(), triangles.end()},
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights.begin(), triangle_bone_weights.end()},
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>(),
-        std::vector<FixedArray<uint8_t, 3>>{triangle_texture_layers.begin(), triangle_texture_layers.end()},
-        std::vector<FixedArray<uint8_t, 2>>());
+        std::vector<FixedArray<float, 3>>{},
+        std::vector<FixedArray<uint8_t, 3>>{});
 }
 
 namespace Mlib {

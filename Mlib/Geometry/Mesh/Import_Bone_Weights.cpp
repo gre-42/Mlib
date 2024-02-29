@@ -24,7 +24,6 @@ void Mlib::import_bone_weights(
     source.check_consistency();
     Bvh<float, VertexAndWeights, 3> bvh{{max_distance / 10, max_distance / 10, max_distance / 10}, 10};
     for (const std::shared_ptr<ColoredVertexArray<float>>& other : source.scvas) {
-        assert_true(other->line_bone_weights.empty());
         auto wo_it = other->triangle_bone_weights.begin();
         for (const auto& t : other->triangles) {
             auto vo_it = wo_it->flat_begin();
@@ -36,7 +35,6 @@ void Mlib::import_bone_weights(
         }
     }
     for (const std::shared_ptr<ColoredVertexArray<float>>& cva : dest.scvas) {
-        assert_true(cva->line_bone_weights.empty());
         if (!cva->triangle_bone_weights.empty()) {
             THROW_OR_ABORT("import_bone_weights requires empty triangle bone weights");
         }

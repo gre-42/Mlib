@@ -109,7 +109,7 @@ void Mlib::merge_textures(
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;
-            std::list<FixedArray<uint8_t, 3>> merged_triangle_texture_layers;
+            std::list<FixedArray<uint8_t, 3>> merged_discrete_triangle_texture_layers;
             for (const auto& [filename, cvas] : merged_filenames) {
                 const auto& tile = uv_tiles.at(filename);
                 for (const auto& cva : cvas) {
@@ -124,7 +124,7 @@ void Mlib::merge_textures(
                             }
                         }
                         {
-                            auto& mlay = merged_triangle_texture_layers.emplace_back();
+                            auto& mlay = merged_discrete_triangle_texture_layers.emplace_back();
                             for (auto& v : mlay.flat_iterable()) {
                                 v = tile.layer;
                             }
@@ -166,9 +166,8 @@ void Mlib::merge_textures(
                     std::vector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
                     std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                     std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                    std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-                    std::vector<FixedArray<uint8_t, 3>>(merged_triangle_texture_layers.begin(), merged_triangle_texture_layers.end()),
-                    std::vector<FixedArray<uint8_t, 2>>{})));
+                    std::vector<FixedArray<float, 3>>{},
+                    std::vector<FixedArray<uint8_t, 3>>(merged_discrete_triangle_texture_layers.begin(), merged_discrete_triangle_texture_layers.end()))));
             scene_node_resources.add_companion(
                 mesh_resource_name,
                 merged_materials_config.resource_name,

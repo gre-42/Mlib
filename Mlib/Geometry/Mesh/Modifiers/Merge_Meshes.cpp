@@ -29,9 +29,8 @@ void Mlib::merge_meshes(
             std::vector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-            std::vector<FixedArray<uint8_t, 3>>{},
-            std::vector<FixedArray<uint8_t, 2>>{}));
+            std::vector<FixedArray<float, 3>>{},
+            std::vector<FixedArray<uint8_t, 3>>{}));
     }
     cvas = std::move(result);
 }

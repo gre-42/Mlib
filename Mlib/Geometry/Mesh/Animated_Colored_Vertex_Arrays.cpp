@@ -113,9 +113,8 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 std::vector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
                 std::vector<FixedArray<ColoredVertex<double>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-                std::vector<FixedArray<uint8_t, 3>>{},
-                std::vector<FixedArray<uint8_t, 2>>{}));
+                std::vector<FixedArray<float, 3>>{},
+                std::vector<FixedArray<uint8_t, 3>>{}));
             l->physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);
@@ -130,13 +129,14 @@ void AnimatedColoredVertexArrays::check_consistency() const {
     auto validate_cva = [this](const auto& cvas){
         for (const auto& cva : cvas) {
             assert_true(cva->triangle_bone_weights.empty() == !skeleton);
-            // assert_true(cva->line_bone_weights.empty() == !skeleton);
-            assert_true(cva->line_bone_weights.empty());
             if (!cva->triangle_bone_weights.empty()) {
                 assert_true(cva->triangle_bone_weights.size() == cva->triangles.size());
             }
-            if (!cva->line_bone_weights.empty()) {
-                assert_true(cva->line_bone_weights.size() == cva->line_bone_weights.size());
+            if (!cva->continuous_triangle_texture_layers.empty()) {
+                assert_true(cva->continuous_triangle_texture_layers.size() == cva->triangles.size());
+            }
+            if (!cva->discrete_triangle_texture_layers.empty()) {
+                assert_true(cva->discrete_triangle_texture_layers.size() == cva->triangles.size());
             }
         }
     };

@@ -19,41 +19,36 @@ using namespace Mlib;
 
 template <class TPos>
 ColoredVertexArray<TPos>::ColoredVertexArray(
-    const std::string& name,
-    Material material,
+    std::string name,
+    const Material& material,
     PhysicsMaterial physics_material,
     ModifierBacklog modifier_backlog,
     std::vector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-    std::vector<FixedArray<std::vector<BoneWeight>, 2>>&& line_bone_weights,
-    std::vector<FixedArray<uint8_t, 3>>&& triangle_texture_layers,
-    std::vector<FixedArray<uint8_t, 2>>&& line_texture_layers)
-: name{name},
-  material{std::move(material)},
-  physics_material{physics_material},
-  modifier_backlog{modifier_backlog},
-  quads{std::move(quads)},
-  triangles{std::move(triangles)},
-  lines{std::move(lines)},
-  triangle_bone_weights{std::move(triangle_bone_weights)},
-  line_bone_weights{std::move(line_bone_weights)},
-  triangle_texture_layers{std::move(triangle_texture_layers)},
-  line_texture_layers{std::move(line_texture_layers)}
+    std::vector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
+    std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers)
+    : name{ std::move(name) }
+    , material{ material }
+    , physics_material{ physics_material }
+    , modifier_backlog{ modifier_backlog }
+    , quads{ std::move(quads) }
+    , triangles{ std::move(triangles) }
+    , lines{ std::move(lines) }
+    , triangle_bone_weights{ std::move(triangle_bone_weights) }
+    , continuous_triangle_texture_layers{ std::move(continuous_triangle_texture_layers) }
+    , discrete_triangle_texture_layers{ std::move(discrete_triangle_texture_layers) }
 {
-    assert_true(!name.empty());
+    assert_true(!this->name.empty());
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
         THROW_OR_ABORT("Triangle bone weights size mismatch");
     }
-    if (!this->line_bone_weights.empty() && (this->line_bone_weights.size() != this->lines.size())) {
-        THROW_OR_ABORT("Line bone weights size mismatch");
+    if (!this->continuous_triangle_texture_layers.empty() && (this->continuous_triangle_texture_layers.size() != this->triangles.size())) {
+        THROW_OR_ABORT("Continuous triangle texture layers size mismatch");
     }
-    if (!this->triangle_texture_layers.empty() && (this->triangle_texture_layers.size() != this->triangles.size())) {
-        THROW_OR_ABORT("Triangle texture layers size mismatch");
-    }
-    if (!this->line_texture_layers.empty() && (this->line_texture_layers.size() != this->lines.size())) {
-        THROW_OR_ABORT("Line texture layers size mismatch");
+    if (!this->discrete_triangle_texture_layers.empty() && (this->discrete_triangle_texture_layers.size() != this->triangles.size())) {
+        THROW_OR_ABORT("Discrete triangle texture layers size mismatch");
     }
 }
 
@@ -118,8 +113,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,
     const std::string& suffix) const
 {
+    if (!lines.empty()) {
+        THROW_OR_ABORT("Cannot apply bone transformations on lines");
+    }
     std::vector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
-    std::vector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
     {
         if (triangle_bone_weights.size() != triangles.size()) {
             THROW_OR_ABORT("Size mismatch in triangle bone weights");
@@ -134,21 +131,6 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
             ++wit;
         }
     }
-    {
-        if (line_bone_weights.size() != lines.size()) {
-            THROW_OR_ABORT("Size mismatch in line bone weights");
-        }
-        auto wit = line_bone_weights.begin();
-        transformed_lines.reserve(lines.size());
-        for (const auto& li : lines) {
-            transformed_lines.push_back({
-                li(0).transformed((*wit)(0), qs),
-                li(1).transformed((*wit)(1), qs)});
-            // transformed_lines.back()(0).normalize();
-            // transformed_lines.back()(1).normalize();
-            ++wit;
-        }
-    }
     return std::make_shared<ColoredVertexArray<TPosResult>>(
         name + suffix,
         material,
@@ -156,11 +138,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         modifier_backlog,
         std::vector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
-        std::move(transformed_lines),
+        std::vector<FixedArray<ColoredVertex<TPosResult>, 2>>{},
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-        std::vector<FixedArray<uint8_t, 3>>(triangle_texture_layers.begin(), triangle_texture_layers.end()),
-        std::vector<FixedArray<uint8_t, 2>>{});
+        std::vector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
+        std::vector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
 }
 
 template <class TPos>
@@ -194,9 +175,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         std::move(transformed_triangles),
         std::move(transformed_lines),
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-        std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-        std::vector<FixedArray<uint8_t, 3>>(triangle_texture_layers.begin(), triangle_texture_layers.end()),
-        std::vector<FixedArray<uint8_t, 2>>{});
+        std::vector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
+        std::vector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
 }
 
 template <class TPos>
@@ -366,7 +346,6 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
         std::move(grind_lines),
         {},
         {},
-        {},
         {});
 }
 
@@ -401,7 +380,6 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
         std::move(contour_edges),
         {},
         {},
-        {},
         {});
 }
 
@@ -432,9 +410,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             std::vector{triangles},
             std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
             std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-            std::vector<FixedArray<uint8_t, 3>>{},
-            std::vector<FixedArray<uint8_t, 2>>{}));
+            std::vector<FixedArray<float, 3>>{},
+            std::vector<FixedArray<uint8_t, 3>>{}));
     for (const auto& tri : triangles) {
         std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
@@ -463,9 +440,8 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 std::move(triangle_as_list),
                 std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
                 std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                std::vector<FixedArray<std::vector<BoneWeight>, 2>>{},
-                std::vector<FixedArray<uint8_t, 3>>{},
-                std::vector<FixedArray<uint8_t, 2>>{}));
+                std::vector<FixedArray<float, 3>>{},
+                std::vector<FixedArray<uint8_t, 3>>{}));
     }
     return result;
 }
@@ -486,9 +462,8 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     ostr << "  #triangles = " << triangles.size() << ' ';
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
-    ostr << "  #line_bone_weights = " << line_bone_weights.size() << '\n';
-    ostr << "  #triangle_texture_layers = " << triangle_texture_layers.size() << ' ';
-    ostr << "  #line_texture_layers = " << line_texture_layers.size() << '\n';
+    ostr << "  #continuous_triangle_texture_layers = " << continuous_triangle_texture_layers.size() << ' ';
+    ostr << "  #discrete_triangle_texture_layers = " << discrete_triangle_texture_layers.size() << '\n';
 }
 
 template <class TPos>
