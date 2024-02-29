@@ -17,12 +17,12 @@
 using namespace Mlib;
 
 RigidBodies::RigidBodies(const PhysicsEngineConfig& cfg)
-: cfg_{cfg},
-  convex_mesh_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  triangle_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  ridge_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  line_bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  collision_ridges_baking_status_{CollisionRidgeBakingStatus::NOT_BAKED}
+    : cfg_{ cfg }
+    , convex_mesh_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , triangle_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , ridge_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , line_bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , collision_ridges_baking_status_{ CollisionRidgeBakingStatus::NOT_BAKED }
 {}
 
 RigidBodies::~RigidBodies() = default;
