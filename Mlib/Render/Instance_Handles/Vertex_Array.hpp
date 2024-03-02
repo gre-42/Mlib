@@ -10,6 +10,7 @@ enum class DeallocationMode;
 class VertexArray {
     VertexArray(const VertexArray&) = delete;
     VertexArray& operator = (const VertexArray&) = delete;
+
 public:
     VertexArray();
     ~VertexArray();
@@ -23,6 +24,7 @@ public:
     BufferBackgroundCopy texture_layer_buffer;
     BufferBackgroundCopy interior_mapping_buffer;
     void deallocate(DeallocationMode mode);
+
 private:
     GLuint vertex_array_;
     DeallocationToken deallocation_token_;

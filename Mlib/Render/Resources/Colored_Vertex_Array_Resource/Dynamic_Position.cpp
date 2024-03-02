@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 DynamicPosition::DynamicPosition(size_t max_num_instances)
-: DynamicBase<value_type>{max_num_instances}
+    : DynamicBase<value_type>{ max_num_instances }
 {}
 
 DynamicPosition::~DynamicPosition() = default;

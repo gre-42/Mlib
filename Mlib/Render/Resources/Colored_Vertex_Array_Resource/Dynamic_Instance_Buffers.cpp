@@ -174,7 +174,7 @@ void DynamicInstanceBuffers::bind(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
-                (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
     {
         position_.bind(instance_attribute_index);
     } else {

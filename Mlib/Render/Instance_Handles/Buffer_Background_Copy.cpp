@@ -40,11 +40,11 @@ static bool buffer_data_supported() {
 }
 
 BufferBackgroundCopy::BufferBackgroundCopy()
-    : buffer_{(GLuint)-1}
-    , is_mapped_{false}
-    , state_{BackgroundCopyState::UNINITIALIZED}
-    , deallocation_token_{render_deallocator.insert([this]() { deallocate(DeallocationMode::DIRECT); })} {
-}
+    : buffer_{ (GLuint)-1 }
+    , is_mapped_{ false }
+    , state_{ BackgroundCopyState::UNINITIALIZED }
+    , deallocation_token_{ render_deallocator.insert([this]() { deallocate(DeallocationMode::DIRECT); }) }
+{}
 
 void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 {

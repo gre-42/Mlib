@@ -7,10 +7,10 @@
 using namespace Mlib;
 
 StaticPosition::StaticPosition(const std::vector<TransformationAndBillboardId>& instances)
-: instances_{instances}
+    : instances_{ instances }
 {
     positions_.reserve(instances_.size());
-    for (const TransformationAndBillboardId &m : instances_) {
+    for (const TransformationAndBillboardId& m : instances_) {
         positions_.push_back(m.transformation_matrix.t());
     }
 }
