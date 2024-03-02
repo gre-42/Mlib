@@ -1010,6 +1010,10 @@ void RenderableColoredVertexArray::render_cva(
         if (!rcva_->triangles_res_->bone_indices.empty()) {
             THROW_OR_ABORT("Draw distance incompatible with animations");
         }
+        // This is legacy code kept in case it finds a new use case.
+        // As of now, deleting triangles far away is done during
+        // the aggregation step, which also converts double to float,
+        // making the following code obsolete.
         const_cast<SubstitutionInfo&>(si).delete_triangles_far_away(
             iv.t().casted<float>(),
             m.casted<float, float>(),

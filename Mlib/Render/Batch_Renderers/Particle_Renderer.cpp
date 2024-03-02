@@ -20,11 +20,11 @@ ParticleRenderer::ParticleRenderer(ParticleResources& resources)
 
 ParticleRenderer::~ParticleRenderer() = default;
 
-IParticleInstantiator &ParticleRenderer::get_instantiator(const std::string &name) {
+IParticleInstantiator& ParticleRenderer::get_instantiator(const std::string& name) {
     return *instantiators_.get(name);
 }
 
-void ParticleRenderer::preload(const std::string &name) {
+void ParticleRenderer::preload(const std::string& name) {
     instances_.get(resources_.get_instance_for_instantiator(name))->preload();
 }
 

@@ -9,8 +9,8 @@
 using namespace Mlib;
 
 VertexArray::VertexArray()
-: vertex_array_{(GLuint)-1},
-  deallocation_token_{render_deallocator.insert([this](){deallocate(DeallocationMode::DIRECT);})}
+    : vertex_array_{ (GLuint)-1 }
+    , deallocation_token_{ render_deallocator.insert([this]() {deallocate(DeallocationMode::DIRECT); }) }
 {}
 
 VertexArray::~VertexArray() {
