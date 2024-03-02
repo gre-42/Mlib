@@ -82,7 +82,7 @@ void ParticlesInstance::render(
         return;
     }
     if (any(isnan(offset_))) {
-        THROW_OR_ABORT("ParticlesInstance::render internal error");
+        verbose_abort("ParticlesInstance::render internal error");
     }
     TransformationMatrix<float, double, 3> m{ fixed_identity_array<float, 3>(), offset_ };
     rcva_->render(
