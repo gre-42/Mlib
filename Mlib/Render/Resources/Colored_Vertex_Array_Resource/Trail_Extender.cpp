@@ -54,9 +54,9 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                 for (size_t i = 0; i < 3; ++i) {
                     if (t0(i).position(2) == -1.f) {
                         previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
-                        time(i) = float(trails_instance_.time() - prev.time);
-                    } else if (t0(i).position(2) == 1.f) {
                         time(i) = 0.f;
+                    } else if (t0(i).position(2) == 1.f) {
+                        time(i) = float(trails_instance_.time() - prev.time);
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                     }
@@ -72,7 +72,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                 if (t0(i).position(2) == -1.f) {
                     t(i) = t0(i).casted<double>().transformed(loc, loc.R()).transformed_uv(op);
                     previous_vertices_[k] = t(i).position;
-                    time(i) = float(trails_instance_.time() - prev.time);
+                    time(i) = 0.f;
                 } else if (t0(i).position(2) == 1.f) {
                     auto it = previous_vertices_.find(k);
                     if (it == previous_vertices_.end()) {
@@ -80,7 +80,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                     }
                     t(i) = t0(i).casted<double>().transformed_uv(op);
                     t(i).position = it->second;
-                    time(i) = 0.f;
+                    time(i) = float(trails_instance_.time() - prev.time);
                 } else {
                     THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                 }
