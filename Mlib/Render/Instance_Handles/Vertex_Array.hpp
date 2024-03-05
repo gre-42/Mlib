@@ -23,7 +23,7 @@ public:
     bool copy_in_progress() const;
     void wait() const;
     void update();
-    GLuint vertex_array() const;
+    void bind() const;
     IArrayBuffer& vertex_buffer;
     IArrayBuffer& bone_weight_buffer;
     IArrayBuffer& texture_layer_buffer;

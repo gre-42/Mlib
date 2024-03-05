@@ -24,6 +24,7 @@
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -124,9 +125,11 @@ void test_physics_engine(unsigned int seed) {
         "primary_rendering_resources",
         16 };
     SurfaceContactDb surface_contact_db;
-    SmokeParticleGenerator smoke_particle_generator{&rendering_resources, scene_node_resources, scene};
-    ContactSmokeGenerator contact_smoke_generator{surface_contact_db, smoke_particle_generator};
+    SmokeParticleGenerator smoke_particle_generator{ &rendering_resources, scene_node_resources, scene };
+    ContactSmokeGenerator contact_smoke_generator{ surface_contact_db, smoke_particle_generator };
+    TrailRenderer trail_renderer{ trail_resources };
     pe.set_contact_smoke_generator(contact_smoke_generator);
+    pe.set_trail_renderer(trail_renderer);
     RenderingContext primary_rendering_context{
         .scene_node_resources = scene_node_resources,
         .particle_resources = particle_resources,

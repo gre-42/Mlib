@@ -188,7 +188,7 @@ void FxaaLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
             CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_color()));  // use the color attachment texture as the texture of the quad plane
 
-            CHK(glBindVertexArray(va().vertex_array()));
+            va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
 

@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_With_Terrain.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -24,12 +25,13 @@ using namespace Mlib;
 PhysicsEngine::PhysicsEngine(
     const PhysicsEngineConfig& cfg,
     bool check_objects_deleted_on_destruction)
-: rigid_bodies_{cfg},
-  collision_query_{*this},
-  collision_direction_{CollisionDirection::FORWARD},
-  contact_smoke_generator_{nullptr},
-  cfg_{cfg},
-  check_objects_deleted_on_destruction_{check_objects_deleted_on_destruction}
+    : rigid_bodies_{ cfg }
+    , collision_query_{ *this }
+    , collision_direction_{ CollisionDirection::FORWARD }
+    , contact_smoke_generator_{ nullptr }
+    , trail_renderer_{ nullptr }
+    , cfg_{ cfg }
+    , check_objects_deleted_on_destruction_{ check_objects_deleted_on_destruction }
 {}
 
 PhysicsEngine::~PhysicsEngine() {
@@ -112,16 +114,6 @@ void PhysicsEngine::collide(
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
-    for (const auto& o : rigid_bodies_.objects_) {
-        if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
-        {
-            continue;
-        }
-        if (o.has_meshes()) {
-            rigid_bodies_.transform_object_and_add(o);
-        }
-        o.rigid_body.collide_with_air(cfg_, contact_infos);
-    }
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
@@ -130,11 +122,15 @@ void PhysicsEngine::collide(
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
+    if (trail_renderer_ == nullptr) {
+        THROW_OR_ABORT("trail_storage not set");
+    }
     CollisionHistory history{
         .burn_in = burn_in,
         .cfg = cfg_,
         .st = st,
-        .scdb = *contact_smoke_generator_,
+        .csg = *contact_smoke_generator_,
+        .tr = *trail_renderer_,
         .beacons = beacons,
         .contact_infos = contact_infos,
         .raycast_intersections = raycast_intersections,
@@ -144,6 +140,16 @@ void PhysicsEngine::collide(
         .ridge_map = rigid_bodies_.ridge_map(),
         .base_log = base_log
     };
+    for (const auto& o : rigid_bodies_.objects_) {
+        if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
+        {
+            continue;
+        }
+        if (o.has_meshes()) {
+            rigid_bodies_.transform_object_and_add(o);
+        }
+        o.rigid_body.collide_with_air(history);
+    }
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
         ? CollisionDirection::BACKWARD
         : CollisionDirection::FORWARD;
@@ -177,7 +183,7 @@ void PhysicsEngine::advance_smoke_generator_lifetimes() {
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
-    contact_smoke_generator_->advance_time(cfg_.dt / (float)cfg_.nsubsteps);
+    contact_smoke_generator_->advance_time(cfg_.dt_substeps());
 }
 
 void PhysicsEngine::move_advance_times() {
@@ -227,6 +233,13 @@ void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_s
         THROW_OR_ABORT("Contact smoke generator already set");
     }
     contact_smoke_generator_ = &contact_smoke_generator;
+}
+
+void PhysicsEngine::set_trail_renderer(ITrailRenderer& trail_renderer) {
+    if (trail_renderer_ != nullptr) {
+        THROW_OR_ABORT("Trail renderer already set");
+    }
+    trail_renderer_ = &trail_renderer;
 }
 
 void PhysicsEngine::add_external_force_provider(ExternalForceProvider& efp)

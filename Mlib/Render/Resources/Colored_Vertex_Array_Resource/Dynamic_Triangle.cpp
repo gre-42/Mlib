@@ -38,4 +38,5 @@ void DynamicTriangle::set_type_erased(const char* begin, const char* end) {
     if (begin != end) {
         THROW_OR_ABORT("DynamicTriangle::set_type_erased: only empty ranges are supported");
     }
+    data_.bind();
 }

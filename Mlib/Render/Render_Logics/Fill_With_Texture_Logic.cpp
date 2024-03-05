@@ -134,7 +134,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
         }
     }
 
-    CHK(glBindVertexArray(va().vertex_array()));
+    va().bind();
 
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
 

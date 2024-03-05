@@ -9,6 +9,9 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -32,6 +35,14 @@ DECLARE_ARGUMENT(angle_yz);
 DECLARE_ARGUMENT(angle_zz);
 DECLARE_ARGUMENT(drag);
 DECLARE_ARGUMENT(wing_id);
+DECLARE_ARGUMENT(trail_source);
+}
+
+namespace KnownTrailSource {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(storage);
+DECLARE_ARGUMENT(position);
+DECLARE_ARGUMENT(minimum_velocity);
 }
 
 const std::string CreateWing::key = "wing";
@@ -58,6 +69,15 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at_vector<float>(KnownArgs::fac_v, [](float v){return v * kph;}),
         args.arguments.at<std::vector<float>>(KnownArgs::fac_c),
         OutOfRangeBehavior::CLAMP};
+    std::optional<TrailSource> trail_source;
+    if (args.arguments.contains(KnownArgs::trail_source)) {
+        auto jtrail_source = args.arguments.child(KnownArgs::trail_source);
+        jtrail_source.validate(KnownTrailSource::options);
+        trail_source.emplace(
+            trail_renderer.get_storage(jtrail_source.at<std::string>(KnownTrailSource::storage)).add_trail_extender(),
+            jtrail_source.at<FixedArray<float, 3>>(KnownTrailSource::position) * meters,
+            jtrail_source.at<float>(KnownTrailSource::minimum_velocity) * kph);
+    }
     auto tp = vehicle_rb.wings_.insert({
         wing_id,
         std::make_unique<Wing>(
@@ -68,7 +88,8 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_zz),
             DRAG_COEFF_UNITS * args.arguments.at<FixedArray<float, 3>>(KnownArgs::drag),
             0.f,
-            0.f)});
+            0.f,
+            std::move(trail_source))});
     if (!tp.second) {
         THROW_OR_ABORT("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
     }

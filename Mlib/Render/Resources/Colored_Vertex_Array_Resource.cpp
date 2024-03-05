@@ -1324,7 +1324,7 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
             if (requires_aggregation(*cva)) {
                 continue;
             }
-            get_vertex_array(cva).vertex_array().wait();
+            get_vertex_array(cva).wait();
             if (instances_ != nullptr) {
                 instances_->at(cva.get())->wait();
             }
@@ -1817,31 +1817,31 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     {
         std::shared_lock lock{mutex_};
         if (auto it = vertex_arrays_.find(cva.get());
-            (it != vertex_arrays_.end()) && (it->second->vertex_array().initialized()))
+            (it != vertex_arrays_.end()) && (it->second->initialized()))
         {
             return *it->second;
         }
     }
     std::scoped_lock lock{ mutex_ };
     auto it = vertex_arrays_.find(cva.get());
-    if ((it != vertex_arrays_.end()) && it->second->vertex_array().initialized()) {
+    if ((it != vertex_arrays_.end()) && it->second->initialized()) {
         return *it->second;
     }
     std::unique_ptr<IVertexData> si;
-    VertexArray* pva;
+    IVertexData* pva;
     if (it == vertex_arrays_.end()) {
         if (cva->triangles.empty()) {
             THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
         }
         si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size());
-        pva = &si->vertex_array();
+        pva = si.get();
     } else {
-        pva = &it->second->vertex_array();
+        pva = it->second.get();
     }
     auto& va = *pva;
     // https://stackoverflow.com/a/13405205/2292832
     va.initialize();
-    va.vertex_buffer.set(cva->triangles);
+    va.vertex_buffer().set(cva->triangles);
 
     ColoredVertex<float>* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
@@ -1907,9 +1907,9 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
                 }
             }
         }
-        va.bone_weight_buffer.set(triangle_bone_weights);
+        va.bone_weight_buffer().set(triangle_bone_weights);
         // The "triangle_bone_weights" array is temporary, so wait until it is transferred.
-        va.bone_weight_buffer.wait();
+        va.bone_weight_buffer().wait();
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
@@ -1917,25 +1917,25 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
         CHK(glEnableVertexAttribArray(IDX_BONE_WEIGHTS));
         CHK(glVertexAttribPointer(IDX_BONE_WEIGHTS, ANIMATION_NINTERPOLATED, GL_FLOAT, GL_FALSE, sizeof(ShaderBoneWeight), &bw->weights));
     }
-    if (!cva->continuous_triangle_texture_layers.empty() &&
-        !cva->discrete_triangle_texture_layers.empty())
+    if (va.has_continuous_triangle_texture_layers() &&
+        va.has_discrete_triangle_texture_layers())
     {
         THROW_OR_ABORT("Detected both, discrete and continuous texture layers");
     }
-    if (!cva->continuous_triangle_texture_layers.empty()) {
+    if (va.has_continuous_triangle_texture_layers()) {
         if (cva->continuous_triangle_texture_layers.size() != cva->triangles.size()) {
             THROW_OR_ABORT("#continuous_triangle_texture_layers != #triangles");
         }
-        va.texture_layer_buffer.set(cva->continuous_triangle_texture_layers);
+        va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribPointer(IDX_TEXTURE_LAYER, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
     }
-    if (!cva->discrete_triangle_texture_layers.empty()) {
+    if (va.has_discrete_triangle_texture_layers()) {
         if (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()) {
             THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
         }
-        va.texture_layer_buffer.set(cva->discrete_triangle_texture_layers);
+        va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
@@ -1951,9 +1951,9 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
                     });
             }
         }
-        va.interior_mapping_buffer.set(shader_interior_mapped_facade);
+        va.interior_mapping_buffer().set(shader_interior_mapped_facade);
         // The "shader_interior_mapped_facade" array is temporary, so wait until it is transferred.
-        va.interior_mapping_buffer.wait();
+        va.interior_mapping_buffer().wait();
 
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));
@@ -1995,7 +1995,7 @@ void ColoredVertexArrayResource::import_bone_weights(
 
 bool ColoredVertexArrayResource::copy_in_progress() const {
     for (const auto& cva : triangles_res_->scvas) {
-        if (get_vertex_array(cva).vertex_array().copy_in_progress()) {
+        if (get_vertex_array(cva).copy_in_progress()) {
             return true;
         }
         if ((instances_ != nullptr) && (instances_->at(cva.get())->copy_in_progress())) {
@@ -2007,7 +2007,7 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
 
 void ColoredVertexArrayResource::wait() const {
     for (const auto& cva : triangles_res_->scvas) {
-        get_vertex_array(cva).vertex_array().wait();
+        get_vertex_array(cva).wait();
         if (instances_ != nullptr) {
             instances_->at(cva.get())->wait();
         }

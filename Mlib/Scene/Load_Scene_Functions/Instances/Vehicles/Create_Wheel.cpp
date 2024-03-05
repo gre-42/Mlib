@@ -88,26 +88,25 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
         // From: https://www.nanolounge.de/21977/federkonstante-und-masse-bei-auto
         // Ds = 1000 / 4 * 9.8 / 0.02 = 122500 = 1.225e5
         // Da * 1 = 1000 / 4 * 9.8 => Da = 1e4 / 4
-        auto tp = rb.tires_.insert({
+        auto tp = rb.tires_.try_emplace(
             tire_id,
-            Tire{
-                engine,
-                std::move(delta_engine),
-                wheel_rbp,
-                args.arguments.at<float>(KnownArgs::brake_force) * N,
-                args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
-                args.arguments.at<float>(KnownArgs::Ks) * N,
-                args.arguments.at<float>(KnownArgs::Ka) * N / (meters / s),
-                mus,
-                CombinedMagicFormula<float>{
-                    .f = FixedArray<MagicFormulaArgmax<float>, 2>{
-                        MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
-                        MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
-                    }
-                },
-                args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
-                args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
-                radius}});
+            engine,
+            std::move(delta_engine),
+            wheel_rbp,
+            args.arguments.at<float>(KnownArgs::brake_force) * N,
+            args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
+            args.arguments.at<float>(KnownArgs::Ks) * N,
+            args.arguments.at<float>(KnownArgs::Ka) * N / (meters / s),
+            mus,
+            CombinedMagicFormula<float>{
+                .f = FixedArray<MagicFormulaArgmax<float>, 2>{
+                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.longitudinal_friction_steepness}},
+                    MagicFormulaArgmax<float>{MagicFormula<float>{.B = 41.f * 0.044f * scene_config.physics_engine_config.lateral_friction_steepness}}
+                }
+            },
+            args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_0),
+            args.arguments.at<FixedArray<float, 3>>(KnownArgs::vehicle_mount_1),
+            radius);
         if (!tp.second) {
             THROW_OR_ABORT("Tire with ID \"" + std::to_string(tire_id) + "\" already exists");
         }

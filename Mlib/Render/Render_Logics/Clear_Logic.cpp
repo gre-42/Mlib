@@ -81,7 +81,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
     }
     CHK(glUseProgram(rp_color_only_.program));
     CHK(glUniform4fv(rp_color_only_.clear_color_location, 1, color.flat_begin()));
-    CHK(glBindVertexArray(va_.vertex_array()));
+    va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 }
@@ -99,7 +99,7 @@ void ClearLogic::clear_depth() {
     CHK(glEnable(GL_DEPTH_TEST));
 
     CHK(glUseProgram(rp_depth_only_.program));
-    CHK(glBindVertexArray(va_.vertex_array()));
+    va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 
@@ -122,7 +122,7 @@ void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
 
     CHK(glUseProgram(rp_color_and_depth_.program));
     CHK(glUniform4fv(rp_color_and_depth_.clear_color_location, 1, color.flat_begin()));
-    CHK(glBindVertexArray(va_.vertex_array()));
+    va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
 

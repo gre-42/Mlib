@@ -61,6 +61,11 @@ public:
         }
     }
     bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+        if ((all(aabb.min() == fixed_full<TData, 3>(-INFINITY))) &&
+            (all(aabb.max() == fixed_full<TData, 3>(INFINITY))))
+        {
+            return true;
+        }
         // From: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         auto center = (aabb.min() + aabb.max()) / (TData)2;
         auto extents = aabb.max() - center;

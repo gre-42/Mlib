@@ -41,4 +41,5 @@ void DynamicContinuousTextureLayer::set_type_erased(const char* begin, const cha
     if (begin != end) {
         THROW_OR_ABORT("DynamicContinuousTextureLayer::set_type_erased: only empty ranges are supported");
     }
+    data_.bind();
 }

@@ -152,6 +152,7 @@ RenderableScene::RenderableScene(
 #endif
 {
     physics_engine_.set_contact_smoke_generator(contact_smoke_generator_);
+    physics_engine_.set_trail_renderer(*trail_renderer_);
     if (config.with_flying_logic) {
         render_logics_.append(nullptr, flying_camera_logic_, 0 /* z_order */);
     }

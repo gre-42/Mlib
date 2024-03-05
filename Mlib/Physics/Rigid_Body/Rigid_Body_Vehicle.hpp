@@ -22,6 +22,7 @@ namespace Mlib {
 class RigidBodies;
 class RigidBodyEngine;
 class RigidBodyDeltaEngine;
+struct CollisionHistory;
 struct TirePowerIntent;
 struct EnginePowerIntent;
 struct EnginePowerDeltaIntent;
@@ -104,9 +105,7 @@ public:
         float damping,
         float friction,
         const PhysicsEngineConfig& cfg);
-    void collide_with_air(
-        const PhysicsEngineConfig& cfg,
-        std::list<std::unique_ptr<IContactInfo>>& contact_infos);
+    void collide_with_air(CollisionHistory& c);
     void advance_time(
         const PhysicsEngineConfig& cfg,
         std::list<Beacon>* beacons);

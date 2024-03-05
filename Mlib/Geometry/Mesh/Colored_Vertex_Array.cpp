@@ -28,7 +28,8 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     std::vector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
-    std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers)
+    std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+    const AxisAlignedBoundingBox<TPos, 3>* aabb)
     : name{ std::move(name) }
     , material{ material }
     , physics_material{ physics_material }
@@ -49,6 +50,9 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     }
     if (!this->discrete_triangle_texture_layers.empty() && (this->discrete_triangle_texture_layers.size() != this->triangles.size())) {
         THROW_OR_ABORT("Discrete triangle texture layers size mismatch");
+    }
+    if (aabb != nullptr) {
+        aabb_ = *aabb;
     }
 }
 
@@ -469,12 +473,12 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
 template <class TPos>
 AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     {
-        std::shared_lock lock{aabb_mutex_.value};
+        std::shared_lock lock{ aabb_mutex_.value };
         if (aabb_.has_value()) {
             return aabb_.value();
         }
     }
-    std::scoped_lock lock{aabb_mutex_.value};
+    std::scoped_lock lock{ aabb_mutex_.value };
     if (aabb_.has_value()) {
         return aabb_.value();
     }

@@ -10,6 +10,7 @@ struct PhysicsEngineConfig;
 class RigidBodies;
 class SatTracker;
 class ContactSmokeGenerator;
+class ITrailRenderer;
 struct Beacon;
 class IContactInfo;
 template <typename TData, size_t... tshape>
@@ -26,7 +27,8 @@ struct CollisionHistory {
     bool burn_in;
     const PhysicsEngineConfig& cfg;
     const SatTracker& st;
-    ContactSmokeGenerator& scdb;
+    ContactSmokeGenerator& csg;
+    ITrailRenderer& tr;
     std::list<Beacon>* beacons;
     std::list<std::unique_ptr<IContactInfo>>& contact_infos;
     std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact>& raycast_intersections;

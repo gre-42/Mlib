@@ -15,6 +15,8 @@ struct NormalImpulse;
  * References: https://en.wikipedia.org/wiki/Tire_load_sensitivity
  */
 class Tire: public BaseRotor {
+    Tire(const Tire&) = delete;
+    Tire& operator = (const Tire&) = delete;
 public:
     Tire(
         const std::string& engine,

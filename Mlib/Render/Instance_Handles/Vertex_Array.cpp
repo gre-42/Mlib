@@ -64,12 +64,12 @@ void VertexArray::wait() const {
     interior_mapping_buffer.wait();
 }
 
-GLuint VertexArray::vertex_array() const {
+void VertexArray::bind() const {
     if (!initialized()) {
         THROW_OR_ABORT("Vertex-array not initialized");
     }
     wait();
-    return vertex_array_;
+    CHK(glBindVertexArray(vertex_array_));
 }
 
 void VertexArray::deallocate(DeallocationMode mode) {

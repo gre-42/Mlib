@@ -14,9 +14,19 @@ class AnimatedTextureLayer: public IVertexData {
 public:
     explicit AnimatedTextureLayer(size_t max_num_triangles);
 
-    virtual VertexArray& vertex_array() override;
-    virtual const VertexArray& vertex_array() const override;
+    virtual void update() override;
+    virtual void bind() const override;
+    virtual bool copy_in_progress() const override;
+    virtual bool initialized() const override;
+    virtual void initialize() override;
+    virtual void wait() const override;
     virtual size_t ntriangles() const override;
+    virtual bool has_continuous_triangle_texture_layers() const override;
+    virtual bool has_discrete_triangle_texture_layers() const override;
+    virtual IArrayBuffer& vertex_buffer() override;
+    virtual IArrayBuffer& bone_weight_buffer() override;
+    virtual IArrayBuffer& texture_layer_buffer() override;
+    virtual IArrayBuffer& interior_mapping_buffer() override;
     virtual void delete_triangles_far_away(
         const FixedArray<float, 3>& position,
         const TransformationMatrix<float, float, 3>& m,

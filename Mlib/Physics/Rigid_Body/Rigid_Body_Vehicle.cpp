@@ -17,6 +17,7 @@
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
+#include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/Damageable.hpp>
@@ -28,6 +29,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 
@@ -181,9 +183,7 @@ void RigidBodyVehicle::integrate_force(
 // Note that g_beacons is delayed by one frame.
 // namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
 
-void RigidBodyVehicle::collide_with_air(
-    const PhysicsEngineConfig& cfg,
-    std::list<std::unique_ptr<IContactInfo>>& contact_infos)
+void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
 {
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
@@ -194,27 +194,27 @@ void RigidBodyVehicle::collide_with_air(
                 VectorAtPosition<float, double, 3>{
                     .vector = z3_from_3x3(abs_location.R()) * P.power * P.relaxation * rotor->power2lift,
                     .position = abs_location.t() },
-                cfg);
+                c.cfg);
         }
-        set_rotor_angular_velocity(rotor_id, rotor->w, cfg, P.power);
+        set_rotor_angular_velocity(rotor_id, rotor->w, c.cfg, P.power);
         if (rotor->rbp != nullptr) {
             rotor->rbp->w_ = rotor->angular_velocity * z3_from_3x3(rotor->rbp->rotation_);
             auto T0 = rbp_.abs_transformation();
             auto T1 = rotor->rbp->abs_transformation();
-            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+            c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
                 *rotor->rbp,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_0.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_0.casted<double>()),
-                    .beta = cfg.point_equality_beta}));
-            contact_infos.push_back(std::make_unique<PointContactInfo2>(
+                    .beta = c.cfg.point_equality_beta}));
+            c.contact_infos.push_back(std::make_unique<PointContactInfo2>(
                 rbp_,
                 *rotor->rbp,
                 PointEqualityConstraint{
                     .p0 = T0.transform(rotor->vehicle_mount_1.casted<double>()),
                     .p1 = T1.transform(rotor->blades_mount_1.casted<double>()),
-                    .beta = cfg.point_equality_beta}));
+                    .beta = c.cfg.point_equality_beta}));
         }
     }
     auto rbp_orig = rbp_;
@@ -236,7 +236,16 @@ void RigidBodyVehicle::collide_with_air(
                         drag(1) - svel2(2) * wing->angle_of_attack * wing->angle_coefficient_yz + vel2(2) * wing->lift_coefficient,
                         drag(2) - svel2(2) * std::abs(wing->brake_angle) * wing->angle_coefficient_zz}),
                 .position = abs_location.t() },
-            cfg);
+            c.cfg);
+        if (wing->trail_source.has_value()) {
+            const auto& s = wing->trail_source.value();
+            if (std::abs(lvel) > s.minimum_velocity) {
+                TransformationMatrix<float, double, 3> trail_location{
+                    abs_location.R(),
+                    abs_location.transform(s.position.casted<double>()) };
+                s.extender->append_location(trail_location);
+            }
+        }
     }
     if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
         auto dir = rbp_.rotation_.column(1);
@@ -249,7 +258,7 @@ void RigidBodyVehicle::collide_with_air(
                                  std::sqrt(l2)) *
                                 dir,
                     .position = abs_com() },
-                cfg);
+                c.cfg);
         }
     }
     for (auto& [tire_id, tire] : tires_) {
@@ -262,25 +271,25 @@ void RigidBodyVehicle::collide_with_air(
         auto abs_vertical_line = T0.rotate(tire.vertical_line);
         // Vertical constraints
         {
-            contact_infos.push_back(std::make_unique<LineContactInfo2>(
+            c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                 rbp_,
                 *tire.rbp,
                 LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = abs_vehicle_mount_0,
                         .p1 = T1.t(),
-                        .beta = cfg.point_equality_beta
+                        .beta = c.cfg.point_equality_beta
                     },
                     .null_space = abs_vertical_line
                 }));
-            contact_infos.push_back(std::make_unique<LineContactInfo2>(
+            c.contact_infos.push_back(std::make_unique<LineContactInfo2>(
                 rbp_,
                 *tire.rbp,
                 LineEqualityConstraint{
                     .pec = PointEqualityConstraint{
                         .p0 = T0.transform(tire.vehicle_mount_1.casted<double>()),
                         .p1 = T1.t(),
-                        .beta = cfg.point_equality_beta
+                        .beta = c.cfg.point_equality_beta
                     },
                     .null_space = abs_vertical_line
                 }));
@@ -294,7 +303,7 @@ void RigidBodyVehicle::collide_with_air(
                 FixedArray<float, 3> p1r{ 0.f, std::sin(angle), std::cos(angle) };
                 auto p1 = T1.transform((tire.radius * p1r).casted<double>());
                 auto p0 = p1 - plane_normal.casted<double>() * dot0d(plane_normal.casted<double>(), p1 - abs_vehicle_mount_0);
-                contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
+                c.contact_infos.push_back(std::make_unique<PlaneContactInfo2>(
                     rbp_,
                     *tire.rbp,
                     BoundedPlaneEqualityConstraint{
@@ -302,7 +311,7 @@ void RigidBodyVehicle::collide_with_air(
                             .pec = PointEqualityConstraint{
                                 .p0 = p0,
                                 .p1 = p1,
-                                .beta = cfg.plane_equality_beta
+                                .beta = c.cfg.plane_equality_beta
                             },
                             .plane_normal = plane_normal
                         }
@@ -322,11 +331,11 @@ void RigidBodyVehicle::collide_with_air(
                         .Ks = tire.sKs,
                         .Ka = tire.sKa
                     },
-                    .lambda_min = tire.rbp->mass_ * cfg.velocity_lambda_min,
-                    .lambda_max = -tire.rbp->mass_ * cfg.velocity_lambda_min },
+                    .lambda_min = tire.rbp->mass_ * c.cfg.velocity_lambda_min,
+                    .lambda_max = -tire.rbp->mass_ * c.cfg.velocity_lambda_min },
                 tire.rbp->abs_position());
             tire.normal_impulse = &ci->normal_impulse();
-            contact_infos.push_back(std::move(ci));
+            c.contact_infos.push_back(std::move(ci));
         }
     }
 }

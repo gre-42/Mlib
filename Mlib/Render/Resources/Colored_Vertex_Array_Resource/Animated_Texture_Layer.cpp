@@ -9,6 +9,8 @@ AnimatedTextureLayer::AnimatedTextureLayer(size_t max_num_triangles)
     : max_num_triangles_{ max_num_triangles }
     , tmp_num_triangles_{ 0 }
     , gl_num_triangles_{ 0 }
+    , animation_times_(max_num_triangles)
+    , animation_sequences_(max_num_triangles)
     , triangle_{ max_num_triangles }
     , texture_layer_{ max_num_triangles }
     , va_{
@@ -18,16 +20,61 @@ AnimatedTextureLayer::AnimatedTextureLayer(size_t max_num_triangles)
         empty_}
 {}
 
-VertexArray& AnimatedTextureLayer::vertex_array() {
-    return va_;
+void AnimatedTextureLayer::update() {
+    std::scoped_lock lock{ mutex_ };
+    va_.update();
+    gl_num_triangles_ = integral_cast<GLsizei>(tmp_num_triangles_);
 }
 
-const VertexArray& AnimatedTextureLayer::vertex_array() const {
-    return va_;
+void AnimatedTextureLayer::bind() const {
+    va_.bind();
+}
+
+bool AnimatedTextureLayer::copy_in_progress() const {
+    if (va_.copy_in_progress()) {
+        verbose_abort("AnimatedTextureLayer::copy_in_progress internal error");
+    }
+    return false;
+}
+
+bool AnimatedTextureLayer::initialized() const {
+    return va_.initialized();
+}
+
+void AnimatedTextureLayer::initialize() {
+    va_.initialize();
+}
+
+void AnimatedTextureLayer::wait() const {
+    // Do nothing
 }
 
 size_t AnimatedTextureLayer::ntriangles() const {
     return gl_num_triangles_;
+}
+
+bool AnimatedTextureLayer::has_continuous_triangle_texture_layers() const {
+    return true;
+}
+
+bool AnimatedTextureLayer::has_discrete_triangle_texture_layers() const {
+    return false;
+}
+
+IArrayBuffer& AnimatedTextureLayer::vertex_buffer() {
+    return va_.vertex_buffer;
+}
+
+IArrayBuffer& AnimatedTextureLayer::bone_weight_buffer() {
+    return va_.bone_weight_buffer;
+}
+
+IArrayBuffer& AnimatedTextureLayer::texture_layer_buffer() {
+    return va_.texture_layer_buffer;
+}
+
+IArrayBuffer& AnimatedTextureLayer::interior_mapping_buffer() {
+    return va_.interior_mapping_buffer;
 }
 
 void AnimatedTextureLayer::append(
@@ -41,6 +88,8 @@ void AnimatedTextureLayer::append(
     }
     triangle_.append(triangle);
     texture_layer_.append(time.applied([&sequence](const auto& v) { return sequence.times_to_frames(v); }));
+    animation_times_[tmp_num_triangles_] = time;
+    animation_sequences_[tmp_num_triangles_] = &sequence;
     ++tmp_num_triangles_;
 }
 

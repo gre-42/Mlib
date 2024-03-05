@@ -564,8 +564,9 @@ void RenderableColoredVertexArray::render_cva(
     {
         THROW_OR_ABORT("Detected discrete and continuous texture layer");
     }
+    IVertexData& si = rcva_->get_vertex_array(cva);
     bool has_texture_layer =
-        !cva->continuous_triangle_texture_layers.empty() ||
+        si.has_continuous_triangle_texture_layers() ||
         has_discrete_texture_layer;
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
@@ -599,8 +600,8 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
-            .has_continuous_vertex_texture_layer = !cva->continuous_triangle_texture_layers.empty(),
-            .has_discrete_vertex_texture_layer = !cva->discrete_triangle_texture_layers.empty(),
+            .has_continuous_vertex_texture_layer = si.has_continuous_triangle_texture_layers(),
+            .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),
             .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
             .reorient_normals = reorient_normals,
@@ -1000,7 +1001,6 @@ void RenderableColoredVertexArray::render_cva(
         setup_texture(desc);
         CHK(glActiveTexture(GL_TEXTURE0));
     }
-    IVertexData& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&
         cva->material.draw_distance_noperations > 0 &&
@@ -1041,12 +1041,12 @@ void RenderableColoredVertexArray::render_cva(
             instances->wait();
         }
         if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
-            si.vertex_array().copy_in_progress())
+            si.copy_in_progress())
         {
             verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
         }
-        si.vertex_array().update();
-        CHK(glBindVertexArray(si.vertex_array().vertex_array()));
+        si.update();
+        si.bind();
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
             {

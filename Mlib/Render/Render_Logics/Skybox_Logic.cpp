@@ -153,7 +153,7 @@ void SkyboxLogic::render(
             .color_mode = ColorMode::RGB,
             .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
 
-        CHK(glBindVertexArray(va_.vertex_array()));
+        va_.bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
 
         // Reset to defaults

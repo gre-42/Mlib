@@ -172,7 +172,7 @@ void TextResource::render() const
     mat4x4_ortho(projection, 0, canvas_size_(0), 0, canvas_size_(1), -2, 2);
     CHK(glUniformMatrix4fv(rp_.projection_location, 1, GL_FALSE, (const GLfloat*)projection));
     CHK(glBindTexture(GL_TEXTURE_2D, loaded_font_->texture_handle));
-    CHK(glBindVertexArray(va_.vertex_array()));
+    va_.bind();
 
     // render quad
     CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(vdata_.size() * 2 * 3)));

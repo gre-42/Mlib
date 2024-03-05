@@ -9,6 +9,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
     , scene_node_resources{ renderable_scene.scene_node_resources_ }
     , particle_resources{ renderable_scene.particle_resources_ }
     , particle_renderer{ *renderable_scene.particle_renderer_ }
+    , trail_renderer{ *renderable_scene.trail_renderer_ }
     , smoke_particle_generator{ renderable_scene.smoke_particle_generator_ }
     , vehicle_spawners{ renderable_scene.vehicle_spawners_ }
     , players{ renderable_scene.players_ }

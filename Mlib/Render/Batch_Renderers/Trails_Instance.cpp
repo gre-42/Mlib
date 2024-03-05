@@ -11,19 +11,24 @@
 using namespace Mlib;
 
 static std::shared_ptr<ColoredVertexArray<float>> gen_array(const std::string& texture) {
+    AxisAlignedBoundingBox<float, 3> aabb{
+        fixed_full<float, 3>(-INFINITY),
+        fixed_full<float, 3>(INFINITY) };
     return std::make_shared<ColoredVertexArray<float>>(
         "empty_trails",
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
-            .textures_color = {BlendMapTexture{.texture_descriptor = {.color = texture}}}},
-        PhysicsMaterial::NONE,
+            .textures_color = {BlendMapTexture{.texture_descriptor = {.color = {.filename = texture, .color_mode = ColorMode::RGBA}}}},
+            .cull_faces = false },
+        PhysicsMaterial::ATTR_VISIBLE,
         ModifierBacklog{},
         std::vector<FixedArray<ColoredVertex<float>, 4>>{},             // quads
         std::vector<FixedArray<ColoredVertex<float>, 3>>{},             // triangles
         std::vector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},          // triangle_bone_weights
         std::vector<FixedArray<float, 3>>{},                            // continous_triangle_texture_layers
-        std::vector<FixedArray<uint8_t, 3>>{});                         // discrete_triangle_texture_layers
+        std::vector<FixedArray<uint8_t, 3>>{},                          // discrete_triangle_texture_layers
+        &aabb);
 }
 
 TrailsInstance::TrailsInstance(

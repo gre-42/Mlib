@@ -1,6 +1,7 @@
 #include "Wing.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 
 using namespace Mlib;
 
@@ -12,21 +13,22 @@ Wing::Wing(
     float angle_coefficient_zz,
     const FixedArray<float, 3>& drag_coefficients,
     float angle_of_attack,
-    float brake_angle)
-: fac{fac},
-  lift_coefficient{lift_coefficient},
-  angle_coefficient_yz{angle_coefficient_yz},
-  angle_coefficient_zz{angle_coefficient_zz},
-  drag_coefficients{drag_coefficients},
-  angle_of_attack{angle_of_attack},
-  brake_angle{brake_angle},
-  angle_of_attack_movable{this->angle_of_attack, relative_location.R().column(0)},
-  brake_angle_movable{this->brake_angle, relative_location.R().column(0)},
-  relative_location_{relative_location}
+    float brake_angle,
+    std::optional<TrailSource> trail_source)
+    : fac{ fac }
+    , lift_coefficient{ lift_coefficient }
+    , angle_coefficient_yz{ angle_coefficient_yz }
+    , angle_coefficient_zz{ angle_coefficient_zz }
+    , drag_coefficients{ drag_coefficients }
+    , angle_of_attack{ angle_of_attack }
+    , brake_angle{ brake_angle }
+    , angle_of_attack_movable{ this->angle_of_attack, relative_location.R().column(0) }
+    , brake_angle_movable{ this->brake_angle, relative_location.R().column(0) }
+    , trail_source{ std::move(trail_source) }
+    , relative_location_{ relative_location }
 {}
 
-Wing::~Wing()
-{}
+Wing::~Wing() = default;
 
 TransformationMatrix<float, double, 3> Wing::absolute_location(
     const TransformationMatrix<float, double, 3>& parent_location)

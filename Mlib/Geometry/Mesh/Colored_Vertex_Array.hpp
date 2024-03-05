@@ -48,7 +48,8 @@ public:
         std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
         std::vector<FixedArray<float, 3>>&& continous_triangle_texture_layers,
-        std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers);
+        std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+        const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr);
     ~ColoredVertexArray();
     std::string name;
     Material material;

@@ -4,8 +4,8 @@
 using namespace Mlib;
 
 SmokeTrailGenerator::SmokeTrailGenerator(SmokeParticleGenerator& smoke_generator)
-: smoke_generator_{smoke_generator},
-  trail_lifetime_{0.f}
+    : smoke_generator_{ smoke_generator }
+    , trail_lifetime_{ 0.f }
 {}
 
 SmokeTrailGenerator::~SmokeTrailGenerator() = default;

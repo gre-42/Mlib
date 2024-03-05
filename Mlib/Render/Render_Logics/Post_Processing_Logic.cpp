@@ -250,7 +250,7 @@ void PostProcessingLogic::render(
                 CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             }
 
-            CHK(glBindVertexArray(va().vertex_array()));
+            va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
 

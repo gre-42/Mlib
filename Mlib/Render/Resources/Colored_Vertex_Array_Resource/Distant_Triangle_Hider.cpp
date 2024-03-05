@@ -31,16 +31,56 @@ DistantTriangleHider::DistantTriangleHider(
     , ntriangles_{ ntriangles }
 {}
 
-VertexArray& DistantTriangleHider::vertex_array() {
-    return va_;
+void DistantTriangleHider::update() {
+    return va_.update();
 }
 
-const VertexArray& DistantTriangleHider::vertex_array() const {
-    return va_;
+void DistantTriangleHider::bind() const {
+    va_.bind();
+}
+
+bool DistantTriangleHider::copy_in_progress() const {
+    return va_.copy_in_progress();
+}
+
+bool DistantTriangleHider::initialized() const {
+    return va_.initialized();
+}
+
+void DistantTriangleHider::initialize() {
+    va_.initialize();
+}
+
+void DistantTriangleHider::wait() const {
+    va_.wait();
 }
 
 size_t DistantTriangleHider::ntriangles() const {
     return ntriangles_;
+}
+
+bool DistantTriangleHider::has_continuous_triangle_texture_layers() const {
+    return !cva_->continuous_triangle_texture_layers.empty();
+}
+
+bool DistantTriangleHider::has_discrete_triangle_texture_layers() const {
+    return !cva_->discrete_triangle_texture_layers.empty();
+}
+
+IArrayBuffer& DistantTriangleHider::vertex_buffer() {
+    return va_.vertex_buffer;
+}
+
+IArrayBuffer& DistantTriangleHider::bone_weight_buffer() {
+    return va_.bone_weight_buffer;
+}
+
+IArrayBuffer& DistantTriangleHider::texture_layer_buffer() {
+    return va_.texture_layer_buffer;
+}
+
+IArrayBuffer& DistantTriangleHider::interior_mapping_buffer() {
+    return va_.interior_mapping_buffer;
 }
 
 void DistantTriangleHider::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {

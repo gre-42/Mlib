@@ -15,6 +15,7 @@ struct Beacon;
 class BaseLog;
 enum class CollisionDirection;
 class ContactSmokeGenerator;
+class ITrailRenderer;
 
 class PhysicsEngine {
     friend CollisionQuery;
@@ -36,6 +37,7 @@ public:
     void move_advance_times();
     void burn_in(float duration);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
+    void set_trail_renderer(ITrailRenderer& trail_renderer);
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;
@@ -44,6 +46,7 @@ public:
 private:
     CollisionDirection collision_direction_;
     ContactSmokeGenerator* contact_smoke_generator_;
+    ITrailRenderer* trail_renderer_;
     std::list<ExternalForceProvider*> external_force_providers_;
     std::set<Controllable*> controllables_;
     PhysicsEngineConfig cfg_;
