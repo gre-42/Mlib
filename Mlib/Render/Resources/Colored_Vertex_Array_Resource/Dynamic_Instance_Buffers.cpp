@@ -92,7 +92,7 @@ void DynamicInstanceBuffers::move(float dt) {
             if (frame_index >= bi->billboard_ids.size()) {
                 THROW_OR_ABORT("Frame index too large");
             }
-            billboard_ids_.modify(i, bi->billboard_ids[frame_index]);
+            billboard_ids_[i] = bi->billboard_ids[frame_index];
             ++i;
         } else {
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {

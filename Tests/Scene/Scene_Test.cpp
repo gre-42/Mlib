@@ -41,6 +41,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
+#include <Mlib/Render/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -112,6 +113,7 @@ void test_physics_engine(unsigned int seed) {
 
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
+    TrailResources trail_resources;
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
     DestructionGuard scene_destruction_guard{[&](){
@@ -128,6 +130,7 @@ void test_physics_engine(unsigned int seed) {
     RenderingContext primary_rendering_context{
         .scene_node_resources = scene_node_resources,
         .particle_resources = particle_resources,
+        .trail_resources = trail_resources,
         .rendering_resources = rendering_resources,
         .z_order = 0};
     RenderingContextGuard rcg{ primary_rendering_context };

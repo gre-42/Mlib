@@ -18,7 +18,12 @@ SHADER_VER
 "}";
 
 GenericPostProcessingLogic::GenericPostProcessingLogic(const float* quad_vertices)
-: quad_vertices_{quad_vertices}
+    : va_{
+        vertices_,
+        empty_,
+        empty_,
+        empty_ }
+    , quad_vertices_ { quad_vertices }
 {}
 
 GenericPostProcessingLogic::~GenericPostProcessingLogic()

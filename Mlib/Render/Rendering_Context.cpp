@@ -24,6 +24,10 @@ ParticleResources& RenderingContextStack::primary_particle_resources() {
     return instance().particle_resources;
 }
 
+TrailResources& RenderingContextStack::primary_trail_resources() {
+    return instance().trail_resources;
+}
+
 RenderingResources& RenderingContextStack::primary_rendering_resources() {
     return instance().rendering_resources;
 }

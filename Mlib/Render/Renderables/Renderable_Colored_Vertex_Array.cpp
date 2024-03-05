@@ -15,12 +15,13 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Substitution_Info.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
 #include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
@@ -94,9 +95,9 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     RenderingResources& rendering_resources,
     const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
     const RenderableResourceFilter& renderable_resource_filter)
-: rcva_{rcva},
-  continuous_blending_z_order_{CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED},
-  secondary_rendering_resources_{rendering_resources}
+    : rcva_{ rcva }
+    , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
+    , secondary_rendering_resources_{ rendering_resources }
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
@@ -642,10 +643,10 @@ void RenderableColoredVertexArray::render_cva(
             } else {
                 float elapsed = animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin;
                 float duration = animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin;
-                float frame_index = frame_index_from_animation_state(
+                float frame_index = std::floor(frame_index_from_animation_state(
                     elapsed,
                     duration,
-                    cva->material.number_of_frames);
+                    cva->material.number_of_frames));
                 uv_offset_u = frame_index / (float)cva->material.number_of_frames;
             }
         } else {
@@ -999,7 +1000,7 @@ void RenderableColoredVertexArray::render_cva(
         setup_texture(desc);
         CHK(glActiveTexture(GL_TEXTURE0));
     }
-    const SubstitutionInfo& si = rcva_->get_vertex_array(cva);
+    IVertexData& si = rcva_->get_vertex_array(cva);
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&
         cva->material.draw_distance_noperations > 0 &&
@@ -1014,7 +1015,7 @@ void RenderableColoredVertexArray::render_cva(
         // As of now, deleting triangles far away is done during
         // the aggregation step, which also converts double to float,
         // making the following code obsolete.
-        const_cast<SubstitutionInfo&>(si).delete_triangles_far_away(
+        si.delete_triangles_far_away(
             iv.t().casted<float>(),
             m.casted<float, float>(),
             std::isnan(render_config.draw_distance_add)
@@ -1040,20 +1041,21 @@ void RenderableColoredVertexArray::render_cva(
             instances->wait();
         }
         if (any(render_pass.internal & InternalRenderPass::PRELOADED) &&
-            si.va_.copy_in_progress())
+            si.vertex_array().copy_in_progress())
         {
             verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
         }
-        CHK(glBindVertexArray(si.va_.vertex_array()));
+        si.vertex_array().update();
+        CHK(glBindVertexArray(si.vertex_array().vertex_array()));
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
             {
                 // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
                 instances->update();
             }
-            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_), instances->num_instances()));
+            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
         } else {
-            CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles_)));
+            CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles())));
         }
         CHK(glBindVertexArray(0));
     }

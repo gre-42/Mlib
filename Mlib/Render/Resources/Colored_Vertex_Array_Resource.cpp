@@ -21,11 +21,13 @@
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
+#include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Distant_Triangle_Hider.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Substitution_Info.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
@@ -1194,12 +1196,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::shared_ptr<AnimatedColoredVertexArrays> triangles,
+    Vertices&& vertices,
     std::unique_ptr<Instances>&& instances)
     : triangles_res_{ std::move(triangles) }
     , scene_node_resources_{ RenderingContextStack::primary_scene_node_resources() }
     , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
+    , vertex_arrays_{ std::move(vertices) }
     , instances_{ std::move(instances) }
-    , deallocation_token_{render_deallocator.insert([this](){deallocate();})}
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -1209,9 +1212,11 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
+    Vertices&& vertices,
     std::unique_ptr<Instances>&& instances)
 : ColoredVertexArrayResource{
     std::make_shared<AnimatedColoredVertexArrays>(),
+    std::move(vertices),
     std::move(instances)}
 {
     triangles_res_->scvas = striangles;
@@ -1223,10 +1228,12 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles,
+    Vertices&& vertices,
     std::unique_ptr<Instances>&& instances)
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{striangles},
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+        std::move(vertices),
         std::move(instances))
 {}
 
@@ -1236,6 +1243,7 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{dtriangles},
+        Vertices{},
         std::move(instances))
 {}
 
@@ -1250,11 +1258,21 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<IInstanceBuffers>& instances)
     : ColoredVertexArrayResource(
         striangles,
+        Vertices{},
         std::make_unique<Instances>(make_init_list({ Instances::value_type{striangles.get(), instances} })))
 {}
 
+ColoredVertexArrayResource::ColoredVertexArrayResource(
+    const std::shared_ptr<ColoredVertexArray<float>>& striangles,
+    const std::shared_ptr<IVertexData>& vertices)
+    : ColoredVertexArrayResource(
+        striangles,
+        Vertices(make_init_list({ Vertices::value_type{striangles.get(), vertices} })),
+        nullptr)
+{}
+
 ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
-: ColoredVertexArrayResource(triangles, nullptr)
+    : ColoredVertexArrayResource(triangles, Vertices{}, nullptr)
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
@@ -1270,17 +1288,17 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
-: ColoredVertexArrayResource(striangles, dtriangles, nullptr)
+    : ColoredVertexArrayResource(striangles, dtriangles, Vertices{}, nullptr)
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles)
-: ColoredVertexArrayResource({striangles}, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}, nullptr)
+    : ColoredVertexArrayResource({ striangles }, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}, Vertices{}, nullptr)
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<double>>& dtriangles)
-: ColoredVertexArrayResource(std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, {dtriangles}, nullptr)
+    : ColoredVertexArrayResource(std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, { dtriangles }, Vertices{}, nullptr)
 {}
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
@@ -1306,7 +1324,7 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
             if (requires_aggregation(*cva)) {
                 continue;
             }
-            get_vertex_array(cva).wait();
+            get_vertex_array(cva).vertex_array().wait();
             if (instances_ != nullptr) {
                 instances_->at(cva.get())->wait();
             }
@@ -1787,34 +1805,40 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     }
 }
 
-void ColoredVertexArrayResource::deallocate() {
-    vertex_arrays_.clear();
-}
-
 bool ColoredVertexArrayResource::requires_aggregation(const ColoredVertexArray<float> &cva) const {
     return (cva.material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr);
 }
 
-const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
+IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
 {
     if (requires_aggregation(*cva)) {
         THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     {
         std::shared_lock lock{mutex_};
-        if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
+        if (auto it = vertex_arrays_.find(cva.get());
+            (it != vertex_arrays_.end()) && (it->second->vertex_array().initialized()))
+        {
             return *it->second;
         }
     }
-    if (cva->triangles.empty()) {
-        THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
-    }
     std::scoped_lock lock{ mutex_ };
-    if (auto it = vertex_arrays_.find(cva.get()); it != vertex_arrays_.end()) {
+    auto it = vertex_arrays_.find(cva.get());
+    if ((it != vertex_arrays_.end()) && it->second->vertex_array().initialized()) {
         return *it->second;
     }
-    auto si = std::make_unique<SubstitutionInfo>();
-    auto& va = si->va_;
+    std::unique_ptr<IVertexData> si;
+    VertexArray* pva;
+    if (it == vertex_arrays_.end()) {
+        if (cva->triangles.empty()) {
+            THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
+        }
+        si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size());
+        pva = &si->vertex_array();
+    } else {
+        pva = &it->second->vertex_array();
+    }
+    auto& va = *pva;
     // https://stackoverflow.com/a/13405205/2292832
     va.initialize();
     va.vertex_buffer.set(cva->triangles);
@@ -1939,12 +1963,13 @@ const SubstitutionInfo& ColoredVertexArrayResource::get_vertex_array(const std::
     }
 
     CHK(glBindVertexArray(0));
-    si->cva_ = cva;
-    si->ntriangles_ = cva->triangles.size();
-    si->nlines_ = cva->lines.size();
-    auto& result = *si;  // store data before std::move (unique_ptr)
-    vertex_arrays_.insert(std::make_pair(cva.get(), std::move(si)));
-    return result;
+    if (it == vertex_arrays_.end()) {
+        auto& result = *si;  // store data before std::move (unique_ptr)
+        vertex_arrays_.insert(std::make_pair(cva.get(), std::move(si)));
+        return result;
+    } else {
+        return *it->second;
+    }
 }
 
 void ColoredVertexArrayResource::set_absolute_joint_poses(
@@ -1970,7 +1995,7 @@ void ColoredVertexArrayResource::import_bone_weights(
 
 bool ColoredVertexArrayResource::copy_in_progress() const {
     for (const auto& cva : triangles_res_->scvas) {
-        if (get_vertex_array(cva).va_.copy_in_progress()) {
+        if (get_vertex_array(cva).vertex_array().copy_in_progress()) {
             return true;
         }
         if ((instances_ != nullptr) && (instances_->at(cva.get())->copy_in_progress())) {
@@ -1982,7 +2007,7 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
 
 void ColoredVertexArrayResource::wait() const {
     for (const auto& cva : triangles_res_->scvas) {
-        get_vertex_array(cva).va_.wait();
+        get_vertex_array(cva).vertex_array().wait();
         if (instances_ != nullptr) {
             instances_->at(cva.get())->wait();
         }

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 #include <future>
 #include <string>
 #include <thread>
@@ -22,41 +23,27 @@ enum class BackgroundCopyState {
 
 std::string background_copy_state_to_string(BackgroundCopyState s);
 
-class BufferBackgroundCopy {
+class BufferBackgroundCopy: public IArrayBuffer {
     BufferBackgroundCopy(const BufferBackgroundCopy &) = delete;
     BufferBackgroundCopy &operator=(const BufferBackgroundCopy &) = delete;
 
 public:
     BufferBackgroundCopy();
-    template <class TData>
-    void reserve(size_t size) {
-        set((TData *)nullptr, (TData *)nullptr + size);
-    }
-    template <class TData>
-    void set(const std::vector<TData> &vec) {
-        set(vec.begin(), vec.end());
-    }
-    template <class TIter>
-        requires std::is_trivially_copyable_v<std::remove_reference_t<decltype(*TIter())>>
-    void set(const TIter &begin, const TIter &end) {
-        set_type_erased(reinterpret_cast<const char *>(&*begin),
-                        reinterpret_cast<const char *>(&*end));
-    }
-    template <typename T, size_t size>
-    void set(const T (&array)[size]) {
-        set(array + 0, array + size);
-    }
     ~BufferBackgroundCopy();
-    void deallocate(DeallocationMode mode);
-    void wait() const;
+
+    virtual bool copy_in_progress() const override;
+    virtual void wait() const override;
+    virtual void update() override;
+    virtual void bind() const override;
+
     GLuint handle() const;
-    bool copy_in_progress() const;
     inline BackgroundCopyState state() const {
         return state_;
     }
 
 private:
-    void set_type_erased(const char *begin, const char *end);
+    void deallocate(DeallocationMode mode);
+    virtual void set_type_erased(const char *begin, const char *end);
     GLuint buffer_;
     mutable std::future<void> future_;
     mutable bool is_mapped_;

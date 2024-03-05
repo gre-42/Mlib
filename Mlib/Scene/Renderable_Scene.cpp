@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
+#include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
@@ -26,6 +27,7 @@ RenderableScene::RenderableScene(
     unsigned int max_anisotropic_filtering_level,
     SceneNodeResources& scene_node_resources,
     ParticleResources& particle_resources,
+    TrailResources& trail_resources,
     SurfaceContactDb& surface_contact_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -49,6 +51,7 @@ RenderableScene::RenderableScene(
         rendering_resources_name,
         max_anisotropic_filtering_level }
     , particle_renderer_{ std::make_unique<ParticleRenderer>(particle_resources) }
+    , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
     , scene_config_{ scene_config }
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
@@ -56,7 +59,8 @@ RenderableScene::RenderableScene(
     , scene_{
           delete_node_mutex_,
           &scene_node_resources,
-          particle_renderer_.get()}
+          particle_renderer_.get(),
+          trail_renderer_.get()}
     , selected_cameras_{ scene_ }
     , user_object_{
           .button_states = button_states,

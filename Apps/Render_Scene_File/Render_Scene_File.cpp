@@ -26,6 +26,7 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
+#include <Mlib/Render/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -529,6 +530,7 @@ int main(int argc, char** argv) {
 
             SceneNodeResources scene_node_resources;
             ParticleResources particle_resources;
+            TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
             LayoutConstraints layout_constraints;
             {
@@ -568,6 +570,7 @@ int main(int argc, char** argv) {
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
+                    .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
                     .z_order = 0
                 };

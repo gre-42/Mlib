@@ -1,28 +1,33 @@
 #pragma once
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
-#include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 
 namespace Mlib {
 
 enum class DeallocationMode;
+class IArrayBuffer;
 
 class VertexArray {
     VertexArray(const VertexArray&) = delete;
     VertexArray& operator = (const VertexArray&) = delete;
 
 public:
-    VertexArray();
+    VertexArray(
+        IArrayBuffer& vertex_buffer,
+        IArrayBuffer& bone_weight_buffer,
+        IArrayBuffer& texture_layer_buffer,
+        IArrayBuffer& interior_mapping_buffer);
     ~VertexArray();
     bool initialized() const;
     void initialize();
     bool copy_in_progress() const;
-    GLuint vertex_array() const;
     void wait() const;
-    BufferBackgroundCopy vertex_buffer;
-    BufferBackgroundCopy bone_weight_buffer;
-    BufferBackgroundCopy texture_layer_buffer;
-    BufferBackgroundCopy interior_mapping_buffer;
+    void update();
+    GLuint vertex_array() const;
+    IArrayBuffer& vertex_buffer;
+    IArrayBuffer& bone_weight_buffer;
+    IArrayBuffer& texture_layer_buffer;
+    IArrayBuffer& interior_mapping_buffer;
     void deallocate(DeallocationMode mode);
 
 private:

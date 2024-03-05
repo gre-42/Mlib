@@ -48,7 +48,7 @@ void ArrayInstancesRenderer::update_instances(
         {
             return a->material.rendering_sorting_key() < b->material.rendering_sorting_key();
         });
-    auto cva_instances = std::make_unique<std::map<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>>();
+    auto cva_instances = std::make_unique<ColoredVertexArrayResource::Instances>();
     for (const auto& [a, ts] : cva_lists) {
         cva_instances->insert({a.get(), std::make_shared<StaticInstanceBuffers>(
             a->material.transformation_mode,
@@ -59,6 +59,7 @@ void ArrayInstancesRenderer::update_instances(
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+        ColoredVertexArrayResource::Vertices{},
         std::move(cva_instances));
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {

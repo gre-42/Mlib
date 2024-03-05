@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <string>
 #include <vector>
 
@@ -59,6 +61,8 @@ private:
     void ensure_initialized(float font_height) const;
     void deallocate();
     mutable TextRenderProgram rp_;
+    BufferBackgroundCopy vertices_;
+    EmptyArrayBuffer empty_;
     mutable VertexArray va_;
     mutable const LoadedFont* loaded_font_;
     mutable FixedArray<float, 2> canvas_size_;

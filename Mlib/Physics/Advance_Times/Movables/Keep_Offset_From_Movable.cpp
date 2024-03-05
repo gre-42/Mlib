@@ -12,12 +12,12 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     DanglingRef<SceneNode> followed_node,
     IAbsoluteMovable& followed,
     const FixedArray<float, 3>& offset)
-: advance_times_{advance_times},
-  scene_{scene},
-  follower_name_{follower_name},
-  followed_node_{followed_node.ptr()},
-  followed_{&followed},
-  offset_{offset}
+    : advance_times_{ advance_times }
+    , scene_{ scene }
+    , follower_name_{ follower_name }
+    , followed_node_{ followed_node.ptr() }
+    , followed_{ &followed }
+    , offset_{ offset }
 {
     followed_node_->clearing_observers.add(*this);
 }

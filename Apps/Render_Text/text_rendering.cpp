@@ -14,6 +14,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
+#include <Mlib/Render/Trail_Resources.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
@@ -63,12 +64,14 @@ int main(int argc, char** argv)
         // ---------
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
+        TrailResources trail_resources;
         RenderingResources rendering_resources{
             "primary_rendering_resources",
             16 };
         RenderingContext primary_rendering_context{
             .scene_node_resources = scene_node_resources,
             .particle_resources = particle_resources,
+            .trail_resources = trail_resources,
             .rendering_resources = rendering_resources,
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };

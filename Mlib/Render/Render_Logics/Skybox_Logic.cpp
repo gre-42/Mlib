@@ -90,10 +90,11 @@ float skybox_vertices[] = {
 };
 
 SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
-: child_logic_{child_logic},
-  rendering_resources_{RenderingContextStack::primary_rendering_resources()},
-  loaded_{false},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : child_logic_{ child_logic }
+    , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
+    , va_{ vertices_, empty_, empty_, empty_ }
+    , loaded_{ false }
+    , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 
 SkyboxLogic::~SkyboxLogic() = default;

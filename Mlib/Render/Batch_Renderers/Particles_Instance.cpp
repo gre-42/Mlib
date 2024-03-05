@@ -78,7 +78,7 @@ void ParticlesInstance::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    if (dynamic_instance_buffers_->tmp_num_instances() == 0) {
+    if (dynamic_instance_buffers_->tmp_empty()) {
         return;
     }
     if (any(isnan(offset_))) {

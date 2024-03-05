@@ -1,19 +1,19 @@
 #pragma once
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Billboard_Sequence.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticle_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 
 namespace Mlib {
 
 class ParticlesInstance;
 struct BillboardSequence;
 
-class ParticleInstantiator final: public IParticleInstantiator {
+class ParticleCreator final: public IParticleCreator {
 public:
-    ParticleInstantiator(
+    ParticleCreator(
         ParticlesInstance &particles_instance,
         const BillboardSequence& billboard_sequence);
     
-    ~ParticleInstantiator();
+    ~ParticleCreator();
 
     virtual void add_particle(const TransformationMatrix<float, double, 3>& transformation_matrix) override;
 private:

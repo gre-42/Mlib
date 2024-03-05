@@ -6,9 +6,9 @@ namespace Mlib {
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class IParticleInstantiator {
+class IParticleCreator {
 public:
-    virtual ~IParticleInstantiator() = default;
+    virtual ~IParticleCreator() = default;
     virtual void add_particle(const TransformationMatrix<float, double, 3>& transformation_matrix) = 0;
     
 };

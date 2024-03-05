@@ -31,6 +31,18 @@ struct ColoredVertex {
             .normal = normal,
             .tangent = tangent}; 
     }
+    template <class TResultPos>
+    explicit operator ColoredVertex<TResultPos>() const {
+        return casted<TResultPos>();
+    }
+    ColoredVertex translated(const FixedArray<TPos, 3>& shift) const {
+        return ColoredVertex{
+            .position = position + shift,
+            .color = color,
+            .uv = uv,
+            .normal = normal,
+            .tangent = normal};
+    }
     ColoredVertex rotated(const FixedArray<float, 3, 3>& m) const {
         return ColoredVertex{
             .position = dot1d(m.casted<TPos>(), position),
@@ -78,6 +90,15 @@ struct ColoredVertex {
         result.normal /= std::sqrt(sum(squared(result.normal)));
         result.tangent /= std::sqrt(sum(squared(result.tangent)));
         return result;
+    }
+    template <class TOperation>
+    ColoredVertex transformed_uv(const TOperation& m) const {
+        return ColoredVertex{
+            .position = position,
+            .color = color,
+            .uv = m(uv),
+            .normal = normal,
+            .tangent = tangent};
     }
     template <class Archive>
     void serialize(Archive& archive) {

@@ -14,14 +14,14 @@ struct Skidmark;
 struct RenderConfig;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
-class IParticleInstantiator;
+class IParticleCreator;
 enum class ParticleSubstrate;
 
 class IParticleRenderer {
 public:
     virtual ~IParticleRenderer() = default;
     virtual void preload(const std::string& resource_name) = 0;
-    virtual IParticleInstantiator& get_instantiator(const std::string& resource_name) = 0;
+    virtual IParticleCreator& get_instantiator(const std::string& resource_name) = 0;
     virtual void move(float dt) = 0;
     virtual void render(
         ParticleSubstrate substrate,

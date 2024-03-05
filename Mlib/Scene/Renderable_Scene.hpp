@@ -41,7 +41,9 @@ namespace Mlib {
 
 class SceneNodeResources;
 class ParticleResources;
+class TrailResources;
 class IParticleRenderer;
+class ITrailRenderer;
 class SurfaceContactDb;
 
 class DirtmapLogic;
@@ -80,6 +82,7 @@ public:
         unsigned int max_anisotropic_filtering_level,
         SceneNodeResources& scene_node_resources,
         ParticleResources& particle_resources,
+        TrailResources& trail_resources,
         SurfaceContactDb& surface_contact_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
@@ -129,6 +132,7 @@ public:
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;
     std::unique_ptr<IParticleRenderer> particle_renderer_;
+    std::unique_ptr<ITrailRenderer> trail_renderer_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     VehicleSpawners vehicle_spawners_;

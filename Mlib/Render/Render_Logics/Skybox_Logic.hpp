@@ -1,8 +1,10 @@
 #pragma once
 #include <Mlib/Memory/Deallocation_Token.hpp>
+#include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,6 +44,8 @@ private:
     RenderLogic& child_logic_;
     RenderingResources& rendering_resources_;
     SRenderProgram rp_;
+    BufferBackgroundCopy vertices_;
+    EmptyArrayBuffer empty_;
     VertexArray va_;
     std::string alias_;
     bool loaded_;

@@ -1,5 +1,5 @@
 #include "Particle_Renderer.hpp"
-#include <Mlib/Render/Batch_Renderers/Particle_Instantiator.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <mutex>
@@ -12,20 +12,20 @@ ParticleRenderer::ParticleRenderer(ParticleResources& resources)
         return resources.instantiate_particles_instance(name);
       } }
     , instantiators_{ mutex_, [this, &resources](const std::string& name) {
-        return resources.instantiate_particle_instantiator(
+        return resources.instantiate_particle_creator(
             name,
-            *instances_.get(resources.get_instance_for_instantiator(name)));
+            *instances_.get(resources.get_instance_for_creator(name)));
       } }
 {}
 
 ParticleRenderer::~ParticleRenderer() = default;
 
-IParticleInstantiator& ParticleRenderer::get_instantiator(const std::string& name) {
+IParticleCreator& ParticleRenderer::get_instantiator(const std::string& name) {
     return *instantiators_.get(name);
 }
 
 void ParticleRenderer::preload(const std::string& name) {
-    instances_.get(resources_.get_instance_for_instantiator(name))->preload();
+    instances_.get(resources_.get_instance_for_creator(name))->preload();
 }
 
 void ParticleRenderer::move(float dt) {

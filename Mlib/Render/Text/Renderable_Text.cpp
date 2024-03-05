@@ -53,11 +53,12 @@ TextResource::TextResource(
     std::string ttf_filename,
     const FixedArray<float, 3>& color,
     size_t max_nchars)
-: loaded_font_{nullptr},
-  ttf_filename_{std::move(ttf_filename)},
-  color_{color},
-  max_nchars_{max_nchars},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : va_{ vertices_, empty_, empty_, empty_ }
+    , loaded_font_{ nullptr }
+    , ttf_filename_{ std::move(ttf_filename) }
+    , color_{ color }
+    , max_nchars_{ max_nchars }
+    , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 
 void TextResource::deallocate() {
@@ -149,7 +150,7 @@ void TextResource::set_contents(
         }
     }
     // update content of VBO memory
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
+    va_.vertex_buffer.bind();
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, integral_cast<GLsizeiptr>(sizeof(vdata_[0]) * vdata_.size()), vdata_.data())); // be sure to use glBufferSubData and not glBufferData
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

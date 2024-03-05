@@ -49,6 +49,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         args.scene_config.render_config.anisotropic_filtering_level,
         RenderingContextStack::primary_scene_node_resources(),
         RenderingContextStack::primary_particle_resources(),
+        RenderingContextStack::primary_trail_resources(),
         args.surface_contact_db,
         args.scene_config,
         args.button_states,

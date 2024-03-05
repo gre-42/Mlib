@@ -5,11 +5,20 @@
 #include <Mlib/Render/Deallocate/Deallocation_Mode.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
+#include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 
 using namespace Mlib;
 
-VertexArray::VertexArray()
-    : vertex_array_{ (GLuint)-1 }
+VertexArray::VertexArray(
+    IArrayBuffer& vertex_buffer,
+    IArrayBuffer& bone_weight_buffer,
+    IArrayBuffer& texture_layer_buffer,
+    IArrayBuffer& interior_mapping_buffer)
+    : vertex_buffer{ vertex_buffer }
+    , bone_weight_buffer{ bone_weight_buffer }
+    , texture_layer_buffer{ texture_layer_buffer }
+    , interior_mapping_buffer{ interior_mapping_buffer }
+    , vertex_array_ { (GLuint)-1 }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(DeallocationMode::DIRECT); }) }
 {}
 
@@ -41,12 +50,11 @@ bool VertexArray::copy_in_progress() const {
         interior_mapping_buffer.copy_in_progress();
 }
 
-GLuint VertexArray::vertex_array() const {
-    if (!initialized()) {
-        THROW_OR_ABORT("Vertex-array not initialized");
-    }
-    wait();
-    return vertex_array_;
+void VertexArray::update() {
+    vertex_buffer.update();
+    bone_weight_buffer.update();
+    texture_layer_buffer.update();
+    interior_mapping_buffer.update();
 }
 
 void VertexArray::wait() const {
@@ -54,6 +62,14 @@ void VertexArray::wait() const {
     bone_weight_buffer.wait();
     texture_layer_buffer.wait();
     interior_mapping_buffer.wait();
+}
+
+GLuint VertexArray::vertex_array() const {
+    if (!initialized()) {
+        THROW_OR_ABORT("Vertex-array not initialized");
+    }
+    wait();
+    return vertex_array_;
 }
 
 void VertexArray::deallocate(DeallocationMode mode) {
@@ -67,8 +83,9 @@ void VertexArray::deallocate(DeallocationMode mode) {
         }
         vertex_array_ = (GLuint)-1;
     }
-    vertex_buffer.deallocate(mode);
-    bone_weight_buffer.deallocate(mode);
-    texture_layer_buffer.deallocate(mode);
-    interior_mapping_buffer.deallocate(mode);
+    // The buffers have to deallocate themselves.
+    // vertex_buffer.deallocate(mode);
+    // bone_weight_buffer.deallocate(mode);
+    // texture_layer_buffer.deallocate(mode);
+    // interior_mapping_buffer.deallocate(mode);
 }

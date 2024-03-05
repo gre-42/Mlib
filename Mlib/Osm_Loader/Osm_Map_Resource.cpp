@@ -7,7 +7,7 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.cpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>

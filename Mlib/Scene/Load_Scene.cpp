@@ -180,7 +180,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Atlas.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Texture_Descriptor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Billboards.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Animatable_Trails.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Billboards.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Animated_Trails.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Append_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Cleanup_Mesh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Convex_Decompose_Terrain.hpp>
@@ -404,6 +406,8 @@ LoadScene::LoadScene() {
     register_json_user_function(AppendFocuses::key, AppendFocuses::json_user_function);
     register_json_user_function(AnimatableBillboards::key, AnimatableBillboards::json_user_function);
     register_json_user_function(AnimatedBillboards::key, AnimatedBillboards::json_user_function);
+    register_json_user_function(AnimatableTrails::key, AnimatableTrails::json_user_function);
+    register_json_user_function(AnimatedTrails::key, AnimatedTrails::json_user_function);
     register_json_user_function(CleanupMesh::key, CleanupMesh::json_user_function);
     register_json_user_function(CreateBinaryXResource::key, CreateBinaryXResource::json_user_function);
     register_json_user_function(CreateBlendingXResource::key, CreateBlendingXResource::json_user_function);

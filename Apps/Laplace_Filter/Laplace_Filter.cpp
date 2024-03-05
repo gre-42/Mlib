@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.cpp>
+#include <Mlib/Geography/Heightmaps/Load_Heightmap_From_File.hpp>
 #include <Mlib/Images/Filters/Central_Differences.hpp>
 #include <Mlib/Images/Filters/Filters.hpp>
 #include <Mlib/Images/Filters/Gaussian_Filter.hpp>

@@ -14,10 +14,10 @@ public:
 
     explicit DynamicBase(size_t max_num_instances);
     ~DynamicBase();
-    void append(const value_type& v);
+    void append(const tvalue_type& v);
     void remove(size_t index);
     void clear();
-    void modify(size_t index, const value_type& v);
+    tvalue_type& operator [] (size_t index);
     void update();
     void bind() const;
 private:

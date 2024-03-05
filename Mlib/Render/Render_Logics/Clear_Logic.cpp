@@ -41,7 +41,13 @@ SHADER_VER FRAGMENT_PRECISION
 "    gl_FragDepth = 1.0;\n"
 "}\n";
 
-ClearLogic::ClearLogic() = default;
+ClearLogic::ClearLogic()
+    : va_{
+        vertices_,
+        empty_,
+        empty_,
+        empty_ }
+{}
 
 ClearLogic::~ClearLogic() = default;
 

@@ -46,7 +46,7 @@ void DynamicBase<tvalue_type>::deallocate() {
 }
 
 template <class tvalue_type>
-void DynamicBase<tvalue_type>::append(const value_type& v) {
+void DynamicBase<tvalue_type>::append(const tvalue_type& v) {
     if (num_instances_ == max_num_instances_) {
         THROW_OR_ABORT("Too many instances");
     }
@@ -70,11 +70,11 @@ void DynamicBase<tvalue_type>::clear() {
 }
 
 template <class tvalue_type>
-void DynamicBase<tvalue_type>::modify(size_t index, const value_type& v) {
+tvalue_type& DynamicBase<tvalue_type>::operator [] (size_t index) {
     if (index >= num_instances_) {
         THROW_OR_ABORT("Billboard index out of bounds");
     }
-    instances_[index] = v;
+    return instances_[index];
 }
 
 template <class tvalue_type>

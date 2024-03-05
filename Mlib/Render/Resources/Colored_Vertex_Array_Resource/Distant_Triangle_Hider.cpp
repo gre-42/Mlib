@@ -1,10 +1,11 @@
-#include "Substitution_Info.hpp"
+#include "Distant_Triangle_Hider.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Stats/Mean.hpp>
@@ -18,7 +19,31 @@
 
 using namespace Mlib;
 
-void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
+DistantTriangleHider::DistantTriangleHider(
+    std::shared_ptr<ColoredVertexArray<float>> cva,
+    size_t ntriangles)
+    : va_{
+        vertices_,
+        bone_weights_,
+        texture_layers_,
+        interior_mapping_ }
+    , cva_{ std::move(cva) }
+    , ntriangles_{ ntriangles }
+{}
+
+VertexArray& DistantTriangleHider::vertex_array() {
+    return va_;
+}
+
+const VertexArray& DistantTriangleHider::vertex_array() const {
+    return va_;
+}
+
+size_t DistantTriangleHider::ntriangles() const {
+    return ntriangles_;
+}
+
+void DistantTriangleHider::delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
     // assert(ntriangles > 0);
     if (triangles_local_ids_[id] == ntriangles_ - 1) {
         triangles_local_ids_[id] = SIZE_MAX;
@@ -36,7 +61,7 @@ void SubstitutionInfo::delete_triangle(size_t id, FixedArray<ColoredVertex<float
     --ntriangles_;
 }
 
-void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
+void DistantTriangleHider::insert_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr) {
     // assert(triangles_global_ids_[ntriangles] == SIZE_MAX);
     assert(triangles_local_ids_[id] == SIZE_MAX);
     triangles_local_ids_[id] = ntriangles_;
@@ -48,7 +73,7 @@ void SubstitutionInfo::insert_triangle(size_t id, FixedArray<ColoredVertex<float
 /**
  * From: https://learnopengl.com/Advanced-OpenGL/Advanced-Data
  */
-void SubstitutionInfo::delete_triangles_far_away(
+void DistantTriangleHider::delete_triangles_far_away(
     const FixedArray<float, 3>& position,
     const TransformationMatrix<float, float, 3>& m,
     float draw_distance_add,
@@ -149,7 +174,7 @@ void SubstitutionInfo::delete_triangles_far_away(
         if (background_loop_->done()) {
             if (!triangles_to_delete_.empty() || !triangles_to_insert_.empty()) {
                 // TimeGuard tg{ "deleting triangles", "deleting triangles" };
-                CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
+                va_.vertex_buffer.bind();
                 // CHK(auto* ptr = (Triangle*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
                 CHK(auto* ptr = (Triangle*)glMapBufferRange(GL_ARRAY_BUFFER, integral_cast<GLintptr>(offset_ * sizeof(Triangle)), integral_cast<GLsizeiptr>(noperations2_ * sizeof(Triangle)), GL_MAP_WRITE_BIT));
                 ptr -= offset_;
@@ -171,7 +196,7 @@ void SubstitutionInfo::delete_triangles_far_away(
             THROW_OR_ABORT("Substitution both in fg and bg");
         }
         update_counters();
-        CHK(glBindBuffer(GL_ARRAY_BUFFER, va_.vertex_buffer.handle()));
+        va_.vertex_buffer.bind();
         func();
         CHK(glUnmapBuffer(GL_ARRAY_BUFFER));
     }

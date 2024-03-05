@@ -119,6 +119,14 @@ void BufferBackgroundCopy::wait() const {
     }
 }
 
+void BufferBackgroundCopy::update() {
+    // Do nothing
+}
+
+void BufferBackgroundCopy::bind() const {
+    CHK(glBindBuffer(GL_ARRAY_BUFFER, handle())); 
+}
+
 GLuint BufferBackgroundCopy::handle() const {
     wait();
     if (state_ != BackgroundCopyState::AWAITED) {

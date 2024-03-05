@@ -1,13 +1,12 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
-#include <map>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -15,11 +14,11 @@ struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 struct Light;
 struct Skidmark;
-class SubstitutionInfo;
 class SceneNodeResources;
 class RenderingResources;
 struct TransformationAndBillboardId;
 struct BlendMapTexture;
+class IVertexData;
 class IInstanceBuffers;
 
 class ColoredVertexArrayResource:
@@ -31,16 +30,20 @@ class ColoredVertexArrayResource:
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
 public:
-    using Instances = std::map<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>;
+    using Vertices = std::unordered_map<const ColoredVertexArray<float>*, std::shared_ptr<IVertexData>>;
+    using Instances = std::unordered_map<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>;
     ColoredVertexArrayResource(
         std::shared_ptr<AnimatedColoredVertexArrays> triangles,
+        Vertices&& vertices,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
+        Vertices&& vertices,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles,
+        Vertices&& vertices,
         std::unique_ptr<Instances>&& instances);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
@@ -48,6 +51,9 @@ public:
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles,
         const std::shared_ptr<IInstanceBuffers>& instances);
+    ColoredVertexArrayResource(
+        const std::shared_ptr<ColoredVertexArray<float>>& striangles,
+        const std::shared_ptr<IVertexData>& vertices);
     
     explicit ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles);
     ColoredVertexArrayResource(
@@ -112,16 +118,14 @@ private:
         const std::vector<size_t>& black_shadow_indices,
         const std::vector<BlendMapTexture*>& textures_color,
         const std::vector<BlendMapTexture*>& textures_alpha) const;
-    void deallocate();
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
-    const SubstitutionInfo& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
+    IVertexData& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
-    mutable std::map<const ColoredVertexArray<float>*, std::unique_ptr<SubstitutionInfo>> vertex_arrays_;
     SceneNodeResources& scene_node_resources_;
     RenderingResources& rendering_resources_;
-    mutable SafeSharedMutex mutex_;
+    mutable Vertices vertex_arrays_;
     std::unique_ptr<Instances> instances_;
-    DeallocationToken deallocation_token_;
+    mutable SafeSharedMutex mutex_;
 };
 
 }

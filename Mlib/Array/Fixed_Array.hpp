@@ -359,6 +359,10 @@ public:
             return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
         }
     }
+    template <typename TResultData>
+    explicit operator FixedArray<TResultData, tshape0, tshape...>() const {
+        return casted<TResultData>();
+    }
     template <class Archive>
     void serialize(Archive& archive) {
         for (TData& v : flat_iterable()) {

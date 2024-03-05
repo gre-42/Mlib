@@ -22,7 +22,8 @@ class TransformationMatrix;
 class SceneNode;
 class SceneNodeResources;
 class IParticleRenderer;
-class IParticleInstantiator;
+class ITrailRenderer;
+class IParticleCreator;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 struct RenderConfig;
@@ -36,7 +37,8 @@ public:
     explicit Scene(
         DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
-        IParticleRenderer* particle_renderer = nullptr);
+        IParticleRenderer* particle_renderer = nullptr,
+        ITrailRenderer* trail_renderer = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -97,7 +99,7 @@ public:
     void clear_nodes_not_allowed_to_be_unregistered();
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     DeleteNodeMutex& delete_node_mutex() const;
-    IParticleInstantiator& particle_instantiator(const std::string& resource_name) const;
+    IParticleCreator& particle_instantiator(const std::string& resource_name) const;
 private:
     DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for
@@ -129,6 +131,7 @@ private:
     std::set<std::string> nodes_not_allowed_to_be_unregistered_;
     SceneNodeResources* scene_node_resources_;
     IParticleRenderer* particle_renderer_;
+    ITrailRenderer* trail_renderer_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

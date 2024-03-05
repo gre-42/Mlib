@@ -17,6 +17,7 @@
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -29,21 +30,23 @@ using namespace Mlib;
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
-    IParticleRenderer* particle_renderer)
-: morn_{ *this },
-  root_nodes_{ morn_.create("root_nodes") },
-  static_root_nodes_{ morn_.create("static_root_nodes") },
-  root_aggregate_nodes_{ morn_.create("root_aggregate_nodes") },
-  root_instances_nodes_{ morn_.create("root_instances_nodes") },
-  delete_node_mutex_{ delete_node_mutex },
-  large_aggregate_bg_worker_{"Large_agg_BG"},
-  large_instances_bg_worker_{"Large_inst_BG"},
-  small_aggregate_bg_worker_{"Small_agg_BG"},
-  small_instances_bg_worker_{"Small_inst_BG"},
-  uuid_{ 0 },
-  shutting_down_{ false },
-  scene_node_resources_{ scene_node_resources },
-  particle_renderer_{ particle_renderer }
+    IParticleRenderer* particle_renderer,
+    ITrailRenderer* trail_renderer)
+    : morn_{ *this }
+    , root_nodes_{ morn_.create("root_nodes") }
+    , static_root_nodes_{ morn_.create("static_root_nodes") }
+    , root_aggregate_nodes_{ morn_.create("root_aggregate_nodes") }
+    , root_instances_nodes_{ morn_.create("root_instances_nodes") }
+    , delete_node_mutex_{ delete_node_mutex }
+    , large_aggregate_bg_worker_{ "Large_agg_BG" }
+    , large_instances_bg_worker_{ "Large_inst_BG" }
+    , small_aggregate_bg_worker_{ "Small_agg_BG" }
+    , small_instances_bg_worker_{ "Small_inst_BG" }
+    , uuid_{ 0 }
+    , shutting_down_{ false }
+    , scene_node_resources_{ scene_node_resources }
+    , particle_renderer_{ particle_renderer }
+    , trail_renderer_{ trail_renderer }
 {}
 
 void Scene::add_root_node(
@@ -628,19 +631,29 @@ void Scene::render(
             }
         }
     }
-    if ((particle_renderer_ != nullptr) &&
-        (external_render_pass.pass == ExternalRenderPassType::STANDARD))
-    {
-        // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
-        particle_renderer_->render(
-            ParticleSubstrate::AIR,
-            vp,
-            iv,
-            lights,
-            skidmarks,
-            scene_graph_config,
-            render_config,
-            external_render_pass);
+    if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+        if (particle_renderer_ != nullptr) {
+            // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
+            particle_renderer_->render(
+                ParticleSubstrate::AIR,
+                vp,
+                iv,
+                lights,
+                skidmarks,
+                scene_graph_config,
+                render_config,
+                external_render_pass);
+        }
+        if (trail_renderer_ != nullptr) {
+            trail_renderer_->render(
+                vp,
+                iv,
+                lights,
+                skidmarks,
+                scene_graph_config,
+                render_config,
+                external_render_pass);
+        }
     }
     {
         // AperiodicLagFinder lag_finder{"blended: ", std::chrono::milliseconds{5}};
@@ -685,6 +698,9 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     }
     if (particle_renderer_ != nullptr) {
         particle_renderer_->move(dt);
+    }
+    if (trail_renderer_ != nullptr) {
+        trail_renderer_->move(dt);
     }
 }
 
@@ -744,7 +760,7 @@ DeleteNodeMutex& Scene::delete_node_mutex() const {
     return delete_node_mutex_;
 }
 
-IParticleInstantiator& Scene::particle_instantiator(const std::string& resource_name) const {
+IParticleCreator& Scene::particle_instantiator(const std::string& resource_name) const {
     std::shared_lock lock{mutex_};
     if (particle_renderer_ == nullptr) {
         THROW_OR_ABORT("Particle renderer not set");

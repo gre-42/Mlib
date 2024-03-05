@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 
 using namespace Mlib;
@@ -43,7 +44,7 @@ void PointerImageLogic::render(
         (center(0) + pcr(0, 1, 1)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1, 1, 1)) / canvas_size(1) * 2.f - 1.f, 1.0f, 1.0f
     };
 
-    CHK(glBindBuffer(GL_ARRAY_BUFFER, va().vertex_buffer.handle()));
+    va().vertex_buffer.bind();
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 

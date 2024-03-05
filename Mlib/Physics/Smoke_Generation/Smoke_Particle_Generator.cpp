@@ -5,7 +5,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
-#include <Mlib/Scene_Graph/Interfaces/IParticle_Instantiator.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 

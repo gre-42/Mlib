@@ -1,16 +1,13 @@
 #include "Animated_Billboards.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Render/Batch_Renderers/Particle_Instantiator.hpp>
+#include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Billboard_Sequence.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
@@ -34,17 +31,17 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
     auto animatable = args.arguments.at<std::string>(KnownArgs::animatable);
 
     auto& pr = RenderingContextStack::primary_particle_resources();
-    pr.insert_instantiator_creator(
+    pr.insert_creator_instantiator(
         name,
         [frames = args.arguments.at<std::vector<uint32_t>>(KnownArgs::frames),
          duration = args.arguments.at<float>(KnownArgs::duration)]
         (ParticlesInstance& particles_instance)
         {
-            return std::unique_ptr<IParticleInstantiator>(new ParticleInstantiator(
+            return std::unique_ptr<IParticleCreator>(new ParticleCreator(
                 particles_instance,
                 BillboardSequence{
                     .billboard_ids = frames,
                     .duration = duration * s}));
         });
-    pr.insert_instantiator_to_instance(name, animatable);
+    pr.insert_creator_to_instance(name, animatable);
 };
