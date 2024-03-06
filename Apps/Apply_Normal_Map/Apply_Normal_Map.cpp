@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Particle_Resources.hpp>
@@ -176,13 +177,17 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
-                std::string name = "light" + std::to_string(i++);
+            for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
+                std::string name = "light" + std::to_string(i);
+                auto R = gl_lookat_absolute(
+                    scene.get_node(name, DP_LOC)->position(),
+                    scene.get_node("obj", DP_LOC)->position());
+                if (!R.has_value()) {
+                    THROW_OR_ABORT("Lookat failed for light " + std::to_string(i));
+                }
                 scene.add_root_node(name, make_dunique<SceneNode>(
                     FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
-                    matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                        scene.get_node(name, DP_LOC)->position(),
-                        scene.get_node("obj", DP_LOC)->position())).casted<float>(),
+                    matrix_2_tait_bryan_angles(R.value()).casted<float>(),
                     1.f));
                 auto light = std::make_unique<Light>(Light{
                     .shadow_render_pass = ExternalRenderPassType::NONE});

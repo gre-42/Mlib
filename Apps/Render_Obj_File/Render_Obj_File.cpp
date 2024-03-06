@@ -14,6 +14,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Images/StbImage3.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Interp.hpp>
@@ -887,13 +888,17 @@ int main(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown light configuration");
             }
-            for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
-                std::string name = "light" + std::to_string(i++);
+            for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
+                std::string name = "light" + std::to_string(i);
+                auto R = gl_lookat_absolute(
+                    scene.get_node(name, DP_LOC)->position(),
+                    scene.get_node("obj", DP_LOC)->position());
+                if (!R.has_value()) {
+                    THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
+                }
                 scene.add_root_node(name, make_dunique<SceneNode>(
                     FixedArray<double, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
-                    matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                        scene.get_node(name, DP_LOC)->position(),
-                        scene.get_node("obj", DP_LOC)->position())).casted<float>(),
+                    matrix_2_tait_bryan_angles(R.value()).casted<float>(),
                     1.f));
                 auto light = create_light(name);
                 lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
@@ -907,13 +912,17 @@ int main(int argc, char** argv) {
                 lights.back().light.specular = 0.f;
             }
             if (with_diffusivity) {
-                for (float a : Linspace<float>(0.f, 2.f * float(M_PI), n)) {
-                    std::string name = "light_s" + std::to_string(i++);
+                for (const auto& [i, a] : enumerate(Linspace<float>(0.f, 2.f * float(M_PI), n))) {
+                    std::string name = "light_s" + std::to_string(i);
+                    auto R = gl_lookat_absolute(
+                        scene.get_node(name, DP_LOC)->position(),
+                        scene.get_node("obj", DP_LOC)->position());
+                    if (!R.has_value()) {
+                        THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
+                    }
                     scene.add_root_node(name, make_dunique<SceneNode>(
                         FixedArray<double, 3>{r * cos(a) + center(0), center(1), r * sin(a) + center(2)},
-                        matrix_2_tait_bryan_angles(gl_lookat_absolute(
-                            scene.get_node(name, DP_LOC)->position(),
-                            scene.get_node("obj", DP_LOC)->position())).casted<float>(),
+                        matrix_2_tait_bryan_angles(R.value()).casted<float>(),
                         1.f));
                     auto light = create_light(name);
                     lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});

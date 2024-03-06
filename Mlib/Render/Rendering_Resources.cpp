@@ -1015,8 +1015,8 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
             ColormapWithModifiers desc = dit != nullptr
                 ? dit->color
                 : ColormapWithModifiers{
-                .filename = atd.filename,
-                .color_mode = color.color_mode };
+                    .filename = atd.filename,
+                    .color_mode = color.color_mode };
             atlas_tiles.push_back(AtlasTile{
                 .left = atd.left,
                 .bottom = atd.bottom,

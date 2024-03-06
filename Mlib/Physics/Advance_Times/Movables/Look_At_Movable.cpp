@@ -30,8 +30,11 @@ void LookAtMovable::advance_time(float dt) {
         return;
     }
     auto dmat = followed_->get_new_absolute_model_matrix();
-    auto dpos = dmat.t();
-    transformation_matrix_.R() = gl_lookat_absolute(transformation_matrix_.t(), dpos).casted<float>();
+    const auto& dpos = dmat.t();
+    auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos);
+    if (R.has_value()) {
+        transformation_matrix_.R() = R.value().casted<float>();
+    }
 }
 
 void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {

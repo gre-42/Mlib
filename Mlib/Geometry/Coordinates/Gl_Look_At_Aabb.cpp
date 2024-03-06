@@ -18,7 +18,11 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
         return std::nullopt;
     }
     d /= d_len;
-    result.extrinsic_R = gl_lookat_relative(FixedArray<float, 3>{d(0), 0.f, d(1)});
+    auto R = gl_lookat_relative(FixedArray<float, 3>{d(0), 0.f, d(1)});
+    if (!R.has_value()) {
+        return std::nullopt;
+    }
+    result.extrinsic_R = R.value();
     TransformationMatrix<float, double, 3> lookat0{
         result.extrinsic_R,
         camera_position};

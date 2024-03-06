@@ -5,12 +5,16 @@
 namespace Mlib {
 
 template <class TData>
-FixedArray<TData, 3, 3> gl_lookat_relative(
+std::optional<FixedArray<TData, 3, 3>> gl_lookat_relative(
     const FixedArray<TData, 3>& dz,
     const FixedArray<TData, 3>& dy0 = { 0.f, 1.f, 0.f })
 {
     auto dx = cross(dy0, -dz);
-    dx /= std::sqrt(sum(squared(dx)));
+    auto dx_len2 = sum(squared(dx));
+    if (dx_len2 < 1e-12) {
+        return std::nullopt;
+    }
+    dx /= std::sqrt(dx_len2);
     FixedArray<TData, 3> dy = cross(-dz, dx);
     return FixedArray<TData, 3, 3>::init(
         dx(0), dy(0), -dz(0),
@@ -19,13 +23,17 @@ FixedArray<TData, 3, 3> gl_lookat_relative(
 }
 
 template <class TData>
-FixedArray<TData, 3, 3> gl_lookat_absolute(
+std::optional<FixedArray<TData, 3, 3>> gl_lookat_absolute(
     const FixedArray<TData, 3>& camera_pos,
     const FixedArray<TData, 3>& object_pos,
     const FixedArray<TData, 3>& dy0 = { 0.f, 1.f, 0.f })
 {
     auto dz = object_pos - camera_pos;
-    return gl_lookat_relative(dz / std::sqrt(sum(squared(dz))), dy0);
+    auto dz_len2 = sum(squared(dz));
+    if (dz_len2 < 1e-12) {
+        return std::nullopt;
+    }
+    return gl_lookat_relative(dz / std::sqrt(dz_len2), dy0);
 }
 
 }

@@ -442,7 +442,7 @@ TransformationMatrix<float, float, 3> generate_point_observation(const FixedArra
             gl_lookat_absolute(
                 cv_to_opengl_coordinates({0.f, 2.f, -2.f}),
                 cv_to_opengl_coordinates(pos),
-                cv_to_opengl_coordinates({0.f, 1.f, 0.f})),
+                cv_to_opengl_coordinates({0.f, 1.f, 0.f})).value(),
             cv_to_opengl_coordinates(pos) });
 }
 

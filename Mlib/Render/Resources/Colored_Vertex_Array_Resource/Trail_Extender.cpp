@@ -1,5 +1,6 @@
 #include "Trail_Extender.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
@@ -30,18 +31,12 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
             return;
         }
         dz /= std::sqrt(dz_l2);
-        auto dy = cross(dz, location.R().column(0));
-        auto dy_l2 = sum(squared(dy));
-        if (dy_l2 < 1e-12) {
+        auto lookat = gl_lookat_relative(dz, location.R().column(1));
+        if (!lookat.has_value()) {
             return;
         }
-        dy /= std::sqrt(dy_l2);
-        auto dx = cross(dy, dz);
         TransformationMatrix<float, double, 3> loc{
-            FixedArray<float, 3, 3>::init(
-                dx(0), dy(0), dz(0),
-                dx(1), dy(1), dz(1),
-                dx(2), dy(2), dz(2)),
+            lookat.value(),
             location.t() };
         auto op = [this](const FixedArray<float, 2>& uv){
             return FixedArray<float, 2>{ trail_sequence_.u_offset + uv(0) * trail_sequence_.u_scale, uv(1) };
