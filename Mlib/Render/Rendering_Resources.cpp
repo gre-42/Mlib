@@ -1563,10 +1563,13 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
             flat_data.insert(flat_data.end(), d.data.get(), d.data.get() + layer_size);
         }
         GLuint texture;
+        GLenum target = (color.depth_interpolation == InterpolationMode::NEAREST)
+            ? GL_TEXTURE_2D_ARRAY
+            : GL_TEXTURE_3D;
         CHK(glGenTextures(1, &texture));
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, texture));
+        CHK(glBindTexture(target, texture));
         if (aniso != 0) {
-            CHK(glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
+            CHK(glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso));
         }
         CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));  // https://stackoverflow.com/a/49126350/2292832
         {
@@ -1576,7 +1579,7 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
             auto nchannels = (size_t)color.color_mode;
 #endif
             CHK(glTexImage3D(
-                GL_TEXTURE_2D_ARRAY,
+                target,
                 0,
                 nchannels2internal_format(nchannels),
                 data[0].width,
@@ -1589,9 +1592,9 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
         }
 
         if (color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-            CHK(glGenerateMipmap(GL_TEXTURE_2D_ARRAY));
+            CHK(glGenerateMipmap(target));
         }
-        CHK(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
+        CHK(glBindTexture(target, 0));
         return texture;
     };
 

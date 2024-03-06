@@ -1,6 +1,7 @@
 #include "Add_Texture_Atlas.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Rendering_Resources.hpp>
@@ -17,6 +18,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(width);
 DECLARE_ARGUMENT(height);
 DECLARE_ARGUMENT(layers);
+DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(color_mode);
 DECLARE_ARGUMENT(images);
 }
@@ -53,6 +55,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
             .width = args.arguments.at<int>(KnownArgs::width),
             .height = args.arguments.at<int>(KnownArgs::height),
             .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
+            .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
             .tiles = tiles});
 }

@@ -23,8 +23,8 @@ DECLARE_ARGUMENT(animatable);
 DECLARE_ARGUMENT(model);
 DECLARE_ARGUMENT(u_offset);
 DECLARE_ARGUMENT(u_scale);
-DECLARE_ARGUMENT(frames);
 DECLARE_ARGUMENT(times);
+DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(minimum_length);
 }
 
@@ -49,8 +49,8 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
          model = args.arguments.at<std::string>(KnownArgs::model),
          u_offset = args.arguments.at<float>(KnownArgs::u_offset),
          u_scale = args.arguments.at<float>(KnownArgs::u_scale),
-         frames = args.arguments.at<std::vector<float>>(KnownArgs::frames),
          times = args.arguments.at_vector<float>(KnownArgs::times, to_seconds),
+         w = args.arguments.at<std::vector<float>>(KnownArgs::w),
          minimum_length = args.arguments.at<double>(KnownArgs::minimum_length)]
         (TrailsInstance& trails_instance)
         {
@@ -60,7 +60,7 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
                 TrailSequence{
                     .u_offset = u_offset,
                     .u_scale = u_scale,
-                    .times_to_frames = Interp<float>{ times, frames, OutOfRangeBehavior::CLAMP }
+                    .times_to_w = Interp<float>{ times, w, OutOfRangeBehavior::CLAMP }
                 },
                 m->triangles,
                 minimum_length));

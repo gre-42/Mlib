@@ -18,7 +18,12 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(const std::string& t
         "empty_trails",
         Material{
             .blend_mode = BlendMode::CONTINUOUS,
-            .textures_color = {BlendMapTexture{.texture_descriptor = {.color = {.filename = texture, .color_mode = ColorMode::RGBA}}}},
+            .textures_color = {BlendMapTexture{.texture_descriptor = {.color = {
+                .filename = texture,
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                .depth_interpolation = InterpolationMode::LINEAR}}}},
+            .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .cull_faces = false },
         PhysicsMaterial::ATTR_VISIBLE,
         ModifierBacklog{},

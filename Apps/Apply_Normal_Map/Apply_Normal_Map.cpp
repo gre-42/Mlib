@@ -168,7 +168,6 @@ int main(int argc, char** argv) {
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
-            size_t i = 0;
             FixedArray<float, 3> center;
             if (light_configuration == "circle") {
                 center = {0.f, 10.f, 0.f};

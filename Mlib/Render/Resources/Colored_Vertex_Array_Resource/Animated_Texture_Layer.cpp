@@ -87,7 +87,7 @@ void AnimatedTextureLayer::append(
         THROW_OR_ABORT("Maximum number of triangles exceeded");
     }
     triangle_.append(triangle);
-    texture_layer_.append(time.applied([&sequence](const auto& v) { return sequence.times_to_frames(v); }));
+    texture_layer_.append(time.applied([&sequence](const auto& v) { return sequence.times_to_w(v); }));
     animation_times_[tmp_num_triangles_] = time;
     animation_sequences_[tmp_num_triangles_] = &sequence;
     ++tmp_num_triangles_;
@@ -99,10 +99,10 @@ void AnimatedTextureLayer::move(float dt) {
         auto& ai = animation_times_[i];
         auto& bi = animation_sequences_[i];
         ai += fixed_full<float, 3>(dt);
-        if (any(ai.applied<bool>([&bi](const auto& t){ return bi->times_to_frames.is_within_range(t); }))) {
+        if (any(ai.applied<bool>([&bi](const auto& t){ return bi->times_to_w.is_within_range(t); }))) {
             auto& tl = texture_layer_[i];
             for (size_t j = 0; j < 3; ++j) {
-                tl(j) = bi->times_to_frames(ai(j));
+                tl(j) = bi->times_to_w(ai(j));
             }
             ++i;
         } else {

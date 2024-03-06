@@ -578,9 +578,8 @@ int main(int argc, char** argv) {
             auto filenames = args.unnamed_values();
             std::vector<std::string> resource_names;
             resource_names.reserve(filenames.size());
-            size_t i = 0;
-            for (const std::string& filename : filenames) {
-                const auto& name = resource_names.emplace_back("obj-" + std::to_string(i++));
+            for (const auto& [i, filename] : enumerate(filenames)) {
+                const auto& name = resource_names.emplace_back("obj-" + std::to_string(i));
                 if (filename.ends_with(".obj")) {
                     if (!args.has_named("--large_object_mode")) {
                         scene_node_resources.add_resource(name, load_renderable_obj(
@@ -878,7 +877,6 @@ int main(int argc, char** argv) {
         } else if (light_configuration == "circle" || light_configuration == "shifted_circle") {
             size_t n = 10;
             float r = 50;
-            size_t i = 0;
             bool with_diffusivity = true;
             FixedArray<float, 3> center;
             if (light_configuration == "circle") {

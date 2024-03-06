@@ -92,7 +92,13 @@ void Bullet::advance_time(float dt) {
         lifetime_ = INFINITY;
         return;
     }
-    rigid_body_pulses_.rotation_ = gl_lookat_relative(rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))));
+    auto R = gl_lookat_relative(
+        rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))),
+        rigid_body_pulses_.rotation_.column(1));
+    if (!R.has_value()) {
+        THROW_OR_ABORT("Could not update bullet rotation");
+    }
+    rigid_body_pulses_.rotation_ = R.value();
     if (has_trail_) {
         trail_generator_.advance_time(dt);
         trail_generator_.maybe_generate(

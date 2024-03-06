@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -33,6 +34,7 @@ struct ColormapWithModifiers {
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
+    InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
     unsigned int anisotropic_filtering_level = 0;
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
     std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;
@@ -62,6 +64,7 @@ struct ColormapWithModifiers {
         archive(color_mode);
         archive(alpha_fac);
         archive(mipmap_mode);
+        archive(depth_interpolation);
         archive(anisotropic_filtering_level);
         archive(wrap_modes);
     }

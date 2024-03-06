@@ -28,6 +28,7 @@ struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
 class RenderingResources;
 struct BlendMapTexture;
+enum class InterpolationMode;
 enum class ColorMode;
 struct LoadedFont;
 
@@ -69,6 +70,7 @@ struct ManualTextureAtlasDescriptor {
     int width;
     int height;
     size_t nlayers;
+    InterpolationMode depth_interpolation;
     ColorMode color_mode;
     std::vector<ManualAtlasTileDescriptor> tiles;
 };

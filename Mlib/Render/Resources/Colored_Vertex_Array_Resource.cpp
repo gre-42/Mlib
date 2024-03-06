@@ -433,12 +433,15 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (std::isnan(alpha_threshold)) {
         THROW_OR_ABORT("alpha_threshold is NAN => unknown blend mode");
     }
-    bool has_texture_layer_color = (has_continuous_texture_layer_color || has_discrete_texture_layer_color);
-    const char* sampler_type_color = has_texture_layer_color
-        ? "sampler2DArray"
-        : "sampler2D";
-    auto sample = [](const std::string& sampler, const std::string& coordinates, bool has_texture_layer) {
-        return has_texture_layer
+    const char* sampler_type_color = has_continuous_texture_layer_color
+        ? "sampler3D"
+        : has_discrete_texture_layer_color
+            ? "sampler2DArray"
+            : "sampler2D";
+    auto sample_color = [has_continuous_texture_layer_color, has_discrete_texture_layer_color]
+        (const std::string& sampler, const std::string& coordinates)
+    {
+        return (has_continuous_texture_layer_color || has_discrete_texture_layer_color)
             ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs))"
             : "texture(" + sampler + ", " + coordinates + ')';
     };
@@ -743,7 +746,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         compute_normal_and_reorient_uv0();
     }
     if (ntextures_color == 1) {
-        sstr << "    vec4 texture_color_ambient_diffuse = " << sample("textures_color[0]", tex_coords(*textures_color[0]), has_texture_layer_color) << ';' << std::endl;
+        sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color("textures_color[0]", tex_coords(*textures_color[0])) << ';' << std::endl;
         sstr << "    texture_color_ambient_diffuse.a *= alpha_fac;" << std::endl;
     } else if (ntextures_color > 1) {
         if (textures_color[0]->role == BlendMapRole::SUMMAND) {

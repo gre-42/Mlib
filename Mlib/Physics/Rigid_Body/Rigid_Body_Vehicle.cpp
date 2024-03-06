@@ -372,9 +372,12 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
         } else if (grind_state_.grind_axis_ == 2) {
             if (std::abs(grind_state_.grind_pv_(2)) > 1e-12) {
                 auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -gravity_direction);
+                if (!r1.has_value()) {
+                    THROW_OR_ABORT("Could not compute grind rotation");
+                }
                 rbp_.rotation_ =
                     Quaternion<float>{ rbp_.rotation_ }
-                    .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)
+                    .slerp(Quaternion<float>{ r1.value() }, cfg.alignment_slerp)
                     .to_rotation_matrix();
             }
         } else {

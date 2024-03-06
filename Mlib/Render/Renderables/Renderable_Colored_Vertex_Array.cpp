@@ -551,23 +551,20 @@ void RenderableColoredVertexArray::render_cva(
             break;
         }
     }
-    if (!cva->discrete_triangle_texture_layers.empty() &&
+    IVertexData& si = rcva_->get_vertex_array(cva);
+    if (si.has_discrete_triangle_texture_layers() &&
         has_discrete_atlas_texture_layer)
     {
         THROW_OR_ABORT("Detected discrete texture layer per vertex and per instance");
     }
     bool has_discrete_texture_layer =
-        !cva->discrete_triangle_texture_layers.empty() ||
+        si.has_discrete_triangle_texture_layers() ||
         has_discrete_atlas_texture_layer;
-    if (!cva->continuous_triangle_texture_layers.empty() &&
+    if (si.has_continuous_triangle_texture_layers() &&
         has_discrete_texture_layer)
     {
         THROW_OR_ABORT("Detected discrete and continuous texture layer");
     }
-    IVertexData& si = rcva_->get_vertex_array(cva);
-    bool has_texture_layer =
-        si.has_continuous_triangle_texture_layers() ||
-        has_discrete_texture_layer;
     const ColoredRenderProgram& rp = rcva_->get_render_program(
         RenderProgramIdentifier{
             .render_pass = render_pass.external.pass,
@@ -812,7 +809,11 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_S, get_wrap_param(texture_descriptor.color.wrap_modes(0))));
         CHK(glTexParameteri(target, GL_TEXTURE_WRAP_T, get_wrap_param(texture_descriptor.color.wrap_modes(1))));
         if (texture_descriptor.color.mipmap_mode == MipmapMode::WITH_MIPMAPS) {
-            CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+            if (target == GL_TEXTURE_3D) {
+                CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+            } else {
+                CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+            }
         } else {
             CHK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         }
@@ -836,9 +837,11 @@ void RenderableColoredVertexArray::render_cva(
                 : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            GLenum target = has_texture_layer
-                ? GL_TEXTURE_2D_ARRAY
-                : GL_TEXTURE_2D;
+            GLenum target = si.has_continuous_triangle_texture_layers()
+                ? GL_TEXTURE_3D
+                : has_discrete_texture_layer
+                    ? GL_TEXTURE_2D_ARRAY
+                    : GL_TEXTURE_2D;
             CHK(glBindTexture(target, texture));
             LOG_INFO("RenderableColoredVertexArray::render_cva clamp texture \"" + t.texture_descriptor.color.filename + '"');
             setup_texture(t.texture_descriptor, target);
