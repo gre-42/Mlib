@@ -58,29 +58,31 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                 }
                 trails_instance_.add_triangle(t, time, trail_sequence_);
             }
-        }
-        for (const auto& t0 : segment_) {
-            FixedArray<ColoredVertex<double>, 3> t;
-            FixedArray<float, 3> time;
-            for (size_t i = 0; i < 3; ++i) {
-                OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
-                if (t0(i).position(2) == -1.f) {
-                    t(i) = t0(i).casted<double>().transformed(loc, loc.R()).transformed_uv(op);
-                    previous_vertices_[k] = t(i).position;
-                    time(i) = 0.f;
-                } else if (t0(i).position(2) == 1.f) {
-                    auto it = previous_vertices_.find(k);
-                    if (it == previous_vertices_.end()) {
-                        THROW_OR_ABORT("TrailExtender::append_location: Could not find previous vertex");
+        } else {
+            for (const auto& t0 : segment_) {
+                FixedArray<ColoredVertex<double>, 3> t;
+                FixedArray<float, 3> time;
+                for (size_t i = 0; i < 3; ++i) {
+                    OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
+                    if (t0(i).position(2) == -1.f) {
+                        t(i) = t0(i).casted<double>().transformed(loc, loc.R()).transformed_uv(op);
+                        current_vertices_[k] = t(i).position;
+                        time(i) = 0.f;
+                    } else if (t0(i).position(2) == 1.f) {
+                        auto it = previous_vertices_.find(k);
+                        if (it == previous_vertices_.end()) {
+                            THROW_OR_ABORT("TrailExtender::append_location: Could not find previous vertex");
+                        }
+                        t(i) = t0(i).casted<double>().transformed_uv(op);
+                        t(i).position = it->second;
+                        time(i) = float(trails_instance_.time() - prev.time);
+                    } else {
+                        THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                     }
-                    t(i) = t0(i).casted<double>().transformed_uv(op);
-                    t(i).position = it->second;
-                    time(i) = float(trails_instance_.time() - prev.time);
-                } else {
-                    THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                 }
+                trails_instance_.add_triangle(t, time, trail_sequence_);
             }
-            trails_instance_.add_triangle(t, time, trail_sequence_);
+            std::swap(previous_vertices_, current_vertices_);
         }
     }
     previous_center_ = PreviousCenter{ .position = location.t(), .time = trails_instance_.time() };
