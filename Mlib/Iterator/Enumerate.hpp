@@ -23,7 +23,7 @@ public:
     const enumerate_object& begin() const { return *this; }
     const enumerate_object& end()   const { return *this; }
 
-    bool operator!=(const enumerate_object&) const
+    bool operator != (const enumerate_object&) const
     {
         return begin_ != end_;
     }
@@ -34,9 +34,7 @@ public:
         ++size_;
     }
 
-    auto operator*() const
-        -> std::pair<std::size_t, decltype(*begin_)&>
-    {
+    std::pair<std::size_t, decltype(*begin_)> operator*() const {
         return { size_, *begin_ };
     }
 };
