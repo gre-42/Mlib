@@ -37,7 +37,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
         }
         TransformationMatrix<float, double, 3> loc{
             lookat.value(),
-            location.t() };
+            prev.position };
         auto op = [this](const FixedArray<float, 2>& uv){
             return FixedArray<float, 2>{ trail_sequence_.u_offset + uv(0) * trail_sequence_.u_scale, uv(1) };
         };
