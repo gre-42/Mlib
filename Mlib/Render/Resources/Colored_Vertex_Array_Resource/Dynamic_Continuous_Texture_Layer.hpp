@@ -24,7 +24,7 @@ public:
     FixedArray<float, 3>& operator [] (size_t i);
     void remove(size_t i);
 protected:
-    virtual void set_type_erased(const char* begin, const char* end);
+    virtual void set_type_erased(const char* begin, const char* end) override;
 
 private:
     DynamicBase<FixedArray<float, 3>> data_;

@@ -16,7 +16,7 @@ public:
     virtual void bind() const override;
 
 protected:
-    virtual void set_type_erased(const char* begin, const char* end);
+    virtual void set_type_erased(const char* begin, const char* end) override;
 };
 
 }
