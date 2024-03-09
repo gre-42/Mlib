@@ -41,9 +41,11 @@ public:
         return state_;
     }
 
+protected:
+    virtual void set_type_erased(const char *begin, const char *end) override;
+
 private:
     void deallocate(DeallocationMode mode);
-    virtual void set_type_erased(const char *begin, const char *end);
     GLuint buffer_;
     mutable std::future<void> future_;
     mutable bool is_mapped_;
