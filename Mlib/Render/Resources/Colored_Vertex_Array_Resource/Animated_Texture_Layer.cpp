@@ -50,7 +50,7 @@ void AnimatedTextureLayer::wait() const {
 }
 
 size_t AnimatedTextureLayer::ntriangles() const {
-    return gl_num_triangles_;
+    return integral_cast<size_t>(gl_num_triangles_);
 }
 
 bool AnimatedTextureLayer::has_continuous_triangle_texture_layers() const {
