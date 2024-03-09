@@ -17,7 +17,7 @@ void GravityEfp::increment_external_forces(
 {
     for (auto& rb : olist) {
         if (rb->feels_gravity() && (rb->mass() != INFINITY)) {
-            rb->rbp_.integrate_delta_v(gravity_ * cfg.dt / (float)cfg.nsubsteps);
+            rb->rbp_.integrate_delta_v(gravity_ * cfg.dt_substeps());
         }
     }
 }

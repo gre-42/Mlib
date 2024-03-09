@@ -218,7 +218,7 @@ void PhysicsEngine::burn_in(float duration) {
                 .surface_power = NAN});
         }
     }
-    for (float time = 0; time < duration; time += cfg_.dt / (float)cfg_.nsubsteps) {
+    for (float time = 0; time < duration; time += cfg_.dt_substeps()) {
         collide(
             nullptr,        // beacons
             true,           // true = burn_in

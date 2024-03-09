@@ -145,7 +145,7 @@ void test_com() {
     r1->rbp_.rotation_ = fixed_identity_array<float, 3>();
     // Hack to get identical values in the following tests.
     r1->rbp_.I_ = r0->rbp_.I_;
-    float dt = cfg.dt / (float)cfg.nsubsteps;
+    float dt = cfg.dt_substeps();
     r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
     r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
     {
