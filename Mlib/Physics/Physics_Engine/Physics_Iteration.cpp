@@ -51,7 +51,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             i,
             base_log_);
         physics_engine_.move_rigid_bodies(bcns);
-        physics_engine_.advance_smoke_generator_lifetimes();
+        physics_engine_.move_particles();
     }
     {
         // for(size_t i = 0; i < 32; ++i) {

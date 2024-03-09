@@ -15,6 +15,7 @@ struct Beacon;
 class BaseLog;
 enum class CollisionDirection;
 class ContactSmokeGenerator;
+class IParticleRenderer;
 class ITrailRenderer;
 
 class PhysicsEngine {
@@ -33,10 +34,11 @@ public:
         size_t oversampling_iteration,
         BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
-    void advance_smoke_generator_lifetimes();
+    void move_particles();
     void move_advance_times();
     void burn_in(float duration);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
+    void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
 
     RigidBodies rigid_bodies_;
@@ -46,6 +48,7 @@ public:
 private:
     CollisionDirection collision_direction_;
     ContactSmokeGenerator* contact_smoke_generator_;
+    IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
     std::list<ExternalForceProvider*> external_force_providers_;
     std::set<Controllable*> controllables_;

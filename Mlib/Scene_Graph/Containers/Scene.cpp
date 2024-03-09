@@ -696,12 +696,6 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
             ++it;
         }
     }
-    if (particle_renderer_ != nullptr) {
-        particle_renderer_->move(dt);
-    }
-    if (trail_renderer_ != nullptr) {
-        trail_renderer_->move(dt);
-    }
 }
 
 size_t Scene::get_uuid() {

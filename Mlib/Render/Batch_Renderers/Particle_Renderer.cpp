@@ -29,6 +29,7 @@ void ParticleRenderer::preload(const std::string& name) {
 }
 
 void ParticleRenderer::move(float dt) {
+    std::shared_lock lock{ mutex_ };
     for (auto& [_, instance] : instances_) {
         instance->move(dt);
     }
