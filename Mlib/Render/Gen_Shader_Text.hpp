@@ -8,7 +8,7 @@ template <class Func>
 class GenShaderText {
 public:
     GenShaderText(const Func& func)
-    : func_{func}
+        : func_{ func }
     {}
     template <class... Args>
     const char* operator() (const Args... args) {
