@@ -10,7 +10,11 @@
 
 using namespace Mlib;
 
-static std::shared_ptr<ColoredVertexArray<float>> gen_array(const std::string& texture) {
+static std::shared_ptr<ColoredVertexArray<float>> gen_array(
+    const std::string& texture,
+    const std::vector<float>& continuous_layer_x,
+    const std::vector<float>& continuous_layer_y)
+{
     AxisAlignedBoundingBox<float, 3> aabb{
         fixed_full<float, 3>(-INFINITY),
         fixed_full<float, 3>(INFINITY) };
@@ -23,6 +27,8 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(const std::string& t
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                 .depth_interpolation = InterpolationMode::LINEAR}}}},
+            .continuous_layer_x = continuous_layer_x,
+            .continuous_layer_y = continuous_layer_y,
             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .cull_faces = false },
         PhysicsMaterial::ATTR_VISIBLE,
@@ -38,12 +44,14 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(const std::string& t
 
 TrailsInstance::TrailsInstance(
     const std::string& texture,
+    const std::vector<float>& continuous_layer_x,
+    const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
     : time_{ 0 }
     , offset_(NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayer>(max_num_segments) }
-    , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture), dynamic_vertex_buffers_) }
+    , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
     , filter_{ filter }
 {}

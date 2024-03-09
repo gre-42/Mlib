@@ -589,6 +589,8 @@ void RenderableColoredVertexArray::render_cva(
             .facade_edge_size = cva->material.interior_textures.facade_edge_size,
             .facade_inner_size = cva->material.interior_textures.facade_inner_size,
             .interior_size = cva->material.interior_textures.interior_size,
+            .continuous_layer_x = cva->material.continuous_layer_x,
+            .continuous_layer_y = cva->material.continuous_layer_y,
             .has_horizontal_detailmap = has_horizontal_detailmap,
             .dirt_color_mode = (tic.ntextures_dirt != 0)
                 ? rcva_->rendering_resources_.get_existing_texture_descriptor(cva->material.dirt_texture).color.color_mode

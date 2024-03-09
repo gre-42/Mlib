@@ -47,6 +47,8 @@ struct Material {
     std::string reflection_map;
     std::string dirt_texture;
     InteriorTextures interior_textures;
+    std::vector<float> continuous_layer_x;
+    std::vector<float> continuous_layer_y;
     ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
     ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
     bool contains_skidmarks = false;
@@ -90,6 +92,8 @@ struct Material {
         archive(reflection_map);
         archive(dirt_texture);
         archive(interior_textures);
+        archive(continuous_layer_x);
+        archive(continuous_layer_y);
         archive(occluded_pass);
         archive(occluder_pass);
         archive(contains_skidmarks);

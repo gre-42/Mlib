@@ -66,6 +66,8 @@ struct RenderProgramIdentifier {
     OrderableFixedArray<float, 2> facade_edge_size;
     OrderableFixedArray<float, 2> facade_inner_size;
     OrderableFixedArray<float, 3> interior_size;
+    std::vector<float> continuous_layer_x;
+    std::vector<float> continuous_layer_y;
     bool has_horizontal_detailmap;
     ColorMode dirt_color_mode;
     bool has_instances;

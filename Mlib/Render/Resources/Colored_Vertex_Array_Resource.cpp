@@ -377,6 +377,41 @@ static GenShaderText vertex_shader_text_gen{[](
     return sstr.str();
 }};
 
+static void bisect_texture_layer(
+    std::ostream& sstr,
+    size_t left,
+    size_t right,
+    const std::vector<float>& continuous_layer_x,
+    const std::vector<float>& continuous_layer_y,
+    size_t ncalls)
+{
+    if (continuous_layer_x.size() != continuous_layer_y.size()) {
+        THROW_OR_ABORT("Incompatible texture layer sizes");
+    }
+    if (left >= right) {
+        THROW_OR_ABORT("Invalid interpolation bounds");
+    }
+    if (left >= continuous_layer_x.size()) {
+        THROW_OR_ABORT("Invalid left boundary");
+    }
+    if (right >= continuous_layer_x.size()) {
+        THROW_OR_ABORT("Invalid right boundary");
+    }
+    std::string indent(4 * (ncalls + 1), ' ');
+    if (left + 1 == right) {
+        auto len = continuous_layer_x[right] - continuous_layer_x[left];
+        sstr << indent << "float layer_alpha = (texture_layer_fs - " << continuous_layer_x[left] << ") * " << (1.f / len) << ';' << std::endl;
+        sstr << indent << "texture_layer_fs_transformed = mix(" << continuous_layer_y[left] << ", " << continuous_layer_y[right] << ", layer_alpha);" << std::endl;
+    } else {
+        auto center = (left + right) / 2;
+        sstr << indent << "if (texture_layer_fs < " << continuous_layer_x[center] << ") {" << std::endl;
+        bisect_texture_layer(sstr, left, center, continuous_layer_x, continuous_layer_y, ncalls + 1);
+        sstr << indent << "} else {" << std::endl;
+        bisect_texture_layer(sstr, center, right, continuous_layer_x, continuous_layer_y, ncalls + 1);
+        sstr << indent << "}" << std::endl;
+    }
+}
+
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>>& skidmarks,
@@ -385,6 +420,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
+    const std::vector<float>& continuous_layer_x,
+    const std::vector<float>& continuous_layer_y,
     size_t texture_modifier_hash,
     size_t nlights,
     size_t nskidmarks,
@@ -442,7 +479,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         (const std::string& sampler, const std::string& coordinates)
     {
         return (has_continuous_texture_layer_color || has_discrete_texture_layer_color)
-            ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs))"
+            ? "texture(" + sampler + ", vec3(" + coordinates + ", texture_layer_fs_transformed))"
             : "texture(" + sampler + ", " + coordinates + ')';
     };
     std::stringstream sstr;
@@ -744,6 +781,17 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         !has_interiormap)
     {
         compute_normal_and_reorient_uv0();
+    }
+    if (continuous_layer_x.size() != continuous_layer_y.size()) {
+        THROW_OR_ABORT("Incompatible texture layer sizes");
+    }
+    if (!continuous_layer_x.empty()) {
+        sstr << "    float texture_layer_fs_transformed;" << std::endl;
+        bisect_texture_layer(sstr, 0, continuous_layer_x.size() - 1, continuous_layer_x, continuous_layer_y, 0);
+    } else if (has_continuous_texture_layer_color) {
+        sstr << "    float texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
+    } else if (has_discrete_texture_layer_color) {
+        sstr << "    lowp uint texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
     }
     if (ntextures_color == 1) {
         sstr << "    vec4 texture_color_ambient_diffuse = " << sample_color("textures_color[0]", tex_coords(*textures_color[0])) << ';' << std::endl;
@@ -1578,6 +1626,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ light_noshadow_indices },
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
+        id.continuous_layer_x,
+        id.continuous_layer_y,
         id.texture_modifiers_hash,
         filtered_lights.size(),
         filtered_skidmarks.size(),
