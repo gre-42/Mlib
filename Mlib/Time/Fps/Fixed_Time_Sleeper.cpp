@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 FixedTimeSleeper::FixedTimeSleeper(float dt)
-: dt_{dt}
+    : dt_{ dt }
 {}
 
 FixedTimeSleeper::~FixedTimeSleeper() = default;
@@ -14,7 +14,7 @@ FixedTimeSleeper::~FixedTimeSleeper() = default;
 void FixedTimeSleeper::tick() {
     std::chrono::steady_clock::time_point end_time =
         std::chrono::steady_clock::now() +
-        std::chrono::nanoseconds((uint64_t)(dt_ * 1000.f * 1000.f * 1000.f));
+        std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(dt_));
     while (std::chrono::steady_clock::now() < end_time);
     // Mlib::sleep_for(std::chrono::duration<float>(dt_));
 }

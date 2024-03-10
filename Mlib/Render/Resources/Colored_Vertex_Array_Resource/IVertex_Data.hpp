@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <cstddef>
 
 namespace Mlib {
@@ -13,7 +14,7 @@ class IArrayBuffer;
 class IVertexData {
 public:
 	virtual ~IVertexData() = default;
-    virtual void update() = 0;
+    virtual void update(std::chrono::steady_clock::time_point time) = 0;
     virtual void bind() const = 0;
     virtual bool copy_in_progress() const = 0;
     virtual bool initialized() const = 0;

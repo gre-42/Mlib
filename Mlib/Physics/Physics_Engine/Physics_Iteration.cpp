@@ -41,17 +41,23 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
 #else
     std::list<Beacon> beacons;
 #endif
-    for (size_t i = 0; i < physics_cfg_.nsubsteps; ++i) {
-        std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
-            ? &beacons
-            : nullptr;
-        physics_engine_.collide(
-            bcns,
-            false,          // false=burn_in
-            i,
-            base_log_);
-        physics_engine_.move_rigid_bodies(bcns);
-        physics_engine_.move_particles();
+    {
+        if (physics_cfg_.nsubsteps == 0) {
+            THROW_OR_ABORT("Number of substeps is zero");
+        }
+        auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(physics_cfg_.dt_substeps() / s));
+        for (size_t i = 0; i < physics_cfg_.nsubsteps; ++i) {
+            std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
+                ? &beacons
+                : nullptr;
+            physics_engine_.collide(
+                bcns,
+                false,          // false=burn_in
+                i,
+                base_log_);
+            physics_engine_.move_rigid_bodies(bcns);
+            physics_engine_.move_particles(time - (physics_cfg_.nsubsteps - 1 - i) * idt);
+        }
     }
     {
         // for(size_t i = 0; i < 32; ++i) {

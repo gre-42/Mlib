@@ -14,7 +14,7 @@ class AnimatedTextureLayer: public IVertexData {
 public:
     explicit AnimatedTextureLayer(size_t max_num_triangles);
 
-    virtual void update() override;
+    virtual void update(std::chrono::steady_clock::time_point time) override;
     virtual void bind() const override;
     virtual bool copy_in_progress() const override;
     virtual bool initialized() const override;
@@ -41,7 +41,7 @@ public:
         const FixedArray<float, 3>& time,
         const TrailSequence& sequence);
 
-    void move(float dt);
+    void move(float dt, std::chrono::steady_clock::time_point time);
 
     size_t tmp_length() const;
     size_t tmp_empty();
@@ -57,6 +57,7 @@ private:
     DynamicContinuousTextureLayer texture_layer_;
     EmptyArrayBuffer empty_;
     VertexArray va_;
+    std::chrono::steady_clock::time_point time_;
     mutable std::mutex mutex_;
 };
 

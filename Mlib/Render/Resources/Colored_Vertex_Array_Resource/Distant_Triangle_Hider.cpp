@@ -31,7 +31,7 @@ DistantTriangleHider::DistantTriangleHider(
     , ntriangles_{ ntriangles }
 {}
 
-void DistantTriangleHider::update() {
+void DistantTriangleHider::update(std::chrono::steady_clock::time_point time) {
     return va_.update();
 }
 

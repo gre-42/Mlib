@@ -22,7 +22,7 @@ public:
     DistantTriangleHider(
         std::shared_ptr<ColoredVertexArray<float>> cva,
         size_t ntriangles);
-    virtual void update() override;
+    virtual void update(std::chrono::steady_clock::time_point time) override;
     virtual void bind() const override;
     virtual bool copy_in_progress() const override;
     virtual bool initialized() const override;

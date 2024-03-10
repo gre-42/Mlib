@@ -1,5 +1,6 @@
 #include "Animated_Texture_Layer.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 #include <mutex>
 
@@ -20,8 +21,23 @@ AnimatedTextureLayer::AnimatedTextureLayer(size_t max_num_triangles)
         empty_}
 {}
 
-void AnimatedTextureLayer::update() {
+void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
+    if (time == std::chrono::steady_clock::time_point()) {
+        THROW_OR_ABORT("AnimatedTextureLayer::update received uninitialized time");
+    }
     std::scoped_lock lock{ mutex_ };
+    if (time_ == std::chrono::steady_clock::time_point()) {
+        if (tmp_num_triangles_ != 0) {
+            THROW_OR_ABORT("AnimatedTextureLayer::update without previous move");
+        }
+    } else {
+        auto time_offset = std::chrono::duration<float>(time - time_).count() * s;
+        for (size_t i = 0; i < tmp_length(); ++i) {
+            const auto& ai = animation_times_[i];
+            const auto& bi = *animation_sequences_[i];
+            texture_layer_[i] = ai.applied([&](const auto& v) { return bi.times_to_w(v + time_offset); });
+        }
+    }
     va_.update();
     gl_num_triangles_ = integral_cast<GLsizei>(tmp_num_triangles_);
 }
@@ -87,23 +103,19 @@ void AnimatedTextureLayer::append(
         THROW_OR_ABORT("Maximum number of triangles exceeded");
     }
     triangle_.append(triangle);
-    texture_layer_.append(time.applied([&sequence](const auto& v) { return sequence.times_to_w(v); }));
+    texture_layer_.append(fixed_nans<float, 3>());
     animation_times_[tmp_num_triangles_] = time;
     animation_sequences_[tmp_num_triangles_] = &sequence;
     ++tmp_num_triangles_;
 }
 
-void AnimatedTextureLayer::move(float dt) {
+void AnimatedTextureLayer::move(float dt, std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{ mutex_ };
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = animation_sequences_[i];
         ai += fixed_full<float, 3>(dt);
         if (any(ai.applied<bool>([&bi](const auto& t){ return bi->times_to_w.is_within_range(t); }))) {
-            auto& tl = texture_layer_[i];
-            for (size_t j = 0; j < 3; ++j) {
-                tl(j) = bi->times_to_w(ai(j));
-            }
             ++i;
         } else {
             triangle_.remove(i);
@@ -115,6 +127,7 @@ void AnimatedTextureLayer::move(float dt) {
             }
         }
     }
+    time_ = time;
 }
 
 void AnimatedTextureLayer::delete_triangles_far_away(

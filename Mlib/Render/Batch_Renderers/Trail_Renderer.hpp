@@ -17,7 +17,7 @@ public:
     // ITrailRenderer
     virtual ITrailStorage& get_storage(const std::string& name) override;
     virtual void preload(const std::string& name) override;
-    virtual void move(float dt) override;
+    virtual void move(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void render(
         const FixedArray<double, 4, 4>& vp,
         const TransformationMatrix<float, double, 3>& iv,

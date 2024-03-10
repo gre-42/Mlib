@@ -181,7 +181,7 @@ void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     }
 }
 
-void PhysicsEngine::move_particles() {
+void PhysicsEngine::move_particles(std::chrono::steady_clock::time_point time) {
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
@@ -190,7 +190,7 @@ void PhysicsEngine::move_particles() {
         particle_renderer_->move(cfg_.dt_substeps());
     }
     if (trail_renderer_ != nullptr) {
-        trail_renderer_->move(cfg_.dt_substeps());
+        trail_renderer_->move(cfg_.dt_substeps(), time);
     }
 }
 

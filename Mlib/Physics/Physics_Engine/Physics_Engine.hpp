@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Containers/Permanent_Contacts.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <chrono>
 #include <list>
 #include <set>
 
@@ -34,7 +35,7 @@ public:
         size_t oversampling_iteration,
         BaseLog* base_log);
     void move_rigid_bodies(std::list<Beacon>* beacons);
-    void move_particles();
+    void move_particles(std::chrono::steady_clock::time_point time);
     void move_advance_times();
     void burn_in(float duration);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);

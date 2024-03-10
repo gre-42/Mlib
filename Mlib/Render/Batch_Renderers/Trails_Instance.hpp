@@ -38,7 +38,7 @@ public:
         const FixedArray<ColoredVertex<double>, 3>& triangle,
         const FixedArray<float, 3>& time,
         const TrailSequence& trail_sequence);
-    void move(float dt);
+    void move(float dt, std::chrono::steady_clock::time_point time);
     double time() const;
     void preload() const;
     void render(

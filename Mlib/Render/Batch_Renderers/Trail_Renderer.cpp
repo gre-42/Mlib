@@ -28,10 +28,10 @@ void TrailRenderer::preload(const std::string& name) {
     instances_.get(resources_.get_instance_for_storage(name))->preload();
 }
 
-void TrailRenderer::move(float dt) {
+void TrailRenderer::move(float dt, std::chrono::steady_clock::time_point time) {
     std::shared_lock lock{ mutex_ };
     for (auto& [_, instance] : instances_) {
-        instance->move(dt);
+        instance->move(dt, time);
     }
 }
 

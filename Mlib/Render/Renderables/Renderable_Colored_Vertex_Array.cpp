@@ -1050,7 +1050,7 @@ void RenderableColoredVertexArray::render_cva(
         {
             verbose_abort("Preloaded render pass has incomplete triangles (" + cva->name + ')');
         }
-        si.update();
+        si.update(render_pass.external.time);
         si.bind();
         LOG_INFO("RenderableColoredVertexArray::render_cva glDrawArrays");
         if (has_instances) {
