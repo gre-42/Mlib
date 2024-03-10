@@ -629,15 +629,9 @@ bool RenderingResources::texture_is_loaded_and_try_preload(
     if (!preloader_background_loop_.done()) {
         return false;
     }
-    std::scoped_lock lock{mutex_};
-    if (texture_is_loaded_unsafe(color)) {
-        return true;
-    }
-    if (preloader_background_loop_.done()) {
-        preloader_background_loop_.run([this, color, role](){
-            preload(color, role);
-        });
-    }
+    preloader_background_loop_.try_run([this, color, role](){
+        preload(color, role);
+    });
     return false;
 }
 

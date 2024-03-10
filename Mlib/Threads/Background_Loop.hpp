@@ -8,15 +8,13 @@
 
 namespace Mlib {
 
-/**
- * Like BackgroundTask, but reuses the same thread for each task.
- */
 class BackgroundLoop {
 public:
     explicit BackgroundLoop(std::string thread_name);
     ~BackgroundLoop();
     WorkerStatus tick(size_t update_interval);
     void run(const std::function<void()>& task);
+    bool try_run(const std::function<void()>& task);
     bool done() const;
     void wait_until_done() const;
     void shutdown();

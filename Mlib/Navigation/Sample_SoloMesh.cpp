@@ -17,6 +17,7 @@
 //
 
 #include "Sample_SoloMesh.hpp"
+#include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Navigation/InputGeom.hpp>
 #pragma clang diagnostic push
@@ -367,10 +368,13 @@ bool Sample_SoloMesh::build()
         return false;
     }
 
-    if (!rcBuildPolyMeshDetail(m_ctx, *m_pmesh, *m_chf, m_cfg.detailSampleDist, m_cfg.detailSampleMaxError, *m_dmesh))
     {
-        m_ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
-        return false;
+        TemporarilyIgnoreFloatingPointExeptions ignore_except;
+        if (!rcBuildPolyMeshDetail(m_ctx, *m_pmesh, *m_chf, m_cfg.detailSampleDist, m_cfg.detailSampleMaxError, *m_dmesh))
+        {
+            m_ctx->log(RC_LOG_ERROR, "buildNavigation: Could not build detail mesh.");
+            return false;
+        }
     }
 
     if (!m_keepInterResults)

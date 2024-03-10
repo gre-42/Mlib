@@ -60,18 +60,25 @@ WorkerStatus BackgroundLoop::tick(size_t update_interval) {
 }
 
 void BackgroundLoop::run(const std::function<void()>& task) {
+    if (!try_run(task)) {
+        THROW_OR_ABORT("BackgroundLoop::run despite not done");
+    }
+}
+
+bool BackgroundLoop::try_run(const std::function<void()>& task) {
     if (!thread_.joinable()) {
         THROW_OR_ABORT("BackgroundLoop::run despite not joinable thread");
     }
     {
         std::scoped_lock lck{ mutex_ };
         if (!done_) {
-            THROW_OR_ABORT("BackgroundLoop::run despite not done");
+            return false;
         }
         task_ = task;
         done_ = false;
     }
     task_ready_cv_.notify_one();
+    return true;
 }
 
 bool BackgroundLoop::done() const {
