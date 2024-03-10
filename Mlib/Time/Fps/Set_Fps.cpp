@@ -11,10 +11,10 @@ SetFps::SetFps(
     ISleeper* sleeper,
     std::function<std::chrono::steady_clock::time_point()> simulated_time,
     std::function<bool()> paused)
-: stop_requested_{false},
-  simulated_time_{std::move(simulated_time)},
-  paused_{std::move(paused)},
-  sleeper_{sleeper}
+    : stop_requested_{ false }
+    , simulated_time_{ std::move(simulated_time) }
+    , paused_{ std::move(paused) }
+    , sleeper_{ sleeper }
 {}
 
 SetFps::~SetFps() = default;

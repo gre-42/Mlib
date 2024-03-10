@@ -788,7 +788,6 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!continuous_layer_x.empty()) {
         sstr << "    float texture_layer_fs_transformed;" << std::endl;
         bisect_texture_layer(sstr, 0, continuous_layer_x.size() - 1, continuous_layer_x, continuous_layer_y, 0);
-        sstr << "    texture_layer_fs_transformed = clamp(texture_layer_fs_transformed, 0, 1);" << std::endl;
     } else if (has_continuous_texture_layer_color) {
         sstr << "    float texture_layer_fs_transformed = texture_layer_fs;" << std::endl;
     } else if (has_discrete_texture_layer_color) {
