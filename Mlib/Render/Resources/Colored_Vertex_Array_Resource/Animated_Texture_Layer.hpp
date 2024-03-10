@@ -4,7 +4,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Triangle.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <mutex>
 
 namespace Mlib {
 
@@ -57,7 +57,7 @@ private:
     DynamicContinuousTextureLayer texture_layer_;
     EmptyArrayBuffer empty_;
     VertexArray va_;
-    mutable SafeSharedMutex mutex_;
+    mutable std::mutex mutex_;
 };
 
 }
