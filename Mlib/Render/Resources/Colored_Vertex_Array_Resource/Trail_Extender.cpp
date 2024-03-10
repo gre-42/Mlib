@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 
@@ -23,6 +24,9 @@ TrailExtender::TrailExtender(
 }
 
 void TrailExtender::append_location(const TransformationMatrix<float, double, 3>& location) {
+    if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
+        THROW_OR_ABORT("Trail instance move not called");
+    }
     if (previous_center_.has_value()) {
         auto& prev = previous_center_.value();
         auto dz = (location.t() - prev.position).casted<float>();
@@ -51,7 +55,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                         previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 1.f) {
-                        time(i) = float(trails_instance_.time() - prev.time);
+                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                     }
@@ -75,7 +79,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                         }
                         t(i) = t0(i).casted<double>().transformed_uv(op);
                         t(i).position = it->second;
-                        time(i) = float(trails_instance_.time() - prev.time);
+                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 1 or -1");
                     }

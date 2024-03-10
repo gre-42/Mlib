@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
+#include <chrono>
 #include <map>
 #include <optional>
 #include <vector>
@@ -16,7 +17,7 @@ struct TrailSequence;
 
 struct PreviousCenter {
     FixedArray<double, 3> position;
-    double time;
+    std::chrono::steady_clock::time_point time;
 };
 
 class TrailExtender final: public ITrailExtender {

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <chrono>
 #include <list>
 #include <memory>
 #include <string>
@@ -39,7 +40,7 @@ public:
         const FixedArray<float, 3>& time,
         const TrailSequence& trail_sequence);
     void move(float dt, std::chrono::steady_clock::time_point time);
-    double time() const;
+    std::chrono::steady_clock::time_point time() const;
     void preload() const;
     void render(
         const FixedArray<double, 4, 4>& vp,
@@ -51,7 +52,7 @@ public:
         const ExternalRenderPass& external_render_pass) const;
 
 private:
-    double time_;
+    std::chrono::steady_clock::time_point time_;
     FixedArray<double, 3> offset_;
     std::shared_ptr<AnimatedTextureLayer> dynamic_vertex_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;

@@ -48,8 +48,7 @@ TrailsInstance::TrailsInstance(
     const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
-    : time_{ 0 }
-    , offset_(NAN)
+    : offset_(NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayer>(max_num_segments) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
@@ -74,10 +73,10 @@ void TrailsInstance::add_triangle(
 
 void TrailsInstance::move(float dt, std::chrono::steady_clock::time_point time) {
     dynamic_vertex_buffers_->move(dt, time);
-    time_ += dt;
+    time_ = time;
 }
 
-double TrailsInstance::time() const {
+std::chrono::steady_clock::time_point TrailsInstance::time() const {
     return time_;
 }
 
