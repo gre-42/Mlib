@@ -73,11 +73,10 @@ void TrailsInstance::add_triangle(
 
 void TrailsInstance::move(float dt, std::chrono::steady_clock::time_point time) {
     dynamic_vertex_buffers_->move(dt, time);
-    time_ = time;
 }
 
 std::chrono::steady_clock::time_point TrailsInstance::time() const {
-    return time_;
+    return dynamic_vertex_buffers_->time();
 }
 
 void TrailsInstance::preload() const {

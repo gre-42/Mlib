@@ -42,6 +42,7 @@ public:
         const TrailSequence& sequence);
 
     void move(float dt, std::chrono::steady_clock::time_point time);
+    std::chrono::steady_clock::time_point time() const;
 
     size_t tmp_length() const;
     size_t tmp_empty();

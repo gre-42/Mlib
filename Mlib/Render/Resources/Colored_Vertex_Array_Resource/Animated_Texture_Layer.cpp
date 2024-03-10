@@ -130,6 +130,10 @@ void AnimatedTextureLayer::move(float dt, std::chrono::steady_clock::time_point 
     time_ = time;
 }
 
+std::chrono::steady_clock::time_point AnimatedTextureLayer::time() const {
+    return time_;
+}
+
 void AnimatedTextureLayer::delete_triangles_far_away(
     const FixedArray<float, 3>& position,
     const TransformationMatrix<float, float, 3>& m,

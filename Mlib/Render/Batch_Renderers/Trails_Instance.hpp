@@ -52,7 +52,6 @@ public:
         const ExternalRenderPass& external_render_pass) const;
 
 private:
-    std::chrono::steady_clock::time_point time_;
     FixedArray<double, 3> offset_;
     std::shared_ptr<AnimatedTextureLayer> dynamic_vertex_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
