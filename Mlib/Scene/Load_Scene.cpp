@@ -219,8 +219,6 @@
 
 using namespace Mlib;
 
-static DECLARE_REGEX(func_name_re, "^\\s*(\\w+)\\s*([\\s\\S]*)$");
-
 void LoadScene::register_json_user_function(const std::string& key, LoadSceneJsonUserFunction function) {
     if (!json_user_functions_.try_emplace(key, function).second) {
         THROW_OR_ABORT("Multiple functions with name \"" + key + "\" exist");
