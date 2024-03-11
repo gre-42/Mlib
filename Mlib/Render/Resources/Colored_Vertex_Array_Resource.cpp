@@ -110,6 +110,7 @@ static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
+    const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     size_t texture_modifier_hash,
     size_t nlights,
     size_t nskidmarks,
@@ -337,9 +338,9 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "    tex_coord.s += uv_offset_u;" << std::endl;
     }
     if (has_lightmap_color || has_lightmap_depth) {
-        sstr << "    for (int i = 0; i < " << lights.size() << "; ++i) {" << std::endl;
-        sstr << "        FragPosLightSpace[i] = MVP_light[i] * vec4(vPosInstance, 1.0);" << std::endl;
-        sstr << "    }" << std::endl;
+        for (size_t i : lightmap_indices) {
+            sstr << "    FragPosLightSpace[" << i << "] = MVP_light[" << i << "] * vec4(vPosInstance, 1.0);" << std::endl;
+        }
     }
     for (size_t i = 0; i < nskidmarks; ++i) {
         sstr << "    for (int i = 0; i < " << nskidmarks << "; ++i) {" << std::endl;
@@ -497,7 +498,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "uniform mat3 R;" << std::endl;
     }
     if (ntextures_color != 0) {
-        sstr << "lowp uniform " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
+        sstr << "uniform lowp " << sampler_type_color << " textures_color[" << ntextures_color << "];" << std::endl;
     }
     if (ntextures_alpha != 0) {
         sstr << "uniform sampler2D textures_alpha[" << ntextures_alpha << "];" << std::endl;
@@ -1590,6 +1591,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const char* vs_text = vertex_shader_text_gen(
         NotSortedArray{ filtered_lights },
         NotSortedArray{ textures_color },
+        NotSortedArray{ lightmap_indices },
         id.texture_modifiers_hash,
         id.nlights,
         id.nskidmarks,
@@ -1695,7 +1697,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->texture_alpha_locations[i] = checked_glGetUniformLocation(rp->program, ("textures_alpha[" + std::to_string(i) + "]").c_str());
         }
         if (!id.lightmap_indices_color.empty() || !id.lightmap_indices_depth.empty()) {
-            for (size_t i = 0; i < filtered_lights.size(); ++i) {
+            for (size_t i : lightmap_indices) {
                 rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
             }
         } else {
@@ -1805,13 +1807,22 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->pose_quaternions[i] = checked_glGetUniformLocation(rp->program, ("bone_quaternions[" + std::to_string(i) + "]").c_str());
         }
         for (size_t i = 0; i < filtered_lights.size(); ++i) {
-            if (!id.ambient.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.ambient.all_equal(0) &&
+                any(filtered_lights.at(i).second->ambient != 0.f) &&
+                !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 rp->light_ambients[i] = checked_glGetUniformLocation(rp->program, ("lightAmbient[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.diffuse.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.diffuse.all_equal(0) &&
+                any(filtered_lights.at(i).second->diffuse != 0.f) &&
+                !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 rp->light_diffuses[i] = checked_glGetUniformLocation(rp->program, ("lightDiffuse[" + std::to_string(i) + "]").c_str());
             }
-            if (!id.specular.all_equal(0) && !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (!id.specular.all_equal(0) &&
+                any(filtered_lights.at(i).second->specular != 0.f) &&
+                !any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 rp->light_speculars[i] = checked_glGetUniformLocation(rp->program, ("lightSpecular[" + std::to_string(i) + "]").c_str());
             }
         }

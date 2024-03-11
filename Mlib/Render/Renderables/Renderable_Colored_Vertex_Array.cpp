@@ -755,13 +755,22 @@ void RenderableColoredVertexArray::render_cva(
     {
         size_t i = 0;
         for (const auto& [_, light] : filtered_lights) {
-            if (any(ambient != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(ambient != 0.f) &&
+                any(light->ambient != 0.f) &&
+                !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 CHK(glUniform3fv(rp.light_ambients.at(i), 1, light->ambient.flat_begin()));
             }
-            if (any(diffuse != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(diffuse != 0.f) &&
+                any(light->diffuse != 0.f) &&
+                !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 CHK(glUniform3fv(rp.light_diffuses.at(i), 1, light->diffuse.flat_begin()));
             }
-            if (any(specular != 0.f) && !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
+            if (any(specular != 0.f) &&
+                any(light->specular != 0.f) &&
+                !any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK))
+            {
                 CHK(glUniform3fv(rp.light_speculars.at(i), 1, light->specular.flat_begin()));
             }
             ++i;
