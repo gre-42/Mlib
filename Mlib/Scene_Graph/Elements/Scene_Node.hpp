@@ -8,6 +8,7 @@
 #include <Mlib/Memory/Shared_Ptrs.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
@@ -106,6 +107,11 @@ enum class ChildParentState {
 enum class PoseInterpolationMode {
     DISABLED,
     ENABLED
+};
+
+enum class LockingStrategy {
+    NO_LOCK,
+    ACQUIRE_LOCK
 };
 
 PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
@@ -299,8 +305,13 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe(
+        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe(
+        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, double, 3> absolute_model_matrix(
+        LockingStrategy locking_strategy,
+        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     Scene* scene_;
     DanglingPtr<SceneNode> parent_;
     IAbsoluteMovable* absolute_movable_;
@@ -317,7 +328,7 @@ private:
     std::list<std::unique_ptr<Light>> lights_;
     std::list<std::unique_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, double> trafo_;
-    QuaternionSeries<float, double, 3> trafo_history_;
+    QuaternionSeries<float, double, NINTERPOLATED> trafo_history_;
     bool trafo_history_invalidated_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;

@@ -1094,13 +1094,25 @@ TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const 
 }
 
 TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix(std::chrono::steady_clock::time_point time) const {
-    std::shared_lock lock{ mutex_ };
+    return absolute_model_matrix(LockingStrategy::ACQUIRE_LOCK, time);
+}
+
+TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix(
+    LockingStrategy locking_strategy,
+    std::chrono::steady_clock::time_point time) const
+{
+    std::shared_lock lock{ mutex_, std::defer_lock };
+    if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
+        lock.lock();
+    }
     if (state_ != SceneNodeState::DETACHED) {
         scene_->delete_node_mutex().notify_reading();
     }
     auto result = relative_model_matrix_unsafe(time);
     if (parent_ != nullptr) {
-        lock.unlock();
+        if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
+            lock.unlock();
+        }
         return parent_->absolute_model_matrix(time) * result;
     } else {
         return result;

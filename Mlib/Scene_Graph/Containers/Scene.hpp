@@ -1,7 +1,9 @@
 #pragma once
+#include <Mlib/Math/Time_Point_Series.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
+#include <Mlib/Scene_Graph/Interpolation.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
@@ -132,6 +134,7 @@ private:
     SceneNodeResources* scene_node_resources_;
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
+    TimePointSeries<NINTERPOLATED> times_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

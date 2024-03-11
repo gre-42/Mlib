@@ -25,7 +25,7 @@ public:
         if (node->absolute_movable_ != nullptr) {
             THROW_OR_ABORT("Absolute movable already set");
         }
-        this->absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix());
+        this->absolute_movable->set_absolute_model_matrix(node->absolute_model_matrix(LockingStrategy::NO_LOCK));
     }
     AbsoluteMovableSetter(
         DanglingRef<SceneNode> node,
