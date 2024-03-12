@@ -10,7 +10,6 @@ namespace Mlib {
 class SceneNode;
 
 struct RelativeMovableKeyBinding {
-    DanglingPtr<SceneNode> fixed_node;
     std::function<DanglingPtr<SceneNode>()> dynamic_node;
     FixedArray<double, 3> translation;
     FixedArray<float, 3> rotation_axis;

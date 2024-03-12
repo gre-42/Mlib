@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 
@@ -30,15 +30,13 @@ class ButtonPress;
 class CursorMovement;
 class ScrollWheelMovement;
 
-class KeyBindings: public DestructionObserver<DanglingRef<const SceneNode>>, public ExternalForceProvider, public RenderLogic {
+class KeyBindings: public ExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
         SelectedCameras& selected_cameras,
         const Focuses& focuses,
         Players& players);
     ~KeyBindings();
-
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
 
     // ExternalForceProvider
     virtual void increment_external_forces(const std::list<RigidBodyVehicle*>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
@@ -81,6 +79,8 @@ public:
     void delete_gun_key_binding(const GunKeyBinding& deleted_key_binding);
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
     void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
+
+    DestructionFunctions on_destroy;
 private:
     float get_alpha(
         ButtonPress& button_press,

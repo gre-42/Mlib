@@ -66,7 +66,7 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             args.arguments.at<std::string>(KnownArgs::role) } });
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_car_controller_key_binding(kb);
         }

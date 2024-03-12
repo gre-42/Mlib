@@ -42,7 +42,7 @@ void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             FixedArray<float, 3>{0.f, 0.f, 1.f})});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_absolute_movable_idle_binding(kb);
         }

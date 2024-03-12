@@ -94,7 +94,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::role)} });
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_absolute_movable_key_binding(kb);
         }

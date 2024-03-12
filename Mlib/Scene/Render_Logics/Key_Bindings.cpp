@@ -67,38 +67,20 @@ KeyBindings::KeyBindings(
 {}
 
 KeyBindings::~KeyBindings() {
-    std::set<DanglingPtr<SceneNode>> nodes;
-    for (auto& b : absolute_movable_idle_bindings_) { nodes.insert(b.node); }
-    for (auto& b : absolute_movable_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : relative_movable_key_bindings_) { if (b.fixed_node != nullptr) nodes.insert(b.fixed_node); }
-    for (auto& b : car_controller_idle_bindings_) { nodes.insert(b.node); }
-    for (auto& b : car_controller_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : plane_controller_idle_bindings_) { nodes.insert(b.node); }
-    for (auto& b : plane_controller_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : avatar_controller_idle_bindings_) { nodes.insert(b.node); }
-    for (auto& b : avatar_controller_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : weapon_cycle_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : gun_key_bindings_) { nodes.insert(b.node); }
-    for (auto& b : player_key_bindings_) { nodes.insert(b.node); }
-    for (auto& node : nodes) {
-        node->clearing_observers.remove(*this);
-    }
-}
-
-void KeyBindings::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    auto dop = destroyed_object.ptr();
-    absolute_movable_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    absolute_movable_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    relative_movable_key_bindings_.remove_if([&dop](const auto& b) {return b.fixed_node == dop; });
-    car_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    car_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    plane_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    plane_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    avatar_controller_idle_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    avatar_controller_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    weapon_cycle_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    gun_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop; });
-    player_key_bindings_.remove_if([&dop](const auto& b) {return b.node == dop;});
+    on_destroy.clear();
+    if (!absolute_movable_idle_bindings_.empty()) { lwarn() << "absolute_movable_idle_bindings remaining"; }
+    if (!absolute_movable_key_bindings_.empty()) { lwarn() << "absolute_movable_key_bindings remaining"; }
+    if (!relative_movable_key_bindings_.empty()) { lwarn() << "relative_movable_key_bindings remaining"; }
+    if (!car_controller_idle_bindings_.empty()) { lwarn() << "car_controller_idle_bindings remaining"; }
+    if (!car_controller_key_bindings_.empty()) { lwarn() << "car_controller_key_bindings remaining"; }
+    if (!plane_controller_idle_bindings_.empty()) { lwarn() << "plane_controller_idle_bindings remaining"; }
+    if (!plane_controller_key_bindings_.empty()) { lwarn() << "plane_controller_key_bindings remaining"; }
+    if (!avatar_controller_idle_bindings_.empty()) { lwarn() << "avatar_controller_idle_bindings remaining"; }
+    if (!avatar_controller_key_bindings_.empty()) { lwarn() << "avatar_controller_key_bindings remaining"; }
+    if (!weapon_cycle_key_bindings_.empty()) { lwarn() << "weapon_cycle_key_bindings remaining"; }
+    if (!gun_key_bindings_.empty()) { lwarn() << "gun_key_bindings remaining"; }
+    if (!player_key_bindings_.empty()) { lwarn() << "player_key_bindings remaining"; }
+    if (!print_node_info_key_bindings_.empty()) { lwarn() << "print_node_info_key_bindings remaining"; }
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
@@ -106,124 +88,133 @@ void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
 }
 
 const AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return absolute_movable_idle_bindings_.emplace_back(b);
 }
 
 const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return absolute_movable_key_bindings_.emplace_back(b);
 }
 
 const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
-    if (b.fixed_node != nullptr) {
-        b.fixed_node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    }
     return relative_movable_key_bindings_.emplace_back(b);
 }
 
 const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return car_controller_idle_bindings_.emplace_back(b);
 }
 
 const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return car_controller_key_bindings_.emplace_back(b);
 }
 
 const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return plane_controller_idle_bindings_.emplace_back(b);
 }
 
 const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return plane_controller_key_bindings_.emplace_back(b);
 }
 
 const AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return avatar_controller_idle_bindings_.emplace_back(b);
 }
 
 const AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return avatar_controller_key_bindings_.emplace_back(b);
 }
 
 const WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return weapon_cycle_key_bindings_.emplace_back(b);
 }
 
 const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
-    b.node->destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return gun_key_bindings_.emplace_back(b);
 }
 
 const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
-    b.node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     return player_key_bindings_.emplace_back(b);
 }
 
 const PrintNodeInfoKeyBinding& KeyBindings::add_print_node_info_key_binding(const PrintNodeInfoKeyBinding& b) {
-    if (b.fixed_node != nullptr) {
-        b.fixed_node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
-    }
     return print_node_info_key_bindings_.emplace_back(b);
 }
 
 void KeyBindings::delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding) {
-    relative_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (relative_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"relative movable key binding\"");
+    }
 }
 
 void KeyBindings::delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding) {
-    absolute_movable_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (absolute_movable_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"absolute movable idle binding\"");
+    }
 }
 
 void KeyBindings::delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding) {
-    absolute_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (absolute_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"absolute movable key binding\"");
+    }
 }
 
 void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding) {
-    car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"car controller idle binding\"");
+    }
 }
 
 void KeyBindings::delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding) {
-    car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"car controller key binding\"");
+    }
 }
 
 void KeyBindings::delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding) {
-    plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"plane controller idle binding\"");
+    }
 }
 
 void KeyBindings::delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding) {
-    plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"plane controller key binding\"");
+    }
 }
 
 void KeyBindings::delete_avatar_controller_idle_binding(const AvatarControllerIdleBinding& deleted_key_binding) {
-    avatar_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (avatar_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"avatar controller idle binding\"");
+    }
 }
 
 void KeyBindings::delete_avatar_controller_key_binding(const AvatarControllerKeyBinding& deleted_key_binding) {
-    avatar_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (avatar_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"abatar controller key binding\"");
+    }
 }
 
 void KeyBindings::delete_weapon_cycle_key_binding(const WeaponCycleKeyBinding& deleted_key_binding) {
-    weapon_cycle_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (weapon_cycle_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"weapon cycle key binding\"");
+    }
 }
 
 void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {
-    gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"gun key binding\"");
+    }
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"player key binding\"");
+    }
 }
 
 void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding) {
-    print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;});
+    if (print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+        verbose_abort("Could not remove exactly one \"print node info key binding\"");
+    }
 }
 
 float KeyBindings::get_alpha(

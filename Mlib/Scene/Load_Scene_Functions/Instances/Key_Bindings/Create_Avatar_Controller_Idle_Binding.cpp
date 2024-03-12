@@ -35,7 +35,7 @@ void CreateAvatarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionA
         .node = node.ptr()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_avatar_controller_idle_binding(kb);
         }

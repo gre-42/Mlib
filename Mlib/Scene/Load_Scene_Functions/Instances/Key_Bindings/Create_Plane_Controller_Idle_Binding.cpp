@@ -35,7 +35,7 @@ void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionAr
     auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{.node = node.ptr()});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_idle_binding(kb);
         }

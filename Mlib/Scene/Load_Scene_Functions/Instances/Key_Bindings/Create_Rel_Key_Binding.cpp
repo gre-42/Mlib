@@ -47,8 +47,7 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
-        .fixed_node = node.ptr(),
-        .dynamic_node= [node]() {return node.ptr();},
+        .dynamic_node = [node]() { return node.ptr(); },
         .translation = args.arguments.at<FixedArray<double, 3>>(KnownArgs::translation, fixed_zeros<double, 3>()),
         .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
         .velocity_press = args.arguments.at<double>(KnownArgs::velocity_press, 0.) * kph,
@@ -67,7 +66,7 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::id))});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        node.ptr(),
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_relative_movable_key_binding(kb);
         }

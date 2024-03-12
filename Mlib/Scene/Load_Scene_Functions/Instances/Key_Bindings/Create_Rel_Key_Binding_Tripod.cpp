@@ -41,8 +41,7 @@ CreateRelKeyBindingTripod::CreateRelKeyBindingTripod(RenderableScene& renderable
 
 void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
-        .fixed_node = nullptr,
+    auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingPtr<SceneNode> {
             auto name = sc.camera_node_name();
             auto cycle = sc.cycle(name);
@@ -67,4 +66,7 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
             args.cursor_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id))});
+    key_bindings.on_destroy.add([&kbs = key_bindings, &kb]() {
+        kbs.delete_relative_movable_key_binding(kb);
+    });
 }
