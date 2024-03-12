@@ -20,7 +20,10 @@ public:
     : from_{from}, to_{to}, count_{count}
     {}
     TData operator [] (size_t i) const {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         return (from_ * TData(count_ - i - 1) + to_ * TData(i)) / TData(count_ - 1);
+#pragma GCC diagnostic pop
     }
     size_t length() const {
         return count_;
