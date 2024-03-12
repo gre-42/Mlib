@@ -40,13 +40,10 @@ public:
 };
 
 template<typename Iterable>
-auto enumerate(const Iterable& iter) -> enumerate_object<const Iterable&> {
-    return { iter };
-}
-
-template<typename Iterable>
-auto enumerate(Iterable& iter) -> enumerate_object<Iterable&> {
-    return { iter };
+auto enumerate(Iterable&& iter)
+    -> enumerate_object<Iterable>
+{
+    return { std::forward<Iterable>(iter) };
 }
 
 }
