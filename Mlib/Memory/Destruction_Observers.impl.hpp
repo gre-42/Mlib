@@ -7,8 +7,8 @@ namespace Mlib {
 
 template <class T>
 DestructionObservers<T>::DestructionObservers(T obj)
-: shutting_down_{false},
-  obj_{obj}
+    : shutting_down_{ false }
+    , obj_{ obj }
 {}
 
 template <class T>
@@ -43,12 +43,13 @@ void DestructionObservers<T>::remove(
     DestructionObserver<T>& destruction_observer,
     ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
+    std::unique_lock lock{ mutex_, std::defer_lock };
     if (!shutting_down_) {
-        std::scoped_lock lock{ mutex_ };
-        size_t nerased = observers_.erase(&destruction_observer);
-        if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
-            verbose_abort("Could not find destruction observer to be erased");
-        }
+        lock.lock();
+    }
+    size_t nerased = observers_.erase(&destruction_observer);
+    if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
+        verbose_abort("Could not find destruction observer to be erased");
     }
 }
 

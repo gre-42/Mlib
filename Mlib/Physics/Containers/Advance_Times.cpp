@@ -13,25 +13,9 @@ AdvanceTimes::~AdvanceTimes()
     }
 }
 
-void AdvanceTimes::delete_scheduled_advance_times(SourceLocation loc) {
-    std::scoped_lock log{scheduled_deletion_mutex_};
-    for (auto it = advance_times_shared_.begin(); it != advance_times_shared_.end(); ) {
-        auto v = it++;
-        auto dit = advance_times_to_delete_.find(v->get());
-        if (dit != advance_times_to_delete_.end()) {
-            advance_times_shared_.erase(v);
-            advance_times_to_delete_.erase(dit);
-        }
-    }
-    if (!advance_times_to_delete_.empty()) {
-        lerr() << "Deleting location:";
-        lerr() << loc.file_name() << ':' << loc.line();
-        lerr() << "Deleted locations:";
-        for (const auto& a : advance_times_to_delete_) {
-            lerr() << a.second.file_name() << ':' << a.second.line();
-        }
-        verbose_abort("Could not delete all shared advance times");
-    }
+void AdvanceTimes::delete_scheduled_advance_times() {
+    std::scoped_lock log{ scheduled_deletion_mutex_ };
+    advance_times_shared_.remove_if([](const auto& a){ return a == nullptr; });
 }
 
 void AdvanceTimes::add_advance_time(std::unique_ptr<AdvanceTime>&& advance_time)
@@ -44,20 +28,14 @@ void AdvanceTimes::add_advance_time(AdvanceTime& advance_time) {
 }
 
 void AdvanceTimes::schedule_delete_advance_time(const AdvanceTime& advance_time, SourceLocation loc) {
-    std::scoped_lock log{scheduled_deletion_mutex_};
-    for (const auto& a : advance_times_shared_) {
+    std::scoped_lock log{ scheduled_deletion_mutex_ };
+    for (auto& a : advance_times_shared_) {
         if (a.get() == &advance_time) {
-            auto res = advance_times_to_delete_.insert({&advance_time, loc});
-            if (!res.second) {
-                lerr() << "Previous advance-time";
-                lerr() << res.first->second.file_name() << ':' << res.first->second.line();
-                lerr() << "Current advance-time";
-                lerr() << loc.file_name() << ':' << loc.line();
-                verbose_abort("Multiple deletes scheduled for a single shared advance_time");
-            }
+            a = nullptr;
             return;
         }
     }
+    lerr() << loc.file_name() << ':' << loc.line();
     verbose_abort("Could not find shared advance time");
 }
 

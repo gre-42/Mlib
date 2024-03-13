@@ -102,19 +102,21 @@ void SupplyDepots::add_supply_depot(
     float cooldown)
 {
     auto center = scene_node->absolute_model_matrix().t();
-    bvh_.insert(
+    auto payload = bvh_.insert(
         AxisAlignedBoundingBox<double, 3>{center},
         SupplyDepot{
             .node = scene_node,
             .center = center,
             .supplies = supplies,
             .cooldown = cooldown,
-            .time_since_last_visit = cooldown});
+            .time_since_last_visit = cooldown,
+            .node_on_clear = std::make_shared<DestructionFunctionsRemovalTokens>(scene_node->on_clear) });
     auto rt = std::make_unique<RelativeTransformer>(
         advance_times_,
         fixed_zeros<float, 3>(),
         FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
     scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{.selector = Mlib::compile_regex("")}));
     scene_node->set_relative_movable(rt.get());
+    payload->node_on_clear->add([this](){ bvh_.clear(); });
     advance_times_.add_advance_time(std::move(rt));
 }

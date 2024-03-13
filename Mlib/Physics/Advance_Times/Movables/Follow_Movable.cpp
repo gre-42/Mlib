@@ -42,8 +42,7 @@ FollowMovable::FollowMovable(
     dpos_old_ = followed_->get_new_absolute_model_matrix().t();
 }
 
-FollowMovable::~FollowMovable()
-{}
+FollowMovable::~FollowMovable() = default;
 
 void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
     initialized_ = true;

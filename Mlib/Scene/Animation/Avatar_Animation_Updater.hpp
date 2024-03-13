@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <string>
 
@@ -19,7 +20,8 @@ public:
     virtual void update_animation_state(AnimationState* animation_state) override;
 private:
     const RigidBodyVehicle& rb_;
-    DanglingRef<SceneNode> gun_node_;
+    DanglingPtr<SceneNode> gun_node_;
+    DestructionFunctionsRemovalTokens gun_node_on_destroy_;
     std::string resource_wo_gun_;
     std::string resource_w_gun_;
     float surface_power_;

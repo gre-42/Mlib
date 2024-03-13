@@ -66,7 +66,7 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
             args.cursor_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id))});
-    key_bindings.on_destroy.add([&kbs = key_bindings, &kb]() {
+    key_bindings.on_destroy.forever.add([&kbs = key_bindings, &kb]() {
         kbs.delete_relative_movable_key_binding(kb);
     });
 }

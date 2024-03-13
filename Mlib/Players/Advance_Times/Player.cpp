@@ -148,7 +148,14 @@ void Player::reset_node() {
         clear_map_recursively(delete_externals_, [](const auto& p){
             p.key() = nullptr;
             p.mapped()();
-        });
+            });
+    }
+    if (!dependent_nodes_.empty()) {
+        std::scoped_lock lock{ delete_node_mutex_ };
+        clear_map_recursively(dependent_nodes_, [this](const auto& p){
+            p.key() = nullptr;
+            scene_.delete_node(p.mapped());
+            });
     }
     externals_mode_ = ExternalsMode::NONE;
 }
@@ -320,12 +327,9 @@ void Player::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
-    // If node != nullptr in "append_delete_externals",
-    // it is assumed that all objects that would be
-    // deleted in the externals-deleters are children of
-    // the external nodes. The children will therefore get
-    // deleted by the node itself.
-    delete_externals_.erase(destroyed_object.ptr());
+    // The node has already removed the player from its observers,
+    // so nothing no deregistration is done here.
+    dependent_nodes_.erase(destroyed_object.ptr());
 }
 
 void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
@@ -775,6 +779,14 @@ void Player::append_delete_externals(
     if (node != nullptr) {
         node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
     }
+}
+
+void Player::append_dependent_node(std::string node_name) {
+    auto node = scene_.get_node(node_name, DP_LOC);
+    if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
+        THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + name() + '"');
+    }
+    node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
 }
 
 void Player::notify_race_started() {

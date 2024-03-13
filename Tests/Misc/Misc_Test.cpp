@@ -2,6 +2,7 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
@@ -128,6 +129,14 @@ void test_parallel_block() {
     assert_true(ctr == 15);
 }
 
+void test_destruction_functions() {
+    DestructionFunctions df;
+    DestructionFunctionsRemovalTokens rt{ df };
+    df.clear();
+    rt.add([]() { linfo() << "f"; });
+    df.clear();
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -136,5 +145,6 @@ int main(int argc, const char** argv) {
     test_dangling_unique();
     test_template_regex();
     test_parallel_block();
+    test_destruction_functions();
     return 0;
 }

@@ -53,7 +53,7 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
             args.arguments.at<std::string>(KnownArgs::id))});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        nullptr,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_weapon_cycle_key_binding(kb);
         }

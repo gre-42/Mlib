@@ -18,12 +18,17 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
     DanglingRef<SceneNode> gun_node,
     const std::string& resource_wo_gun,
     const std::string& resource_w_gun)
-: rb_{ rb },
-  gun_node_{ gun_node },
-  resource_wo_gun_{ resource_wo_gun },
-  resource_w_gun_{ resource_w_gun },
-  surface_power_{ 0.f }
-{}
+    : rb_{ rb }
+    , gun_node_{ gun_node.ptr() }
+    , gun_node_on_destroy_{ gun_node->on_destroy }
+    , resource_wo_gun_{ resource_wo_gun }
+    , resource_w_gun_{ resource_w_gun }
+    , surface_power_{ 0.f }
+{
+    gun_node_on_destroy_.add([this](){
+        gun_node_ = nullptr;
+    });
+}
 
 void AvatarAnimationUpdater::notify_movement_intent() {
     auto it = rb_.engines_.find("legs");
@@ -34,7 +39,7 @@ void AvatarAnimationUpdater::notify_movement_intent() {
 }
 
 void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
-    Gun& gun = get_gun(gun_node_);
+    Gun& gun = get_gun(*gun_node_);
     std::string resource_name = gun.is_none_gun()
         ? resource_wo_gun_
         : resource_w_gun_;

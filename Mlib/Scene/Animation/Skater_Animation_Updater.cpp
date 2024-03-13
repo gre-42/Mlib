@@ -12,11 +12,15 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
     const RigidBodyVehicle& rb,
     DanglingRef<SceneNode> skateboard_node,
     const std::string& resource)
-: rb_{ rb },
-  skateboard_node_{ skateboard_node },
-  resource_{ resource }
+    : rb_{ rb }
+    , skateboard_node_{ skateboard_node.ptr() }
+    , skateboard_node_on_destroy_{ skateboard_node->on_destroy }
+    , resource_{ resource }
 {
     skateboard_node_->set_periodic_animation("<no_animation>");
+    skateboard_node_on_destroy_.add([this](){
+        skateboard_node_ = nullptr;
+    });
 }
 
 void SkaterAnimationUpdater::notify_movement_intent()

@@ -44,7 +44,7 @@ void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs
         .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f)});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        nullptr,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_car_controller_idle_binding(kb);
         }

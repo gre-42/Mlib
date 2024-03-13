@@ -32,15 +32,17 @@ void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).append_delete_externals(
-        node.ptr(),
-        [&scene = scene, node_name]()
-        {
-            try {
-                scene.delete_node(node_name);
-            } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Could not delete node \"" + node_name + "\": " + e.what());
-            }
-        }
-    );
+    // players.get_player(args.arguments.at<std::string>(KnownArgs::player)).append_delete_externals(
+    //     node.ptr(),
+    //     [&scene = scene, node_name]()
+    //     {
+    //         try {
+    //             scene.delete_node(node_name);
+    //         } catch (const std::runtime_error& e) {
+    //             throw std::runtime_error("Could not delete node \"" + node_name + "\": " + e.what());
+    //         }
+    //     }
+    // );
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
+        .append_dependent_node(node_name);
 }

@@ -63,7 +63,7 @@ Gun::Gun(
   rigid_bodies_{ rigid_bodies },
   advance_times_{ advance_times },
   parent_rb_{ parent_rb },
-  node_{ node },
+  node_{ node.ptr() },
   punch_angle_node_{ punch_angle_node },
   bullet_renderable_resource_name_{ bullet_renderable_resource_name },
   bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
@@ -81,6 +81,8 @@ Gun::Gun(
   bullet_trail_animation_time_{ bullet_trail_animation_time},
   ammo_type_{ ammo_type },
   triggered_{ false },
+  player_{ nullptr },
+  team_{ nullptr },
   cool_down_{ cool_down },
   time_since_last_shot_{ 0 },
   absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
@@ -195,7 +197,7 @@ void Gun::generate_muzzle_flash_hider() {
     std::string muzzle_flash_suffix = smoke_generator_.generate_suffix();
 
     smoke_generator_.generate_child(
-        node_,
+        *node_,
         muzzle_flash_resource_,
         "muzzle_flash_node" + muzzle_flash_suffix,
         muzzle_flash_position_.casted<double>(),
@@ -209,7 +211,18 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
 }
 
 void Gun::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    if (destroyed_object.ptr() == node_) {
+        if (punch_angle_node_ != nullptr) {
+            punch_angle_node_->clearing_observers.remove(*this);
+            punch_angle_node_ = nullptr;
+        }
+        node_ = nullptr;
+        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    }
+    if (destroyed_object.ptr() == punch_angle_node_) {
+        punch_angle_node_ = nullptr;
+    }
+    
 }
 
 void Gun::trigger(Player* player, Team* team) {

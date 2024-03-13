@@ -3,6 +3,7 @@
 #include <Mlib/Math/Transformation/Quaternion_Series.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Memory/Memory.hpp>
 #include <Mlib/Memory/Shared_Ptrs.hpp>
@@ -297,6 +298,8 @@ public:
     mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
+    mutable DestructionFunctions on_clear;
+    mutable DestructionFunctions on_destroy;
 private:
     void set_scene_and_state_unsafe(Scene& scene, SceneNodeState state);
     void setup_child_unsafe(

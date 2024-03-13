@@ -85,6 +85,7 @@ SceneNode::~SceneNode() {
     sticky_absolute_observer_ = nullptr;
     destruction_observers.shutdown();
     destruction_pointers.clear();
+    on_destroy.clear();
     clear_unsafe();
 }
 
@@ -302,6 +303,7 @@ void SceneNode::clear() {
 void SceneNode::clear_unsafe() {
     clearing_observers.notify_destroyed();
     clearing_pointers.clear();
+    on_clear.clear();
 
     absolute_movable_ = nullptr;
     relative_movable_ = nullptr;

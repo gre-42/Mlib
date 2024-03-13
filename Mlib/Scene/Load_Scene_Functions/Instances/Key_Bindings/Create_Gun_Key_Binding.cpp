@@ -44,7 +44,7 @@ void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)} });
     player.append_delete_externals(
-        nullptr,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_gun_key_binding(kb);
         }

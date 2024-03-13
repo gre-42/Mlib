@@ -80,7 +80,7 @@ private:
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;
-    DanglingRef<SceneNode> node_;
+    DanglingPtr<SceneNode> node_;
     DanglingPtr<SceneNode> punch_angle_node_;
     std::string bullet_renderable_resource_name_;
     std::string bullet_hitbox_resource_name_;

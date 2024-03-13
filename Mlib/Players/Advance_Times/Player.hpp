@@ -188,6 +188,7 @@ public:
     void append_delete_externals(
         DanglingPtr<SceneNode> node,
         const std::function<void()>& delete_externals);
+    void append_dependent_node(std::string node_name);
     void create_externals(ExternalsMode externals_mode);
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
@@ -252,6 +253,7 @@ private:
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
     std::multimap<DanglingPtr<const SceneNode>, std::function<void()>> delete_externals_;
+    std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;

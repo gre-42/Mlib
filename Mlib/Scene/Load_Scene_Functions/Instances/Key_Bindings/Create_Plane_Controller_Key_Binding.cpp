@@ -75,7 +75,7 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
             args.arguments.at<std::string>(KnownArgs::role) }});
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        nullptr,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_key_binding(kb);
         }

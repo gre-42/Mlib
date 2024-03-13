@@ -53,7 +53,7 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)} });
     driver.append_delete_externals(
-        nullptr,
+        node.ptr(),
         [&kbs=key_bindings, &kb](){
             kbs.delete_player_key_binding(kb);
         }

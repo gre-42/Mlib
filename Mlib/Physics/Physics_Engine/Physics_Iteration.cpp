@@ -89,9 +89,9 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         scene_.move(physics_cfg_.dt, time);
     }
     physics_engine_.move_advance_times();
-    physics_engine_.advance_times_.delete_scheduled_advance_times(CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.delete_scheduled_advance_times();
 }
 
 void PhysicsIteration::delete_scheduled_advance_times() {
-    physics_engine_.advance_times_.delete_scheduled_advance_times(CURRENT_SOURCE_LOCATION);
+    physics_engine_.advance_times_.delete_scheduled_advance_times();
 }

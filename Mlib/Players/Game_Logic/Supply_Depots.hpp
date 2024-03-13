@@ -1,9 +1,11 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <cstdint>
 #include <map>
+#include <memory>
 
 namespace Mlib {
 
@@ -11,6 +13,7 @@ class Players;
 class AdvanceTimes;
 struct PhysicsEngineConfig;
 class SceneNode;
+class DestructionFunctionsRemovalTokens;
 
 struct SupplyDepot {
     DanglingRef<SceneNode> node;
@@ -18,6 +21,7 @@ struct SupplyDepot {
     std::map<std::string, uint32_t> supplies;
     float cooldown;
     float time_since_last_visit;
+    std::shared_ptr<DestructionFunctionsRemovalTokens> node_on_clear;
     bool is_cooling_down() const;
 };
 

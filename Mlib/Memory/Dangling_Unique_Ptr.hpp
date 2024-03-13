@@ -9,7 +9,7 @@ concept pointers_are_comparable = requires(const T2* v) {
 };
 }
 
-#ifdef WITH_DANGLING_UNIQUE_PTR
+#ifndef WITHOUT_DANGLING_UNIQUE_PTR
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <atomic>

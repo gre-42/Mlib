@@ -80,10 +80,15 @@ void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
         THROW_OR_ABORT("Head node already set");
     }
     head_node_ = head_node.ptr();
+    head_node_->clearing_observers.add(*this);
 }
 
 void PitchLookAtNode::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    if (destroyed_object.ptr() == head_node_) {
+        head_node_ = nullptr;
+    } else {
+        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    }
 }
 
 void PitchLookAtNode::advance_time(float dt) {
