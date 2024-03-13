@@ -108,6 +108,7 @@ void AimAt::set_followed(DanglingPtr<SceneNode> followed_node)
         followed_node_on_destroy_.value().add([this]() {
             followed_node_ = nullptr;
             followed_ = nullptr;
+            followed_node_on_destroy_.reset();
             });
     }
 }

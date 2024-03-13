@@ -6,7 +6,7 @@ using namespace Mlib;
 
 DestructionFunctions::DestructionFunctions()
     : forever{ *this }
-    , clearing_ { false }
+    , clearing_{ false }
 {}
 
 DestructionFunctions::~DestructionFunctions() {
