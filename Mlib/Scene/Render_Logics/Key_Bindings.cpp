@@ -68,19 +68,19 @@ KeyBindings::KeyBindings(
 
 KeyBindings::~KeyBindings() {
     on_destroy.clear();
-    if (!absolute_movable_idle_bindings_.empty()) { lwarn() << "absolute_movable_idle_bindings remaining"; }
-    if (!absolute_movable_key_bindings_.empty()) { lwarn() << "absolute_movable_key_bindings remaining"; }
-    if (!relative_movable_key_bindings_.empty()) { lwarn() << "relative_movable_key_bindings remaining"; }
-    if (!car_controller_idle_bindings_.empty()) { lwarn() << "car_controller_idle_bindings remaining"; }
-    if (!car_controller_key_bindings_.empty()) { lwarn() << "car_controller_key_bindings remaining"; }
-    if (!plane_controller_idle_bindings_.empty()) { lwarn() << "plane_controller_idle_bindings remaining"; }
-    if (!plane_controller_key_bindings_.empty()) { lwarn() << "plane_controller_key_bindings remaining"; }
-    if (!avatar_controller_idle_bindings_.empty()) { lwarn() << "avatar_controller_idle_bindings remaining"; }
-    if (!avatar_controller_key_bindings_.empty()) { lwarn() << "avatar_controller_key_bindings remaining"; }
-    if (!weapon_cycle_key_bindings_.empty()) { lwarn() << "weapon_cycle_key_bindings remaining"; }
-    if (!gun_key_bindings_.empty()) { lwarn() << "gun_key_bindings remaining"; }
-    if (!player_key_bindings_.empty()) { lwarn() << "player_key_bindings remaining"; }
-    if (!print_node_info_key_bindings_.empty()) { lwarn() << "print_node_info_key_bindings remaining"; }
+    if (!absolute_movable_idle_bindings_.empty()) { lwarn() << absolute_movable_idle_bindings_.size() << " absolute_movable_idle_bindings remaining"; }
+    if (!absolute_movable_key_bindings_.empty()) { lwarn() << absolute_movable_key_bindings_.size() << " absolute_movable_key_bindings remaining"; }
+    if (!relative_movable_key_bindings_.empty()) { lwarn() << relative_movable_key_bindings_.size() << " relative_movable_key_bindings remaining"; }
+    if (!car_controller_idle_bindings_.empty()) { lwarn() << car_controller_idle_bindings_.size() << " car_controller_idle_bindings remaining"; }
+    if (!car_controller_key_bindings_.empty()) { lwarn() << car_controller_key_bindings_.size() << " car_controller_key_bindings remaining"; }
+    if (!plane_controller_idle_bindings_.empty()) { lwarn() << plane_controller_idle_bindings_.size() << " plane_controller_idle_bindings remaining"; }
+    if (!plane_controller_key_bindings_.empty()) { lwarn() << plane_controller_key_bindings_.size() << " plane_controller_key_bindings remaining"; }
+    if (!avatar_controller_idle_bindings_.empty()) { lwarn() << avatar_controller_idle_bindings_.size() << " avatar_controller_idle_bindings remaining"; }
+    if (!avatar_controller_key_bindings_.empty()) { lwarn() << avatar_controller_key_bindings_.size() << " avatar_controller_key_bindings remaining"; }
+    if (!weapon_cycle_key_bindings_.empty()) { lwarn() << weapon_cycle_key_bindings_.size() << " weapon_cycle_key_bindings remaining"; }
+    if (!gun_key_bindings_.empty()) { lwarn() << gun_key_bindings_.size() << " gun_key_bindings remaining"; }
+    if (!player_key_bindings_.empty()) { lwarn() << player_key_bindings_.size() << " player_key_bindings remaining"; }
+    if (!print_node_info_key_bindings_.empty()) { lwarn() << print_node_info_key_bindings_.size() << " print_node_info_key_bindings remaining"; }
 }
 
 void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
