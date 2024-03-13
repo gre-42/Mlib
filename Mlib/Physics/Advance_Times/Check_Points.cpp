@@ -259,20 +259,23 @@ void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
     }
     moving_nodes_.clear();
     movings_.clear();
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 
-    // Scene destruction happens before physics destruction,
-    // so the nodes are deleted here and not in the destructor.
-    std::scoped_lock lock{ delete_node_mutex_ };
-    for (auto& b : beacon_nodes_) {
-        if (b.beacon_node->shutting_down()) {
-            b.beacon_node = nullptr;
-        } else {
-            b.beacon_node->clearing_observers.remove(*this);
-            b.beacon_node = nullptr;
-            scene_.delete_root_node(b.beacon_node_name);
+    {
+        // Scene destruction happens before physics destruction,
+        // so the nodes are deleted here and not in the destructor.
+        std::scoped_lock lock{ delete_node_mutex_ };
+        for (auto& b : beacon_nodes_) {
+            if (b.beacon_node->shutting_down()) {
+                b.beacon_node = nullptr;
+            }
+            else {
+                b.beacon_node->clearing_observers.remove(*this);
+                b.beacon_node = nullptr;
+                scene_.delete_root_node(b.beacon_node_name);
+            }
         }
     }
+    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 bool CheckPoints::has_meters_to_start() const {

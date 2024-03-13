@@ -211,6 +211,9 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
 }
 
 void Gun::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+    if (destroyed_object.ptr() == punch_angle_node_) {
+        punch_angle_node_ = nullptr;
+    }
     if (destroyed_object.ptr() == node_) {
         if (punch_angle_node_ != nullptr) {
             punch_angle_node_->clearing_observers.remove(*this);
@@ -219,10 +222,6 @@ void Gun::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
         node_ = nullptr;
         advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
     }
-    if (destroyed_object.ptr() == punch_angle_node_) {
-        punch_angle_node_ = nullptr;
-    }
-    
 }
 
 void Gun::trigger(Player* player, Team* team) {
