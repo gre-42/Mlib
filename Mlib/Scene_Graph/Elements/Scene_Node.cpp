@@ -82,10 +82,12 @@ SceneNode::~SceneNode() {
         }
     }
     shutting_down_ = true;
-    sticky_absolute_observer_ = nullptr;
     destruction_observers.shutdown();
     destruction_pointers.clear();
     on_destroy.clear();
+    if (sticky_absolute_observer_ != nullptr) {
+        verbose_abort("Sticky absolute observer not null");
+    }
     clear_unsafe();
 }
 
@@ -232,34 +234,26 @@ IAbsoluteObserver& SceneNode::get_sticky_absolute_observer() const {
     return *sticky_absolute_observer_;
 }
 
-void SceneNode::set_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer)
+void SceneNode::set_absolute_observer(IAbsoluteObserver& absolute_observer)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{ mutex_ };
     if (absolute_observer_ != nullptr) {
         THROW_OR_ABORT("Absolute observer already set");
     }
-    if (absolute_observer.observer() == nullptr) {
-        THROW_OR_ABORT("Absolute destruction observer cannot be null");
-    }
-    absolute_observer_ = absolute_observer.get();
+    absolute_observer_ = &absolute_observer;
     absolute_observer_->set_absolute_model_matrix(m);
-    clearing_observers.add(*absolute_observer.observer());
 }
 
-void SceneNode::set_sticky_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& sticky_absolute_observer)
+void SceneNode::set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{ mutex_ };
     if (sticky_absolute_observer_ != nullptr) {
         THROW_OR_ABORT("Sticky absolute observer already set");
     }
-    if (sticky_absolute_observer.observer() == nullptr) {
-        THROW_OR_ABORT("Absolute destruction observer cannot be null");
-    }
-    sticky_absolute_observer_ = sticky_absolute_observer.get();
+    sticky_absolute_observer_ = &sticky_absolute_observer;
     sticky_absolute_observer_->set_absolute_model_matrix(m);
-    destruction_observers.add(*sticky_absolute_observer.observer());
 }
 
 void SceneNode::add_renderable(
@@ -283,17 +277,28 @@ bool SceneNode::has_node_modifier() const {
 void SceneNode::clear_renderable_instance(const std::string& name) {
     std::scoped_lock lock{ mutex_ };
     if (renderables_.erase(name) != 1) {
-        THROW_OR_ABORT("Could not clear renderable with name \"" + name + '"');
+        verbose_abort("Could not clear renderable with name \"" + name + '"');
     }
 }
 
 void SceneNode::clear_absolute_observer() {
     std::scoped_lock lock{ mutex_ };
+    if (absolute_observer_ == nullptr) {
+        verbose_abort("Absolute observer not set");
+    }
     absolute_observer_ = nullptr;
 }
 
+void SceneNode::clear_sticky_absolute_observer() {
+    std::scoped_lock lock{ mutex_ };
+    if (sticky_absolute_observer_ == nullptr) {
+        verbose_abort("Sticky absolute observer not set");
+    }
+    sticky_absolute_observer_ = nullptr;
+}
+
 void SceneNode::clear() {
-    std::shared_lock lock{ mutex_ };
+    std::scoped_lock lock{ mutex_ };
     if (shutting_down()) {
         verbose_abort("Node to be cleared is shutting down");
     }

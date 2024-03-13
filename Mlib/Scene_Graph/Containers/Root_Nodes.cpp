@@ -104,9 +104,11 @@ void RootNodes::schedule_delete_root_node(const std::string& name) {
 
 void RootNodes::delete_scheduled_root_nodes() const {
     auto self = const_cast<RootNodes*>(this);
-    std::scoped_lock lock{ self->root_nodes_to_delete_mutex_ };
-    clear_set_recursively(self->root_nodes_to_delete_, [self](const auto& name){
+    std::unique_lock lock{ self->root_nodes_to_delete_mutex_ };
+    clear_set_recursively(self->root_nodes_to_delete_, [self, &lock](const auto& name){
+        lock.unlock();
         self->delete_root_node(name);
+        lock.lock();
     });
 }
 

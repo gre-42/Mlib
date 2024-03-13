@@ -2,11 +2,13 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <mutex>
+#include <optional>
 
 namespace Mlib {
 
@@ -23,7 +25,7 @@ class Player;
 class Team;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteObserver, public AdvanceTime {
+class Gun final: public IAbsoluteObserver, public AdvanceTime {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,
@@ -59,7 +61,6 @@ public:
     ~Gun();
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     void trigger(
         Player* player = nullptr,
         Team* team = nullptr);
@@ -110,6 +111,9 @@ private:
     float muzzle_flash_animation_time_;
     std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;
     DeleteNodeMutex& delete_node_mutex_;
+    DestructionFunctionsRemovalTokens node_on_clear_;
+    std::optional<DestructionFunctionsRemovalTokens> punch_angle_node_on_clear_;
+    DestructionGuards dgs_;
 };
 
 }

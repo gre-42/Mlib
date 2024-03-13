@@ -40,17 +40,6 @@ public:
         advance_times_.add_advance_time(std::move(relative_movable));
     }
 
-    template <class TAbsoluteObserver>
-    void link_absolute_observer(DanglingRef<SceneNode> node, std::unique_ptr<TAbsoluteObserver>&& absolute_observer) const {
-        node->set_absolute_observer(absolute_observer.get());
-        advance_times_.add_advance_time(std::move(absolute_observer));
-    };
-
-    template <class TAbsoluteObserver>
-    void link_sticky_absolute_observer(DanglingRef<SceneNode> node, std::unique_ptr<TAbsoluteObserver>&& sticky_absolute_observer) const {
-        node->set_sticky_absolute_observer(sticky_absolute_observer.get());
-        advance_times_.add_advance_time(std::move(sticky_absolute_observer));
-    };
 private:
     AdvanceTimes& advance_times_;
 };

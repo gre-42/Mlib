@@ -146,8 +146,8 @@ public:
     void set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier);
     void insert_node_hider(INodeHider& node_hider);
     void remove_node_hider(INodeHider& node_hider);
-    void set_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& absolute_observer);
-    void set_sticky_absolute_observer(const observer_ptr<IAbsoluteObserver, DanglingRef<const SceneNode>>& sticky_absolute_observer);
+    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
+    void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -162,6 +162,7 @@ public:
     DanglingRef<const SceneNode> parent() const;
     void clear_renderable_instance(const std::string& name);
     void clear_absolute_observer();
+    void clear_sticky_absolute_observer();
     void clear();
     DanglingRef<SceneNode> get_child(const std::string& name);
     DanglingRef<const SceneNode> get_child(const std::string& name) const;

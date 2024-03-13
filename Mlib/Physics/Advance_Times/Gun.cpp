@@ -56,44 +56,60 @@ Gun::Gun(
     float muzzle_flash_animation_time,
     const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
     DeleteNodeMutex& delete_node_mutex)
-: rendering_resources_{ rendering_resources },
-  scene_{ scene },
-  scene_node_resources_{ scene_node_resources },
-  smoke_generator_{ smoke_generator },
-  rigid_bodies_{ rigid_bodies },
-  advance_times_{ advance_times },
-  parent_rb_{ parent_rb },
-  node_{ node.ptr() },
-  punch_angle_node_{ punch_angle_node },
-  bullet_renderable_resource_name_{ bullet_renderable_resource_name },
-  bullet_hitbox_resource_name_{ bullet_hitbox_resource_name },
-  bullet_explosion_resource_name_{ bullet_explosion_resource_name },
-  bullet_explosion_animation_time_{ bullet_explosion_animation_time },
-  bullet_rigid_body_flags_{ bullet_rigid_body_flags },
-  bullet_mass_{ bullet_mass },
-  bullet_velocity_{ bullet_velocity },
-  bullet_lifetime_{ bullet_lifetime },
-  bullet_damage_{ bullet_damage },
-  bullet_damage_radius_{ bullet_damage_radius },
-  bullet_size_{ bullet_size },
-  bullet_trail_resource_{ bullet_trail_resource },
-  bullet_trail_dt_{ bullet_trail_dt },
-  bullet_trail_animation_time_{ bullet_trail_animation_time},
-  ammo_type_{ ammo_type },
-  triggered_{ false },
-  player_{ nullptr },
-  team_{ nullptr },
-  cool_down_{ cool_down },
-  time_since_last_shot_{ 0 },
-  absolute_model_matrix_{ fixed_nans<double, 4, 4 >() },
-  punch_angle_{ 0.f, 0.f, 0.f },
-  punch_angle_rng_{ punch_angle_rng },
-  muzzle_flash_resource_{ muzzle_flash_resource },
-  muzzle_flash_position_{ muzzle_flash_position },
-  muzzle_flash_animation_time_{ muzzle_flash_animation_time },
-  generate_muzzle_flash_hider_{ generate_muzzle_flash_hider },
-  delete_node_mutex_{ delete_node_mutex }
-{}
+    : rendering_resources_{ rendering_resources }
+    , scene_{ scene }
+    , scene_node_resources_{ scene_node_resources }
+    , smoke_generator_{ smoke_generator }
+    , rigid_bodies_{ rigid_bodies }
+    , advance_times_{ advance_times }
+    , parent_rb_{ parent_rb }
+    , node_{ node.ptr() }
+    , punch_angle_node_{ punch_angle_node }
+    , bullet_renderable_resource_name_{ bullet_renderable_resource_name }
+    , bullet_hitbox_resource_name_{ bullet_hitbox_resource_name }
+    , bullet_explosion_resource_name_{ bullet_explosion_resource_name }
+    , bullet_explosion_animation_time_{ bullet_explosion_animation_time }
+    , bullet_rigid_body_flags_{ bullet_rigid_body_flags }
+    , bullet_mass_{ bullet_mass }
+    , bullet_velocity_{ bullet_velocity }
+    , bullet_lifetime_{ bullet_lifetime }
+    , bullet_damage_{ bullet_damage }
+    , bullet_damage_radius_{ bullet_damage_radius }
+    , bullet_size_{ bullet_size }
+    , bullet_trail_resource_{ bullet_trail_resource }
+    , bullet_trail_dt_{ bullet_trail_dt }
+    , bullet_trail_animation_time_{ bullet_trail_animation_time }
+    , ammo_type_{ ammo_type }
+    , triggered_{ false }
+    , player_{ nullptr }
+    , team_{ nullptr }
+    , cool_down_{ cool_down }
+    , time_since_last_shot_{ 0 }
+    , absolute_model_matrix_{ fixed_nans<double, 4, 4 >() }
+    , punch_angle_{ 0.f, 0.f, 0.f }
+    , punch_angle_rng_{ punch_angle_rng }
+    , muzzle_flash_resource_{ muzzle_flash_resource }
+    , muzzle_flash_position_{ muzzle_flash_position }
+    , muzzle_flash_animation_time_{ muzzle_flash_animation_time }
+    , generate_muzzle_flash_hider_{ generate_muzzle_flash_hider }
+    , delete_node_mutex_{ delete_node_mutex }
+    , node_on_clear_{ node->on_clear }
+{
+    if (punch_angle_node != nullptr) {
+        punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear);
+        punch_angle_node_on_clear_.value().add([this]() {
+            punch_angle_node_ = nullptr;
+            });
+    }
+    node->set_absolute_observer(*this);
+    dgs_.add([node]() { node->clear_absolute_observer(); });
+    advance_times_.add_advance_time(*this);
+    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    node_on_clear_.add([this]() {
+        node_ = nullptr;
+        delete this;
+        });
+}
 
 Gun::~Gun() = default;
 
@@ -208,20 +224,6 @@ void Gun::generate_muzzle_flash_hider() {
 void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)
 {
     absolute_model_matrix_ = absolute_model_matrix;
-}
-
-void Gun::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == punch_angle_node_) {
-        punch_angle_node_ = nullptr;
-    }
-    if (destroyed_object.ptr() == node_) {
-        if (punch_angle_node_ != nullptr) {
-            punch_angle_node_->clearing_observers.remove(*this);
-            punch_angle_node_ = nullptr;
-        }
-        node_ = nullptr;
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-    }
 }
 
 void Gun::trigger(Player* player, Team* team) {

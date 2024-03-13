@@ -18,8 +18,7 @@ void AdvanceTimes::delete_scheduled_advance_times() {
     advance_times_shared_.remove_if([](const auto& a){ return a == nullptr; });
 }
 
-void AdvanceTimes::add_advance_time(std::unique_ptr<AdvanceTime>&& advance_time)
-{
+void AdvanceTimes::add_advance_time(std::unique_ptr<AdvanceTime>&& advance_time) {
     advance_times_shared_.emplace_back(std::move(advance_time));
 }
 

@@ -115,7 +115,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
-    auto gun = std::make_unique<Gun>(
+    new Gun(
         &rendering_resources,
         scene,
         scene_node_resources,
@@ -160,9 +160,4 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             macro_line_executor(macro.value(), &local_substitutions, nullptr);
         },
         delete_node_mutex);
-      
-    if (punch_angle_node != nullptr) {
-        punch_angle_node->clearing_observers.add(*gun);
-    }
-    linker.link_absolute_observer(node, std::move(gun));
 }

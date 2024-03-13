@@ -1,5 +1,6 @@
 #include "Aim_At.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
@@ -12,7 +13,8 @@ using namespace Mlib;
 
 AimAt::AimAt(
     AdvanceTimes& advance_times,
-    const RigidBodyVehicle& follower,
+    DanglingRef<SceneNode> follower_node,
+    DanglingRef<SceneNode> gun_node,
     float bullet_start_offset,
     float bullet_velocity,
     bool bullet_feels_gravity,
@@ -22,7 +24,7 @@ AimAt::AimAt(
     : point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
     , advance_times_{ advance_times }
-    , follower_{ follower }
+    , follower_{ get_rigid_body_vehicle(follower_node) }
     , followed_{ nullptr }
     , bullet_start_offset_{ bullet_start_offset }
     , bullet_velocity_{ bullet_velocity }
@@ -31,13 +33,16 @@ AimAt::AimAt(
     , locked_on_cosine_min_{ locked_on_cosine_min }
     , target_locked_on_{ false }
     , velocity_estimation_error_{ velocity_estimation_error }
-{}
-
-AimAt::~AimAt() {
-    if (followed_node_ != nullptr) {
-        followed_node_->clearing_observers.remove(*this);
-    }
+    , follower_node_on_destroy_{ follower_node->on_destroy }
+{
+    gun_node->set_sticky_absolute_observer(*this);
+    dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
+    advance_times_.add_advance_time(*this);
+    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    follower_node_on_destroy_.add([this]() { delete this; });
 }
+
+AimAt::~AimAt() = default;
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {
@@ -91,32 +96,24 @@ bool AimAt::has_followed() const {
     return followed_ != nullptr;
 }
 
-void AimAt::set_followed(
-    DanglingPtr<SceneNode> followed_node,
-    const RigidBodyVehicle* followed)
+void AimAt::set_followed(DanglingPtr<SceneNode> followed_node)
 {
-    assert_true((followed_node == nullptr) == (followed == nullptr));
-    if (followed_node_ != nullptr) {
-        followed_node_->clearing_observers.remove(*this);
-    }
+    followed_node_on_destroy_.reset();
     followed_node_ = followed_node;
-    followed_ = followed;
-    if (followed_node != nullptr) {
-        followed_node->clearing_observers.add(*this);
+    if (followed_node == nullptr) {
+        followed_ = nullptr;
+    } else {
+        followed_ = &get_rigid_body_vehicle(*followed_node);
+        followed_node_on_destroy_.emplace(followed_node_->on_destroy);
+        followed_node_on_destroy_.value().add([this]() {
+            followed_node_ = nullptr;
+            followed_ = nullptr;
+            });
     }
 }
 
 bool AimAt::target_locked_on() const {
     return target_locked_on_;
-}
-
-void AimAt::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == followed_node_) {
-        followed_node_ = nullptr;
-        followed_ = nullptr;
-    } else {
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-    }
 }
 
 void AimAt::advance_time(float dt) {

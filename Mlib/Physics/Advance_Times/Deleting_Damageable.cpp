@@ -1,7 +1,8 @@
 #include "Deleting_Damageable.hpp"
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -9,28 +10,33 @@ using namespace Mlib;
 DeletingDamageable::DeletingDamageable(
     Scene& scene,
     AdvanceTimes& advance_times,
-    const std::string& root_node_name,
+    std::string root_node_name,
     float health,
-    bool delete_node_when_health_leq_zero,
-    DeleteNodeMutex& delete_node_mutex)
-: scene_{scene},
-  advance_times_{advance_times},
-  root_node_name_{root_node_name},
-  health_{health},
-  delete_node_when_health_leq_zero_{delete_node_when_health_leq_zero},
-  delete_node_mutex_{delete_node_mutex}
+    bool delete_node_when_health_leq_zero)
+    : scene_{ scene }
+    , advance_times_{ advance_times }
+    , root_node_name_{ std::move(root_node_name) }
+    , health_{ health }
+    , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
+    , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear }
 {
-    scene_.get_node(root_node_name_, DP_LOC)->clearing_observers.add(*this);
+    DanglingRef<SceneNode> node = scene.get_node(root_node_name_, DP_LOC);
+    auto& rb = get_rigid_body_vehicle(node);
+    if (rb.damageable_ != nullptr) {
+        THROW_OR_ABORT("Rigid body already has a damageable");
+    }
+    rb.damageable_ = this;
+    dgs_.add([&rb]() { rb.damageable_ = nullptr; });
+    advance_times_.add_advance_time(*this);
+    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    node_on_clear_.add([this, &rb]() { delete this; });
 }
 
-void DeletingDamageable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-}
+DeletingDamageable::~DeletingDamageable() = default;
 
 void DeletingDamageable::advance_time(float dt) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
-        std::scoped_lock lock{ delete_node_mutex_ };
-        scene_.delete_root_node(root_node_name_);
+        scene_.schedule_delete_root_node(root_node_name_);
     }
 }
 

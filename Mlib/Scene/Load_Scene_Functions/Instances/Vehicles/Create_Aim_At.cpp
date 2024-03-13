@@ -1,10 +1,8 @@
 #include "Create_Aim_At.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -48,12 +46,9 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
     Linker linker{ physics_engine.advance_times_ };
     DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
     DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::parent_follower_rigid_body_node), DP_LOC);
-    auto& follower_rb = get_rigid_body_vehicle(follower_node);
     DanglingPtr<SceneNode> followed_node = nullptr;
-    RigidBodyVehicle* followed_rb = nullptr;
     if (args.arguments.contains(KnownArgs::followed)) {
         followed_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::followed), DP_LOC).ptr();
-        followed_rb = &get_rigid_body_vehicle(*followed_node);
     }
     float velocity_error_std = args.arguments.at<float>(KnownArgs::velocity_error_std);
     float error_alpha = args.arguments.at<float>(KnownArgs::error_alpha);
@@ -71,15 +66,15 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
     bool  bullet_feels_gravity = args.arguments.at<bool>(KnownArgs::bullet_feels_gravity);
     float gravity              = args.arguments.at<float>(KnownArgs::gravity) * meters / (s * s);
 
-    auto aim_at = std::make_unique<AimAt>(
+    auto aim_at = new AimAt(
         physics_engine.advance_times_,
-        follower_rb,
+        follower_node,
+        gun_node,
         bullet_start_offset,
         bullet_velocity,
         bullet_feels_gravity,
         gravity,
         std::cos(args.arguments.at<float>(KnownArgs::locked_on_max) * degrees),
         velocity_estimation_error);
-    aim_at->set_followed(followed_node, followed_rb);
-    linker.link_sticky_absolute_observer(gun_node, std::move(aim_at));
+    aim_at->set_followed(followed_node);
 }

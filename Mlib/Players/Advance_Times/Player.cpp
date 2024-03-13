@@ -134,11 +134,11 @@ void Player::reset_node() {
         target_scene_node_->clearing_observers.remove(*this);
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
-        if (controlled_.aim_at != nullptr) {
-            controlled_.aim_at->set_followed(nullptr, nullptr);
-        }
     }
-    controlled_.aim_at = nullptr;
+    if (controlled_.aim_at != nullptr) {
+        controlled_.aim_at->set_followed(nullptr);
+        controlled_.aim_at = nullptr;
+    }
     vehicle_movement.reset_node();
     car_movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
@@ -561,7 +561,7 @@ void Player::aim_and_shoot() {
     }
     assert_true((vehicle_ == nullptr) ||
                 (vehicle_->scene_node().ptr() != target_scene_node_));
-    controlled_.aim_at->set_followed(target_scene_node_, target_rb_);
+    controlled_.aim_at->set_followed(target_scene_node_);
     if (controlled_.gun_node == nullptr) {
         return;
     }
@@ -821,6 +821,7 @@ RaceState Player::notify_lap_finished(
 
 void Player::notify_vehicle_destroyed() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    controlled_.aim_at = nullptr;
     reset_node();
 }
 
