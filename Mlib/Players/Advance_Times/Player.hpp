@@ -91,7 +91,8 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
 enum class ControlSource;
 
 struct PlayerControlled {
-    AimAt* aim_at;
+    bool has_aim_at() const;
+    AimAt& aim_at();
     DanglingPtr<SceneNode> gun_node;
 };
 

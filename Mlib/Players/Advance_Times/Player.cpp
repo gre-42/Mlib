@@ -38,6 +38,17 @@
 
 using namespace Mlib;
 
+bool PlayerControlled::has_aim_at() const {
+    return (gun_node != nullptr) && Mlib::has_aim_at(*gun_node);
+}
+
+AimAt& PlayerControlled::aim_at() {
+    if (gun_node == nullptr) {
+        THROW_OR_ABORT("Gun node is null");
+    }
+    return get_aim_at(*gun_node);
+}
+
 Player::Player(
     Scene& scene,
     SupplyDepots& supply_depots,
@@ -63,9 +74,7 @@ Player::Player(
     , name_{ name }
     , team_{ team }
     , vehicle_{ nullptr }
-    , controlled_{
-      .aim_at = nullptr,
-      .gun_node = nullptr }
+    , controlled_{ .gun_node = nullptr }
     , target_scene_node_{ nullptr }
     , target_rb_{ nullptr }
     , game_mode_{ game_mode }
@@ -125,7 +134,6 @@ void Player::reset_node() {
     vehicle_->rb().driver_ = nullptr;
     vehicle_->destruction_observers.remove(*this);
     vehicle_ = nullptr;
-    controlled_.gun_node = nullptr;
     if (next_scene_vehicle_ != nullptr) {
         next_scene_vehicle_->destruction_observers.remove(*this);
         next_scene_vehicle_ = nullptr;
@@ -135,9 +143,11 @@ void Player::reset_node() {
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
-    if (controlled_.aim_at != nullptr) {
-        controlled_.aim_at->set_followed(nullptr);
-        controlled_.aim_at = nullptr;
+    if (controlled_.gun_node != nullptr) {
+        if (controlled_.has_aim_at()) {
+            controlled_.aim_at().set_followed(nullptr);
+        }
+        controlled_.gun_node = nullptr;
     }
     vehicle_movement.reset_node();
     car_movement.reset_node();
@@ -190,13 +200,9 @@ const std::string& Player::scene_node_name() const {
 
 void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (controlled_.aim_at != nullptr) {
-        THROW_OR_ABORT("aim_at already set");
-    }
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
     }
-    controlled_.aim_at = &get_aim_at(gun_node);
     controlled_.gun_node = gun_node.ptr();
 }
 
@@ -453,7 +459,6 @@ void Player::trigger_gun() {
 }
 
 bool Player::has_gun_node() const {
-    assert_true((controlled_.aim_at == nullptr) == (controlled_.gun_node == nullptr));
     return (controlled_.gun_node != nullptr);
 }
 
@@ -556,19 +561,19 @@ void Player::aim_and_shoot() {
     if (target_rb_ == nullptr) {
         select_next_opponent();
     }
-    if (controlled_.aim_at == nullptr) {
+    if (!controlled_.has_aim_at()) {
         return;
     }
     assert_true((vehicle_ == nullptr) ||
                 (vehicle_->scene_node().ptr() != target_scene_node_));
-    controlled_.aim_at->set_followed(target_scene_node_);
+    controlled_.aim_at().set_followed(target_scene_node_);
     if (controlled_.gun_node == nullptr) {
         return;
     }
     if (!skills_.at(ControlSource::AI).can_shoot) {
         return;
     }
-    if ((target_scene_node_ != nullptr) && (controlled_.aim_at->target_locked_on())) {
+    if ((target_scene_node_ != nullptr) && (controlled_.aim_at().target_locked_on())) {
         gun().trigger(this, &team());
     }
 }
@@ -821,7 +826,6 @@ RaceState Player::notify_lap_finished(
 
 void Player::notify_vehicle_destroyed() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    controlled_.aim_at = nullptr;
     reset_node();
 }
 

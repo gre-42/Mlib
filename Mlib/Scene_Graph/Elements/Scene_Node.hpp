@@ -139,7 +139,9 @@ public:
     bool has_absolute_movable() const;
     IRelativeMovable& get_relative_movable() const;
     INodeModifier& get_node_modifier() const;
+    bool has_absolute_observer() const;
     IAbsoluteObserver& get_absolute_observer() const;
+    bool has_sticky_absolute_observer() const;
     IAbsoluteObserver& get_sticky_absolute_observer() const;
     bool has_node_modifier() const;
     void set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>& relative_movable);

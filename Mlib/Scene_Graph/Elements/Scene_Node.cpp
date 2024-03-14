@@ -218,12 +218,22 @@ void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, Dangli
     }
 }
 
+bool SceneNode::has_absolute_observer() const {
+    std::shared_lock lock{ mutex_ };
+    return absolute_observer_ != nullptr;
+}
+
 IAbsoluteObserver& SceneNode::get_absolute_observer() const {
     std::shared_lock lock{ mutex_ };
     if (absolute_observer_ == nullptr) {
         THROW_OR_ABORT("Absolute observer not set");
     }
     return *absolute_observer_;
+}
+
+bool SceneNode::has_sticky_absolute_observer() const {
+    std::shared_lock lock{ mutex_ };
+    return sticky_absolute_observer_ != nullptr;
 }
 
 IAbsoluteObserver& SceneNode::get_sticky_absolute_observer() const {
