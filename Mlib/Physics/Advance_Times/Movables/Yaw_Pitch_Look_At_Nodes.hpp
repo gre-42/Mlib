@@ -33,7 +33,7 @@ public:
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
-    void increment_yaw(float dyaw);
+    void increment_yaw(float dyaw, float relaxation);
     void set_yaw(float yaw);
 
     PitchLookAtNode& pitch_look_at_node() const;

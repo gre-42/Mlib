@@ -16,8 +16,8 @@ public:
     void stop();
     void set_target_yaw(float target_yaw);
     void set_target_pitch(float target_pitch);
-    void increment_yaw(float dyaw);
-    void increment_pitch(float dpitch);
+    void increment_yaw(float dyaw, float relaxation);
+    void increment_pitch(float dpitch, float relaxation);
     void reset();
     virtual void apply() = 0;
 protected:
@@ -25,7 +25,9 @@ protected:
     float target_yaw_;
     float target_pitch_;
     float dyaw_;
+    float dyaw_relaxation_;
     float dpitch_;
+    float dpitch_relaxation_;
     float surface_power_;
     float drive_relaxation_;
 };

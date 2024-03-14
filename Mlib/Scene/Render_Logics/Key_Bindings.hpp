@@ -86,7 +86,9 @@ private:
         ButtonPress& button_press,
         CursorMovement* cursor_movement,
         ScrollWheelMovement* scroll_wheel_movement,
-        GamepadAnalogAxesPosition* gamepad_analog_axes_position);
+        GamepadAnalogAxesPosition* gamepad_analog_axes_position,
+        float press_factor,
+        float repeat_factor);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;

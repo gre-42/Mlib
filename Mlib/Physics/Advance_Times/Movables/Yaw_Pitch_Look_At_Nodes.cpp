@@ -36,7 +36,7 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     if (!any(isnan(aim_at_node_.point_to_aim_at()))) {
         float dyaw = z_to_yaw(-aim_at_node_.point_to_aim_at());
         float eyaw = increment_yaw_error_();
-        increment_yaw(dyaw + eyaw);
+        increment_yaw(dyaw + eyaw, 1.f);
     }
     relative_model_matrix_ =
         relative_model_matrix_ *
@@ -46,12 +46,13 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     dyaw_ = 0.f;
 }
 
-void YawPitchLookAtNodes::increment_yaw(float dyaw) {
-    dyaw_ = signed_min(dyaw, dyaw_max_);
+void YawPitchLookAtNodes::increment_yaw(float dyaw, float relaxation) {
+    // Increment required for substepping.
+    dyaw_ += signed_min(dyaw, dyaw_max_) * relaxation;
 }
 
 void YawPitchLookAtNodes::set_yaw(float yaw) {
-    increment_yaw(std::remainderf(yaw - z_to_yaw(relative_model_matrix_.R().column(2)), float(2 * M_PI)));
+    increment_yaw(std::remainderf(yaw - dyaw_ - z_to_yaw(relative_model_matrix_.R().column(2)), float(2 * M_PI)), 1.f);
 }
 
 TransformationMatrix<float, double, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {

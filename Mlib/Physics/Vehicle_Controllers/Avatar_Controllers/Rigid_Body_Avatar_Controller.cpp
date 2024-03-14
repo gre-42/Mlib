@@ -8,7 +8,9 @@ RigidBodyAvatarController::RigidBodyAvatarController()
     , target_yaw_{ NAN }
     , target_pitch_{ NAN }
     , dyaw_{ NAN }
+    , dyaw_relaxation_{ 0.f }
     , dpitch_{ NAN }
+    , dpitch_relaxation_{ 0.f }
     , surface_power_{ 0.f }
     , drive_relaxation_{ 0.f }
 {}
@@ -36,12 +38,18 @@ void RigidBodyAvatarController::set_target_pitch(float target_pitch) {
     target_pitch_ = target_pitch;
 }
 
-void RigidBodyAvatarController::increment_yaw(float dyaw) {
-    dyaw_ = dyaw;
+void RigidBodyAvatarController::increment_yaw(float dyaw, float relaxation) {
+    if (relaxation > dyaw_relaxation_) {
+        dyaw_ = dyaw;
+        dyaw_relaxation_ = relaxation;
+    }
 }
 
-void RigidBodyAvatarController::increment_pitch(float dpitch) {
-    dpitch_ = dpitch;
+void RigidBodyAvatarController::increment_pitch(float dpitch, float relaxation) {
+    if (relaxation > dpitch_relaxation_) {
+        dpitch_ = dpitch;
+        dpitch_relaxation_ = relaxation;
+    }
 }
 
 void RigidBodyAvatarController::reset() {
@@ -51,5 +59,7 @@ void RigidBodyAvatarController::reset() {
     target_yaw_ = NAN;
     target_pitch_ = NAN;
     dyaw_ = NAN;
+    dyaw_relaxation_ = 0.f;
     dpitch_ = NAN;
+    dpitch_relaxation_ = 0.f;
 }

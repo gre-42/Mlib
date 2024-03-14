@@ -25,9 +25,9 @@ DECLARE_ARGUMENT(surface_power);
 DECLARE_ARGUMENT(drive_relaxation_threshold);
 DECLARE_ARGUMENT(yaw);
 DECLARE_ARGUMENT(pitch);
-DECLARE_ARGUMENT(angular_velocity_press);
-DECLARE_ARGUMENT(angular_velocity_repeat);
-DECLARE_ARGUMENT(angular_velocity_analog);
+DECLARE_ARGUMENT(press_factor);
+DECLARE_ARGUMENT(repeat_factor);
+DECLARE_ARGUMENT(angular_velocity);
 DECLARE_ARGUMENT(speed_cursor);
 DECLARE_ARGUMENT(legs_z);
 }
@@ -55,14 +55,10 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .drive_relaxation_threshold = args.arguments.at<float>(KnownArgs::drive_relaxation_threshold, 0.f),
         .yaw = args.arguments.at<bool>(KnownArgs::yaw, false),
         .pitch = args.arguments.at<bool>(KnownArgs::pitch, false),
-        .angular_velocity_press = args.arguments.contains(KnownArgs::angular_velocity_press)
-            ? args.arguments.at<float>(KnownArgs::angular_velocity_press) * radians / s
-            : std::optional<float>(),
-        .angular_velocity_repeat = args.arguments.contains(KnownArgs::angular_velocity_repeat)
-            ? args.arguments.at<float>(KnownArgs::angular_velocity_repeat) * radians / s
-            : std::optional<float>(),
-        .angular_velocity_analog = args.arguments.contains(KnownArgs::angular_velocity_analog)
-            ? args.arguments.at<float>(KnownArgs::angular_velocity_analog) * radians / s
+        .press_factor = args.arguments.at<float>(KnownArgs::press_factor, 0.f),
+        .repeat_factor = args.arguments.at<float>(KnownArgs::repeat_factor, 1.f),
+        .angular_velocity = args.arguments.contains(KnownArgs::angular_velocity)
+            ? args.arguments.at<float>(KnownArgs::angular_velocity) * radians / s
             : std::optional<float>(),
         .speed_cursor = args.arguments.contains(KnownArgs::speed_cursor)
             ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians

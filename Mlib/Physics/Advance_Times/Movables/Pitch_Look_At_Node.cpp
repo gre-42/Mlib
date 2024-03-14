@@ -49,19 +49,20 @@ void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float
     if (!any(isnan(aim_at_node_.point_to_aim_at()))) {
         float dpitch = z_to_pitch(-aim_at_node_.point_to_aim_at());
         float epitch = increment_pitch_error_();
-        increment_pitch(dpitch + epitch);
+        increment_pitch(dpitch + epitch, 1.f);
     }
     pitch_ += dpitch_;
     pitch_ = std::clamp(pitch_, pitch_min_, pitch_max_);
     dpitch_ = 0.f;
 }
 
-void PitchLookAtNode::increment_pitch(float dpitch) {
-    dpitch_ = signed_min(dpitch, dpitch_max_);
+void PitchLookAtNode::increment_pitch(float dpitch, float relaxation) {
+    // Increment required for substepping.
+    dpitch_ += signed_min(dpitch, dpitch_max_) * relaxation;
 }
 
 void PitchLookAtNode::set_pitch(float pitch) {
-    increment_pitch(std::remainderf(pitch - pitch_, float(2 * M_PI)));
+    increment_pitch(std::remainderf(pitch - dpitch_ - pitch_, float(2 * M_PI)), 1.f);
 }
 
 TransformationMatrix<float, double, 3> PitchLookAtNode::get_new_relative_model_matrix() const {

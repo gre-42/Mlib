@@ -221,35 +221,25 @@ float KeyBindings::get_alpha(
     ButtonPress& button_press,
     CursorMovement* cursor_movement,
     ScrollWheelMovement* scroll_wheel_movement,
-    GamepadAnalogAxesPosition* gamepad_analog_axes_position)
+    GamepadAnalogAxesPosition* gamepad_analog_axes_position,
+    float press_factor,
+    float repeat_factor)
 {
-    // Analog gamepad axis
-    float alpha = NAN;
+    float alpha = button_press.keys_alpha(0.05f);
+    if (!std::isnan(alpha)) {
+        alpha = press_factor * (1 - alpha) + repeat_factor * alpha;
+    }
+    auto update_alpha = [&alpha](float a) {
+        alpha = std::isnan(alpha) ? a : std::max(alpha, a);
+        };
     if (gamepad_analog_axes_position != nullptr) {
-        alpha = gamepad_analog_axes_position->axis_alpha();
+        update_alpha(gamepad_analog_axes_position->axis_alpha());
     }
-    float alpha_digital = button_press.keys_alpha(0.05f);
-    float alpha_cursor = NAN;
     if (cursor_movement != nullptr) {
-        alpha_cursor = cursor_movement->axis_alpha();
+        update_alpha(cursor_movement->axis_alpha());
     }
-    float alpha_scroll_wheel = NAN;
     if (scroll_wheel_movement != nullptr) {
-        alpha_scroll_wheel = scroll_wheel_movement->axis_alpha();
-    }
-    if (std::isnan(alpha) || std::abs(alpha) < 0.1f) {
-        // Digital button
-        if (!std::isnan(alpha_digital)) {
-            return alpha_digital;
-        }
-        // Analog cursor
-        if (!std::isnan(alpha_cursor)) {
-            return alpha_cursor;
-        }
-        // Analog scroll wheel
-        if (!std::isnan(alpha_scroll_wheel)) {
-            return alpha_scroll_wheel;
-        }
+        update_alpha(scroll_wheel_movement->axis_alpha());
     }
     return alpha;
 }
@@ -411,9 +401,9 @@ void KeyBindings::increment_external_forces(
                     rt->transformation_matrix_.R() = tait_bryan_angles_2_matrix(r);
                 } else if (ypln != nullptr) {
                     if (all(k.rotation_axis == FixedArray<float, 3>{0.f, 1.f, 0.f})) {
-                        ypln->increment_yaw(dangle);
+                        ypln->increment_yaw(dangle, 1.f);
                     } else if (all(k.rotation_axis == FixedArray<float, 3>{1.f, 0.f, 0.f})) {
-                        ypln->pitch_look_at_node().increment_pitch(dangle);
+                        ypln->pitch_look_at_node().increment_pitch(dangle, 1.f);
                     } else {
                         THROW_OR_ABORT("Unsupported rotation axis for yaw/pitch-look-at-nodes");
                     }
@@ -436,8 +426,8 @@ void KeyBindings::increment_external_forces(
             if (enable_controls && !std::isnan(alpha)) {
                 double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
-                translate(v * cfg.dt);
-                rotate(w * cfg.dt);
+                translate(v * cfg.dt_substeps());
+                rotate(w * cfg.dt_substeps());
             }
             if (k.cursor_movement != nullptr) {
                 float beta = k.cursor_movement->axis_alpha();
@@ -475,35 +465,20 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             k.cursor_movement.get(),
             nullptr,
-            &k.gamepad_analog_axes_position);
+            &k.gamepad_analog_axes_position,
+            k.press_factor,
+            k.repeat_factor);
         if (enable_controls && !std::isnan(alpha)) {
             if (k.surface_power.has_value() && (alpha > k.drive_relaxation_threshold)) {
                 rb.avatar_controller().walk(k.surface_power.value(), alpha);
                 rb.avatar_controller().increment_legs_z(k.legs_z.value() * alpha);
             }
-            float w = 0.f;
-            if (k.angular_velocity_press.has_value() && k.angular_velocity_repeat.has_value()) {
-                w += ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());
-            }
-            if (k.angular_velocity_analog.has_value()) {
-                w += alpha * k.angular_velocity_analog.value();
-            }
-            if (k.yaw) {
-                rb.avatar_controller().increment_yaw(w * cfg.dt);
-            }
-            if (k.pitch) {
-                rb.avatar_controller().increment_pitch(w * cfg.dt);
-            }
-        }
-        if (k.cursor_movement != nullptr) {
-            float beta = k.cursor_movement->axis_alpha();
-            if (enable_controls && !std::isnan(beta) && k.speed_cursor.has_value()) {
-                float dangle = beta * k.speed_cursor.value();
+            if (k.angular_velocity.has_value()) {
                 if (k.yaw) {
-                    rb.avatar_controller().increment_yaw(dangle);
+                    rb.avatar_controller().increment_yaw(k.angular_velocity.value() * cfg.dt_substeps(), alpha);
                 }
                 if (k.pitch) {
-                    rb.avatar_controller().increment_pitch(dangle);
+                    rb.avatar_controller().increment_pitch(k.angular_velocity.value() * cfg.dt_substeps(), alpha);
                 }
             }
         }
@@ -531,7 +506,9 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             nullptr,
             nullptr,
-            &k.gamepad_analog_axes_position);
+            &k.gamepad_analog_axes_position,
+            0.f,
+            1.f);
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
@@ -543,7 +520,7 @@ void KeyBindings::increment_external_forces(
                 rb.vehicle_controller().set_stearing_wheel_amount(k.steer_left_amount.value(), alpha);
             }
             if (k.ascend_velocity.has_value()) {
-                rb.vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt);
+                rb.vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt_substeps());
             }
         }
     }
@@ -566,7 +543,9 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             k.cursor_movement.get(),
             nullptr,
-            &k.gamepad_analog_axes_position);
+            &k.gamepad_analog_axes_position,
+            0.f,
+            1.f);
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
@@ -598,7 +577,9 @@ void KeyBindings::increment_external_forces(
             k.button_press,
             nullptr,
             k.scroll_wheel_movement.get(),
-            nullptr);
+            nullptr,
+            0.f,
+            1.f);
         if (enable_controls && !std::isnan(alpha)) {
             auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {

@@ -74,13 +74,13 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         aim_at,
         args.arguments.at<float>(KnownArgs::pitch_min) * degrees,
         args.arguments.at<float>(KnownArgs::pitch_max) * degrees,
-        args.arguments.at<float>(KnownArgs::dpitch_max) * degrees,
+        args.arguments.at<float>(KnownArgs::dpitch_max) * degrees / scene_config.physics_engine_config.nsubsteps,
         increment_pitch_error);
     auto follower = std::make_unique<YawPitchLookAtNodes>(
         physics_engine.advance_times_,
         aim_at,
         *follower_pitch,
-        args.arguments.at<float>(KnownArgs::dyaw_max) * degrees,
+        args.arguments.at<float>(KnownArgs::dyaw_max) * degrees / scene_config.physics_engine_config.nsubsteps,
         increment_yaw_error);
     if (args.arguments.contains(KnownArgs::head_node)) {
         follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node), DP_LOC));

@@ -16,9 +16,9 @@ struct AvatarControllerKeyBinding {
     float drive_relaxation_threshold;
     bool yaw;
     bool pitch;
-    std::optional<float> angular_velocity_press;
-    std::optional<float> angular_velocity_repeat;
-    std::optional<float> angular_velocity_analog;
+    float press_factor;
+    float repeat_factor;
+    std::optional<float> angular_velocity;
     std::optional<float> speed_cursor;
     std::optional<FixedArray<float, 3>> legs_z;
     ButtonPress button_press;

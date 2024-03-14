@@ -30,7 +30,7 @@ public:
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
-    void increment_pitch(float dpitch);
+    void increment_pitch(float dpitch, float relaxation);
     void set_pitch(float pitch);
 
     void set_head_node(DanglingRef<SceneNode> head_node);
