@@ -29,7 +29,7 @@ DeletingDamageable::DeletingDamageable(
     dgs_.add([&rb]() { rb.damageable_ = nullptr; });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    node_on_clear_.add([this, &rb]() { delete this; });
+    node_on_clear_.add([this]() { delete this; });
 }
 
 DeletingDamageable::~DeletingDamageable() = default;
