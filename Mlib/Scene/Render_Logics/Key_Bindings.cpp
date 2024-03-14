@@ -227,10 +227,10 @@ float KeyBindings::get_alpha(
 {
     float alpha = button_press.keys_alpha(0.05f);
     if (!std::isnan(alpha)) {
-        alpha = press_factor * (1 - alpha) + repeat_factor * alpha;
+        return press_factor * (1 - alpha) + repeat_factor * alpha;
     }
     auto update_alpha = [&alpha](float a) {
-        alpha = std::isnan(alpha) ? a : std::max(alpha, a);
+        alpha = std::isnan(alpha) ? a : std::isnan(a) ? alpha : std::max(alpha, a);
         };
     if (gamepad_analog_axes_position != nullptr) {
         update_alpha(gamepad_analog_axes_position->axis_alpha());
