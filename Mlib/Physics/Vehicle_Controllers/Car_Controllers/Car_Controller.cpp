@@ -18,13 +18,13 @@ CarController::CarController(
     Interp<float> tire_angle_interp,
     PhysicsEngine& physics_engine)
     : RigidBodyVehicleController{ rb, SteeringType::CAR }
-    , front_engine_{front_engine}
-    , rear_engine_{rear_engine}
-    , front_tire_ids_{std::move(front_tire_ids)}
-    , max_tire_angle_{max_tire_angle}
-    , tire_angle_interp_{std::move(tire_angle_interp)}
-    , applied_{false}
-    , physics_engine_{physics_engine}
+    , front_engine_{ front_engine }
+    , rear_engine_{ rear_engine }
+    , front_tire_ids_{ std::move(front_tire_ids) }
+    , max_tire_angle_{ max_tire_angle }
+    , tire_angle_interp_{ std::move(tire_angle_interp) }
+    , applied_{ false }
+    , physics_engine_{ physics_engine }
 {
     physics_engine_.add_controllable(*this);
 }

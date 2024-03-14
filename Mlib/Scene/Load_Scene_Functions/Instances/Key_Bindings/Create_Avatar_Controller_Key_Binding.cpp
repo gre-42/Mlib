@@ -22,10 +22,12 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 
 DECLARE_ARGUMENT(surface_power);
+DECLARE_ARGUMENT(drive_relaxation_threshold);
 DECLARE_ARGUMENT(yaw);
 DECLARE_ARGUMENT(pitch);
 DECLARE_ARGUMENT(angular_velocity_press);
 DECLARE_ARGUMENT(angular_velocity_repeat);
+DECLARE_ARGUMENT(angular_velocity_analog);
 DECLARE_ARGUMENT(speed_cursor);
 DECLARE_ARGUMENT(legs_z);
 }
@@ -50,6 +52,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
+        .drive_relaxation_threshold = args.arguments.at<float>(KnownArgs::drive_relaxation_threshold, 0.f),
         .yaw = args.arguments.at<bool>(KnownArgs::yaw, false),
         .pitch = args.arguments.at<bool>(KnownArgs::pitch, false),
         .angular_velocity_press = args.arguments.contains(KnownArgs::angular_velocity_press)
@@ -57,6 +60,9 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             : std::optional<float>(),
         .angular_velocity_repeat = args.arguments.contains(KnownArgs::angular_velocity_repeat)
             ? args.arguments.at<float>(KnownArgs::angular_velocity_repeat) * radians / s
+            : std::optional<float>(),
+        .angular_velocity_analog = args.arguments.contains(KnownArgs::angular_velocity_analog)
+            ? args.arguments.at<float>(KnownArgs::angular_velocity_analog) * radians / s
             : std::optional<float>(),
         .speed_cursor = args.arguments.contains(KnownArgs::speed_cursor)
             ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians
@@ -72,7 +78,12 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             key_configurations,
-            args.arguments.at<std::string>(KnownArgs::id))});
+            args.arguments.at<std::string>(KnownArgs::id)),
+        .gamepad_analog_axes_position{
+            args.button_states,
+            key_configurations,
+            args.arguments.at<std::string>(KnownArgs::id),
+            args.arguments.at<std::string>(KnownArgs::role)} });
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
         node.ptr(),

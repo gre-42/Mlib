@@ -8,7 +8,7 @@
 using namespace Mlib;
 
 AvatarMovement::AvatarMovement(Player& player)
-: player_{ player }
+    : player_{ player }
 {}
 
 void AvatarMovement::run_move(
@@ -34,7 +34,7 @@ void AvatarMovement::run_move(
     } else {
         float len = std::sqrt(len2);
         player_.rigid_body().avatar_controller().increment_legs_z(direction / len);
-        player_.rigid_body().avatar_controller().walk(player_.vehicle_movement.surface_power_forward());
+        player_.rigid_body().avatar_controller().walk(player_.vehicle_movement.surface_power_forward(), 1.f);
     }
     player_.rigid_body().avatar_controller().apply();
 }

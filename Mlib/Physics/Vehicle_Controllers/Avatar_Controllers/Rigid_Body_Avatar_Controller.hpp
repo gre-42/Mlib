@@ -12,7 +12,7 @@ public:
     RigidBodyAvatarController();
     virtual ~RigidBodyAvatarController();
     void increment_legs_z(const FixedArray<float, 3>& dz);
-    void walk(float surface_power);
+    void walk(float surface_power, float relaxation);
     void stop();
     void set_target_yaw(float target_yaw);
     void set_target_pitch(float target_pitch);
@@ -27,6 +27,7 @@ protected:
     float dyaw_;
     float dpitch_;
     float surface_power_;
+    float drive_relaxation_;
 };
 
 }

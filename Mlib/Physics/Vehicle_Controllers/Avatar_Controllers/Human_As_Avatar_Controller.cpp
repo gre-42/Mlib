@@ -11,17 +11,19 @@ using namespace Mlib;
 HumanAsAvatarController::HumanAsAvatarController(
     RigidBodyVehicle& rb,
     YawPitchLookAtNodes& ypln)
-: rb_{rb},
-  ypln_{ypln}
+    : rb_ { rb }
+    , ypln_{ ypln }
 {}
 
 HumanAsAvatarController::~HumanAsAvatarController()
 {}
 
 void HumanAsAvatarController::apply() {
-    if (any(abs(legs_z_) > float(1e-12))) {
+    if ((any(abs(legs_z_) > float(1e-12))) && (drive_relaxation_ > 0.f)) {
         rb_.tires_z_ = legs_z_ / std::sqrt(sum(squared(legs_z_)));
-        rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_});
+        rb_.set_surface_power("legs", EnginePowerIntent{
+            .surface_power = surface_power_,
+            .drive_relaxation = drive_relaxation_});
     } else {
         rb_.tires_z_ = { 0.f, 0.f, 1.f };
         rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = NAN});

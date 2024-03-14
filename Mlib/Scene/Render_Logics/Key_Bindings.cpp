@@ -471,20 +471,28 @@ void KeyBindings::increment_external_forces(
     }
     for (auto& k : avatar_controller_key_bindings_) {
         auto& rb = get_rigid_body_vehicle(*k.node);
-        float alpha = k.button_press.keys_alpha(0.05f);
+        float alpha = get_alpha(
+            k.button_press,
+            k.cursor_movement.get(),
+            nullptr,
+            &k.gamepad_analog_axes_position);
         if (enable_controls && !std::isnan(alpha)) {
-            if (k.surface_power.has_value()) {
-                rb.avatar_controller().walk(k.surface_power.value());
-                rb.avatar_controller().increment_legs_z(k.legs_z.value());
+            if (k.surface_power.has_value() && (alpha > k.drive_relaxation_threshold)) {
+                rb.avatar_controller().walk(k.surface_power.value(), alpha);
+                rb.avatar_controller().increment_legs_z(k.legs_z.value() * alpha);
             }
+            float w = 0.f;
             if (k.angular_velocity_press.has_value() && k.angular_velocity_repeat.has_value()) {
-                float w = ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());
-                if (k.yaw) {
-                    rb.avatar_controller().increment_yaw(w * cfg.dt);
-                }
-                if (k.pitch) {
-                    rb.avatar_controller().increment_pitch(w * cfg.dt);
-                }
+                w += ((1 - alpha) * k.angular_velocity_press.value() + alpha * k.angular_velocity_repeat.value());
+            }
+            if (k.angular_velocity_analog.has_value()) {
+                w += alpha * k.angular_velocity_analog.value();
+            }
+            if (k.yaw) {
+                rb.avatar_controller().increment_yaw(w * cfg.dt);
+            }
+            if (k.pitch) {
+                rb.avatar_controller().increment_pitch(w * cfg.dt);
             }
         }
         if (k.cursor_movement != nullptr) {

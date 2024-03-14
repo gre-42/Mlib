@@ -148,13 +148,13 @@ void SingleWaypoint::move_to_waypoint() {
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->walk(player_.vehicle_movement.surface_power_forward());
+                player_rb.avatar_controller_->walk(player_.vehicle_movement.surface_power_forward(), 1.f);
             } else {
                 player_.car_movement.drive_forward();
             }
         } else if (dvel < player_.driving_mode_.max_delta_velocity_brake) {
             if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->walk(0.f);
+                player_rb.avatar_controller_->walk(0.f, 1.f);
             } else {
                 player_.car_movement.roll_tires();
             }
