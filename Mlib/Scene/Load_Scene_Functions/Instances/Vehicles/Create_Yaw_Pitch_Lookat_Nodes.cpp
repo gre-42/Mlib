@@ -3,6 +3,7 @@
 #include <Mlib/Components/Aim_At.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -74,13 +75,13 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
         aim_at,
         args.arguments.at<float>(KnownArgs::pitch_min) * degrees,
         args.arguments.at<float>(KnownArgs::pitch_max) * degrees,
-        args.arguments.at<float>(KnownArgs::dpitch_max) * degrees / scene_config.physics_engine_config.nsubsteps,
+        args.arguments.at<float>(KnownArgs::dpitch_max) * degrees / integral_to_float<float>(scene_config.physics_engine_config.nsubsteps),
         increment_pitch_error);
     auto follower = std::make_unique<YawPitchLookAtNodes>(
         physics_engine.advance_times_,
         aim_at,
         *follower_pitch,
-        args.arguments.at<float>(KnownArgs::dyaw_max) * degrees / scene_config.physics_engine_config.nsubsteps,
+        args.arguments.at<float>(KnownArgs::dyaw_max) * degrees / integral_to_float<float>(scene_config.physics_engine_config.nsubsteps),
         increment_yaw_error);
     if (args.arguments.contains(KnownArgs::head_node)) {
         follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node), DP_LOC));
