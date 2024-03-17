@@ -45,12 +45,16 @@ float GamepadAnalogAxesPosition::axis_alpha()
     if (std::isnan(v)) {
         return NAN;
     }
+    auto transform = [&b](float r) {
+        auto denom = std::pow(1.f - b->deadzone, b->exponent);
+        return std::pow(std::max(std::abs(r) - b->deadzone, 0.f), b->exponent) * sign(r) / denom;
+    };
     if (b->sign_and_scale == 0) {
-        return (1.f + v) / 2.f;
+        return transform((1.f + v) / 2.f);
     } else {
         if (sign(v) != sign(b->sign_and_scale)) {
             return NAN;
         }
-        return std::min(b->sign_and_scale * v, 1.f);
+        return std::min(transform(b->sign_and_scale * v), 1.f);
     }
 }

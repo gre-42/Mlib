@@ -38,6 +38,8 @@ namespace BaseGamepadAnalogAxisBindingArgs {
     BEGIN_ARGUMENT_LIST;
     DECLARE_ARGUMENT(axis);
     DECLARE_ARGUMENT(sign_and_scale);
+    DECLARE_ARGUMENT(deadzone);
+    DECLARE_ARGUMENT(exponent);
 }
 
 namespace Mlib {
@@ -51,9 +53,15 @@ void from_json(const nlohmann::json& j, JoystickDigitalAxis& obj)
 
 void from_json(const nlohmann::json& j, BaseGamepadAnalogAxisBinding& obj)
 {
-    validate(j, BaseGamepadAnalogAxisBindingArgs::options);
+    JsonView jv{ j };
+    jv.validate(BaseGamepadAnalogAxisBindingArgs::options);
     j.at(BaseGamepadAnalogAxisBindingArgs::axis).get_to(obj.axis);
     j.at(BaseGamepadAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
+    obj.deadzone = jv.at<float>(BaseGamepadAnalogAxisBindingArgs::deadzone, 0);
+    obj.exponent = jv.at<float>(BaseGamepadAnalogAxisBindingArgs::exponent, 1);
+    if (std::isnan(obj.deadzone) || (obj.deadzone < 0.f) || (obj.deadzone > 1.f)) {
+        THROW_OR_ABORT("Joystick deadzone must be >= 0 and <= 1");
+    }
 }
 
 }
