@@ -13,7 +13,6 @@ class SceneNode;
 struct AvatarControllerKeyBinding {
     DanglingPtr<SceneNode> node;
     std::optional<float> surface_power;
-    float drive_relaxation_threshold;
     bool yaw;
     bool pitch;
     float press_factor;

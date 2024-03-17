@@ -22,7 +22,6 @@ DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(node);
 
 DECLARE_ARGUMENT(surface_power);
-DECLARE_ARGUMENT(drive_relaxation_threshold);
 DECLARE_ARGUMENT(yaw);
 DECLARE_ARGUMENT(pitch);
 DECLARE_ARGUMENT(press_factor);
@@ -52,7 +51,6 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
             : std::optional<float>(),
-        .drive_relaxation_threshold = args.arguments.at<float>(KnownArgs::drive_relaxation_threshold, 0.f),
         .yaw = args.arguments.at<bool>(KnownArgs::yaw, false),
         .pitch = args.arguments.at<bool>(KnownArgs::pitch, false),
         .press_factor = args.arguments.at<float>(KnownArgs::press_factor, 0.f),

@@ -469,7 +469,7 @@ void KeyBindings::increment_external_forces(
             k.press_factor,
             k.repeat_factor);
         if (enable_controls && !std::isnan(alpha)) {
-            if (k.surface_power.has_value() && (alpha > k.drive_relaxation_threshold)) {
+            if (k.surface_power.has_value()) {
                 rb.avatar_controller().walk(k.surface_power.value(), alpha);
                 rb.avatar_controller().increment_legs_z(k.legs_z.value() * alpha);
             }
