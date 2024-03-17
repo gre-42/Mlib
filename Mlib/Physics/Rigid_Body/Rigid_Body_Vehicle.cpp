@@ -796,8 +796,8 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     if (log_components & StatusComponents::TIME) {
         static const std::chrono::steady_clock::time_point epoch_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-        int64_t milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - epoch_time).count();
-        ostr << "t: " << milliseconds << " ms" << std::endl;
+        auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - epoch_time);
+        ostr << "t: " << milliseconds.count() << " ms" << std::endl;
     }
     // if (true) {
     //     static std::chrono::time_point time_v0 = std::chrono::steady_clock::time_point();
@@ -813,9 +813,9 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     //         (time_v100 != std::chrono::steady_clock::time_point()))
     //     {
     //         if (time_v0 < time_v100) {
-    //             ostr << "t 0-100: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_v100 - time_v0).count() / 1000.f << " s" << std::endl;
+    //             ostr << "t 0-100: " << (time_v100 - time_v0).count() << " s" << std::endl;
     //         } else if (time_v100 < time_v0) {
-    //             ostr << "t 100-0: " << std::chrono::duration_cast<std::chrono::milliseconds>(time_v0 - time_v100).count() / 1000.f << " s" << std::endl;
+    //             ostr << "t 100-0: " << (time_v0 - time_v100).count() << " s" << std::endl;
     //         }
     //     }
     // }

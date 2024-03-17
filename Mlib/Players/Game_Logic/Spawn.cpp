@@ -72,7 +72,7 @@ void Spawn::spawn_at_spawn_point(
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
     spawner.spawn(sp, cfg_.spawn_y_offset);
-    // std::cerr << "Spawn time " << 1000 * std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count() << std::endl;
+    // std::cerr << "Spawn time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(std::chrono::steady_clock::now() - start)).count() << std::endl;
     ++nspawns_;
     // while (true) {
     //     std::scoped_lock lock{ delete_node_mutex_ };

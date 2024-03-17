@@ -8,5 +8,5 @@ ElapsedGuard::ElapsedGuard()
 {}
 
 ElapsedGuard::~ElapsedGuard() {
-    linfo() << "Elapsed: " << (std::chrono::steady_clock::now() - start_time_).count() / (1000 * 1000) << " ms";
+    linfo() << "Elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start_time_).count() << " ms";
 }

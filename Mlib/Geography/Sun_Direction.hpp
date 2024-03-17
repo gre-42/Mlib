@@ -4,6 +4,8 @@
 
 namespace Mlib {
 
+// From: https://github.com/sczesla/PyAstronomy/blob/master/src/pyasl/asl/eq2hor.py
+
 template <typename TData, size_t... tshape>
 class FixedArray;
 enum class Season;
