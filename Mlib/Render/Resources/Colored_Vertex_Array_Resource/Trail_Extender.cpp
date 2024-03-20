@@ -41,7 +41,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
         const auto& R = lookat.value();
         auto RS = R;
         for (size_t r = 0; r < 3; ++r) {
-            RS(r, 2) = dz(r);
+            RS(r, 2) = -dz(r);
         }
         TransformationMatrix<float, double, 3> loc{
             RS,
