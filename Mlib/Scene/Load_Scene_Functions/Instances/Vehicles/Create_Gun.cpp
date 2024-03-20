@@ -11,6 +11,8 @@
 #include <Mlib/Scene/Linker.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
 #include <Mlib/Stats/Random_Process.hpp>
@@ -38,6 +40,7 @@ DECLARE_ARGUMENT(bullet_size);
 DECLARE_ARGUMENT(bullet_trail_resource);
 DECLARE_ARGUMENT(bullet_trail_dt);
 DECLARE_ARGUMENT(bullet_trail_animation_time);
+DECLARE_ARGUMENT(bullet_trace_storage);
 DECLARE_ARGUMENT(ammo_type);
 DECLARE_ARGUMENT(punch_angle_idle_std);
 DECLARE_ARGUMENT(punch_angle_shoot_std);
@@ -115,6 +118,10 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
+    ITrailStorage* bullet_trace_storage = nullptr;
+    if (args.arguments.contains(KnownArgs::bullet_trace_storage)) {
+        bullet_trace_storage = &trail_renderer.get_storage(args.arguments.at<std::string>(KnownArgs::bullet_trace_storage));
+    }
     new Gun(
         &rendering_resources,
         scene,
@@ -140,6 +147,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::bullet_trail_resource, ""),
         args.arguments.at<float>(KnownArgs::bullet_trail_dt, NAN) * s,
         args.arguments.at<float>(KnownArgs::bullet_trail_animation_time, NAN) * s,
+        bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
         args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),

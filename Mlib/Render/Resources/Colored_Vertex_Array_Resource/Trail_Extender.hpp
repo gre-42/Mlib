@@ -33,7 +33,7 @@ private:
     TrailsInstance& trails_instance_;
     const TrailSequence& trail_sequence_;
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
-    double minimum_length_;
+    double minimum_length_squared_;
     std::optional<PreviousCenter> previous_center_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<double, 3>> previous_vertices_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<double, 3>> current_vertices_;

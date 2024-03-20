@@ -18,6 +18,8 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -49,6 +51,7 @@ Gun::Gun(
     const std::string& bullet_trail_resource,
     float bullet_trail_dt,
     float bullet_trail_animation_time,
+    ITrailStorage* bullet_trace_storage,
     const std::string& ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
     const std::string& muzzle_flash_resource,
@@ -79,6 +82,7 @@ Gun::Gun(
     , bullet_trail_resource_{ bullet_trail_resource }
     , bullet_trail_dt_{ bullet_trail_dt }
     , bullet_trail_animation_time_{ bullet_trail_animation_time }
+    , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ ammo_type }
     , triggered_{ false }
     , player_{ nullptr }
@@ -195,6 +199,9 @@ void Gun::generate_bullet() {
         bullet_trail_resource_,
         bullet_trail_dt_,
         bullet_trail_animation_time_,
+        bullet_trace_storage_ == nullptr
+            ? nullptr
+            : bullet_trace_storage_->add_trail_extender(),
         delete_node_mutex_);
     if (player_ != nullptr) {
         player_->destruction_observers.add(*bullet);

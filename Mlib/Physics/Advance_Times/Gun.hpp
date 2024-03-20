@@ -15,6 +15,7 @@ namespace Mlib {
 class RenderingResources;
 class SceneNodeResources;
 class SmokeParticleGenerator;
+class ITrailStorage;
 class RigidBodyVehicle;
 class Scene;
 class RigidBodies;
@@ -51,6 +52,7 @@ public:
         const std::string& bullet_trail_resource,
         float bullet_trail_dt,
         float bullet_trail_animation_time,
+        ITrailStorage* bullet_trace_storage,
         const std::string& ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
         const std::string& muzzle_flash_resource,
@@ -97,6 +99,7 @@ private:
     std::string bullet_trail_resource_;
     float bullet_trail_dt_;
     float bullet_trail_animation_time_;
+    ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;
     Player* player_;

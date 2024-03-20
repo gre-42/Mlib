@@ -20,6 +20,7 @@ class DeleteNodeMutex;
 class IPlayer;
 class ITeam;
 class SmokeParticleGenerator;
+class ITrailExtender;
 
 class Bullet:
     public DestructionObserver<const IPlayer&>,
@@ -45,6 +46,7 @@ public:
         const std::string& trail_resource,
         float trail_dt,
         float trail_animation_time,
+        std::unique_ptr<ITrailExtender> trace_extender,
         DeleteNodeMutex& delete_node_mutex);
     ~Bullet();
     virtual void notify_destroyed(const IPlayer& destroyed_object) override;
@@ -83,6 +85,7 @@ private:
     std::string trail_resource_name_;
     float trail_animation_duration_;
     float trail_dt_;
+    std::unique_ptr<ITrailExtender> trace_extender_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

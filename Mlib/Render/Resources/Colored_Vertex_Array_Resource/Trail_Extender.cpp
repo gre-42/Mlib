@@ -16,7 +16,7 @@ TrailExtender::TrailExtender(
     : trails_instance_{ trails_instance }
     , trail_sequence_{ trail_sequence }
     , segment_{ segment }
-    , minimum_length_{ minimum_length }
+    , minimum_length_squared_{ squared(minimum_length) }
 {
     if (segment.empty()) {
         THROW_OR_ABORT("Trail segment is empty");
@@ -31,24 +31,28 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
         auto& prev = previous_center_.value();
         auto dz = (location.t() - prev.position).casted<float>();
         auto dz_l2 = sum(squared(dz));
-        if (dz_l2 < squared(minimum_length_)) {
+        if (dz_l2 < minimum_length_squared_) {
             return;
         }
-        dz /= std::sqrt(dz_l2);
-        auto lookat = gl_lookat_relative(dz, location.R().column(1));
+        auto lookat = gl_lookat_relative(dz / std::sqrt(dz_l2), location.R().column(1));
         if (!lookat.has_value()) {
             return;
         }
+        const auto& R = lookat.value();
+        auto RS = R;
+        for (size_t r = 0; r < 3; ++r) {
+            RS(r, 2) = dz(r);
+        }
         TransformationMatrix<float, double, 3> loc{
-            lookat.value(),
+            RS,
             prev.position };
         auto op = [this](const FixedArray<float, 2>& uv){
             return FixedArray<float, 2>{ trail_sequence_.u_offset + uv(0) * trail_sequence_.u_scale, uv(1) };
         };
         if (previous_vertices_.empty()) {
             for (const auto& t0 : segment_) {
-                auto t = t0.applied<ColoredVertex<double>>([&loc, &op](const auto& v){
-                    return v.template casted<double>().transformed(loc, loc.R()).transformed_uv(op); });
+                auto t = t0.applied<ColoredVertex<double>>([&loc, &R, &op](const auto& v){
+                    return v.template casted<double>().transformed(loc, R).transformed_uv(op); });
                 FixedArray<float, 3> time;
                 for (size_t i = 0; i < 3; ++i) {
                     if (t0(i).position(2) == -1.f) {
@@ -69,7 +73,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                 for (size_t i = 0; i < 3; ++i) {
                     OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
                     if (t0(i).position(2) == -1.f) {
-                        t(i) = t0(i).casted<double>().transformed(loc, loc.R()).transformed_uv(op);
+                        t(i) = t0(i).casted<double>().transformed(loc, R).transformed_uv(op);
                         current_vertices_[k] = t(i).position;
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 1.f) {

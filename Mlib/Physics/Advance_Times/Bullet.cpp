@@ -13,6 +13,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -35,6 +36,7 @@ Bullet::Bullet(
     const std::string& trail_resource,
     float trail_dt,
     float trail_animation_time,
+    std::unique_ptr<ITrailExtender> trace_extender,
     DeleteNodeMutex& delete_node_mutex)
 : scene_{ scene },
   smoke_generator_{smoke_generator},
@@ -55,6 +57,7 @@ Bullet::Bullet(
   trail_resource_name_{ trail_resource },
   trail_animation_duration_{ trail_animation_time },
   trail_dt_{ trail_dt },
+  trace_extender_{ std::move(trace_extender) },
   delete_node_mutex_{ delete_node_mutex }
 {}
 
@@ -110,6 +113,9 @@ void Bullet::advance_time(float dt) {
             trail_dt_,
             ParticleType::INSTANCE);
     }
+    if (trace_extender_ != nullptr) {
+        trace_extender_->append_location(rigid_body_pulses_.abs_transformation());
+    }
 }
 
 void Bullet::notify_collided(
@@ -133,6 +139,9 @@ void Bullet::notify_collided(
         fixed_zeros<float, 3>(),
         bullet_explosion_animation_time_,
         ParticleType::NODE);
+    if (trace_extender_ != nullptr) {
+        trace_extender_->append_location(TransformationMatrix<float, double, 3>{rigid_body_pulses_.rotation_, intersection_point});
+    }
 }
 
 void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
