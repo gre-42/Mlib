@@ -55,13 +55,13 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                     return v.template casted<double>().transformed(loc, R).transformed_uv(op); });
                 FixedArray<float, 3> time;
                 for (size_t i = 0; i < 3; ++i) {
-                    if (t0(i).position(2) == -1.f) {
+                    if (t0(i).position(2) == 0.f) {
                         previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
                         time(i) = 0.f;
-                    } else if (t0(i).position(2) == 1.f) {
+                    } else if (t0(i).position(2) == -1.f) {
                         time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
                     } else {
-                        THROW_OR_ABORT("z-position of trail object is not 1 or -1");
+                        THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }
                 }
                 trails_instance_.add_triangle(t, time, trail_sequence_);
@@ -72,11 +72,11 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                 FixedArray<float, 3> time;
                 for (size_t i = 0; i < 3; ++i) {
                     OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
-                    if (t0(i).position(2) == -1.f) {
+                    if (t0(i).position(2) == 0.f) {
                         t(i) = t0(i).casted<double>().transformed(loc, R).transformed_uv(op);
                         current_vertices_[k] = t(i).position;
                         time(i) = 0.f;
-                    } else if (t0(i).position(2) == 1.f) {
+                    } else if (t0(i).position(2) == -1.f) {
                         auto it = previous_vertices_.find(k);
                         if (it == previous_vertices_.end()) {
                             THROW_OR_ABORT("TrailExtender::append_location: Could not find previous vertex");
@@ -85,7 +85,7 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
                         t(i).position = it->second;
                         time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
                     } else {
-                        THROW_OR_ABORT("z-position of trail object is not 1 or -1");
+                        THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }
                 }
                 trails_instance_.add_triangle(t, time, trail_sequence_);
