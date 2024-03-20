@@ -54,9 +54,9 @@ private:
     float locked_on_cosine_min_;
     bool target_locked_on_;
     std::function<float()> velocity_estimation_error_;
+    DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens follower_node_on_destroy_;
     std::optional<DestructionFunctionsRemovalTokens> followed_node_on_destroy_;
-    DestructionGuards dgs_;
 };
 
 }

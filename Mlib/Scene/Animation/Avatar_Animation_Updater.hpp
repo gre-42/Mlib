@@ -21,10 +21,10 @@ public:
 private:
     const RigidBodyVehicle& rb_;
     DanglingPtr<SceneNode> gun_node_;
-    DestructionFunctionsRemovalTokens gun_node_on_destroy_;
     std::string resource_wo_gun_;
     std::string resource_w_gun_;
     float surface_power_;
+    DestructionFunctionsRemovalTokens gun_node_on_destroy_;
 };
 
 }

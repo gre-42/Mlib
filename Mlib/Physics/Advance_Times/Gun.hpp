@@ -114,9 +114,9 @@ private:
     float muzzle_flash_animation_time_;
     std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;
     DeleteNodeMutex& delete_node_mutex_;
+    DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     std::optional<DestructionFunctionsRemovalTokens> punch_angle_node_on_clear_;
-    DestructionGuards dgs_;
 };
 
 }

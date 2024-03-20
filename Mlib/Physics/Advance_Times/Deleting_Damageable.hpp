@@ -43,8 +43,8 @@ protected:
     float health_;
     mutable SafeSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
-    DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionGuards dgs_;
+    DestructionFunctionsRemovalTokens node_on_clear_;
 };
 
 }
