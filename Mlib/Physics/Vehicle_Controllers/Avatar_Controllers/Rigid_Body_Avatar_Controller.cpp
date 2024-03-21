@@ -22,6 +22,9 @@ void RigidBodyAvatarController::increment_legs_z(const FixedArray<float, 3>& dz)
 }
 
 void RigidBodyAvatarController::walk(float surface_power, float relaxation) {
+    if (relaxation < drive_relaxation_) {
+        return;
+    }
     surface_power_ = surface_power;
     drive_relaxation_ = relaxation;
 }
