@@ -32,7 +32,8 @@ void Mlib::collide_with_terrain(
                 PhysicsMaterial::OBJ_DISTANCEBOX;
             if (any(msh1.physics_material & collide_with_terrain_triangle_mask)) {
                 if (any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX) ||
-                    any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE))
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE) ||
+                    any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MASK))
                 {
                     rigid_bodies.convex_mesh_bvh().visit(
                         msh1.mesh->aabb(),

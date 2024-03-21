@@ -1,5 +1,6 @@
 #include "Collide_With_Movables.hpp"
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Iterator/Reverse_Iterator.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Convex_Meshes.hpp>
@@ -47,30 +48,22 @@ void Mlib::collide_with_movables(
     const CollisionHistory& history)
 {
     if (collision_direction == CollisionDirection::FORWARD) {
-        size_t i0 = 0;
-        for (const auto& o0 : rigid_bodies.transformed_objects()) {
-            size_t i1 = 0;
-            for (const auto& o1 : rigid_bodies.transformed_objects()) {
+        for (const auto& [i0, o0] : enumerate(rigid_bodies.transformed_objects())) {
+            for (const auto& [i1, o1] : enumerate(rigid_bodies.transformed_objects())) {
                 if (i1 >= i0) {
                     break;
                 }
                 collide_objects(o0, o1, history);
-                ++i1;
             }
-            ++i0;
         }
     } else {
-        size_t i0 = 0;
-        for (const auto& o0 : reverse(rigid_bodies.transformed_objects())) {
-            size_t i1 = 0;
-            for (const auto& o1 : reverse(rigid_bodies.transformed_objects())) {
+        for (const auto& [i0, o0] : enumerate(reverse(rigid_bodies.transformed_objects()))) {
+            for (const auto& [i1, o1] : enumerate(reverse(rigid_bodies.transformed_objects()))) {
                 if (i1 >= i0) {
                     break;
                 }
                 collide_objects(o0, o1, history);
-                ++i1;
             }
-            ++i0;
         }
     }
 }
