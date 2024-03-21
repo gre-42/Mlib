@@ -12,9 +12,10 @@ public:
     explicit IncrementalMovement(CursorStates& cursor_states);
     ~IncrementalMovement();
     void update_cursor(double x, double y);
-    double consume_cursor(size_t axis);
-    float axis_alpha(const BaseCursorAxisBinding& binding);
+    float axis_alpha(const BaseCursorAxisBinding& binding, float nsubsteps);
 private:
+    double consume_cursor_unsafe(size_t axis);
+    void increment_cursor_unsafe(size_t axis, double value);
     double cursor_x_;
     double cursor_y_;
     CursorStates& cursor_states_;

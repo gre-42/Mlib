@@ -1,6 +1,7 @@
 #include "Cursor_Movement.hpp"
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
+#include <cmath>
 
 using namespace Mlib;
 
@@ -15,10 +16,10 @@ CursorMovement::CursorMovement(
 
 CursorMovement::~CursorMovement() = default;
 
-float CursorMovement::axis_alpha() {
+float CursorMovement::axis_alpha(float ncached) {
     if (id_.empty()) {
         return NAN;
     }
     const auto& key_combination = key_configurations_.get(id_);
-    return incremental_movement_.axis_alpha(key_combination.base_cursor_axis);
+    return incremental_movement_.axis_alpha(key_combination.base_cursor_axis, ncached);
 }

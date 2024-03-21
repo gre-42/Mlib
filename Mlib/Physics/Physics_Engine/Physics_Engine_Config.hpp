@@ -8,8 +8,12 @@ struct PhysicsEngineConfig {
     inline float dt_substeps() const {
         return dt / (float)nsubsteps;
     }
+    inline float ncached() const {
+        return dt_io / dt_substeps();
+    }
 
     float dt = 0.01667f * s;
+    float dt_io = 0.01667f * s;
     float max_residual_time = 0.5f * s;
     bool control_fps = true;
     bool print_residual_time = false;

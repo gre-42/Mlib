@@ -88,7 +88,8 @@ private:
         ScrollWheelMovement* scroll_wheel_movement,
         GamepadAnalogAxesPosition* gamepad_analog_axes_position,
         float press_factor,
-        float repeat_factor);
+        float repeat_factor,
+        const PhysicsEngineConfig& cfg);
 
     std::list<CameraKeyBinding> camera_key_bindings_;
     std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;

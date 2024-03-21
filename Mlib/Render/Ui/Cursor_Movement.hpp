@@ -14,7 +14,7 @@ public:
         const KeyConfigurations& key_configurations,
         std::string id);
     ~CursorMovement();
-    float axis_alpha();
+    float axis_alpha(float ncached);
 private:
     IncrementalMovement incremental_movement_;
     const KeyConfigurations& key_configurations_;

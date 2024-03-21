@@ -223,7 +223,8 @@ float KeyBindings::get_alpha(
     ScrollWheelMovement* scroll_wheel_movement,
     GamepadAnalogAxesPosition* gamepad_analog_axes_position,
     float press_factor,
-    float repeat_factor)
+    float repeat_factor,
+    const PhysicsEngineConfig& cfg)
 {
     float alpha = button_press.keys_alpha(0.05f);
     if (!std::isnan(alpha)) {
@@ -236,10 +237,10 @@ float KeyBindings::get_alpha(
         update_alpha(gamepad_analog_axes_position->axis_alpha());
     }
     if (cursor_movement != nullptr) {
-        update_alpha(cursor_movement->axis_alpha());
+        update_alpha(cursor_movement->axis_alpha(cfg.ncached()));
     }
     if (scroll_wheel_movement != nullptr) {
-        update_alpha(scroll_wheel_movement->axis_alpha());
+        update_alpha(scroll_wheel_movement->axis_alpha(cfg.ncached()));
     }
     return alpha;
 }
@@ -430,7 +431,7 @@ void KeyBindings::increment_external_forces(
                 rotate(w * cfg.dt_substeps());
             }
             if (k.cursor_movement != nullptr) {
-                float beta = k.cursor_movement->axis_alpha();
+                float beta = k.cursor_movement->axis_alpha(cfg.ncached());
                 if (enable_controls && !std::isnan(beta)) {
                     rotate(beta * k.speed_cursor);
                     translate(beta * k.speed_cursor);
@@ -467,7 +468,8 @@ void KeyBindings::increment_external_forces(
             nullptr,
             &k.gamepad_analog_axes_position,
             k.press_factor,
-            k.repeat_factor);
+            k.repeat_factor,
+            cfg);
         if (enable_controls && !std::isnan(alpha)) {
             if (k.surface_power.has_value()) {
                 rb.avatar_controller().walk(k.surface_power.value(), alpha);
@@ -508,7 +510,8 @@ void KeyBindings::increment_external_forces(
             nullptr,
             &k.gamepad_analog_axes_position,
             0.f,
-            1.f);
+            1.f,
+            cfg);
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.surface_power.has_value()) {
@@ -545,7 +548,8 @@ void KeyBindings::increment_external_forces(
             nullptr,
             &k.gamepad_analog_axes_position,
             0.f,
-            1.f);
+            1.f,
+            cfg);
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k.node);
             if (k.turbine_power.has_value()) {
@@ -579,7 +583,8 @@ void KeyBindings::increment_external_forces(
             k.scroll_wheel_movement.get(),
             nullptr,
             0.f,
-            1.f);
+            1.f,
+            cfg);
         if (enable_controls && !std::isnan(alpha)) {
             auto& wc = get_weapon_cycle(*k.node);
             if (k.direction == 1) {
