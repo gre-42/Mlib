@@ -16,6 +16,7 @@ public:
         DanglingRef<SceneNode> gun_node,
         const std::string& resource_wo_gun,
         const std::string& resource_w_gun);
+    virtual ~AvatarAnimationUpdater() override;
     virtual void notify_movement_intent() override;
     virtual void update_animation_state(AnimationState* animation_state) override;
 private:

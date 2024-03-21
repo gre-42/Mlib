@@ -30,6 +30,8 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
     });
 }
 
+AvatarAnimationUpdater::~AvatarAnimationUpdater() = default;
+
 void AvatarAnimationUpdater::notify_movement_intent() {
     auto it = rb_.engines_.find("legs");
     if (it == rb_.engines_.end()) {

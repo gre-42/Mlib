@@ -19,7 +19,7 @@ public:
     void add(std::function<void()> f);
     void clear();
 private:
-    DestructionFunctions& funcs_;
+    DestructionFunctions* funcs_;
 };
 
 class DestructionFunctions {
@@ -27,17 +27,17 @@ class DestructionFunctions {
     DestructionFunctions(const DestructionFunctions&) = delete;
     DestructionFunctions& operator = (const DestructionFunctions&) = delete;
     using Funcs = std::map<DestructionFunctionsRemovalTokens*, std::list<std::function<void()>>>;
-public:
-    DestructionFunctions();
-    ~DestructionFunctions();
-    DestructionFunctionsRemovalTokens forever;
-    void clear();
 private:
     void add(DestructionFunctionsRemovalTokens& tokens, std::function<void()> f);
     void remove(DestructionFunctionsRemovalTokens& tokens);
     Funcs funcs_;
     std::mutex mutex_;
     std::atomic_bool clearing_;
+public:
+    DestructionFunctions();
+    ~DestructionFunctions();
+    DestructionFunctionsRemovalTokens forever;
+    void clear();
 };
 
 }

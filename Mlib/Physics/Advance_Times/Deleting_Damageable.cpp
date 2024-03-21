@@ -18,21 +18,25 @@ DeletingDamageable::DeletingDamageable(
     , root_node_name_{ std::move(root_node_name) }
     , health_{ health }
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
+    , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
+    , shutting_down_{ false }
     , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear }
+    , rb_on_destroy_{ rb_->on_destroy }
 {
-    DanglingRef<SceneNode> node = scene.get_node(root_node_name_, DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    if (rb.damageable_ != nullptr) {
+    if (rb_->damageable_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a damageable");
     }
-    rb.damageable_ = this;
-    dgs_.add([&rb]() { rb.damageable_ = nullptr; });
+    rb_->damageable_ = this;
+    dgs_.add([this]() { if (rb_ != nullptr) { rb_->damageable_ = nullptr; } });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    node_on_clear_.add([this]() { delete this; });
+    node_on_clear_.add([this]() { if (!shutting_down_) { delete this; } });
+    rb_on_destroy_.add([this]() { rb_ = nullptr; if (!shutting_down_) { delete this; } });
 }
 
-DeletingDamageable::~DeletingDamageable() = default;
+DeletingDamageable::~DeletingDamageable() {
+    shutting_down_ = true;
+}
 
 void DeletingDamageable::advance_time(float dt) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {

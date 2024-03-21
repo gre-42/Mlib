@@ -5,8 +5,8 @@
 using namespace Mlib;
 
 DestructionFunctions::DestructionFunctions()
-    : forever{ *this }
-    , clearing_{ false }
+    : clearing_{ false }
+    , forever{ *this }
 {}
 
 DestructionFunctions::~DestructionFunctions() {
@@ -48,17 +48,24 @@ void DestructionFunctions::clear() {
 }
 
 DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(DestructionFunctions& funcs)
-    : funcs_{ funcs }
-{}
+    : funcs_{ &funcs }
+{
+    funcs_->add(*this, [this]() { funcs_ = nullptr; });
+}
 
 DestructionFunctionsRemovalTokens::~DestructionFunctionsRemovalTokens() {
     clear();
 }
 
 void DestructionFunctionsRemovalTokens::add(std::function<void()> f) {
-    funcs_.add(*this, std::move(f));
+    if (funcs_ == nullptr) {
+        verbose_abort("DestructionFunctionsRemovalTokens::add on destroyed functions");
+    }
+    funcs_->add(*this, std::move(f));
 }
 
 void DestructionFunctionsRemovalTokens::clear() {
-    funcs_.remove(*this);
+    if (funcs_ != nullptr) {
+        funcs_->remove(*this);
+    }
 }

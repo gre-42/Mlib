@@ -13,6 +13,7 @@
 namespace Mlib {
 
 class AdvanceTimes;
+class RigidBodyVehicle;
 class SceneNode;
 class Scene;
 
@@ -43,8 +44,11 @@ protected:
     float health_;
     mutable SafeSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
+    RigidBodyVehicle* rb_;
     DestructionGuards dgs_;
+    bool shutting_down_;
     DestructionFunctionsRemovalTokens node_on_clear_;
+    DestructionFunctionsRemovalTokens rb_on_destroy_;
 };
 
 }

@@ -95,6 +95,7 @@ RigidBodyVehicle::RigidBodyVehicle(
 
 RigidBodyVehicle::~RigidBodyVehicle()
 {
+    on_destroy.clear();
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
     }
