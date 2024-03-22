@@ -21,7 +21,8 @@ AimAt::AimAt(
     float gravity,
     float locked_on_cosine_min,
     const std::function<float()>& velocity_estimation_error)
-    : point_to_aim_at_{ NAN }
+    : shutting_down_{ false }
+    , point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
     , advance_times_{ advance_times }
     , follower_{ get_rigid_body_vehicle(follower_node) }
@@ -33,16 +34,20 @@ AimAt::AimAt(
     , locked_on_cosine_min_{ locked_on_cosine_min }
     , target_locked_on_{ false }
     , velocity_estimation_error_{ velocity_estimation_error }
+    , gun_node_on_destroy_{ gun_node->on_destroy }
     , follower_node_on_destroy_{ follower_node->on_destroy }
 {
     gun_node->set_sticky_absolute_observer(*this);
     dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    follower_node_on_destroy_.add([this]() { delete this; });
+    gun_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }});
+    follower_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }});
 }
 
-AimAt::~AimAt() = default;
+AimAt::~AimAt() {
+    shutting_down_ = true;
+}
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {

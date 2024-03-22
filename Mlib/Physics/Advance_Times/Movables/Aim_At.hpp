@@ -42,6 +42,7 @@ public:
     const FixedArray<double, 3>& point_to_aim_at() const;
 
 private:
+    bool shutting_down_;
     FixedArray<double, 3> point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;
     AdvanceTimes& advance_times_;
@@ -55,6 +56,7 @@ private:
     bool target_locked_on_;
     std::function<float()> velocity_estimation_error_;
     DestructionGuards dgs_;
+    DestructionFunctionsRemovalTokens gun_node_on_destroy_;
     DestructionFunctionsRemovalTokens follower_node_on_destroy_;
     std::optional<DestructionFunctionsRemovalTokens> followed_node_on_destroy_;
 };
