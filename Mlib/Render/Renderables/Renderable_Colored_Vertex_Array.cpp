@@ -413,10 +413,10 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (!filtered_lights.empty() && !is_lightmap) {
         ambient = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
-        diffuse = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse : cva->material.shading.diffuse;
-        specular = color_style && !all(color_style->specular == -1.f) ? color_style->specular : cva->material.shading.specular;
+        diffuse = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
+        specular = color_style && !all(color_style->specular == -1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
         specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
-        FixedArray<float, 3> fresnel_ambient = color_style && !all(color_style->fresnel_ambient == -1.f) ? color_style->fresnel_ambient : cva->material.shading.fresnel.ambient;
+        FixedArray<float, 3> fresnel_ambient = color_style && !all(color_style->fresnel_ambient == -1.f) ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
     } else {
