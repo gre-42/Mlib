@@ -363,6 +363,12 @@ void Player::increment_external_forces(
     if (burn_in) {
         return;
     }
+    if (!has_scene_vehicle()) {
+        return;
+    }
+    if (!has_vehicle_controller()) {
+        return;
+    }
     if (has_scene_vehicle()) {
         bool countdown_active;
         {
@@ -524,12 +530,16 @@ bool Player::has_scene_vehicle() const {
         return false;
     }
     if (vehicle_->scene_node()->shutting_down()) {
-        THROW_OR_ABORT("Player::has_rigid_body: Scene node shutting down");
+        verbose_abort("Player::has_rigid_body: Scene node shutting down");
     }
     if (scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name())) {
         return false;
     }
     return true;
+}
+
+bool Player::has_vehicle_controller() const {
+    return rigid_body().has_vehicle_controller();
 }
 
 const Gun& Player::gun() const {

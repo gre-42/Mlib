@@ -171,6 +171,7 @@ public:
         float time_offset = 0) const;
     bool is_pedestrian() const;
     bool has_scene_vehicle() const;
+    bool has_vehicle_controller() const;
     std::string vehicle_name() const;
     FixedArray<float, 3> gun_direction() const;
     FixedArray<float, 3> punch_angle() const;

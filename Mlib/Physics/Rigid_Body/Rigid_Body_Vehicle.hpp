@@ -202,6 +202,10 @@ public:
     bool is_activated_avatar() const;
     bool is_deactivated_avatar() const;
 
+    bool has_avatar_controller() const;
+    bool has_vehicle_controller() const;
+    bool has_plane_controller() const;
+
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();

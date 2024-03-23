@@ -946,6 +946,18 @@ bool RigidBodyVehicle::is_deactivated_avatar() const {
     return (spawner_ != nullptr) && (driver_ == nullptr) && (spawner_->player() != nullptr);
 }
 
+bool RigidBodyVehicle::has_avatar_controller() const {
+    return avatar_controller_ != nullptr;
+}
+
+bool RigidBodyVehicle::has_vehicle_controller() const {
+    return vehicle_controller_ != nullptr;
+}
+
+bool RigidBodyVehicle::has_plane_controller() const {
+    return plane_controller_ != nullptr;
+}
+
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");
