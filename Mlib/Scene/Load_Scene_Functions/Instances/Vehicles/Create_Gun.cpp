@@ -133,7 +133,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb,
         node,
         punch_angle_node,
-        args.arguments.at<std::string>(KnownArgs::bullet_renderable),
+        args.arguments.at_non_null<std::string>(KnownArgs::bullet_renderable, ""),
         args.arguments.at<std::string>(KnownArgs::bullet_hitbox),
         args.arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
         args.arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
