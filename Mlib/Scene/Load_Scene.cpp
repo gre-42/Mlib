@@ -97,7 +97,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Aim.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Drive.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Best_Weapon.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Weapon.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Opponent.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Shoot.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Pathfinding_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Playback_Waypoints.hpp>
@@ -332,6 +333,7 @@ LoadScene::LoadScene() {
     register_json_user_function(PlayerSetCanAim::key, PlayerSetCanAim::json_user_function);
     register_json_user_function(PlayerSetCanDrive::key, PlayerSetCanDrive::json_user_function);
     register_json_user_function(PlayerSetCanSelectBestWeapon::key, PlayerSetCanSelectBestWeapon::json_user_function);
+    register_json_user_function(PlayerSetCanSelectOpponent::key, PlayerSetCanSelectOpponent::json_user_function);
     register_json_user_function(PlayerSetCanShoot::key, PlayerSetCanShoot::json_user_function);
     register_json_user_function(PlayerSetPathfindingWaypoints::key, PlayerSetPathfindingWaypoints::json_user_function);
     register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);

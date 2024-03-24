@@ -93,6 +93,7 @@ Player::Player(
     , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
     , playback_waypoints_{ *this }
     , focuses_{ focuses }
+    , select_opponent_hysteresis_factor_{ 0.9 }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -118,9 +119,19 @@ void Player::set_can_shoot(ControlSource control_source, bool value) {
     skills_.at(control_source).can_shoot = value;
 }
 
-void Player::set_can_select_best_weapon(ControlSource control_source, bool value) {
+void Player::set_can_select_weapon(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_select_best_weapon = value;
+    skills_.at(control_source).can_select_weapon = value;
+}
+
+void Player::set_can_select_opponent(ControlSource control_source, bool value) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    skills_.at(control_source).can_select_opponent = value;
+}
+
+void Player::set_select_opponent_hysteresis_factor(double factor) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    select_opponent_hysteresis_factor_ = factor;
 }
 
 void Player::reset_node() {
@@ -499,18 +510,18 @@ size_t Player::nbullets_available() const {
     return gun().nbullets_available();
 }
 
-std::string Player::best_weapon_in_inventory() const {
+std::optional<std::string> Player::best_weapon_in_inventory() const {
     auto& wc = weapon_cycle();
     if ((target_rb_ == nullptr) ||
         !has_scene_vehicle())
     {
-        return "";
+        return std::nullopt;
     }
     const auto& inventy = inventory();
     double distance_to_target = std::sqrt(sum(squared(
         target_rb_->rbp_.abs_position() - rigid_body().rbp_.abs_position())));
     float best_score = -INFINITY;
-    std::string best_weapon_name;
+    std::optional<std::string> best_weapon_name;
     for (const auto& [name, info] : wc.weapon_infos()) {
         if (inventy.navailable(info.ammo_type) == 0) {
             continue;
@@ -565,11 +576,10 @@ void Player::aim_and_shoot() {
         return;
     }
     assert_true((target_scene_node_ == nullptr) == (target_rb_ == nullptr));
-    if ((target_rb_ != nullptr) && !can_see(*target_rb_)) {
-        clear_opponent();
-    }
-    if (target_rb_ == nullptr) {
-        select_next_opponent();
+    if (skills_.at(ControlSource::AI).can_select_opponent) {
+        select_opponent(OpponentSelectionStrategy::BEST);
+    } else {
+        select_opponent(OpponentSelectionStrategy::KEEP);
     }
     if (!controlled_.has_aim_at()) {
         return;
@@ -590,7 +600,7 @@ void Player::aim_and_shoot() {
 
 void Player::select_best_weapon_in_inventory() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!skills_.at(ControlSource::AI).can_select_best_weapon) {
+    if (!skills_.at(ControlSource::AI).can_select_weapon) {
         return;
     }
     if (!has_scene_vehicle()) {
@@ -599,11 +609,11 @@ void Player::select_best_weapon_in_inventory() {
     if (!has_weapon_cycle()) {
         return;
     }
-    std::string best_weapon = best_weapon_in_inventory();
-    if (best_weapon.empty()) {
+    auto best_weapon = best_weapon_in_inventory();
+    if (!best_weapon.has_value()) {
         return;
     }
-    weapon_cycle().set_desired_weapon(best_weapon);
+    weapon_cycle().set_desired_weapon(best_weapon.value());
 }
 
 bool Player::ramming() const {
@@ -611,7 +621,7 @@ bool Player::ramming() const {
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
-void Player::select_next_opponent() {
+void Player::select_opponent(OpponentSelectionStrategy strategy) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
         return;
@@ -634,8 +644,54 @@ void Player::select_next_opponent() {
         }
         players_vec.push_back(p.get());
     }
+    auto opponent_score = [&](size_t i) {
+        auto& p = *players_vec[i];
+        if (p.team_ == team_) {
+            return -(double)INFINITY;
+        }
+        if (!p.has_scene_vehicle()) {
+            return -(double)INFINITY;
+        }
+        if (!can_see(p.rigid_body())) {
+            return -(double)INFINITY;
+        }
+        switch (strategy) {
+        case OpponentSelectionStrategy::KEEP: {
+            if (i == current_opponent_index) {
+                return (double)INFINITY;
+            } else {
+                return -(double)INFINITY;
+            }
+        }
+        case OpponentSelectionStrategy::NEXT: {
+            if (i == current_opponent_index) {
+                return -(double)INFINITY;
+            } else {
+                return (double)INFINITY;
+            }
+        }
+        case OpponentSelectionStrategy::BEST: {
+            auto dist_squared = sum(squared(players_vec[i]->rigid_body().rbp_.abs_position() - this->rigid_body().rbp_.abs_position()));
+            if (i == current_opponent_index) {
+                dist_squared *= squared(select_opponent_hysteresis_factor_);
+            }
+            return -dist_squared;
+        }
+        }
+        THROW_OR_ABORT("Unknown opponent selection strategy");
+        };
+    double best_score = -INFINITY;
+    const Player* best_opponent = nullptr;
+    if (current_opponent_index != SIZE_MAX) {
+        best_score = opponent_score(current_opponent_index);
+        if (best_score == -INFINITY) {
+            clear_opponent();
+        } else {
+            best_opponent = players_vec[current_opponent_index];
+        }
+    }
     size_t i = current_opponent_index;
-    while (true) {
+    while (best_score != INFINITY) {
         if ((current_opponent_index == SIZE_MAX) &&
             (i == players_vec.size() - 1))
         {
@@ -652,14 +708,21 @@ void Player::select_next_opponent() {
             if (!p.has_scene_vehicle()) {
                 continue;
             }
-            if (can_see(p.vehicle_->rb())) {
-                if (target_scene_node_ != nullptr) {
-                    clear_opponent();
-                }
-                set_opponent(p);
-                break;
+            double candidate_score = opponent_score(i);
+            if (candidate_score > best_score) {
+                best_score = candidate_score;
+                best_opponent = &p;
             }
         }
+    }
+    if (best_opponent != nullptr) {
+        if (best_opponent->vehicle_->scene_node().ptr() == target_scene_node_) {
+            return;
+        }
+        if (target_scene_node_ != nullptr) {
+            clear_opponent();
+        }
+        set_opponent(*best_opponent);
     }
 }
 

@@ -1,4 +1,4 @@
-#include "Player_Set_Can_Select_Best_Weapon.hpp"
+#include "Player_Set_Can_Select_Weapon.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -15,7 +15,7 @@ DECLARE_ARGUMENT(source);
 DECLARE_ARGUMENT(value);
 }
 
-const std::string PlayerSetCanSelectBestWeapon::key = "set_can_select_best_weapon";
+const std::string PlayerSetCanSelectBestWeapon::key = "set_can_select_weapon";
 
 LoadSceneJsonUserFunction PlayerSetCanSelectBestWeapon::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -30,7 +30,7 @@ PlayerSetCanSelectBestWeapon::PlayerSetCanSelectBestWeapon(RenderableScene& rend
 void PlayerSetCanSelectBestWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    player.set_can_select_best_weapon(
+    player.set_can_select_weapon(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));
 

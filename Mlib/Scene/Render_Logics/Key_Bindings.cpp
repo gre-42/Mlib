@@ -612,7 +612,7 @@ void KeyBindings::increment_external_forces(
             }
             Player& player = get_driver(rb);
             if (k.select_next_opponent) {
-                player.select_next_opponent();
+                player.select_opponent(OpponentSelectionStrategy::NEXT);
             }
             if (k.select_next_vehicle) {
                 player.select_next_vehicle();

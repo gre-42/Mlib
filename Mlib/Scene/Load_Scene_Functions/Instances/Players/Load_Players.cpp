@@ -69,7 +69,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(can_drive);
 DECLARE_ARGUMENT(can_aim);
 DECLARE_ARGUMENT(can_shoot);
-DECLARE_ARGUMENT(can_select_best_weapon);
+DECLARE_ARGUMENT(can_select_opponent);
+DECLARE_ARGUMENT(can_select_weapon);
 DECLARE_ARGUMENT(velocity_error_std);
 DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
@@ -179,7 +180,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"AI_DRIVE", get_skill(SourceKeys::ai, SkillsKeys::can_drive)},
                             {"AI_AIM", get_skill(SourceKeys::ai, SkillsKeys::can_aim)},
                             {"AI_SHOOT", get_skill(SourceKeys::ai, SkillsKeys::can_shoot)},
-                            {"AI_SELECT_BEST_WEAPON", get_skill(SourceKeys::ai, SkillsKeys::can_select_best_weapon)},
+                            {"AI_SELECT_OPPONENT", get_skill(SourceKeys::ai, SkillsKeys::can_select_opponent)},
+                            {"AI_SELECT_WEAPON", get_skill(SourceKeys::ai, SkillsKeys::can_select_weapon)},
                             {"VELOCITY_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::velocity_error_std)},
                             {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},

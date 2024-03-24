@@ -23,6 +23,7 @@
 #include <chrono>
 #include <list>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -89,6 +90,12 @@ inline UnstuckMode unstuck_mode_from_string(const std::string& unstuck_mode) {
     }
 }
 
+enum class OpponentSelectionStrategy {
+    KEEP,
+    NEXT,
+    BEST
+};
+
 enum class ControlSource;
 
 struct PlayerControlled {
@@ -131,7 +138,9 @@ public:
     void set_can_drive(ControlSource control_source, bool value);
     void set_can_aim(ControlSource control_source, bool value);
     void set_can_shoot(ControlSource control_source, bool value);
-    void set_can_select_best_weapon(ControlSource control_source, bool value);
+    void set_can_select_weapon(ControlSource control_source, bool value);
+    void set_can_select_opponent(ControlSource control_source, bool value);
+    void set_select_opponent_hysteresis_factor(double factor);
     void reset_node();
     void set_scene_vehicle(SceneVehicle& pv);
     RigidBodyVehicle& rigid_body();
@@ -186,8 +195,8 @@ public:
     const WeaponCycle& weapon_cycle() const;
     bool needs_supplies() const;
     size_t nbullets_available() const;
-    std::string best_weapon_in_inventory() const;
-    void select_next_opponent();
+    std::optional<std::string> best_weapon_in_inventory() const;
+    void select_opponent(OpponentSelectionStrategy strategy);
     void select_next_vehicle();
     void append_delete_externals(
         DanglingPtr<SceneNode> node,
@@ -264,6 +273,7 @@ private:
     SupplyDepotsWaypoints supply_depots_waypoints_;
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
+    double select_opponent_hysteresis_factor_;
 };
 
 };
