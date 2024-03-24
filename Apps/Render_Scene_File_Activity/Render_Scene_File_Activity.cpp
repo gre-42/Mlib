@@ -104,6 +104,8 @@ public:
             verbose_abort("renderable_scenes is null");
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
+        render_set_fps_.set_fps.tick();
+        auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (*load_scene_finished_) {
             execute_render_allocators();
             if (!last_load_scene_finished_ &&
@@ -122,7 +124,7 @@ public:
                 render_config_,
                 scene_graph_config_,
                 render_results_,
-                rrsd_.next(render_config_.motion_interpolation));
+                rsd);
             if (args_.has_named("--single_threaded")) {
                 for (auto& [_, r]: renderable_scenes_->guarded_iterable()) {
                     if (!r.physics_set_fps_.paused()) {
@@ -140,12 +142,11 @@ public:
                     render_config_,
                     scene_graph_config_,
                     render_results_,
-                    rrsd_.next(render_config_.motion_interpolation));
+                    rsd);
             }
         } else {
             clear_color({0.2f, 0.2f, 0.2f, 1.f});
         }
-        render_set_fps_.set_fps.tick();
     }
 
     void set_scene(
@@ -313,6 +314,8 @@ void android_main(android_app* app) {
         "    [--scene_lightmap_height <height>]\n"
         "    [--black_lightmap_width <width>]\n"
         "    [--black_lightmap_height <height>]\n"
+        "    [--scene_skidmarks_width <width>]\n"
+        "    [--scene_skidmarks_height <height>]\n"
         "    [--fullscreen]\n"
         "    [--no_double_buffer]\n"
         "    [--anisotropic_filtering_level <value>]\n"
@@ -405,6 +408,8 @@ void android_main(android_app* app) {
          "--scene_lightmap_height",
          "--black_lightmap_width",
          "--black_lightmap_height",
+         "--scene_skidmarks_width",
+         "--scene_skidmarks_height",
          "--static_radius",
          "--bvh_max_size",
          "--physics_dt",
@@ -570,7 +575,9 @@ void android_main(android_app* app) {
                     {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                     {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                     {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
-                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))}};
+                    {"BLACK_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--black_lightmap_height", "1024"))},
+                    {"SCENE_SKIDMARKS_WIDTH", safe_stoi(args.named_value("--scene_skidmarks_width", "2048"))},
+                    {"SCENE_SKIDMARKS_HEIGHT", safe_stoi(args.named_value("--scene_skidmarks_height", "2048"))}};
                 external_json_macro_arguments.merge_and_notify(JsonMacroArguments{std::move(j)});
             }
             // "load_scene" must be above "renderable_scenes", because the "RenderableScene" background
