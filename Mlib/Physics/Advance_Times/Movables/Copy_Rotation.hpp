@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -13,7 +14,7 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 
-class CopyRotation: public DestructionObserver<DanglingRef<const SceneNode>>, public IRelativeMovable, public AdvanceTime {
+class CopyRotation: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public AdvanceTime, public DanglingBaseClass {
 public:
     CopyRotation(
         AdvanceTimes& advance_times,
@@ -24,7 +25,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 private:
     AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> from_;

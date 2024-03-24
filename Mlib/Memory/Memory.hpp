@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 
 namespace Mlib {
@@ -6,24 +7,23 @@ namespace Mlib {
 template <class T, class TSender>
 class observer_ptr {
 public:
-    template <class T2>
-    observer_ptr(T2* ptr)
-        : ptr_{ ptr }
-        , observer_{ ptr }
+    observer_ptr(const DanglingBaseClass& ptr, SourceLocation loc)
+        : ptr_{ ptr.ptr<T>(loc) }
+        , observer_{ ptr.ptr<DestructionObserver<TSender>>(loc) }
     {}
-    observer_ptr(T* ptr, DestructionObserver<TSender>* observer)
+    observer_ptr(DanglingBaseClassPtr<T> ptr, DanglingBaseClassPtr<DestructionObserver<TSender>> observer)
         : ptr_{ ptr }
         , observer_{ observer }
     {}
-    T* get() const {
+    DanglingBaseClassPtr<T> get() const {
         return ptr_;
     }
-    DestructionObserver<TSender>* observer() const {
+    DanglingBaseClassPtr<DestructionObserver<TSender>> observer() const {
         return observer_;
     }
 private:
-    T* ptr_;
-    DestructionObserver<TSender>* observer_;
+    DanglingBaseClassPtr<T> ptr_;
+    DanglingBaseClassPtr<DestructionObserver<TSender>> observer_;
 };
 
 }

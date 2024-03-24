@@ -22,6 +22,9 @@ RigidBodyPlayback::RigidBodyPlayback(
   track_reader_{std::move(sequence), 0, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, TrackReaderInterpolationMode::LINEAR, ntransformations}  // 1 = nlaps
 {
     playback_objects_.resize(ntransformations);
+    for (auto& o : playback_objects_) {
+        o = std::make_unique<RigidBodySinglePlayback>();
+    }
 }
 
 RigidBodyPlayback::~RigidBodyPlayback() {
@@ -42,16 +45,16 @@ void RigidBodyPlayback::advance_time(float dt) {
             THROW_OR_ABORT("Conflicting playback sizees");
         }
         for (size_t i = 0; i < t.size(); ++i) {
-            playback_objects_[i].transformation_matrix_ = t[i].to_matrix();
+            playback_objects_[i]->transformation_matrix_ = t[i].to_matrix();
         }
     }
 }
 
-IAbsoluteMovable& RigidBodyPlayback::get_playback_object(size_t i) {
+DanglingBaseClassRef<IAbsoluteMovable> RigidBodyPlayback::get_playback_object(size_t i) {
     if (i >= playback_objects_.size()) {
         THROW_OR_ABORT("Playback-object index out of bounds");
     }
-    return playback_objects_[i];
+    return playback_objects_[i]->ref<IAbsoluteMovable>(CURRENT_SOURCE_LOCATION);
 }
 
 void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {

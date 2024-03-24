@@ -14,6 +14,7 @@
 using namespace Mlib;
 
 CountDownLogic::CountDownLogic(
+    DanglingRef<SceneNode> node,
     AdvanceTimes& advance_times,
     const std::string& ttf_filename,
     const FixedArray<float, 3>& color,
@@ -30,6 +31,7 @@ CountDownLogic::CountDownLogic(
     color,
     font_height,
     line_distance},
+  node_{node.ptr()},
   advance_times_{advance_times},
   duration_{duration},
   pending_focus_{pending_focus},
@@ -39,10 +41,17 @@ CountDownLogic::CountDownLogic(
   position_{position}
 {}
 
-CountDownLogic::~CountDownLogic() = default;
-
-void CountDownLogic::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+CountDownLogic::~CountDownLogic() {
+    if (node_ != nullptr) {
+        node_->clearing_observers.remove(
+            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            ObserverDoesNotExistBehavior::IGNORE);
+    }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+}
+
+void CountDownLogic::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    node_ = nullptr;
 }
 
 void CountDownLogic::render(

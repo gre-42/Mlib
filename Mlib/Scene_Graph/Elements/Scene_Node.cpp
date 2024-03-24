@@ -188,11 +188,17 @@ IAbsoluteMovable& SceneNode::get_absolute_movable() const {
     if (absolute_movable_ == nullptr) {
         THROW_OR_ABORT("Absolute movable not set");
     }
-    return *absolute_movable_;
+    return *absolute_movable_.get();
 }
 
 bool SceneNode::has_absolute_movable() const {
+    std::shared_lock lock{ mutex_ };
     return (absolute_movable_ != nullptr);
+}
+
+void SceneNode::clear_absolute_movable() {
+    std::scoped_lock lock{ mutex_ };
+    absolute_movable_ = nullptr;
 }
 
 IRelativeMovable& SceneNode::get_relative_movable() const {
@@ -200,10 +206,20 @@ IRelativeMovable& SceneNode::get_relative_movable() const {
     if (relative_movable_ == nullptr) {
         THROW_OR_ABORT("Relative movable not set");
     }
-    return *relative_movable_;
+    return *relative_movable_.get();
 }
 
-void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>& relative_movable)
+bool SceneNode::has_relative_movable() const {
+    std::shared_lock lock{ mutex_ };
+    return (relative_movable_ != nullptr);
+}
+
+void SceneNode::clear_relative_movable() {
+    std::scoped_lock lock{ mutex_ };
+    relative_movable_ = nullptr;
+}
+
+void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<SceneNode>>& relative_movable)
 {
     auto m = absolute_model_matrix();
     std::scoped_lock lock{ mutex_ };

@@ -16,16 +16,16 @@ PermanentNodeContact::PermanentNodeContact(
     , scene_node0_{ scene_node0 }
     , scene_node1_{ scene_node1 }
 {
-    scene_node0_->destruction_observers.add(*this);
-    scene_node1_->destruction_observers.add(*this);
+    scene_node0_->destruction_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    scene_node1_->destruction_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
-void PermanentNodeContact::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void PermanentNodeContact::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if (destroyed_object.ptr() == scene_node0_.ptr()) {
-        scene_node1_->destruction_observers.remove(*this);
+        scene_node1_->destruction_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
     if (destroyed_object.ptr() == scene_node1_.ptr()) {
-        scene_node0_->destruction_observers.remove(*this);
+        scene_node0_->destruction_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
     permanent_contacts_.remove(*this);
 }

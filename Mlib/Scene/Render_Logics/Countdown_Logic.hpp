@@ -1,9 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 namespace Mlib {
 
@@ -15,9 +17,11 @@ class CountDownLogic:
     public RenderLogic,
     public RenderTextLogic,
     public AdvanceTime,
-    public DestructionObserver<DanglingRef<const SceneNode>> {
+    public DestructionObserver<DanglingRef<SceneNode>>,
+    public DanglingBaseClass {
 public:
     CountDownLogic(
+        DanglingRef<SceneNode> node,
         AdvanceTimes& advance_times,
         const std::string& ttf_filename,
         const FixedArray<float, 3>& color,
@@ -32,7 +36,7 @@ public:
     ~CountDownLogic();
 
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     // RenderLogic
     virtual void render(
@@ -48,6 +52,7 @@ public:
     virtual void advance_time(float dt) override;
 
 private:
+    DanglingPtr<SceneNode> node_;
     AdvanceTimes& advance_times_;
     float elapsed_time_;
     float duration_;

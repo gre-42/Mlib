@@ -78,9 +78,19 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             jtrail_source.at<FixedArray<float, 3>>(KnownTrailSource::position) * meters,
             jtrail_source.at<float>(KnownTrailSource::minimum_velocity) * kph);
     }
+    DanglingPtr<SceneNode> angle_of_attack_node = nullptr;
+    if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
+        angle_of_attack_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node), DP_LOC).ptr();
+    }
+    DanglingPtr<SceneNode> brake_angle_node = nullptr;
+    if (args.arguments.contains(KnownArgs::brake_angle_node)) {
+        brake_angle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node), DP_LOC).ptr();
+    }
     auto tp = vehicle_rb.wings_.insert({
         wing_id,
         std::make_unique<Wing>(
+            angle_of_attack_node,
+            brake_angle_node,
             TransformationMatrix<float, double, 3>{ r, position },
             fac,
             LIFT_COEFF_UNITS * args.arguments.at<float>(KnownArgs::lift_c),
@@ -92,13 +102,5 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
             std::move(trail_source))});
     if (!tp.second) {
         THROW_OR_ABORT("Wing with ID \"" + std::to_string(wing_id) + "\" already exists");
-    }
-    if (args.arguments.contains(KnownArgs::angle_of_attack_node)) {
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::angle_of_attack_node), DP_LOC)->set_relative_movable(
-            observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->angle_of_attack_movable, nullptr});
-    }
-    if (args.arguments.contains(KnownArgs::brake_angle_node)) {
-        scene.get_node(args.arguments.at<std::string>(KnownArgs::brake_angle_node), DP_LOC)->set_relative_movable(
-            observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>{&tp.first->second->brake_angle_movable, nullptr});
     }
 }

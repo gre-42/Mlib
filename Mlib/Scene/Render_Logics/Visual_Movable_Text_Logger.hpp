@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -10,7 +11,7 @@ class TextResource;
 class StatusWriter;
 class IWidget;
 
-class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic {
+class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic, public DanglingBaseClass {
 public:
     VisualMovableTextLogger(
         StatusWriter& status_writer,

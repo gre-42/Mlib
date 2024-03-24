@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
@@ -46,6 +47,12 @@ void RelativeTransformer::advance_time(float dt) {
     transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }
 
-void RelativeTransformer::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void RelativeTransformer::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    if (destroyed_object->has_relative_movable()) {
+        if (&destroyed_object->get_relative_movable() != this) {
+            verbose_abort("Unexpected relative movable");
+        }
+        destroyed_object->clear_relative_movable();
+    }
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

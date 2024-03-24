@@ -1,6 +1,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
@@ -132,9 +133,19 @@ void test_parallel_block() {
 void test_destruction_functions() {
     DestructionFunctions df;
     DestructionFunctionsRemovalTokens rt{ df };
-    df.clear();
     rt.add([]() { linfo() << "f"; });
     df.clear();
+}
+
+struct MyClass: DanglingBaseClass {};
+struct MyContainer {
+    DanglingBaseClassRef<Object> o;
+};
+
+void test_dangling_base_class() {
+    MyClass a;
+    a.ref<Object>(CURRENT_SOURCE_LOCATION);
+    // new MyContainer{ a.ref<Object>(CURRENT_SOURCE_LOCATION) };
 }
 
 int main(int argc, const char** argv) {
@@ -146,5 +157,6 @@ int main(int argc, const char** argv) {
     test_template_regex();
     test_parallel_block();
     test_destruction_functions();
+    test_dangling_base_class();
     return 0;
 }

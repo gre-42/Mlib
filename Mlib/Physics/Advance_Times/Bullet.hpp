@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -26,7 +27,8 @@ class Bullet:
     public DestructionObserver<const IPlayer&>,
     public DestructionObserver<const ITeam&>,
     public CollisionObserver,
-    public AdvanceTime
+    public AdvanceTime,
+    public DanglingBaseClass
 {
 public:
     Bullet(

@@ -66,7 +66,7 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
         }
         auto& tstg = tire_smoke_trail_generators_[&c.o1];
         if (tstg.empty()) {
-            c.o1.destruction_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+            c.o1.destruction_observers.add(ref<DestructionObserver<const RigidBodyVehicle&>>(CURRENT_SOURCE_LOCATION), ObserverAlreadyExistsBehavior::IGNORE);
         }
         std::pair<size_t, size_t> key{ c.tire_id1, i };
         if (auto tstgit = tstg.find(key); tstgit == tstg.end()) {

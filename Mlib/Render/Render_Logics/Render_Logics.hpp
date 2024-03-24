@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -27,7 +28,7 @@ struct SceneNodeAndRenderLogic {
     std::shared_ptr<RenderLogic> render_logic;
 };
 
-class RenderLogics: public RenderLogic, public DestructionObserver<DanglingRef<const SceneNode>> {
+class RenderLogics: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public DanglingBaseClass {
 public:
     explicit RenderLogics(UiFocus& ui_focus);
     ~RenderLogics();
@@ -40,7 +41,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     void prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);
     void append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);

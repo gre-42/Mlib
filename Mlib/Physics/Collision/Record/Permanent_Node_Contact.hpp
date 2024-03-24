@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Collision/Record/IPermanent_Contact.hpp>
@@ -9,7 +10,7 @@ class RigidBodyPulses;
 class PermanentContacts;
 class SceneNode;
 
-class PermanentNodeContact: public IPermanentContact, public DestructionObserver<DanglingRef<const SceneNode>> {
+class PermanentNodeContact: public IPermanentContact, public DestructionObserver<DanglingRef<SceneNode>>, public DanglingBaseClass {
 public:
     PermanentNodeContact(
         PermanentContacts& permanent_contacts,
@@ -19,7 +20,7 @@ public:
         RigidBodyPulses& rbp1);
     
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 protected:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;

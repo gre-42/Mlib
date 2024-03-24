@@ -42,7 +42,9 @@ Countdown::Countdown(RenderableScene& renderable_scene)
 
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto node = make_dunique<SceneNode>();
     auto countdown_logic = std::make_shared<CountDownLogic>(
+        node.ref(CURRENT_SOURCE_LOCATION),
         physics_engine.advance_times_,
         args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
@@ -54,9 +56,8 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
-    auto node = make_dunique<SceneNode>();
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
-    node->clearing_observers.add(*countdown_logic);
+    node->clearing_observers.add(countdown_logic->ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     render_logics.append(node.get(DP_LOC), countdown_logic, args.arguments.at<int>(KnownArgs::z_order));
     scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
 }

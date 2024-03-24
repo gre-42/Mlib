@@ -106,7 +106,7 @@ Gun::Gun(
             });
     }
     node->set_absolute_observer(*this);
-    dgs_.add([node]() { node->clear_absolute_observer(); });
+    dgs_.add([node]() { if (node->has_absolute_observer()) { node->clear_absolute_observer(); }});
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
     node_on_clear_.add([this]() {
@@ -204,10 +204,10 @@ void Gun::generate_bullet() {
             : bullet_trace_storage_->add_trail_extender(),
         delete_node_mutex_);
     if (player_ != nullptr) {
-        player_->destruction_observers.add(*bullet);
+        player_->destruction_observers.add(bullet->ref<DestructionObserver<const IPlayer&>>(CURRENT_SOURCE_LOCATION));
     }
     if (team_ != nullptr) {
-        team_->destruction_observers.add(*bullet);
+        team_->destruction_observers.add(bullet->ref<DestructionObserver<const ITeam&>>(CURRENT_SOURCE_LOCATION));
     }
     advance_times_.add_advance_time(*bullet);
     // Destruction order: Node -> Rigid body (collision observers) -> Bullet

@@ -31,7 +31,7 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
 }
 
 void Team::notify_bullet_destroyed(Bullet& bullet) {
-    destruction_observers.remove(bullet);
+    destruction_observers.remove(bullet.ref<DestructionObserver<const ITeam&>>(CURRENT_SOURCE_LOCATION));
 }
 
 void Team::add_player(const std::string& player) {

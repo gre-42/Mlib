@@ -6,6 +6,8 @@
 using namespace Mlib;
 
 Wing::Wing(
+    DanglingPtr<SceneNode> angle_of_attack_node,
+    DanglingPtr<SceneNode> brake_angle_node,
     const TransformationMatrix<float, double, 3>& relative_location,
     const Interp<float>& fac,
     float lift_coefficient,
@@ -22,8 +24,8 @@ Wing::Wing(
     , drag_coefficients{ drag_coefficients }
     , angle_of_attack{ angle_of_attack }
     , brake_angle{ brake_angle }
-    , angle_of_attack_movable{ this->angle_of_attack, relative_location.R().column(0) }
-    , brake_angle_movable{ this->brake_angle, relative_location.R().column(0) }
+    , angle_of_attack_movable{ angle_of_attack_node, this->angle_of_attack, relative_location.R().column(0) }
+    , brake_angle_movable{ brake_angle_node, this->brake_angle, relative_location.R().column(0) }
     , trail_source{ std::move(trail_source) }
     , relative_location_{ relative_location }
 {}

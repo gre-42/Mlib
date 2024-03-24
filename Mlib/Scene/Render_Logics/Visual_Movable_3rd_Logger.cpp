@@ -23,7 +23,7 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
 : scene_logic_{scene_logic},
-  scene_node_{scene_node},
+  scene_node_{scene_node.ptr()},
   advance_times_{advance_times},
   status_writer_{status_writer},
   log_components_{log_components},
@@ -32,13 +32,20 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height}
 {
-    scene_node->clearing_observers.add(*this);
+    scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
-VisualMovable3rdLogger::~VisualMovable3rdLogger() = default;
-
-void VisualMovable3rdLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+VisualMovable3rdLogger::~VisualMovable3rdLogger() {
+    if (scene_node_ != nullptr) {
+        scene_node_->clearing_observers.remove(
+            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            ObserverDoesNotExistBehavior::IGNORE);
+    }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+}
+
+void VisualMovable3rdLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    scene_node_ = nullptr;
 }
 
 void VisualMovable3rdLogger::advance_time(float dt) {

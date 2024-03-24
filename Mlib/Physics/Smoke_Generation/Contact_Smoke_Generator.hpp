@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
 #include <compare>
@@ -16,7 +17,7 @@ struct IntersectionScene;
 struct SurfaceContactInfo;
 class SurfaceContactDb;
 
-class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&> {
+class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public DanglingBaseClass {
 public:
     explicit ContactSmokeGenerator(
         SurfaceContactDb& surface_contact_db,

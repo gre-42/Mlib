@@ -18,7 +18,7 @@ void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& 
     loggers_.push_back(std::move(logger));
 }
 
-void VisualMovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void VisualMovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

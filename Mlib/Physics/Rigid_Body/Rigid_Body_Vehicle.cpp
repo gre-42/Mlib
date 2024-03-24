@@ -29,6 +29,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
@@ -469,7 +470,13 @@ TransformationMatrix<float, double, 3> RigidBodyVehicle::get_new_absolute_model_
     return rbp_.abs_transformation();
 }
 
-void RigidBodyVehicle::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    if (destroyed_object->has_absolute_movable()) {
+        if (&destroyed_object->get_absolute_movable() != this) {
+            verbose_abort("Unexpected absolute movable");
+        }
+        destroyed_object->clear_absolute_movable();
+    }
     if (driver_ != nullptr) {
         driver_->notify_vehicle_destroyed();
         driver_ = nullptr;

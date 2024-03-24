@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -12,14 +13,14 @@ class DanglingRef;
 class AdvanceTimes;
 class SceneNode;
 
-class MovableLogger: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
+class MovableLogger: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
 public:
     MovableLogger(
         DanglingRef<SceneNode> scene_node,
         AdvanceTimes& advance_times,
         StatusWriter& status_writer,
         StatusComponents log_components);
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
 private:
     AdvanceTimes& advance_times_;

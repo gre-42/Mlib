@@ -101,13 +101,19 @@ TransformationMatrix<float, double, 3> FollowMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void FollowMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void FollowMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove(*this);
+            followed_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+        }
+        if (destroyed_object->has_absolute_movable()) {
+            if (&destroyed_object->get_absolute_movable() != this) {
+                verbose_abort("Unexpected absolute movable");
+            }
+            destroyed_object->clear_absolute_movable();
         }
         advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
     }

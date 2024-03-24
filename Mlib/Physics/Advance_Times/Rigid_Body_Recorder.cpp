@@ -23,7 +23,7 @@ RigidBodyRecorder::RigidBodyRecorder(
     , track_writer_{filename, geographic_mapping}
     , start_time_{std::chrono::steady_clock::now()}
 {
-    recorded_node_->clearing_observers.add(*this);
+    recorded_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
 void RigidBodyRecorder::advance_time(float dt) {
@@ -41,7 +41,7 @@ void RigidBodyRecorder::advance_time(float dt) {
         .transformations = {OffsetAndTaitBryanAngles<float, double, 3>{rbp_->rotation_, rbp_->abs_position()}}});
 }
 
-void RigidBodyRecorder::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void RigidBodyRecorder::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     rbp_ = nullptr;
     recorded_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);

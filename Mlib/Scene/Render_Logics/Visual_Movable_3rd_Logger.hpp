@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -16,7 +17,7 @@ class SceneNode;
 class TextResource;
 class ILayoutPixels;
 
-class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
+class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
@@ -30,7 +31,7 @@ public:
         const ILayoutPixels& line_distance);
     virtual ~VisualMovable3rdLogger();
 
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 
@@ -46,7 +47,7 @@ public:
 private:
     std::unique_ptr<TextResource> renderable_text_;
     RenderLogic& scene_logic_;
-    DanglingRef<SceneNode> scene_node_;
+    DanglingPtr<SceneNode> scene_node_;
     AdvanceTimes& advance_times_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;

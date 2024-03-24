@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
@@ -19,7 +20,7 @@ class Focuses;
 class ITrackElementSequence;
 class RigidBodyPlayback;
 
-class RigidBodySinglePlayback: public IAbsoluteMovable {
+class RigidBodySinglePlayback: public IAbsoluteMovable, public DanglingBaseClass {
     friend RigidBodyPlayback;
 public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -28,7 +29,7 @@ private:
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
-class RigidBodyPlayback: public Object, public AdvanceTime {
+class RigidBodyPlayback: public virtual Object, public AdvanceTime {
 public:
     RigidBodyPlayback(
         std::unique_ptr<ITrackElementSequence>&& sequence,
@@ -39,14 +40,14 @@ public:
         size_t ntransformations);
     ~RigidBodyPlayback();
     virtual void advance_time(float dt) override;
-    IAbsoluteMovable& get_playback_object(size_t i);
+    DanglingBaseClassRef<IAbsoluteMovable> get_playback_object(size_t i);
 private:
     AdvanceTimes& advance_times_;
     const Focuses& focuses_;
     float speedup_;
     double progress_;
     TrackReader track_reader_;
-    std::vector<RigidBodySinglePlayback> playback_objects_;
+    std::vector<std::unique_ptr<RigidBodySinglePlayback>> playback_objects_;
 };
 
 }

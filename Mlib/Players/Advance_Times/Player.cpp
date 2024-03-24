@@ -132,14 +132,14 @@ void Player::reset_node() {
         THROW_OR_ABORT("Rigid body's driver is not player");
     }
     vehicle_->rb().driver_ = nullptr;
-    vehicle_->destruction_observers.remove(*this);
+    vehicle_->destruction_observers.remove(ref<DestructionObserver<const SceneVehicle&>>(CURRENT_SOURCE_LOCATION));
     vehicle_ = nullptr;
     if (next_scene_vehicle_ != nullptr) {
-        next_scene_vehicle_->destruction_observers.remove(*this);
+        next_scene_vehicle_->destruction_observers.remove(ref<DestructionObserver<const SceneVehicle&>>(CURRENT_SOURCE_LOCATION));
         next_scene_vehicle_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
-        target_scene_node_->clearing_observers.remove(*this);
+        target_scene_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
@@ -177,7 +177,7 @@ void Player::set_scene_vehicle(SceneVehicle& pv) {
     }
     vehicle_ = &pv;
     pv.rb().driver_ = this;
-    vehicle_->destruction_observers.add(*this);
+    vehicle_->destruction_observers.add(ref<DestructionObserver<const SceneVehicle&>>(CURRENT_SOURCE_LOCATION));
 }
 
 RigidBodyVehicle& Player::rigid_body() {
@@ -327,7 +327,7 @@ bool Player::can_see(
         time_offset);
 }
 
-void Player::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void Player::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (destroyed_object.ptr() == target_scene_node_) {
         target_scene_node_ = nullptr;
@@ -667,7 +667,7 @@ void Player::clear_opponent() {
     if (target_scene_node_ == nullptr) {
         THROW_OR_ABORT("Player has no opponent");
     }
-    target_scene_node_->clearing_observers.remove(*this);
+    target_scene_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -681,7 +681,7 @@ void Player::set_opponent(const Player& opponent) {
     }
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
     target_rb_ = &opponent.vehicle_->rb();
-    target_scene_node_->clearing_observers.add(*this);
+    target_scene_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
 DanglingRef<SceneNode> Player::scene_node() {
@@ -717,7 +717,7 @@ void Player::select_next_vehicle() {
     double closest_distance2 = INFINITY;
     auto clear_next_scene_vehicle = [this](){
         if (next_scene_vehicle_ != nullptr) {
-            next_scene_vehicle_->destruction_observers.remove(*this);
+            next_scene_vehicle_->destruction_observers.remove(ref<DestructionObserver<const SceneVehicle&>>(CURRENT_SOURCE_LOCATION));
             next_scene_vehicle_ = nullptr;
         }
     };
@@ -736,7 +736,7 @@ void Player::select_next_vehicle() {
         auto set_next_scene_vehicle = [&](){
             clear_next_scene_vehicle();
             next_scene_vehicle_ = &v;
-            v.destruction_observers.add(*this);
+            v.destruction_observers.add(ref<DestructionObserver<const SceneVehicle&>>(CURRENT_SOURCE_LOCATION));
         };
         if (s->has_player() && (&s->get_player() == this)) {
             set_next_scene_vehicle();
@@ -792,7 +792,7 @@ void Player::append_delete_externals(
     // in "Player::notify_destroyed" and the comments above it.
     delete_externals_.insert({ node, delete_externals });
     if (node != nullptr) {
-        node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+        node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION), ObserverAlreadyExistsBehavior::IGNORE);
     }
 }
 
@@ -801,7 +801,7 @@ void Player::append_dependent_node(std::string node_name) {
     if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
         THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + name() + '"');
     }
-    node->clearing_observers.add(*this, ObserverAlreadyExistsBehavior::IGNORE);
+    node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION), ObserverAlreadyExistsBehavior::IGNORE);
 }
 
 void Player::notify_race_started() {
@@ -854,7 +854,7 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
 }
 
 void Player::notify_bullet_destroyed(Bullet& bullet) {
-    destruction_observers.remove(bullet);
+    destruction_observers.remove(bullet.ref<DestructionObserver<const IPlayer&>>(CURRENT_SOURCE_LOCATION));
 }
 
 void Player::set_pathfinding_waypoints(

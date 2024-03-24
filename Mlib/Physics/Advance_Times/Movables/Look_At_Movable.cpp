@@ -45,7 +45,7 @@ TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_mat
     return transformation_matrix_;
 }
 
-void LookAtMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void LookAtMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if ((follower_node_ == nullptr) != (followed_node_ == nullptr)) {
         verbose_abort("LookAtMovable in inconsistent state");
     }
@@ -53,14 +53,22 @@ void LookAtMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_obje
         return;
     }
     if (destroyed_object.ptr() == follower_node_) {
-        if (!followed_node_->shutting_down()) {
-            followed_node_->clearing_observers.remove(*this);
-        }
+        followed_node_->clearing_observers.remove(
+            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            ObserverDoesNotExistBehavior::IGNORE);
     } else if (destroyed_object.ptr() == followed_node_) {
+        follower_node_->clearing_observers.remove(
+            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            ObserverDoesNotExistBehavior::IGNORE);
         if (!follower_node_->shutting_down()) {
-            follower_node_->clearing_observers.remove(*this);
             scene_.schedule_delete_root_node(follower_name_);
         }
+    }
+    if (follower_node_->has_absolute_movable()) {
+        if (&follower_node_->get_absolute_movable() != this) {
+            verbose_abort("Unexpected absolute movable");
+        }
+        follower_node_->clear_absolute_movable();
     }
     follower_node_ = nullptr;
     followed_node_ = nullptr;

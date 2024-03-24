@@ -96,7 +96,7 @@ CheckPoints::CheckPoints(
     // in case the ctor throws an exception, because in this case CheckPoints object is not
     // added to the "advance_times" list.
     for (auto& n : moving_nodes_) {
-        n->clearing_observers.add(*this);
+        n->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
 }
 
@@ -166,7 +166,7 @@ void CheckPoints::advance_time(float dt) {
                     .instance_name = "beacon",
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
-            node->clearing_observers.add(*this);
+            node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
             scene_.add_root_node(beacon_info.beacon_node_name, std::move(node));
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
@@ -245,7 +245,7 @@ void CheckPoints::advance_time(float dt) {
     }
 }
 
-void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if (shutting_down_) {
         verbose_abort("CheckPoints received multiple shutdown requests");
     }
@@ -254,7 +254,7 @@ void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
 
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
-            n->clearing_observers.remove(*this);
+            n->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
         }
     }
     moving_nodes_.clear();
@@ -269,7 +269,7 @@ void CheckPoints::notify_destroyed(DanglingRef<const SceneNode> destroyed_object
                 b.beacon_node = nullptr;
             }
             else {
-                b.beacon_node->clearing_observers.remove(*this);
+                b.beacon_node->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
                 b.beacon_node = nullptr;
                 scene_.delete_root_node(b.beacon_node_name);
             }

@@ -14,10 +14,10 @@ MovableLogger::MovableLogger(
   status_writer_{status_writer},
   log_components_{log_components}
 {
-    scene_node->clearing_observers.add(*this);
+    scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
-void MovableLogger::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void MovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

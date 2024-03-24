@@ -81,13 +81,19 @@ void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
         THROW_OR_ABORT("Head node already set");
     }
     head_node_ = head_node.ptr();
-    head_node_->clearing_observers.add(*this);
+    head_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
-void PitchLookAtNode::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void PitchLookAtNode::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if (destroyed_object.ptr() == head_node_) {
         head_node_ = nullptr;
     } else {
+        if (destroyed_object->has_relative_movable()) {
+            if (&destroyed_object->get_relative_movable() != this) {
+                verbose_abort("Unexpected relative movable");
+            }
+            destroyed_object->clear_relative_movable();
+        }
         advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
     }
 }

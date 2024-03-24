@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -15,7 +16,7 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 
-class FollowMovable: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public AdvanceTime {
+class FollowMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public AdvanceTime, public DanglingBaseClass {
 public:
     FollowMovable(
         AdvanceTimes& advance_times,
@@ -34,7 +35,7 @@ public:
     virtual void advance_time(float dt) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
     AdvanceTimes& advance_times_;

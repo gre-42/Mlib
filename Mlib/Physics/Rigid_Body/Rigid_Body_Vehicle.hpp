@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
@@ -86,7 +87,7 @@ struct TrailerHitches {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public DestructionObserver<DanglingRef<const SceneNode>>, public IAbsoluteMovable, public StatusWriter, public INodeHider {
+class RigidBodyVehicle: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public StatusWriter, public INodeHider, public DanglingBaseClass {
 public:
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
@@ -185,7 +186,7 @@ public:
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;

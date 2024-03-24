@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -20,7 +21,7 @@ class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class CheckPointsPacenotes: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime, public RenderLogic {
+class CheckPointsPacenotes: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public RenderLogic, public DanglingBaseClass {
 public:
     CheckPointsPacenotes(
         RenderLogicGallery& gallery,
@@ -46,7 +47,7 @@ public:
     // AdvanceTime
     virtual void advance_time(float dt) override;
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,

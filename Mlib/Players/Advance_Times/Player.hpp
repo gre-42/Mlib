@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
@@ -98,10 +99,11 @@ struct PlayerControlled {
 
 class Player:
     public IPlayer,
-    public DestructionObserver<DanglingRef<const SceneNode>>,
+    public DestructionObserver<DanglingRef<SceneNode>>,
     public DestructionObserver<const SceneVehicle&>,
     public AdvanceTime,
-    public ExternalForceProvider
+    public ExternalForceProvider,
+    public DanglingBaseClass
 {
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
@@ -210,7 +212,7 @@ public:
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual void notify_bullet_destroyed(Bullet& bullet) override;
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
     // AdvanceTime
     virtual void advance_time(float dt) override;

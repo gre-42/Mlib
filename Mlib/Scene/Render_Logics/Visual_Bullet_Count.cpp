@@ -27,7 +27,7 @@ VisualBulletCount::VisualBulletCount(
 
 VisualBulletCount::~VisualBulletCount() = default;
 
-void VisualBulletCount::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void VisualBulletCount::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

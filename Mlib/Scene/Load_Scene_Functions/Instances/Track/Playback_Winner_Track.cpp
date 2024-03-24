@@ -68,7 +68,7 @@ void PlaybackWinnerTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {
         DanglingRef<SceneNode> node = scene.get_node(prefix + suffix, DP_LOC);
         node->clearing_pointers.add(playback);
-        auto& playback_object = playback->get_playback_object(i);
+        auto playback_object = playback->get_playback_object(i);
         AbsoluteMovableSetter ams{node, playback_object};
     }
 }

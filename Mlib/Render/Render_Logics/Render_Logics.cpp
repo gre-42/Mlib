@@ -35,10 +35,10 @@ RenderLogics::RenderLogics(UiFocus& ui_focus)
 RenderLogics::~RenderLogics() {
     std::scoped_lock lock{mutex_};
     std::set<DanglingPtr<SceneNode>> visited_nodes;
-    for (const auto& n : render_logics_) {
-        if ((n.second.node != nullptr) && !visited_nodes.contains(n.second.node)) {
-            visited_nodes.insert(n.second.node);
-            n.second.node->clearing_observers.remove(*this);
+    for (const auto& [_, n] : render_logics_) {
+        if ((n.node != nullptr) && !visited_nodes.contains(n.node)) {
+            visited_nodes.insert(n.node);
+            n.node->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
         }
     }
 }
@@ -96,7 +96,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     auto node = it->second.node;
     render_logics_.erase(it);
     if ((node != nullptr) && (find_render_logic(*node, render_logics_) == render_logics_.end())) {
-        node->clearing_observers.remove(*this);
+        node->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
 }
 
@@ -105,7 +105,7 @@ void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_p
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
     {
-        scene_node->clearing_observers.add(*this);
+        scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
     ZorderAndId zi{
         .z = z_order,
@@ -118,7 +118,7 @@ void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_p
     }
 }
 
-void RenderLogics::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void RenderLogics::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     std::scoped_lock lock{mutex_};
     size_t nfound = 0;
     while(true) {

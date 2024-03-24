@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -14,7 +15,7 @@ class AdvanceTimes;
 class SceneNode;
 class RigidBodyPulses;
 
-class RigidBodyRecorder: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
+class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
 public:
     RigidBodyRecorder(
         const std::string& filename,
@@ -24,7 +25,7 @@ public:
         RigidBodyPulses* rbp,
         const Focuses& focuses);
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
     const Focuses& focuses_;

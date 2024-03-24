@@ -68,7 +68,13 @@ TransformationMatrix<float, double, 3> KeepOffsetFromCamera::get_new_absolute_mo
     return transformation_matrix_;
 }
 
-void KeepOffsetFromCamera::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void KeepOffsetFromCamera::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    if (destroyed_object->has_absolute_movable()) {
+        if (&destroyed_object->get_absolute_movable() != this) {
+            verbose_abort("Unexpected absolute movable");
+        }
+        destroyed_object->clear_absolute_movable();
+    }
     follower_node_ = nullptr;
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }

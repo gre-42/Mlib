@@ -1,4 +1,5 @@
 #include "Destruction_Observers.hpp"
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -25,14 +26,14 @@ bool DestructionObservers<T>::shutting_down() const {
 
 template <class T>
 void DestructionObservers<T>::add(
-    DestructionObserver<T>& destruction_observer,
+    const DanglingBaseClassRef<DestructionObserver<T>>& destruction_observer,
     ObserverAlreadyExistsBehavior already_exists_behavior)
 {
     if (shutting_down_) {
         verbose_abort("DestructionObservers::add despite shutdown");
     }
     std::scoped_lock lock{ mutex_ };
-    auto r = observers_.insert(&destruction_observer);
+    auto r = observers_.insert(destruction_observer.ptr());
     if (!r.second && (already_exists_behavior == ObserverAlreadyExistsBehavior::RAISE)) {
         verbose_abort("Destruction observer already registered");
     }
@@ -40,14 +41,14 @@ void DestructionObservers<T>::add(
 
 template <class T>
 void DestructionObservers<T>::remove(
-    DestructionObserver<T>& destruction_observer,
+    const DanglingBaseClassRef<DestructionObserver<T>>& destruction_observer,
     ObserverDoesNotExistBehavior does_not_exist_behavior)
 {
     std::unique_lock lock{ mutex_, std::defer_lock };
     if (!shutting_down_) {
         lock.lock();
     }
-    size_t nerased = observers_.erase(&destruction_observer);
+    size_t nerased = observers_.erase(destruction_observer.ptr());
     if ((nerased != 1) && (does_not_exist_behavior == ObserverDoesNotExistBehavior::RAISE)) {
         verbose_abort("Could not find destruction observer to be erased");
     }
@@ -60,9 +61,11 @@ void DestructionObservers<T>::shutdown() {
     }
     std::unique_lock lock{ mutex_ };
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
+    clear_set_recursively(observers_, [this, &lock](DanglingBaseClassPtr<DestructionObserver<T>>& obs){
         lock.unlock();
-        obs->notify_destroyed(obj_);
+        auto obs0 = obs.get();
+        obs = nullptr;
+        obs0->notify_destroyed(obj_);
         lock.lock();
     });
 }
@@ -74,9 +77,11 @@ void DestructionObservers<T>::notify_destroyed() {
     }
     std::unique_lock lock{ mutex_ };
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this, &lock](DestructionObserver<T>* obs){
+    clear_set_recursively(observers_, [this, &lock](DanglingBaseClassPtr<DestructionObserver<T>>& obs){
         lock.unlock();
-        obs->notify_destroyed(obj_);
+        auto obs0 = obs.get();
+        obs = nullptr;
+        obs0->notify_destroyed(obj_);
         lock.lock();
     });
     shutting_down_ = false;
@@ -88,8 +93,10 @@ void DestructionObservers<T>::shutdown_unsafe() {
         verbose_abort("DestructionObservers::shutdown_unsafe despite shutdown");
     }
     shutting_down_ = true;
-    clear_set_recursively(observers_, [this](DestructionObserver<T>* obs){
-        obs->notify_destroyed(obj_);
+    clear_set_recursively(observers_, [this](DanglingBaseClassPtr<DestructionObserver<T>>& obs){
+        auto obs0 = obs.get();
+        obs = nullptr;
+        obs0->notify_destroyed(obj_);
     });
 }
 

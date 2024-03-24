@@ -23,7 +23,7 @@ public:
         // 2. Add to physics engine.
         advance_times_.add_advance_time(std::move(ams.absolute_movable));
         // 3. Observe an additional node.
-        observed_node->clearing_observers.add(am);
+        observed_node->clearing_observers.add(am. template ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
     }
 
     template <class TAbsoluteMovable>
@@ -36,7 +36,7 @@ public:
 
     template <class TRelativeMovable>
     void link_relative_movable(DanglingRef<SceneNode> node, std::unique_ptr<TRelativeMovable>&& relative_movable) const {
-        node->set_relative_movable(relative_movable.get());
+        node->set_relative_movable({*relative_movable, CURRENT_SOURCE_LOCATION});
         advance_times_.add_advance_time(std::move(relative_movable));
     }
 

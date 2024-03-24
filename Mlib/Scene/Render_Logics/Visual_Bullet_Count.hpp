@@ -13,7 +13,7 @@ class TextResource;
 class Player;
 class IWidget;
 
-class VisualBulletCount: public RenderLogic, public DestructionObserver<DanglingRef<const SceneNode>>, public RenderTextLogic, public AdvanceTime {
+class VisualBulletCount: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public RenderTextLogic, public AdvanceTime {
 public:
     VisualBulletCount(
         AdvanceTimes& advance_times,
@@ -24,7 +24,7 @@ public:
         const ILayoutPixels& line_distance);
     virtual ~VisualBulletCount();
 
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     virtual void advance_time(float dt) override;
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -33,7 +34,7 @@ struct BeaconNode {
     CheckPointPose* check_point_pose;
 };
 
-class CheckPoints: public DestructionObserver<DanglingRef<const SceneNode>>, public AdvanceTime {
+class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,
@@ -60,7 +61,7 @@ public:
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt) override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     bool has_meters_to_start() const;
     double meters_to_start() const;
     size_t lap_index() const;

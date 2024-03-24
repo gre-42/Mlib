@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/Advance_Time.hpp>
@@ -18,7 +19,7 @@ class RigidBodyVehicle;
 class AimAt;
 class SceneNode;
 
-class YawPitchLookAtNodes: public DestructionObserver<DanglingRef<const SceneNode>>, public IRelativeMovable, public AdvanceTime {
+class YawPitchLookAtNodes: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public AdvanceTime, public DanglingBaseClass {
 public:
     YawPitchLookAtNodes(
         AdvanceTimes& advance_times,
@@ -31,7 +32,7 @@ public:
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<const SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void advance_time(float dt) override;
     void increment_yaw(float dyaw, float relaxation);
     void set_yaw(float yaw);

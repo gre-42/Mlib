@@ -120,7 +120,7 @@ PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
 static const auto SUCCESSOR_POSE = std::nullopt;
 
-class SceneNode: public Object {
+class SceneNode: public virtual Object {
     template <class TAbsoluteMovable>
     friend class AbsoluteMovableSetter;
     SceneNode(const SceneNode& other) = delete;
@@ -135,21 +135,31 @@ public:
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
     ~SceneNode();
     bool shutting_down() const;
+
     IAbsoluteMovable& get_absolute_movable() const;
     bool has_absolute_movable() const;
+    void clear_absolute_movable();
+
     IRelativeMovable& get_relative_movable() const;
+    void set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<SceneNode>>& relative_movable);
+    bool has_relative_movable() const;
+    void clear_relative_movable();
+
     INodeModifier& get_node_modifier() const;
+    bool has_node_modifier() const;
+    void set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier);
+
     bool has_absolute_observer() const;
     IAbsoluteObserver& get_absolute_observer() const;
+
     bool has_sticky_absolute_observer() const;
+    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
+
     IAbsoluteObserver& get_sticky_absolute_observer() const;
-    bool has_node_modifier() const;
-    void set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<const SceneNode>>& relative_movable);
-    void set_node_modifier(std::unique_ptr<INodeModifier>&& node_modifier);
+    void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
+
     void insert_node_hider(INodeHider& node_hider);
     void remove_node_hider(INodeHider& node_hider);
-    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
-    void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
     void add_renderable(
         const std::string& name,
         const std::shared_ptr<const Renderable>& renderable);
@@ -297,8 +307,8 @@ public:
     std::string debug_message() const;
     PoseInterpolationMode pose_interpolation_mode() const;
     void invalidate_transformation_history();
-    mutable DestructionObservers<DanglingRef<const SceneNode>> clearing_observers;
-    mutable DestructionObservers<DanglingRef<const SceneNode>> destruction_observers;
+    mutable DestructionObservers<DanglingRef<SceneNode>> clearing_observers;
+    mutable DestructionObservers<DanglingRef<SceneNode>> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
     mutable DestructionFunctions on_clear;
@@ -320,8 +330,8 @@ private:
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     Scene* scene_;
     DanglingPtr<SceneNode> parent_;
-    IAbsoluteMovable* absolute_movable_;
-    IRelativeMovable* relative_movable_;
+    DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_;
+    DanglingBaseClassPtr<IRelativeMovable> relative_movable_;
     std::unique_ptr<INodeModifier> node_modifier_;
     std::set<INodeHider*> node_hiders_;
     IAbsoluteObserver* absolute_observer_;

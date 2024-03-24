@@ -19,7 +19,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     , followed_{ &followed }
     , offset_{ offset }
 {
-    followed_node_->clearing_observers.add(*this);
+    followed_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
 KeepOffsetFromMovable::~KeepOffsetFromMovable()
@@ -40,7 +40,7 @@ TransformationMatrix<float, double, 3> KeepOffsetFromMovable::get_new_absolute_m
     return transformation_matrix_;
 }
 
-void KeepOffsetFromMovable::notify_destroyed(DanglingRef<const SceneNode> destroyed_object) {
+void KeepOffsetFromMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     if (destroyed_object.ptr() == followed_node_) {
         followed_node_ = nullptr;
         followed_ = nullptr;
@@ -51,7 +51,7 @@ void KeepOffsetFromMovable::notify_destroyed(DanglingRef<const SceneNode> destro
         }
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove(*this);
+            followed_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
         }
         follower_name_.clear();
         advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
