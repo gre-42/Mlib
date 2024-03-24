@@ -41,6 +41,7 @@
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Render/Trail_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
@@ -288,6 +289,7 @@ void android_main(android_app* app) {
     // This currently has no effect, because the implementation is empty on Android.
     // The render-loop is called by the system, which is therefore in control of the frame rate.
     reserve_realtime_threads(0);
+    ThreadInitializer ti{"main", ThreadAffinity::POOL};
 
     const ArgParser parser(
         "Usage: render_scene_file working_directory scene.scn.json\n"
@@ -490,8 +492,8 @@ void android_main(android_app* app) {
         CursorStates scroll_wheel_states;
         // AWindow window{*app};
         MenuUserClass menu_user_object{
-                .button_states = button_states,
-                .focuses = ui_focus.focuses};
+            .button_states = button_states,
+            .focuses = ui_focus.focuses};
         MenuLogic menu_logic{menu_user_object};
         // Declared as first class to let destructors of other classes succeed.
         SceneRenderer scene_renderer{
@@ -547,6 +549,7 @@ void android_main(android_app* app) {
 
             SceneNodeResources scene_node_resources;
             ParticleResources particle_resources;
+            TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
             LayoutConstraints layout_constraints;
             {
@@ -584,6 +587,7 @@ void android_main(android_app* app) {
                 RenderingContext primary_rendering_context{
                     .scene_node_resources = scene_node_resources,
                     .particle_resources = particle_resources,
+                    .trail_resources = trail_resources,
                     .rendering_resources = rendering_resources,
                     .z_order = 0
                 };
@@ -592,6 +596,7 @@ void android_main(android_app* app) {
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
                 RenderableScenes renderable_scenes;
+
                 std::atomic_bool load_scene_finished = false;
                 scene_renderer.set_scene(&renderable_scenes, &load_scene_finished);
                 DestructionGuard dg{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};

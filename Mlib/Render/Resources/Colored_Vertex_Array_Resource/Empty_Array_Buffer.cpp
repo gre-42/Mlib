@@ -1,4 +1,5 @@
 #include "Empty_Array_Buffer.hpp"
+#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 

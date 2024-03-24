@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     ThreadInitializer ti{"main", ThreadAffinity::POOL};
 
     const ArgParser parser(
-        "Usage: render_scene_file working_directory scene.scn\n"
+        "Usage: render_scene_file working_directory scene.scn.json\n"
         "    [--app_reldir]\n"
         "    [--wire_frame]\n"
         "    [--cull_faces]\n"
@@ -646,10 +646,10 @@ int main(int argc, char** argv) {
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerror() << e.what();
         return 1;
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerror() << e.what();
         return 1;
     }
     if (unhandled_exceptions_occured()) {
