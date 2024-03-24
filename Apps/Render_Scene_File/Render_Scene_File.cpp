@@ -646,10 +646,10 @@ int main(int argc, char** argv) {
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {
-        lerror() << e.what();
+        lerr() << e.what();
         return 1;
     } catch (const std::runtime_error& e) {
-        lerror() << e.what();
+        lerr() << e.what();
         return 1;
     }
     if (unhandled_exceptions_occured()) {
