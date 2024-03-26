@@ -7,9 +7,9 @@
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Intersection_Scene.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Physics/Interfaces/Controllable.hpp>
-#include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IControllable.hpp>
+#include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Concave_Triangles.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Grind_Infos.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Collide_Raycast_Intersections.hpp>
@@ -255,20 +255,20 @@ void PhysicsEngine::set_trail_renderer(ITrailRenderer& trail_renderer) {
     trail_renderer_ = &trail_renderer;
 }
 
-void PhysicsEngine::add_external_force_provider(ExternalForceProvider& efp)
+void PhysicsEngine::add_external_force_provider(IExternalForceProvider& efp)
 {
     external_force_providers_.push_back(&efp);
 }
 
-void PhysicsEngine::add_controllable(Controllable& co)
+void PhysicsEngine::add_controllable(IControllable& co)
 {
     if (!controllables_.insert(&co).second) {
-        THROW_OR_ABORT("Controllable already added");
+        THROW_OR_ABORT("IControllable already added");
     }
 }
 
-void PhysicsEngine::remove_controllable(Controllable& co) {
+void PhysicsEngine::remove_controllable(IControllable& co) {
     if (controllables_.erase(&co) != 1) {
-        THROW_OR_ABORT("Controllable does not exist");
+        THROW_OR_ABORT("IControllable does not exist");
     }
 }

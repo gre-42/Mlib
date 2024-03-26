@@ -4,7 +4,7 @@ namespace Mlib {
 
 struct PhysicsEngineConfig;
 
-class Controllable {
+class IControllable {
 public:
     virtual void notify_reset(bool burn_in, const PhysicsEngineConfig& cfg) = 0;
 };

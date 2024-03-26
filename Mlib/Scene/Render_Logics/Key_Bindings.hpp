@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 
 namespace Mlib {
@@ -30,7 +30,7 @@ class ButtonPress;
 class CursorMovement;
 class ScrollWheelMovement;
 
-class KeyBindings: public ExternalForceProvider, public RenderLogic {
+class KeyBindings: public IExternalForceProvider, public RenderLogic {
 public:
     KeyBindings(
         SelectedCameras& selected_cameras,
@@ -38,7 +38,7 @@ public:
         Players& players);
     ~KeyBindings();
 
-    // ExternalForceProvider
+    // IExternalForceProvider
     virtual void increment_external_forces(const std::list<RigidBodyVehicle*>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
 
     // RenderLogic

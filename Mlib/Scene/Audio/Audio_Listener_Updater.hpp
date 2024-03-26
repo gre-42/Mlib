@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <chrono>
 
 namespace Mlib {
@@ -8,7 +8,7 @@ class AudioListener;
 class SelectedCameras;
 class Scene;
 
-class AudioListenerUpdater: public AdvanceTime {
+class AudioListenerUpdater: public IAdvanceTime {
 public:
     AudioListenerUpdater(
         const SelectedCameras& selected_cameras,

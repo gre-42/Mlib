@@ -3,7 +3,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Object.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <chrono>
@@ -29,7 +29,7 @@ private:
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
-class RigidBodyPlayback: public virtual Object, public AdvanceTime {
+class RigidBodyPlayback: public virtual Object, public IAdvanceTime {
 public:
     RigidBodyPlayback(
         std::unique_ptr<ITrackElementSequence>&& sequence,

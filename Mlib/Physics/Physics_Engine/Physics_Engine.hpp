@@ -10,8 +10,8 @@
 
 namespace Mlib {
 
-class ExternalForceProvider;
-class Controllable;
+class IExternalForceProvider;
+class IControllable;
 struct Beacon;
 class BaseLog;
 enum class CollisionDirection;
@@ -26,9 +26,9 @@ public:
         const PhysicsEngineConfig& cfg,
         bool check_objects_deleted_on_destruction = true);
     ~PhysicsEngine();
-    void add_external_force_provider(ExternalForceProvider& efp);
-    void add_controllable(Controllable& co);
-    void remove_controllable(Controllable& co);
+    void add_external_force_provider(IExternalForceProvider& efp);
+    void add_controllable(IControllable& co);
+    void remove_controllable(IControllable& co);
     void collide(
         std::list<Beacon>* beacons,
         bool burn_in,
@@ -51,8 +51,8 @@ private:
     ContactSmokeGenerator* contact_smoke_generator_;
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
-    std::list<ExternalForceProvider*> external_force_providers_;
-    std::set<Controllable*> controllables_;
+    std::list<IExternalForceProvider*> external_force_providers_;
+    std::set<IControllable*> controllables_;
     PhysicsEngineConfig cfg_;
     bool check_objects_deleted_on_destruction_;
 };

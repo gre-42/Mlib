@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
 #include <mutex>
@@ -24,9 +24,10 @@ class DeleteNodeMutex;
 class SceneNode;
 class Player;
 class Team;
+struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public IAbsoluteObserver, public AdvanceTime {
+class Gun final: public IAbsoluteObserver, public IAdvanceTime {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,
@@ -38,20 +39,7 @@ public:
         RigidBodyVehicle& parent_rb,
         DanglingRef<SceneNode> node,
         DanglingPtr<SceneNode> punch_angle_node,
-        const std::string& bullet_renderable_resource_name,
-        const std::string& bullet_hitbox_resource_name,
-        const std::string& bullet_explosion_resource_name,
-        float bullet_explosion_animation_time,
-        RigidBodyVehicleFlags bullet_rigid_body_flags,
-        float bullet_mass,
-        float bullet_velocity,
-        float bullet_lifetime,
-        float bullet_damage,
-        float bullet_damage_radius,
-        const FixedArray<float, 3>& bullet_size,
-        const std::string& bullet_trail_resource,
-        float bullet_trail_dt,
-        float bullet_trail_animation_time,
+        const BulletProperties& bullet_properties,
         ITrailStorage* bullet_trace_storage,
         const std::string& ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -85,20 +73,7 @@ private:
     RigidBodyVehicle& parent_rb_;
     DanglingPtr<SceneNode> node_;
     DanglingPtr<SceneNode> punch_angle_node_;
-    std::string bullet_renderable_resource_name_;
-    std::string bullet_hitbox_resource_name_;
-    std::string bullet_explosion_resource_name_;
-    float bullet_explosion_animation_time_;
-    RigidBodyVehicleFlags bullet_rigid_body_flags_;
-    float bullet_mass_;
-    float bullet_velocity_;
-    float bullet_lifetime_;
-    float bullet_damage_;
-    float bullet_damage_radius_;
-    const FixedArray<float, 3> bullet_size_;
-    std::string bullet_trail_resource_;
-    float bullet_trail_dt_;
-    float bullet_trail_animation_time_;
+    const BulletProperties& bullet_properties_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

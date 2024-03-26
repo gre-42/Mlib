@@ -10,7 +10,7 @@
 #include <Mlib/Render/Batch_Renderers/Optional_Mesh_Hider.hpp>
 #include <Mlib/Render/Batch_Renderers/Special_Renderable_Names.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Yield.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>

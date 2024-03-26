@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
@@ -26,21 +27,7 @@ DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(parent_rigid_body_node);
 DECLARE_ARGUMENT(punch_angle_node);
 DECLARE_ARGUMENT(cool_down);
-DECLARE_ARGUMENT(bullet_renderable);
-DECLARE_ARGUMENT(bullet_hitbox);
-DECLARE_ARGUMENT(bullet_explosion_resource);
-DECLARE_ARGUMENT(bullet_explosion_animation_time);
-DECLARE_ARGUMENT(bullet_rigid_body_flags);
-DECLARE_ARGUMENT(bullet_mass);
-DECLARE_ARGUMENT(bullet_velocity);
-DECLARE_ARGUMENT(bullet_lifetime);
-DECLARE_ARGUMENT(bullet_damage);
-DECLARE_ARGUMENT(bullet_damage_radius);
-DECLARE_ARGUMENT(bullet_size);
-DECLARE_ARGUMENT(bullet_trail_resource);
-DECLARE_ARGUMENT(bullet_trail_dt);
-DECLARE_ARGUMENT(bullet_trail_animation_time);
-DECLARE_ARGUMENT(bullet_trace_storage);
+DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(ammo_type);
 DECLARE_ARGUMENT(punch_angle_idle_std);
 DECLARE_ARGUMENT(punch_angle_shoot_std);
@@ -118,9 +105,10 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         [pitch_rng, yaw_rng](bool shooting) mutable {
             return FixedArray<float, 3>{pitch_rng(shooting), yaw_rng(shooting), 0.f};
         }};
+    const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type));
     ITrailStorage* bullet_trace_storage = nullptr;
-    if (args.arguments.contains(KnownArgs::bullet_trace_storage)) {
-        bullet_trace_storage = &trail_renderer.get_storage(args.arguments.at<std::string>(KnownArgs::bullet_trace_storage));
+    if (!bullet_props.trace_storage.empty()) {
+        bullet_trace_storage = &trail_renderer.get_storage(bullet_props.trace_storage);
     }
     new Gun(
         &rendering_resources,
@@ -133,20 +121,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb,
         node,
         punch_angle_node,
-        args.arguments.at_non_null<std::string>(KnownArgs::bullet_renderable, ""),
-        args.arguments.at<std::string>(KnownArgs::bullet_hitbox),
-        args.arguments.at<std::string>(KnownArgs::bullet_explosion_resource),
-        args.arguments.at<float>(KnownArgs::bullet_explosion_animation_time) * s,
-        rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::bullet_rigid_body_flags)),
-        args.arguments.at<float>(KnownArgs::bullet_mass) * kg,
-        args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / s,
-        args.arguments.at<float>(KnownArgs::bullet_lifetime) * s,
-        args.arguments.at<float>(KnownArgs::bullet_damage),
-        args.arguments.at<float>(KnownArgs::bullet_damage_radius, 0.f) * meters,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::bullet_size) * meters,
-        args.arguments.at<std::string>(KnownArgs::bullet_trail_resource, ""),
-        args.arguments.at<float>(KnownArgs::bullet_trail_dt, NAN) * s,
-        args.arguments.at<float>(KnownArgs::bullet_trail_animation_time, NAN) * s,
+        bullet_props,
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,

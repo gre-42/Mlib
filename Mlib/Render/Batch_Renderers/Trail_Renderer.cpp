@@ -1,7 +1,7 @@
 #include "Trail_Renderer.hpp"
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Storage.hpp>
-#include <Mlib/Render/Trail_Resources.hpp>
 #include <mutex>
 
 using namespace Mlib;

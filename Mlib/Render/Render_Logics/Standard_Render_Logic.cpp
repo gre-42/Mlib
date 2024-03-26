@@ -9,7 +9,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>

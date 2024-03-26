@@ -2,7 +2,7 @@
 #include <Mlib/Components/Gun.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
-#include <Mlib/Physics/Interfaces/Damageable.hpp>
+#include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>

@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Writer.hpp>
 #include <chrono>
 #include <fstream>
@@ -15,7 +15,7 @@ class AdvanceTimes;
 class SceneNode;
 class RigidBodyPulses;
 
-class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
+class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     RigidBodyRecorder(
         const std::string& filename,

@@ -7,7 +7,7 @@ namespace Mlib {
 class RigidBodyVehicle;
 struct PhysicsEngineConfig;
 
-class ExternalForceProvider {
+class IExternalForceProvider {
 public:
     virtual void increment_external_forces(
         const std::list<RigidBodyVehicle*>& olist,

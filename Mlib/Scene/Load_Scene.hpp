@@ -20,6 +20,7 @@ struct UiFocus;
 class RenderLogics;
 class ThreadSafeString;
 class SurfaceContactDb;
+class BulletPropertyDb;
 class LayoutConstraints;
 struct RealtimeDependentFps;
 
@@ -36,6 +37,7 @@ public:
         RealtimeDependentFps& render_set_fps,
         bool verbose,
         SurfaceContactDb& surface_contact_db,
+        BulletPropertyDb& bullet_property_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,

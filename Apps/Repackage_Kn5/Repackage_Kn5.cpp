@@ -5,7 +5,7 @@
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
 #include <stb/stb_image_write.h>

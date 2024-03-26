@@ -6,8 +6,6 @@
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Strings/String.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 
 namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;

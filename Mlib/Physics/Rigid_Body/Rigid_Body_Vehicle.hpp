@@ -29,7 +29,8 @@ struct TirePowerIntent;
 struct EnginePowerIntent;
 struct EnginePowerDeltaIntent;
 struct Beacon;
-class Damageable;
+class IDamageable;
+class IIlluminatable;
 class ISpawner;
 class IPlayer;
 class AnimationStateUpdater;
@@ -239,7 +240,8 @@ public:
 
     std::string name_;
     std::string asset_id_;
-    Damageable* damageable_;
+    IDamageable* damageable_;
+    IIlluminatable* illuminatable_;
     std::set<RigidBodyVehicle*> passengers_;
     float door_distance_;
     AnimationStateUpdater* animation_state_updater_;

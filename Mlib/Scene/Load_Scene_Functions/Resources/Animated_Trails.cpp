@@ -6,9 +6,9 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Extender.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Storage.hpp>
-#include <Mlib/Render/Trail_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>

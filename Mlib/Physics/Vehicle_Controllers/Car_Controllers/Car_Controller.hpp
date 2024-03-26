@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
-#include <Mlib/Physics/Interfaces/Controllable.hpp>
+#include <Mlib/Physics/Interfaces/IControllable.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <cstddef>
 #include <string>
@@ -10,7 +10,7 @@ namespace Mlib {
 
 class PhysicsEngine;
 
-class CarController: public RigidBodyVehicleController, public Controllable {
+class CarController: public RigidBodyVehicleController, public IControllable {
 public:
     CarController(
         RigidBodyVehicle& rb,
@@ -27,7 +27,7 @@ public:
     // RigidBodyVehicleController
     virtual void apply() override;
 
-    // Controllable
+    // IControllable
     virtual void notify_reset(bool burn_in, const PhysicsEngineConfig& cfg) override;
 private:
     std::string front_engine_;

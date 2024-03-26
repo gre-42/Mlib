@@ -2,7 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -16,7 +16,7 @@ class AdvanceTimes;
 class CountDownLogic:
     public RenderLogic,
     public RenderTextLogic,
-    public AdvanceTime,
+    public IAdvanceTime,
     public DestructionObserver<DanglingRef<SceneNode>>,
     public DanglingBaseClass {
 public:
@@ -48,7 +48,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    // AdvanceTime
+    // IAdvanceTime
     virtual void advance_time(float dt) override;
 
 private:

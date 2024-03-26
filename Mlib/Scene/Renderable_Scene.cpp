@@ -29,6 +29,7 @@ RenderableScene::RenderableScene(
     ParticleResources& particle_resources,
     TrailResources& trail_resources,
     SurfaceContactDb& surface_contact_db,
+    BulletPropertyDb& bullet_property_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,

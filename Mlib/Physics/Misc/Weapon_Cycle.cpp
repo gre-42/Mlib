@@ -1,4 +1,5 @@
 #include "Weapon_Cycle.hpp"
+#include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -14,7 +15,7 @@ float WeaponInfo::score(double distance_to_target) const {
     {
         return -INFINITY;
     }
-    return bullet_damage / (cool_down / s);
+    return bullet_properties.damage / (cool_down / s);
 }
 
 WeaponCycle::WeaponCycle() = default;

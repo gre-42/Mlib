@@ -2,8 +2,8 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
 #include <mutex>
 #include <string>
@@ -22,12 +22,13 @@ class IPlayer;
 class ITeam;
 class SmokeParticleGenerator;
 class ITrailExtender;
+struct BulletProperties;
 
 class Bullet:
     public DestructionObserver<const IPlayer&>,
     public DestructionObserver<const ITeam&>,
     public CollisionObserver,
-    public AdvanceTime,
+    public IAdvanceTime,
     public DanglingBaseClass
 {
 public:
@@ -40,14 +41,7 @@ public:
         IPlayer* gunner,
         ITeam* team,
         std::string bullet_node_name,
-        std::string bullet_explosion_resource_name,
-        float bullet_explosion_animation_time,
-        float max_lifetime,
-        float damage,
-        float damage_radius,
-        std::string trail_resource,
-        float trail_dt,
-        float trail_animation_time,
+        const BulletProperties& props,
         std::unique_ptr<ITrailExtender> trace_extender,
         DeleteNodeMutex& delete_node_mutex);
     ~Bullet();
@@ -68,6 +62,10 @@ private:
         RigidBodyVehicle& rigid_body,
         float amount);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
+    void illuminate(
+        const FixedArray<double, 3>& intersection_point,
+        RigidBodyVehicle& rigid_body);
+    void illuminate(RigidBodyVehicle& rigid_body);
     Scene& scene_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
@@ -76,17 +74,10 @@ private:
     IPlayer* gunner_;
     ITeam* team_;
     std::string bullet_node_name_;
-    std::string bullet_explosion_resource_name_;
-    float bullet_explosion_animation_time_;
-    float max_lifetime_;
+    const BulletProperties& props_;
     float lifetime_;
-    float damage_;
-    float damage_radius_;
     SmokeTrailGenerator trail_generator_;
     bool has_trail_;
-    std::string trail_resource_name_;
-    float trail_animation_duration_;
-    float trail_dt_;
     std::unique_ptr<ITrailExtender> trace_extender_;
     DeleteNodeMutex& delete_node_mutex_;
 };

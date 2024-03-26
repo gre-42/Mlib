@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <functional>
 
@@ -16,7 +16,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 class RigidBodyVehicle;
 
-class AimAt: public IAbsoluteObserver, public AdvanceTime {
+class AimAt: public IAbsoluteObserver, public IAdvanceTime {
 public:
     AimAt(
         AdvanceTimes& advance_times,

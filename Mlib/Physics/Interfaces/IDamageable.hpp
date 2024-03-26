@@ -2,7 +2,7 @@
 
 namespace Mlib {
 
-class Damageable {
+class IDamageable {
 public:
     virtual float health() const = 0;
     virtual void damage(float amount) = 0;

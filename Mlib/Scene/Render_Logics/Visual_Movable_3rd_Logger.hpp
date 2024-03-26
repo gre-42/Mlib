@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
@@ -17,7 +17,7 @@ class SceneNode;
 class TextResource;
 class ILayoutPixels;
 
-class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
+class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,

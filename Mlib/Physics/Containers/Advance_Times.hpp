@@ -7,21 +7,21 @@
 
 namespace Mlib {
 
-class AdvanceTime;
+class IAdvanceTime;
 
 class AdvanceTimes {
     friend class PhysicsEngine;
 public:
     AdvanceTimes();
     ~AdvanceTimes();
-    void add_advance_time(std::unique_ptr<AdvanceTime>&& advance_time);
-    void add_advance_time(AdvanceTime& advance_time);
-    void schedule_delete_advance_time(const AdvanceTime& advance_time, SourceLocation loc);
-    void delete_advance_time(const AdvanceTime& advance_time, SourceLocation loc);
+    void add_advance_time(std::unique_ptr<IAdvanceTime>&& advance_time);
+    void add_advance_time(IAdvanceTime& advance_time);
+    void schedule_delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
+    void delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
     void delete_scheduled_advance_times();
 private:
-    std::list<std::unique_ptr<AdvanceTime>> advance_times_shared_;
-    std::list<AdvanceTime*> advance_times_ptr_;
+    std::list<std::unique_ptr<IAdvanceTime>> advance_times_shared_;
+    std::list<IAdvanceTime*> advance_times_ptr_;
     std::mutex scheduled_deletion_mutex_;
 };
 

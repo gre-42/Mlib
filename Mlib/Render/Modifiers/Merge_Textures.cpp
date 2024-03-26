@@ -11,7 +11,7 @@
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Math/Bool.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>

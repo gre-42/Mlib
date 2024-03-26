@@ -1,8 +1,10 @@
 #include "Bullet.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Interfaces/Damageable.hpp>
+#include <Mlib/Physics/Interfaces/IDamageable.hpp>
+#include <Mlib/Physics/Interfaces/IIlluminatable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -28,37 +30,23 @@ Bullet::Bullet(
     IPlayer* gunner,
     ITeam* team,
     std::string bullet_node_name,
-    std::string bullet_explosion_resource_name,
-    float bullet_explosion_animation_time,
-    float max_lifetime,
-    float damage,
-    float damage_radius,
-    std::string trail_resource,
-    float trail_dt,
-    float trail_animation_time,
+    const BulletProperties& props,
     std::unique_ptr<ITrailExtender> trace_extender,
     DeleteNodeMutex& delete_node_mutex)
-: scene_{ scene },
-  smoke_generator_{smoke_generator},
-  advance_times_{ advance_times },
-  rigid_body_pulses_{ rigid_body.rbp_ },
-  rigid_bodies_{ rigid_bodies },
-  gunner_{ gunner },
-  team_{ team },
-  bullet_node_name_{ std::move(bullet_node_name) },
-  bullet_explosion_resource_name_{ std::move(bullet_explosion_resource_name) },
-  bullet_explosion_animation_time_{ bullet_explosion_animation_time },
-  max_lifetime_{ max_lifetime },
-  lifetime_{ 0.f },
-  damage_{ damage },
-  damage_radius_{ damage_radius },
-  trail_generator_{ smoke_generator },
-  has_trail_{ !trail_resource.empty() },
-  trail_resource_name_{ std::move(trail_resource) },
-  trail_animation_duration_{ trail_animation_time },
-  trail_dt_{ trail_dt },
-  trace_extender_{ std::move(trace_extender) },
-  delete_node_mutex_{ delete_node_mutex }
+    : scene_{ scene }
+    , smoke_generator_{ smoke_generator }
+    , advance_times_{ advance_times }
+    , rigid_body_pulses_{ rigid_body.rbp_ }
+    , rigid_bodies_{ rigid_bodies }
+    , gunner_{ gunner }
+    , team_{ team }
+    , bullet_node_name_{ std::move(bullet_node_name) }
+    , props_{ props }
+    , lifetime_{ 0.f }
+    , trail_generator_{ smoke_generator }
+    , has_trail_{ !props.trail_resource_name.empty() }
+    , trace_extender_{ std::move(trace_extender) }
+    , delete_node_mutex_{ delete_node_mutex }
 {}
 
 Bullet::~Bullet() {
@@ -89,7 +77,7 @@ void Bullet::notify_destroyed(const ITeam& destroyed_object) {
 
 void Bullet::advance_time(float dt) {
     lifetime_ += dt;
-    if (lifetime_ > max_lifetime_) {
+    if (lifetime_ > props_.max_lifetime) {
         std::scoped_lock lock{ delete_node_mutex_ };
         scene_.schedule_delete_root_node(bullet_node_name_);
         lifetime_ = INFINITY;
@@ -107,10 +95,10 @@ void Bullet::advance_time(float dt) {
         trail_generator_.maybe_generate(
             rigid_body_pulses_.abs_position(),
             fixed_zeros<float, 3>(),
-            trail_resource_name_,
+            props_.trail_resource_name,
             "trail",
-            trail_animation_duration_,
-            trail_dt_,
+            props_.trail_animation_duration,
+            props_.trail_dt,
             ParticleType::INSTANCE);
     }
     if (trace_extender_ != nullptr) {
@@ -133,11 +121,11 @@ void Bullet::notify_collided(
     collision_type = CollisionType::GO_THROUGH;
     cause_damage(intersection_point, rigid_body);
     smoke_generator_.generate_root(
-        bullet_explosion_resource_name_,
+        props_.explosion_resource_name,
         "explosion" + smoke_generator_.generate_suffix(),
         intersection_point,
         fixed_zeros<float, 3>(),
-        bullet_explosion_animation_time_,
+        props_.explosion_animation_time,
         ParticleType::NODE);
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(TransformationMatrix<float, double, 3>{rigid_body_pulses_.rotation_, intersection_point});
@@ -173,8 +161,8 @@ void Bullet::cause_damage(
     const FixedArray<double, 3>& intersection_point,
     RigidBodyVehicle& rigid_body)
 {
-    if (damage_radius_ == 0) {
-        cause_damage(rigid_body, damage_);
+    if (props_.damage_radius == 0) {
+        cause_damage(rigid_body, props_.damage);
     } else {
         for (const auto& rbm : rigid_bodies_.objects()) {
             const RigidBodyVehicle& rb = rbm.rigid_body;
@@ -184,10 +172,44 @@ void Bullet::cause_damage(
                 continue;
             }
             double dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
-            if (dist2 > squared(damage_radius_)) {
+            if (dist2 > squared(props_.damage_radius)) {
                 continue;
             }
-            cause_damage(const_cast<RigidBodyVehicle&>(rb), damage_);
+            cause_damage(const_cast<RigidBodyVehicle&>(rb), props_.damage);
+        }
+    }
+}
+
+void Bullet::illuminate(RigidBodyVehicle& rigid_body) {
+    if (rigid_body.illuminatable_ == nullptr) {
+        return;
+    }
+    if (!props_.illumination.has_value()) {
+        return;
+    }
+    rigid_body.illuminatable_->illuminate(props_.illumination.value().colors);
+}
+
+void Bullet::illuminate(
+    const FixedArray<double, 3>& intersection_point,
+    RigidBodyVehicle& rigid_body)
+{
+    if (!props_.illumination.has_value()) {
+        return;
+    }
+    if (props_.illumination.value().radius == 0) {
+        illuminate(rigid_body);
+    } else {
+        for (const auto& rbm : rigid_bodies_.objects()) {
+            const RigidBodyVehicle& rb = rbm.rigid_body;
+            if (rb.illuminatable_ == nullptr) {
+                continue;
+            }
+            double dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
+            if (dist2 > squared(props_.illumination.value().radius)) {
+                continue;
+            }
+            illuminate(const_cast<RigidBodyVehicle&>(rb));
         }
     }
 }

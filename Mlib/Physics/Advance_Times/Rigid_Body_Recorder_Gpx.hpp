@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Writer_Gpx.hpp>
 #include <chrono>
 #include <fstream>
@@ -17,7 +17,7 @@ class RigidBodyPulses;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
+class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,

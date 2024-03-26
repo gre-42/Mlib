@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
@@ -37,20 +38,7 @@ Gun::Gun(
     RigidBodyVehicle& parent_rb,
     DanglingRef<SceneNode> node,
     DanglingPtr<SceneNode> punch_angle_node,
-    const std::string& bullet_renderable_resource_name,
-    const std::string& bullet_hitbox_resource_name,
-    const std::string& bullet_explosion_resource_name,
-    float bullet_explosion_animation_time,
-    RigidBodyVehicleFlags bullet_rigid_body_flags,
-    float bullet_mass,
-    float bullet_velocity,
-    float bullet_lifetime,
-    float bullet_damage,
-    float bullet_damage_radius,
-    const FixedArray<float, 3>& bullet_size,
-    const std::string& bullet_trail_resource,
-    float bullet_trail_dt,
-    float bullet_trail_animation_time,
+    const BulletProperties& bullet_properties,
     ITrailStorage* bullet_trace_storage,
     const std::string& ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -68,20 +56,7 @@ Gun::Gun(
     , parent_rb_{ parent_rb }
     , node_{ node.ptr() }
     , punch_angle_node_{ punch_angle_node }
-    , bullet_renderable_resource_name_{ bullet_renderable_resource_name }
-    , bullet_hitbox_resource_name_{ bullet_hitbox_resource_name }
-    , bullet_explosion_resource_name_{ bullet_explosion_resource_name }
-    , bullet_explosion_animation_time_{ bullet_explosion_animation_time }
-    , bullet_rigid_body_flags_{ bullet_rigid_body_flags }
-    , bullet_mass_{ bullet_mass }
-    , bullet_velocity_{ bullet_velocity }
-    , bullet_lifetime_{ bullet_lifetime }
-    , bullet_damage_{ bullet_damage }
-    , bullet_damage_radius_{ bullet_damage_radius }
-    , bullet_size_{ bullet_size }
-    , bullet_trail_resource_{ bullet_trail_resource }
-    , bullet_trail_dt_{ bullet_trail_dt }
-    , bullet_trail_animation_time_{ bullet_trail_animation_time }
+    , bullet_properties_{ bullet_properties }
     , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ ammo_type }
     , triggered_{ false }
@@ -154,10 +129,10 @@ bool Gun::maybe_generate_bullet() {
 }
 
 void Gun::generate_bullet() {
-    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_mass_, bullet_size_);
-    rcu->flags_ = bullet_rigid_body_flags_;
+    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_properties_.mass, bullet_properties_.size);
+    rcu->flags_ = bullet_properties_.rigid_body_flags;
     rcu->rbp_.v_ =
-        - bullet_velocity_ * z3_from_3x3(absolute_model_matrix_.R())
+        - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R())
         + parent_rb_.rbp_.v_;
     auto node = make_dunique<SceneNode>(
         absolute_model_matrix_.t(),
@@ -166,9 +141,9 @@ void Gun::generate_bullet() {
     auto& rc = *rcu;
     {
         AbsoluteMovableSetter ams{node.ref(DP_LOC), std::move(rcu)};
-        if (!bullet_renderable_resource_name_.empty()) {
+        if (!bullet_properties_.renderable_resource_name.empty()) {
             scene_node_resources_.instantiate_renderable(
-                bullet_renderable_resource_name_,
+                bullet_properties_.renderable_resource_name,
                 InstantiationOptions{
                     .rendering_resources = rendering_resources_,
                     .instance_name = "bullet",
@@ -177,8 +152,8 @@ void Gun::generate_bullet() {
         }
         rigid_bodies_.add_rigid_body(
             std::move(ams.absolute_movable),
-            scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->scvas,
-            scene_node_resources_.get_physics_arrays(bullet_hitbox_resource_name_)->dcvas,
+            scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->scvas,
+            scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->dcvas,
             CollidableMode::MOVING);
     }
     std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();
@@ -191,14 +166,7 @@ void Gun::generate_bullet() {
         player_,
         team_,
         bullet_node_name,
-        bullet_explosion_resource_name_,
-        bullet_explosion_animation_time_,
-        bullet_lifetime_,
-        bullet_damage_,
-        bullet_damage_radius_,
-        bullet_trail_resource_,
-        bullet_trail_dt_,
-        bullet_trail_animation_time_,
+        bullet_properties_,
         bullet_trace_storage_ == nullptr
             ? nullptr
             : bullet_trace_storage_->add_trail_extender(),
@@ -244,7 +212,7 @@ const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const
 }
 
 bool Gun::is_none_gun() const {
-    return bullet_lifetime_ == 0;
+    return bullet_properties_.max_lifetime == 0;
 }
 
 const FixedArray<float, 3>& Gun::punch_angle() const {
@@ -256,5 +224,5 @@ float Gun::cool_down() const {
 }
 
 float Gun::bullet_damage() const {
-    return bullet_damage_;
+    return bullet_properties_.damage;
 }

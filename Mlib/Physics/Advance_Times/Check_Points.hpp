@@ -3,7 +3,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Track_Reader.hpp>
 #include <fstream>
 #include <mutex>
@@ -34,7 +34,7 @@ struct BeaconNode {
     CheckPointPose* check_point_pose;
 };
 
-class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
+class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,

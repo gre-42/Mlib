@@ -19,7 +19,7 @@
 #include <Mlib/Render/Render_Logics/Skybox_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
@@ -45,6 +45,7 @@ class TrailResources;
 class IParticleRenderer;
 class ITrailRenderer;
 class SurfaceContactDb;
+class BulletPropertyDb;
 
 class DirtmapLogic;
 class PostProcessingLogic;
@@ -84,6 +85,7 @@ public:
         ParticleResources& particle_resources,
         TrailResources& trail_resources,
         SurfaceContactDb& surface_contact_db,
+        BulletPropertyDb& bullet_property_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,

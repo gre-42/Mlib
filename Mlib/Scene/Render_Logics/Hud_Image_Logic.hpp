@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -23,7 +23,7 @@ enum class HudErrorBehavior {
 
 HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
 
-class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public INodeHider, public AdvanceTime {
+class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public INodeHider, public IAdvanceTime {
 public:
     HudImageLogic(
         RenderLogic* scene_logic,
@@ -39,7 +39,7 @@ public:
         HudErrorBehavior hud_error_behavior);
     ~HudImageLogic();
 
-    // AdvanceTime
+    // IAdvanceTime
     virtual void advance_time(float dt) override;
 
     // RenderLogic

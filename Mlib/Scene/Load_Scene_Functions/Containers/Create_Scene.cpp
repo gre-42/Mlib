@@ -51,6 +51,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         RenderingContextStack::primary_particle_resources(),
         RenderingContextStack::primary_trail_resources(),
         args.surface_contact_db,
+        args.bullet_property_db,
         args.scene_config,
         args.button_states,
         args.cursor_states,

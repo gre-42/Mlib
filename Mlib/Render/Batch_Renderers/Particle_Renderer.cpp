@@ -1,7 +1,7 @@
 #include "Particle_Renderer.hpp"
 #include <Mlib/Render/Batch_Renderers/Particle_Creator.hpp>
 #include <Mlib/Render/Batch_Renderers/Particles_Instance.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <mutex>
 
 using namespace Mlib;

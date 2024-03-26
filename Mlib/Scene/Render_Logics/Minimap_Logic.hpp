@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
@@ -14,7 +14,7 @@ class SceneNode;
 class IWidget;
 class ILayoutPixels;
 
-class MinimapLogic: public RenderLogic, public AdvanceTime {
+class MinimapLogic: public RenderLogic, public IAdvanceTime {
 public:
     MinimapLogic(
         DanglingRef<SceneNode> node,
@@ -28,7 +28,7 @@ public:
         const FixedArray<double, 2>& offset);
     ~MinimapLogic();
 
-    // AdvanceTime
+    // IAdvanceTime
     virtual void advance_time(float dt) override;
 
     // RenderLogic

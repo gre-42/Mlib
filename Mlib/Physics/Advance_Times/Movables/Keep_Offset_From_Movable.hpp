@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <memory>
 
@@ -14,7 +14,7 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 
-class KeepOffsetFromMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public AdvanceTime, public DanglingBaseClass {
+class KeepOffsetFromMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public DanglingBaseClass {
 public:
     KeepOffsetFromMovable(
         AdvanceTimes& advance_times,

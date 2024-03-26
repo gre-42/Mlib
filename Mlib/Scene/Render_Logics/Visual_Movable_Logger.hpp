@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <list>
 #include <memory>
@@ -11,7 +11,7 @@ namespace Mlib {
 class VisualMovableLoggerView;
 class AdvanceTimes;
 
-class VisualMovableLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public AdvanceTime, public DanglingBaseClass {
+class VisualMovableLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     explicit VisualMovableLogger(AdvanceTimes& advance_times);
     virtual ~VisualMovableLogger();

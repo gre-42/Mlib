@@ -7,8 +7,8 @@
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Driving_Mode.hpp>
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
-#include <Mlib/Physics/Interfaces/External_Force_Provider.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Players/Player/Avatar_Movement.hpp>
 #include <Mlib/Players/Player/Car_Movement.hpp>
@@ -108,8 +108,8 @@ class Player:
     public IPlayer,
     public DestructionObserver<DanglingRef<SceneNode>>,
     public DestructionObserver<const SceneVehicle&>,
-    public AdvanceTime,
-    public ExternalForceProvider,
+    public IAdvanceTime,
+    public IExternalForceProvider,
     public DanglingBaseClass
 {
     friend PathfindingWaypoints;
@@ -223,9 +223,9 @@ public:
     // DestructionObserver
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
-    // AdvanceTime
+    // IAdvanceTime
     virtual void advance_time(float dt) override;
-    // ExternalForceProvider
+    // IExternalForceProvider
     virtual void increment_external_forces(
         const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,

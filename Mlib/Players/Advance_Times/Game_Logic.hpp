@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Physics/Interfaces/Advance_Time.hpp>
+#include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Players/Game_Logic/Bystanders.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
 #include <Mlib/Players/Game_Logic/Team_Deathmatch.hpp>
@@ -20,7 +20,7 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh;
 class DeleteNodeMutex;
 
-class GameLogic: public AdvanceTime {
+class GameLogic: public IAdvanceTime {
 public:
     GameLogic(
         Scene& scene,

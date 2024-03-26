@@ -21,12 +21,13 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Trail_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
@@ -154,6 +155,7 @@ std::future<void> loader_thread(
     std::atomic_size_t& num_renderings,
     RealtimeDependentFps& render_set_fps,
     SurfaceContactDb& surface_contact_db,
+    BulletPropertyDb& bullet_property_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -188,6 +190,7 @@ std::future<void> loader_thread(
                     render_set_fps,
                     args.has_named("--verbose"),
                     surface_contact_db,
+                    bullet_property_db,
                     scene_config,
                     button_states,
                     cursor_states,
@@ -532,6 +535,7 @@ int main(int argc, char** argv) {
             ParticleResources particle_resources;
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
+            BulletPropertyDb bullet_property_db;
             LayoutConstraints layout_constraints;
             {
                 nlohmann::json j{
@@ -606,6 +610,7 @@ int main(int argc, char** argv) {
                     num_renderings,
                     render_set_fps,
                     surface_contact_db,
+                    bullet_property_db,
                     scene_config,
                     button_states,
                     cursor_states,

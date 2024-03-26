@@ -2,9 +2,9 @@
 
 namespace Mlib {
 
-class AdvanceTime {
+class IAdvanceTime {
 public:
-    virtual ~AdvanceTime() = default;
+    virtual ~IAdvanceTime() = default;
     virtual void advance_time(float dt) = 0;
 };
 
