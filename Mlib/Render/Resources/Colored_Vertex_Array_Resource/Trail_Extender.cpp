@@ -23,7 +23,9 @@ TrailExtender::TrailExtender(
     }
 }
 
-void TrailExtender::append_location(const TransformationMatrix<float, double, 3>& location) {
+void TrailExtender::append_location(
+    const TransformationMatrix<float, double, 3>& location,
+    TrailLocationType location_type) {
     if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
         THROW_OR_ABORT("Trail instance move not called");
     }
@@ -31,7 +33,9 @@ void TrailExtender::append_location(const TransformationMatrix<float, double, 3>
         auto& prev = previous_center_.value();
         auto dz = (location.t() - prev.position).casted<float>();
         auto dz_l2 = sum(squared(dz));
-        if (dz_l2 < minimum_length_squared_) {
+        if ((location_type == TrailLocationType::MIDPOINT) &&
+            (dz_l2 < minimum_length_squared_))
+        {
             return;
         }
         auto lookat = gl_lookat_relative(dz / std::sqrt(dz_l2), location.R().column(1));

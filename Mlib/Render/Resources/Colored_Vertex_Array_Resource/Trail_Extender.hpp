@@ -27,7 +27,9 @@ public:
         const TrailSequence& trail_sequence,
         const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
         double minimum_length);
-    virtual void append_location(const TransformationMatrix<float, double, 3>& location) override;
+    virtual void append_location(
+        const TransformationMatrix<float, double, 3>& location,
+        TrailLocationType location_type) override;
 
 private:
     TrailsInstance& trails_instance_;

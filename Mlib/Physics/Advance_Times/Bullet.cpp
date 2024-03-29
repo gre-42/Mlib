@@ -111,7 +111,9 @@ void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) 
             ParticleType::INSTANCE);
     }
     if (trace_extender_ != nullptr) {
-        trace_extender_->append_location(rigid_body_pulses_.abs_transformation());
+        trace_extender_->append_location(
+            rigid_body_pulses_.abs_transformation(),
+            TrailLocationType::MIDPOINT);
     }
 }
 
@@ -145,7 +147,9 @@ void Bullet::notify_collided(
         props_.explosion_animation_time,
         ParticleType::NODE);
     if (trace_extender_ != nullptr) {
-        trace_extender_->append_location(TransformationMatrix<float, double, 3>{rigid_body_pulses_.rotation_, intersection_point});
+        trace_extender_->append_location(
+            TransformationMatrix<float, double, 3>{rigid_body_pulses_.rotation_, intersection_point},
+            TrailLocationType::ENDPOINT);
     }
 }
 
