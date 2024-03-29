@@ -89,7 +89,8 @@ void PhysicsEngine::collide(
     std::list<Beacon>* beacons,
     bool burn_in,
     size_t oversampling_iteration,
-    BaseLog* base_log)
+    BaseLog* base_log,
+    std::chrono::steady_clock::time_point time)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
         return (rbtm.rigid_body.mass() != INFINITY);
@@ -137,7 +138,8 @@ void PhysicsEngine::collide(
         .grind_infos = grind_infos,
         .ridge_intersection_points = ridge_intersection_points,
         .ridge_map = rigid_bodies_.ridge_map(),
-        .base_log = base_log
+        .base_log = base_log,
+        .time = time
     };
     for (const auto& o : rigid_bodies_.objects_) {
         if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
@@ -191,17 +193,17 @@ void PhysicsEngine::move_particles(std::chrono::steady_clock::time_point time) {
     }
 }
 
-void PhysicsEngine::move_advance_times() {
+void PhysicsEngine::move_advance_times(std::chrono::steady_clock::time_point time) {
     for (const auto& a : advance_times_.advance_times_shared_) {
         if (a != nullptr) {
-            a->advance_time(cfg_.dt);
+            a->advance_time(cfg_.dt, time);
         }
     }
     for (const auto& a : advance_times_.advance_times_ptr_) {
         if (a == nullptr) {
             verbose_abort("Unexpected nullptr in advance times");
         }
-        a->advance_time(cfg_.dt);
+        a->advance_time(cfg_.dt, time);
     }
 }
 
@@ -218,10 +220,11 @@ void PhysicsEngine::burn_in(float duration) {
     }
     for (float time = 0; time < duration; time += cfg_.dt_substeps()) {
         collide(
-            nullptr,        // beacons
-            true,           // true = burn_in
-            SIZE_MAX,       // oversampling_iteration
-            nullptr);       // base_log
+            nullptr,                            // beacons
+            true,                               // true = burn_in
+            SIZE_MAX,                           // oversampling_iteration
+            nullptr,                            // base_log
+            std::chrono::steady_clock::now());
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
                 if (o.rigid_body.is_deactivated_avatar()) {

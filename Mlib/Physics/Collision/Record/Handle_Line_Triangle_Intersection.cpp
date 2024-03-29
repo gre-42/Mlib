@@ -104,10 +104,10 @@ void Mlib::handle_line_triangle_intersection(
     CollisionType collision_type = c.default_collision_type;
     bool abort = false;
     for (auto& c0 : c.o0.collision_observers_) {
-        c0->notify_collided(intersection_point, c.o1, CollisionRole::PRIMARY, collision_type, abort);
+        c0->notify_collided(intersection_point, c.history.time, c.o1, CollisionRole::PRIMARY, collision_type, abort);
     }
     for (auto& c1 : c.o1.collision_observers_) {
-        c1->notify_collided(intersection_point, c.o0, CollisionRole::SECONDARY, collision_type, abort);
+        c1->notify_collided(intersection_point, c.history.time, c.o0, CollisionRole::SECONDARY, collision_type, abort);
     }
     auto* scinfo = c.history.csg.notify_contact(intersection_point, fixed_zeros<float, 3>(), N0.normal, c);
     if (abort) {

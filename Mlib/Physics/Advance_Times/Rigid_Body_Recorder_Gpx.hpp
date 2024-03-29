@@ -26,7 +26,7 @@ public:
         RigidBodyPulses* rbp,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const Focuses& focuses);
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:

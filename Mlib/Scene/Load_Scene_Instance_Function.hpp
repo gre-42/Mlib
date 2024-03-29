@@ -13,6 +13,7 @@ class ParticleResources;
 class IParticleRenderer;
 class ITrailRenderer;
 class SmokeParticleGenerator;
+class DynamicLights;
 class VehicleSpawners;
 class Players;
 class Scene;
@@ -50,6 +51,7 @@ protected:
     IParticleRenderer& particle_renderer;
     ITrailRenderer& trail_renderer;
     SmokeParticleGenerator& smoke_particle_generator;
+    DynamicLights& dynamic_lights;
     VehicleSpawners& vehicle_spawners;
     Players& players;
     Scene& scene;

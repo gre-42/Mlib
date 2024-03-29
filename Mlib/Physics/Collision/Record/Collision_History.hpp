@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <list>
 #include <map>
 #include <memory>
@@ -37,6 +38,7 @@ struct CollisionHistory {
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>>& ridge_intersection_points;
     const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& ridge_map;
     BaseLog* base_log;
+    std::chrono::steady_clock::time_point time;
 };
 
 }

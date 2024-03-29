@@ -17,6 +17,7 @@ class RenderableScene;
 class RenderableScenes;
 class SurfaceContactDb;
 class BulletPropertyDb;
+class DynamicLightDb;
 class ThreadSafeString;
 struct SceneConfig;
 class ButtonStates;
@@ -35,6 +36,7 @@ struct LoadSceneJsonUserFunctionArgs {
     JsonMacroArguments* local_json_macro_arguments;
     SurfaceContactDb& surface_contact_db;
     BulletPropertyDb& bullet_property_db;
+    DynamicLightDb& dynamic_light_db;
     SceneConfig& scene_config;
     ButtonStates& button_states;
     CursorStates& cursor_states;

@@ -1,6 +1,7 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
@@ -30,6 +31,7 @@ RenderableScene::RenderableScene(
     TrailResources& trail_resources,
     SurfaceContactDb& surface_contact_db,
     BulletPropertyDb& bullet_property_db,
+    DynamicLightDb& dynamic_light_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -53,6 +55,7 @@ RenderableScene::RenderableScene(
         max_anisotropic_filtering_level }
     , particle_renderer_{ std::make_unique<ParticleRenderer>(particle_resources) }
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
+    , dynamic_lights_{ std::make_unique<DynamicLights>(dynamic_light_db) }
     , scene_config_{ scene_config }
   // SceneNode destructors require that physics engine is destroyed after scene,
   // => Create PhysicsEngine before Scene
@@ -61,7 +64,8 @@ RenderableScene::RenderableScene(
           delete_node_mutex_,
           &scene_node_resources,
           particle_renderer_.get(),
-          trail_renderer_.get()}
+          trail_renderer_.get(),
+          dynamic_lights_.get()}
     , selected_cameras_{ scene_ }
     , user_object_{
           .button_states = button_states,

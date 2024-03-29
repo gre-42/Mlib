@@ -25,7 +25,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
 KeepOffsetFromMovable::~KeepOffsetFromMovable()
 {}
 
-void KeepOffsetFromMovable::advance_time(float dt) {
+void KeepOffsetFromMovable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (followed_ == nullptr) {
         return;
     }

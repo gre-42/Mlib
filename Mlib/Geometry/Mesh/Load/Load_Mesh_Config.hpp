@@ -54,6 +54,7 @@ struct LoadMeshConfig {
     TriangleTangentErrorBehavior triangle_tangent_error_behavior = TriangleTangentErrorBehavior::RAISE;
     bool apply_static_lighting;
     float laplace_ao_strength;
+    bool dynamically_lighted;
     PhysicsMaterial physics_material;
     bool triangulate;
     bool werror;

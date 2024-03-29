@@ -15,6 +15,7 @@ namespace Mlib {
 class RenderingResources;
 class SceneNodeResources;
 class SmokeParticleGenerator;
+class DynamicLights;
 class ITrailStorage;
 class RigidBodyVehicle;
 class Scene;
@@ -33,6 +34,7 @@ public:
         Scene& scene,
         SceneNodeResources& scene_node_resources,
         SmokeParticleGenerator& smoke_generator,
+        DynamicLights& dynamic_lights,
         RigidBodies& rigid_bodies,
         AdvanceTimes& advance_times,
         float cool_down,
@@ -49,7 +51,7 @@ public:
         const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
         DeleteNodeMutex& delete_node_mutex);
     ~Gun();
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     void trigger(
         Player* player = nullptr,
@@ -61,13 +63,14 @@ public:
     float cool_down() const;
     float bullet_damage() const;
 private:
-    bool maybe_generate_bullet();
-    void generate_bullet();
+    bool maybe_generate_bullet(std::chrono::steady_clock::time_point time);
+    void generate_bullet(std::chrono::steady_clock::time_point time);
     void generate_muzzle_flash_hider();
     RenderingResources* rendering_resources_;
     Scene& scene_;
     SceneNodeResources& scene_node_resources_;
     SmokeParticleGenerator& smoke_generator_;
+    DynamicLights& dynamic_lights_;
     RigidBodies& rigid_bodies_;
     AdvanceTimes& advance_times_;
     RigidBodyVehicle& parent_rb_;

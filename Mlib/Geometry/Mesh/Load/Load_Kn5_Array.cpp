@@ -328,7 +328,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .transformation_mode = cfg.transformation_mode,
                     .center_distances = cfg.center_distances,
                     .max_triangle_distance = cfg.max_triangle_distance,
-                    .cull_faces = cfg.cull_faces_default},
+                    .cull_faces = cfg.cull_faces_default,
+                    .dynamically_lighted = cfg.dynamically_lighted},
                 cfg.physics_material};
             auto attrs = MetaAttributes::ATTR_VISIBLE;
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");

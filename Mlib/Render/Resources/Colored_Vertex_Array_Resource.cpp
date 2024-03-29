@@ -433,6 +433,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     bool has_lightmap_depth,
     bool has_specularmap,
     bool has_normalmap,
+    bool has_dynamic_emissive,
     size_t nbillboard_ids,
     float reflection_strength,
     bool reflect_only_y,
@@ -487,6 +488,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     sstr << std::scientific;
     sstr << SHADER_VER << FRAGMENT_PRECISION;
     sstr << "in vec3 color;" << std::endl;
+    if (has_dynamic_emissive) {
+        sstr << "uniform vec3 dynamic_emissive;" << std::endl;
+    }
     if (ntextures_color != 0) {
         sstr << "in vec2 tex_coord;" << std::endl;
     }
@@ -1213,6 +1217,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (!emissive.all_equal(0.f)) {
         sstr << "    frag_brightness_emissive_ambient_diffuse += vec3(" << emissive(0) << ", " << emissive(1) << ", " << emissive(2) << ");" << std::endl;
     }
+    if (has_dynamic_emissive) {
+        sstr << "    frag_brightness_emissive_ambient_diffuse += dynamic_emissive;" << std::endl;
+    }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
         sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, fragSpecularity);" << std::endl;
@@ -1640,6 +1647,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         !id.lightmap_indices_depth.empty(),
         id.has_specularmap,
         id.ntextures_normal != 0,
+        id.has_dynamic_emissive,
         id.nbillboard_ids,
         id.reflection_strength,
         id.reflect_only_y,
@@ -1727,6 +1735,11 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
             rp->uv_offset_location = 0;
             rp->texture_layers_location = 0;
             rp->alpha_distances_location = 0;
+        }
+        if (id.has_dynamic_emissive) {
+            rp->dynamic_emissive_location = checked_glGetUniformLocation(rp->program, "dynamic_emissive");
+        } else {
+            rp->dynamic_emissive_location = 0;
         }
         assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());
         if (!id.lightmap_indices_color.empty()) {

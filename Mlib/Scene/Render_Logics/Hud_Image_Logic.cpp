@@ -76,7 +76,7 @@ HudImageLogic::~HudImageLogic() {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
-void HudImageLogic::advance_time(float dt) {
+void HudImageLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (gun_node_ == nullptr) {
         return;
     }

@@ -25,7 +25,7 @@ LookAtMovable::LookAtMovable(
 LookAtMovable::~LookAtMovable()
 {}
 
-void LookAtMovable::advance_time(float dt) {
+void LookAtMovable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (followed_ == nullptr) {
         return;
     }

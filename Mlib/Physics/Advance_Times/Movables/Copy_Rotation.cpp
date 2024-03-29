@@ -38,7 +38,7 @@ TransformationMatrix<float, double, 3> CopyRotation::get_new_relative_model_matr
     return transformation_matrix_;
 }
 
-void CopyRotation::advance_time(float dt) {
+void CopyRotation::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     // Do nothing
 }
 

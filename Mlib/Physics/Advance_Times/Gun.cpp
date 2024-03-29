@@ -32,6 +32,7 @@ Gun::Gun(
     Scene& scene,
     SceneNodeResources& scene_node_resources,
     SmokeParticleGenerator& smoke_generator,
+    DynamicLights& dynamic_lights,
     RigidBodies& rigid_bodies,
     AdvanceTimes& advance_times,
     float cool_down,
@@ -51,6 +52,7 @@ Gun::Gun(
     , scene_{ scene }
     , scene_node_resources_{ scene_node_resources }
     , smoke_generator_{ smoke_generator }
+    , dynamic_lights_{ dynamic_lights }
     , rigid_bodies_{ rigid_bodies }
     , advance_times_{ advance_times }
     , parent_rb_{ parent_rb }
@@ -92,10 +94,10 @@ Gun::Gun(
 
 Gun::~Gun() = default;
 
-void Gun::advance_time(float dt) {
+void Gun::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
-    punch_angle_ = punch_angle_rng_(maybe_generate_bullet());
+    punch_angle_ = punch_angle_rng_(maybe_generate_bullet(time));
     if (punch_angle_node_ != nullptr) {
         punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
     }
@@ -106,7 +108,7 @@ size_t Gun::nbullets_available() const {
     return parent_rb_.inventory_.navailable(ammo_type_);
 }
 
-bool Gun::maybe_generate_bullet() {
+bool Gun::maybe_generate_bullet(std::chrono::steady_clock::time_point time) {
     if (is_none_gun()) {
         return false;
     }
@@ -121,14 +123,14 @@ bool Gun::maybe_generate_bullet() {
     }
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
-    generate_bullet();
+    generate_bullet(time);
     if (!muzzle_flash_resource_.empty()) {
         generate_muzzle_flash_hider();
     }
     return true;
 }
 
-void Gun::generate_bullet() {
+void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
     std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_properties_.mass, bullet_properties_.size);
     rcu->flags_ = bullet_properties_.rigid_body_flags;
     rcu->rbp_.v_ =
@@ -170,7 +172,9 @@ void Gun::generate_bullet() {
         bullet_trace_storage_ == nullptr
             ? nullptr
             : bullet_trace_storage_->add_trail_extender(),
-        delete_node_mutex_);
+        dynamic_lights_,
+        delete_node_mutex_,
+        time);
     if (player_ != nullptr) {
         player_->destruction_observers.add(bullet->ref<DestructionObserver<const IPlayer&>>(CURRENT_SOURCE_LOCATION));
     }

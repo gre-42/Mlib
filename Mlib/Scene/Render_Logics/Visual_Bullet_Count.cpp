@@ -31,7 +31,7 @@ void VisualBulletCount::notify_destroyed(DanglingRef<SceneNode> destroyed_object
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
-void VisualBulletCount::advance_time(float dt) {
+void VisualBulletCount::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{mutex_};
     if (!player_.has_gun_node()) {
         text_.clear();

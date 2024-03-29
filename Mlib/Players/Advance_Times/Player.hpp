@@ -224,7 +224,7 @@ public:
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
     // IAdvanceTime
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     // IExternalForceProvider
     virtual void increment_external_forces(
         const std::list<RigidBodyVehicle*>& olist,

@@ -14,9 +14,11 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -781,6 +783,7 @@ void SceneNode::render(
     const TransformationMatrix<float, double, 3>& parent_m,
     const TransformationMatrix<float, double, 3>& iv,
     DanglingRef<const SceneNode> camera_node,
+    const IDynamicLights* dynamic_lights,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     std::list<Blended>& blended,
@@ -818,6 +821,9 @@ void SceneNode::render(
         ecolor_styles.push_back(s.get());
     }
     if (visibility == SceneNodeVisibility::VISIBLE) {
+        DynamicStyle dynamic_style{dynamic_lights == nullptr
+            ? fixed_zeros<float, 3>()
+            : dynamic_lights->get_color(m.t()) };
         for (const auto& [n, r] : renderables_) {
             ColorStyle r_style;
             for (const auto& style : ecolor_styles) {
@@ -830,6 +836,7 @@ void SceneNode::render(
                     mvp,
                     m,
                     iv,
+                    &dynamic_style,
                     lights,
                     skidmarks,
                     scene_graph_config,
@@ -855,6 +862,7 @@ void SceneNode::render(
             m,
             iv,
             camera_node,
+            dynamic_lights,
             lights,
             skidmarks,
             blended,

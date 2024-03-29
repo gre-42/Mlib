@@ -49,7 +49,7 @@ TransformationMatrix<float, double, 3> Wheel::get_new_relative_model_matrix() co
     return transformation_matrix_;
 }
 
-void Wheel::advance_time(float dt) {
+void Wheel::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     FixedArray<float, 3> tire_angles{fixed_zeros<float, 3>()};
     if (auto it = rigid_body_.tires_.find(tire_id_); it != rigid_body_.tires_.end()) {
         tire_angles(1) = it->second.angle_y;

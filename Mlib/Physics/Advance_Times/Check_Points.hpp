@@ -60,7 +60,7 @@ public:
         const FixedArray<float, 3>& deselection_emissive = { -1.f, -1.f, -1.f },
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     bool has_meters_to_start() const;
     double meters_to_start() const;

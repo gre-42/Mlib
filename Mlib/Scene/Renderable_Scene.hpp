@@ -44,8 +44,10 @@ class ParticleResources;
 class TrailResources;
 class IParticleRenderer;
 class ITrailRenderer;
+class DynamicLights;
 class SurfaceContactDb;
 class BulletPropertyDb;
+class DynamicLightDb;
 
 class DirtmapLogic;
 class PostProcessingLogic;
@@ -86,6 +88,7 @@ public:
         TrailResources& trail_resources,
         SurfaceContactDb& surface_contact_db,
         BulletPropertyDb& bullet_property_db,
+        DynamicLightDb& dynamic_light_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
         CursorStates& cursor_states,
@@ -135,6 +138,7 @@ public:
     RenderingResources rendering_resources_;
     std::unique_ptr<IParticleRenderer> particle_renderer_;
     std::unique_ptr<ITrailRenderer> trail_renderer_;
+    std::unique_ptr<DynamicLights> dynamic_lights_;
     const SceneConfig& scene_config_;
     PhysicsEngine physics_engine_;
     VehicleSpawners vehicle_spawners_;

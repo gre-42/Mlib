@@ -31,7 +31,7 @@ RigidBodyPlayback::~RigidBodyPlayback() {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
-void RigidBodyPlayback::advance_time(float dt) {
+void RigidBodyPlayback::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     {
         std::shared_lock lock{focuses_.mutex};
         if (focuses_.countdown_active()) {

@@ -115,6 +115,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene,
         scene_node_resources,
         smoke_particle_generator,
+        dynamic_lights,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
         args.arguments.at<float>(KnownArgs::cool_down) * s,

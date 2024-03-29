@@ -1,17 +1,10 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Interp.hpp>
-#include <optional>
 #include <string>
 
 namespace Mlib {
 
 enum class RigidBodyVehicleFlags;
-
-struct BulletIllumination {
-    float radius;
-    Interp<float, FixedArray<float, 3>> colors = { {}, {} };
-};
 
 struct BulletProperties {
     std::string renderable_resource_name;
@@ -29,7 +22,8 @@ struct BulletProperties {
     float trail_dt;
     float trail_animation_duration;
     std::string trace_storage;
-    std::optional<BulletIllumination> illumination;
+    std::string dynamic_light_configuration_before_impact;
+    std::string dynamic_light_configuration_after_impact;
 };
 
 }

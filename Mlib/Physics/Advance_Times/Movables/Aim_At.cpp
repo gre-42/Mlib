@@ -122,7 +122,7 @@ bool AimAt::target_locked_on() const {
     return target_locked_on_;
 }
 
-void AimAt::advance_time(float dt) {
+void AimAt::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     // do nothing (yet)
 }
 

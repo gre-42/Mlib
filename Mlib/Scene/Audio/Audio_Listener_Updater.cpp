@@ -21,13 +21,13 @@ AudioListenerUpdater::AudioListenerUpdater(
 #endif
 {}
 
-void AudioListenerUpdater::advance_time(float dt) {
+void AudioListenerUpdater::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 #ifndef WITHOUT_ALUT
     DanglingRef<SceneNode> node = scene_.get_node(selected_cameras_.camera_node_name(), DP_LOC);
-    auto time = std::chrono::steady_clock::now() - delay_;
+    auto corrected_time = std::chrono::steady_clock::now() - delay_;
     AudioListener::set_transformation(AudioListenerState{
-        .pose = node->absolute_model_matrix(time),
-        .velocity = node->velocity(time, velocity_dt_)
+        .pose = node->absolute_model_matrix(corrected_time),
+        .velocity = node->velocity(corrected_time, velocity_dt_)
     });
 #endif
 }

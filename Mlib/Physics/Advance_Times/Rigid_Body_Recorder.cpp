@@ -26,7 +26,7 @@ RigidBodyRecorder::RigidBodyRecorder(
     recorded_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
 }
 
-void RigidBodyRecorder::advance_time(float dt) {
+void RigidBodyRecorder::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (recorded_node_ == nullptr) {
         return;
     }

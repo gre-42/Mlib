@@ -13,6 +13,7 @@ class AxisAlignedBoundingBox;
 template <class TPos>
 class ColoredVertexArray;
 struct TransformedColoredVertexArray;
+struct DynamicStyle;
 struct Light;
 struct Skidmark;
 struct RenderConfig;
@@ -35,6 +36,7 @@ public:
         const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,
         const TransformationMatrix<float, double, 3>& iv,
+        const DynamicStyle* dynamic_style,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,

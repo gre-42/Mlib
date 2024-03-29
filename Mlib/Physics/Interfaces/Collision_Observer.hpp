@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
+#include <chrono>
 #include <list>
 #include <memory>
 
@@ -20,6 +21,7 @@ public:
     virtual ~CollisionObserver() = default;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,
+        std::chrono::steady_clock::time_point time,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,

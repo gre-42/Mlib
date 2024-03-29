@@ -23,6 +23,7 @@
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -156,6 +157,7 @@ std::future<void> loader_thread(
     RealtimeDependentFps& render_set_fps,
     SurfaceContactDb& surface_contact_db,
     BulletPropertyDb& bullet_property_db,
+    DynamicLightDb& dynamic_light_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -191,6 +193,7 @@ std::future<void> loader_thread(
                     args.has_named("--verbose"),
                     surface_contact_db,
                     bullet_property_db,
+                    dynamic_light_db,
                     scene_config,
                     button_states,
                     cursor_states,
@@ -536,6 +539,7 @@ int main(int argc, char** argv) {
             TrailResources trail_resources;
             SurfaceContactDb surface_contact_db;
             BulletPropertyDb bullet_property_db;
+            DynamicLightDb dynamic_light_db;
             LayoutConstraints layout_constraints;
             {
                 nlohmann::json j{
@@ -611,6 +615,7 @@ int main(int argc, char** argv) {
                     render_set_fps,
                     surface_contact_db,
                     bullet_property_db,
+                    dynamic_light_db,
                     scene_config,
                     button_states,
                     cursor_states,

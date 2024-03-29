@@ -33,10 +33,11 @@ public:
         std::list<Beacon>* beacons,
         bool burn_in,
         size_t oversampling_iteration,
-        BaseLog* base_log);
+        BaseLog* base_log,
+        std::chrono::steady_clock::time_point time);
     void move_rigid_bodies(std::list<Beacon>* beacons);
     void move_particles(std::chrono::steady_clock::time_point time);
-    void move_advance_times();
+    void move_advance_times(std::chrono::steady_clock::time_point time);
     void burn_in(float duration);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
     void set_particle_renderer(IParticleRenderer& particle_renderer);

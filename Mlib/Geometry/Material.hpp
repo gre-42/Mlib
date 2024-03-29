@@ -68,6 +68,7 @@ struct Material {
     float draw_distance_add = 500;
     float draw_distance_slop = 10;
     size_t draw_distance_noperations = 0;
+    bool dynamically_lighted = false;
     Material& compute_color_mode();
     bool has_normalmap() const;
     bool fragments_depend_on_distance() const;
@@ -113,6 +114,7 @@ struct Material {
         archive(draw_distance_add);
         archive(draw_distance_slop);
         archive(draw_distance_noperations);
+        archive(dynamically_lighted);
     }
 };
 

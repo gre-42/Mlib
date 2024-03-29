@@ -206,7 +206,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .ambient = OrderableFixedArray{cfg.ambient_factor * material.at("ambient_color").get<FixedArray<float, 3>>()},
                 .diffuse = OrderableFixedArray{cfg.diffuse_factor * material.at("diffuse_color").get<FixedArray<float, 3>>()},
                 .specular = OrderableFixedArray{cfg.specular_factor * material.at("specular_color").get<FixedArray<float, 3>>()}
-            }
+            },
+            .dynamically_lighted = cfg.dynamically_lighted
         }}).second) {
             THROW_OR_ABORT("Could not insert material " + material.at("name").get<std::string>());
         }

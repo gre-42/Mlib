@@ -48,7 +48,7 @@ void VisualMovable3rdLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_o
     scene_node_ = nullptr;
 }
 
-void VisualMovable3rdLogger::advance_time(float dt) {
+void VisualMovable3rdLogger::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     std::stringstream sstr;
     status_writer_.write_status(sstr, log_components_);
     text_ = sstr.str();

@@ -211,7 +211,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Replace_Terrain_Material.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Atlas_Png.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bullet_Properties.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
@@ -439,6 +441,8 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateAdditiveScreenConstraint::key, CreateAdditiveScreenConstraint::json_user_function);
     register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
     register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
+    register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
+    register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
     register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
     register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
     register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
@@ -464,6 +468,7 @@ void LoadScene::operator()(
     bool verbose,
     SurfaceContactDb& surface_contact_db,
     BulletPropertyDb& bullet_property_db,
+    DynamicLightDb& dynamic_light_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
     CursorStates& cursor_states,
@@ -496,6 +501,7 @@ void LoadScene::operator()(
             .local_json_macro_arguments = local_json_macro_arguments,
             .surface_contact_db = surface_contact_db,
             .bullet_property_db = bullet_property_db,
+            .dynamic_light_db = dynamic_light_db,
             .scene_config = scene_config,
             .button_states = button_states,
             .cursor_states = cursor_states,

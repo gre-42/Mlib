@@ -46,7 +46,7 @@ FollowMovable::~FollowMovable() = default;
 
 void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
     initialized_ = true;
-    advance_time(NAN);
+    advance_time(NAN, std::chrono::steady_clock::time_point());
     follower_node->set_absolute_pose(
         transformation_matrix_.t(),
         matrix_2_tait_bryan_angles(transformation_matrix_.R()),
@@ -54,7 +54,7 @@ void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
         INITIAL_POSE);
 }
 
-void FollowMovable::advance_time(float dt) {
+void FollowMovable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (followed_ == nullptr) {
         return;
     }

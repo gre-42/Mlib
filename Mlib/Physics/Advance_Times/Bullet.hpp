@@ -22,6 +22,8 @@ class IPlayer;
 class ITeam;
 class SmokeParticleGenerator;
 class ITrailExtender;
+class IDynamicLight;
+class DynamicLights;
 struct BulletProperties;
 
 class Bullet:
@@ -43,13 +45,16 @@ public:
         std::string bullet_node_name,
         const BulletProperties& props,
         std::unique_ptr<ITrailExtender> trace_extender,
-        DeleteNodeMutex& delete_node_mutex);
+        DynamicLights& dynamic_lights,
+        DeleteNodeMutex& delete_node_mutex,
+        std::chrono::steady_clock::time_point time);
     ~Bullet();
     virtual void notify_destroyed(const IPlayer& destroyed_object) override;
     virtual void notify_destroyed(const ITeam& destroyed_object) override;
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,
+        std::chrono::steady_clock::time_point time,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,
@@ -62,10 +67,6 @@ private:
         RigidBodyVehicle& rigid_body,
         float amount);
     void notify_kill(RigidBodyVehicle& rigid_body_vehicle);
-    void illuminate(
-        const FixedArray<double, 3>& intersection_point,
-        RigidBodyVehicle& rigid_body);
-    void illuminate(RigidBodyVehicle& rigid_body);
     Scene& scene_;
     SmokeParticleGenerator& smoke_generator_;
     AdvanceTimes& advance_times_;
@@ -79,6 +80,9 @@ private:
     SmokeTrailGenerator trail_generator_;
     bool has_trail_;
     std::unique_ptr<ITrailExtender> trace_extender_;
+    std::unique_ptr<IDynamicLight> light_before_impact_;
+    std::unique_ptr<IDynamicLight> light_after_impact_;
+    DynamicLights& dynamic_lights_;
     DeleteNodeMutex& delete_node_mutex_;
 };
 

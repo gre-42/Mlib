@@ -105,6 +105,7 @@ void ArrayInstancesRenderer::render_instances(
             dot2d(vp, m.affine()),
             m,
             iv,
+            nullptr,    // dynamic style
             lights,
             skidmarks,
             scene_graph_config,

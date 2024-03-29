@@ -74,6 +74,6 @@ void YawPitchLookAtNodes::notify_destroyed(DanglingRef<SceneNode> destroyed_obje
     advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
-void YawPitchLookAtNodes::advance_time(float dt) {
+void YawPitchLookAtNodes::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     // do nothing (yet)
 }

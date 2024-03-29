@@ -29,7 +29,7 @@ public:
         bool delete_node_when_health_leq_zero);
     virtual ~DeletingDamageable() override;
     // IAdvanceTime
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
     virtual float get_value(StatusComponents log_components) const override;

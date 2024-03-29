@@ -98,7 +98,7 @@ void PitchLookAtNode::notify_destroyed(DanglingRef<SceneNode> destroyed_object) 
     }
 }
 
-void PitchLookAtNode::advance_time(float dt) {
+void PitchLookAtNode::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     // do nothing (yet)
 }
 

@@ -103,6 +103,7 @@ void TrailsInstance::render(
         dot2d(vp, m.affine()),
         m,
         iv,
+        nullptr,        // dynamic_style
         lights,
         skidmarks,
         scene_graph_config,

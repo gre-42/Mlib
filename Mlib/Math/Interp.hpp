@@ -72,7 +72,7 @@ public:
         }
         size_t i = (size_t)(it - x_.begin());
         TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
-        return y_[i - 1] * (1 - alpha) + y_[i] * alpha;
+        return (TDataY)(y_[i - 1] * (1 - alpha) + y_[i] * alpha);
     }
     bool is_within_range(const TDataX& vx) const {
         if (x_.empty()) {

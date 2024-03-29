@@ -21,7 +21,7 @@ public:
         StatusWriter& status_writer,
         StatusComponents log_components);
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 private:
     AdvanceTimes& advance_times_;
     StatusWriter& status_writer_;

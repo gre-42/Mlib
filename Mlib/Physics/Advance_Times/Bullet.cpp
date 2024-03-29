@@ -3,8 +3,8 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
-#include <Mlib/Physics/Interfaces/IIlluminatable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IDynamic_Light.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -32,7 +33,9 @@ Bullet::Bullet(
     std::string bullet_node_name,
     const BulletProperties& props,
     std::unique_ptr<ITrailExtender> trace_extender,
-    DeleteNodeMutex& delete_node_mutex)
+    DynamicLights& dynamic_lights,
+    DeleteNodeMutex& delete_node_mutex,
+    std::chrono::steady_clock::time_point time)
     : scene_{ scene }
     , smoke_generator_{ smoke_generator }
     , advance_times_{ advance_times }
@@ -46,8 +49,14 @@ Bullet::Bullet(
     , trail_generator_{ smoke_generator }
     , has_trail_{ !props.trail_resource_name.empty() }
     , trace_extender_{ std::move(trace_extender) }
+    , dynamic_lights_{ dynamic_lights }
     , delete_node_mutex_{ delete_node_mutex }
-{}
+{
+    if (!props_.dynamic_light_configuration_before_impact.empty()) {
+        auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
+        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, time);
+    }
+}
 
 Bullet::~Bullet() {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
@@ -75,7 +84,7 @@ void Bullet::notify_destroyed(const ITeam& destroyed_object) {
     }
 }
 
-void Bullet::advance_time(float dt) {
+void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     lifetime_ += dt;
     if (lifetime_ > props_.max_lifetime) {
         std::scoped_lock lock{ delete_node_mutex_ };
@@ -108,6 +117,7 @@ void Bullet::advance_time(float dt) {
 
 void Bullet::notify_collided(
     const FixedArray<double, 3>& intersection_point,
+    std::chrono::steady_clock::time_point time,
     RigidBodyVehicle& rigid_body,
     CollisionRole collision_role,
     CollisionType& collision_type,
@@ -120,6 +130,13 @@ void Bullet::notify_collided(
     lifetime_ = INFINITY;
     collision_type = CollisionType::GO_THROUGH;
     cause_damage(intersection_point, rigid_body);
+    if (!props_.dynamic_light_configuration_after_impact.empty()) {
+        auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
+        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, time);
+    }
+    if (light_before_impact_ != nullptr) {
+        light_before_impact_ = nullptr;
+    }
     smoke_generator_.generate_root(
         props_.explosion_resource_name,
         "explosion" + smoke_generator_.generate_suffix(),
@@ -176,40 +193,6 @@ void Bullet::cause_damage(
                 continue;
             }
             cause_damage(const_cast<RigidBodyVehicle&>(rb), props_.damage);
-        }
-    }
-}
-
-void Bullet::illuminate(RigidBodyVehicle& rigid_body) {
-    if (rigid_body.illuminatable_ == nullptr) {
-        return;
-    }
-    if (!props_.illumination.has_value()) {
-        return;
-    }
-    rigid_body.illuminatable_->illuminate(props_.illumination.value().colors);
-}
-
-void Bullet::illuminate(
-    const FixedArray<double, 3>& intersection_point,
-    RigidBodyVehicle& rigid_body)
-{
-    if (!props_.illumination.has_value()) {
-        return;
-    }
-    if (props_.illumination.value().radius == 0) {
-        illuminate(rigid_body);
-    } else {
-        for (const auto& rbm : rigid_bodies_.objects()) {
-            const RigidBodyVehicle& rb = rbm.rigid_body;
-            if (rb.illuminatable_ == nullptr) {
-                continue;
-            }
-            double dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
-            if (dist2 > squared(props_.illumination.value().radius)) {
-                continue;
-            }
-            illuminate(const_cast<RigidBodyVehicle&>(rb));
         }
     }
 }

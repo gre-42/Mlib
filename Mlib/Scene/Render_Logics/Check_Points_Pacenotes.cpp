@@ -51,7 +51,7 @@ CheckPointsPacenotes::~CheckPointsPacenotes() {
     }
 }
 
-void CheckPointsPacenotes::advance_time(float dt) {
+void CheckPointsPacenotes::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (check_points_ == nullptr) {
         return;
     }

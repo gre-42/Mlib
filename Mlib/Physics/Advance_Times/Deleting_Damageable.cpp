@@ -38,7 +38,7 @@ DeletingDamageable::~DeletingDamageable() {
     shutting_down_ = true;
 }
 
-void DeletingDamageable::advance_time(float dt) {
+void DeletingDamageable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
         scene_.schedule_delete_root_node(root_node_name_);
     }

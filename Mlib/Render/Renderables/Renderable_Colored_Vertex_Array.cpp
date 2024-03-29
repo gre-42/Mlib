@@ -28,6 +28,7 @@
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
@@ -232,6 +233,7 @@ void RenderableColoredVertexArray::render_cva(
     const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
+    const DynamicStyle* dynamic_style,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
@@ -535,6 +537,7 @@ void RenderableColoredVertexArray::render_cva(
         THROW_OR_ABORT("reorient_uv0 requires disabled face culling");
     }
     bool reorient_uv0 = cva->material.reorient_uv0 && (tic.ntextures_color != 0);
+    bool has_dynamic_emissive = cva->material.dynamically_lighted && !any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK);
     LOG_INFO("RenderableColoredVertexArray::render_cva get_render_program");
     assert_true(cva->material.number_of_frames > 0);
     Hasher texture_modifiers_hash;
@@ -578,6 +581,7 @@ void RenderableColoredVertexArray::render_cva(
             .ntextures_color = tic.ntextures_color,
             .ntextures_alpha = tic.ntextures_alpha,
             .ntextures_normal = tic.ntextures_normal,
+            .has_dynamic_emissive = has_dynamic_emissive,
             .lightmap_indices_color = lightmap_indices_color,
             .lightmap_indices_depth = lightmap_indices_depth,
             .has_specularmap = (tic.ntextures_specular != 0),
@@ -688,6 +692,12 @@ void RenderableColoredVertexArray::render_cva(
         if (!vc.orthographic()) {
             CHK(glUniform4fv(rp.alpha_distances_location, ni, (const GLfloat*)alpha_distances.data()));
         }
+    }
+    if (has_dynamic_emissive) {
+        FixedArray<float, 3> dynamic_emissive = dynamic_style != nullptr
+            ? dynamic_style->emissive
+            : fixed_zeros<float, 3>();
+        CHK(glUniform3fv(rp.dynamic_emissive_location, 1, (const GLfloat*)&dynamic_emissive));
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva textures");
     for (size_t i = 0; i < tic.ntextures_color; ++i) {
@@ -1081,6 +1091,7 @@ void RenderableColoredVertexArray::render(
     const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
+    const DynamicStyle* dynamic_style,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
     const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
@@ -1111,6 +1122,7 @@ void RenderableColoredVertexArray::render(
             mvp,
             m,
             iv,
+            dynamic_style,
             lights,
             skidmarks,
             scene_graph_config,

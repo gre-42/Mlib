@@ -11,11 +11,13 @@
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
+#include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Particle_Substrate.hpp>
@@ -31,7 +33,8 @@ Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
     IParticleRenderer* particle_renderer,
-    ITrailRenderer* trail_renderer)
+    ITrailRenderer* trail_renderer,
+    IDynamicLights* dynamic_lights)
     : morn_{ *this }
     , root_nodes_{ morn_.create("root_nodes") }
     , static_root_nodes_{ morn_.create("static_root_nodes") }
@@ -47,6 +50,7 @@ Scene::Scene(
     , scene_node_resources_{ scene_node_resources }
     , particle_renderer_{ particle_renderer }
     , trail_renderer_{ trail_renderer }
+    , dynamic_lights_{ dynamic_lights }
 {}
 
 void Scene::add_root_node(
@@ -363,7 +367,7 @@ void Scene::render(
             }
             return it->second.ref(DP_LOC);
         }();
-        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         std::list<DanglingPtr<const SceneNode>> nodes;
         {
@@ -373,7 +377,7 @@ void Scene::render(
             }
         }
         for (const auto& node : nodes) {
-            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
     } else {
         if (!external_render_pass.black_node_name.empty()) {
@@ -420,8 +424,9 @@ void Scene::render(
                 ? external_render_pass.singular_node->parent()->absolute_model_matrix()
                 : TransformationMatrix<float, double, 3>::identity();
             auto parent_mvp = dot2d(vp, parent_m.affine());
-            external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         } else {
+            dynamic_lights_->set_time(external_render_pass.time);
             LOG_INFO("Scene::render non-blended");
             {
                 std::list<DanglingPtr<const SceneNode>> nodes;
@@ -438,7 +443,7 @@ void Scene::render(
                     }
                 }
                 for (const auto& node : nodes) {
-                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
                 }
             }
             {
@@ -629,51 +634,55 @@ void Scene::render(
                         vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
             }
-        }
-    }
-    if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) && !times_.empty()) {
-        auto xp = external_render_pass;
-        xp.time = times_.clamped(xp.time);
-        if (particle_renderer_ != nullptr) {
-            // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
-            particle_renderer_->render(
-                ParticleSubstrate::AIR,
-                vp,
-                iv,
-                lights,
-                skidmarks,
-                scene_graph_config,
-                render_config,
-                xp);
-        }
-        if (trail_renderer_ != nullptr) {
-            trail_renderer_->render(
-                vp,
-                iv,
-                lights,
-                skidmarks,
-                scene_graph_config,
-                render_config,
-                xp);
-        }
-    }
-    {
-        // AperiodicLagFinder lag_finder{"blended: ", std::chrono::milliseconds{5}};
-        // Contains continuous alpha and must therefore be rendered late.
-        LOG_INFO("Scene::render blended");
-        blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
-        for (const auto& b : blended) {
-            b.renderable->render(
-                b.mvp,
-                b.m,
-                iv,
-                lights,
-                skidmarks,
-                scene_graph_config,
-                render_config,
-                { external_render_pass, InternalRenderPass::BLENDED },
-                b.animation_state,
-                &b.color_style);
+            if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) && !times_.empty()) {
+                auto xp = external_render_pass;
+                xp.time = times_.clamped(xp.time);
+                if (particle_renderer_ != nullptr) {
+                    // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
+                    particle_renderer_->render(
+                        ParticleSubstrate::AIR,
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        xp);
+                }
+                if (trail_renderer_ != nullptr) {
+                    trail_renderer_->render(
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        xp);
+                }
+            }
+            {
+                // AperiodicLagFinder lag_finder{"blended: ", std::chrono::milliseconds{5}};
+                // Contains continuous alpha and must therefore be rendered late.
+                LOG_INFO("Scene::render blended");
+                blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
+                for (const auto& b : blended) {
+                    DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
+                        ? dynamic_lights_->get_color(b.m.t())
+                        : fixed_zeros<float, 3>() };
+                    b.renderable->render(
+                        b.mvp,
+                        b.m,
+                        iv,
+                        &dynamic_style,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        { external_render_pass, InternalRenderPass::BLENDED },
+                        b.animation_state,
+                        &b.color_style);
+                }
+            }
         }
     }
 }
@@ -697,6 +706,9 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
         } else {
             ++it;
         }
+    }
+    if (dynamic_lights_ != nullptr) {
+        dynamic_lights_->append_time(time);
     }
     times_.append(time);
 }

@@ -60,6 +60,7 @@ DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
+DECLARE_ARGUMENT(dynamically_lighted);
 DECLARE_ARGUMENT(physics_material);
 DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(triangulate);
@@ -185,6 +186,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
             : TriangleTangentErrorBehavior::RAISE,
         .apply_static_lighting = false,
         .laplace_ao_strength = 0.f,
+        .dynamically_lighted = args.arguments.at<bool>(KnownArgs::dynamically_lighted, false),
         .physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, "attr_visible|attr_collide")),
         .triangulate = args.arguments.at<bool>(KnownArgs::triangulate, true),
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};

@@ -40,7 +40,7 @@ public:
     ~HudImageLogic();
 
     // IAdvanceTime
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 
     // RenderLogic
     virtual void render(

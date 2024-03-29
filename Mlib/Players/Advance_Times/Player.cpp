@@ -359,7 +359,7 @@ void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
     } 
 }
 
-void Player::advance_time(float dt) {
+void Player::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
     select_best_weapon_in_inventory();

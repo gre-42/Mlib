@@ -8,13 +8,6 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
-namespace KnownIlluminationArgs {
-BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(radius);
-DECLARE_ARGUMENT(colors_time);
-DECLARE_ARGUMENT(colors_color);
-}
-
 namespace KnownBulletArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(renderable);
@@ -32,20 +25,11 @@ DECLARE_ARGUMENT(trail_resource);
 DECLARE_ARGUMENT(trail_dt);
 DECLARE_ARGUMENT(trail_animation_duration);
 DECLARE_ARGUMENT(trace_storage);
-DECLARE_ARGUMENT(illumination);
+DECLARE_ARGUMENT(light_before_impact);
+DECLARE_ARGUMENT(light_after_impact);
 }
 
 namespace Mlib {
-
-void from_json(const nlohmann::json& j, BulletIllumination& item) {
-    JsonView jv{ j };
-    jv.validate(KnownIlluminationArgs::options);
-
-    item.radius = jv.at<float>(KnownIlluminationArgs::radius);
-    item.colors = Interp<float, FixedArray<float, 3>>{
-        jv.at<std::vector<float>>(KnownIlluminationArgs::colors_time),
-        jv.at<std::vector<FixedArray<float, 3>>>(KnownIlluminationArgs::colors_color) };
-}
 
 void from_json(const nlohmann::json& j, BulletProperties& item) {
     JsonView jv{ j };
@@ -66,11 +50,8 @@ void from_json(const nlohmann::json& j, BulletProperties& item) {
     item.trail_dt = jv.at<float>(KnownBulletArgs::trail_dt, NAN) * s;
     item.trail_animation_duration = jv.at<float>(KnownBulletArgs::trail_animation_duration, NAN) * s;
     item.trace_storage = jv.at<std::string>(KnownBulletArgs::trace_storage, "");
-    if (jv.contains_non_null(KnownBulletArgs::illumination)) {
-        item.illumination = jv.at<BulletIllumination>(KnownBulletArgs::illumination);
-    } else {
-        item.illumination.reset();
-    }
+    item.dynamic_light_configuration_before_impact = jv.at<std::string>(KnownBulletArgs::light_before_impact, "");
+    item.dynamic_light_configuration_after_impact = jv.at<std::string>(KnownBulletArgs::light_after_impact, "");
 }
 
 }

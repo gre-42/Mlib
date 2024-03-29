@@ -38,6 +38,7 @@ class Camera;
 class INodeModifier;
 class IRelativeMovable;
 class IAbsoluteObserver;
+class IDynamicLights;
 struct Light;
 struct Skidmark;
 enum class ExternalRenderPassType;
@@ -218,6 +219,7 @@ public:
         const TransformationMatrix<float, double, 3>& parent_m,
         const TransformationMatrix<float, double, 3>& iv,
         DanglingRef<const SceneNode> camera_node,
+        const IDynamicLights* dynamic_lights,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
         const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
         std::list<Blended>& blended,

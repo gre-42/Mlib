@@ -25,6 +25,7 @@ class SceneNode;
 class SceneNodeResources;
 class IParticleRenderer;
 class ITrailRenderer;
+class IDynamicLights;
 class IParticleCreator;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
@@ -40,7 +41,8 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
         IParticleRenderer* particle_renderer = nullptr,
-        ITrailRenderer* trail_renderer = nullptr);
+        ITrailRenderer* trail_renderer = nullptr,
+        IDynamicLights* dynamic_lights = nullptr);
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
@@ -134,6 +136,7 @@ private:
     SceneNodeResources* scene_node_resources_;
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
+    IDynamicLights* dynamic_lights_;
     TimePointSeries<NINTERPOLATED> times_;
 };
 

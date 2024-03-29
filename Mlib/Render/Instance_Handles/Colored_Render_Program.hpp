@@ -43,6 +43,7 @@ struct ColoredRenderProgram: public RenderProgram {
     GLint uv_offset_location;
     GLint texture_layers_location;
     GLint alpha_distances_location;
+    GLint dynamic_emissive_location;
 };
 
 struct RenderProgramIdentifier {
@@ -55,6 +56,7 @@ struct RenderProgramIdentifier {
     size_t ntextures_color;
     size_t ntextures_alpha;
     size_t ntextures_normal;
+    bool has_dynamic_emissive;
     std::vector<size_t> lightmap_indices_color;
     std::vector<size_t> lightmap_indices_depth;
     bool has_specularmap;

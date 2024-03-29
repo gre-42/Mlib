@@ -30,7 +30,7 @@ public:
         const std::function<float()>& velocity_estimation_error);
     ~AimAt();
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 
     bool has_followed() const;
     void set_followed(DanglingPtr<SceneNode> followed_node);
