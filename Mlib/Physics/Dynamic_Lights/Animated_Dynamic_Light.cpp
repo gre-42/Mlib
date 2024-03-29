@@ -44,5 +44,5 @@ bool AnimatedDynamicLight::animation_completed(std::chrono::steady_clock::time_p
 }
 
 float AnimatedDynamicLight::elapsed(std::chrono::steady_clock::time_point time) const {
-    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<float>(time - creation_time_)).count() * s;
+    return std::chrono::duration<float>(time - creation_time_).count() * s;
 }
