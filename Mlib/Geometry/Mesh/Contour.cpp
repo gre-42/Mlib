@@ -74,9 +74,9 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                 auto v = std::make_pair(O((*t)(a).position), O((*t)(b).position));
                 if (edges.find(v) != edges.end()) {
                     if (!neighbors.insert(v).second) {
-                        const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                        if (debug_filename != nullptr) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(debug_filename);
+                        auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                        if (debug_filename.has_value()) {
+                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(debug_filename.value());
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, debug image saved");
                         } else {
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -330,9 +330,9 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     C_DEBUG(check_consistency());
                 }
             } catch (const std::runtime_error& e) {
-                const char* debug_filename = getenv("CONTOUR_DEBUG_FILENAME");
-                if (debug_filename != nullptr) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(debug_filename);
+                auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
+                if (debug_filename.has_value()) {
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(debug_filename.value());
                     THROW_OR_ABORT(std::string(e.what()) + ", debug image saved");
                 } else {
                     THROW_OR_ABORT(std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");
