@@ -2,6 +2,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Game_Logic_Config.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <iostream>
@@ -18,13 +19,14 @@ GameLogic::GameLogic(
     SupplyDepots& supply_depots,
     DeleteNodeMutex& delete_node_mutex,
     const std::function<void()>& setup_new_round)
-: spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene },
-  bystanders{ vehicle_spawners, players, scene, spawn, cfg },
-  team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round },
-  vehicle_changer_{ vehicle_spawners, delete_node_mutex },
-  advance_times_{ advance_times },
-  players_{ players },
-  supply_depots_{ supply_depots }
+    : spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
+    , bystanders{ vehicle_spawners, players, scene, spawn, cfg }
+    , team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round }
+    , vehicle_changer_{ vehicle_spawners, delete_node_mutex }
+    , advance_times_{ advance_times }
+    , vehicle_spawners_{ vehicle_spawners }
+    , players_{ players }
+    , supply_depots_{ supply_depots }
 {
     advance_times_.add_advance_time(*this);
 }
@@ -37,6 +39,7 @@ void GameLogic::advance_time(float dt, std::chrono::steady_clock::time_point tim
     // TimeGuard tg{"GameLogic::advance_time"};
     spawn.nspawns_ = 0;
     spawn.ndelete_ = 0;
+    vehicle_spawners_.advance_time(dt);
     team_deathmatch.handle_respawn();
     bystanders.handle_bystanders();
     vehicle_changer_.change_vehicles();

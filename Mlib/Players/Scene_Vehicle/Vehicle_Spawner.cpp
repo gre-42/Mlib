@@ -11,10 +11,13 @@
 using namespace Mlib;
 
 VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
-: scene_{scene},
-  player_{nullptr},
-  team_name_{team_name},
-  spotted_by_vip_{ false }
+    : scene_{ scene }
+    , player_{ nullptr }
+    , team_name_{ team_name }
+    , time_since_spawn_{ NAN }
+    , time_since_deletion_{ 0.f }
+    , spotted_by_vip_{ false }
+    , respawn_cooldown_time_{ 0 }
 {}
 
 VehicleSpawner::~VehicleSpawner() = default;
@@ -25,6 +28,10 @@ void VehicleSpawner::notify_vehicle_destroyed(RigidBodyVehicle& rigid_body_vehic
     });
     if (ndeleted != 1) {
         verbose_abort("Could not deleted exactly one vehicle");
+    }
+    if (scene_vehicles_.empty()) {
+        time_since_spawn_ = NAN;
+        time_since_deletion_ = 0.f;
     }
 }
 
@@ -59,6 +66,18 @@ Player& VehicleSpawner::get_player() {
         THROW_OR_ABORT("Player not set");
     }
     return *player_;
+}
+
+float VehicleSpawner::get_respawn_cooldown_time() const {
+    return respawn_cooldown_time_;
+}
+
+void VehicleSpawner::set_respawn_cooldown_time(float respawn_cooldown_time) {
+    respawn_cooldown_time_ = respawn_cooldown_time;
+}
+
+float VehicleSpawner::get_time_since_deletion() const {
+    return time_since_deletion_;
 }
 
 void VehicleSpawner::set_spawn_vehicle(std::function<void(const SpawnPoint&)> spawn_vehicle) {
@@ -141,19 +160,19 @@ void VehicleSpawner::notify_spawn() {
     if (has_player()) {
         player_->single_waypoint_.notify_spawn();
     }
-    spawn_time_ = std::chrono::steady_clock::now();
+    time_since_spawn_ = 0.f;
     spotted_by_vip_ = false;
 }
 
-float VehicleSpawner::seconds_since_spawn() const {
+float VehicleSpawner::get_time_since_spawn() const {
     scene_.delete_node_mutex().notify_reading();
-    if (spawn_time_ == std::chrono::steady_clock::time_point()) {
+    if (std::isnan(time_since_spawn_)) {
         THROW_OR_ABORT("Seconds since spawn requires previous call to notify_spawn");
     }
-    return std::chrono::duration<float>(std::chrono::steady_clock::now() - spawn_time_).count();
+    return time_since_spawn_;
 }
 
-bool VehicleSpawner::spotted_by_vip() const {
+bool VehicleSpawner::get_spotted_by_vip() const {
     scene_.delete_node_mutex().notify_reading();
     return spotted_by_vip_;
 }
@@ -161,4 +180,9 @@ bool VehicleSpawner::spotted_by_vip() const {
 void VehicleSpawner::set_spotted_by_vip() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     spotted_by_vip_ = true;
+}
+
+void VehicleSpawner::advance_time(float dt) {
+    time_since_spawn_ += dt;
+    time_since_deletion_ += dt;
 }

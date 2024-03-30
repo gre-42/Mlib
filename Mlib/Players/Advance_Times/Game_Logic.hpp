@@ -38,6 +38,7 @@ public:
 private:
     VehicleChanger vehicle_changer_;
     AdvanceTimes& advance_times_;
+    VehicleSpawners& vehicle_spawners_;
     Players& players_;
     SupplyDepots& supply_depots_;
     std::function<void()> setup_new_round_;

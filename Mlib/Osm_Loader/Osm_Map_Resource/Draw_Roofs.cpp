@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Base_Materials.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Rectangle_2D.hpp>
@@ -35,7 +36,7 @@ void Mlib::draw_roofs(
         tls.push_back(std::make_shared<TriangleList<double>>(
             "roof_" + std::to_string(number),
             material,
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
+            BASE_VISIBLE_TERRAIN_MATERIAL));
         auto sw = subdivided_way(
             nodes,
             bu.way.nd,

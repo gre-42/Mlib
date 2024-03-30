@@ -30,7 +30,6 @@ DECLARE_ARGUMENT(teams);
 DECLARE_ARGUMENT(library);
 }
 
-
 namespace PlayerKeys {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
@@ -75,6 +74,7 @@ DECLARE_ARGUMENT(velocity_error_std);
 DECLARE_ARGUMENT(yaw_error_std);
 DECLARE_ARGUMENT(pitch_error_std);
 DECLARE_ARGUMENT(error_alpha);
+DECLARE_ARGUMENT(respawn_cooldown_time);
 }
 
 const std::string LoadPlayers::key = "load_players";
@@ -142,7 +142,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     : defaults.at(name);
             };
             auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
-                auto player_skill = player.try_resolve(PlayerKeys::skills, name);
+                auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
                 return player_skill.has_value()
                     ? player_skill.value()
                     : default_skills.at(source).at(name);
@@ -151,14 +151,13 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<FixedArray<float, 3>>();
             auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
-            if (player.contains(PlayerKeys::controller)) {
-                auto controller = player.at<std::string>(PlayerKeys::controller);
+            if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {
                 nlohmann::json line{
                     {
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
                             vars.database.at<std::string>("CLASS") +
-                            "_for_" + controller)
+                            "_for_" + controller.value())
                     },
                     {
                         MacroKeys::arguments,
@@ -187,6 +186,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"YAW_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::yaw_error_std)},
                             {"PITCH_ERROR_STD", get_skill(SourceKeys::ai, SkillsKeys::pitch_error_std)},
                             {"ERROR_ALPHA", get_skill(SourceKeys::ai, SkillsKeys::error_alpha)},
+                            {"RESPAWN_COOLDOWN_TIME", get_skill(SourceKeys::ai, SkillsKeys::respawn_cooldown_time)},
                             {"MUTE", false},
                             {"TEAMS_WAY_POINTS_RESOURCE", args.arguments.at(KnownArgs::way_points)}
                         }

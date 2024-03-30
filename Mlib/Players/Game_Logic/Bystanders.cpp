@@ -151,7 +151,7 @@ bool Bystanders::delete_for_vip(
                 spawner.set_spotted_by_vip();
             }
         }
-        if (!spawner.spotted_by_vip() && (spawner.seconds_since_spawn() > cfg_.visible_after_delete_seconds)) {
+        if (!spawner.get_spotted_by_vip() && (spawner.get_time_since_spawn() > cfg_.visible_after_delete_time)) {
             if (!vip_->can_see(
                 *vehicle,
                 cfg_.only_terrain,

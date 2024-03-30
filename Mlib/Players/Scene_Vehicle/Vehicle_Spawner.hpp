@@ -25,6 +25,10 @@ public:
     virtual IPlayer* player() override;
 
     // Misc
+    float get_respawn_cooldown_time() const;
+    void set_respawn_cooldown_time(float respawn_cooldown_time);
+    float get_time_since_deletion() const;
+
     void set_team_name(const std::string& team_name);
     std::string get_team_name() const;
     
@@ -40,9 +44,11 @@ public:
     void set_spawn_vehicle(std::function<void(const SpawnPoint&)> spawn_vehicle);
     void spawn(const SpawnPoint& spawn_point, double spawn_y_offset);
 
-    float seconds_since_spawn() const;
-    bool spotted_by_vip() const;
+    float get_time_since_spawn() const;
+    bool get_spotted_by_vip() const;
     void set_spotted_by_vip();
+
+    void advance_time(float dt);
 private:
     void notify_spawn();
     Scene& scene_;
@@ -50,8 +56,10 @@ private:
     std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
     Player* player_;
     std::string team_name_;
-    std::chrono::steady_clock::time_point spawn_time_;
+    float time_since_spawn_;
+    float time_since_deletion_;
     bool spotted_by_vip_;
+    float respawn_cooldown_time_;
 };
 
 }

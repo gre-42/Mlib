@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Base_Materials.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Resource_Config.hpp>
@@ -145,7 +146,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(config.terrain_materials, tt)));
+            BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt)));
         tl_terrain_visuals.insert(tt, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(tt) + "_visuals" + name_suffix,
             Material{
@@ -175,7 +176,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = terrain_type_specularity(config.terrain_materials, tt, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | physics_material(config.terrain_materials, tt)));
+            BASE_VISIBLE_TERRAIN_MATERIAL | physics_material(config.terrain_materials, tt)));
         for (auto& t : ttt) {
             // BlendMapTexture bt{ .texture_descriptor = {.color = t, .normal = primary_rendering_resources.get_normalmap(t), .anisotropic_filtering_level = anisotropic_filtering_level } };
             BlendMapTexture bt = primary_rendering_resources.get_blend_map_texture(t);
@@ -213,7 +214,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity(pmit->second, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
+            BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second));
     }
     for (const auto& [road_properties, road_style] : config.street_texture) {
         auto pmit = config.street_materials.find(road_properties.type);
@@ -263,7 +264,7 @@ OsmTriangleLists::OsmTriangleLists(
                                 config),
                             // .reflect_only_y = true,
                             .draw_distance_noperations = 1000}.compute_color_mode(),
-                        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second),
+                        BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second),
                     .uvx = road_style.uvx}}); // mixed_texture: terrain_texture
         }
         if (blend &&
@@ -326,7 +327,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity((config.extrude_curb_amount == 0 && tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
+            BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second)); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.curb2_street_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -346,7 +347,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity((tpe != RoadType::WALL) ? CURB_REFLECTANCE : DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second)); // mixed_texture: terrain_texture
+            BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second)); // mixed_texture: terrain_texture
     }
     for (const auto& [tpe, texture] : config.air_curb_street_texture) {
         auto pmit = config.street_materials.find(tpe);
@@ -367,7 +368,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_specularity(DEFAULT_REFLECTANCE, config),
                 .draw_distance_noperations = 1000}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | pmit->second));
+            BASE_VISIBLE_TERRAIN_MATERIAL | pmit->second));
     }
     tl_racing_line = std::make_shared<TriangleList<double>>(
         "racing_line" + name_suffix,
@@ -386,7 +387,7 @@ OsmTriangleLists::OsmTriangleLists(
     tl_ditch = std::make_shared<TriangleList<double>>(
         "ditch" + name_suffix,
         Material{},
-        PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE | PhysicsMaterial::SURFACE_BASE_TARMAC);
+        BASE_INVISIBLE_TERRAIN_MATERIAL | PhysicsMaterial::SURFACE_BASE_TARMAC);
     tl_air_support = std::make_shared<TriangleList<double>>(
         "air_support" + name_suffix,
         Material{
@@ -396,7 +397,7 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::ONCE,
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     tl_tunnel_crossing = std::make_shared<TriangleList<double>>(
         "tunnel_crossing" + name_suffix,
         Material{
@@ -406,7 +407,7 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::ONCE,
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     tl_tunnel_pipe = std::make_shared<TriangleList<double>>(
         "tunnel_pipe" + name_suffix,
         Material{
@@ -416,22 +417,22 @@ OsmTriangleLists::OsmTriangleLists(
             .aggregate_mode = AggregateMode::ONCE,
             .shading = material_specularity(DEFAULT_REFLECTANCE, config),
             .draw_distance_noperations = 1000}.compute_color_mode(),
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     tl_tunnel_bdry = std::make_shared<TriangleList<double>>(
         "tunnel_bdry" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     tl_entrance[EntranceType::TUNNEL] = std::make_shared<TriangleList<double>>(
         "tunnel_entrance" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     tl_entrance[EntranceType::BRIDGE] = std::make_shared<TriangleList<double>>(
         "bridge_entrance" + name_suffix,
         Material{
             .shading = material_specularity(DEFAULT_REFLECTANCE, config)},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE);
+        BASE_VISIBLE_TERRAIN_MATERIAL);
     entrances[EntranceType::TUNNEL];
     entrances[EntranceType::BRIDGE];
     tl_water.insert(WaterType::UNDEFINED, std::make_shared<TriangleList<double>>(

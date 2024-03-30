@@ -1,6 +1,7 @@
 #include "Draw_Building_Walls.hpp"
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Base_Materials.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Building.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Get_Smooth_Building_Levels.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
@@ -33,7 +34,7 @@ void Mlib::draw_building_walls(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::ATTR_CONCAVE));
+                BASE_VISIBLE_TERRAIN_MATERIAL));
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;

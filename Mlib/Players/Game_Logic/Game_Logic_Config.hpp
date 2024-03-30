@@ -10,7 +10,7 @@ struct GameLogicConfig {
     float r_delete_far = 300 * meters;
     float r_neighbors = 20 * meters;
     float visible_after_spawn_time = 2 * s;
-    float visible_after_delete_seconds = 3.f;
+    float visible_after_delete_time = 3 * s;
     float spawn_y_offset = 0.7f * meters;
     bool only_terrain = true;
     float can_see_y_offset = 2 * meters;

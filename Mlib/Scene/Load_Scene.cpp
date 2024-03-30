@@ -123,6 +123,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Create_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Spawner_Set_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Spawner_Set_Player.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Spawners/Spawner_Set_Respawn_Cooldown_Time.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Winner_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track.hpp>
@@ -386,6 +387,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetVip::key, SetVip::json_user_function);
     register_json_user_function(SpawnerSetNodes::key, SpawnerSetNodes::json_user_function);
     register_json_user_function(SpawnerSetPlayer::key, SpawnerSetPlayer::json_user_function);
+    register_json_user_function(SpawnerSetRespawnCooldownTime::key, SpawnerSetRespawnCooldownTime::json_user_function);
     register_json_user_function(StartRace::key, StartRace::json_user_function);
     register_json_user_function(TeamSetWaypoint::key, TeamSetWaypoint::json_user_function);
     register_json_user_function(UiBackground::key, UiBackground::json_user_function);

@@ -17,7 +17,13 @@ VehicleSpawner& VehicleSpawners::get(const std::string& name) {
 }
 
 void VehicleSpawners::set(const std::string& name, std::unique_ptr<VehicleSpawner>&& spawner) {
-    if (!spawners_.insert({name, std::move(spawner)}).second) {
+    if (!spawners_.try_emplace(name, std::move(spawner)).second) {
         THROW_OR_ABORT("Vehicle spawner with name \"" + name + "\" already exists");
+    }
+}
+
+void VehicleSpawners::advance_time(float dt) {
+    for (auto& s : spawners_) {
+        s.second->advance_time(dt);
     }
 }

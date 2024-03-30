@@ -17,6 +17,7 @@ public:
     inline std::map<std::string, std::unique_ptr<VehicleSpawner>>& spawners() {
         return spawners_;
     }
+    void advance_time(float dt);
 private:
     std::map<std::string, std::unique_ptr<VehicleSpawner>> spawners_;
 };
