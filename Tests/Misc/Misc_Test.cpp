@@ -144,7 +144,8 @@ struct MyContainer {
 
 void test_dangling_base_class() {
     MyClass a;
-    a.ref<Object>(CURRENT_SOURCE_LOCATION);
+    DanglingBaseClassRef<Object>{ a, CURRENT_SOURCE_LOCATION };
+    // a.ref<Object>(CURRENT_SOURCE_LOCATION);
     // new MyContainer{ a.ref<Object>(CURRENT_SOURCE_LOCATION) };
 }
 

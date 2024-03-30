@@ -27,9 +27,9 @@ static std::map<ZorderAndId, SceneNodeAndRenderLogic>::iterator
 }
 
 RenderLogics::RenderLogics(UiFocus& ui_focus)
-: ui_focus_{ui_focus},
-  next_smallest_id_{0},
-  next_largest_id_{1}
+    : ui_focus_{ ui_focus }
+    , next_smallest_id_{ 0 }
+    , next_largest_id_{ 1 }
 {}
 
 RenderLogics::~RenderLogics() {
@@ -38,7 +38,7 @@ RenderLogics::~RenderLogics() {
     for (const auto& [_, n] : render_logics_) {
         if ((n.node != nullptr) && !visited_nodes.contains(n.node)) {
             visited_nodes.insert(n.node);
-            n.node->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            n.node->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
     }
 }
@@ -96,7 +96,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
     auto node = it->second.node;
     render_logics_.erase(it);
     if ((node != nullptr) && (find_render_logic(*node, render_logics_) == render_logics_.end())) {
-        node->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+        node->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
 }
 
@@ -105,7 +105,7 @@ void RenderLogics::insert(DanglingPtr<SceneNode> scene_node, const std::shared_p
     if (scene_node != nullptr &&
         (find_render_logic(*scene_node, render_logics_) == render_logics_.end()))
     {
-        scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+        scene_node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     }
     ZorderAndId zi{
         .z = z_order,

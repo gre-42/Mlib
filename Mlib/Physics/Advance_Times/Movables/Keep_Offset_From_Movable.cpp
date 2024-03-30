@@ -19,7 +19,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     , followed_{ &followed }
     , offset_{ offset }
 {
-    followed_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    followed_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 KeepOffsetFromMovable::~KeepOffsetFromMovable()
@@ -51,7 +51,7 @@ void KeepOffsetFromMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_ob
         }
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
         follower_name_.clear();
         advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);

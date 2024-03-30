@@ -44,7 +44,7 @@ CountDownLogic::CountDownLogic(
 CountDownLogic::~CountDownLogic() {
     if (node_ != nullptr) {
         node_->clearing_observers.remove(
-            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
     }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);

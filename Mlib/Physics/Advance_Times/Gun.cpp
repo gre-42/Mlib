@@ -176,10 +176,10 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         delete_node_mutex_,
         time);
     if (player_ != nullptr) {
-        player_->destruction_observers.add(bullet->ref<DestructionObserver<const IPlayer&>>(CURRENT_SOURCE_LOCATION));
+        player_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
     }
     if (team_ != nullptr) {
-        team_->destruction_observers.add(bullet->ref<DestructionObserver<const ITeam&>>(CURRENT_SOURCE_LOCATION));
+        team_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
     }
     advance_times_.add_advance_time(*bullet);
     // Destruction order: Node -> Rigid body (collision observers) -> Bullet

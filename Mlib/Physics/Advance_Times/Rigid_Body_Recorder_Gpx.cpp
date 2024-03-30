@@ -24,7 +24,7 @@ RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     , track_writer_{ filename }
     , start_time_{ std::chrono::steady_clock::now() }
 {
-    recorded_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    recorded_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 void RigidBodyRecorderGpx::advance_time(float dt, std::chrono::steady_clock::time_point time) {

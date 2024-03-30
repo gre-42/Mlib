@@ -54,7 +54,7 @@ DanglingBaseClassRef<IAbsoluteMovable> RigidBodyPlayback::get_playback_object(si
     if (i >= playback_objects_.size()) {
         THROW_OR_ABORT("Playback-object index out of bounds");
     }
-    return playback_objects_[i]->ref<IAbsoluteMovable>(CURRENT_SOURCE_LOCATION);
+    return { *playback_objects_[i], CURRENT_SOURCE_LOCATION };
 }
 
 void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {

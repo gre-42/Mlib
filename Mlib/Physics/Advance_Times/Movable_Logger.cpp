@@ -14,7 +14,7 @@ MovableLogger::MovableLogger(
   status_writer_{status_writer},
   log_components_{log_components}
 {
-    scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    scene_node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 void MovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {

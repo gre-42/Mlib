@@ -60,8 +60,8 @@ public:
     virtual ~NodeHiderWithEvent() override {
         // This can happen in case of an exception.
         if (camera_node_ != nullptr) {
-            camera_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
-            node_to_hide_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+            node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
     }
 
@@ -73,9 +73,9 @@ public:
             on_destroy_();
         }
         if (destroyed_object.ptr() == node_to_hide_) {
-            camera_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         } else if (destroyed_object.ptr() == camera_node_) {
-            node_to_hide_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
             node_to_hide_->remove_node_hider(*this);
         } else {
             verbose_abort("Unknown destroyed object");
@@ -189,8 +189,8 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             macro_line_executor(on_update.value(), &local_args, nullptr);
         });
-    node_to_hide->clearing_observers.add(node_hider->ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
-    camera_node->clearing_observers.add(node_hider->ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    node_to_hide->clearing_observers.add({ *node_hider, CURRENT_SOURCE_LOCATION });
+    camera_node->clearing_observers.add({ *node_hider, CURRENT_SOURCE_LOCATION });
     node_to_hide->insert_node_hider(*node_hider);
     physics_engine.advance_times_.add_advance_time(std::move(node_hider));
 }

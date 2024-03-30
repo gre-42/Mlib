@@ -57,7 +57,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
     physics_engine.advance_times_.add_advance_time(*countdown_logic);
-    node->clearing_observers.add(countdown_logic->ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    node->clearing_observers.add({ *countdown_logic, CURRENT_SOURCE_LOCATION });
     render_logics.append(node.get(DP_LOC), countdown_logic, args.arguments.at<int>(KnownArgs::z_order));
     scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
 }

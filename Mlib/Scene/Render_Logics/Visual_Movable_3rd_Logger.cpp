@@ -32,13 +32,13 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
   ttf_filename_{std::move(ttf_filename)},
   font_height_{font_height}
 {
-    scene_node->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    scene_node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() {
     if (scene_node_ != nullptr) {
         scene_node_->clearing_observers.remove(
-            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
     }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);

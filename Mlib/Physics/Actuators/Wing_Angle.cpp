@@ -10,14 +10,14 @@ WingAngle::WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray
     , rotation_axis_{rotation_axis}
 {
     if (node != nullptr) {
-        node->set_relative_movable({*this, CURRENT_SOURCE_LOCATION});
+        node->set_relative_movable({ *this, CURRENT_SOURCE_LOCATION });
     }
 }
 
 WingAngle::~WingAngle() {
     if (node_ != nullptr) {
         node_->clearing_observers.remove(
-            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
         if (node_->has_relative_movable()) {
             if (&node_->get_relative_movable() != this) {

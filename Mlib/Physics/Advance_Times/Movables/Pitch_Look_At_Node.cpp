@@ -81,7 +81,7 @@ void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
         THROW_OR_ABORT("Head node already set");
     }
     head_node_ = head_node.ptr();
-    head_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    head_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 void PitchLookAtNode::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {

@@ -54,11 +54,11 @@ void LookAtMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     }
     if (destroyed_object.ptr() == follower_node_) {
         followed_node_->clearing_observers.remove(
-            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
     } else if (destroyed_object.ptr() == followed_node_) {
         follower_node_->clearing_observers.remove(
-            ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+            { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
         if (!follower_node_->shutting_down()) {
             scene_.schedule_delete_root_node(follower_name_);

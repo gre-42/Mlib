@@ -15,12 +15,12 @@ public:
         std::unique_ptr<TAbsoluteMovable>&& absolute_movable,
         DanglingBaseClassPtr<DestructionObserver<DanglingRef<SceneNode>>> destruction_observer,
         INodeHider* node_hider)
-    : absolute_movable{std::move(absolute_movable)},
-      absolute_movable_ptr_{this->absolute_movable->template ptr<IAbsoluteMovable>(CURRENT_SOURCE_LOCATION)},
-      destruction_observer_{destruction_observer},
-      node_hider_{node_hider},
-      node_{node},
-      lock_{node->mutex_}
+        : absolute_movable{ std::move(absolute_movable) }
+        , absolute_movable_ptr_{ *this->absolute_movable, CURRENT_SOURCE_LOCATION }
+        , destruction_observer_{ destruction_observer }
+        , node_hider_{ node_hider }
+        , node_{ node }
+        , lock_{ node->mutex_ }
     {
         if (node->absolute_movable_ != nullptr) {
             THROW_OR_ABORT("Absolute movable already set");
@@ -33,7 +33,7 @@ public:
     : AbsoluteMovableSetter{
         node,
         std::move(absolute_movable),
-        absolute_movable ->template ptr<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION),
+        { *absolute_movable, CURRENT_SOURCE_LOCATION },
         optional_cast<INodeHider*>(absolute_movable.get())}
     {}
     AbsoluteMovableSetter(

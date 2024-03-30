@@ -21,10 +21,10 @@ class DanglingBaseClass: public virtual Object {
 public:
     DanglingBaseClass();
     virtual ~DanglingBaseClass() override;
-    template <class T>
-    DanglingBaseClassPtr<T> ptr(SourceLocation loc) const { return DanglingBaseClassPtr<T>(*const_cast<DanglingBaseClass*>(this), loc); }
-    template <class T>
-    DanglingBaseClassRef<T> ref(SourceLocation loc) const { return DanglingBaseClassRef<T>(*const_cast<DanglingBaseClass*>(this), loc); }
+    // template <class T>
+    // DanglingBaseClassPtr<T> ptr(SourceLocation loc) const { return DanglingBaseClassPtr<T>(*const_cast<DanglingBaseClass*>(this), loc); }
+    // template <class T>
+    // DanglingBaseClassRef<T> ref(SourceLocation loc) const { return DanglingBaseClassRef<T>(*const_cast<DanglingBaseClass*>(this), loc); }
 private:
     void add_source_location(const void* ptr, SourceLocation loc);
     void remove_source_location(const void* ptr);
@@ -71,15 +71,29 @@ public:
         }
         return *this;
     }
-    DanglingBaseClassPtr(DanglingBaseClass& b, SourceLocation loc)
+    // explicit DanglingBaseClassPtr(DanglingBaseClass& b, SourceLocation loc)
+    //     : b_{&b}
+    //     , v_{dynamic_cast<T*>(&b)}
+    // {
+    //     if (v_ == nullptr) {
+    //         verbose_abort("DanglingBaseClassPtr: Cannot cast to desired type");
+    //     }
+    //     b_->add_source_location(this, loc);
+    // }
+    DanglingBaseClassPtr(DanglingBaseClass& b, T& v, SourceLocation loc)
         : b_{&b}
-        , v_{dynamic_cast<T*>(&b)}
+        , v_{&v}
     {
-        if (v_ == nullptr) {
-            verbose_abort("DanglingBaseClassPtr: Cannot cast to desired type");
-        }
         b_->add_source_location(this, loc);
     }
+    template <class TDerived>
+    DanglingBaseClassPtr(TDerived& b, SourceLocation loc)
+        : DanglingBaseClassPtr{ b, b, loc }
+    {}
+    template <class TDerived>
+    DanglingBaseClassPtr(const TDerived& b, SourceLocation loc)
+        : DanglingBaseClassPtr{ const_cast<TDerived&>(b), b, loc }
+    {}
     DanglingBaseClassPtr& operator = (std::nullptr_t) {
         if (v_ != nullptr) {
             b_->remove_source_location(this);
@@ -94,13 +108,13 @@ public:
         if (v_ == nullptr) {
             verbose_abort("DanglingBaseClassPtr: Nullptr dereference");
         }
-        return DanglingBaseClassRef<T>(*b_, b_->loc(this));
+        return DanglingBaseClassRef<T>(*b_, *v_, b_->loc(this));
     }
     DanglingBaseClassRef<T> operator * () const {
         if (v_ == nullptr) {
             verbose_abort("DanglingBaseClassPtr: Nullptr dereference");
         }
-        return DanglingBaseClassRef<T>(*b_, b_->loc(this));
+        return DanglingBaseClassRef<T>(*b_, *v_, b_->loc(this));
     }
     T* operator -> () const {
         return v_;
@@ -129,27 +143,41 @@ class DanglingBaseClassRef {
     DanglingBaseClassRef(const DanglingBaseClassRef&) = delete;
     DanglingBaseClassRef& operator = (const DanglingBaseClassRef&) = delete;
 public:
-    DanglingBaseClassRef(DanglingBaseClass& b, SourceLocation loc)
-        : b_{b}
-        , v_{dynamic_cast<T*>(&b)}
+    // explicit DanglingBaseClassRef(DanglingBaseClass& b, SourceLocation loc)
+    //     : b_{b}
+    //     , v_{dynamic_cast<T*>(&b)}
+    // {
+    //     if (v_ == nullptr) {
+    //         verbose_abort("DanglingBaseClassRef: Cannot cast to desired type");
+    //     }
+    //     b_.add_source_location(this, loc);
+    // }
+    explicit DanglingBaseClassRef(DanglingBaseClass& b, T& v, SourceLocation loc)
+        : b_{ b }
+        , v_{ v }
     {
-        if (v_ == nullptr) {
-            verbose_abort("DanglingBaseClassRef: Cannot cast to desired type");
-        }
         b_.add_source_location(this, loc);
     }
+    template <class TDerived>
+    DanglingBaseClassRef(TDerived& b, SourceLocation loc)
+        : DanglingBaseClassRef{ b, b, loc }
+    {}
+    template <class TDerived>
+    DanglingBaseClassRef(const TDerived& b, SourceLocation loc)
+        : DanglingBaseClassRef{ const_cast<TDerived&>(b), b, loc }
+    {}
     ~DanglingBaseClassRef() {
         b_.remove_source_location(this);
     }
     DanglingBaseClassPtr<T> ptr() const {
-        return DanglingBaseClassPtr<T>(b_, b_.loc(this));
+        return DanglingBaseClassPtr<T>{ b_, v_, b_.loc(this) };
     }
     T* operator -> () const {
-        return v_;
+        return &v_;
     }
 private:
     DanglingBaseClass& b_;
-    T* v_;
+    T& v_;
 };
 
 }

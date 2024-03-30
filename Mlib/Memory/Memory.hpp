@@ -7,9 +7,10 @@ namespace Mlib {
 template <class T, class TSender>
 class observer_ptr {
 public:
-    observer_ptr(const DanglingBaseClass& ptr, SourceLocation loc)
-        : ptr_{ ptr.ptr<T>(loc) }
-        , observer_{ ptr.ptr<DestructionObserver<TSender>>(loc) }
+    template <class TDerived>
+    observer_ptr(TDerived& ptr, SourceLocation loc)
+        : ptr_{ ptr, loc }
+        , observer_{ ptr, loc }
     {}
     observer_ptr(DanglingBaseClassPtr<T> ptr, DanglingBaseClassPtr<DestructionObserver<TSender>> observer)
         : ptr_{ ptr }

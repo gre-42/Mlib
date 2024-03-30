@@ -42,12 +42,12 @@ CheckPointsPacenotes::CheckPointsPacenotes(
   moving_node_{moving_node.ptr()}
 {
     pacenotes_.reserve(pacenotes_maximum_number);
-    moving_node_->clearing_observers.add(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+    moving_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 CheckPointsPacenotes::~CheckPointsPacenotes() {
     if (moving_node_ != nullptr) {
-        moving_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+        moving_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
 }
 

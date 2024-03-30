@@ -107,7 +107,7 @@ void FollowMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
         followed_ = nullptr;
     } else {
         if (followed_node_ != nullptr) {
-            followed_node_->clearing_observers.remove(ref<DestructionObserver<DanglingRef<SceneNode>>>(CURRENT_SOURCE_LOCATION));
+            followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
         if (destroyed_object->has_absolute_movable()) {
             if (&destroyed_object->get_absolute_movable() != this) {
