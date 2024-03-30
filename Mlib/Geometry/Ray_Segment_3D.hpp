@@ -64,6 +64,9 @@ public:
         }
         return polygon.contains(*intersection_point);
     }
+    FixedArray<TData, 3> stop() const {
+        return start + direction * length;
+    }
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;
     TData length;

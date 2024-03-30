@@ -31,23 +31,21 @@ bool CollisionQuery::can_see(
         THROW_OR_ABORT("CollisionQuery::can_see received (nearly) identical watcher and watched");
     }
     dir /= dist;
-    for (double alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.cfg_.static_radius) {
-        double alpha1 = std::min(alpha0 + physics_engine_.cfg_.static_radius, dist);
+    for (double alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.config().static_radius) {
+        double alpha1 = std::min(alpha0 + physics_engine_.config().static_radius, dist);
         if (alpha1 - alpha0 < 1e-12) {
             break;
         }
         RaySegment3D<double> ray{
-            start,
+            start + alpha0 * dir,
             dir,
             alpha1 - alpha0 };
-        FixedArray<FixedArray<double, 3>, 2> l{
-            start + alpha0 * dir,
-            start + alpha1 * dir};
+        FixedArray<FixedArray<double, 3>, 2> l{ ray.start, ray.stop() };
         double t_min = INFINITY;
         std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*> triangle_min;
         BoundingSphere<double, 3> bs{ l };
         if (!only_terrain) {
-            for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects_) {
+            for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
                 if (&o0.rigid_body == excluded0 ||
                     &o0.rigid_body == excluded1)
                 {
@@ -109,7 +107,7 @@ bool CollisionQuery::can_see(
                 }
             }
         }
-        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh_.visit(
+        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
             AxisAlignedBoundingBox{ bs.center(), bs.radius() },
             [&](const RigidBodyAndIntersectableMesh& rm0){
                 if (!any(rm0.mesh.physics_material & collidable_mask)) {
@@ -157,9 +155,12 @@ bool CollisionQuery::can_see(
         {
             return false;
         }
-        if (!physics_engine_.rigid_bodies_.triangle_bvh_.visit(
+        if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
             AxisAlignedBoundingBox{ bs.center(), bs.radius() },
             [&](const RigidBodyAndCollisionTriangleSphere& t0){
+                if (!any(t0.ctp.physics_material & collidable_mask)) {
+                    return true;
+                }
                 double t;
                 FixedArray<double, 3> intersection_pt;
                 if (ray.intersects(
@@ -190,7 +191,6 @@ bool CollisionQuery::can_see(
                             linfo() << "-" << t0.rb.name() << "-";
                             THROW_OR_ABORT("gggg");
                         }
-                        return true;
                     }
                 }
                 return true;

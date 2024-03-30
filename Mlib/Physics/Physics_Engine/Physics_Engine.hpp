@@ -20,7 +20,6 @@ class IParticleRenderer;
 class ITrailRenderer;
 
 class PhysicsEngine {
-    friend CollisionQuery;
 public:
     PhysicsEngine(
         const PhysicsEngineConfig& cfg,
@@ -42,6 +41,7 @@ public:
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
     void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
+    inline const PhysicsEngineConfig& config() const { return cfg_; }
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;

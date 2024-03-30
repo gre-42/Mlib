@@ -210,11 +210,12 @@ void TriangleList<TPos>::draw_rectangle_wo_normals(
     ColoredVertex<TPos>** pp11b)
 {
     if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
-        is_delaunay(
-            FixedArray<TPos, 2>{p00(0), p00(1)},
-            FixedArray<TPos, 2>{p10(0), p10(1)},
-            FixedArray<TPos, 2>{p11(0), p11(1)},
-            FixedArray<TPos, 2>{p01(0), p01(1)}))
+        ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
+            is_delaunay(
+                FixedArray<TPos, 2>{p00(0), p00(1)},
+                FixedArray<TPos, 2>{p10(0), p10(1)},
+                FixedArray<TPos, 2>{p11(0), p11(1)},
+                FixedArray<TPos, 2>{p01(0), p01(1)})))
     {
         draw_triangle_wo_normals(p00, p11, p01, c00, c11, c01, u00, u11, u01, b00, b11, b01, normal_error_behavior, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_wo_normals(p00, p10, p11, c00, c10, c11, u00, u10, u11, b00, b10, b11, normal_error_behavior, tangent_error_behavior, pp00b, pp10b, pp11b);

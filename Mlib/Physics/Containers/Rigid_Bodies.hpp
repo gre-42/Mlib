@@ -64,7 +64,6 @@ enum class CollisionRidgeBakingStatus {
 
 class RigidBodies {
     friend class PhysicsEngine;
-    friend class CollisionQuery;
 public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     ~RigidBodies();
