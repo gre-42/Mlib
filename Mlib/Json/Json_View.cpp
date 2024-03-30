@@ -28,6 +28,10 @@ nlohmann::json JsonView::try_resolve() const {
     return (const nlohmann::json&)(*this);
 }
 
+std::optional<nlohmann::json> JsonView::try_resolve(const std::string& key) const {
+    return try_at(key);
+}
+
 std::optional<nlohmann::json> JsonView::try_at(const std::string& name) const {
     return j_.contains(name)
         ? j_.at(name)

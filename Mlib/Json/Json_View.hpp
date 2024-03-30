@@ -24,8 +24,9 @@ public:
         const nlohmann::json& j,
         CheckIsObjectBehavior check = CheckIsObjectBehavior::CHECK);
     nlohmann::json try_resolve() const;
+    std::optional<nlohmann::json> try_resolve(const std::string& key) const;
     template <class TKey0, class... TKeys1>
-    std::optional<nlohmann::json> try_resolve(const TKey0& key0, TKeys1... path) {
+    std::optional<nlohmann::json> try_resolve(const TKey0& key0, TKeys1... path) const {
         auto res0 = try_at(key0);
         if (res0.has_value()) {
             return JsonView{ res0.value() }.try_resolve(path...);
