@@ -1,6 +1,7 @@
 #include "Spawner_Set_Respawn_Cooldown_Time.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -29,5 +30,5 @@ void SpawnerSetRespawnCooldownTime::execute(const LoadSceneJsonUserFunctionArgs&
 {
     vehicle_spawners
         .get(args.arguments.at<std::string>(KnownArgs::spawner))
-        .set_respawn_cooldown_time(args.arguments.at<float>(KnownArgs::time));
+        .set_respawn_cooldown_time(args.arguments.at<float>(KnownArgs::time) * s);
 }
