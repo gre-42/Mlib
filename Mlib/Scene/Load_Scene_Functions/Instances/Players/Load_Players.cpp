@@ -142,8 +142,9 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     : defaults.at(name);
             };
             auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
-                return player.contains(PlayerKeys::skills) && player.at(PlayerKeys::skills).contains(source) && player.at(PlayerKeys::skills).at(source).contains(name)
-                    ? player.at(PlayerKeys::skills).at(source).at(name)
+                auto player_skill = player.try_resolve(PlayerKeys::skills, name);
+                return player_skill.has_value()
+                    ? player_skill.value()
                     : default_skills.at(source).at(name);
             };
             auto team = player.at<std::string>(PlayerKeys::team);
