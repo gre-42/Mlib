@@ -77,7 +77,7 @@ void Mlib::add_models_to_model_nodes(
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
                     if (supplies_match[1].str() == "meta:cooldown_seconds") {
                         prn.supplies_cooldown = safe_stof(v) * s;
-                    } else if (!prn.supplies.insert({supplies_match[1].str(), safe_stox<uint32_t>(v, "supplies")}).second) {
+                    } else if (!prn.supplies.try_emplace(supplies_match[1].str(), safe_stox<uint32_t>(v, "supplies")).second) {
                         THROW_OR_ABORT("Could not insert supplies");
                     }
                 }
