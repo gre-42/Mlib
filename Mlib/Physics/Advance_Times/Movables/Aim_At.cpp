@@ -22,7 +22,8 @@ AimAt::AimAt(
     float locked_on_cosine_min,
     const std::function<float()>& velocity_estimation_error)
     : shutting_down_{ false }
-    , point_to_aim_at_{ NAN }
+    , absolute_point_to_aim_at_{ NAN }
+    , relative_point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
     , advance_times_{ advance_times }
     , follower_{ get_rigid_body_vehicle(follower_node) }
@@ -61,8 +62,8 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 
                 rbp.v_ *= (1 + verr);
                 rbp.advance_time(t);
                 if (i == 10) {
-                    point_to_aim_at_ = absolute_model_matrix.itransform(
-                        offset + rbp.transform_to_world_coordinates(followed_->target_));
+                    absolute_point_to_aim_at_ = offset + rbp.transform_to_world_coordinates(followed_->target_);
+                    relative_point_to_aim_at_ = absolute_model_matrix.itransform(absolute_point_to_aim_at_);
                     break;
                 }
                 Aim aim{
@@ -74,7 +75,8 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 
                     1e-6,
                     10 };
                 if (std::isnan(aim.aim_offset)) {
-                    point_to_aim_at_ = NAN;
+                    absolute_point_to_aim_at_ = NAN;
+                    relative_point_to_aim_at_ = NAN;
                     target_locked_on_ = false;
                     return;
                 }
@@ -83,16 +85,17 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 
             }
         }
         {
-            auto dir = point_to_aim_at_ - absolute_model_matrix.t();
+            auto dir = absolute_point_to_aim_at_ - absolute_model_matrix.t();
             auto l2 = sum(squared(dir));
             if (l2 < 1e-12) {
                 target_locked_on_ = false;
             } else {
-                target_locked_on_ = std::abs(dot0d((dir / std::sqrt(l2)).casted<float>(), follower_.rbp_.abs_z())) < locked_on_cosine_min_;
+                target_locked_on_ = -dot0d((dir / std::sqrt(l2)).casted<float>(), follower_.rbp_.abs_z()) > locked_on_cosine_min_;
             }
         }
     } else {
-        point_to_aim_at_ = NAN;
+        absolute_point_to_aim_at_ = NAN;
+        relative_point_to_aim_at_ = NAN;
         target_locked_on_ = false;
     }
 }
@@ -134,6 +137,10 @@ void AimAt::set_bullet_feels_gravity(bool value) {
     bullet_feels_gravity_ = value;
 }
 
-const FixedArray<double, 3>& AimAt::point_to_aim_at() const {
-    return point_to_aim_at_;
+const FixedArray<double, 3>& AimAt::absolute_point_to_aim_at() const {
+    return absolute_point_to_aim_at_;
+}
+
+const FixedArray<double, 3>& AimAt::relative_point_to_aim_at() const {
+    return relative_point_to_aim_at_;
 }

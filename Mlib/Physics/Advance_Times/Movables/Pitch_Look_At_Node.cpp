@@ -46,8 +46,8 @@ void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatr
 }
 
 void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
-    if (!any(isnan(aim_at_node_.point_to_aim_at()))) {
-        float dpitch = z_to_pitch(-aim_at_node_.point_to_aim_at());
+    if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
+        float dpitch = z_to_pitch(-aim_at_node_.relative_point_to_aim_at());
         float epitch = increment_pitch_error_();
         increment_pitch(dpitch + epitch, 1.f);
     }

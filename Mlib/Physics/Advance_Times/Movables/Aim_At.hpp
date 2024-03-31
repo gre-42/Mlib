@@ -39,11 +39,13 @@ public:
     void set_bullet_velocity(float value);
     void set_bullet_feels_gravity(bool value);
 
-    const FixedArray<double, 3>& point_to_aim_at() const;
+    const FixedArray<double, 3>& absolute_point_to_aim_at() const;
+    const FixedArray<double, 3>& relative_point_to_aim_at() const;
 
 private:
     bool shutting_down_;
-    FixedArray<double, 3> point_to_aim_at_;
+    FixedArray<double, 3> absolute_point_to_aim_at_;
+    FixedArray<double, 3> relative_point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;
     AdvanceTimes& advance_times_;
     const RigidBodyVehicle& follower_;

@@ -34,8 +34,8 @@ void YawPitchLookAtNodes::set_updated_relative_model_matrix(const Transformation
 }
 
 void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
-    if (!any(isnan(aim_at_node_.point_to_aim_at()))) {
-        float dyaw = z_to_yaw(-aim_at_node_.point_to_aim_at());
+    if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
+        float dyaw = z_to_yaw(-aim_at_node_.relative_point_to_aim_at());
         float eyaw = increment_yaw_error_();
         increment_yaw(dyaw + eyaw, 1.f);
     }
