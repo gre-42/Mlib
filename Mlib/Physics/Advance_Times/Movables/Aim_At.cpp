@@ -19,12 +19,13 @@ AimAt::AimAt(
     float bullet_velocity,
     bool bullet_feels_gravity,
     float gravity,
-    float locked_on_cosine_min,
+    float locked_on_cosine,
     const std::function<float()>& velocity_estimation_error)
     : shutting_down_{ false }
     , absolute_point_to_aim_at_{ NAN }
     , relative_point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
+    , gun_node_{ gun_node.ptr() }
     , advance_times_{ advance_times }
     , follower_{ get_rigid_body_vehicle(follower_node) }
     , followed_{ nullptr }
@@ -32,7 +33,7 @@ AimAt::AimAt(
     , bullet_velocity_{ bullet_velocity }
     , bullet_feels_gravity_{ bullet_feels_gravity }
     , gravity_{ gravity }
-    , locked_on_cosine_min_{ locked_on_cosine_min }
+    , locked_on_cosine_{ locked_on_cosine }
     , target_locked_on_{ false }
     , velocity_estimation_error_{ velocity_estimation_error }
     , gun_node_on_destroy_{ gun_node->on_destroy }
@@ -90,7 +91,7 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 
             if (l2 < 1e-12) {
                 target_locked_on_ = false;
             } else {
-                target_locked_on_ = -dot0d((dir / std::sqrt(l2)).casted<float>(), follower_.rbp_.abs_z()) > locked_on_cosine_min_;
+                target_locked_on_ = -dot0d((dir / std::sqrt(l2)).casted<float>(), gun_node_->absolute_model_matrix().R().column(2)) > locked_on_cosine_;
             }
         }
     } else {

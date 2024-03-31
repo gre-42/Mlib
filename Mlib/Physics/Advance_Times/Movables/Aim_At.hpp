@@ -26,7 +26,7 @@ public:
         float bullet_velocity,
         bool bullet_feels_gravity,
         float gravity,
-        float locked_on_cosine_min,
+        float locked_on_cosine,
         const std::function<float()>& velocity_estimation_error);
     ~AimAt();
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -47,6 +47,7 @@ private:
     FixedArray<double, 3> absolute_point_to_aim_at_;
     FixedArray<double, 3> relative_point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;
+    DanglingPtr<SceneNode> gun_node_;
     AdvanceTimes& advance_times_;
     const RigidBodyVehicle& follower_;
     const RigidBodyVehicle* followed_;
@@ -54,7 +55,7 @@ private:
     float bullet_velocity_;
     bool bullet_feels_gravity_;
     float gravity_;
-    float locked_on_cosine_min_;
+    float locked_on_cosine_;
     bool target_locked_on_;
     std::function<float()> velocity_estimation_error_;
     DestructionGuards dgs_;

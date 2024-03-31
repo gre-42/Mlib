@@ -24,7 +24,7 @@ DECLARE_ARGUMENT(bullet_start_offset);
 DECLARE_ARGUMENT(bullet_velocity);
 DECLARE_ARGUMENT(bullet_feels_gravity);
 DECLARE_ARGUMENT(gravity);
-DECLARE_ARGUMENT(locked_on_max);
+DECLARE_ARGUMENT(locked_on_angle);
 DECLARE_ARGUMENT(velocity_error_std);
 DECLARE_ARGUMENT(error_alpha);
 }
@@ -74,7 +74,7 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
         bullet_velocity,
         bullet_feels_gravity,
         gravity,
-        std::cos(args.arguments.at<float>(KnownArgs::locked_on_max) * degrees),
+        std::cos(args.arguments.at<float>(KnownArgs::locked_on_angle) * degrees),
         velocity_estimation_error);
     aim_at->set_followed(followed_node);
 }
