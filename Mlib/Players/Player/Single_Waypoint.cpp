@@ -124,8 +124,9 @@ void SingleWaypoint::move_to_waypoint() {
             }
         } else if (dl2 < squared(player_.driving_mode_.collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
-                auto z = player_rb.rbp_.abs_z();
-                if (dot0d(d, z.casted<double>()) / std::sqrt(dl2) < -player_.driving_mode_.collision_avoidance_cos) {
+                if ((player_rb.avatar_controller_ != nullptr) ||
+                    (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_.driving_mode_.collision_avoidance_cos))
+                {
                     if (player_.driving_direction_ == DrivingDirection::CENTER || player_.driving_direction_ == DrivingDirection::RIGHT) {
                         d_wpt = player_.driving_mode_.collision_avoidance_delta;
                     } else if (player_.driving_direction_ == DrivingDirection::LEFT) {

@@ -17,8 +17,8 @@ using namespace Mlib;
 PathfindingWaypoints::PathfindingWaypoints(
     Player& player,
     const PhysicsEngineConfig& cfg)
-: player_{player},
-  cfg_{cfg}
+    : player_{ player }
+    , cfg_{ cfg }
 {}
 
 PathfindingWaypoints::~PathfindingWaypoints()
