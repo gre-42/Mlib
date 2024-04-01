@@ -12,5 +12,5 @@ VehicleAiMoveToStatus PlaneAi::move_to(
 	const FixedArray<double, 3>& destination_position,
 	const FixedArray<float, 3>& destination_velocity)
 {
-	return VehicleAiMoveToStatus::NONE;
+	THROW_OR_ABORT("PlaneAi::move_to not yet implemented");
 }

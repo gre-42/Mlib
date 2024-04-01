@@ -6,17 +6,17 @@ using namespace Mlib;
 RigidBodyPlaneController::RigidBodyPlaneController(
     RigidBodyVehicle& rb,
     SteeringType steering_type)
-: steering_type{ steering_type },
-  rb_{ rb },
-  turbine_power_{ NAN },
-  brake_amount_{ NAN },
-  throttle_relaxation_{ 0.f },
-  pitch_amount_{ NAN },
-  pitch_relaxation_{ 0.f },
-  yaw_amount_{ NAN },
-  yaw_relaxation_{ 0.f },
-  roll_amount_{ NAN },
-  roll_relaxation_{ 0.f }
+    : steering_type{ steering_type }
+    , rb_{ rb }
+    , turbine_power_{ NAN }
+    , brake_amount_{ NAN }
+    , throttle_relaxation_{ 0.f }
+    , pitch_amount_{ NAN }
+    , pitch_relaxation_{ 0.f }
+    , yaw_amount_{ NAN }
+    , yaw_relaxation_{ 0.f }
+    , roll_amount_{ NAN }
+    , roll_relaxation_{ 0.f }
 {}
 
 RigidBodyPlaneController::~RigidBodyPlaneController()

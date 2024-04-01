@@ -24,15 +24,15 @@ PlaneController::PlaneController(
     VehicleDomain vehicle_domain)
     : RigidBodyPlaneController{ rb, SteeringType::CAR }
     , tire_angles_{ std::move(tire_angles) }
-    , yaw_amount_to_tire_angle_{yaw_amount_to_tire_angle}
-    , left_front_aileron_wing_ids_{std::move(left_front_aileron_wing_ids)}
-    , right_front_aileron_wing_ids_{std::move(right_front_aileron_wing_ids)}
-    , left_rear_aileron_wing_ids_{std::move(left_rear_aileron_wing_ids)}
-    , right_rear_aileron_wing_ids_{std::move(right_rear_aileron_wing_ids)}
-    , left_rudder_wing_ids_{std::move(left_rudder_wing_ids)}
-    , right_rudder_wing_ids_{std::move(right_rudder_wing_ids)}
-    , left_flap_wing_ids_{std::move(left_flap_wing_ids)}
-    , right_flap_wing_ids_{std::move(right_flap_wing_ids)}
+    , yaw_amount_to_tire_angle_{ yaw_amount_to_tire_angle }
+    , left_front_aileron_wing_ids_{ std::move(left_front_aileron_wing_ids) }
+    , right_front_aileron_wing_ids_{ std::move(right_front_aileron_wing_ids) }
+    , left_rear_aileron_wing_ids_{ std::move(left_rear_aileron_wing_ids) }
+    , right_rear_aileron_wing_ids_{ std::move(right_rear_aileron_wing_ids) }
+    , left_rudder_wing_ids_{ std::move(left_rudder_wing_ids) }
+    , right_rudder_wing_ids_{ std::move(right_rudder_wing_ids) }
+    , left_flap_wing_ids_{ std::move(left_flap_wing_ids) }
+    , right_flap_wing_ids_{ std::move(right_flap_wing_ids) }
     , vehicle_domain_{ vehicle_domain }
 {}
 
