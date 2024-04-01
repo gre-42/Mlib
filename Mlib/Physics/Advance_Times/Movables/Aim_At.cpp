@@ -54,12 +54,16 @@ AimAt::~AimAt() {
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {
         {
+            auto bullet_launch_position =
+                gun_node_->absolute_model_matrix().t() -
+                (bullet_start_offset_ * gun_node_->absolute_model_matrix().R().column(2)).casted<double>();
+            auto initial_bullet_velocity = follower_.velocity_at_position(bullet_launch_position);
             float verr = velocity_estimation_error_();
             auto offset = fixed_zeros<double, 3>();
             float t = 0;
             for (size_t i = 0; ; ++i) {
                 RigidBodyPulses rbp = followed_->rbp_;
-                rbp.v_ -= follower_.rbp_.v_;
+                rbp.v_ -= initial_bullet_velocity;
                 rbp.v_ *= (1 + verr);
                 rbp.advance_time(t);
                 if (i == 10) {
