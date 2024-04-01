@@ -39,12 +39,12 @@ class DanglingBaseClassPtr {
     DanglingBaseClassPtr() = delete;
 public:
     DanglingBaseClassPtr(std::nullptr_t)
-        : b_{nullptr}
-        , v_{nullptr}
+        : b_{ nullptr }
+        , v_{ nullptr }
     {}
     DanglingBaseClassPtr(DanglingBaseClassPtr<T>&& other)
-        : b_{other.b_}
-        , v_{other.v_}
+        : b_{ other.b_ }
+        , v_{ other.v_ }
     {
         if (v_ != nullptr) {
             b_->add_source_location(this, b_->loc(&other));
@@ -53,8 +53,8 @@ public:
         }
     }
     DanglingBaseClassPtr(const DanglingBaseClassPtr<T>& other)
-        : b_{other.b_}
-        , v_{other.v_}
+        : b_{ other.b_ }
+        , v_{ other.v_ }
     {
         if (v_ != nullptr) {
             b_->add_source_location(this, b_->loc(&other));
@@ -81,8 +81,8 @@ public:
     //     b_->add_source_location(this, loc);
     // }
     DanglingBaseClassPtr(DanglingBaseClass& b, T& v, SourceLocation loc)
-        : b_{&b}
-        , v_{&v}
+        : b_{ &b }
+        , v_{ &v }
     {
         b_->add_source_location(this, loc);
     }
@@ -140,7 +140,6 @@ private:
 template <class T>
 class DanglingBaseClassRef {
     DanglingBaseClassRef(DanglingBaseClassRef&&) = delete;
-    DanglingBaseClassRef(const DanglingBaseClassRef&) = delete;
     DanglingBaseClassRef& operator = (const DanglingBaseClassRef&) = delete;
 public:
     // explicit DanglingBaseClassRef(DanglingBaseClass& b, SourceLocation loc)
@@ -157,6 +156,12 @@ public:
         , v_{ v }
     {
         b_.add_source_location(this, loc);
+    }
+    DanglingBaseClassRef(const DanglingBaseClassRef& other)
+        : b_{ other.b_ }
+        , v_{ other.v_ }
+    {
+        b_.add_source_location(this, b_.loc(&other));
     }
     template <class TDerived>
     DanglingBaseClassRef(TDerived& b, SourceLocation loc)
