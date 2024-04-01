@@ -4,6 +4,7 @@
 namespace Mlib {
 
 enum class VehicleDomain {
+    UNDEFINED,
     AIR,
     GROUND
 };

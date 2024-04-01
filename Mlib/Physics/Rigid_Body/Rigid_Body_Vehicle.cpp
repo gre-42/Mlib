@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
@@ -43,49 +44,45 @@ RigidBodyVehicle::RigidBodyVehicle(
     std::string name,
     std::string asset_id,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
-: destruction_observers{ *this },
-  rigid_bodies_{ nullptr },
-  max_velocity_{ INFINITY },
-  flags_{ RigidBodyVehicleFlags::NONE },
+    : destruction_observers{ *this }
+    , rigid_bodies_{ nullptr }
+    , max_velocity_{ INFINITY }
+    , flags_{ RigidBodyVehicleFlags::NONE }
 #ifdef COMPUTE_POWER
-  power_{ NAN },
-  energy_old_{ NAN },
+    , power_{ NAN }
+    , energy_old_{ NAN }
 #endif
-  tires_z_{ 0.f, 0.f, -1.f },
-  target_{ 0.f, 0.f, 0.f },
-  rbp_{ rbp },
-  name_{ std::move(name) },
-  asset_id_{ std::move(asset_id) },
-  damageable_{ nullptr },
-  door_distance_{ NAN },
-  animation_state_updater_{ nullptr },
-  spawner_{ nullptr },
-  driver_{ nullptr },
-  avatar_controller_{ nullptr},
-  vehicle_controller_{ nullptr},
-  jump_state_{
-      .wants_to_jump_ = false,
-      .wants_to_jump_oversampled_ = false,
-      .jumping_counter_ = SIZE_MAX,
-  },
-  grind_state_ {
-      .wants_to_grind_ = false,
-      .wants_to_grind_counter_ = 0,
-      .grinding_ = false,
-  },
-  align_to_surface_state_{
-      .align_to_surface_relaxation_ = 0.f,
-      .touches_alignment_plane_ = false,
-      .surface_normal_{ NAN, NAN, NAN },
-  },
-  revert_surface_power_state_{
-      .revert_surface_power_threshold_= INFINITY,
-      .revert_surface_power_ = false,
-  },
-  fly_forward_state_{
-      .wants_to_fly_forward_factor_ = NAN
-  },
-  geographic_mapping_{ geographic_mapping }
+    , tires_z_{ 0.f, 0.f, -1.f }
+    , target_{ 0.f, 0.f, 0.f }
+    , rbp_{ rbp }
+    , name_{ std::move(name) }
+    , asset_id_{ std::move(asset_id) }
+    , damageable_{ nullptr }
+    , door_distance_{ NAN }
+    , animation_state_updater_{ nullptr }
+    , spawner_{ nullptr }
+    , driver_{ nullptr }
+    , avatar_controller_{ nullptr}
+    , vehicle_controller_{ nullptr}
+    , jump_state_{
+        .wants_to_jump_ = false,
+        .wants_to_jump_oversampled_ = false,
+        .jumping_counter_ = SIZE_MAX }
+    , grind_state_{
+        .wants_to_grind_ = false,
+        .wants_to_grind_counter_ = 0,
+        .grinding_ = false}
+    , align_to_surface_state_{
+        .align_to_surface_relaxation_ = 0.f,
+        .touches_alignment_plane_ = false,
+        .surface_normal_{ NAN, NAN, NAN }}
+    , revert_surface_power_state_{
+        .revert_surface_power_threshold_= INFINITY,
+        .revert_surface_power_ = false}
+    , fly_forward_state_{
+        .wants_to_fly_forward_factor_ = NAN }
+    , geographic_mapping_{ geographic_mapping }
+    , vehicle_domain_{ VehicleDomain::UNDEFINED }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");

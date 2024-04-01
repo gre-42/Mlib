@@ -9,11 +9,10 @@
 using namespace Mlib;
 
 CarMovement::CarMovement(Player& player)
-: player_{player}
+    : player_{player}
 {}
 
-CarMovement::~CarMovement()
-{}
+CarMovement::~CarMovement() = default;
 
 void CarMovement::step_on_brakes() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();

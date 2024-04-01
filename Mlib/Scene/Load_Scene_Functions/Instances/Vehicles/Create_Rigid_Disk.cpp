@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
@@ -38,6 +39,7 @@ DECLARE_ARGUMENT(asset_id);
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
 DECLARE_ARGUMENT(flags);
+DECLARE_ARGUMENT(domain);
 }
 
 const std::string CreateRigidDisk::key = "rigid_disk";
@@ -66,6 +68,9 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_node_resources.get_geographic_mapping("world"));
     if (args.arguments.contains(KnownArgs::flags)) {
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));
+    }
+    if (args.arguments.contains(KnownArgs::domain)) {
+        rb->vehicle_domain_ = vehicle_domain_from_string(args.arguments.at<std::string>(KnownArgs::domain));
     }
     std::list<std::shared_ptr<ColoredVertexArray<float>>> s_hitboxes;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> d_hitboxes;

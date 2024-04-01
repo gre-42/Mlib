@@ -18,6 +18,7 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -25,6 +26,8 @@
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
+#include <Mlib/Players/Vehicle_Ai/Drive_Or_Walk_Ai.hpp>
+#include <Mlib/Players/Vehicle_Ai/Plane_Ai.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -94,6 +97,8 @@ Player::Player(
     , playback_waypoints_{ *this }
     , focuses_{ focuses }
     , select_opponent_hysteresis_factor_{ 0.9 }
+    , plane_ai_{ std::make_unique<PlaneAi>(*this) }
+    , drive_or_walk_ai_{ std::make_unique<DriveOrWalkAi>(*this) }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
@@ -621,6 +626,10 @@ bool Player::ramming() const {
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
+const RigidBodyVehicle* Player::target_rb() const {
+    return target_rb_;
+}
+
 void Player::select_opponent(OpponentSelectionStrategy strategy) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
@@ -822,6 +831,35 @@ void Player::create_externals(ExternalsMode externals_mode) {
     }
     vehicle_->create_externals(name(), externals_mode, skills_);
     externals_mode_ = externals_mode;
+}
+
+const Skills& Player::skills(ControlSource control_source) const {
+    auto it = skills_.find(control_source);
+    if (it == skills_.end()) {
+        THROW_OR_ABORT("Player \"" + name_ + "\": Could not find skill");
+    }
+    return it->second;
+}
+
+Players& Player::players() {
+    return players_;
+}
+
+const DrivingMode& Player::driving_mode() const {
+    return driving_mode_;
+}
+
+DrivingDirection Player::driving_direction() const {
+    return driving_direction_;
+}
+
+IVehicleAi& Player::vehicle_ai() {
+    switch (rigid_body().vehicle_domain_) {
+        case VehicleDomain::AIR: return *plane_ai_;
+        case VehicleDomain::GROUND: return *drive_or_walk_ai_;
+        case VehicleDomain::UNDEFINED: THROW_OR_ABORT("Player \"" + name_ + "\": Vehicle domain is undefined");
+    }
+    THROW_OR_ABORT("Unknown vehicle domain");
 }
 
 ExternalsMode Player::externals_mode() const {

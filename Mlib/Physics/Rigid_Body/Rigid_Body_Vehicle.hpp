@@ -43,6 +43,7 @@ class IContactInfo;
 class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
+enum class VehicleDomain;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -256,6 +257,7 @@ public:
     FlyForwardState fly_forward_state_;
     TrailerHitches trailer_hitches_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
+    VehicleDomain vehicle_domain_;
 private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };

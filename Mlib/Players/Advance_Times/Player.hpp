@@ -48,6 +48,9 @@ class Focuses;
 class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
+class IVehicleAi;
+class PlaneAi;
+class DriveOrWalkAi;
 
 enum class GameMode {
     RAMMING,
@@ -203,6 +206,13 @@ public:
         const std::function<void()>& delete_externals);
     void append_dependent_node(std::string node_name);
     void create_externals(ExternalsMode externals_mode);
+    const Skills& skills(ControlSource control_source) const;
+    Players& players();
+    bool ramming() const;
+    const RigidBodyVehicle* target_rb() const;
+    const DrivingMode& driving_mode() const;
+    DrivingDirection driving_direction() const;
+    IVehicleAi& vehicle_ai();
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
@@ -240,7 +250,6 @@ private:
     void set_opponent(const Player& opponent);
     void aim_and_shoot();
     void select_best_weapon_in_inventory();
-    bool ramming() const;
     bool unstuck();
     const Gun& gun() const;
     Gun& gun();
@@ -274,6 +283,8 @@ private:
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
     double select_opponent_hysteresis_factor_;
+    std::unique_ptr<PlaneAi> plane_ai_;
+    std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
 };
 
 };
