@@ -11,7 +11,7 @@ public:
 	virtual ~PlaneAi() override;
 	virtual VehicleAiMoveToStatus move_to(
 		const FixedArray<double, 3>& destination_position,
-		const FixedArray<float, 3>& destination_velocity) override;
+		const std::optional<FixedArray<float, 3>>& destination_velocity) override;
 private:
 	Player& player_;
 };

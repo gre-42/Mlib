@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <optional>
 
 namespace Mlib {
 
@@ -39,7 +40,7 @@ public:
 	virtual ~IVehicleAi() = default;
 	virtual VehicleAiMoveToStatus move_to(
 		const FixedArray<double, 3>& destination_position,
-		const FixedArray<float, 3>& destination_velocity) = 0;
+		const std::optional<FixedArray<float, 3>>& destination_velocity) = 0;
 };
 
 }

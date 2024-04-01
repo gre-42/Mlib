@@ -17,7 +17,7 @@ DriveOrWalkAi::~DriveOrWalkAi() = default;
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
 	const FixedArray<double, 3>& destination_position,
-    const FixedArray<float, 3>& destination_velocity)
+    const std::optional<FixedArray<float, 3>>& destination_velocity)
 {
     // if (!any(Mlib::isnan(waypoint_))) {
     //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
@@ -111,9 +111,9 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     }
     // Keep velocity within the specified range.
     {
-        float target_vel = all(isnan(destination_velocity))
-            ? player_.driving_mode().max_velocity
-            : std::sqrt(sum(squared(destination_velocity)));
+        float target_vel = destination_velocity.has_value()
+            ? std::sqrt(sum(squared(destination_velocity.value())))
+            : player_.driving_mode().max_velocity;
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {
