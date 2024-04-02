@@ -6,12 +6,12 @@ namespace Mlib {
 
 class BulletPropertyDb {
 public:
-	BulletPropertyDb();
-	~BulletPropertyDb();
-	void add(const std::string& name, BulletProperties props);
-	const BulletProperties& get(const std::string& name);
+    BulletPropertyDb();
+    ~BulletPropertyDb();
+    void add(const std::string& name, const BulletProperties& props);
+    const BulletProperties& get(const std::string& name);
 private:
-	std::map<std::string, BulletProperties> properties_;
+    std::map<std::string, BulletProperties> properties_;
 };
 
 }
