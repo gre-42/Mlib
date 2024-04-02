@@ -1,6 +1,6 @@
 #include "Collision_Ridges.hpp"
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.impl.hpp>
-#include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Polygon_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 
 using namespace Mlib;
@@ -9,19 +9,20 @@ CollisionRidges::CollisionRidges() = default;
 
 CollisionRidges::~CollisionRidges() = default;
 
+template <size_t tnvertices>
 void CollisionRidges::insert(
-    const FixedArray<FixedArray<double, 3>, 3>& tri,
+    const FixedArray<FixedArray<double, 3>, tnvertices>& tri,
     const FixedArray<double, 3>& normal,
     double max_min_cos_ridge,
     PhysicsMaterial physics_material)
 {
-    for (size_t i = 0; i < 3; ++i) {
-        size_t j = (i + 1) % 3;
+    for (size_t i = 0; i < tnvertices; ++i) {
+        size_t j = (i + 1) % tnvertices;
         try {
             insert(tri(i), tri(j), normal, max_min_cos_ridge, physics_material);
         } catch (const EdgeException<double>& e) {
-            throw TriangleEdgeException<double>{
-                tri(0), tri(1), tri(2), i, j, e.what()};
+            throw PolygonEdgeException<double, tnvertices>{
+                tri, i, j, e.what()};
         }
     }
 }
@@ -48,4 +49,14 @@ void CollisionRidges::insert(
 
 namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereBase>;
+    template void CollisionRidges::insert<3>(
+        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
+        PhysicsMaterial physics_material);
+    template void CollisionRidges::insert<4>(
+        const FixedArray<FixedArray<double, 3>, 4>& tri,
+        const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
+        PhysicsMaterial physics_material);
 }

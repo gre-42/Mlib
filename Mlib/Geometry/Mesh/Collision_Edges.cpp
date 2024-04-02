@@ -25,13 +25,14 @@ CollisionEdges::CollisionEdges() = default;
 
 CollisionEdges::~CollisionEdges() = default;
 
+template <size_t tnvertices>
 void CollisionEdges::insert(
-    const FixedArray<FixedArray<double, 3>, 3>& tri,
+    const FixedArray<FixedArray<double, 3>, tnvertices>& tri,
     PhysicsMaterial physics_material)
 {
-    insert(tri(0), tri(1), physics_material);
-    insert(tri(1), tri(2), physics_material);
-    insert(tri(2), tri(0), physics_material);
+    for (size_t i = 0; i < tnvertices; ++i) {
+        insert(tri(i), tri((i + 1) % tnvertices), physics_material);
+    }
 }
 
 void CollisionEdges::insert(
@@ -58,4 +59,13 @@ CollisionEdges::const_iterator CollisionEdges::end() const {
 
 size_t CollisionEdges::size() const {
     return edges_.size();
+}
+
+namespace Mlib {
+    template void CollisionEdges::insert<3>(
+        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        PhysicsMaterial physics_material);
+    template void CollisionEdges::insert<4>(
+        const FixedArray<FixedArray<double, 3>, 4>& tri,
+        PhysicsMaterial physics_material);
 }

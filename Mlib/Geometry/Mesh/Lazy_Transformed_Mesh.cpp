@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Geometry/Quad_3D.hpp>
 #include <Mlib/Geometry/Triangle_3D.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 
@@ -103,11 +104,19 @@ const std::vector<CollisionLineSphere>& LazyTransformedMesh::get_edges_sphere() 
                     Triangle3D t3{t, transformation_matrix_};
                     edges.insert(t3.vertices(), smesh_->physics_material);
                 }
+                for (const auto& t : smesh_->quads) {
+                    Quad3D q3{t, transformation_matrix_};
+                    edges.insert(q3.vertices(), smesh_->physics_material);
+                }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
                     edges.insert(t3.vertices(), smesh_->physics_material);
+                }
+                for (const auto& t : dmesh_->quads) {
+                    Quad3D q3{t, transformation_matrix_};
+                    edges.insert(q3.vertices(), smesh_->physics_material);
                 }
             }
             transformed_edges_.reserve(edges.size());
@@ -133,11 +142,19 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
                     Triangle3D t3{t, transformation_matrix_};
                     ridges.insert(t3.vertices(), t3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
                 }
+                for (const auto& t : smesh_->quads) {
+                    Quad3D q3{t, transformation_matrix_};
+                    ridges.insert(q3.vertices(), q3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
+                }
             }
             if (dmesh_ != nullptr) {
                 for (const auto& t : dmesh_->triangles) {
                     Triangle3D t3{t, transformation_matrix_};
                     ridges.insert(t3.vertices(), t3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
+                }
+                for (const auto& t : dmesh_->quads) {
+                    Quad3D q3{t, transformation_matrix_};
+                    ridges.insert(q3.vertices(), q3.polygon().plane().normal, max_min_cos_ridge_, smesh_->physics_material);
                 }
             }
             transformed_ridges_.reserve(ridges.size());

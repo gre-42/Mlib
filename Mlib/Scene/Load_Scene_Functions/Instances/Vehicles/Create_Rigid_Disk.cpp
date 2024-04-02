@@ -1,11 +1,11 @@
 #include "Create_Rigid_Disk.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Env.hpp>
-#include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Polygon_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
-#include <Mlib/Geometry/Mesh/Save_Triangle_To_Obj.hpp>
+#include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -106,9 +106,14 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
             save_triangle_to_obj(filename.value(), {e.a, e.b, e.c});
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
-    } catch (const TriangleEdgeException<double>& e) {
+    } catch (const PolygonEdgeException<double, 3>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_triangle_to_obj(filename.value(), {e.a, e.b, e.c});
+            save_triangle_to_obj(filename.value(), e.poly);
+        }
+        throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
+    } catch (const PolygonEdgeException<double, 4>& e) {
+        if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
+            save_quad_to_obj(filename.value(), e.poly);
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }

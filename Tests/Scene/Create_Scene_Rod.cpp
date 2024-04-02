@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -51,7 +52,7 @@ void Mlib::create_scene_rod(
                 .apply_static_lighting = true,
                 .laplace_ao_strength = 0.f,
                 .physics_material = physics_material,
-                .triangulate = true,
+                .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                 .werror = true});
     };
     std::list<std::shared_ptr<ColoredVertexArray<float>>> triangles1 = load_box(
@@ -79,7 +80,7 @@ void Mlib::create_scene_rod(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-            .triangulate = true,
+            .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
     // scene_node_resources.generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});

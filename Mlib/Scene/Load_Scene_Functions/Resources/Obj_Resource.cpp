@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Macro_Executor/Asset_Group_Replacement_Parameters.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -60,10 +61,10 @@ DECLARE_ARGUMENT(desaturate);
 DECLARE_ARGUMENT(histogram);
 DECLARE_ARGUMENT(lighten);
 DECLARE_ARGUMENT(triangle_tangent_error_behavior);
+DECLARE_ARGUMENT(rectangle_triangulation_mode);
 DECLARE_ARGUMENT(dynamically_lighted);
 DECLARE_ARGUMENT(physics_material);
 DECLARE_ARGUMENT(double_precision);
-DECLARE_ARGUMENT(triangulate);
 DECLARE_ARGUMENT(werror);
 }
 
@@ -188,7 +189,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .laplace_ao_strength = 0.f,
         .dynamically_lighted = args.arguments.at<bool>(KnownArgs::dynamically_lighted, false),
         .physics_material = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::physics_material, "attr_visible|attr_collide")),
-        .triangulate = args.arguments.at<bool>(KnownArgs::triangulate, true),
+        .rectangle_triangulation_mode = rectangle_triangulation_mode_from_string(args.arguments.at<std::string>(KnownArgs::rectangle_triangulation_mode, "delaunay")),
         .werror = args.arguments.at<bool>(KnownArgs::werror, true)};
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();

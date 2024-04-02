@@ -426,7 +426,9 @@ void Scene::render(
             auto parent_mvp = dot2d(vp, parent_m.affine());
             external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         } else {
-            dynamic_lights_->set_time(external_render_pass.time);
+            if (dynamic_lights_ != nullptr) {
+                dynamic_lights_->set_time(external_render_pass.time);
+            }
             LOG_INFO("Scene::render non-blended");
             {
                 std::list<DanglingPtr<const SceneNode>> nodes;

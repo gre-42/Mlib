@@ -13,6 +13,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -214,7 +215,7 @@ LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_config
         .apply_static_lighting = args.has_named("--apply_static_lighting"),
         .laplace_ao_strength = safe_stof(args.named_value("--laplace_ao_strength", "0")),
         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-        .triangulate = true,
+        .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
         .werror = !args.has_named("--no_werror")};
 }
 
@@ -635,7 +636,7 @@ int main(int argc, char** argv) {
                         .apply_static_lighting = false,
                         .laplace_ao_strength = 0.f,
                         .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-                        .triangulate = true,
+                        .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                         .werror = !args.has_named("--no_werror")};
                     if (args.has_named_value("--reference_bone")) {
                         scene_node_resources.add_resource("reference_bone", load_renderable_obj(
@@ -840,7 +841,7 @@ int main(int argc, char** argv) {
                 .apply_static_lighting = args.has_named("--apply_static_lighting"),
                 .laplace_ao_strength = 0.f,
                 .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-                .triangulate = true,
+                .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                 .werror = !args.has_named("--no_werror")};
             scene_node_resources.add_resource(name, load_renderable_obj(
                 args.named_value("--light_beacon"),

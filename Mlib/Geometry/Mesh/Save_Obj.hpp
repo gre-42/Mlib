@@ -34,31 +34,37 @@ void save_obj(
         save_mtllib(mtl_filename, *materials);
         ostr << "mtllib " << fs::path(mtl_filename).filename().string()  << '\n';
     }
-    for (const auto v : data.vertices) {
+    for (const auto& v : data.vertices) {
         ostr << "v " << v << '\n';
     }
-    for (const auto uv : data.uvs) {
+    for (const auto& uv : data.uvs) {
         ostr << "vt " << uv << '\n';
     }
-    for (const auto n : data.normals) {
+    for (const auto& n : data.normals) {
         ostr << "vn " << n << '\n';
     }
-    for (const NamedObjTriangles<TIndex>& named_triangles : data.named_obj_triangles) {
-        if (!named_triangles.name.empty()) {
-            ostr << "g " << named_triangles.name << '\n';
-            ostr << "usemtl " << named_triangles.material_name << '\n';
+    for (const NamedObjPolygons<TIndex>& named_polygons : data.named_obj_polygons) {
+        if (!named_polygons.name.empty()) {
+            ostr << "g " << named_polygons.name << '\n';
+            ostr << "usemtl " << named_polygons.material_name << '\n';
         }
-        for (const auto& t : named_triangles.triangles) {
-            ostr << "f ";
-            size_t i = 0;
-            for (const auto& v : t.flat_iterable()) {
-                if (i++ != 0) {
-                    ostr << ' ';
+        auto add_polygons = [&ostr]<size_t tnvertices>(
+            const std::vector<FixedArray<IndexVertex<TIndex>, tnvertices>>& polygons)
+        {
+            for (const auto& t : polygons) {
+                ostr << "f ";
+                size_t i = 0;
+                for (const auto& v : t.flat_iterable()) {
+                    if (i++ != 0) {
+                        ostr << ' ';
+                    }
+                    ostr << (v.position + 1) << '/' << (v.uv + 1) << '/' << (v.normal + 1);
                 }
-                ostr << (v.position + 1) << '/' << (v.uv + 1) << '/' << (v.normal + 1);
+                ostr << '\n';
             }
-            ostr << '\n';
-        }
+        };
+        add_polygons(named_polygons.triangles);
+        add_polygons(named_polygons.quads);
     }
     ostr.flush();
     if (ostr.fail()) {

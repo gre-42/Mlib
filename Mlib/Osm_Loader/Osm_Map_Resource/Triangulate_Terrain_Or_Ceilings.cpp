@@ -56,11 +56,13 @@ void plot_tris(
             standard_triangles.push_back(t);
         }
     }
+    using L3 = std::list<FixedArray<ColoredVertex<double>, 3>>;
+    using L4 = std::list<FixedArray<ColoredVertex<double>, 4>>;
     save_obj(
         filename,
         IndexedFaceSet<float, double, size_t>{std::vector{
-            NamedInputTriangles<std::list<FixedArray<ColoredVertex<double>, 3>>>{"standard", "", standard_triangles},
-            NamedInputTriangles<std::list<FixedArray<ColoredVertex<double>, 3>>>{"highlighted", "", highlighted_triangles}}},
+            NamedInputPolygons<L3, L4>{"standard", "", standard_triangles, {}},
+            NamedInputPolygons<L3, L4>{"highlighted", "", highlighted_triangles, {}} }},
         nullptr);  // material
 }
 

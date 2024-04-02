@@ -152,7 +152,10 @@ bool rcMeshLoaderObj::load(
 			addVertex(v(0), v(1), v(2), vcap);
 		}
 
-		for (const auto& o : indexed_face_set->named_obj_triangles) {
+		for (const auto& o : indexed_face_set->named_obj_polygons) {
+			if (!o.quads.empty()) {
+				THROW_OR_ABORT("rcMeshLoaderObj::load does not yet support quad triangulation");
+			}
 			for (const auto& t : o.triangles) {
 				addTriangle(
 					Mlib::integral_cast<int>(t(0).position),

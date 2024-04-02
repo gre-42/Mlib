@@ -22,8 +22,9 @@ public:
     ~CollisionEdges();
     using Edges = std::set<OrderableEdgeSphere>;
     using const_iterator = Edges::const_iterator;
+    template <size_t tnvertices>
     void insert(
-        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        const FixedArray<FixedArray<double, 3>, tnvertices>& tri,
         PhysicsMaterial physics_material);
     const_iterator begin() const;
     const_iterator end() const;

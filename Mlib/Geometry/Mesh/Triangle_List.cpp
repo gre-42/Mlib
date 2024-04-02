@@ -70,21 +70,21 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     v10.tangent = tangent TEMPLATEV casted<float>();
     v01.tangent = tangent TEMPLATEV casted<float>();
 
-    triangles.push_back(FixedArray<ColoredVertex<TPos>, 3>{v00, v10, v01});
+    auto& triangle = triangles.emplace_back(v00, v10, v01);
     if (!b00.empty() || !b10.empty() || !b01.empty()) {
-        triangle_bone_weights.push_back(FixedArray<std::vector<BoneWeight>, 3>{b00, b10, b01});
+        triangle_bone_weights.emplace_back(b00, b10, b01);
         if (triangles.size() != triangle_bone_weights.size()) {
             THROW_OR_ABORT("Triangle bone size mismatch");
         }
     }
     if (pp00 != nullptr) {
-        *pp00 = &triangles.back()(0);
+        *pp00 = &triangle(0);
     }
     if (pp10 != nullptr) {
-        *pp10 = &triangles.back()(1);
+        *pp10 = &triangle(1);
     }
     if (pp01 != nullptr) {
-        *pp01 = &triangles.back()(2);
+        *pp01 = &triangle(2);
     }
 }
 
@@ -143,9 +143,22 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
     ColoredVertex<TPos>** pp10b,
     ColoredVertex<TPos>** pp11b)
 {
-    if (rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) {
+    if ((rectangle_triangulation_mode == RectangleTriangulationMode::FIRST) ||
+        ((rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) &&
+            is_delaunay(
+                FixedArray<TPos, 2>{p00(0), p00(1)},
+                FixedArray<TPos, 2>{p10(0), p10(1)},
+                FixedArray<TPos, 2>{p11(0), p11(1)},
+                FixedArray<TPos, 2>{p01(0), p01(1)})))
+    {
         draw_triangle_with_normals(p00, p11, p01, n00, n11, n01, c00, c11, c01, u00, u11, u01, b00, b11, b01, tangent_error_behavior, pp00a, pp11a, pp01a);
         draw_triangle_with_normals(p00, p10, p11, n00, n10, n11, c00, c10, c11, u00, u10, u11, b00, b10, b11, tangent_error_behavior, pp00b, pp10b, pp11b);
+    } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DELAUNAY) {
+        if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
+            THROW_OR_ABORT("Triangle positions not supported for Delaunay flipping");
+        }
+        draw_triangle_with_normals(p01, p10, p11, n01, n10, n11, c01, c10, c11, u01, u10, u11, b01, b10, b11, tangent_error_behavior);
+        draw_triangle_with_normals(p00, p10, p01, n00, n10, n01, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior);
     } else if (rectangle_triangulation_mode == RectangleTriangulationMode::DISABLED) {
         if (pp00a || pp11a || pp01a || pp00b || pp10b || pp11b) {
             THROW_OR_ABORT("Triangle positions not supported for quads");

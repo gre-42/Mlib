@@ -14,56 +14,71 @@ struct IndexVertex {
     TIndex normal;
 };
 
-template <class TInputTriangles>
-struct NamedInputTriangles {
+template <class TInputTriangles, class TInputQuads>
+struct NamedInputPolygons {
     std::string name;
     std::string material_name;
     const TInputTriangles& triangles;
+    const TInputQuads& quads;
 };
 
 template <class TIndex>
-struct NamedObjTriangles {
+struct NamedObjPolygons {
     std::string name;
     std::string material_name;
     std::vector<FixedArray<IndexVertex<TIndex>, 3>> triangles;
+    std::vector<FixedArray<IndexVertex<TIndex>, 4>> quads;
 };
 
 template <class TDir, class TPos, class TIndex>
 class IndexedFaceSet {
-    using NamedListInputTriangles = NamedInputTriangles<std::list<FixedArray<ColoredVertex<TPos>, 3>>>;
-    using NamedVectorInputTriangles = NamedInputTriangles<std::vector<FixedArray<ColoredVertex<TPos>, 3>>>;
+    using NamedListInputPolygons = NamedInputPolygons<
+        std::list<FixedArray<ColoredVertex<TPos>, 3>>,
+        std::list<FixedArray<ColoredVertex<TPos>, 4>>>;
+    using NamedVectorInputPolygons = NamedInputPolygons<
+        std::vector<FixedArray<ColoredVertex<TPos>, 3>>,
+        std::vector<FixedArray<ColoredVertex<TPos>, 4>>>;
 public:
-    IndexedFaceSet(const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles)
-    : IndexedFaceSet{std::vector<NamedListInputTriangles>{NamedListInputTriangles{"", "", triangles}}}
+    IndexedFaceSet(
+        const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+        const std::list<FixedArray<ColoredVertex<TPos>, 4>>& quads = {})
+    : IndexedFaceSet{std::vector<NamedListInputPolygons>{NamedListInputPolygons{"", "", triangles, quads}}}
     {}
-    IndexedFaceSet(const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles)
-    : IndexedFaceSet{std::vector<NamedVectorInputTriangles>{NamedVectorInputTriangles{"", "", triangles}}}
+    IndexedFaceSet(
+        const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+        const std::vector<FixedArray<ColoredVertex<TPos>, 4>>& quads = {})
+    : IndexedFaceSet{std::vector<NamedVectorInputPolygons>{NamedVectorInputPolygons{"", "", triangles, quads}}}
     {}
-    template <class TInputTriangles>
-    IndexedFaceSet(const std::vector<NamedInputTriangles<TInputTriangles>>& named_input_triangles)
+    template <class TInputTriangles, class TInputQuads>
+    IndexedFaceSet(const std::vector<NamedInputPolygons<TInputTriangles, TInputQuads>>& named_input_polygons)
     {
         std::map<OrderableFixedArray<TPos, 3>, size_t> vertex_indices;
         std::map<OrderableFixedArray<TDir, 3>, size_t> normal_indices;
         std::map<OrderableFixedArray<TDir, 2>, size_t> uv_indices;
-        named_obj_triangles.reserve(named_input_triangles.size());
-        for (const NamedInputTriangles<TInputTriangles>& itris : named_input_triangles) {
-            named_obj_triangles.push_back(NamedObjTriangles<TIndex>{itris.name, itris.material_name, {}});
-            std::vector<FixedArray<IndexVertex<TIndex>, 3>>& otris = named_obj_triangles.back().triangles;
-            otris.reserve(itris.triangles.size());
-            for (auto& tri : itris.triangles) {
-                for (auto& v : tri.flat_iterable()) {
-                    vertex_indices.insert({OrderableFixedArray{v.position}, vertex_indices.size()});
-                    uv_indices.insert({OrderableFixedArray{v.uv}, uv_indices.size()});
-                    normal_indices.insert({OrderableFixedArray{v.normal}, normal_indices.size()});
+        named_obj_polygons.reserve(named_input_polygons.size());
+        for (const NamedInputPolygons<TInputTriangles, TInputQuads>& named_ipolys : named_input_polygons) {
+            auto& named_opolys = named_obj_polygons.emplace_back(NamedObjPolygons<TIndex>{named_ipolys.name, named_ipolys.material_name, {}, {}});
+            named_opolys.triangles.reserve(named_ipolys.triangles.size());
+            named_opolys.quads.reserve(named_ipolys.quads.size());
+            auto add_polygons = [&](const auto& ipolys, auto& opolys)
+            {
+                for (auto& ipoly : ipolys) {
+                    for (auto& v : ipoly.flat_iterable()) {
+                        vertex_indices.insert({ OrderableFixedArray{v.position}, vertex_indices.size() });
+                        uv_indices.insert({ OrderableFixedArray{v.uv}, uv_indices.size() });
+                        normal_indices.insert({ OrderableFixedArray{v.normal}, normal_indices.size() });
+                    }
+                    FixedArray<IndexVertex<TIndex>, ipoly.length()> opolygon;
+                    for (size_t i = 0; i < ipoly.length(); ++i) {
+                        opolygon(i).position = vertex_indices.at(OrderableFixedArray{ ipoly(i).position });
+                        opolygon(i).uv = uv_indices.at(OrderableFixedArray{ ipoly(i).uv });
+                        opolygon(i).normal = normal_indices.at(OrderableFixedArray{ ipoly(i).normal });
+                    }
+                    opolys.push_back(opolygon);
                 }
-                FixedArray<IndexVertex<TIndex>, 3> triangle;
-                for (size_t i = 0; i < 3; ++i) {
-                    triangle(i).position = vertex_indices.at(OrderableFixedArray{tri(i).position});
-                    triangle(i).uv = uv_indices.at(OrderableFixedArray{tri(i).uv});
-                    triangle(i).normal = normal_indices.at(OrderableFixedArray{tri(i).normal});
-                }
-                otris.push_back(triangle);
-            }
+            };
+            add_polygons(named_ipolys.triangles, named_opolys.triangles);
+            add_polygons(named_ipolys.quads, named_opolys.quads);
         }
         vertices.resize(vertex_indices.size());
         for (const auto& v : vertex_indices) {
@@ -81,7 +96,7 @@ public:
     std::vector<FixedArray<TPos, 3>> vertices;
     std::vector<FixedArray<TDir, 2>> uvs;
     std::vector<FixedArray<TDir, 3>> normals;
-    std::vector<NamedObjTriangles<TIndex>> named_obj_triangles;
+    std::vector<NamedObjPolygons<TIndex>> named_obj_polygons;
 };
 
 }

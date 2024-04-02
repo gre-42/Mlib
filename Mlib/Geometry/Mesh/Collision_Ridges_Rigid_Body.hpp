@@ -17,8 +17,9 @@ class CollisionRidgesRigidBody: public CollisionRidgesBase<OrderableRidgeSphereR
 public:
     CollisionRidgesRigidBody();
     ~CollisionRidgesRigidBody();
+    template <size_t tnvertices>
     void insert(
-        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        const FixedArray<FixedArray<double, 3>, tnvertices>& polygon,
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
         PhysicsMaterial physics_material,

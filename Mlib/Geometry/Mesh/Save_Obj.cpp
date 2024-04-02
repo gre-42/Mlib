@@ -13,8 +13,10 @@ void Mlib::save_obj(
     std::set<std::string> names;
     std::map<Material, size_t> material_indices;
     std::map<std::string, ObjMaterial> obj_materials;
-    std::vector<NamedInputTriangles<std::vector<FixedArray<ColoredVertex<double>, 3>>>> itris;
-    itris.reserve(cvas.size());
+    std::vector<NamedInputPolygons<
+        std::vector<FixedArray<ColoredVertex<double>, 3>>,
+        std::vector<FixedArray<ColoredVertex<double>, 4>>>> ipolys;
+    ipolys.reserve(cvas.size());
     for (const std::shared_ptr<ColoredVertexArray<double>>& cva : cvas) {
         if (cva->name.empty()) {
             if (!cva->material.textures_color.empty()) {
@@ -28,8 +30,8 @@ void Mlib::save_obj(
         }
         material_indices.insert({ cva->material, material_indices.size() });
         std::string material_name = "material_" + std::to_string(material_indices.at(cva->material));
-        itris.push_back({ cva->name, material_name, cva->triangles });
+        ipolys.push_back({ cva->name, material_name, cva->triangles, cva->quads });
         obj_materials.insert({ material_name, convert_material(cva->material) });
     }
-    save_obj(filename, IndexedFaceSet<float, double, size_t>{ itris }, &obj_materials);
+    save_obj(filename, IndexedFaceSet<float, double, size_t>{ ipolys }, &obj_materials);
 }

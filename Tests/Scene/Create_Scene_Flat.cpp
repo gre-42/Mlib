@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Obj.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -88,7 +89,22 @@ void Mlib::create_scene_flat(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material = PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
-            .triangulate = true,
+            .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
+            .werror = true});
+    std::list<std::shared_ptr<ColoredVertexArray<float>>> quads1 = load_obj(
+        "Data/box.obj",
+        LoadMeshConfig<float>{
+            .blend_mode = BlendMode::OFF,
+            .cull_faces_default = true,
+            .cull_faces_alpha = false,
+            .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+            .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
+            .aggregate_mode = AggregateMode::NONE,
+            .transformation_mode = TransformationMode::ALL,
+            .apply_static_lighting = true,
+            .laplace_ao_strength = 0.f,
+            .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONVEX,
+            .rectangle_triangulation_mode = RectangleTriangulationMode::DISABLED,
             .werror = true});
 
     RenderingContextStack::primary_scene_node_resources().add_resource("obj0", std::make_shared<ColoredVertexArrayResource>(triangles0));
@@ -109,7 +125,7 @@ void Mlib::create_scene_flat(
             .apply_static_lighting = true,
             .laplace_ao_strength = 0.f,
             .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
-            .triangulate = true,
+            .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
     // RenderingContextStack::primary_scene_node_resources().generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
@@ -183,9 +199,9 @@ void Mlib::create_scene_flat(
         AbsoluteMovableSetter ams1_2{scene.get_node("obj", DP_LOC)->get_child("n1_2"), std::move(rb1_2)};
 
         pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), { triangles0 }, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), triangles1, {}, CollidableMode::MOVING);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), triangles1, {}, CollidableMode::MOVING);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), triangles1, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), quads1, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_1.absolute_movable), quads1, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(std::move(ams1_2.absolute_movable), quads1, {}, CollidableMode::MOVING);
     }
 
     // Check if the initialization does not change the node positions.

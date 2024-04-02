@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.hpp>
+#include <cstddef>
 #include <cstdint>
 
 namespace Mlib {
@@ -12,8 +13,9 @@ class CollisionRidges: public CollisionRidgesBase<OrderableRidgeSphereBase> {
 public:
     CollisionRidges();
     ~CollisionRidges();
+    template <size_t tnvertices>
     void insert(
-        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        const FixedArray<FixedArray<double, 3>, tnvertices>& polygon,
         const FixedArray<double, 3>& normal,
         double max_min_cos_ridge,
         PhysicsMaterial physics_material);

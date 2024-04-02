@@ -311,7 +311,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     {},
                     {},
                     {},
-                    cfg.triangle_tangent_error_behavior);
+                    cfg.triangle_tangent_error_behavior,
+                    cfg.rectangle_triangulation_mode);
             } else if (regex_match(line, match, comment_reg)) {
                 // do nothing
             } else if (regex_match(line, match, object_reg) ||
@@ -406,13 +407,21 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {
+        auto transform_vertex = [&](ColoredVertex<TPos>& v){
+            v.position *= cfg.scale TEMPLATEV casted<TPos>();
+            v.position = dot1d(rotation_matrix_p TEMPLATEV casted<TPos>(), v.position);
+            v.position += cfg.position;
+            v.normal = dot1d(rotation_matrix_n, v.normal);
+            v.tangent = dot1d(rotation_matrix_p, v.tangent);
+            };
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                v.position *= cfg.scale TEMPLATEV casted<TPos>();
-                v.position = dot1d(rotation_matrix_p TEMPLATEV casted<TPos>(), v.position);
-                v.position += cfg.position;
-                v.normal = dot1d(rotation_matrix_n, v.normal);
-                v.tangent = dot1d(rotation_matrix_p, v.tangent);
+                transform_vertex(v);
+            }
+        }
+        for (auto& t : l->quads) {
+            for (auto& v : t.flat_iterable()) {
+                transform_vertex(v);
             }
         }
     }

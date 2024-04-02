@@ -1,6 +1,6 @@
 #include "Collision_Ridges_Rigid_Body.hpp"
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Base.impl.hpp>
-#include <Mlib/Geometry/Exceptions/Triangle_Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Polygon_Edge_Exception.hpp>
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 
 using namespace Mlib;
@@ -9,8 +9,9 @@ CollisionRidgesRigidBody::CollisionRidgesRigidBody() = default;
 
 CollisionRidgesRigidBody::~CollisionRidgesRigidBody() = default;
 
+template <size_t tnvertices>
 void CollisionRidgesRigidBody::insert(
-    const FixedArray<FixedArray<double, 3>, 3>& tri,
+    const FixedArray<FixedArray<double, 3>, tnvertices>& polygon,
     const FixedArray<double, 3>& normal,
     double max_min_cos_ridge,
     PhysicsMaterial physics_material,
@@ -19,10 +20,10 @@ void CollisionRidgesRigidBody::insert(
     for (size_t i = 0; i < 3; ++i) {
         size_t j = (i + 1) % 3;
         try {
-            insert(tri(i), tri(j), normal, max_min_cos_ridge, physics_material, rb);
+            insert(polygon(i), polygon(j), normal, max_min_cos_ridge, physics_material, rb);
         } catch (const EdgeException<double>& e) {
-            throw TriangleEdgeException<double>{
-                tri(0), tri(1), tri(2), i, j, e.what()};
+            throw PolygonEdgeException<double, tnvertices>{
+                polygon, i, j, e.what()};
         }
     }
 }
@@ -51,4 +52,16 @@ void CollisionRidgesRigidBody::insert(
 
 namespace Mlib {
     template class CollisionRidgesBase<OrderableRidgeSphereRigidBody>;
+    template void CollisionRidgesRigidBody::insert<3>(
+        const FixedArray<FixedArray<double, 3>, 3>& polygon,
+        const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
+        PhysicsMaterial physics_material,
+        RigidBodyVehicle& rb);
+    template void CollisionRidgesRigidBody::insert<4>(
+        const FixedArray<FixedArray<double, 3>, 4>& polygon,
+        const FixedArray<double, 3>& normal,
+        double max_min_cos_ridge,
+        PhysicsMaterial physics_material,
+        RigidBodyVehicle& rb);
 }

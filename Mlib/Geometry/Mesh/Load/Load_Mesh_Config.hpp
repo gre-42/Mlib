@@ -15,6 +15,7 @@ enum class AggregateMode;
 enum class TransformationMode;
 enum class ExternalRenderPassType;
 enum class PhysicsMaterial: uint32_t;
+enum class RectangleTriangulationMode;
 
 template <class TPos>
 struct LoadMeshConfig {
@@ -56,7 +57,7 @@ struct LoadMeshConfig {
     float laplace_ao_strength;
     bool dynamically_lighted;
     PhysicsMaterial physics_material;
-    bool triangulate;
+    RectangleTriangulationMode rectangle_triangulation_mode;
     bool werror;
 };
 
