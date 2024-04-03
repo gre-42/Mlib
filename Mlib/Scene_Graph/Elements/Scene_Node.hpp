@@ -152,9 +152,9 @@ public:
 
     bool has_absolute_observer() const;
     IAbsoluteObserver& get_absolute_observer() const;
+    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
 
     bool has_sticky_absolute_observer() const;
-    void set_absolute_observer(IAbsoluteObserver& absolute_observer);
 
     IAbsoluteObserver& get_sticky_absolute_observer() const;
     void set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_observer);
