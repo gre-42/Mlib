@@ -6,12 +6,15 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -88,13 +91,18 @@ int main(int argc, char** argv) {
             .windowed_height = (int)depth.shape(0)};
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
-        auto rrg = RenderingContextGuard::root(
+        TrailResources trail_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            16 };
+        RenderingContext rendering_context{
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            render_config.anisotropic_filtering_level,
-            0);
-        Render2 render{ render_config, num_renderings };
+            trail_resources,
+            rendering_resources };
+        RenderingContextGuard rrg{ rendering_context };
+        SetFps set_fps{ nullptr };
+        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
         render_depth_map(
             render,
             img.to_float_rgb(),

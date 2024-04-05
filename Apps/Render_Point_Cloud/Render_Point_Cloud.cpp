@@ -6,13 +6,15 @@
 #include <Mlib/Images/Pgm_Image.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -32,18 +34,23 @@ int main(int argc, char** argv) {
         Array<FixedArray<float, 3>> points = Array<float>::from_dynamic<3>(Array<float>::load_txt_2d(args.named_value("--points")));
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
-        auto rrg = RenderingContextGuard::root(
+        TrailResources trail_resources;
+        RenderingResources rendering_resources{
+            "primary_rendering_resources",
+            16 };
+        RenderingContext rendering_context{
             scene_node_resources,
             particle_resources,
-            "primary_rendering_resources",
-            16,
-            0);
+            trail_resources,
+            rendering_resources };
+        RenderingContextGuard rrg{ rendering_context };
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
         std::unique_ptr<Camera> camera(new PerspectiveCamera(
             PerspectiveCameraConfig(),
             PerspectiveCamera::Postprocessing::ENABLED));
-        Render2 render{ render_config, num_renderings };
+        SetFps set_fps{ nullptr };
+        Render render{ render_config, num_renderings, set_fps, []() {return std::chrono::steady_clock::now(); } };
         render_point_cloud(
             render,
             points.applied<TransformationMatrix<float, float, 3>>([](const auto& p){return TransformationMatrix<float, float, 3>{fixed_zeros<float, 3, 3>(), p};}),

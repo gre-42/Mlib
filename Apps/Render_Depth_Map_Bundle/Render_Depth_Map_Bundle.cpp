@@ -8,14 +8,17 @@
 #include <Mlib/Images/Filters/Median_Filter.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Sfm/Components/Depth_Map_Bundle.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <vector>
 
 using namespace Mlib;
@@ -188,18 +191,24 @@ int main(int argc, char** argv) {
             .double_buffer = true};
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
-        auto rrg = RenderingContextGuard::root(
-            scene_node_resources,
-            particle_resources,
+        TrailResources trail_resources;
+        RenderingResources rendering_resources{
             "primary_rendering_resources",
-            render_config.anisotropic_filtering_level,
-            0);
+            16 };
+        RenderingContext primary_rendering_context{
+            .scene_node_resources = scene_node_resources,
+            .particle_resources = particle_resources,
+            .trail_resources = trail_resources,
+            .rendering_resources = rendering_resources,
+            .z_order = 0 };
+        RenderingContextGuard rcg{ primary_rendering_context };
         RenderResults render_results;
         RenderedSceneDescriptor rsd;
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = {};
         }
-        Render2 render{ render_config, num_renderings, &render_results };
+        SetFps set_fps{ nullptr };
+        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); }, &render_results };
         render_depth_maps(
             render,
             packages,

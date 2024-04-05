@@ -456,7 +456,7 @@ namespace Mlib {
 
 template <typename TData, size_t tshape0, size_t... tshape>
 FixedArray<TData, tshape0, tshape...>::FixedArray(const ArrayShape& shape)
-: FixedArray{ shape.begin(), shape.ndim() }
+: FixedArray(FixedArray::from_buffer(shape.begin(), shape.ndim()))
 {}
 
 template <typename TData, size_t tshape0, size_t... tshape>

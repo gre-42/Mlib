@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
 
             // disparity_0 = compute_disparity_gray_single_pixel(im0_gray, im1_gray, F, search_length);
             // disparity_0 = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error, ArrayShape{10, 10});
-            disparity_0 = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error, FixedArray<size_t, 2>{15, 15}, FixedArray<size_t, 2>{0, 0}, &error_0);
+            disparity_0 = compute_disparity_rgb_patch(im0_rgb, im1_rgb, F, search_length, worst_error, FixedArray<size_t, 2>{15u, 15u}, FixedArray<size_t, 2>{0u, 0u}, &error_0);
             disparity_0.save_txt_2d("disparity_0.m");
             error_0.save_txt_2d("error_0.m");
             draw_nan_masked_grayscale(disparity_0, -50.f, 50.f).save_to_file("disparity-0.png");
@@ -553,7 +553,7 @@ int main(int argc, char **argv) {
                 // std::cerr << r << std::endl;
                 for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                     if (!desc.can_compute(r, c) ||
-                        db.count(desc(r, c), 0.1) > 0) {
+                        db.count(desc(r, c), 0.1f) > 0) {
                         x(0, r, c) = NAN;
                         x(1, r, c) = NAN;
                         x(2, r, c) = NAN;
