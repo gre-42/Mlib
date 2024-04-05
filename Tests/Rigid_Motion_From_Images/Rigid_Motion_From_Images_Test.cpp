@@ -18,10 +18,10 @@ using namespace Mlib::Sfm;
 using namespace Mlib::Sfm::Rmfi;
 
 void test_jacobian() {
-    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>::init(
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
-        0.f, 0.f, 1.f} };
+        0.f, 0.f, 1.f) };
     FixedArray<float, 6> kep{ uniform_random_array<float>(ArrayShape{6}, 3) };
     FixedArray<float, 2> x{ uniform_random_array<float>(ArrayShape{2}, 2) };
     float depth = 2.345f;
@@ -34,10 +34,10 @@ void test_jacobian() {
 }
 
 void test_intensity_jacobian() {
-    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>::init(
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
-        0.f, 0.f, 1.f} };
+        0.f, 0.f, 1.f) };
     FixedArray<float, 6> kep{0.2f, 0.1f, 0.4f, 0.12f, 0.34f, 0.56f};
     Array<float> im_r = uniform_random_array<float>(ArrayShape{2, 4, 5}, 1);
     Array<float> im_l = uniform_random_array<float>(ArrayShape{2, 4, 5}, 2);

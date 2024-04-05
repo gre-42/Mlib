@@ -14,7 +14,7 @@ class FixedArray;
 class Camera;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-class Render2;
+class Render;
 template <class TPos>
 class ColoredVertexArray;
 enum class NormalType;
@@ -24,7 +24,7 @@ namespace Cv {
 struct DepthMapPackage;
 
 void render_point_cloud(
-    Render2& render,
+    Render& render,
     const Array<TransformationMatrix<float, float, 3>>& points,
     std::unique_ptr<Camera>&& camera,
     bool rotate = false,
@@ -33,7 +33,7 @@ void render_point_cloud(
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
 void render_depth_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const TransformationMatrix<float, float, 2>& intrinsic_matrix,
@@ -45,7 +45,7 @@ void render_depth_map(
     const SceneGraphConfig& scene_graph_config = SceneGraphConfig());
 
 void render_depth_maps(
-    Render2& render,
+    Render& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, float, 3>>& points,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& mesh,
@@ -64,7 +64,7 @@ void render_depth_maps(
     float cos_threshold = 0.f);
 
 void render_height_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, float, 2>& normalization_matrix,

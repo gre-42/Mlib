@@ -177,10 +177,10 @@ struct HomographyData {
         random_array2<float>(ArrayShape{20}, 1),
         random_array2<float>(ArrayShape{20}, 2)}).T())),
      y1(y0.shape()),
-     homography{
+     homography{FixedArray<float, 3, 3>::init(
         0.5f, 0.6f, 0.2f,
         0.1f, 0.7f, 0.15f,
-        0.25f, 0.9f, 1.f} // last element must be 1
+        0.25f, 0.9f, 1.f)} // last element must be 1
     {
         for (size_t r = 0; r < y1.shape(0); ++r) {
             y1(r) = apply_homography(homography, y0(r));
@@ -374,8 +374,8 @@ void test_traceable_patch() {
         {1, 2, 3, 4, 5},
         {6, 7, 8, 9, 10},
         {11, 12, 13, 14, 15}});
-    const FixedArray<size_t, 2> patch_center{1, 2};
-    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3, 4}, FixedArray<size_t, 2>{0, 0}, 5);
+    const FixedArray<size_t, 2> patch_center{ 1u, 2u };
+    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3u, 4u}, FixedArray<size_t, 2>{0u, 0u}, 5);
     assert_allclose(
         p.image_patch_,
         to_rgb(Array<float>{
@@ -386,11 +386,11 @@ void test_traceable_patch() {
         {5, 5, 5, 1, 2, 3, 4, 5},
         {5, 5, 5, 6, 7, 8, 9, 10},
         {5, 5, 5, 11, 12, 13, 14, 15}});
-    assert_isclose<float>(p.error_at_position(new_image, FixedArray<size_t, 2>{1, 5}), 0);
-    assert_isclose<float>(p.error_at_position(image, FixedArray<size_t, 2>{1, 2}), 0);
+    assert_isclose<float>(p.error_at_position(new_image, FixedArray<size_t, 2>{1u, 5u}), 0);
+    assert_isclose<float>(p.error_at_position(image, FixedArray<size_t, 2>{1u, 2u}), 0);
     assert_allequal(
-        p.new_position_in_box(new_image, patch_center, FixedArray<size_t, 2>{10, 10}, 0.002f),
-        FixedArray<size_t, 2>{1, 5});
+        p.new_position_in_box(new_image, patch_center, FixedArray<size_t, 2>{10u, 10u}, 0.002f),
+        FixedArray<size_t, 2>{1u, 5u});
 }
 
 void test_traceable_patch_nan() {
@@ -398,8 +398,8 @@ void test_traceable_patch_nan() {
         {1, 2, 3, 4, 5},
         {6, 7, 8, 9, 10},
         {11, 12, 13, 14, 15}});
-    const FixedArray<size_t, 2> patch_center{1, 2};
-    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3, 4}, FixedArray<size_t, 2>{1, 1});
+    const FixedArray<size_t, 2> patch_center{1u, 2u};
+    TraceablePatch p(image, patch_center, FixedArray<size_t, 2>{3u, 4u}, FixedArray<size_t, 2>{1u, 1u});
     assert_allclose(
         p.image_patch_,
         to_rgb(Array<float>{

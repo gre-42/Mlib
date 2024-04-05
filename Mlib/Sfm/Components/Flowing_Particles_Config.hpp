@@ -13,8 +13,8 @@ public:
     float presmoothing_sigma = 0.5f;
     float distance_sigma = 2.f;
     float worst_patch_error = 0.4f; // Errors respect the patch-brightness.
-    FixedArray<size_t, 2> search_window{10, 10};
-    FixedArray<size_t, 2> patch_size{10, 10};
+    FixedArray<size_t, 2> search_window{ 10u, 10u };
+    FixedArray<size_t, 2> patch_size{ 10u, 10u };
 };
 
 }

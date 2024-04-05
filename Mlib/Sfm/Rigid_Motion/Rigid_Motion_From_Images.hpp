@@ -176,10 +176,10 @@ Array<TData> intensity_jacobian_fast(
             da_dkep_T[1] = dot(RR1, r0);
             da_dkep_T[2] = dot(RR2, r1);
 
-            FixedArray<float, 3, 6> da_dk{
+            auto da_dk = FixedArray<float, 3, 6>::init(
                 da_dkep_T(0, 0), da_dkep_T(1, 0), da_dkep_T(2, 0), 1.f, 0.f, 0.f,
                 da_dkep_T(0, 1), da_dkep_T(1, 1), da_dkep_T(2, 1), 0.f, 1.f, 0.f,
-                da_dkep_T(0, 2), da_dkep_T(1, 2), da_dkep_T(2, 2), 0.f, 0.f, 1.f };
+                da_dkep_T(0, 2), da_dkep_T(1, 2), da_dkep_T(2, 2), 0.f, 0.f, 1.f);
 
             FixedArray<TData, 2, 6> J = dot(dy_da, da_dk);
 

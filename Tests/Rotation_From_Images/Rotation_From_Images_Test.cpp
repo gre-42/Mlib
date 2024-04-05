@@ -13,10 +13,10 @@ using namespace Mlib::Sfm::Hfi;
 
 void test_jacobian() {
     // Array<float> intrinsic_matrix = Array<float>::load_txt_2d("Data/camera_intrinsic-256x455.m");
-    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>::init(
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
-        0.f, 0.f, 1.f} };
+        0.f, 0.f, 1.f) };
     FixedArray<float, 3> theta{ uniform_random_array<float>(ArrayShape{3}, 3) };
     FixedArray<float, 2> x{ uniform_random_array<float>(ArrayShape{2}, 2) };
     FixedArray<float, 2, 3> num = numerical_differentiation<2>([&](const FixedArray<float, 3>& ttheta){
@@ -27,10 +27,10 @@ void test_jacobian() {
 }
 
 void test_intensity_jacobian() {
-    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>{
+    TransformationMatrix<float, float, 2> intrinsic_matrix{ FixedArray<float, 3, 3>::init(
         0.5f, 0.f, 0.9f,
         0.f, 0.7f, 0.2f,
-        0.f, 0.f, 1.f} };
+        0.f, 0.f, 1.f) };
     FixedArray<float, 3> theta{0.2f, 0.1f, 0.4f};
     Array<float> im_r = uniform_random_array<float>(ArrayShape{2, 4, 5}, 1);
     Array<float> im_l = uniform_random_array<float>(ArrayShape{2, 4, 5}, 2);
@@ -60,10 +60,10 @@ void test_homography_from_images() {
     im1_rgb = multichannel_gaussian_filter_NWE(im1_rgb, 3.f, NAN);
 
     FixedArray<float, 3, 3> R = rotation_from_images(im0_rgb, im1_rgb, intrinsic_matrix, intrinsic_matrix);
-    assert_allclose(R, FixedArray<float, 3, 3>{
+    assert_allclose(R, FixedArray<float, 3, 3>::init(
         0.999998f, -0.00143413f, -0.00139267f,
         0.00150745f, 0.998531f, 0.0541625f,
-        0.00131294f, -0.0541645f, 0.998531f});
+        0.00131294f, -0.0541645f, 0.998531f));
     // Array<float> diff = d_pr(im0_rgb, im1_rgb, intrinsic_matrix, R);
     Array<float> diff = d_pr_bilinear(zeros<float>(im0_rgb.shape()), im1_rgb, intrinsic_matrix, intrinsic_matrix, R);
     draw_nan_masked_rgb(diff, 0, 0).save_to_file("TestOut/rotation-diff.png");

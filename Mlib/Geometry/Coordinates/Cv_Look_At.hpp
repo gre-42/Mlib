@@ -11,11 +11,15 @@ TransformationMatrix<TData, TData, 3> cv_lookat_relative(
     const FixedArray<TData, 3>& dz,
     const FixedArray<TData, 3>& dy0 = { 0.f, 1.f, 0.f })
 {
+    auto R = gl_lookat_relative(
+        cv_to_opengl_coordinates(dz),
+        cv_to_opengl_coordinates(dy0));
+    if (!R.has_value()) {
+        THROW_OR_ABORT("Could not compute lookat-matrix");
+    }
     return opengl_to_cv_extrinsic_matrix(
         TransformationMatrix<float, float, 3>{
-            gl_lookat_relative(
-                cv_to_opengl_coordinates(dz),
-                cv_to_opengl_coordinates(dy0)),
+            R.value(),
             cv_to_opengl_coordinates(camera_pos) });
 }
 

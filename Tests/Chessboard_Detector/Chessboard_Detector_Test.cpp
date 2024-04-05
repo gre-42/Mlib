@@ -27,10 +27,10 @@ void test_chessboard_detector() {
 }
 
 void test_inverse_homography() {
-    FixedArray<float, 3, 3> homography{
+    auto homography = FixedArray<float, 3, 3>::init(
         0.5f, 0.6f, 0.2f,
         0.1f, 0.7f, 0.15f,
-        0.25f, 0.9f, 2.f};
+        0.25f, 0.9f, 2.f);
     FixedArray<float, 2> a{0.31f, 0.45f};
     FixedArray<float, 2> b = apply_homography(homography, a);
     FixedArray<float, 2> bi = apply_inverse_homography(homography, b);

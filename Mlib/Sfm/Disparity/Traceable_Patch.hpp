@@ -9,7 +9,7 @@ public:
         const Array<float>& image,
         const FixedArray<size_t, 2>& patch_center,
         const FixedArray<size_t, 2>& patch_size,
-        const FixedArray<size_t, 2>& patch_nan_size = FixedArray<size_t, 2>{0, 0},
+        const FixedArray<size_t, 2>& patch_nan_size = FixedArray<size_t, 2>{0u, 0u},
         size_t min_npixels = 0,  // 0 = enable strict mode);
         float min_brightness = 0.1f);
     FixedArray<size_t, 2> new_position_in_box(

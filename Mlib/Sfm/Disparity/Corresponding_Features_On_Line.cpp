@@ -26,7 +26,7 @@ CorrespondingFeaturesOnLine::CorrespondingFeaturesOnLine(
         FixedArray<size_t, 2> id = a2i(f0);
         EpilineDirection ed(id(0), id(1), F);
         if (ed.good) {
-            TraceablePatch tp{im0_rgb, id, FixedArray<size_t, 2>{ 10, 10 }};
+            TraceablePatch tp{im0_rgb, id, FixedArray<size_t, 2>{ 10u, 10u }};
             if (tp.good_) {
                 float new_pos = tp.new_position_on_line(im1_rgb, a2i(ed.center1), ed.v1, max_distance, worst_error);
                 if (!std::isnan(new_pos)) {

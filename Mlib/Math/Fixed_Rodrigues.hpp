@@ -136,7 +136,7 @@ FixedArray<TData, 3> rodrigues_gradient_dtheta(
 {
     auto R = rodrigues2(k, theta);
     auto v = cross(k, x);
-    return dot2d(R, v);
+    return dot1d(R, v);
 }
 
 template <class TData>
@@ -170,10 +170,10 @@ FixedArray<TData, 3, 3> tait_bryan_angles_dtheta(
     FixedArray<TData, 3> dy_da0 = dot1d(R2, dot1d(R1, rodrigues_gradient_dtheta(I0, theta(0), x)));
 
     // Changed order to be compatible with the rodrigues-implementation
-    return FixedArray<TData, 3, 3>{
+    return FixedArray<TData, 3, 3>::init(
         dy_da0(0), dy_da1(0), dy_da2(0),
         dy_da0(1), dy_da1(1), dy_da2(1),
-        dy_da0(2), dy_da1(2), dy_da2(2)};
+        dy_da0(2), dy_da1(2), dy_da2(2));
 }
 
 }

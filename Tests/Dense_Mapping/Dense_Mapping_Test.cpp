@@ -68,7 +68,7 @@ void test_numerical_differentiation() {
             float(1e-3));
     }
     {
-        float sigma = 0.1;
+        float sigma = 0.1f;
         auto f = [&](const Array<float>& qq) {
             return Array<float>{HuberRof::prox_sigma_fs(
                 sigma,

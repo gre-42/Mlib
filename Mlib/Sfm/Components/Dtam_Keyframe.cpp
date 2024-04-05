@@ -420,7 +420,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 cfg_.cost_volume_parameters_,
                 cfg_.dp_params_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
-            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
+            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, FilterExtension::NWE, cfg_.regularization_filter_poly_degree_);};
             // auto w = [this](const Array<double>& d){return gaussian_filter_NWE(d, double{cfg_.regularization_filter_sigma_}, double{NAN}, 4., false);};
             // auto l = [&w](const Array<float>& d){return local_polynomial_regression(d.casted<double>(), w, 2).casted<float>();};
             dm_ = std::make_unique<Df::DenseFiltering>(
@@ -463,7 +463,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
                 cfg_.cost_volume_parameters_,
                 cfg_.dp_params_);
         } else if (cfg_.regularization_ == Regularization::FILTERING) {
-            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, true, cfg_.regularization_filter_poly_degree_);};
+            auto g2 = [this](const Array<float>& d){return gaussian_filter_NWE(d, cfg_.regularization_filter_sigma_, float{NAN}, 4.f, FilterExtension::NWE, cfg_.regularization_filter_poly_degree_);};
             Df::qualitative_primary_parameter_optimization(
                 dsi_,
                 cfg_.cost_volume_parameters_,

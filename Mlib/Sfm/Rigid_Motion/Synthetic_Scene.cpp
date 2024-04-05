@@ -27,10 +27,10 @@ SyntheticScene::SyntheticScene(
         (2.f * ones<float>(ArrayShape{20}) +
          random_array2<float>(ArrayShape{20}, 485)) }).T())),
 // an intrinsic camera-matrix
- ki{FixedArray<float, 3, 3>{
+ ki{FixedArray<float, 3, 3>::init(
     256.f, 0.f, 200.f,
     0.f, 512.f, 490.f,
-    0.f, 0.f, 1.f}},
+    0.f, 0.f, 1.f)},
 // several extrinsic camera-matrices observing "x"
  ke({
     random_ke(1, (zero_first_extrinsic ? 0.f : 1.f) * tR_multiplier),

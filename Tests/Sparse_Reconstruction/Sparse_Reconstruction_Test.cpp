@@ -48,8 +48,8 @@ void test_reconstruction() {
     std::map<size_t, float> last_sq_residual;
     SparseReconstruction recon{ sc.ki, camera_frames, image_frames, particles, bad_points, last_sq_residual, "TestOut", cfg };
     Array<float> image = random_array2<float>(ArrayShape{3, 256, 512}, 1);
-    FixedArray<size_t, 2> patch_center{127, 130};
-    FixedArray<size_t, 2> patch_size{6, 6};
+    FixedArray<size_t, 2> patch_center{127u, 130u};
+    FixedArray<size_t, 2> patch_size{6u, 6u};
     TraceablePatch traceable_patch{image, patch_center, patch_size};
     // y.shape == frame, ID, coordinate
     auto insert_camera = [&](size_t itime) {

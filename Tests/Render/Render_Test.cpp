@@ -5,22 +5,23 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Fixed_Random_Arrays.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;
 
 void test_scene_node() {
     SceneNode node;
-    node.set_position(fixed_random_uniform_array<double, 3>(1));
-    node.set_rotation(fixed_random_uniform_array<float, 3>(2));
+    node.set_position(fixed_random_uniform_array<double, 3>(1), std::chrono::steady_clock::now());
+    node.set_rotation(fixed_random_uniform_array<float, 3>(2), std::chrono::steady_clock::now());
     node.set_scale(5);
     assert_allclose(
         node.relative_model_matrix().affine(),
@@ -40,7 +41,8 @@ void test_render() {
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         std::atomic_size_t num_renderings = SIZE_MAX;
-        Render2 render{ render_config, num_renderings, &render_results};
+        SetFps set_fps{ nullptr };
+        Render render{ render_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results };
         render_depth_map(
             render,
             img.to_float_rgb(),
@@ -60,7 +62,8 @@ void test_render() {
         RenderedSceneDescriptor rsd;
         render_results.outputs[rsd] = {};
         std::atomic_size_t num_renderings = SIZE_MAX;
-        Render2 render{ render_config, num_renderings, &render_results};
+        SetFps set_fps{ nullptr };
+        Render render{ render_config, num_renderings, set_fps, [](){ return std::chrono::steady_clock::now(); }, &render_results};
         render_depth_map(
             render,
             img.to_float_rgb(),

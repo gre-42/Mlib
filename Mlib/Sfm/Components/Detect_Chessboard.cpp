@@ -144,10 +144,10 @@ void Mlib::Sfm::detect_chessboard(
         for (float fx = 0; fx < maxX; fx += 3 * xs) {
             for (float fy = 0; fy < maxY; fy += 3 * ys) {
                 Array<unsigned int> hist = zeros<unsigned int>(shape);
-                FixedArray<float, 3, 3> homography{
+                auto homography = FixedArray<float, 3, 3>::init(
                     w  , 0.f, fx,
                     0.f, w  , fy,
-                    0.f, 0.f, 1.f };
+                    0.f, 0.f, 1.f);
                 // homography = FixedArray<float, 3, 3>{
                 //     33.f, 0.f, 121.25f,
                 //     0.f, 33.f, 101.25f,

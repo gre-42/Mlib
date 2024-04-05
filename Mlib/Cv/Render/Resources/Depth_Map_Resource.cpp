@@ -98,10 +98,13 @@ DepthMapResource::DepthMapResource(
             "DepthMapResource",
             Material{},
             PhysicsMaterial::ATTR_VISIBLE,
+            ModifierBacklog{},
+            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),
-            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<float, 3>>(),
+            std::vector<FixedArray<uint8_t, 3>>()));
 }
 
 void DepthMapResource::instantiate_renderable(const InstantiationOptions& options) const

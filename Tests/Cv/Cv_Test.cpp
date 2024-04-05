@@ -28,9 +28,9 @@ void test_homogeneous_jacobian() {
 void test_projection_jacobian_dx() {
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
     TransformationMatrix<float, float, 3> ke{ FixedArray<float, 3, 4>{ random_array3<float>(ArrayShape{3, 4}, 5) } };
-    TransformationMatrix<float, float, 2> ki{ FixedArray<float, 2, 3>{
+    TransformationMatrix<float, float, 2> ki{ FixedArray<float, 2, 3>::init(
         0.5f, 0.f, 0.1f,
-        0.f, 0.7f, 0.2f } };
+        0.f, 0.7f, 0.2f) };
     auto mm = TransformationMatrix<float, float, 3>{ ki.project(ke.semi_affine()) };
     assert_allclose(
         numerical_differentiation<2>([&](
@@ -74,10 +74,10 @@ void test_projection_jacobian_ke() {
     FixedArray<float, 6> kep{ random_array3<float>(ArrayShape{6}, 2) };
     FixedArray<float, 3> t{ random_array3<float>(ArrayShape{3}, 2) };
     FixedArray<float, 3> x{ random_array3<float>(ArrayShape{3}, 2) };
-    FixedArray<float, 3, 3> ki{
+    auto ki = FixedArray<float, 3, 3>::init(
         0.5f, 0.f, 0.1f,
         0.f, 0.7f, 0.2f,
-        0.f, 0.f, 1.f };
+        0.f, 0.f, 1.f);
     assert_allclose(
         numerical_differentiation<2>([&](const FixedArray<float, 6>& kkep){
             return projected_points_1p_1ke(
@@ -93,8 +93,8 @@ void test_projection_jacobian_ke() {
     assert_allclose(
         projected_points_jacobian_dke_1p_1ke(x, TransformationMatrix<float, float, 2>{ki}, kep).to_array(),
         Array<float>{
-            {-0.096922, 0.338622, -0.0870149, 0.516837, 0.f, -0.734359f},
-            {-0.155774, 0.240563, 0.320573, 0.f, 0.723572f, -0.537037f}},
+            {-0.096922f, 0.338622f, -0.0870149f, 0.516837f, 0.f, -0.734359f},
+            {-0.155774f, 0.240563f, 0.320573f, 0.f, 0.723572f, -0.537037f}},
         float(1e-2));
 }
 
@@ -114,13 +114,13 @@ void test_projection_jacobian_ki() {
         float(1e-2)).to_array(),
         Array<float>{
             {53.4374f, 1.f, 0.f, 0.f},
-            {0.f, 0.f, 12.5028, 1.00002f}},
+            {0.f, 0.f, 12.5028f, 1.00002f}},
         float(1e-3));
     assert_allclose(
         projected_points_jacobian_dki_1p_1ke(x, ke).to_array(),
         Array<float>{
             {53.4375f, 1.f, 0.f, 0.f},
-            {0.f, 0, 12.5027f, 1.00002f}},
+            {0.f, 0.f, 12.5027f, 1.00002f}},
         float(1e-3));
 }
 

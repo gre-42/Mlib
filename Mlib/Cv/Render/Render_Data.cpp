@@ -8,9 +8,11 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -22,7 +24,7 @@ using namespace Mlib;
 using namespace Mlib::Cv;
 
 void Mlib::Cv::render_point_cloud(
-    Render2& render,
+    Render& render,
     const Array<TransformationMatrix<float, float, 3>>& points,
     std::unique_ptr<Camera>&& camera,
     bool rotate,
@@ -33,12 +35,12 @@ void Mlib::Cv::render_point_cloud(
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<PointCloudResource>(points);
     scene_node_resources.add_resource("PointCloudResource", r);
-    auto on = std::make_unique<SceneNode>();
+    auto on = make_dunique<SceneNode>();
     scene_node_resources.instantiate_renderable(
         "PointCloudResource",
         InstantiationOptions{
             .instance_name = "PointCloudResource",
-            .scene_node = *on,
+            .scene_node = on.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}});
     render.render_node(
         std::move(on),
@@ -51,7 +53,7 @@ void Mlib::Cv::render_point_cloud(
 }
 
 void Mlib::Cv::render_depth_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& depth_picture,
     const TransformationMatrix<float, float, 2>& intrinsic_matrix,
@@ -87,7 +89,7 @@ void Mlib::Cv::render_depth_map(
 }
 
 void Mlib::Cv::render_depth_maps(
-    Render2& render,
+    Render& render,
     const std::vector<DepthMapPackage>& packages,
     const Array<TransformationMatrix<float, float, 3>>& points,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& mesh,
@@ -107,28 +109,32 @@ void Mlib::Cv::render_depth_maps(
 {
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
-    auto rrg = RenderingContextGuard::root(
+    TrailResources trail_resources;
+    RenderingResources rendering_resources{
+        "primary_rendering_resources",
+        16 };
+    RenderingContext rendering_context{
         scene_node_resources,
         particle_resources,
-        "primary_rendering_resources",
-        16,
-        0);
-    auto root_node = std::make_unique<SceneNode>();
+        trail_resources,
+        rendering_resources };
+    RenderingContextGuard rrg{ rendering_context };
+    auto root_node = make_dunique<SceneNode>();
     {
         size_t i = 0;
         for (const DepthMapPackage& package : packages) {
             std::string resource_name = "DepthMapResource_" + std::to_string(i++);
             const auto r = std::make_shared<DepthMapResource>(package.rgb, package.depth, package.ki, cos_threshold);
             scene_node_resources.add_resource(resource_name, r);
-            auto on = std::make_unique<SceneNode>();
+            auto on = make_dunique<SceneNode>();
             TransformationMatrix<float, float, 3> cpos = cv_to_opengl_extrinsic_matrix(package.ke).inverted();
             float scale = cpos.get_scale();
-            on->set_absolute_pose(cpos.t().casted<double>(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale);
+            on->set_absolute_pose(cpos.t().casted<double>(), matrix_2_tait_bryan_angles(cpos.R() / scale), scale, std::chrono::steady_clock::now());
             scene_node_resources.instantiate_renderable(
                 resource_name,
                 InstantiationOptions{
                     .instance_name = "DepthMap",
-                    .scene_node = *on,
+                    .scene_node = on.ref(CURRENT_SOURCE_LOCATION),
                     .renderable_resource_filter = RenderableResourceFilter{}});
             root_node->add_child(resource_name, std::move(on));
         }
@@ -140,7 +146,7 @@ void Mlib::Cv::render_depth_maps(
             "PointCloudResource",
             InstantiationOptions{
                 .instance_name = "DepthMap",
-                .scene_node = *root_node,
+                .scene_node = root_node.ref(CURRENT_SOURCE_LOCATION),
                 .renderable_resource_filter = RenderableResourceFilter{}});
     }
     if (!mesh.empty()) {
@@ -154,7 +160,7 @@ void Mlib::Cv::render_depth_maps(
             "ColoredVertexArrayResource",
             InstantiationOptions{
                 .instance_name = "ColoredVertexArray",
-                .scene_node = *root_node,
+                .scene_node = root_node.ref(CURRENT_SOURCE_LOCATION),
                 .renderable_resource_filter = RenderableResourceFilter{}});
     }
     std::vector<TransformationMatrix<float, double, 3>> transformed_beacon_locations;
@@ -171,12 +177,12 @@ void Mlib::Cv::render_depth_maps(
             {-1.f, -1.f, 0.f});
         const auto r = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
         scene_node_resources.add_resource("beacon", r);
-        auto bn = std::make_unique<SceneNode>();
+        auto bn = make_dunique<SceneNode>();
         scene_node_resources.instantiate_renderable(
             "beacon",
             InstantiationOptions{
                 .instance_name = "beacon",
-                .scene_node = *bn,
+                .scene_node = bn.ref(CURRENT_SOURCE_LOCATION),
                 .renderable_resource_filter = RenderableResourceFilter{}});
         root_node->add_child("beacon", std::move(bn));
     }
@@ -198,7 +204,7 @@ void Mlib::Cv::render_depth_maps(
 }
 
 void Mlib::Cv::render_height_map(
-    Render2& render,
+    Render& render,
     const Array<float>& rgb_picture,
     const Array<float>& height_picture,
     const TransformationMatrix<float, float, 2>& normalization_matrix,
@@ -212,12 +218,12 @@ void Mlib::Cv::render_height_map(
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
-    auto on = std::make_unique<SceneNode>();
+    auto on = make_dunique<SceneNode>();
     scene_node_resources.instantiate_renderable(
         "HeightMapResource",
         InstantiationOptions{
             .instance_name = "HeightMapResource",
-            .scene_node = *on,
+            .scene_node = on.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}});
     std::unique_ptr<Camera> camera(new PerspectiveCamera(
         camera_config,

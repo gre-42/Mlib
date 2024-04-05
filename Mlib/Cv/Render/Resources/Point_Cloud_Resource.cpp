@@ -43,10 +43,14 @@ PointCloudResource::PointCloudResource(
             "DepthMapResource",
             Material{ .cull_faces = false },
             PhysicsMaterial::ATTR_VISIBLE,
-            std::move(std::vector(tris.triangles_.begin(), tris.triangles_.end())),
-            std::move(std::vector<FixedArray<ColoredVertex<float>, 2>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 3>>()),
-            std::move(std::vector<FixedArray<std::vector<BoneWeight>, 2>>())));
+            ModifierBacklog{},
+            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            std::vector(tris.triangles.begin(), tris.triangles.end()),
+            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
+            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            std::vector<FixedArray<float, 3>>(),
+            std::vector<FixedArray<uint8_t, 3>>()));
+
 }
 
 void PointCloudResource::instantiate_renderable(const InstantiationOptions& options) const

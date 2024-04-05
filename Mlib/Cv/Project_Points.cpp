@@ -30,9 +30,9 @@ FixedArray<float, 6> Mlib::Cv::k_external_inverse(const TransformationMatrix<flo
 TransformationMatrix<float, float, 2> Mlib::Cv::k_internal(const FixedArray<float, 4>& kip) {
     assert(kip.length() == 4);
     return TransformationMatrix<float, float, 2>{
-        FixedArray<float, 2, 2>{
+        FixedArray<float, 2, 2>::init(
             kip(0), 0.f,
-            0.f, kip(2)},
+            0.f, kip(2)),
         FixedArray<float, 2>{kip(1), kip(3)}};
 }
 
@@ -152,10 +152,10 @@ FixedArray<float, 2, 6> Mlib::Cv::projected_points_jacobian_dke_1p_1ke(
         kep TEMPLATEV row_range<0, 3>(),
         x TEMPLATEV row_range<0, 3>());
 
-    FixedArray<float, 3, 6> da_dk{
+    auto da_dk = FixedArray<float, 3, 6>::init(
         da_dkep(0, 0), da_dkep(0, 1), da_dkep(0, 2), 1.f, 0.f, 0.f,
         da_dkep(1, 0), da_dkep(1, 1), da_dkep(1, 2), 0.f, 1.f, 0.f,
-        da_dkep(2, 0), da_dkep(2, 1), da_dkep(2, 2), 0.f, 0.f, 1.f};
+        da_dkep(2, 0), da_dkep(2, 1), da_dkep(2, 2), 0.f, 0.f, 1.f);
     return dot2d(dy_da, da_dk);
 }
 
@@ -170,9 +170,9 @@ FixedArray<float, 2, 4> Mlib::Cv::projected_points_jacobian_dki_1p_1ke(
     // y = ki * p / p(2) = | kip(0) * p(0) + kip(1) * p(2) | / p(2)
     //                     | kip(2) * p(1) + kip(3) * p(2) |
     //                     | p(2)                          |
-    FixedArray<float, 2, 4> m_dy_dkip{
+    auto m_dy_dkip = FixedArray<float, 2, 4>::init(
         p(0), p(2), 0.f, 0.f,
-        0.f, 0.f, p(1), p(2)};
+        0.f, 0.f, p(1), p(2));
     return m_dy_dkip / p(2);
 }
 

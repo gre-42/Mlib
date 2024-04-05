@@ -3,8 +3,7 @@
 #include <Mlib/Geometry/Cameras/Projection_Matrix_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Coordinate_Conversion.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Render/Particle_Resources.hpp>
-#include <Mlib/Render/Render2.hpp>
+#include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Read_Pixels_Logic.hpp>
@@ -12,13 +11,17 @@
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
-#include <Mlib/Render/Selected_Cameras.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Time/Fps/Set_Fps.hpp>
 
 using namespace Mlib;
 using namespace Mlib::Cv;
@@ -41,37 +44,46 @@ void Mlib::Cv::project_depth_map(
     RenderResults render_results;
     RenderedSceneDescriptor rsd;
     render_results.outputs[rsd] = { .depth_kind = FrameBufferChannelKind::TEXTURE };
-
-    Render2 render2{ render_config, num_renderings, &render_results };
+    SetFps set_fps{ nullptr };
+    Render render{
+        render_config,
+        num_renderings,
+        set_fps,
+        [](){ return std::chrono::steady_clock::now(); },
+        &render_results };
 
     SceneNodeResources scene_node_resources;
     ParticleResources particle_resources;
-    auto rrg = RenderingContextGuard::root(
+    TrailResources trail_resources;
+    RenderingResources rendering_resources{
+        "primary_rendering_resources",
+        16 };
+    RenderingContext rendering_context{
         scene_node_resources,
         particle_resources,
-        "primary_rendering_resources",
-        render_config.anisotropic_filtering_level,
-        0);
+        trail_resources,
+        rendering_resources };
+    RenderingContextGuard rrg{ rendering_context };
     SceneGraphConfig scene_graph_config;
 
     const auto r = std::make_shared<DepthMapResource>(rgb_picture0, depth_picture0, intrinsic_matrix0);
     scene_node_resources.add_resource("DepthMapResource", r);
-    auto on = std::make_unique<SceneNode>();
+    auto on = make_dunique<SceneNode>();
     scene_node_resources.instantiate_renderable(
         "DepthMapResource",
         InstantiationOptions{
             .instance_name = "DepthMapResource",
-            .scene_node = *on,
+            .scene_node = on.ref(CURRENT_SOURCE_LOCATION),
             .renderable_resource_filter = RenderableResourceFilter{}});
 
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ delete_node_mutex };
     scene.add_root_node("obj", std::move(on));
-    scene.add_root_node("camera", std::make_unique<SceneNode>());
+    scene.add_root_node("camera", make_dunique<SceneNode>());
     TransformationMatrix<float, float, 3> cpose = cv_to_opengl_extrinsic_matrix(ke_1_0).inverted();
     float cscale = cpose.get_scale();
-    scene.get_node("camera", DP_LOC).set_absolute_pose(cpose.t().casted<double>(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale);
-    scene.get_node("camera", DP_LOC).set_camera(std::make_unique<ProjectionMatrixCamera>(
+    scene.get_node("camera", DP_LOC)->set_absolute_pose(cpose.t().casted<double>(), matrix_2_tait_bryan_angles(cpose.R() / cscale), cscale, std::chrono::steady_clock::now());
+    scene.get_node("camera", DP_LOC)->set_camera(std::make_unique<ProjectionMatrixCamera>(
         cv_to_opengl_hz_intrinsic_matrix(
             intrinsic_matrix1,
             (float)width,
@@ -82,9 +94,9 @@ void Mlib::Cv::project_depth_map(
     SelectedCameras selected_cameras{ scene };
     selected_cameras.set_camera_node_name("camera");
     StandardCameraLogic camera_logic{ scene, selected_cameras, delete_node_mutex };
-    StandardRenderLogic render_logic{ scene, camera_logic, {1.f, 0.f, 1.f}, ClearMode::COLOR_AND_DEPTH };
+    StandardRenderLogic render_logic{ rendering_resources, scene, camera_logic, {1.f, 0.f, 1.f}, ClearMode::COLOR_AND_DEPTH };
     ReadPixelsLogic read_pixels_logic{ render_logic };
-    render2.render(read_pixels_logic);
+    render.render(read_pixels_logic, []() {});
     
     rgb_picture1 = render_results.outputs[rsd].rgb;
     // From: https://stackoverflow.com/questions/6652253/getting-the-true-z-value-from-the-depth-buffer
