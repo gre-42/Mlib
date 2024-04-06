@@ -23,6 +23,8 @@ enum class RaceState;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
+    Players(const Players&) = delete;
+    Players& operator = (const Players&) = delete;
 public:
     explicit Players(
         AdvanceTimes& advance_times,

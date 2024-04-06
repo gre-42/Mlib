@@ -40,6 +40,10 @@ Gun::Gun(
     DanglingRef<SceneNode> node,
     DanglingPtr<SceneNode> punch_angle_node,
     const BulletProperties& bullet_properties,
+    std::function<void(
+        const std::optional<std::string>& player,
+        const std::string& node,
+        const FixedArray<float, 3>& velocity)> generate_smart_bullet,
     ITrailStorage* bullet_trace_storage,
     const std::string& ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -59,6 +63,7 @@ Gun::Gun(
     , node_{ node.ptr() }
     , punch_angle_node_{ punch_angle_node }
     , bullet_properties_{ bullet_properties }
+    , generate_smart_bullet_{ std::move(generate_smart_bullet) }
     , bullet_trace_storage_{ bullet_trace_storage }
     , ammo_type_{ ammo_type }
     , triggered_{ false }
@@ -131,61 +136,76 @@ bool Gun::maybe_generate_bullet(std::chrono::steady_clock::time_point time) {
 }
 
 void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
-    std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid("bullet", "bullet_no_id", bullet_properties_.mass, bullet_properties_.size);
-    rcu->flags_ = bullet_properties_.rigid_body_flags;
-    rcu->rbp_.v_ =
-        - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rb_.rbp_.v_;
     auto node = make_dunique<SceneNode>(
         absolute_model_matrix_.t(),
         matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),
         1.f);
-    auto& rc = *rcu;
-    {
-        AbsoluteMovableSetter ams{node.ref(DP_LOC), std::move(rcu)};
-        if (!bullet_properties_.renderable_resource_name.empty()) {
-            scene_node_resources_.instantiate_renderable(
-                bullet_properties_.renderable_resource_name,
-                InstantiationOptions{
-                    .rendering_resources = rendering_resources_,
-                    .instance_name = "bullet",
-                    .scene_node = node.ref(DP_LOC),
-                    .renderable_resource_filter = RenderableResourceFilter{}});
+    auto bullet_velocity =
+        - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R())
+        + parent_rb_.rbp_.v_;
+    std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
+    std::string bullet_node_name = "car_node" + suffix;
+    if (generate_smart_bullet_) {
+        scene_.add_root_node(bullet_node_name, std::move(node));
+        generate_smart_bullet_(
+            player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
+            suffix,
+            bullet_velocity);
+    } else {
+        std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid(
+            "bullet",
+            "bullet_no_id",
+            bullet_properties_.mass,
+            bullet_properties_.size,
+            fixed_zeros<float, 3>(),  // com
+            bullet_velocity);
+        rcu->flags_ = bullet_properties_.rigid_body_flags;
+        auto& rc = *rcu;
+        {
+            AbsoluteMovableSetter ams{ node.ref(DP_LOC), std::move(rcu) };
+            if (!bullet_properties_.renderable_resource_name.empty()) {
+                scene_node_resources_.instantiate_renderable(
+                    bullet_properties_.renderable_resource_name,
+                    InstantiationOptions{
+                        .rendering_resources = rendering_resources_,
+                        .instance_name = "bullet",
+                        .scene_node = node.ref(DP_LOC),
+                        .renderable_resource_filter = RenderableResourceFilter{} });
+            }
+            rigid_bodies_.add_rigid_body(
+                std::move(ams.absolute_movable),
+                scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->scvas,
+                scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->dcvas,
+                CollidableMode::MOVING);
         }
-        rigid_bodies_.add_rigid_body(
-            std::move(ams.absolute_movable),
-            scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->scvas,
-            scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->dcvas,
-            CollidableMode::MOVING);
-    }
-    std::string bullet_node_name = "bullet" + scene_.get_temporary_instance_suffix();
-    auto bullet = std::make_unique<Bullet>(
-        scene_,
-        smoke_generator_,
-        advance_times_,
-        rc,
-        rigid_bodies_,
-        player_,
-        team_,
-        bullet_node_name,
-        bullet_properties_,
-        bullet_trace_storage_ == nullptr
+        auto bullet = std::make_unique<Bullet>(
+            scene_,
+            smoke_generator_,
+            advance_times_,
+            rc,
+            rigid_bodies_,
+            player_,
+            team_,
+            bullet_node_name,
+            bullet_properties_,
+            bullet_trace_storage_ == nullptr
             ? nullptr
             : bullet_trace_storage_->add_trail_extender(),
-        dynamic_lights_,
-        delete_node_mutex_,
-        time);
-    if (player_ != nullptr) {
-        player_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
+            dynamic_lights_,
+            delete_node_mutex_,
+            time);
+        if (player_ != nullptr) {
+            player_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
+        }
+        if (team_ != nullptr) {
+            team_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
+        }
+        advance_times_.add_advance_time(*bullet);
+        // Destruction order: Node -> Rigid body (collision observers) -> Bullet
+        // node->clearing_observers.add(*bullet);
+        rc.collision_observers_.emplace_back(std::move(bullet));
+        scene_.add_root_node(bullet_node_name, std::move(node));
     }
-    if (team_ != nullptr) {
-        team_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
-    }
-    advance_times_.add_advance_time(*bullet);
-    // Destruction order: Node -> Rigid body (collision observers) -> Bullet
-    // node->clearing_observers.add(*bullet);
-    rc.collision_observers_.emplace_back(std::move(bullet));
-    scene_.add_root_node(bullet_node_name, std::move(node));
 }
 
 void Gun::generate_muzzle_flash_hider() {

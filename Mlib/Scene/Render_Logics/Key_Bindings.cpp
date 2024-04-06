@@ -1,8 +1,6 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Components/Driver.hpp>
-#include <Mlib/Components/Gun.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Components/Weapon_Cycle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -586,11 +584,11 @@ void KeyBindings::increment_external_forces(
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& wc = get_weapon_cycle(*k.node);
+            auto& wc = k.player->weapon_cycle();
             if (k.direction == 1) {
-                wc.equip_next_weapon();
+                wc.equip_next_weapon(k.player->name());
             } else if (k.direction == -1) {
-                wc.equip_previous_weapon();
+                wc.equip_previous_weapon(k.player->name());
             } else {
                 THROW_OR_ABORT("Weapon cycle direction not -1 or 1");
             }
@@ -599,8 +597,7 @@ void KeyBindings::increment_external_forces(
     // Gun
     for (auto& k : gun_key_bindings_) {
         if (k.button_press.keys_down() && enable_controls) {
-            auto& gun = get_gun(*k.node);
-            gun.trigger(k.player, &players_.get_team(k.player->team_name()));
+            k.player->trigger_gun();
         }
     }
     // Player

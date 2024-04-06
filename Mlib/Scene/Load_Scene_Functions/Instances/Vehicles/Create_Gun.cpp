@@ -29,6 +29,7 @@ DECLARE_ARGUMENT(punch_angle_node);
 DECLARE_ARGUMENT(cool_down);
 DECLARE_ARGUMENT(bullet_type);
 DECLARE_ARGUMENT(ammo_type);
+DECLARE_ARGUMENT(generate_smart_bullet);
 DECLARE_ARGUMENT(punch_angle_idle_std);
 DECLARE_ARGUMENT(punch_angle_shoot_std);
 DECLARE_ARGUMENT(muzzle_flash_resource);
@@ -110,6 +111,30 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (!bullet_props.trace_storage.empty()) {
         bullet_trace_storage = &trail_renderer.get_storage(bullet_props.trace_storage);
     }
+    std::function<void(
+        const std::optional<std::string>& player,
+        const std::string& node,
+        const FixedArray<float, 3>& velocity)> generate_smart_bullet;
+    if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
+        generate_smart_bullet =
+            [mle = args.macro_line_executor,
+             l = g.value(),
+             capture = args.arguments.try_at_non_null(KnownArgs::capture),
+             &scene = scene]
+            (const std::optional<std::string>& player, const std::string& suffix, const FixedArray<float, 3>& velocity)
+            {
+                JsonMacroArguments local_args;
+                if (capture.has_value()) {
+                    local_args.insert_json(capture.value());
+                }
+                if (player.has_value()) {
+                    local_args.set("PLAYER_NAME", player.value());
+                }
+                local_args.set("SUFFIX", suffix);
+                local_args.set("VELOCITY", velocity / kph);
+                mle(l, &local_args, nullptr);
+            };
+    }
     new Gun(
         &rendering_resources,
         scene,
@@ -123,6 +148,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         node,
         punch_angle_node,
         bullet_props,
+        std::move(generate_smart_bullet),
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
@@ -130,8 +156,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
         args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
         [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.try_at(KnownArgs::generate_muzzle_flash_hider),
-         capture = args.arguments.try_at(KnownArgs::capture)](const std::string& muzzle_flash_suffix)
+         macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash_hider),
+         capture = args.arguments.try_at_non_null(KnownArgs::capture)](const std::string& muzzle_flash_suffix)
         {
             if (!macro.has_value()) {
                 return;

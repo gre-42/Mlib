@@ -7,8 +7,8 @@ BulletPropertyDb::BulletPropertyDb() = default;
 
 BulletPropertyDb::~BulletPropertyDb() = default;
 
-void BulletPropertyDb::add(const std::string& name, BulletProperties props) {
-    if (!properties_.try_emplace(name, std::move(props)).second) {
+void BulletPropertyDb::add(std::string name, BulletProperties&& props) {
+    if (!properties_.try_emplace(std::move(name), std::move(props)).second) {
         THROW_OR_ABORT("Bullet properties with name \"" + name + "\" already exist");
     }
 }

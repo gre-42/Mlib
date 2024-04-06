@@ -130,7 +130,7 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
         ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
-    auto capture = args.arguments.try_at(KnownArgs::capture);
+    auto capture = args.arguments.try_at_non_null(KnownArgs::capture);
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
         physics_engine.advance_times_,
         node_to_hide,

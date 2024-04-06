@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 
 namespace Mlib {
@@ -7,8 +7,7 @@ namespace Mlib {
 class SceneNode;
 
 struct GunKeyBinding {
-    DanglingPtr<SceneNode> node;
-    Player* player;
+    DanglingBaseClassRef<Player> player;
     ButtonPress button_press;
 };
 

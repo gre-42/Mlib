@@ -44,7 +44,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
     auto create = args.arguments.at(KnownArgs::create);
-    auto capture = args.arguments.at(KnownArgs::capture);
+    auto capture = args.arguments.try_at_non_null(KnownArgs::capture);
     WeaponCycle& wc = get_weapon_cycle(cycle_node);
     std::string ammo_type = args.arguments.at<std::string>(KnownArgs::ammo_type);
     std::string bullet_type = args.arguments.at<std::string>(KnownArgs::bullet_type);
@@ -58,9 +58,15 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 capture,
                 ammo_type,
                 bullet_type,
-                cool_down]()
+                cool_down](const std::optional<std::string>& player_name)
             {
-                JsonMacroArguments subst{capture};
+                JsonMacroArguments subst;
+                if (capture.has_value()) {
+                    subst.insert_json(capture.value());
+                }
+                if (player_name.has_value()) {
+                    subst.insert_json("PLAYER_NAME", player_name.value());
+                }
                 subst.insert_json("AMMO_TYPE", ammo_type);
                 subst.insert_json("BULLET_TYPE", bullet_type);
                 subst.insert_json("COOL_DOWN", cool_down);

@@ -38,7 +38,7 @@ Players::~Players()
 void Players::add_player(std::unique_ptr<Player>&& player) {
     std::string player_name = player->name();
     Player* p = player.get();
-    if (!players_.insert(std::make_pair(player->name(), std::move(player))).second) {
+    if (!players_.try_emplace(player->name(), std::move(player)).second) {
         THROW_OR_ABORT("Player with name \"" + player_name + "\" already exists");
     }
     if (!teams_.contains(p->team_name())) {

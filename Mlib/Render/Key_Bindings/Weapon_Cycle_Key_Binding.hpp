@@ -1,14 +1,14 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Scroll_Wheel_Movement.hpp>
 
 namespace Mlib {
 
-class SceneNode;
+class Player;
 
 struct WeaponCycleKeyBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassRef<Player> player;
     int direction;
     ButtonPress button_press;
     std::shared_ptr<ScrollWheelMovement> scroll_wheel_movement;

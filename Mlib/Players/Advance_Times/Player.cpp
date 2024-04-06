@@ -91,7 +91,7 @@ Player::Player(
     , delete_node_mutex_{ delete_node_mutex }
     , next_scene_vehicle_{ nullptr }
     , externals_mode_{ ExternalsMode::NONE }
-    , single_waypoint_{ *this, }
+    , single_waypoint_{ *this }
     , pathfinding_waypoints_{ *this, cfg }
     , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
     , playback_waypoints_{ *this }
@@ -99,12 +99,17 @@ Player::Player(
     , select_opponent_hysteresis_factor_{ 0.9 }
     , plane_ai_{ std::make_unique<PlaneAi>(*this) }
     , drive_or_walk_ai_{ std::make_unique<DriveOrWalkAi>(*this) }
+    , shutting_down_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
 
 Player::~Player()
 {
+    if (shutting_down_) {
+        verbose_abort("Player already shutting down");
+    }
+    shutting_down_ = true;
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     destruction_observers.shutdown();
 }
@@ -171,10 +176,7 @@ void Player::reset_node() {
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_externals_.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
-        clear_map_recursively(delete_externals_, [](const auto& p){
-            p.key() = nullptr;
-            p.mapped()();
-            });
+        clear_list_recursively(delete_externals_, [](const auto& f){ f(); });
     }
     if (!dependent_nodes_.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
@@ -219,6 +221,11 @@ void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
     }
+    controlled_.gun_node = gun_node.ptr();
+}
+
+void Player::change_gun_node(DanglingRef<SceneNode> gun_node) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     controlled_.gun_node = gun_node.ptr();
 }
 
@@ -618,7 +625,7 @@ void Player::select_best_weapon_in_inventory() {
     if (!best_weapon.has_value()) {
         return;
     }
-    weapon_cycle().set_desired_weapon(best_weapon.value());
+    weapon_cycle().set_desired_weapon(name_, best_weapon.value());
 }
 
 bool Player::ramming() const {
@@ -886,12 +893,9 @@ PlaybackWaypoints& Player::playback_waypoints() {
 
 void Player::append_delete_externals(
     DanglingPtr<SceneNode> node,
-    const std::function<void()>& delete_externals)
+    std::function<void()> delete_externals)
 {
-    // Consider reading the line
-    // "delete_externals_.erase((SceneNode*)destroyed_object);"
-    // in "Player::notify_destroyed" and the comments above it.
-    delete_externals_.insert({ node, delete_externals });
+    delete_externals_.emplace_back(std::move(delete_externals));
     if (node != nullptr) {
         node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
     }

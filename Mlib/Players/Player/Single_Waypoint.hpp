@@ -10,6 +10,8 @@ class PathfindingWaypoints;
 
 class SingleWaypoint {
     friend PathfindingWaypoints;
+    SingleWaypoint(const SingleWaypoint&) = delete;
+    SingleWaypoint& operator = (const SingleWaypoint&) = delete;
 public:
     explicit SingleWaypoint(Player& player);
     ~SingleWaypoint();

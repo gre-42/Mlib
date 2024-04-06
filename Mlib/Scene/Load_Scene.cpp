@@ -94,6 +94,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/With_Delete_Node_Mutex.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Change_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Aim.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Drive.hpp>
@@ -333,6 +334,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreatePerspectiveCamera::key, CreatePerspectiveCamera::json_user_function);
     register_json_user_function(PlaybackTrack::key, PlaybackTrack::json_user_function);
     register_json_user_function(PlaybackWinnerTrack::key, PlaybackWinnerTrack::json_user_function);
+    register_json_user_function(PlayerChangeAimingGun::key, PlayerChangeAimingGun::json_user_function);
     register_json_user_function(PlayerSetAimingGun::key, PlayerSetAimingGun::json_user_function);
     register_json_user_function(PlayerSetCanAim::key, PlayerSetCanAim::json_user_function);
     register_json_user_function(PlayerSetCanDrive::key, PlayerSetCanDrive::json_user_function);

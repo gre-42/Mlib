@@ -12,8 +12,9 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(cycle_node);
-DECLARE_ARGUMENT(entry_name);
+DECLARE_ARGUMENT(weapon);
 DECLARE_ARGUMENT(equip_instantly);
 }
 
@@ -32,9 +33,10 @@ SetDesiredWeapon::SetDesiredWeapon(RenderableScene& renderable_scene)
 void SetDesiredWeapon::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
-    std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
+    std::optional<std::string> player_name = args.arguments.try_at_non_null<std::string>(KnownArgs::player);
+    std::string weapon_name = args.arguments.at<std::string>(KnownArgs::weapon);
     auto& wc = get_weapon_cycle(cycle_node);
-    wc.set_desired_weapon(entry_name);
+    wc.set_desired_weapon(player_name, weapon_name);
     if (args.arguments.at<bool>(KnownArgs::equip_instantly)) {
         wc.modify_node();
     }

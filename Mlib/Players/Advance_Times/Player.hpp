@@ -121,6 +121,8 @@ class Player:
     friend CarMovement;
     friend AvatarMovement;
     friend VehicleSpawner;
+    Player(const Player&) = delete;
+    Player& operator = (const Player&) = delete;
 public:
     Player(
         Scene& scene,
@@ -155,6 +157,7 @@ public:
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
+    void change_gun_node(DanglingRef<SceneNode> gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team_name() const;
@@ -203,7 +206,7 @@ public:
     void select_next_vehicle();
     void append_delete_externals(
         DanglingPtr<SceneNode> node,
-        const std::function<void()>& delete_externals);
+        std::function<void()> delete_externals);
     void append_dependent_node(std::string node_name);
     void create_externals(ExternalsMode externals_mode);
     const Skills& skills(ControlSource control_source) const;
@@ -274,7 +277,7 @@ private:
     std::unordered_map<ControlSource, Skills> skills_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
-    std::multimap<DanglingPtr<const SceneNode>, std::function<void()>> delete_externals_;
+    std::list<std::function<void()>> delete_externals_;
     std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;
@@ -285,6 +288,7 @@ private:
     double select_opponent_hysteresis_factor_;
     std::unique_ptr<PlaneAi> plane_ai_;
     std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
+    bool shutting_down_;
 };
 
 };

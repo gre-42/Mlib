@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <functional>
 #include <mutex>
 #include <optional>
 
@@ -42,6 +43,10 @@ public:
         DanglingRef<SceneNode> node,
         DanglingPtr<SceneNode> punch_angle_node,
         const BulletProperties& bullet_properties,
+        std::function<void(
+            const std::optional<std::string>& player,
+            const std::string& suffix,
+            const FixedArray<float, 3>& velocity)> generate_smart_bullet,
         ITrailStorage* bullet_trace_storage,
         const std::string& ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -77,6 +82,10 @@ private:
     DanglingPtr<SceneNode> node_;
     DanglingPtr<SceneNode> punch_angle_node_;
     const BulletProperties& bullet_properties_;
+    std::function<void(
+        const std::optional<std::string>& player,
+        const std::string& suffix,
+        const FixedArray<float, 3>& velocity)> generate_smart_bullet_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

@@ -46,7 +46,7 @@ void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
 
 void SingleWaypoint::move_to_waypoint() {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (any(player_.vehicle_ai().move_to(waypoint_, fixed_nans<float, 3>()) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
+    if (any(player_.vehicle_ai().move_to(waypoint_, std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
         }
