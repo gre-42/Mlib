@@ -214,7 +214,7 @@ public:
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
-    std::optional<std::string> target_name() const;
+    virtual std::optional<std::string> target_name() const override;
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;
