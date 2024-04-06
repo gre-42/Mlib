@@ -16,8 +16,8 @@ class DestructionObservers;
 
 class IPlayer {
 public:
-    virtual std::optional<std::string> target_name() const = 0;
     virtual const std::string& name() const = 0;
+    virtual std::optional<std::string> target_name() const = 0;
     virtual void notify_race_started() = 0;
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
