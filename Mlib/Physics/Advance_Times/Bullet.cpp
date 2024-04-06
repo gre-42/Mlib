@@ -35,7 +35,8 @@ Bullet::Bullet(
     std::unique_ptr<ITrailExtender> trace_extender,
     DynamicLights& dynamic_lights,
     DeleteNodeMutex& delete_node_mutex,
-    std::chrono::steady_clock::time_point time)
+    std::chrono::steady_clock::time_point time,
+    RotateBullet rotate_bullet)
     : scene_{ scene }
     , smoke_generator_{ smoke_generator }
     , advance_times_{ advance_times }
@@ -51,6 +52,7 @@ Bullet::Bullet(
     , trace_extender_{ std::move(trace_extender) }
     , dynamic_lights_{ dynamic_lights }
     , delete_node_mutex_{ delete_node_mutex }
+    , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
@@ -62,6 +64,7 @@ Bullet::Bullet(
     if (team_ != nullptr) {
         team_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
     }
+    advance_times_.add_advance_time(*this);
 }
 
 Bullet::~Bullet() {
@@ -98,13 +101,15 @@ void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) 
         lifetime_ = INFINITY;
         return;
     }
-    auto R = gl_lookat_relative(
-        rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))),
-        rigid_body_pulses_.rotation_.column(1));
-    if (!R.has_value()) {
-        THROW_OR_ABORT("Could not update bullet rotation");
+    if (rotate_bullet_) {
+        auto R = gl_lookat_relative(
+            rigid_body_pulses_.v_ / std::sqrt(sum(squared(rigid_body_pulses_.v_))),
+            rigid_body_pulses_.rotation_.column(1));
+        if (!R.has_value()) {
+            THROW_OR_ABORT("Could not update bullet rotation");
+        }
+        rigid_body_pulses_.rotation_ = R.value();
     }
-    rigid_body_pulses_.rotation_ = R.value();
     if (has_trail_) {
         trail_generator_.advance_time(dt);
         trail_generator_.maybe_generate(

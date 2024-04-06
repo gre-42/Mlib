@@ -1,4 +1,5 @@
 #include "Gun.hpp"
+#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -153,12 +154,34 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     std::string bullet_node_name = "car_node" + suffix;
     if (generate_smart_bullet_) {
+        auto np = node.ref(DP_LOC);
         scene_.add_root_node(bullet_node_name, std::move(node));
         generate_smart_bullet_(
             player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
             suffix,
             player_ == nullptr ? std::nullopt : std::optional{ player_->target_name() },
             bullet_velocity);
+        auto& rc = get_rigid_body_vehicle(np);
+        auto bullet = std::make_unique<Bullet>(
+            scene_,
+            smoke_generator_,
+            advance_times_,
+            rc,
+            rigid_bodies_,
+            player_,
+            team_,
+            bullet_node_name,
+            bullet_properties_,
+            bullet_trace_storage_ == nullptr
+            ? nullptr
+            : bullet_trace_storage_->add_trail_extender(),
+            dynamic_lights_,
+            delete_node_mutex_,
+            time,
+            RotateBullet::NO);
+        // Destruction order: Node -> Rigid body (collision observers) -> Bullet
+        // node->clearing_observers.add(*bullet);
+        rc.collision_observers_.emplace_back(std::move(bullet));
     } else {
         std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid(
             "bullet",
@@ -201,8 +224,8 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
             : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
             delete_node_mutex_,
-            time);
-        advance_times_.add_advance_time(*bullet);
+            time,
+            RotateBullet::YES);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
         rc.collision_observers_.emplace_back(std::move(bullet));

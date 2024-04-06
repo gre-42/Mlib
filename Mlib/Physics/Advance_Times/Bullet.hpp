@@ -26,6 +26,11 @@ class IDynamicLight;
 class DynamicLights;
 struct BulletProperties;
 
+enum class RotateBullet {
+    YES,
+    NO
+};
+
 class Bullet:
     public DestructionObserver<const IPlayer&>,
     public DestructionObserver<const ITeam&>,
@@ -47,7 +52,8 @@ public:
         std::unique_ptr<ITrailExtender> trace_extender,
         DynamicLights& dynamic_lights,
         DeleteNodeMutex& delete_node_mutex,
-        std::chrono::steady_clock::time_point time);
+        std::chrono::steady_clock::time_point time,
+        RotateBullet rotate_bullet);
     ~Bullet();
     virtual void notify_destroyed(const IPlayer& destroyed_object) override;
     virtual void notify_destroyed(const ITeam& destroyed_object) override;
@@ -82,6 +88,7 @@ private:
     std::unique_ptr<ITrailExtender> trace_extender_;
     std::unique_ptr<IDynamicLight> light_before_impact_;
     std::unique_ptr<IDynamicLight> light_after_impact_;
+    bool rotate_bullet_;
     DynamicLights& dynamic_lights_;
     DeleteNodeMutex& delete_node_mutex_;
 };
