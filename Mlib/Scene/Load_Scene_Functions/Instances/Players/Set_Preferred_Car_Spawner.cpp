@@ -52,6 +52,11 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
                 {"CAR_NODE_POSITION", p.position / (double)meters},
                 {"CAR_NODE_ANGLES", p.rotation / degrees},
+                // Velocity and angular velocity should be calculated dynamically from the parent of the spawn point
+                // using "parent.velocity_at_position" and "parent.angular_velocity_at_position". Spawn points do not yet have a
+                // parent, so the values are set to zero here.
+                {"VELOCITY", fixed_zeros<float, 3>() / kph},
+                {"ANGULAR_VELOCITY", fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
                 {"SUFFIX", "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
