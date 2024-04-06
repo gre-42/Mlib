@@ -46,9 +46,9 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto pid_alpha = jpid.at<float>(PidArgs::alpha);
     PidController<FixedArray<float, 3>, float> pid_controller{
         pid(0),
-        pid(1),
-        pid(2),
-        pid_alpha };
+        pid(1) * (physics_engine.config().dt / s),
+        pid(2) / (physics_engine.config().dt / s),
+        std::pow(pid_alpha, physics_engine.config().dt / (1.f / 60.f * s)) };
     auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
     auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::target), DP_LOC));
     auto missile_ai = std::make_unique<MissileAi>(

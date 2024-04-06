@@ -35,7 +35,8 @@ void MissileController::apply() {
 
     auto rel_dir = dot(desired_direction_, rb_.rbp_.rotation_);
     FixedArray<float, 2> fake_dir{ rel_dir(0), rel_dir(1) };
-    if (rel_dir(2) < 1e-12) {
+    // Check if the target is behind the missile
+    if (rel_dir(2) > -1e-12) {
         float l2 = std::sqrt(sum(squared(fake_dir)));
         if (l2 < 1e-12) {
             fake_dir = { 1.f, 0.f };
