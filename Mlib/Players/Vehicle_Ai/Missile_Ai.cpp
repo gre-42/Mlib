@@ -23,14 +23,18 @@ VehicleAiMoveToStatus MissileAi::move_to(
 	const FixedArray<double, 3>& destination_position,
 	const std::optional<FixedArray<float, 3>>& destination_velocity)
 {
+	controller_.reset_parameters();
+	controller_.reset_relaxation();
+
+	controller_.throttle_engine(INFINITY, 1.f);
+
 	auto dir = destination_position - missile_.abs_position();
 	auto l2 = sum(squared(dir));
 	if (l2 < destination_reached_radius_squared_) {
 		return VehicleAiMoveToStatus::DESTINATION_REACHED;
 	}
 	dir /= std::sqrt(l2);
-	controller_.reset_parameters();
-	controller_.reset_relaxation();
 	controller_.set_desired_direction(pid_(dir.casted<float>()), 1.f);
+	controller_.apply();
 	return VehicleAiMoveToStatus::NONE;
 }

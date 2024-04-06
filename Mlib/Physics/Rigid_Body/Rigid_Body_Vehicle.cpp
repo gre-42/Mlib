@@ -29,6 +29,7 @@
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
@@ -94,13 +95,10 @@ RigidBodyVehicle::RigidBodyVehicle(
 RigidBodyVehicle::~RigidBodyVehicle()
 {
     on_destroy.clear();
+    destruction_observers.clear();
     if (driver_ != nullptr) {
-        driver_->notify_vehicle_destroyed();
-    }
-    // The spawner owns the SceneVehicle and must therefore be destroyed
-    // after the driver.
-    if (spawner_ != nullptr) {
-        spawner_->notify_vehicle_destroyed(*this);
+        driver_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
+        driver_ = nullptr;
     }
 }
 
@@ -474,19 +472,17 @@ void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object)
         }
         destroyed_object->clear_absolute_movable();
     }
-    if (driver_ != nullptr) {
-        driver_->notify_vehicle_destroyed();
-        driver_ = nullptr;
-    }
-    // The spawner owns the SceneVehicle and must therefore be destroyed
-    // after the driver.
-    if (spawner_ != nullptr) {
-        spawner_->notify_vehicle_destroyed(*this);
-        spawner_ = nullptr;
-    }
     if (rigid_bodies_ != nullptr) {
+        // "rigid_bodies_" owns the rigid body and will therefore delete it.
         rigid_bodies_->delete_rigid_body(this);
     }
+}
+
+void RigidBodyVehicle::notify_destroyed(const IPlayer& destroyed_object) {
+    if (&destroyed_object != driver_.get()) {
+        verbose_abort("Destroyed player is not the driver");
+    }
+    driver_ = nullptr;
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {
@@ -940,7 +936,7 @@ bool RigidBodyVehicle::is_activated_avatar() const {
     if (!is_avatar()) {
         return false;
     }
-    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() == driver_);
+    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() == driver_.get());
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {
@@ -962,6 +958,10 @@ bool RigidBodyVehicle::has_plane_controller() const {
     return plane_controller_ != nullptr;
 }
 
+bool RigidBodyVehicle::has_missile_controller() const {
+    return missile_controller_ != nullptr;
+}
+
 RigidBodyAvatarController& RigidBodyVehicle::avatar_controller() {
     if (avatar_controller_ == nullptr) {
         THROW_OR_ABORT("Rigid body \"" + name() + "\" has no avatar controller");
@@ -981,6 +981,26 @@ RigidBodyVehicleController& RigidBodyVehicle::vehicle_controller() {
         THROW_OR_ABORT("Rigid body \"" + name() + "\" has no vehicle controller");
     }
     return *vehicle_controller_;
+}
+
+RigidBodyMissileController& RigidBodyVehicle::missile_controller() {
+    if (missile_controller_ == nullptr) {
+        THROW_OR_ABORT("Rigid body \"" + name() + "\" has no missile controller");
+    }
+    return *missile_controller_;
+}
+
+void RigidBodyVehicle::clear_driver() {
+    if (driver_ == nullptr) {
+        verbose_abort("Driver not set");
+    }
+    driver_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
+    driver_ = nullptr;
+}
+
+void RigidBodyVehicle::set_driver(DanglingBaseClassRef<IPlayer> driver) {
+    driver_ = driver.ptr();
+    driver->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {

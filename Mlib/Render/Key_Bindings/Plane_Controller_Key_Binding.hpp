@@ -1,6 +1,5 @@
 #pragma once
-#include <Mlib/Math/Interp.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <Mlib/Render/Ui/Gamepad_Analog_Axes_Position.hpp>
@@ -8,10 +7,10 @@
 
 namespace Mlib {
 
-class SceneNode;
+class Player;
 
 struct PlaneControllerKeyBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassRef<Player> player;
     std::optional<float> turbine_power;
     std::optional<float> brake;
     std::optional<float> pitch;

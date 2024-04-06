@@ -9,14 +9,16 @@ SceneVehicle::SceneVehicle(
     std::string scene_node_name,
     DanglingRef<SceneNode> scene_node,
     RigidBodyVehicle& rb)
-: destruction_observers{*this},
-  delete_node_mutex_{delete_node_mutex},
-  scene_node_name_{std::move(scene_node_name)},
-  scene_node_{scene_node},
-  rb_{rb}
+    : destruction_observers{ *this }
+    , delete_node_mutex_{ delete_node_mutex }
+    , scene_node_name_{ std::move(scene_node_name) }
+    , scene_node_{ scene_node }
+    , rb_{ rb }
 {}
 
-SceneVehicle::~SceneVehicle() = default;
+SceneVehicle::~SceneVehicle() {
+    destruction_observers.clear();
+}
 
 void SceneVehicle::create_externals(
     const std::string& player_name,

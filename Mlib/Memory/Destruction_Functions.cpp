@@ -10,10 +10,11 @@ DestructionFunctions::DestructionFunctions()
 {}
 
 DestructionFunctions::~DestructionFunctions() {
-    forever.clear();
-    // clear();
     if (!funcs_.empty()) {
         verbose_abort("Destruction functions remain");
+    }
+    if (forever.funcs_ != nullptr) {
+        verbose_abort("\"forever\" destruction function remains");
     }
 }
 

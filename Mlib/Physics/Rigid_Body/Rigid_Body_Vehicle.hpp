@@ -36,6 +36,7 @@ class AnimationStateUpdater;
 class RigidBodyAvatarController;
 class RigidBodyPlaneController;
 class RigidBodyVehicleController;
+class RigidBodyMissileController;
 struct BaseRotor;
 class Tire;
 class Rotor;
@@ -88,7 +89,13 @@ struct TrailerHitches {
 /**
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
-class RigidBodyVehicle: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public StatusWriter, public INodeHider, public DanglingBaseClass {
+class RigidBodyVehicle:
+    public DestructionObserver<DanglingRef<SceneNode>>,
+    public DestructionObserver<const IPlayer&>,
+    public IAbsoluteMovable,
+    public StatusWriter,
+    public INodeHider,
+    public DanglingBaseClass {
 public:
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
@@ -181,6 +188,8 @@ public:
     void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();
     void set_jump_dv(float value);
+    void clear_driver();
+    void set_driver(DanglingBaseClassRef<IPlayer> driver);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -188,6 +197,7 @@ public:
 
     // DestructionObserver
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(const IPlayer& destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
@@ -207,10 +217,12 @@ public:
     bool has_avatar_controller() const;
     bool has_vehicle_controller() const;
     bool has_plane_controller() const;
+    bool has_missile_controller() const;
 
     RigidBodyAvatarController& avatar_controller();
     RigidBodyPlaneController& plane_controller();
     RigidBodyVehicleController& vehicle_controller();
+    RigidBodyMissileController& missile_controller();
 
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
     DestructionFunctions on_destroy;
@@ -244,11 +256,12 @@ public:
     std::set<RigidBodyVehicle*> passengers_;
     float door_distance_;
     AnimationStateUpdater* animation_state_updater_;
-    ISpawner* spawner_;
-    IPlayer* driver_;
+    DanglingBaseClassPtr<ISpawner> spawner_;
+    DanglingBaseClassPtr<IPlayer> driver_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
+    std::unique_ptr<RigidBodyMissileController> missile_controller_;
     float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;

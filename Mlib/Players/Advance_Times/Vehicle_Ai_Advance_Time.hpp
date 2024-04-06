@@ -15,7 +15,7 @@ class VehicleAiAdvanceTime: public IAdvanceTime {
 public:
 	explicit VehicleAiAdvanceTime(
 		AdvanceTimes& advance_times,
-		std::unique_ptr<IVehicleAi> vehicle_ai,
+		std::unique_ptr<IVehicleAi>&& vehicle_ai,
 		DanglingBaseClassRef<RigidBodyVehicle> follower,
 		DanglingBaseClassRef<RigidBodyVehicle> followed);
 	virtual ~VehicleAiAdvanceTime();

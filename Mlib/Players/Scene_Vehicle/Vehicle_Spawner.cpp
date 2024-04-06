@@ -22,7 +22,7 @@ VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
 
 VehicleSpawner::~VehicleSpawner() = default;
 
-void VehicleSpawner::notify_vehicle_destroyed(RigidBodyVehicle& rigid_body_vehicle) {
+void VehicleSpawner::notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) {
     size_t ndeleted = scene_vehicles_.remove_if([&rigid_body_vehicle](const std::unique_ptr<SceneVehicle>& v){
         return &v->rb() == &rigid_body_vehicle;
     });
@@ -126,7 +126,8 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
     scene_vehicles_ = std::move(scene_vehicles);
     for (const auto& v : scene_vehicles_) {
-        v->rb().spawner_ = this;
+        v->rb().spawner_ = { *this, CURRENT_SOURCE_LOCATION };
+        v->rb().destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     }
     if (has_player()) {
         player_->set_scene_vehicle(get_primary_scene_vehicle());

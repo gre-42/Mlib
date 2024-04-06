@@ -8,7 +8,6 @@
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
@@ -41,9 +40,9 @@ CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene
 
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
-        .node = node.ptr(),
+        .player = { player, CURRENT_SOURCE_LOCATION },
         .turbine_power = args.arguments.contains(KnownArgs::turbine_power)
             ? args.arguments.at<float>(KnownArgs::turbine_power) * W
             : std::optional<float>(),
@@ -73,9 +72,8 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role) }});
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
+    player.append_delete_externals(
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_key_binding(kb);
         }

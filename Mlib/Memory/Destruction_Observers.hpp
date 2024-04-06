@@ -32,14 +32,12 @@ public:
              ObserverAlreadyExistsBehavior already_exists_behavior = ObserverAlreadyExistsBehavior::RAISE);
     void remove(const DanglingBaseClassRef<DestructionObserver<T>>& destruction_observer,
                 ObserverDoesNotExistBehavior does_not_exist_behavior = ObserverDoesNotExistBehavior::RAISE);
-    bool shutting_down() const;
-    void shutdown();
-    void notify_destroyed();
+    bool clearing() const;
+    void clear();
 private:
-    void shutdown_unsafe();
     std::set<DanglingBaseClassPtr<DestructionObserver<T>>> observers_;
     mutable std::mutex mutex_;
-    std::atomic_bool shutting_down_;
+    std::atomic_bool clearing_;
     T obj_;
 };
 

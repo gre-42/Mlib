@@ -1,15 +1,11 @@
 #include "Create_Driver_Key_Binding.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Components/Driver.hpp>
-#include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Key_Bindings/Player_Key_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -20,7 +16,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
 
-DECLARE_ARGUMENT(node);
+DECLARE_ARGUMENT(player);
 
 DECLARE_ARGUMENT(select_next_opponent);
 DECLARE_ARGUMENT(select_next_vehicle);
@@ -40,11 +36,9 @@ CreateDriverKeyBinding::CreateDriverKeyBinding(RenderableScene& renderable_scene
 
 void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& rb = get_rigid_body_vehicle(node);
-    auto& driver = get_driver(rb);
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& kb = key_bindings.add_player_key_binding(PlayerKeyBinding{
-        .node = node.ptr(),
+        .player = { player, CURRENT_SOURCE_LOCATION },
         .select_next_opponent = args.arguments.at<bool>(KnownArgs::select_next_opponent, false),
         .select_next_vehicle = args.arguments.at<bool>(KnownArgs::select_next_vehicle, false),
         .button_press{
@@ -52,8 +46,8 @@ void CreateDriverKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)} });
-    driver.append_delete_externals(
-        node.ptr(),
+    player.append_delete_externals(
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_player_key_binding(kb);
         }

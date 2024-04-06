@@ -1,12 +1,12 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 
 namespace Mlib {
 
-class SceneNode;
+class Player;
 
 struct PlaneControllerIdleBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassRef<Player> player;
 };
 
 }

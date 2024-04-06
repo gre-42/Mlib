@@ -42,7 +42,8 @@ Gun::Gun(
     const BulletProperties& bullet_properties,
     std::function<void(
         const std::optional<std::string>& player,
-        const std::string& node,
+        const std::string& bullet_suffix,
+        const std::optional<std::string>& target,
         const FixedArray<float, 3>& velocity)> generate_smart_bullet,
     ITrailStorage* bullet_trace_storage,
     const std::string& ammo_type,
@@ -126,6 +127,12 @@ bool Gun::maybe_generate_bullet(std::chrono::steady_clock::time_point time) {
     if (nbullets_available() == 0) {
         return false;
     }
+    if (generate_smart_bullet_ &&
+        (player_ != nullptr) &&
+        !player_->target_name().has_value())
+    {
+        return false;
+    }
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
     generate_bullet(time);
@@ -150,6 +157,7 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         generate_smart_bullet_(
             player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
             suffix,
+            player_ == nullptr ? std::nullopt : std::optional{ player_->target_name() },
             bullet_velocity);
     } else {
         std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid(
@@ -194,12 +202,6 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
             dynamic_lights_,
             delete_node_mutex_,
             time);
-        if (player_ != nullptr) {
-            player_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
-        }
-        if (team_ != nullptr) {
-            team_->destruction_observers.add({ *bullet, CURRENT_SOURCE_LOCATION });
-        }
         advance_times_.add_advance_time(*bullet);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
@@ -225,7 +227,7 @@ void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>
     absolute_model_matrix_ = absolute_model_matrix;
 }
 
-void Gun::trigger(Player* player, Team* team) {
+void Gun::trigger(IPlayer* player, ITeam* team) {
     triggered_ = true;
     player_ = player;
     team_ = team;

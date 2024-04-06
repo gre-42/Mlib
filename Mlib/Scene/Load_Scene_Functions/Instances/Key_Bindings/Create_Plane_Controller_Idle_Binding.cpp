@@ -7,7 +7,6 @@
 #include <Mlib/Render/Key_Bindings/Plane_Controller_Idle_Binding.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
-#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 
 using namespace Mlib;
 
@@ -31,11 +30,11 @@ CreatePlaneControllerIdleBinding::CreatePlaneControllerIdleBinding(RenderableSce
 
 void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{.node = node.ptr()});
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{
+        .player = { player, CURRENT_SOURCE_LOCATION } });
+    player.append_delete_externals(
+        nullptr,
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_idle_binding(kb);
         }

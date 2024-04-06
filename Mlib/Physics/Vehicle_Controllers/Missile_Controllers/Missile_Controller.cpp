@@ -1,17 +1,12 @@
 #include "Missile_Controller.hpp"
-#include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
-#include <Mlib/Physics/Vehicle_Controllers/Steering_Type.hpp>
-#include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 MissileController::MissileController(
     RigidBodyVehicle& rb,
-    const PidController<float, FixedArray<float, 3>>& pid,
     const MissileWingController& left_front,
     const MissileWingController& right_front,
     const MissileWingController& down_front,
@@ -20,7 +15,7 @@ MissileController::MissileController(
     const MissileWingController& right_rear,
     const MissileWingController& down_rear,
     const MissileWingController& up_rear)
-    : RigidBodyMissileController{ rb, pid }
+    : RigidBodyMissileController{ rb }
     , left_front_{ left_front }
     , right_front_{ right_front }
     , down_front_{ down_front }
@@ -34,6 +29,10 @@ MissileController::MissileController(
 MissileController::~MissileController() = default;
 
 void MissileController::apply() {
+    rb_.set_surface_power("rocket_engine", EnginePowerIntent{
+        .surface_power = rocket_engine_power_,
+        .drive_relaxation = rocket_engine_power_relaxation_});
+
     auto rel_dir = dot(desired_direction_, rb_.rbp_.rotation_);
     FixedArray<float, 2> fake_dir{ rel_dir(0), rel_dir(1) };
     if (rel_dir(2) < 1e-12) {

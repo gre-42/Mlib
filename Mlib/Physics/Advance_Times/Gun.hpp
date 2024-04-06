@@ -24,8 +24,8 @@ class RigidBodies;
 class AdvanceTimes;
 class DeleteNodeMutex;
 class SceneNode;
-class Player;
-class Team;
+class IPlayer;
+class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 
@@ -45,7 +45,8 @@ public:
         const BulletProperties& bullet_properties,
         std::function<void(
             const std::optional<std::string>& player,
-            const std::string& suffix,
+            const std::string& bullet_suffix,
+            const std::optional<std::string>& target,
             const FixedArray<float, 3>& velocity)> generate_smart_bullet,
         ITrailStorage* bullet_trace_storage,
         const std::string& ammo_type,
@@ -59,8 +60,8 @@ public:
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     void trigger(
-        Player* player = nullptr,
-        Team* team = nullptr);
+        IPlayer* player = nullptr,
+        ITeam* team = nullptr);
     const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
@@ -84,13 +85,14 @@ private:
     const BulletProperties& bullet_properties_;
     std::function<void(
         const std::optional<std::string>& player,
-        const std::string& suffix,
+        const std::string& bullet_suffix,
+        const std::optional<std::string>& target,
         const FixedArray<float, 3>& velocity)> generate_smart_bullet_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;
-    Player* player_;
-    Team* team_;
+    IPlayer* player_;
+    ITeam* team_;
     float cool_down_;
     float time_since_last_shot_;
     TransformationMatrix<float, double, 3> absolute_model_matrix_;

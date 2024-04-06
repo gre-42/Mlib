@@ -56,15 +56,21 @@ Bullet::Bullet(
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
         light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, time);
     }
+    if (gunner_ != nullptr) {
+        gunner_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+    }
+    if (team_ != nullptr) {
+        team_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+    }
 }
 
 Bullet::~Bullet() {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
     if (gunner_ != nullptr) {
-        gunner_->notify_bullet_destroyed(*this);
+        gunner_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
     }
     if (team_ != nullptr) {
-        team_->notify_bullet_destroyed(*this);
+        team_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
     }
 }
 

@@ -7,21 +7,21 @@
 using namespace Mlib;
 
 Team::Team()
-: destruction_observers{*this},
-  nwins_{0},
-  nlosses_{0},
-  nkills_{0}
+    : destruction_observers_{ *this }
+    , nwins_{ 0 }
+    , nlosses_{ 0 }
+    , nkills_{ 0 }
 {}
 
 Team::~Team() {
-    destruction_observers.shutdown();
+    destruction_observers_.clear();
 }
 
 void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     if (rigid_body_vehicle.driver_ == nullptr) {
         return;
     }
-    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_);
+    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_.get());
     if (player == nullptr) {
         THROW_OR_ABORT("Driver is not a player");
     }
@@ -30,8 +30,8 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
-void Team::notify_bullet_destroyed(Bullet& bullet) {
-    destruction_observers.remove({ bullet, CURRENT_SOURCE_LOCATION });
+DestructionObservers<const ITeam&>& Team::destruction_observers() {
+    return destruction_observers_;
 }
 
 void Team::add_player(const std::string& player) {

@@ -84,7 +84,7 @@ SceneNode::~SceneNode() {
         }
     }
     shutting_down_ = true;
-    destruction_observers.shutdown();
+    destruction_observers.clear();
     destruction_pointers.clear();
     on_destroy.clear();
     if (sticky_absolute_observer_ != nullptr) {
@@ -334,7 +334,7 @@ void SceneNode::clear() {
 }
 
 void SceneNode::clear_unsafe() {
-    clearing_observers.notify_destroyed();
+    clearing_observers.clear();
     clearing_pointers.clear();
     on_clear.clear();
 

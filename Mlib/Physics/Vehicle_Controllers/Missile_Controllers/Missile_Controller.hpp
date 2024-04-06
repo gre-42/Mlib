@@ -15,7 +15,6 @@ class MissileController: public RigidBodyMissileController {
 public:
     MissileController(
         RigidBodyVehicle& rb,
-        const PidController<float, FixedArray<float, 3>>& pid,
         const MissileWingController& left_front,
         const MissileWingController& right_front,
         const MissileWingController& down_front,

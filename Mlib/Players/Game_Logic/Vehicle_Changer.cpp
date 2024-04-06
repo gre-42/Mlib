@@ -41,7 +41,7 @@ void VehicleChanger::change_vehicles() {
         if (next_rb.driver_ == nullptr) {
             enter_vehicle(*s, *next_vehicle);
         } else {
-            Player* other_driver = dynamic_cast<Player*>(next_rb.driver_);
+            Player* other_driver = dynamic_cast<Player*>(next_rb.driver_.get());
             if (other_driver == nullptr) {
                 THROW_OR_ABORT("Next vehicle's driver is not a player");
             }

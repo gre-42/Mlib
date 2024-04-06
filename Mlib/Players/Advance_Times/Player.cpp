@@ -26,6 +26,7 @@
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
+#include <Mlib/Players/Team/Team.hpp>
 #include <Mlib/Players/Vehicle_Ai/Drive_Or_Walk_Ai.hpp>
 #include <Mlib/Players/Vehicle_Ai/Plane_Ai.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
@@ -67,7 +68,7 @@ Player::Player(
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses)
-    : destruction_observers{ *this }
+    : destruction_observers_{ *this }
     , car_movement{ *this }
     , avatar_movement{ *this }
     , scene_{ scene }
@@ -111,7 +112,7 @@ Player::~Player()
     }
     shutting_down_ = true;
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    destruction_observers.shutdown();
+    destruction_observers_.clear();
 }
 
 void Player::set_can_drive(ControlSource control_source, bool value) {
@@ -146,21 +147,21 @@ void Player::set_select_opponent_hysteresis_factor(double factor) {
 
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (vehicle_ == nullptr) {
-        THROW_OR_ABORT("reset_node despite vehicle nullptr");
+    if (vehicle_ != nullptr) {
+        if (vehicle_->rb().driver_.get() != dynamic_cast<IPlayer*>(this)) {
+            THROW_OR_ABORT("Rigid body's driver is not player");
+        }
+        vehicle_->rb().clear_driver();
+        vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+        vehicle_ = nullptr;
     }
-    if (vehicle_->rb().driver_ != dynamic_cast<IPlayer*>(this)) {
-        THROW_OR_ABORT("Rigid body's driver is not player");
-    }
-    vehicle_->rb().driver_ = nullptr;
-    vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-    vehicle_ = nullptr;
     if (next_scene_vehicle_ != nullptr) {
         next_scene_vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         next_scene_vehicle_ = nullptr;
     }
     if (target_scene_node_ != nullptr) {
         target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+        target_name_.reset();
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
@@ -168,7 +169,7 @@ void Player::reset_node() {
         if (controlled_.has_aim_at()) {
             controlled_.aim_at().set_followed(nullptr);
         }
-        controlled_.gun_node = nullptr;
+        change_gun_node(nullptr);
     }
     vehicle_movement.reset_node();
     car_movement.reset_node();
@@ -194,7 +195,7 @@ void Player::set_scene_vehicle(SceneVehicle& pv) {
         THROW_OR_ABORT("Scene vehicle already set");
     }
     vehicle_ = &pv;
-    pv.rb().driver_ = this;
+    pv.rb().set_driver({ *this, CURRENT_SOURCE_LOCATION });
     vehicle_->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
@@ -221,12 +222,18 @@ void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
     }
-    controlled_.gun_node = gun_node.ptr();
+    change_gun_node(gun_node.ptr());
 }
 
-void Player::change_gun_node(DanglingRef<SceneNode> gun_node) {
+void Player::change_gun_node(DanglingPtr<SceneNode> gun_node) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    controlled_.gun_node = gun_node.ptr();
+    if (controlled_.gun_node != nullptr) {
+        controlled_.gun_node->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+    }
+    controlled_.gun_node = gun_node;
+    if (gun_node != nullptr) {
+        gun_node->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    }
 }
 
 const std::string& Player::name() const {
@@ -353,8 +360,12 @@ bool Player::can_see(
 void Player::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (destroyed_object.ptr() == target_scene_node_) {
+        target_name_.reset();
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
+    }
+    if (destroyed_object.ptr() == controlled_.gun_node) {
+        controlled_.gun_node = nullptr;
     }
     // The node has already removed the player from its observers,
     // so nothing no deregistration is done here.
@@ -367,8 +378,23 @@ void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
         next_scene_vehicle_ = nullptr;
     }
     if (&destroyed_object == vehicle_) {
+        vehicle_ = nullptr;
         reset_node();
     } 
+}
+
+void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (vehicle_ == nullptr) {
+        verbose_abort("Player::notify_destroyed: Vehicle is null");
+    }
+    if (&destroyed_object != &vehicle_->rb()) {
+        verbose_abort("Player::notify_destroyed: Unexpected rigid body vehicle");
+    }
+    if (destroyed_object.driver_.get() != this) {
+        verbose_abort("Player::notify_destroyed: Destroyed object's driver is not this player");
+    }
+    reset_node();
 }
 
 void Player::advance_time(float dt, std::chrono::steady_clock::time_point time) {
@@ -484,6 +510,9 @@ void Player::trigger_gun() {
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Player::trigger despite gun nullptr");
     }
+    if (scene_node_scheduled_for_deletion()) {
+        THROW_OR_ABORT("Attempt to trigger gun despite scene node scheduled for deletion");
+    }
     gun().trigger(this, &team());
 }
 
@@ -588,6 +617,7 @@ void Player::aim_and_shoot() {
         return;
     }
     assert_true((target_scene_node_ == nullptr) == (target_rb_ == nullptr));
+    assert_true((target_scene_node_ != nullptr) == (target_name_.has_value()));
     if (skills_.at(ControlSource::AI).can_select_opponent) {
         select_opponent(OpponentSelectionStrategy::BEST);
     } else {
@@ -631,6 +661,10 @@ void Player::select_best_weapon_in_inventory() {
 bool Player::ramming() const {
     delete_node_mutex_.notify_reading();
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
+}
+
+std::optional<std::string> Player::target_name() const {
+    return target_name_;
 }
 
 const RigidBodyVehicle* Player::target_rb() const {
@@ -747,6 +781,7 @@ void Player::clear_opponent() {
         THROW_OR_ABORT("Player has no opponent");
     }
     target_scene_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
+    target_name_.reset();
     target_scene_node_ = nullptr;
     target_rb_ = nullptr;
 }
@@ -758,6 +793,7 @@ void Player::set_opponent(const Player& opponent) {
     if (opponent.vehicle_ == nullptr) {
         THROW_OR_ABORT("Opponent has no avatar or vehicle");
     }
+    target_name_ = opponent.vehicle_->scene_node_name();
     target_scene_node_ = opponent.vehicle_->scene_node().ptr();
     target_rb_ = &opponent.vehicle_->rb();
     target_scene_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
@@ -772,6 +808,10 @@ DanglingRef<SceneNode> Player::scene_node() {
 
 DanglingRef<const SceneNode> Player::scene_node() const {
     return const_cast<Player*>(this)->scene_node();
+}
+
+bool Player::scene_node_scheduled_for_deletion() const {
+    return scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name());
 }
 
 SceneVehicle* Player::next_scene_vehicle() {
@@ -939,17 +979,12 @@ RaceState Player::notify_lap_finished(
         track);
 }
 
-void Player::notify_vehicle_destroyed() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    reset_node();
-}
-
 void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (rigid_body_vehicle.driver_ == nullptr) {
         return;
     }
-    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_);
+    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_.get());
     if (player == nullptr) {
         THROW_OR_ABORT("Driver is not a player");
     }
@@ -958,8 +993,8 @@ void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     }
 }
 
-void Player::notify_bullet_destroyed(Bullet& bullet) {
-    destruction_observers.remove({ bullet, CURRENT_SOURCE_LOCATION });
+DestructionObservers<const IPlayer&>& Player::destruction_observers() {
+    return destruction_observers_;
 }
 
 void Player::set_pathfinding_waypoints(

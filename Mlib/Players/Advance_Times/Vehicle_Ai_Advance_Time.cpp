@@ -7,7 +7,7 @@ using namespace Mlib;
 
 VehicleAiAdvanceTime::VehicleAiAdvanceTime(
 	AdvanceTimes& advance_times,
-	std::unique_ptr<IVehicleAi> vehicle_ai,
+	std::unique_ptr<IVehicleAi>&& vehicle_ai,
 	DanglingBaseClassRef<RigidBodyVehicle> follower,
 	DanglingBaseClassRef<RigidBodyVehicle> followed)
 	: shutting_down_{ false }

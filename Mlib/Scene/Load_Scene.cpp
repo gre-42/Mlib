@@ -21,6 +21,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Heli_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Human_As_Avatar_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Human_As_Car_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Missile_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Tank_Controller.hpp>
@@ -148,6 +149,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Missile_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>
@@ -278,6 +280,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);
     register_json_user_function(CreateGunKeyBinding::key, CreateGunKeyBinding::json_user_function);
     register_json_user_function(CreateGun::key, CreateGun::json_user_function);
+    register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
     register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
     register_json_user_function(CreateHumanAsAvatarController::key, CreateHumanAsAvatarController::json_user_function);
     register_json_user_function(CreateHumanAsCarController::key, CreateHumanAsCarController::json_user_function);
@@ -286,6 +289,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateLightOnlyShadow::key, CreateLightOnlyShadow::json_user_function);
     register_json_user_function(CreateLightWithoutShadow::key, CreateLightWithoutShadow::json_user_function);
     register_json_user_function(CreateLightWithShadow::key, CreateLightWithShadow::json_user_function);
+    register_json_user_function(CreateMissileController::key, CreateMissileController::json_user_function);
     register_json_user_function(CreateParameterSetterLogic::key, CreateParameterSetterLogic::json_user_function);
     register_json_user_function(CreatePlaneAsCarController::key, CreatePlaneAsCarController::json_user_function);
     register_json_user_function(CreatePlaneControllerIdleBinding::key, CreatePlaneControllerIdleBinding::json_user_function);

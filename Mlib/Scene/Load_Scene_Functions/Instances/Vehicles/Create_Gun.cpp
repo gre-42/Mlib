@@ -113,7 +113,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     std::function<void(
         const std::optional<std::string>& player,
-        const std::string& node,
+        const std::string& bullet_suffix,
+        const std::optional<std::string>& target,
         const FixedArray<float, 3>& velocity)> generate_smart_bullet;
     if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
@@ -121,7 +122,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
              l = g.value(),
              capture = args.arguments.try_at_non_null(KnownArgs::capture),
              &scene = scene]
-            (const std::optional<std::string>& player, const std::string& suffix, const FixedArray<float, 3>& velocity)
+            (
+                const std::optional<std::string>& player,
+                const std::string& bullet_suffix,
+                const std::optional<std::string>& target,
+                const FixedArray<float, 3>& velocity)
             {
                 JsonMacroArguments local_args;
                 if (capture.has_value()) {
@@ -130,8 +135,11 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 if (player.has_value()) {
                     local_args.set("PLAYER_NAME", player.value());
                 }
-                local_args.set("SUFFIX", suffix);
-                local_args.set("VELOCITY", velocity / kph);
+                if (target.has_value()) {
+                    local_args.set("TARGET", target.value());
+                }
+                local_args.set("BULLET_SUFFIX", bullet_suffix);
+                local_args.set("BULLET_VELOCITY", velocity / kph);
                 mle(l, &local_args, nullptr);
             };
     }

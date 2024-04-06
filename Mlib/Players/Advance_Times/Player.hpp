@@ -111,6 +111,7 @@ class Player:
     public IPlayer,
     public DestructionObserver<DanglingRef<SceneNode>>,
     public DestructionObserver<const SceneVehicle&>,
+    public DestructionObserver<const RigidBodyVehicle&>,
     public IAdvanceTime,
     public IExternalForceProvider,
     public DanglingBaseClass
@@ -152,12 +153,13 @@ public:
     const RigidBodyVehicle& rigid_body() const;
     DanglingRef<SceneNode> scene_node();
     DanglingRef<const SceneNode> scene_node() const;
+    bool scene_node_scheduled_for_deletion() const;
     SceneVehicle* next_scene_vehicle();
     const std::string& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
-    void change_gun_node(DanglingRef<SceneNode> gun_node);
+    void change_gun_node(DanglingPtr<SceneNode> gun_node);
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team_name() const;
@@ -212,6 +214,7 @@ public:
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
+    std::optional<std::string> target_name() const;
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;
@@ -230,12 +233,12 @@ public:
         const std::vector<FixedArray<float, 3>>& vehicle_colors,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) override;
-    virtual void notify_vehicle_destroyed() override;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
-    virtual void notify_bullet_destroyed(Bullet& bullet) override;
+    virtual DestructionObservers<const IPlayer&>& destruction_observers() override;
     // DestructionObserver
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
+    virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
     // IAdvanceTime
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     // IExternalForceProvider
@@ -244,7 +247,6 @@ public:
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
     
-    DestructionObservers<const IPlayer&> destruction_observers;
     VehicleMovement vehicle_movement;
     CarMovement car_movement;
     AvatarMovement avatar_movement;
@@ -264,6 +266,7 @@ private:
     std::string team_;
     SceneVehicle* vehicle_;
     PlayerControlled controlled_;
+    std::optional<std::string> target_name_;
     DanglingPtr<SceneNode> target_scene_node_;
     RigidBodyVehicle* target_rb_;
     PlayerStats stats_;
@@ -288,6 +291,7 @@ private:
     double select_opponent_hysteresis_factor_;
     std::unique_ptr<PlaneAi> plane_ai_;
     std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
+    DestructionObservers<const IPlayer&> destruction_observers_;
     bool shutting_down_;
 };
 

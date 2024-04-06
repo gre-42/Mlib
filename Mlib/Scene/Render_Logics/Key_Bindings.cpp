@@ -1,5 +1,4 @@
 #include "Key_Bindings.hpp"
-#include <Mlib/Components/Driver.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Log.hpp>
@@ -534,12 +533,18 @@ void KeyBindings::increment_external_forces(
     // Plane controller
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            if (k.player->scene_node_scheduled_for_deletion()) {
+                continue;
+            }
+            auto& rb = k.player->rigid_body();
             rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
             rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
+        if (k.player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
         float alpha = get_alpha(
             k.button_press,
             k.cursor_movement.get(),
@@ -549,7 +554,7 @@ void KeyBindings::increment_external_forces(
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = k.player->rigid_body();
             if (k.turbine_power.has_value()) {
                 rb.plane_controller().accelerate(k.turbine_power.value(), alpha);
             }
@@ -569,12 +574,18 @@ void KeyBindings::increment_external_forces(
     }
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            if (k.player->scene_node_scheduled_for_deletion()) {
+                continue;
+            }
+            auto& rb = k.player->rigid_body();
             rb.plane_controller().apply();
         }
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
+        if (k.player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
         float alpha = get_alpha(
             k.button_press,
             nullptr,
@@ -596,23 +607,24 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (auto& k : gun_key_bindings_) {
+        if (k.player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
         if (k.button_press.keys_down() && enable_controls) {
             k.player->trigger_gun();
         }
     }
     // Player
     for (auto& k : player_key_bindings_) {
+        if (k.player->scene_node_scheduled_for_deletion()) {
+            continue;
+        }
         if (k.button_press.keys_pressed() && enable_controls) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
-            if (rb.driver_ == nullptr) {
-                THROW_OR_ABORT("Rigid body has no driver");
-            }
-            Player& player = get_driver(rb);
             if (k.select_next_opponent) {
-                player.select_opponent(OpponentSelectionStrategy::NEXT);
+                k.player->select_opponent(OpponentSelectionStrategy::NEXT);
             }
             if (k.select_next_vehicle) {
-                player.select_next_vehicle();
+                k.player->select_next_vehicle();
             }
         }
     }

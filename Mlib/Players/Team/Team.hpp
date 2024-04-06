@@ -16,7 +16,7 @@ public:
 
     // ITeam
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
-    virtual void notify_bullet_destroyed(Bullet& bullet) override;
+    virtual DestructionObservers<const ITeam&>& destruction_observers() override;
 
     void add_player(const std::string& name);
     const std::set<std::string>& players() const;
@@ -28,12 +28,12 @@ public:
     void increase_nlosses();
     void increase_nkills();
 
-    DestructionObservers<const ITeam&> destruction_observers;
 private:
     std::set<std::string> players_;
     uint32_t nwins_;
     uint32_t nlosses_;
     uint32_t nkills_;
+    DestructionObservers<const ITeam&> destruction_observers_;
 };
 
 }

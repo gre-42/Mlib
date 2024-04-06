@@ -1,14 +1,14 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Combination.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 
 namespace Mlib {
 
-class SceneNode;
+class Player;
 
 struct PlayerKeyBinding {
-    DanglingPtr<SceneNode> node;
+    DanglingBaseClassRef<Player> player;
     bool select_next_opponent;
     bool select_next_vehicle;
     ButtonPress button_press;

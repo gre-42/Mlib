@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <chrono>
 #include <functional>
@@ -11,17 +13,20 @@ namespace Mlib {
 class Scene;
 struct SpawnPoint;
 class SceneVehicle;
+class RigidBodyVehicle;
 class Player;
 
-class VehicleSpawner final : public ISpawner {
+class VehicleSpawner final : public ISpawner, public DestructionObserver<const RigidBodyVehicle&>, public DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
     VehicleSpawner(Scene& scene, const std::string& team_name);
     ~VehicleSpawner();
 
+    // DestructionObserver
+    virtual void notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) override;
+
     // ISpawner
-    virtual void notify_vehicle_destroyed(RigidBodyVehicle& rigid_body_vehicle) override;
     virtual IPlayer* player() override;
 
     // Misc
