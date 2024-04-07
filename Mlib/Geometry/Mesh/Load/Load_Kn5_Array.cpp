@@ -582,7 +582,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 } else if (
                     !material->txDiffuse.empty() &&
                     !material->txMask.empty() &&
-                    any(material->mult.applied<bool>([](const auto& v) { return v.value_or_default() != 0.f; })) &&
+                    any(material->mult.template applied<bool>([](const auto& v) { return v.value_or_default() != 0.f; })) &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
                     ((material->shader == "ksMultilayer") ||
                      (material->shader == "ksMultilayer_fresnel_nm") ||
