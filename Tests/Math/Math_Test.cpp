@@ -317,7 +317,8 @@ void test_fixed_shape() {
     {
         Array<float> bd = uniform_random_array<float>(ArrayShape{ 4, 5, 6 }, 2);
         FixedArray<float, 4, 5, 6> b{ bd };
-        assert_isequal(dot(a, b).ndim(), dot(ad, bd).ndim());
+        auto a_dot_b = dot(a, b);  // Workaround for MSVC
+        assert_isequal(a_dot_b.ndim(), dot(ad, bd).ndim());
         assert_isclose(
             dot(a, b)(1, 2, 3),
             dot(ad, bd)(1, 2, 3));
@@ -330,7 +331,8 @@ void test_fixed_outer() {
     FixedArray<float, 3, 4> a{ad};
     FixedArray<float, 6, 5, 4> b{bd};
 
-    assert_isequal(outer(a, b).ndim(), outer(ad, bd).ndim());
+    auto a_outer_b = outer(a, b);  // Workaround for MSVC
+    assert_isequal(a_outer_b.ndim(), outer(ad, bd).ndim());
     assert_isclose(
         outer(a, b)(1, 2, 3),
         outer(ad, bd)(1, 2, 3));

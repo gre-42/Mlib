@@ -1,10 +1,10 @@
 #pragma once
 #include <complex>
 
-inline std::complex<float>  conju(const std::complex<float>& v) { return std::conj(v); }
-inline std::complex<double> conju(const std::complex<double>& v) { return std::conj(v); }
-inline float  conju(const float& v) { return v; }
-inline double conju(const double& v) { return v; }
+inline constexpr std::complex<float>  conju(const std::complex<float>& v) { return std::conj(v); }
+inline constexpr std::complex<double> conju(const std::complex<double>& v) { return std::conj(v); }
+inline constexpr float  conju(const float& v) { return v; }
+inline constexpr double conju(const double& v) { return v; }
 
 inline bool is_finite(unsigned char v) { return true; }
 inline bool is_finite(const float& v) { return std::isfinite(v); }

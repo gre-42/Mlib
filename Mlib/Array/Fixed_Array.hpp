@@ -261,11 +261,11 @@ public:
     constexpr const FixedArray<TData, tnew_shape...>& reshaped() const {
         return const_cast<FixedArray*>(this)->reshaped<tnew_shape...>();
     }
-    consteval static FixedArrayShape<tshape0, tshape...> shape() {
+    static consteval FixedArrayShape<tshape0, tshape...> shape() {
         return FixedArrayShape<tshape0, tshape...>();
     }
     template <size_t N>
-    consteval static size_t static_shape() {
+    static consteval size_t static_shape() {
         return shape() TEMPLATEV get<N>();
     }
     template <size_t... tnew_shape>

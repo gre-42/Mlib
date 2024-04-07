@@ -13,24 +13,24 @@ class ArrayShape;
 
 namespace FasUtils {
     template <size_t... tsize_a, size_t... tsize_b>
-    constexpr auto concatenated(FixedArrayShape<tsize_a...>, FixedArrayShape<tsize_b...>);
+    consteval auto concatenated(FixedArrayShape<tsize_a...>, FixedArrayShape<tsize_b...>);
 }
 
 template <size_t... tsize>
 class FixedArrayShape {
 public:
     using A = FixedArrayShape;
-    constexpr static auto erased_first();
-    constexpr static auto erased_last();
+    consteval static auto erased_first();
+    consteval static auto erased_last();
     template <size_t... tsize_b>
-    constexpr static auto concatenated(const FixedArrayShape<tsize_b...>& b) { return ::Mlib::FasUtils::concatenated(A(), b); }
-    constexpr static auto last();
-    constexpr static auto nelements();
-    constexpr static auto ndim();
-    constexpr static auto rows_as_1D();
-    constexpr static auto columns_as_1D();
+    consteval static auto concatenated(const FixedArrayShape<tsize_b...>& b) { return ::Mlib::FasUtils::concatenated(A(), b); }
+    consteval static auto last();
+    consteval static auto nelements();
+    consteval static auto ndim();
+    consteval static auto rows_as_1D();
+    consteval static auto columns_as_1D();
     template <size_t N>
-    constexpr static size_t get();
+    consteval static size_t get();
 };
 
 namespace RUtils {
@@ -72,74 +72,74 @@ namespace RUtils {
 
 namespace FasUtils {
     template <size_t tsize_begin, size_t... tsize_end>
-    constexpr auto erased_first(FixedArrayShape<tsize_begin, tsize_end...>) {
+    consteval auto erased_first(FixedArrayShape<tsize_begin, tsize_end...>) {
         return FixedArrayShape<tsize_end...>();
     }
 
     template <size_t... tsize>
-    constexpr auto erased_last(FixedArrayShape<tsize...>) {
+    consteval auto erased_last(FixedArrayShape<tsize...>) {
         return typename RUtils::rstrip<tsize...>::type();
     }
 
     template <size_t... tsize>
-    constexpr auto last(FixedArrayShape<tsize...>) {
+    consteval auto last(FixedArrayShape<tsize...>) {
         return RUtils::rget<tsize...>::value;
     }
 
     template <size_t... tsize_a, size_t... tsize_b>
-    constexpr auto concatenated(FixedArrayShape<tsize_a...>, FixedArrayShape<tsize_b...>) {
+    consteval auto concatenated(FixedArrayShape<tsize_a...>, FixedArrayShape<tsize_b...>) {
         return FixedArrayShape<tsize_a..., tsize_b...>();
     };
 
 #ifdef _MSC_VER
-    constexpr inline FixedArrayShape<1, 1> rows_as_1D(FixedArrayShape<>) {
+    consteval inline FixedArrayShape<1, 1> rows_as_1D(FixedArrayShape<>) {
         return FixedArrayShape<1, 1>();
     }
 
     template <size_t tsize0>
-    constexpr FixedArrayShape<1, tsize0> rows_as_1D(FixedArrayShape<tsize0>) {
+    consteval FixedArrayShape<1, tsize0> rows_as_1D(FixedArrayShape<tsize0>) {
         return FixedArrayShape<1, tsize0>();
     }
 
     template <size_t tsize0, size_t tsize1>
-    constexpr FixedArrayShape<tsize0, tsize1> rows_as_1D(FixedArrayShape<tsize0, tsize1>) {
+    consteval FixedArrayShape<tsize0, tsize1> rows_as_1D(FixedArrayShape<tsize0, tsize1>) {
         return FixedArrayShape<tsize0, tsize1>();
     }
 
     template <size_t tsize0, size_t tsize1, size_t tsize2>
-    constexpr FixedArrayShape<tsize0 * tsize1, tsize2> rows_as_1D(FixedArrayShape<tsize0, tsize1, tsize2>) {
+    consteval FixedArrayShape<tsize0 * tsize1, tsize2> rows_as_1D(FixedArrayShape<tsize0, tsize1, tsize2>) {
         return FixedArrayShape<tsize0 * tsize1, tsize2>();
     }
 #endif
 
     template <size_t... tsize>
-    constexpr auto rows_as_1D(FixedArrayShape<tsize...> a) {
+    consteval auto rows_as_1D(FixedArrayShape<tsize...> a) {
         return FixedArrayShape<decltype(a.erased_last())::nelements()>().concatenated(FixedArrayShape<decltype(a)::last()>());
     }
 
 #ifdef _MSC_VER
-    constexpr inline FixedArrayShape<1, 1> columns_as_1D(FixedArrayShape<>) {
+    consteval inline FixedArrayShape<1, 1> columns_as_1D(FixedArrayShape<>) {
         return FixedArrayShape<1, 1>();
     }
 
     template <size_t tsize0>
-    constexpr FixedArrayShape<tsize0, 1> columns_as_1D(FixedArrayShape<tsize0>) {
+    consteval FixedArrayShape<tsize0, 1> columns_as_1D(FixedArrayShape<tsize0>) {
         return FixedArrayShape<tsize0, 1>();
     }
 
     template <size_t tsize0, size_t tsize1>
-    constexpr FixedArrayShape<tsize0, tsize1> columns_as_1D(FixedArrayShape<tsize0, tsize1>) {
+    consteval FixedArrayShape<tsize0, tsize1> columns_as_1D(FixedArrayShape<tsize0, tsize1>) {
         return FixedArrayShape<tsize0, tsize1>();
     }
 
     template <size_t tsize0, size_t tsize1, size_t tsize2>
-    constexpr FixedArrayShape<tsize0, tsize1 * tsize2> columns_as_1D(FixedArrayShape<tsize0, tsize1, tsize2>) {
+    consteval FixedArrayShape<tsize0, tsize1 * tsize2> columns_as_1D(FixedArrayShape<tsize0, tsize1, tsize2>) {
         return FixedArrayShape<tsize0, tsize1 * tsize2>();
     }
 #endif
 
     template <size_t tsize0, size_t... tsize>
-    constexpr auto columns_as_1D(FixedArrayShape<tsize0, tsize...>) {
+    consteval auto columns_as_1D(FixedArrayShape<tsize0, tsize...>) {
         constexpr FixedArrayShape<tsize...> a;
         return FixedArrayShape<tsize0>().concatenated(FixedArrayShape<decltype(a)::nelements()>());
     }
@@ -163,22 +163,22 @@ namespace FasUtils {
         return equals_<tsize...>(other, result);
     }
 
-    constexpr size_t nelements(FixedArrayShape<>) {
+    consteval size_t nelements(FixedArrayShape<>) {
         return 1;
     }
 
     template <size_t tsize0, size_t... tsize>
-    constexpr size_t nelements(FixedArrayShape<tsize0, tsize...>) {
+    consteval size_t nelements(FixedArrayShape<tsize0, tsize...>) {
         constexpr FixedArrayShape<tsize...> a;
         return tsize0 * nelements(a);
     }
 
-    constexpr size_t ndim(FixedArrayShape<>) {
+    consteval size_t ndim(FixedArrayShape<>) {
         return 0;
     }
 
     template <size_t tsize0, size_t... tsize>
-    constexpr size_t ndim(FixedArrayShape<tsize0, tsize...>) {
+    consteval size_t ndim(FixedArrayShape<tsize0, tsize...>) {
         constexpr FixedArrayShape<tsize...> a;
         return 1 + ndim(a);
     }
@@ -202,28 +202,28 @@ namespace ElemUtils {
 }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::erased_first() { return ::Mlib::FasUtils::erased_first(A()); }
+consteval auto FixedArrayShape<tsize...>::erased_first() { return ::Mlib::FasUtils::erased_first(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::erased_last() { return ::Mlib::FasUtils::erased_last(A()); }
+consteval auto FixedArrayShape<tsize...>::erased_last() { return ::Mlib::FasUtils::erased_last(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::last() { return ::Mlib::FasUtils::last(A()); }
+consteval auto FixedArrayShape<tsize...>::last() { return ::Mlib::FasUtils::last(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::nelements() { return ::Mlib::FasUtils::nelements(A()); }
+consteval auto FixedArrayShape<tsize...>::nelements() { return ::Mlib::FasUtils::nelements(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::ndim() { return ::Mlib::FasUtils::ndim(A()); }
+consteval auto FixedArrayShape<tsize...>::ndim() { return ::Mlib::FasUtils::ndim(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils::rows_as_1D(A()); }
+consteval auto FixedArrayShape<tsize...>::rows_as_1D() { return ::Mlib::FasUtils::rows_as_1D(A()); }
 
 template <size_t... tsize>
-constexpr auto FixedArrayShape<tsize...>::columns_as_1D() { return ::Mlib::FasUtils::columns_as_1D(A()); }
+consteval auto FixedArrayShape<tsize...>::columns_as_1D() { return ::Mlib::FasUtils::columns_as_1D(A()); }
 
 template <size_t... tsize>
 template <size_t N>
-constexpr size_t FixedArrayShape<tsize...>::get() { return ::Mlib::ElemUtils::NthElement<N, tsize...>::value; }
+consteval size_t FixedArrayShape<tsize...>::get() { return ::Mlib::ElemUtils::NthElement<N, tsize...>::value; }
 
 }

@@ -8,7 +8,7 @@ namespace Mlib {
  * outer2d(a, b) = dot(a, b.H())
  */
 template <class TData, size_t nrows, size_t ncolumns, size_t nsum>
-FixedArray<TData, nrows, ncolumns> outer2d(
+constexpr FixedArray<TData, nrows, ncolumns> outer2d(
     const FixedArray<TData, nrows, nsum>& a,
     const FixedArray<TData, ncolumns, nsum>& b)
 {
@@ -31,7 +31,7 @@ FixedArray<TData, nrows, ncolumns> outer2d(
  * 2D: outer(a, b) = dot(a, b.H())
  */
 template <class TData, size_t... tsize_a, size_t... tsize_b>
-auto outer(
+constexpr auto outer(
     const FixedArray<TData, tsize_a...>& a,
     const FixedArray<TData, tsize_b...>& b)
 {
@@ -58,7 +58,7 @@ auto outer(
 }
 
 template <class TDerived, class TData, size_t nrows, size_t ncolumns, size_t nsum>
-FixedArray<TData, nrows, ncolumns> dot2d(
+constexpr FixedArray<TData, nrows, ncolumns> dot2d(
     const BaseDenseFixedArray<TDerived, TData, nrows, nsum>& a,
     const FixedArray<TData, nsum, ncolumns>& b)
 {
@@ -94,7 +94,7 @@ constexpr const auto& columns_as_1D(const BaseDenseFixedArray<TDerived, TData, t
 }
 
 template <class TDerived, class TData, size_t... tsize_a, size_t... tsize_new>
-const auto& reshaped(
+constexpr const auto& reshaped(
     const BaseDenseFixedArray<TDerived, TData, tsize_a...>& a,
     const FixedArrayShape<tsize_new...>& new_shape) {
     if constexpr (FixedArrayShape<tsize_a...>() == FixedArrayShape<tsize_new...>()) {
@@ -105,7 +105,7 @@ const auto& reshaped(
 }
 
 template <class TDerived, class TData, size_t... tsize_a, size_t... tsize_b>
-auto dot(
+constexpr auto dot(
     const BaseDenseFixedArray<TDerived, TData, tsize_a...>& a,
     const FixedArray<TData, tsize_b...>& b)
 {
@@ -125,7 +125,7 @@ auto dot(
 }
 
 template <class TDerived, class TData, size_t tsize_r, size_t tsize_c>
-FixedArray<TData, tsize_r> dot1d(
+constexpr FixedArray<TData, tsize_r> dot1d(
     const BaseDenseFixedArray<TDerived, TData, tsize_r, tsize_c>& a,
     const FixedArray<TData, tsize_c>& b)
 {
@@ -133,7 +133,7 @@ FixedArray<TData, tsize_r> dot1d(
 }
 
 template <class TData, size_t tsize>
-TData dot0d(
+constexpr TData dot0d(
     const FixedArray<TData, tsize>& a,
     const FixedArray<TData, tsize>& b)
 {
@@ -141,7 +141,7 @@ TData dot0d(
 }
 
 template <class TData, size_t n>
-FixedArray<TData, n, n> fixed_identity_array() {
+constexpr FixedArray<TData, n, n> fixed_identity_array() {
     FixedArray<TData, n, n> result;
     for (size_t r = 0; r < n; ++r){
         for (size_t c = 0; c < n; ++c) {
@@ -152,29 +152,29 @@ FixedArray<TData, n, n> fixed_identity_array() {
 }
 
 template <class TData, size_t... tsize>
-FixedArray<TData, tsize...> fixed_full(const TData& value) {
+constexpr FixedArray<TData, tsize...> fixed_full(const TData& value) {
     FixedArray<TData, tsize...> a;
     a = value;
     return a;
 }
 
 template <class TData, size_t... tsize>
-FixedArray<TData, tsize...> fixed_zeros() {
+constexpr FixedArray<TData, tsize...> fixed_zeros() {
     return fixed_full<TData, tsize...>(0);
 }
 
 template <class TData, size_t... tsize>
-FixedArray<TData, tsize...> fixed_ones() {
+constexpr FixedArray<TData, tsize...> fixed_ones() {
     return fixed_full<TData, tsize...>(1);
 }
 
 template <class TData, size_t... tsize>
-FixedArray<TData, tsize...> fixed_nans() {
+constexpr FixedArray<TData, tsize...> fixed_nans() {
     return fixed_full<TData, tsize...>(NAN);
 }
 
 template <class TData, size_t ...tshape, typename... TIndices>
-FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indices) {
+constexpr FixedArray<TData, tshape...> fixed_dirac_array(const TIndices&... indices) {
     FixedArray<TData, tshape...> result = fixed_zeros<TData, tshape...>();
     result(indices...) = 1;
     return result;

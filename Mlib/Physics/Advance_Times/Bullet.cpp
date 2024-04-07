@@ -50,9 +50,9 @@ Bullet::Bullet(
     , trail_generator_{ smoke_generator }
     , has_trail_{ !props.trail_resource_name.empty() }
     , trace_extender_{ std::move(trace_extender) }
+    , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
     , dynamic_lights_{ dynamic_lights }
     , delete_node_mutex_{ delete_node_mutex }
-    , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
