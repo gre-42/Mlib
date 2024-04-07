@@ -614,7 +614,9 @@ public:
     }
     template <size_t tndim>
     const FixedArray<size_t, tndim> fixed_shape() const {
-        assert(ndim() == tndim);
+        if (ndim() != tndim) {
+            THROW_OR_ABORT("fixed_shape of incorrect size requested");
+        }
         return FixedArray<size_t, tndim>::from_buffer(shape().begin(), ndim());
     }
     inline size_t shape(size_t i) const {
