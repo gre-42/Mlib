@@ -1,4 +1,5 @@
 #include "Missile_Ai.hpp"
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
