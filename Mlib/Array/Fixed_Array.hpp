@@ -161,8 +161,7 @@ public:
         FixedArray<TResultData, tshape0, tshape...> r;
         const TData* s = flat_begin();
         TResultData* d = r.flat_begin();
-        size_t nelems = nelements();  // Workaround for Clang
-        for (size_t i = 0; i < nelems; ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = operation(*s++);
         }
         return r;
@@ -173,8 +172,7 @@ public:
         const TData* sa = flat_begin();
         const TData* sb = b.flat_begin();
         TDataResult* d = r.flat_begin();
-        size_t nelems = nelements();  // Workaround for Clang
-        for (size_t i = 0; i < nelems; ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = binop(*sa++, *sb++);
         }
         return r;
