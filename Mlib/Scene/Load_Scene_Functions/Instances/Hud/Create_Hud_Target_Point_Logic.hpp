@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class HudImage: public LoadSceneInstanceFunction {
+class CreateHudTargetPointLogic: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit HudImage(RenderableScene& renderable_scene);
+    explicit CreateHudTargetPointLogic(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

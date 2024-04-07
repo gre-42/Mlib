@@ -3,9 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
-#include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
-#include <Mlib/Signal/Exponential_Smoother.hpp>
+#include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
 #include <mutex>
 
 namespace Mlib {
@@ -16,20 +14,13 @@ enum class ResourceUpdateCycle;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 
-enum class HudErrorBehavior {
-    HIDE,
-    CENTER
-};
-
-HudErrorBehavior hud_error_behavior_from_string(const std::string& s);
-
-class HudImageLogic: public RenderLogic, public FillWithTextureLogic, public INodeHider, public IAdvanceTime {
+class HudTargetPointLogic: public RenderLogic, public IAdvanceTime {
 public:
-    HudImageLogic(
+    HudTargetPointLogic(
         RenderLogic* scene_logic,
         CollisionQuery* collision_query,
         DanglingPtr<SceneNode> gun_node,
-        DanglingRef<SceneNode> node_to_hide,
+        DanglingPtr<SceneNode> exclusive_node,
         YawPitchLookAtNodes* ypln,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
@@ -37,7 +28,7 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);
-    ~HudImageLogic();
+    ~HudTargetPointLogic();
 
     // IAdvanceTime
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
@@ -53,29 +44,12 @@ public:
 
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    // INodeHider
-    virtual bool node_shall_be_hidden(
-        DanglingRef<const SceneNode> camera_node,
-        const ExternalRenderPass& external_render_pass) const override;
-
 private:
-    RenderLogic* scene_logic_;
     CollisionQuery* collision_query_;
     DanglingPtr<SceneNode> gun_node_;
-    DanglingRef<SceneNode> node_to_hide_;
     YawPitchLookAtNodes* ypln_;
     AdvanceTimes& advance_times_;
-    FixedArray<float, 2> center_;
-    FixedArray<float, 2> size_;
-    HudErrorBehavior hud_error_behavior_;
-    mutable bool is_visible_;
-    FixedArray<float, 2> offset_;
-    ExponentialSmoother<FixedArray<float, 2>, float> smooth_offset_;
-    std::mutex offset_mutex_;
-    mutable FixedArray<double, 4, 4> vp_;
-    mutable float near_plane_;
-    mutable float far_plane_;
-    mutable std::mutex render_mutex_;
+    HudTracker hud_tracker_;
 };
 
 }

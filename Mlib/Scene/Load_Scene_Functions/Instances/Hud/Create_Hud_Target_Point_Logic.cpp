@@ -1,4 +1,4 @@
-#include "Hud_Image.hpp"
+#include "Create_Hud_Target_Point_Logic.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -9,7 +9,7 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene/Render_Logics/Hud_Image_Logic.hpp>
+#include <Mlib/Scene/Render_Logics/Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -20,7 +20,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
 DECLARE_ARGUMENT(gun_node);
-DECLARE_ARGUMENT(camera_node);
+DECLARE_ARGUMENT(exclusive_node);
 DECLARE_ARGUMENT(ypln_node);
 DECLARE_ARGUMENT(filename);
 DECLARE_ARGUMENT(update);
@@ -29,24 +29,27 @@ DECLARE_ARGUMENT(size);
 DECLARE_ARGUMENT(error_behavior);
 }
 
-const std::string HudImage::key = "hud_image";
+const std::string CreateHudTargetPointLogic::key = "hud_target_point";
 
-LoadSceneJsonUserFunction HudImage::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+LoadSceneJsonUserFunction CreateHudTargetPointLogic::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    HudImage(args.renderable_scene()).execute(args);
+    CreateHudTargetPointLogic(args.renderable_scene()).execute(args);
 };
 
-HudImage::HudImage(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable_scene) 
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
+void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingPtr<SceneNode> gun_node = args.arguments.contains(KnownArgs::gun_node)
         ? scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC).ptr()
         : nullptr;
-    DanglingRef<SceneNode> camera_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::camera_node), DP_LOC);
+    DanglingPtr<SceneNode> exclusive_node = nullptr;
+    if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
+        exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
+    }
     YawPitchLookAtNodes* ypln = nullptr;
     if (args.arguments.contains(KnownArgs::ypln_node)) {
         ypln = dynamic_cast<YawPitchLookAtNodes*>(&scene.get_node(args.arguments.at(KnownArgs::ypln_node), DP_LOC)->get_relative_movable());
@@ -54,11 +57,11 @@ void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
     }
-    auto hud_image = std::make_shared<HudImageLogic>(
+    auto hud_image = std::make_shared<HudTargetPointLogic>(
         &scene_logic,
         &physics_engine.collision_query_,
         gun_node,
-        camera_node,
+        exclusive_node,
         ypln,
         physics_engine.advance_times_,
         args.arguments.path(KnownArgs::filename),
@@ -66,12 +69,10 @@ void HudImage::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    physics_engine.advance_times_.add_advance_time(*hud_image);
-    camera_node->insert_node_hider(*hud_image);
-    render_logics.append(camera_node.ptr(), hud_image, 0 /* z_order */);
+    render_logics.append(exclusive_node, hud_image, 0 /* z_order */);
     players.get_player(args.arguments.at<std::string>(KnownArgs::player))
     .append_delete_externals(
-        camera_node.ptr(),
+        exclusive_node,
         [&hi=*hud_image, &rl=render_logics](){
             rl.remove(hi);
         }

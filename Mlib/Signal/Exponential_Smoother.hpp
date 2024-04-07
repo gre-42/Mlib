@@ -27,6 +27,9 @@ public:
     const TData& xhat() const {
         return s_;
     }
+    void reset() {
+        s_is_initialized_ = false;
+    }
 private:
     TFloat alpha_;
     TData s_;

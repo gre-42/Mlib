@@ -31,13 +31,14 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Scheduled_Advance_Times.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Tracker_Logic.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Node_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Bullet_Count.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Player_Status.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Fill_Pixel_Region_With_Texture.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Focused_Text.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Hud_Image.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Minimap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Players_Stats.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Scene_To_Percentage_Region.hpp>
@@ -282,6 +283,8 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateGun::key, CreateGun::json_user_function);
     register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
     register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
+    register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
+    register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
     register_json_user_function(CreateHumanAsAvatarController::key, CreateHumanAsAvatarController::json_user_function);
     register_json_user_function(CreateHumanAsCarController::key, CreateHumanAsCarController::json_user_function);
     register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
@@ -329,7 +332,6 @@ LoadScene::LoadScene() {
     register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
     register_json_user_function(FocusedText::key, FocusedText::json_user_function);
     register_json_user_function(FollowNode::key, FollowNode::json_user_function);
-    register_json_user_function(HudImage::key, HudImage::json_user_function);
     register_json_user_function(Minimap::key, Minimap::json_user_function);
     register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
     register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
