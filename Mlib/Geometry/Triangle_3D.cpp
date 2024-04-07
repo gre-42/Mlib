@@ -13,9 +13,9 @@ Triangle3D::Triangle3D(
     const FixedArray<ColoredVertex<TPos>, 3>& vertices,
     const TransformationMatrix<float, double, 3>& transformation)
 : vertices_{
-    transformation.transform(vertices(0).position TEMPLATEV casted<double>()),
-    transformation.transform(vertices(1).position TEMPLATEV casted<double>()),
-    transformation.transform(vertices(2).position TEMPLATEV casted<double>())}
+    transformation.transform(vertices(0).position.template casted<double>()),
+    transformation.transform(vertices(1).position.template casted<double>()),
+    transformation.transform(vertices(2).position.template casted<double>())}
 {}
 
 const FixedArray<FixedArray<double, 3>, 3>& Triangle3D::vertices() const {

@@ -652,9 +652,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
             for (const auto& tri : node.triangles) {
                 tl.draw_triangle_with_normals(
-                    node.position(tri(0)) TEMPLATEV casted<TPos>(),
-                    node.position(tri(1)) TEMPLATEV casted<TPos>(),
-                    node.position(tri(2)) TEMPLATEV casted<TPos>(),
+                    node.position(tri(0)).template casted<TPos>(),
+                    node.position(tri(1)).template casted<TPos>(),
+                    node.position(tri(2)).template casted<TPos>(),
                     node.normal(tri(0)),
                     node.normal(tri(1)),
                     node.normal(tri(2)),
@@ -746,8 +746,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     for (auto& l : result) {
         for (auto& t : l->triangles) {
             for (auto& v : t.flat_iterable()) {
-                v.position *= cfg.scale TEMPLATEV casted<TPos>();
-                v.position = dot1d(rotation_matrix_p TEMPLATEV casted<TPos>(), v.position);
+                v.position *= cfg.scale.template casted<TPos>();
+                v.position = dot1d(rotation_matrix_p.template casted<TPos>(), v.position);
                 v.position += cfg.position;
                 v.normal = dot1d(rotation_matrix_n, v.normal);
                 v.tangent = dot1d(rotation_matrix_p, v.tangent);

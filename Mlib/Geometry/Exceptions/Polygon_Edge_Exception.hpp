@@ -34,7 +34,7 @@ public:
                 if (i != 0) {
                     sstr << " <-> ";
                 }
-                sstr << m->transform(poly(i) TEMPLATEV casted<double>());
+                sstr << m->transform(poly(i).template casted<double>());
             }
         }
         sstr << ": " << what();

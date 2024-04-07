@@ -18,7 +18,7 @@ Array<TData> Mlib::load_heightmap_from_file(const std::string& filename) {
         if (ar.shape(0) == 3) {
             return terrarium_to_meters<TData>(ar);
         } else if (ar.shape(0) == 1) {
-            return ar[0] TEMPLATEV casted<TData>() / TData(255);
+            return ar[0].template casted<TData>() / TData(255);
         } else {
             THROW_OR_ABORT("Height map is no 16-bit image and does not have 1 or 3 channels");
         }

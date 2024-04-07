@@ -802,7 +802,7 @@ int main(int argc, char** argv) {
                         for (auto& m : cvas) {
                             for (auto& t : m->triangles) {
                                 for (auto& v : t.flat_iterable()) {
-                                    v.color = maximum(color TEMPLATEV casted<float>(), 0.f);
+                                    v.color = maximum(color.template casted<float>(), 0.f);
                                 }
                             }
                         }

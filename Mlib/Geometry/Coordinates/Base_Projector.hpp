@@ -46,7 +46,7 @@ protected:
         if (all(Mlib::isnan(scale_matrix_))) {
             return sliced;
         } else {
-            return dot1d(scale_matrix_, homogenized_3(sliced)) TEMPLATEV row_range<0, 2>();
+            return dot1d(scale_matrix_, homogenized_3(sliced)).template row_range<0, 2>();
         }
     }
 

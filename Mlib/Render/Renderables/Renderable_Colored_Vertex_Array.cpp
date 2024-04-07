@@ -1248,7 +1248,7 @@ void RenderableColoredVertexArray::extend_aabb(
             }
             for (const auto& t : cva->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    aabb.extend(mv.transform(v.position TEMPLATEV casted<double>()));
+                    aabb.extend(mv.transform(v.position.template casted<double>()));
                 }
             }
         }

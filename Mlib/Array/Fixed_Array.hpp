@@ -4,7 +4,6 @@
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
-#include <Mlib/Template.hpp>
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -241,7 +240,7 @@ public:
     template <size_t tstart, size_t tend>
     const FixedArray<TData, tend - tstart, tshape...>& row_range() const {
         auto& x = const_cast<FixedArray<TData, tshape0, tshape...>&>(*this);
-        return x TEMPLATEV row_range<tstart, tend>();
+        return x.template row_range<tstart, tend>();
     }
     FixedArray<TData, tshape0> column(size_t c) const {
         static_assert(ndim() == 2);
@@ -266,7 +265,7 @@ public:
     }
     template <size_t N>
     static consteval size_t static_shape() {
-        return shape() TEMPLATEV get<N>();
+        return shape().template get<N>();
     }
     template <size_t... tnew_shape>
     constexpr FixedArray<TData, tnew_shape...>& reshaped(const FixedArrayShape<tnew_shape...>&) {

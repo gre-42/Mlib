@@ -126,7 +126,7 @@ StbImage3 Mlib::plot_mesh(
     StbImage3 im{image_size, Rgb24::white()};
     auto normalization_matrix = np.normalization_matrix();
     auto trafo = [&](const FixedArray<TPos, 2>& p){
-        return 0.5f + (normalization_matrix.transform(p) TEMPLATEV casted<float>()).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
+        return 0.5f + (normalization_matrix.transform(p).template casted<float>()).to_array() * (Array<float>::from_shape(im.shape()) - 1.f);
     };
     for (const auto& t : triangles) {
         auto a = trafo(t(0));

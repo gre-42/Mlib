@@ -439,8 +439,8 @@ void DrawStreets::draw_holes() {
                     way_infos.at(hv(2).way_id).colors(0));
             } else if (nh.second.size() > 3) {
                 // Draw center fan
-                FixedArray<double, 2> center = mean(hv TEMPLATE applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
-                FixedArray<float, 3> center_color = mean(hv TEMPLATE applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
+                FixedArray<double, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
+                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
                 for (size_t i = 0; i < hv.length(); ++i) {
                     size_t j = (i + 1) % hv.length();
                     hole_triangles->draw_triangle_wo_normals(
@@ -529,8 +529,8 @@ void DrawStreets::draw_holes() {
         } else if (nh.size() >= 3) {
             // Draw center fan
             {
-                FixedArray<double, 2> center = mean(hv TEMPLATE applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
-                FixedArray<float, 3> center_color = mean(hv TEMPLATE applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
+                FixedArray<double, 2> center = mean(hv->template applied<FixedArray<double, 2>>([](auto& v){return v.position;}));
+                FixedArray<float, 3> center_color = mean(hv->template applied<FixedArray<float, 3>>([&](auto& v){return way_infos.at(v.way_id).colors(0);}));
                 for (size_t i = 0; i < hv.length(); ++i) {
                     size_t j = (i + 1) % hv.length();
                     crossings.draw_triangle_wo_normals(

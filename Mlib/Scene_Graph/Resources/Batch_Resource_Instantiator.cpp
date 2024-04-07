@@ -193,7 +193,7 @@ void BatchResourceInstantiator::instantiate_hitboxes(
             for (auto& x : local_cvas) {
                 for (auto& y : ps) {
                     cvas.push_back(
-                        x TEMPLATE transformed<double>(
+                        x->template transformed<double>(
                             TransformationMatrix{
                                 scale_ * dot2d(
                                     rodrigues2(FixedArray<float, 3>{0.f, 0.f, 1.f}, y.yangle),

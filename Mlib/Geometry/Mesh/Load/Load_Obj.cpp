@@ -213,7 +213,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN) TEMPLATEV casted<float>();
+                        TriangleNormalErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -269,7 +269,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         obj_vertices.at(vertex_ids(0) - 1).position,
                         obj_vertices.at(vertex_ids(1) - 1).position,
                         obj_vertices.at(vertex_ids(2) - 1).position},
-                        TriangleNormalErrorBehavior::WARN) TEMPLATEV casted<float>();
+                        TriangleNormalErrorBehavior::WARN).template casted<float>();
                     n0 = n;
                     n1 = n;
                     n2 = n;
@@ -408,8 +408,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {
         auto transform_vertex = [&](ColoredVertex<TPos>& v){
-            v.position *= cfg.scale TEMPLATEV casted<TPos>();
-            v.position = dot1d(rotation_matrix_p TEMPLATEV casted<TPos>(), v.position);
+            v.position *= cfg.scale.template casted<TPos>();
+            v.position = dot1d(rotation_matrix_p.template casted<TPos>(), v.position);
             v.position += cfg.position;
             v.normal = dot1d(rotation_matrix_n, v.normal);
             v.tangent = dot1d(rotation_matrix_p, v.tangent);

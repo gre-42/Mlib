@@ -33,11 +33,11 @@ public:
         if (m != nullptr) {
             sstr <<
                 " | " <<
-                m->transform(a TEMPLATEV casted<double>()) <<
+                m->transform(a.template casted<double>()) <<
                 " <-> " <<
-                m->transform(b TEMPLATEV casted<double>()) <<
+                m->transform(b.template casted<double>()) <<
                 " <-> " <<
-                m->transform(c TEMPLATEV casted<double>());
+                m->transform(c.template casted<double>());
         }
         sstr << ": " << what();
         return sstr.str();

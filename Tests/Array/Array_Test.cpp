@@ -195,9 +195,9 @@ void test_fixed_array_initialization() {
 
 void test_fixed_array_slicing() {
     FixedArray<int, 2> f{4, 5};
-    assert_isequal(f TEMPLATEV row_range<1, 2>()(0), 5);
+    assert_isequal(f.template row_range<1, 2>()(0), 5);
     FixedArray<int, 3, 3> kif;
-    kif TEMPLATEV row_range<0, 2>();
+    kif.template row_range<0, 2>();
     kif.reshaped<2, 2>();
 }
 

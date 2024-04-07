@@ -13,7 +13,7 @@ Array<uint8_t> meters_to_terrarium(const Array<TIn>& meters) {
     Array<TIn> val = meters + TIn(32768);
     for (size_t c = 2; c != SIZE_MAX; --c) {
         auto vc = val - val.applied([](float v){return std::floor(v);});
-        rgb[c] = minimum(round(vc * TIn(256)), TIn(255)) TEMPLATEV casted<uint8_t>();
+        rgb[c] = minimum(round(vc * TIn(256)), TIn(255)).template casted<uint8_t>();
         val -= vc;
         val /= 256;
     }
@@ -34,9 +34,9 @@ Array<TOut> terrarium_to_meters(const Array<uint8_t>& terrarium) {
         THROW_OR_ABORT("Terrarium heightmap does not have 3 channels");
     }
     return
-        terrarium[0] TEMPLATEV casted<TOut>() * TOut(256) +
-        terrarium[1] TEMPLATEV casted<TOut>() +
-        terrarium[2] TEMPLATEV casted<TOut>() / TOut(256) - TOut(32768);
+        terrarium[0].template casted<TOut>() * TOut(256) +
+        terrarium[1].template casted<TOut>() +
+        terrarium[2].template casted<TOut>() / TOut(256) - TOut(32768);
 }
 
 }

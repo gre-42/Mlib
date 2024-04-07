@@ -63,7 +63,7 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_vertex_r
     std::vector<FixedArray<FixedArray<TPos, 3>, 2>> res;
     res.reserve(vertex_normals.vertices().size());
     for (const auto& [v, n] : vertex_normals.vertices()) {
-        res.push_back(gen_ray(v, n TEMPLATEV casted<TPos>(), lengths));
+        res.push_back(gen_ray(v, n.template casted<TPos>(), lengths));
     }
     return res;
 }

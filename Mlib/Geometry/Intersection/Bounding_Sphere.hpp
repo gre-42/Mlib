@@ -75,7 +75,7 @@ public:
     template <class TDir, class TPos>
     BoundingSphere<TPos, tndim> transformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
         return BoundingSphere<TPos, tndim>{
-            transformation_matrix.transform(center_ TEMPLATEV casted<TPos>()),
+            transformation_matrix.transform(center_.template casted<TPos>()),
             radius_ * transformation_matrix.get_scale()};
     }
     inline const FixedArray<TData, tndim>& center() const {

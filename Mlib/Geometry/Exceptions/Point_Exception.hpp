@@ -18,7 +18,7 @@ public:
         sstr.precision(15);
         sstr << message << " at position " << point;
         if (m != nullptr) {
-            sstr << " | " << m->transform(point TEMPLATEV casted<double>());
+            sstr << " | " << m->transform(point.template casted<double>());
         }
         sstr << ": " << what();
         return sstr.str();

@@ -213,13 +213,13 @@ void lstsq_chol_1d(
         AT_A += *dAT_A;
     }
     if (dAT_b != nullptr) {
-        AT_B += dAT_b TEMPLATE reshaped<r, 1>();
+        AT_B += dAT_b->template reshaped<r, 1>();
     }
     auto res = solve_symm_inplace(AT_A, AT_B, alpha, beta, (const FixedArray<typename TArray::value_type, r, 1>*)nullptr, diag2_min);
     if (!res.has_value()) {
         result = std::nullopt;
     } else {
-        result = res.value() TEMPLATEV reshaped<r>();
+        result = res.value().template reshaped<r>();
     }
 }
 

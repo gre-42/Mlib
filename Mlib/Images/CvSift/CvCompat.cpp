@@ -35,9 +35,9 @@ template <class TData>
 template <class TDestData>
 void Mat<TData>::convertTo(Mat<TDestData>& dest, double alpha) const {
     if (alpha == 1) {
-        dest.array.move() = array TEMPLATEV casted<TDestData>();
+        dest.array.move() = array.template casted<TDestData>();
     } else {
-        dest.array.move() = array TEMPLATEV applied<TDestData>([alpha](const TData& v){return (TDestData)(v * alpha);});
+        dest.array.move() = array.template applied<TDestData>([alpha](const TData& v){return (TDestData)(v * alpha);});
     }
 }
 

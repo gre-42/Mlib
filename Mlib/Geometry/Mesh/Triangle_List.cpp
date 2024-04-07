@@ -62,13 +62,13 @@ void TriangleList<TPos>::draw_triangle_with_normals(
         v00.position,
         v10.position,
         v01.position,
-        v00.uv TEMPLATEV casted<TPos>(),
-        v10.uv TEMPLATEV casted<TPos>(),
-        v01.uv TEMPLATEV casted<TPos>(),
+        v00.uv.template casted<TPos>(),
+        v10.uv.template casted<TPos>(),
+        v01.uv.template casted<TPos>(),
         tangent_error_behavior);
-    v00.tangent = tangent TEMPLATEV casted<float>();
-    v10.tangent = tangent TEMPLATEV casted<float>();
-    v01.tangent = tangent TEMPLATEV casted<float>();
+    v00.tangent = tangent.template casted<float>();
+    v10.tangent = tangent.template casted<float>();
+    v01.tangent = tangent.template casted<float>();
 
     auto& triangle = triangles.emplace_back(v00, v10, v01);
     if (!b00.empty() || !b10.empty() || !b01.empty()) {
@@ -108,7 +108,7 @@ void TriangleList<TPos>::draw_triangle_wo_normals(
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
-    auto n = triangle_normal<TPos>({p00, p10, p01}, normal_error_behavior) TEMPLATEV casted<float>();
+    auto n = triangle_normal<TPos>({p00, p10, p01}, normal_error_behavior).template casted<float>();
     draw_triangle_with_normals(p00, p10, p01, n, n, n, c00, c10, c01, u00, u10, u01, b00, b10, b01, tangent_error_behavior, pp00, pp10, pp01);
 }
 
@@ -433,9 +433,9 @@ template <class TPos>
 void TriangleList<TPos>::calculate_triangle_normals(TriangleNormalErrorBehavior error_behavior) {
     for (auto& t : triangles) {
         auto n = triangle_normal<TPos>({t(0).position, t(1).position, t(2).position}, error_behavior);
-        t(0).normal = n TEMPLATEV casted<float>();
-        t(1).normal = n TEMPLATEV casted<float>();
-        t(2).normal = n TEMPLATEV casted<float>();
+        t(0).normal = n.template casted<float>();
+        t(1).normal = n.template casted<float>();
+        t(2).normal = n.template casted<float>();
     }
 }
 

@@ -118,7 +118,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             if (decomposition.capacity() == decomposition.size()) {
                 THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (0)");
             }
-            auto n = triangle_normal(s) TEMPLATEV casted<float>();
+            auto n = triangle_normal(s).template casted<float>();
             decomposition.push_back({
                 ColoredVertex<TPos>{.position = s(0), .color = purple, .uv = zeros2, .normal = n, .tangent = zeros3},
                 ColoredVertex<TPos>{.position = s(1), .color = purple, .uv = zeros2, .normal = n, .tangent = zeros3},

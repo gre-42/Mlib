@@ -1413,7 +1413,7 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
     auto gen_triangle_rays = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
     {
         for (auto& t : cvas) {
-            auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths TEMPLATEV casted<TPos>());
+            auto r = Mlib::generate_triangle_rays(t->triangles, npoints, lengths.template casted<TPos>());
             t->lines.reserve(t->lines.size() + r.size());
             for (const auto& l : r) {
                 t->lines.push_back({

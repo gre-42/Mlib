@@ -93,8 +93,8 @@ public:
     template <class TResultData>
     AxisAlignedBoundingBox<TResultData, tndim> casted() const {
         return AxisAlignedBoundingBox<TResultData, tndim>(
-            min_ TEMPLATEV casted<TResultData>(),
-            max_ TEMPLATEV casted<TResultData>());
+            min_.template casted<TResultData>(),
+            max_.template casted<TResultData>());
     }
 private:
     template <class TOperation>

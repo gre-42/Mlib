@@ -35,21 +35,21 @@ public:
     {}
 
     inline explicit TransformationMatrix(const FixedArray<TPos, n+1, n+1>& m)
-    : R_{R_from_NxN(m) TEMPLATEV casted<TDir>()},
+    : R_{R_from_NxN(m).template casted<TDir>()},
       t_{t_from_NxN(m)}
     {}
 
     inline explicit TransformationMatrix(const FixedArray<TPos, n, n + 1>& m)
-    : R_{ R_from_NxN1(m) TEMPLATEV casted<TDir>() },
+    : R_{ R_from_NxN1(m).template casted<TDir>() },
       t_{ t_from_NxN1(m) }
     {}
 
     inline FixedArray<TPos, n> transform(const FixedArray<TPos, n>& rhs) const {
-        return dot1d(R_ TEMPLATEV casted<TPos>(), rhs) + t_;
+        return dot1d(R_.template casted<TPos>(), rhs) + t_;
     }
 
     inline FixedArray<TPos, n> itransform(const FixedArray<TPos, n>& rhs) const {
-        return dot(rhs - t_, R_ TEMPLATEV casted<TPos>());
+        return dot(rhs - t_, R_.template casted<TPos>());
     }
 
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
@@ -69,7 +69,7 @@ public:
     template <size_t m>
     inline FixedArray<TPos, n + 1, m> project(const FixedArray<TPos, n + 1, m>& rhs) const {
         FixedArray<TPos, n + 1, m> res;
-        res TEMPLATEV row_range<0, n>() = dot2d(semi_affine(), rhs);
+        res.template row_range<0, n>() = dot2d(semi_affine(), rhs);
         res[n] = rhs[n];
         return res;
     }
@@ -107,11 +107,11 @@ public:
     }
 
     inline const FixedArray<TPos, n+1, n+1> affine() const {
-        return assemble_homogeneous_NxN(R_ TEMPLATEV casted<TPos>(), t_);
+        return assemble_homogeneous_NxN(R_.template casted<TPos>(), t_);
     }
 
     inline const FixedArray<TPos, n, n + 1> semi_affine() const {
-        return assemble_homogeneous_NxN1(R_ TEMPLATEV casted<TPos>(), t_);
+        return assemble_homogeneous_NxN1(R_.template casted<TPos>(), t_);
     }
 
     inline TransformationMatrix inverted() const {

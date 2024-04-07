@@ -13,10 +13,10 @@ Quad3D::Quad3D(
     const FixedArray<ColoredVertex<TPos>, 4>& vertices,
     const TransformationMatrix<float, double, 3>& transformation)
 : vertices_{
-    transformation.transform(vertices(0).position TEMPLATEV casted<double>()),
-    transformation.transform(vertices(1).position TEMPLATEV casted<double>()),
-    transformation.transform(vertices(2).position TEMPLATEV casted<double>()),
-    transformation.transform(vertices(3).position TEMPLATEV casted<double>()),}
+    transformation.transform(vertices(0).position.template casted<double>()),
+    transformation.transform(vertices(1).position.template casted<double>()),
+    transformation.transform(vertices(2).position.template casted<double>()),
+    transformation.transform(vertices(3).position.template casted<double>()),}
 {}
 
 const FixedArray<FixedArray<double, 3>, 4>& Quad3D::vertices() const {

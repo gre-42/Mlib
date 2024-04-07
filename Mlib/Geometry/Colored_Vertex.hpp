@@ -25,7 +25,7 @@ struct ColoredVertex {
     template <class TResultPos>
     ColoredVertex<TResultPos> casted() const {
         return ColoredVertex<TResultPos>{
-            .position = position TEMPLATEV casted<TResultPos>(),
+            .position = position.template casted<TResultPos>(),
             .color = color,
             .uv = uv,
             .normal = normal,
