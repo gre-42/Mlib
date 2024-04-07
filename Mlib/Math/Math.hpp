@@ -839,27 +839,27 @@ Array<TData> operator || (const Array<TData>& a, const Array<TData>& b) {
 
 template <class TDerivedA, class TData>
 auto operator + (const BaseDenseArray<TDerivedA, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x + b; });
+    return a->applied([&](const TData& x){ return x + b; });
 }
 
 template <class TDerivedB, class TData>
 auto operator + (const TData& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return b->template applied([&](const TData& x){ return a + x; });
+    return b->applied([&](const TData& x){ return a + x; });
 }
 
 template <class TDerivedA, class TData>
 auto operator - (const BaseDenseArray<TDerivedA, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x - b; });
+    return a->applied([&](const TData& x){ return x - b; });
 }
 
 template <class TDerivedB, class TData>
 auto operator - (const TData& a, const BaseDenseArray<TDerivedB, TData>& b) {
-    return b->template applied([&](const TData& x){ return a - x; });
+    return b->applied([&](const TData& x){ return a - x; });
 }
 
 template <class TDerived, class TData>
 auto operator * (const BaseDenseArray<TDerived, TData>& a, const TData& b) {
-    return a->template applied([&](const TData& x){ return x * b; });
+    return a->applied([&](const TData& x){ return x * b; });
 }
 
 template <class TDerived, class TData>
