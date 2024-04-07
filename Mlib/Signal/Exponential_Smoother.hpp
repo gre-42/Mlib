@@ -7,13 +7,13 @@ template <class TData, class TFloat=TData>
 class ExponentialSmoother {
 public:
     explicit ExponentialSmoother(const TFloat& alpha)
-    : alpha_{alpha},
-      s_is_initialized_{false}
+        : alpha_{ alpha }
+        , s_is_initialized_{ false }
     {}
     ExponentialSmoother(const TFloat& alpha, const TData& x0)
-    : alpha_{alpha},
-      s_{x0},
-      s_is_initialized_(true)
+        : alpha_{ alpha }
+        , s_{ x0 }
+        , s_is_initialized_(true)
     {}
     const TData& operator () (const TData& x) {
         if (!s_is_initialized_) {
