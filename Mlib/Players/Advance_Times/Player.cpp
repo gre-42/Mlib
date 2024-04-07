@@ -68,8 +68,7 @@ Player::Player(
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses)
-    : destruction_observers_{ *this }
-    , car_movement{ *this }
+    : car_movement{ *this }
     , avatar_movement{ *this }
     , scene_{ scene }
     , collision_query_{ collision_query }
@@ -100,6 +99,7 @@ Player::Player(
     , select_opponent_hysteresis_factor_{ 0.9 }
     , plane_ai_{ std::make_unique<PlaneAi>(*this) }
     , drive_or_walk_ai_{ std::make_unique<DriveOrWalkAi>(*this) }
+    , destruction_observers_{ *this }
     , shutting_down_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();

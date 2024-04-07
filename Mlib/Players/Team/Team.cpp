@@ -7,10 +7,10 @@
 using namespace Mlib;
 
 Team::Team()
-    : destruction_observers_{ *this }
-    , nwins_{ 0 }
+    : nwins_{ 0 }
     , nlosses_{ 0 }
     , nkills_{ 0 }
+    , destruction_observers_{ *this }
 {}
 
 Team::~Team() {
