@@ -27,17 +27,17 @@ class FixedArray<TData, tshape0, tshape...>: public BaseDenseFixedArray<FixedArr
 public:
     typedef TData value_type;
 
-    static constexpr size_t nelements() {
+    static consteval size_t nelements() {
         return tshape0 * FixedArray<TData, tshape...>::nelements();
     }
-    static constexpr size_t nbytes() {
+    static consteval size_t nbytes() {
         return nelements() * sizeof(TData);
     }
-    static constexpr size_t length() {
+    static consteval size_t length() {
         static_assert(ndim() == 1);
         return tshape0;
     }
-    static constexpr size_t ndim() {
+    static consteval size_t ndim() {
         return shape().ndim();
     }
 
@@ -261,11 +261,11 @@ public:
     constexpr const FixedArray<TData, tnew_shape...>& reshaped() const {
         return const_cast<FixedArray*>(this)->reshaped<tnew_shape...>();
     }
-    constexpr static FixedArrayShape<tshape0, tshape...> shape() {
+    consteval static FixedArrayShape<tshape0, tshape...> shape() {
         return FixedArrayShape<tshape0, tshape...>();
     }
     template <size_t N>
-    constexpr static size_t static_shape() {
+    consteval static size_t static_shape() {
         return shape() TEMPLATEV get<N>();
     }
     template <size_t... tnew_shape>
@@ -401,10 +401,10 @@ public:
     TData& operator() () {
         return value_;
     }
-    static constexpr size_t nelements() {
+    static consteval size_t nelements() {
         return 1;
     }
-    static constexpr size_t ndim() {
+    static consteval size_t ndim() {
         return 0;
     }
     constexpr TData* flat_begin() {

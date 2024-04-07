@@ -62,8 +62,8 @@ public:
             named_opolys.quads.reserve(named_ipolys.quads.size());
             auto add_polygons = [&](const auto& ipolys, auto& opolys)
             {
-                for (auto& ipoly : ipolys) {
-                    for (auto& v : ipoly.flat_iterable()) {
+                for (const auto& ipoly : ipolys) {
+                    for (const auto& v : ipoly.flat_iterable()) {
                         vertex_indices.insert({ OrderableFixedArray{v.position}, vertex_indices.size() });
                         uv_indices.insert({ OrderableFixedArray{v.uv}, uv_indices.size() });
                         normal_indices.insert({ OrderableFixedArray{v.normal}, normal_indices.size() });
