@@ -157,24 +157,22 @@ public:
         return const_cast<FixedArray*>(this)->flat_end();
     }
     template <class TResultData=TData, class TOperation>
-    FixedArray<TResultData, tshape0, tshape...> applied(const TOperation &operation) const {
+    constexpr FixedArray<TResultData, tshape0, tshape...> applied(const TOperation &operation) const {
         FixedArray<TResultData, tshape0, tshape...> r;
         const TData* s = flat_begin();
         TResultData* d = r.flat_begin();
-        size_t nelems = nelements();  // Workaround for Clang
-        for (size_t i = 0; i < nelems; ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = operation(*s++);
         }
         return r;
     }
     template <class TDataResult=TData, class TDataB, class TBinop>
-    FixedArray<TDataResult, tshape0, tshape...> array_array_binop(const FixedArray<TDataB, tshape0, tshape...>& b, const TBinop &binop) const {
+    constexpr FixedArray<TDataResult, tshape0, tshape...> array_array_binop(const FixedArray<TDataB, tshape0, tshape...>& b, const TBinop &binop) const {
         FixedArray<TDataResult, tshape0, tshape...> r;
         const TData* sa = flat_begin();
         const TData* sb = b.flat_begin();
         TDataResult* d = r.flat_begin();
-        size_t nelems = nelements();  // Workaround for Clang
-        for (size_t i = 0; i < nelems; ++i) {
+        for (size_t i = 0; i < nelements(); ++i) {
             *d++ = binop(*sa++, *sb++);
         }
         return r;
