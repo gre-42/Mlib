@@ -39,8 +39,9 @@ class IVehicleAi {
 public:
 	virtual ~IVehicleAi() = default;
 	virtual VehicleAiMoveToStatus move_to(
-		const FixedArray<double, 3>& destination_position,
-		const std::optional<FixedArray<float, 3>>& destination_velocity) = 0;
+		const FixedArray<double, 3>& position_of_destination,
+		const FixedArray<float, 3>& velocity_of_destination,
+		const std::optional<FixedArray<float, 3>>& velocity_at_destination) = 0;
 };
 
 }

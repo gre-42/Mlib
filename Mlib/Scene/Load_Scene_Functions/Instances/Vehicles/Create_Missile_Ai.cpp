@@ -17,6 +17,8 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(missile);
 DECLARE_ARGUMENT(target);
 DECLARE_ARGUMENT(pid);
+DECLARE_ARGUMENT(dy);
+DECLARE_ARGUMENT(eta_max);
 DECLARE_ARGUMENT(destination_reached_radius);
 }
 
@@ -26,7 +28,17 @@ DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(alpha);
 }
 
+namespace DyArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(velocity);
+DECLARE_ARGUMENT(dy);
+}
+
 const std::string CreateMissileAi::key = "create_missile_ai";
+
+inline float parse_kph(float v) {
+    return v * kph;
+}
 
 LoadSceneJsonUserFunction CreateMissileAi::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -49,13 +61,20 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid(1) * (physics_engine.config().dt / s),
         pid(2) / (physics_engine.config().dt / s),
         std::pow(pid_alpha, physics_engine.config().dt / (1.f / 60.f * s)) };
+    auto jdy = args.arguments.child(KnownArgs::dy);
+    jdy.validate(DyArgs::options);
+    Interp<float, float> dy{
+        jdy.at_vector<float>(DyArgs::velocity, parse_kph),
+        jdy.at<std::vector<float>>(DyArgs::dy),
+        OutOfRangeBehavior::CLAMP };
     auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
     auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::target), DP_LOC));
     auto missile_ai = std::make_unique<MissileAi>(
         pid_controller,
+        std::move(dy),
+        args.arguments.at<double>(KnownArgs::eta_max) * s,
         missile_vehicle.missile_controller(),
         missile_vehicle.rbp_,
-        target_vehicle.rbp_,
         args.arguments.at<float>(KnownArgs::destination_reached_radius));
     new VehicleAiAdvanceTime(
         physics_engine.advance_times_,

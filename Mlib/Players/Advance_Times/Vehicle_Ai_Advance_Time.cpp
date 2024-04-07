@@ -30,6 +30,6 @@ VehicleAiAdvanceTime::~VehicleAiAdvanceTime() {
 
 void VehicleAiAdvanceTime::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 	if (followed_ != nullptr) {
-		vehicle_ai_->move_to(followed_->abs_com(), std::nullopt);
+		vehicle_ai_->move_to(followed_->abs_com(), followed_->rbp_.v_, std::nullopt);
 	}
 }

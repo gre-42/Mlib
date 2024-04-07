@@ -13,8 +13,9 @@ public:
 	void set_car_controller();
 	void set_avatar_controller();
 	virtual VehicleAiMoveToStatus move_to(
-		const FixedArray<double, 3>& destination_position,
-		const std::optional<FixedArray<float, 3>>& destination_velocity) override;
+		const FixedArray<double, 3>& position_of_destination,
+		const FixedArray<float, 3>& velocity_of_destination,
+		const std::optional<FixedArray<float, 3>>& velocity_at_destination) override;
 private:
 	Player& player_;
 };

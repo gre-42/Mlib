@@ -12,15 +12,16 @@ PlaneAi::PlaneAi(Player& player)
 PlaneAi::~PlaneAi() = default;
 
 VehicleAiMoveToStatus PlaneAi::move_to(
-	const FixedArray<double, 3>& destination_position,
-	const std::optional<FixedArray<float, 3>>& destination_velocity)
+	const FixedArray<double, 3>& position_of_destination,
+	const FixedArray<float, 3>& velocity_of_destination,
+	const std::optional<FixedArray<float, 3>>& velocity_at_destination)
 {
 	if (player_.skills(ControlSource::AI).can_drive) {
 		THROW_OR_ABORT("PlaneAi::move_to not yet implemented");
 	}
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<double, 3> pos3 = player_.rigid_body().rbp_.abs_position();
-    double distance_to_waypoint2 = sum(squared(pos3 - destination_position));
+    double distance_to_waypoint2 = sum(squared(pos3 - position_of_destination));
     if (distance_to_waypoint2 < squared(player_.driving_mode().waypoint_reached_radius)) {
         result |= VehicleAiMoveToStatus::DESTINATION_REACHED;
     }

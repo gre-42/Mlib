@@ -16,8 +16,9 @@ DriveOrWalkAi::DriveOrWalkAi(Player& player)
 DriveOrWalkAi::~DriveOrWalkAi() = default;
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
-	const FixedArray<double, 3>& destination_position,
-    const std::optional<FixedArray<float, 3>>& destination_velocity)
+    const FixedArray<double, 3>& position_of_destination,
+    const FixedArray<float, 3>& velocity_of_destination,
+    const std::optional<FixedArray<float, 3>>& velocity_at_destination)
 {
     // if (!any(Mlib::isnan(waypoint_))) {
     //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
@@ -40,13 +41,13 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb.vehicle_controller().apply();
         };
     player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
-    if (any(Mlib::isnan(destination_position))) {
+    if (any(Mlib::isnan(position_of_destination))) {
         step_on_brakes_and_apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
-    double distance_to_waypoint2 = sum(squared(pos3 - destination_position));
+    double distance_to_waypoint2 = sum(squared(pos3 - position_of_destination));
     float lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
@@ -111,8 +112,8 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     }
     // Keep velocity within the specified range.
     {
-        float target_vel = destination_velocity.has_value()
-            ? std::sqrt(sum(squared(destination_velocity.value())))
+        float target_vel = velocity_at_destination.has_value()
+            ? std::sqrt(sum(squared(velocity_at_destination.value())))
             : player_.driving_mode().max_velocity;
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
@@ -146,7 +147,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
         auto p = player_rb.rbp_.abs_position();
-        auto wpt = FixedArray<double, 2>{destination_position(0), destination_position(2)} - FixedArray<double, 2>{p(0), p(2)};
+        auto wpt = FixedArray<double, 2>{position_of_destination(0), position_of_destination(2)} - FixedArray<double, 2>{p(0), p(2)};
         auto m = FixedArray<double, 2, 2>::init(
             z(1), -z(0),
             z(0), z(1));
