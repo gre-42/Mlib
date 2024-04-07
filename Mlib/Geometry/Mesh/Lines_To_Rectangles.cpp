@@ -6,7 +6,7 @@ using namespace Mlib;
 
 /* From: https://en.wikipedia.org/wiki/List_of_trigonometric_identities#Half-angle_formulae
  */
-double half_angle_cos(double cos) {
+static double half_angle_cos(double cos) {
     return std::sqrt((1 + cos) / 2);
 }
 

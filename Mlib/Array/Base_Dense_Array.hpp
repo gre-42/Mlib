@@ -10,16 +10,16 @@ enum class ApplyOverAxisType {
 template <class TDerived, class TData>
 class BaseDenseArray {
 public:
-    const TDerived* operator -> () const {
+    constexpr const TDerived* operator -> () const {
         return reinterpret_cast<const TDerived*>(this);
     }
-    TDerived* operator -> () {
+    constexpr TDerived* operator -> () {
         return reinterpret_cast<TDerived*>(this);
     }
-    const TDerived& operator * () const {
+    constexpr const TDerived& operator * () const {
         return *reinterpret_cast<const TDerived*>(this);
     }
-    TDerived& operator * () {
+    constexpr TDerived& operator * () {
         return *reinterpret_cast<TDerived*>(this);
     }
 };
