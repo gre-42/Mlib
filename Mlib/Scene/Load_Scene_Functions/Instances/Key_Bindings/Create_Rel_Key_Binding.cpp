@@ -46,7 +46,8 @@ CreateRelKeyBinding::CreateRelKeyBinding(RenderableScene& renderable_scene)
 void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [node]() { return node.ptr(); },
         .translation = args.arguments.at<FixedArray<double, 3>>(KnownArgs::translation, fixed_zeros<double, 3>()),
         .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
@@ -63,12 +64,10 @@ void CreateRelKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             key_configurations,
-            args.arguments.at<std::string>(KnownArgs::id))});
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
-        [&kbs=key_bindings, &kb](){
-            kbs.delete_relative_movable_key_binding(kb);
-        }
-    );
+            args.arguments.at<std::string>(KnownArgs::id)),
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ nullptr } },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_relative_movable_key_binding(kb); });
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_relative_movable_key_binding(kb); });
 }

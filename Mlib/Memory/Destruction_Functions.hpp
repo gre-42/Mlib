@@ -15,10 +15,17 @@ class DestructionFunctionsRemovalTokens {
     DestructionFunctionsRemovalTokens& operator = (const DestructionFunctionsRemovalTokens&) = delete;
 public:
     explicit DestructionFunctionsRemovalTokens(DestructionFunctions& funcs);
+    explicit DestructionFunctionsRemovalTokens(DestructionFunctions* funcs);
     ~DestructionFunctionsRemovalTokens();
     void add(std::function<void()> f);
     void clear();
+    void set(DestructionFunctions& funcs);
+    void set(DestructionFunctions* funcs);
+    bool empty() const;
+    bool is_null() const;
 private:
+    void clear_unsafe();
+    mutable std::mutex mutex_;
     DestructionFunctions* funcs_;
 };
 
@@ -31,13 +38,13 @@ private:
     void add(DestructionFunctionsRemovalTokens& tokens, std::function<void()> f);
     void remove(DestructionFunctionsRemovalTokens& tokens);
     Funcs funcs_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::atomic_bool clearing_;
 public:
     DestructionFunctions();
     ~DestructionFunctions();
-    DestructionFunctionsRemovalTokens forever;
     void clear();
+    bool empty() const;
 };
 
 }

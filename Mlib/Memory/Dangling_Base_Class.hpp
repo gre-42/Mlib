@@ -86,6 +86,14 @@ public:
     {
         b_->add_source_location(this, loc);
     }
+    DanglingBaseClassPtr(DanglingBaseClass* b, T* v, SourceLocation loc)
+        : b_{ b }
+        , v_{ v }
+    {
+        if (b_ != nullptr) {
+            b_->add_source_location(this, loc);
+        }
+    }
     template <class TDerived>
     DanglingBaseClassPtr(TDerived& b, SourceLocation loc)
         : DanglingBaseClassPtr{ b, b, loc }
@@ -93,6 +101,14 @@ public:
     template <class TDerived>
     DanglingBaseClassPtr(const TDerived& b, SourceLocation loc)
         : DanglingBaseClassPtr{ const_cast<TDerived&>(b), b, loc }
+    {}
+    template <class TDerived>
+    DanglingBaseClassPtr(TDerived* b, SourceLocation loc)
+        : DanglingBaseClassPtr{ b, b, loc }
+    {}
+    template <class TDerived>
+    DanglingBaseClassPtr(const TDerived* b, SourceLocation loc)
+        : DanglingBaseClassPtr{ const_cast<TDerived*>(b), b, loc }
     {}
     DanglingBaseClassPtr& operator = (std::nullptr_t) {
         if (v_ != nullptr) {

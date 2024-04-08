@@ -8,6 +8,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
@@ -36,17 +37,15 @@ CreateCarControllerIdleBinding::CreateCarControllerIdleBinding(RenderableScene& 
 void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& kb = key_bindings.add_car_controller_idle_binding(CarControllerIdleBinding{
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto& kb = key_bindings.add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>(new CarControllerIdleBinding{
         .node = node.ptr(),
         .surface_power = args.arguments.at<float>(KnownArgs::surface_power, 0.f) * W,
         .steer_angle = args.arguments.at<float>(KnownArgs::steer_angle, 0.f) * degrees,
         .drive_relaxation = args.arguments.at<float>(KnownArgs::drive_relaxation, 0.f),
-        .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f)});
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
-        [&kbs=key_bindings, &kb](){
-            kbs.delete_car_controller_idle_binding(kb);
-        }
-    );
+        .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f),
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); });
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); });
 }

@@ -72,7 +72,12 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto logger = std::make_shared<VisualMovableLogger>(physics_engine.advance_times_);
+    auto logger = std::make_shared<VisualMovableLogger>(
+        physics_engine.advance_times_,
+        render_logics,
+        node,
+        DanglingBaseClassPtr<Player>{ player, CURRENT_SOURCE_LOCATION });
+    logger->init();
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
@@ -106,14 +111,4 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance))));
     }
-    physics_engine.advance_times_.add_advance_time(*logger);
-    player.append_delete_externals(
-        nullptr,
-        [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
-        {
-            at.delete_advance_time(*l, CURRENT_SOURCE_LOCATION);
-            rl.remove(*l);
-        }
-    );
-    render_logics.append(nullptr, logger, 0 /* z_order */);
 }

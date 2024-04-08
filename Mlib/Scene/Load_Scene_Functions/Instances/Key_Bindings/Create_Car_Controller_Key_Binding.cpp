@@ -9,6 +9,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Strings/String.hpp>
 
 using namespace Mlib;
@@ -45,7 +46,8 @@ inline float stov(float v) {
 void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& kb = key_bindings.add_car_controller_key_binding(CarControllerKeyBinding{
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto& kb = key_bindings.add_car_controller_key_binding(std::unique_ptr<CarControllerKeyBinding>(new CarControllerKeyBinding{
         .node = node.ptr(),
         .surface_power = args.arguments.contains(KnownArgs::surface_power)
             ? args.arguments.at<float>(KnownArgs::surface_power) * W
@@ -63,12 +65,9 @@ void CreateCarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs&
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role) } });
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
-        [&kbs=key_bindings, &kb](){
-            kbs.delete_car_controller_key_binding(kb);
-        }
-    );
+            args.arguments.at<std::string>(KnownArgs::role) },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear }},
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); });
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_key_binding(kb); });
 }

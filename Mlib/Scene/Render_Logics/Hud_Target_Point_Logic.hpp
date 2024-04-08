@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Tracker.hpp>
@@ -9,17 +10,25 @@
 namespace Mlib {
 
 class AdvanceTimes;
+class Player;
 class SceneNode;
 enum class ResourceUpdateCycle;
 class CollisionQuery;
 class YawPitchLookAtNodes;
+class RenderLogics;
 
-class HudTargetPointLogic: public RenderLogic, public IAdvanceTime {
+class HudTargetPointLogic:
+    public RenderLogic,
+    public IAdvanceTime,
+    public std::enable_shared_from_this<HudTargetPointLogic>
+{
 public:
     HudTargetPointLogic(
-        RenderLogic* scene_logic,
-        CollisionQuery* collision_query,
-        DanglingPtr<SceneNode> gun_node,
+        RenderLogic& scene_logic,
+        RenderLogics& render_logics,
+        Player& player,
+        CollisionQuery& collision_query,
+        DanglingRef<SceneNode> gun_node,
         DanglingPtr<SceneNode> exclusive_node,
         YawPitchLookAtNodes* ypln,
         AdvanceTimes& advance_times,
@@ -28,6 +37,7 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);
+    void init();
     ~HudTargetPointLogic();
 
     // IAdvanceTime
@@ -45,11 +55,17 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    CollisionQuery* collision_query_;
-    DanglingPtr<SceneNode> gun_node_;
+    CollisionQuery& collision_query_;
+    DanglingRef<SceneNode> gun_node_;
     YawPitchLookAtNodes* ypln_;
     AdvanceTimes& advance_times_;
     HudTracker hud_tracker_;
+    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
+    bool shutting_down_;
+
+    RenderLogics& render_logics_;
+    DanglingPtr<SceneNode> exclusive_node_;
 };
 
 }

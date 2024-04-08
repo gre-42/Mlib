@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Data_Display/Centered_Texture_Image_Logic.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -13,10 +14,20 @@ namespace Mlib {
 class SceneNode;
 class IWidget;
 class ILayoutPixels;
+class AdvanceTimes;
+class RenderLogics;
+class Player;
 
-class MinimapLogic: public RenderLogic, public IAdvanceTime {
+class MinimapLogic:
+    public RenderLogic,
+    public IAdvanceTime,
+    public std::enable_shared_from_this<MinimapLogic>
+{
 public:
     MinimapLogic(
+        AdvanceTimes& advance_times,
+        RenderLogics& render_logics,
+        Player& player,
         DanglingRef<SceneNode> node,
         const std::string& map_image_resource_name,
         const std::string& locator_image_resource_name,
@@ -26,6 +37,7 @@ public:
         float scale,
         const FixedArray<float, 2>& size,
         const FixedArray<double, 2>& offset);
+    void init();
     ~MinimapLogic();
 
     // IAdvanceTime
@@ -43,6 +55,8 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    AdvanceTimes& advance_times_;
+    RenderLogics& render_logics_;
     DanglingRef<SceneNode> node_;
     CenteredTextureImageLogic centered_texture_image_logic_;
     FillWithTextureLogic locator_logic_;
@@ -55,6 +69,7 @@ private:
     std::mutex pose_mutex_;
     FixedArray<double, 2> position_;
     float angle_;
+    DestructionFunctionsRemovalTokens on_player_delete_externals_;
 };
 
 }

@@ -41,7 +41,7 @@ CreatePlaneControllerKeyBinding::CreatePlaneControllerKeyBinding(RenderableScene
 void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto& kb = key_bindings.add_plane_controller_key_binding(PlaneControllerKeyBinding{
+    auto& kb = key_bindings.add_plane_controller_key_binding(std::unique_ptr<PlaneControllerKeyBinding>(new PlaneControllerKeyBinding{
         .player = { player, CURRENT_SOURCE_LOCATION },
         .turbine_power = args.arguments.contains(KnownArgs::turbine_power)
             ? args.arguments.at<float>(KnownArgs::turbine_power) * W
@@ -71,9 +71,9 @@ void CreatePlaneControllerKeyBinding::execute(const LoadSceneJsonUserFunctionArg
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role) }});
-    player.append_delete_externals(
-        nullptr,
+            args.arguments.at<std::string>(KnownArgs::role) },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_player_delete_externals.add(
         [&kbs=key_bindings, &kb](){
             kbs.delete_plane_controller_key_binding(kb);
         }

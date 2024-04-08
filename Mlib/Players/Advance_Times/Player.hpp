@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
@@ -206,9 +207,6 @@ public:
     std::optional<std::string> best_weapon_in_inventory() const;
     void select_opponent(OpponentSelectionStrategy strategy);
     void select_next_vehicle();
-    void append_delete_externals(
-        DanglingPtr<SceneNode> node,
-        std::function<void()> delete_externals);
     void append_dependent_node(std::string node_name);
     void create_externals(ExternalsMode externals_mode);
     const Skills& skills(ControlSource control_source) const;
@@ -247,6 +245,7 @@ public:
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
     
+    DestructionFunctions delete_externals;
     VehicleMovement vehicle_movement;
     CarMovement car_movement;
     AvatarMovement avatar_movement;
@@ -280,7 +279,6 @@ private:
     std::unordered_map<ControlSource, Skills> skills_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
-    std::list<std::function<void()>> delete_externals_;
     std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
     ExternalsMode externals_mode_;
     SingleWaypoint single_waypoint_;

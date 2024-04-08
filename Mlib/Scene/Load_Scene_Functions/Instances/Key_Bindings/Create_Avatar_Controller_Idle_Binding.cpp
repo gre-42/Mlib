@@ -7,6 +7,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
@@ -31,13 +32,11 @@ CreateAvatarControllerIdleBinding::CreateAvatarControllerIdleBinding(RenderableS
 void CreateAvatarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto& kb = key_bindings.add_avatar_controller_idle_binding(AvatarControllerIdleBinding{
-        .node = node.ptr()});
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
-        [&kbs=key_bindings, &kb](){
-            kbs.delete_avatar_controller_idle_binding(kb);
-        }
-    );
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto& kb = key_bindings.add_avatar_controller_idle_binding(std::unique_ptr<AvatarControllerIdleBinding>(new AvatarControllerIdleBinding{
+        .node{ node.ptr() },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_idle_binding(kb); });
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_idle_binding(kb); });
 }

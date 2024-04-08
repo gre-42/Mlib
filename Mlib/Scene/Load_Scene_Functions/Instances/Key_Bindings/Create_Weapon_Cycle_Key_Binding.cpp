@@ -19,7 +19,6 @@ DECLARE_ARGUMENT(id);
 DECLARE_ARGUMENT(role);
 
 DECLARE_ARGUMENT(player);
-DECLARE_ARGUMENT(node);
 
 DECLARE_ARGUMENT(weapon_increment);
 }
@@ -38,9 +37,8 @@ CreateWeaponCycleKeyBinding::CreateWeaponCycleKeyBinding(RenderableScene& render
 
 void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto& kb = key_bindings.add_weapon_inventory_key_binding(WeaponCycleKeyBinding{
+    auto& kb = key_bindings.add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>(new WeaponCycleKeyBinding{
         .player = { player, CURRENT_SOURCE_LOCATION },
         .direction = args.arguments.at<int>(KnownArgs::weapon_increment),
         .button_press{
@@ -51,9 +49,9 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
         .scroll_wheel_movement = std::make_shared<ScrollWheelMovement>(
             args.scroll_wheel_states,
             key_configurations,
-            args.arguments.at<std::string>(KnownArgs::id))});
-    player.append_delete_externals(
-        node.ptr(),
+            args.arguments.at<std::string>(KnownArgs::id)),
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_player_delete_externals.add(
         [&kbs=key_bindings, &kb](){
             kbs.delete_weapon_cycle_key_binding(kb);
         }

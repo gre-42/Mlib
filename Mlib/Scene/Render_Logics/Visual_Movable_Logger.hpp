@@ -1,5 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -10,10 +12,23 @@ namespace Mlib {
 
 class VisualMovableLoggerView;
 class AdvanceTimes;
+class RenderLogics;
+class Player;
 
-class VisualMovableLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class VisualMovableLogger:
+    public RenderLogic,
+    public DestructionObserver<DanglingRef<SceneNode>>,
+    public IAdvanceTime,
+    public DanglingBaseClass,
+    public std::enable_shared_from_this<VisualMovableLogger>
+{
 public:
-    explicit VisualMovableLogger(AdvanceTimes& advance_times);
+    explicit VisualMovableLogger(
+        AdvanceTimes& advance_times,
+        RenderLogics& render_logics,
+        DanglingRef<SceneNode> node,
+        DanglingBaseClassPtr<Player> player);
+    void init();
     virtual ~VisualMovableLogger();
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
@@ -32,7 +47,12 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    bool shutting_down_;
+    DanglingBaseClassPtr<Player> player_;
+    DanglingRef<SceneNode> node_;
     AdvanceTimes& advance_times_;
+    RenderLogics& render_logics_;
+    DestructionFunctionsRemovalTokens on_player_delete_externals_;
     std::list<std::unique_ptr<VisualMovableLoggerView>> loggers_;
 };
 

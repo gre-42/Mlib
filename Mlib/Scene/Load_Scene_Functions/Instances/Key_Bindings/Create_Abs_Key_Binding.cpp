@@ -61,8 +61,9 @@ CreateAbsKeyBinding::CreateAbsKeyBinding(RenderableScene& renderable_scene)
 void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto& rb = get_rigid_body_vehicle(node);
-    auto& kb = key_bindings.add_absolute_movable_key_binding(AbsoluteMovableKeyBinding{
+    auto& kb = key_bindings.add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>(new AbsoluteMovableKeyBinding{
         .node = node.ptr(),
         .force = {
             .vector = args.arguments.at<FixedArray<float, 3>>(KnownArgs::force, fixed_zeros<float, 3>()) * N,
@@ -91,12 +92,9 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role)} });
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        node.ptr(),
-        [&kbs=key_bindings, &kb](){
-            kbs.delete_absolute_movable_key_binding(kb);
-        }
-    );
+            args.arguments.at<std::string>(KnownArgs::role)},
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); });
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); });
 }

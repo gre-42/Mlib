@@ -53,6 +53,9 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
     auto c = std::make_shared<MinimapLogic>(
+        physics_engine.advance_times_,
+        render_logics,
+        player,
         node,
         args.arguments.path_or_variable(KnownArgs::minimap).path,
         args.arguments.path_or_variable(KnownArgs::locator).path,
@@ -62,14 +65,5 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::pointer_scale),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::pointer_size),
         args.arguments.at<FixedArray<double, 2>>(KnownArgs::pointer_offset));
-    physics_engine.advance_times_.add_advance_time(*c);
-    player.append_delete_externals(
-        nullptr,
-        [&at=physics_engine.advance_times_, &rl=render_logics, l=c.get()]()
-        {
-            at.delete_advance_time(*l, CURRENT_SOURCE_LOCATION);
-            rl.remove(*l);
-        }
-    );
-    render_logics.append(nullptr, c, 0 /* z_order */);
+    c->init();
 }

@@ -31,11 +31,11 @@ CreatePlaneControllerIdleBinding::CreatePlaneControllerIdleBinding(RenderableSce
 void CreatePlaneControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto& kb = key_bindings.add_plane_controller_idle_binding(PlaneControllerIdleBinding{
-        .player = { player, CURRENT_SOURCE_LOCATION } });
-    player.append_delete_externals(
-        nullptr,
-        [&kbs=key_bindings, &kb](){
+    auto& kb = key_bindings.add_plane_controller_idle_binding(std::unique_ptr<PlaneControllerIdleBinding>(new PlaneControllerIdleBinding{
+        .player = { player, CURRENT_SOURCE_LOCATION },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } } }));
+    kb.on_player_delete_externals.add(
+        [&kbs = key_bindings, &kb]() {
             kbs.delete_plane_controller_idle_binding(kb);
         }
     );

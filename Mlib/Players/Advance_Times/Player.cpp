@@ -175,9 +175,9 @@ void Player::reset_node() {
     car_movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
-    if (!delete_externals_.empty()) {
+    if (!delete_externals.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
-        clear_list_recursively(delete_externals_, [](const auto& f){ f(); });
+        delete_externals.clear();
     }
     if (!dependent_nodes_.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
@@ -929,16 +929,6 @@ PlaybackWaypoints& Player::playback_waypoints() {
         THROW_OR_ABORT("Player::playback_waypoints called, but game mode is not racing");
     }
     return playback_waypoints_;
-}
-
-void Player::append_delete_externals(
-    DanglingPtr<SceneNode> node,
-    std::function<void()> delete_externals)
-{
-    delete_externals_.emplace_back(std::move(delete_externals));
-    if (node != nullptr) {
-        node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION }, ObserverAlreadyExistsBehavior::IGNORE);
-    }
 }
 
 void Player::append_dependent_node(std::string node_name) {

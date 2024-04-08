@@ -6,15 +6,11 @@ using namespace Mlib;
 
 DestructionFunctions::DestructionFunctions()
     : clearing_{ false }
-    , forever{ *this }
 {}
 
 DestructionFunctions::~DestructionFunctions() {
     if (!funcs_.empty()) {
         verbose_abort("Destruction functions remain");
-    }
-    if (forever.funcs_ != nullptr) {
-        verbose_abort("\"forever\" destruction function remains");
     }
 }
 
@@ -32,7 +28,9 @@ void DestructionFunctions::add(
 void DestructionFunctions::remove(DestructionFunctionsRemovalTokens& tokens) {
     if (!clearing_) {
         std::scoped_lock lock{ mutex_ };
-        funcs_.erase(&tokens);
+        if (funcs_.erase(&tokens) != 1) {
+            verbose_abort("Could not erase destruction removal token");
+        }
     }
 }
 
@@ -43,22 +41,33 @@ void DestructionFunctions::clear() {
     std::unique_lock lock{ mutex_ };
     clearing_ = true;
     clear_map_recursively(funcs_, [&lock](auto& node) {
+        node.key()->funcs_ = nullptr;
         clear_list_recursively_with_lock(node.mapped(), lock, [](auto& f) { f(); });
     });
     clearing_ = false;
 }
 
+bool DestructionFunctions::empty() const {
+    std::scoped_lock lock{ mutex_ };
+    return funcs_.empty();
+}
+
 DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(DestructionFunctions& funcs)
-    : funcs_{ &funcs }
+    : DestructionFunctionsRemovalTokens{ &funcs }
+{}
+
+DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(DestructionFunctions* funcs)
+    : funcs_{ nullptr }
 {
-    funcs_->add(*this, [this]() { funcs_ = nullptr; });
+    set(funcs);
 }
 
 DestructionFunctionsRemovalTokens::~DestructionFunctionsRemovalTokens() {
-    clear();
+    clear_unsafe();
 }
 
 void DestructionFunctionsRemovalTokens::add(std::function<void()> f) {
+    std::scoped_lock lock{ mutex_ };
     if (funcs_ == nullptr) {
         verbose_abort("DestructionFunctionsRemovalTokens::add on destroyed functions");
     }
@@ -66,7 +75,40 @@ void DestructionFunctionsRemovalTokens::add(std::function<void()> f) {
 }
 
 void DestructionFunctionsRemovalTokens::clear() {
+    std::scoped_lock lock{ mutex_ };
+    clear_unsafe();
+}
+
+void DestructionFunctionsRemovalTokens::clear_unsafe() {
     if (funcs_ != nullptr) {
         funcs_->remove(*this);
+        funcs_ = nullptr;
     }
+}
+
+void DestructionFunctionsRemovalTokens::set(DestructionFunctions& funcs) {
+    set(&funcs);
+}
+
+void DestructionFunctionsRemovalTokens::set(DestructionFunctions* funcs) {
+    std::scoped_lock lock{ mutex_ };
+    clear_unsafe();
+    funcs_ = funcs;
+}
+
+bool DestructionFunctionsRemovalTokens::empty() const {
+    std::scoped_lock lock{ mutex_ };
+    if (funcs_ == nullptr) {
+        verbose_abort("DestructionFunctionsRemovalTokens::empty call on null object");
+    }
+    auto it = funcs_->funcs_.find(const_cast<DestructionFunctionsRemovalTokens*>(this));
+    if (it == funcs_->funcs_.end()) {
+        verbose_abort("Could not find destruction removal token");
+    }
+    return it->second.empty();
+}
+
+bool DestructionFunctionsRemovalTokens::is_null() const {
+    std::scoped_lock lock{ mutex_ };
+    return funcs_ == nullptr;
 }

@@ -61,7 +61,7 @@ private:
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens gun_node_on_destroy_;
     DestructionFunctionsRemovalTokens follower_node_on_destroy_;
-    std::optional<DestructionFunctionsRemovalTokens> followed_node_on_destroy_;
+    DestructionFunctionsRemovalTokens followed_node_on_destroy_;
 };
 
 }

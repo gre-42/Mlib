@@ -46,6 +46,7 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
     auto logger = std::make_shared<VisualBulletCount>(
         physics_engine.advance_times_,
+        render_logics,
         player,
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -55,14 +56,5 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
-    physics_engine.advance_times_.add_advance_time(*logger);
-    player.append_delete_externals(
-        nullptr,
-        [&at=physics_engine.advance_times_, &rl=render_logics, l=logger.get()]()
-        {
-            at.delete_advance_time(*l, CURRENT_SOURCE_LOCATION);
-            rl.remove(*l);
-        }
-    );
-    render_logics.append(nullptr, logger, 0 /* z_order */);
+    logger->init();
 }

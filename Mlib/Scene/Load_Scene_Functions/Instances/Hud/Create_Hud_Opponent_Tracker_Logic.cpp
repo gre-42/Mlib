@@ -5,7 +5,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Opponent_Tracker_Logic.hpp>
@@ -45,8 +44,9 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
     }
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto hud_image = std::make_shared<HudOpponentTrackerLogic>(
-        &scene_logic,
+    auto htl = std::make_shared<HudOpponentTrackerLogic>(
+        scene_logic,
+        render_logics,
         players,
         player,
         exclusive_node,
@@ -56,12 +56,5 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    render_logics.append(exclusive_node, hud_image, 0 /* z_order */);
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        exclusive_node,
-        [&hi=*hud_image, &rl=render_logics](){
-            rl.remove(hi);
-        }
-    );
+    htl->init();
 }

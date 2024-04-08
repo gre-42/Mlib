@@ -41,7 +41,7 @@ CreateRelKeyBindingTripod::CreateRelKeyBindingTripod(RenderableScene& renderable
 
 void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& kb = key_bindings.add_relative_movable_key_binding(RelativeMovableKeyBinding{
+    auto& kb = key_bindings.add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>(new RelativeMovableKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingPtr<SceneNode> {
             auto name = sc.camera_node_name();
             auto cycle = sc.cycle(name);
@@ -65,8 +65,11 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         .cursor_movement = std::make_shared<CursorMovement>(
             args.cursor_states,
             key_configurations,
-            args.arguments.at<std::string>(KnownArgs::id))});
-    key_bindings.on_destroy.forever.add([&kbs = key_bindings, &kb]() {
+            args.arguments.at<std::string>(KnownArgs::id)),
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy } },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ nullptr } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ nullptr }} }));
+    kb.on_destroy_key_bindings.add([&kbs = key_bindings, &kb]() {
         kbs.delete_relative_movable_key_binding(kb);
     });
 }

@@ -2,7 +2,9 @@
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <memory>
 #include <optional>
 
 namespace Mlib {
@@ -22,6 +24,8 @@ struct AbsoluteMovableKeyBinding {
     std::optional<bool> wants_to_grind;
     std::optional<float> fly_forward_factor;
     ButtonPress button_press;
+    DestructionFunctionsRemovalTokens on_node_clear;
+    DestructionFunctionsRemovalTokens on_player_delete_externals;
 };
 
 }

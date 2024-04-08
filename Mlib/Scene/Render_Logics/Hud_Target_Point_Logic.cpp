@@ -4,6 +4,8 @@
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -11,9 +13,11 @@
 using namespace Mlib;
 
 HudTargetPointLogic::HudTargetPointLogic(
-    RenderLogic* scene_logic,
-    CollisionQuery* collision_query,
-    DanglingPtr<SceneNode> gun_node,
+    RenderLogic& scene_logic,
+    RenderLogics& render_logics,
+    Player& player,
+    CollisionQuery& collision_query,
+    DanglingRef<SceneNode> gun_node,
     DanglingPtr<SceneNode> exclusive_node,
     YawPitchLookAtNodes* ypln,
     AdvanceTimes& advance_times,
@@ -34,24 +38,30 @@ HudTargetPointLogic::HudTargetPointLogic(
         size,
         image_resource_name,
         update_cycle }
-{
-    if ((gun_node == nullptr) != (scene_logic == nullptr)) {
-        THROW_OR_ABORT("Inconsistent nullness for gun node and scene logic");
+    , on_player_delete_externals_{ player.delete_externals }
+    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear }
+    , shutting_down_{ false }
+    , render_logics_{ render_logics }
+    , exclusive_node_{ exclusive_node }
+{}
+
+void HudTargetPointLogic::init() {
+    render_logics_.append(exclusive_node_, shared_from_this(), 0 /* z_order */);
+    if (exclusive_node_ != nullptr) {
+        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
     }
-    if ((gun_node == nullptr) != (collision_query == nullptr)) {
-        THROW_OR_ABORT("Inconsistent nullness for gun node and collision query");
-    }
+    on_player_delete_externals_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
     advance_times_.add_advance_time(*this);
 }
 
 HudTargetPointLogic::~HudTargetPointLogic() {
+    if (!shutting_down_) {
+        verbose_abort("HudTargetPointLogic::~HudTargetPointLogic not shutting down");
+    }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void HudTargetPointLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
-    if (gun_node_ == nullptr) {
-        return;
-    }
     if (ypln_ != nullptr) {
         float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {
@@ -65,7 +75,7 @@ void HudTargetPointLogic::advance_time(float dt, std::chrono::steady_clock::time
     }
     auto gun_pose = gun_node_->absolute_model_matrix();
     FixedArray<double, 3> intersection_point;
-    if (collision_query_->can_see(
+    if (collision_query_.can_see(
         gun_pose.t(),
         gun_pose.t() - 1000.0 * gun_pose.R().column(2).casted<double>(),
         nullptr, // excluded0,

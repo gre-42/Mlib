@@ -80,136 +80,136 @@ KeyBindings::~KeyBindings() {
     if (!print_node_info_key_bindings_.empty()) { lwarn() << print_node_info_key_bindings_.size() << " print_node_info_key_bindings remaining"; }
 }
 
-void KeyBindings::add_camera_key_binding(const CameraKeyBinding& b) {
-    camera_key_bindings_.push_back(b);
+CameraKeyBinding& KeyBindings::add_camera_key_binding(std::unique_ptr<CameraKeyBinding>&& b) {
+    return *camera_key_bindings_.emplace_back(std::move(b));
 }
 
-const AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b) {
-    return absolute_movable_idle_bindings_.emplace_back(b);
+AbsoluteMovableIdleBinding& KeyBindings::add_absolute_movable_idle_binding(std::unique_ptr<AbsoluteMovableIdleBinding>&& b) {
+    return *absolute_movable_idle_bindings_.emplace_back(std::move(b));
 }
 
-const AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b) {
-    return absolute_movable_key_bindings_.emplace_back(b);
+AbsoluteMovableKeyBinding& KeyBindings::add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>&& b) {
+    return *absolute_movable_key_bindings_.emplace_back(std::move(b));
 }
 
-const RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(const RelativeMovableKeyBinding& b) {
-    return relative_movable_key_bindings_.emplace_back(b);
+RelativeMovableKeyBinding& KeyBindings::add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>&& b) {
+    return *relative_movable_key_bindings_.emplace_back(std::move(b));
 }
 
-const CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(const CarControllerIdleBinding& b) {
-    return car_controller_idle_bindings_.emplace_back(b);
+CarControllerIdleBinding& KeyBindings::add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>&& b) {
+    return *car_controller_idle_bindings_.emplace_back(std::move(b));
 }
 
-const CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(const CarControllerKeyBinding& b) {
-    return car_controller_key_bindings_.emplace_back(b);
+CarControllerKeyBinding& KeyBindings::add_car_controller_key_binding(std::unique_ptr<CarControllerKeyBinding>&& b) {
+    return *car_controller_key_bindings_.emplace_back(std::move(b));
 }
 
-const PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b) {
-    return plane_controller_idle_bindings_.emplace_back(b);
+PlaneControllerIdleBinding& KeyBindings::add_plane_controller_idle_binding(std::unique_ptr<PlaneControllerIdleBinding>&& b) {
+    return *plane_controller_idle_bindings_.emplace_back(std::move(b));
 }
 
-const PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(const PlaneControllerKeyBinding& b) {
-    return plane_controller_key_bindings_.emplace_back(b);
+PlaneControllerKeyBinding& KeyBindings::add_plane_controller_key_binding(std::unique_ptr<PlaneControllerKeyBinding>&& b) {
+    return *plane_controller_key_bindings_.emplace_back(std::move(b));
 }
 
-const AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b) {
-    return avatar_controller_idle_bindings_.emplace_back(b);
+AvatarControllerIdleBinding& KeyBindings::add_avatar_controller_idle_binding(std::unique_ptr<AvatarControllerIdleBinding>&& b) {
+    return *avatar_controller_idle_bindings_.emplace_back(std::move(b));
 }
 
-const AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b) {
-    return avatar_controller_key_bindings_.emplace_back(b);
+AvatarControllerKeyBinding& KeyBindings::add_avatar_controller_key_binding(std::unique_ptr<AvatarControllerKeyBinding>&& b) {
+    return *avatar_controller_key_bindings_.emplace_back(std::move(b));
 }
 
-const WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b) {
-    return weapon_cycle_key_bindings_.emplace_back(b);
+WeaponCycleKeyBinding& KeyBindings::add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>&& b) {
+    return *weapon_cycle_key_bindings_.emplace_back(std::move(b));
 }
 
-const GunKeyBinding& KeyBindings::add_gun_key_binding(const GunKeyBinding& b) {
-    return gun_key_bindings_.emplace_back(b);
+GunKeyBinding& KeyBindings::add_gun_key_binding(std::unique_ptr<GunKeyBinding>&& b) {
+    return *gun_key_bindings_.emplace_back(std::move(b));
 }
 
-const PlayerKeyBinding& KeyBindings::add_player_key_binding(const PlayerKeyBinding& b) {
-    return player_key_bindings_.emplace_back(b);
+PlayerKeyBinding& KeyBindings::add_player_key_binding(std::unique_ptr<PlayerKeyBinding>&& b) {
+    return *player_key_bindings_.emplace_back(std::move(b));
 }
 
-const PrintNodeInfoKeyBinding& KeyBindings::add_print_node_info_key_binding(const PrintNodeInfoKeyBinding& b) {
-    return print_node_info_key_bindings_.emplace_back(b);
+PrintNodeInfoKeyBinding& KeyBindings::add_print_node_info_key_binding(std::unique_ptr<PrintNodeInfoKeyBinding>&& b) {
+    return *print_node_info_key_bindings_.emplace_back(std::move(b));
 }
 
 void KeyBindings::delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding) {
-    if (relative_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (relative_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"relative movable key binding\"");
     }
 }
 
 void KeyBindings::delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding) {
-    if (absolute_movable_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (absolute_movable_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"absolute movable idle binding\"");
     }
 }
 
 void KeyBindings::delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding) {
-    if (absolute_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (absolute_movable_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"absolute movable key binding\"");
     }
 }
 
 void KeyBindings::delete_car_controller_idle_binding(const CarControllerIdleBinding& deleted_key_binding) {
-    if (car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (car_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"car controller idle binding\"");
     }
 }
 
 void KeyBindings::delete_car_controller_key_binding(const CarControllerKeyBinding& deleted_key_binding) {
-    if (car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (car_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"car controller key binding\"");
     }
 }
 
 void KeyBindings::delete_plane_controller_idle_binding(const PlaneControllerIdleBinding& deleted_key_binding) {
-    if (plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (plane_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"plane controller idle binding\"");
     }
 }
 
 void KeyBindings::delete_plane_controller_key_binding(const PlaneControllerKeyBinding& deleted_key_binding) {
-    if (plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (plane_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"plane controller key binding\"");
     }
 }
 
 void KeyBindings::delete_avatar_controller_idle_binding(const AvatarControllerIdleBinding& deleted_key_binding) {
-    if (avatar_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (avatar_controller_idle_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"avatar controller idle binding\"");
     }
 }
 
 void KeyBindings::delete_avatar_controller_key_binding(const AvatarControllerKeyBinding& deleted_key_binding) {
-    if (avatar_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (avatar_controller_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"abatar controller key binding\"");
     }
 }
 
 void KeyBindings::delete_weapon_cycle_key_binding(const WeaponCycleKeyBinding& deleted_key_binding) {
-    if (weapon_cycle_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (weapon_cycle_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"weapon cycle key binding\"");
     }
 }
 
 void KeyBindings::delete_gun_key_binding(const GunKeyBinding& deleted_key_binding) {
-    if (gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (gun_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"gun key binding\"");
     }
 }
 
 void KeyBindings::delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding) {
-    if (player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (player_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"player key binding\"");
     }
 }
 
 void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding) {
-    if (print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return &b == &deleted_key_binding;}) != 1) {
+    if (print_node_info_key_bindings_.remove_if([&deleted_key_binding](const auto& b){return b.get() == &deleted_key_binding;}) != 1) {
         verbose_abort("Could not remove exactly one \"print node info key binding\"");
     }
 }
@@ -276,7 +276,7 @@ void KeyBindings::increment_external_forces(
     // Absolute movable
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             rb.set_surface_power("main", EnginePowerIntent{.surface_power = 0});
             rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
             rb.set_max_velocity(INFINITY);
@@ -284,58 +284,58 @@ void KeyBindings::increment_external_forces(
                 t.second.angle_y = 0;
                 // t.second.accel_x = 0;
             }
-            rb.tires_z_ = k.tires_z;
+            rb.tires_z_ = k->tires_z;
         }
     }
     for (auto& k : absolute_movable_key_bindings_) {
-        float alpha = k.button_press.keys_alpha(0.05f);
+        float alpha = k->button_press.keys_alpha(0.05f);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
-            if (any(k.force.vector != 0.f)) {
-                rb.integrate_force(rb.abs_F(k.force), cfg);
+            auto& rb = get_rigid_body_vehicle(*k->node);
+            if (any(k->force.vector != 0.f)) {
+                rb.integrate_force(rb.abs_F(k->force), cfg);
             }
-            if (any(k.rotate != 0.f)) {
-                rb.rbp_.rotation_ = dot2d(rb.rbp_.rotation_, rodrigues1(alpha * k.rotate));
+            if (any(k->rotate != 0.f)) {
+                rb.rbp_.rotation_ = dot2d(rb.rbp_.rotation_, rodrigues1(alpha * k->rotate));
             }
-            if (k.car_surface_power.has_value()) {
-                rb.set_surface_power("main", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
-                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = k.car_surface_power.value()});
+            if (k->car_surface_power.has_value()) {
+                rb.set_surface_power("main", EnginePowerIntent{.surface_power = k->car_surface_power.value()});
+                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = k->car_surface_power.value()});
             }
-            if (k.max_velocity != INFINITY) {
-                rb.set_max_velocity(k.max_velocity);
+            if (k->max_velocity != INFINITY) {
+                rb.set_max_velocity(k->max_velocity);
             }
-            if (k.tire_id != SIZE_MAX) {
+            if (k->tire_id != SIZE_MAX) {
                 if (false) {
                     float a = gravity_magnitude * 1.f;
                     float l = 2.55f;
                     float r = sum(squared(rb.rbp_.v_)) / a;
                     float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
-                    rb.set_tire_angle_y(k.tire_id, angle * alpha * sign(k.tire_angle_interp(0)));
+                    rb.set_tire_angle_y(k->tire_id, angle * alpha * sign(k->tire_angle_interp(0)));
                 }
                 // float v = std::sqrt(sum(squared(rb->rbp_.v_)));
                 float v = std::abs(dot0d(
                     rb.rbp_.v_,
                     rb.rbp_.rotation_.column(2)));
-                rb.set_tire_angle_y(k.tire_id, alpha * degrees * k.tire_angle_interp(v * 3.6f));
-                // rb->set_tire_accel_x(k.tire_id, alpha * sign(k.tire_angle_interp(0)));
+                rb.set_tire_angle_y(k->tire_id, alpha * degrees * k->tire_angle_interp(v * 3.6f));
+                // rb->set_tire_accel_x(k->tire_id, alpha * sign(k->tire_angle_interp(0)));
             }
-            if (any(k.tires_z != 0.f)) {
-                rb.tires_z_ += k.tires_z;
+            if (any(k->tires_z != 0.f)) {
+                rb.tires_z_ += k->tires_z;
             }
-            if ((alpha == 0) && k.wants_to_jump.has_value() && k.wants_to_jump.value()) {
+            if ((alpha == 0) && k->wants_to_jump.has_value() && k->wants_to_jump.value()) {
                 rb.set_wants_to_jump();
             }
-            if (k.wants_to_grind.has_value()) {
-                rb.grind_state_.wants_to_grind_ = k.wants_to_grind.value();
+            if (k->wants_to_grind.has_value()) {
+                rb.grind_state_.wants_to_grind_ = k->wants_to_grind.value();
             }
-            if (k.fly_forward_factor.has_value()) {
-                rb.fly_forward_state_.wants_to_fly_forward_factor_ = k.fly_forward_factor.value();
+            if (k->fly_forward_factor.has_value()) {
+                rb.fly_forward_state_.wants_to_fly_forward_factor_ = k->fly_forward_factor.value();
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             if (any(abs(rb.tires_z_) > float(1e-12))) {
                 rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
             } else {
@@ -353,11 +353,11 @@ void KeyBindings::increment_external_forces(
         std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> v;
         v.reserve(relative_movable_key_bindings_.size());
         for (auto& k : relative_movable_key_bindings_) {
-            auto node = k.dynamic_node();
+            auto node = k->dynamic_node();
             if (node == nullptr) {
                 continue;
             }
-            v.emplace_back(k, *node);
+            v.emplace_back(*k, *node);
         }
         if (enable_controls) {
             for (const auto& [k, node] : v) {
@@ -385,7 +385,7 @@ void KeyBindings::increment_external_forces(
                     return;
                 }
                 if (rt != nullptr) {
-                    // rt->w_ = w * k.rotation_axis;
+                    // rt->w_ = w * k->rotation_axis;
                     // auto r = node->rotation();
                     auto z = rt->transformation_matrix_.R().column(2);
                     auto r = FixedArray<float, 3>{z_to_pitch(z), z_to_yaw(z), 0.f};
@@ -438,11 +438,11 @@ void KeyBindings::increment_external_forces(
     }
     // Node info
     for (auto& k : print_node_info_key_bindings_) {
-        auto node = k.dynamic_node();
+        auto node = k->dynamic_node();
         if (node == nullptr) {
             continue;
         }
-        if (k.button_press.keys_pressed()) {
+        if (k->button_press.keys_pressed()) {
             auto trafo = node->absolute_model_matrix();
             auto z = trafo.R().column(2);
             linfo() << "Position: " << trafo.t() / (double)meters;
@@ -453,153 +453,153 @@ void KeyBindings::increment_external_forces(
     // Avatar controller
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             rb.avatar_controller().reset();
         }
     }
     for (auto& k : avatar_controller_key_bindings_) {
-        auto& rb = get_rigid_body_vehicle(*k.node);
+        auto& rb = get_rigid_body_vehicle(*k->node);
         float alpha = get_alpha(
-            k.button_press,
-            k.cursor_movement.get(),
+            k->button_press,
+            k->cursor_movement.get(),
             nullptr,
-            &k.gamepad_analog_axes_position,
-            k.press_factor,
-            k.repeat_factor,
+            &k->gamepad_analog_axes_position,
+            k->press_factor,
+            k->repeat_factor,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            if (k.surface_power.has_value()) {
-                rb.avatar_controller().walk(k.surface_power.value(), alpha);
-                rb.avatar_controller().increment_legs_z(k.legs_z.value() * alpha);
+            if (k->surface_power.has_value()) {
+                rb.avatar_controller().walk(k->surface_power.value(), alpha);
+                rb.avatar_controller().increment_legs_z(k->legs_z.value() * alpha);
             }
-            if (k.angular_velocity.has_value()) {
-                if (k.yaw) {
-                    rb.avatar_controller().increment_yaw(k.angular_velocity.value() * cfg.dt_substeps(), alpha);
+            if (k->angular_velocity.has_value()) {
+                if (k->yaw) {
+                    rb.avatar_controller().increment_yaw(k->angular_velocity.value() * cfg.dt_substeps(), alpha);
                 }
-                if (k.pitch) {
-                    rb.avatar_controller().increment_pitch(k.angular_velocity.value() * cfg.dt_substeps(), alpha);
+                if (k->pitch) {
+                    rb.avatar_controller().increment_pitch(k->angular_velocity.value() * cfg.dt_substeps(), alpha);
                 }
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : avatar_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             rb.avatar_controller().apply();
         }
     }
     // Vehicle controller
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             rb.vehicle_controller().reset_parameters(
-                k.surface_power,
-                k.steer_angle);
+                k->surface_power,
+                k->steer_angle);
             rb.vehicle_controller().reset_relaxation(
-                k.drive_relaxation,
-                k.steer_relaxation);
+                k->drive_relaxation,
+                k->steer_relaxation);
         }
     }
     for (auto& k : car_controller_key_bindings_) {
         float alpha = get_alpha(
-            k.button_press,
+            k->button_press,
             nullptr,
             nullptr,
-            &k.gamepad_analog_axes_position,
+            &k->gamepad_analog_axes_position,
             0.f,
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
-            if (k.surface_power.has_value()) {
+            auto& rb = get_rigid_body_vehicle(*k->node);
+            if (k->surface_power.has_value()) {
                 rb.vehicle_controller().drive(
-                    k.surface_power.value(),
+                    k->surface_power.value(),
                     alpha);
             }
-            if (k.steer_left_amount.has_value()) {
-                rb.vehicle_controller().set_stearing_wheel_amount(k.steer_left_amount.value(), alpha);
+            if (k->steer_left_amount.has_value()) {
+                rb.vehicle_controller().set_stearing_wheel_amount(k->steer_left_amount.value(), alpha);
             }
-            if (k.ascend_velocity.has_value()) {
-                rb.vehicle_controller().ascend_by(k.ascend_velocity.value() * cfg.dt_substeps());
+            if (k->ascend_velocity.has_value()) {
+                rb.vehicle_controller().ascend_by(k->ascend_velocity.value() * cfg.dt_substeps());
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : car_controller_idle_bindings_) {
-            auto& rb = get_rigid_body_vehicle(*k.node);
+            auto& rb = get_rigid_body_vehicle(*k->node);
             rb.vehicle_controller().apply();
         }
     }
     // Plane controller
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            if (k.player->scene_node_scheduled_for_deletion()) {
+            if (k->player->scene_node_scheduled_for_deletion()) {
                 continue;
             }
-            auto& rb = k.player->rigid_body();
+            auto& rb = k->player->rigid_body();
             rb.plane_controller().reset_parameters(0.f, 0.f, 0.f, 0.f, 0.f);
             rb.plane_controller().reset_relaxation(0.f, 0.f, 0.f, 0.f);
         }
     }
     for (auto& k : plane_controller_key_bindings_) {
-        if (k.player->scene_node_scheduled_for_deletion()) {
+        if (k->player->scene_node_scheduled_for_deletion()) {
             continue;
         }
         float alpha = get_alpha(
-            k.button_press,
-            k.cursor_movement.get(),
+            k->button_press,
+            k->cursor_movement.get(),
             nullptr,
-            &k.gamepad_analog_axes_position,
+            &k->gamepad_analog_axes_position,
             0.f,
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& rb = k.player->rigid_body();
-            if (k.turbine_power.has_value()) {
-                rb.plane_controller().accelerate(k.turbine_power.value(), alpha);
+            auto& rb = k->player->rigid_body();
+            if (k->turbine_power.has_value()) {
+                rb.plane_controller().accelerate(k->turbine_power.value(), alpha);
             }
-            if (k.brake.has_value()) {
-                rb.plane_controller().brake(k.brake.value(), alpha);
+            if (k->brake.has_value()) {
+                rb.plane_controller().brake(k->brake.value(), alpha);
             }
-            if (k.pitch.has_value()) {
-                rb.plane_controller().pitch(alpha * k.pitch.value(), alpha);
+            if (k->pitch.has_value()) {
+                rb.plane_controller().pitch(alpha * k->pitch.value(), alpha);
             }
-            if (k.yaw.has_value()) {
-                rb.plane_controller().yaw(alpha * k.yaw.value(), alpha);
+            if (k->yaw.has_value()) {
+                rb.plane_controller().yaw(alpha * k->yaw.value(), alpha);
             }
-            if (k.roll.has_value()) {
-                rb.plane_controller().roll(alpha * k.roll.value(), alpha);
+            if (k->roll.has_value()) {
+                rb.plane_controller().roll(alpha * k->roll.value(), alpha);
             }
         }
     }
     if (enable_controls) {
         for (const auto& k : plane_controller_idle_bindings_) {
-            if (k.player->scene_node_scheduled_for_deletion()) {
+            if (k->player->scene_node_scheduled_for_deletion()) {
                 continue;
             }
-            auto& rb = k.player->rigid_body();
+            auto& rb = k->player->rigid_body();
             rb.plane_controller().apply();
         }
     }
     // Weapon inventory
     for (auto& k : weapon_cycle_key_bindings_) {
-        if (k.player->scene_node_scheduled_for_deletion()) {
+        if (k->player->scene_node_scheduled_for_deletion()) {
             continue;
         }
         float alpha = get_alpha(
-            k.button_press,
+            k->button_press,
             nullptr,
-            k.scroll_wheel_movement.get(),
+            k->scroll_wheel_movement.get(),
             nullptr,
             0.f,
             1.f,
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
-            auto& wc = k.player->weapon_cycle();
-            if (k.direction == 1) {
-                wc.equip_next_weapon(k.player->name());
-            } else if (k.direction == -1) {
-                wc.equip_previous_weapon(k.player->name());
+            auto& wc = k->player->weapon_cycle();
+            if (k->direction == 1) {
+                wc.equip_next_weapon(k->player->name());
+            } else if (k->direction == -1) {
+                wc.equip_previous_weapon(k->player->name());
             } else {
                 THROW_OR_ABORT("Weapon cycle direction not -1 or 1");
             }
@@ -607,24 +607,24 @@ void KeyBindings::increment_external_forces(
     }
     // Gun
     for (auto& k : gun_key_bindings_) {
-        if (k.player->scene_node_scheduled_for_deletion()) {
+        if (k->player->scene_node_scheduled_for_deletion()) {
             continue;
         }
-        if (k.button_press.keys_down() && enable_controls) {
-            k.player->trigger_gun();
+        if (k->button_press.keys_down() && enable_controls) {
+            k->player->trigger_gun();
         }
     }
     // Player
     for (auto& k : player_key_bindings_) {
-        if (k.player->scene_node_scheduled_for_deletion()) {
+        if (k->player->scene_node_scheduled_for_deletion()) {
             continue;
         }
-        if (k.button_press.keys_pressed() && enable_controls) {
-            if (k.select_next_opponent) {
-                k.player->select_opponent(OpponentSelectionStrategy::NEXT);
+        if (k->button_press.keys_pressed() && enable_controls) {
+            if (k->select_next_opponent) {
+                k->player->select_opponent(OpponentSelectionStrategy::NEXT);
             }
-            if (k.select_next_vehicle) {
-                k.player->select_next_vehicle();
+            if (k->select_next_vehicle) {
+                k->player->select_next_vehicle();
             }
         }
     }
@@ -641,11 +641,11 @@ void KeyBindings::render(
     LOG_FUNCTION("KeyBindings::render");
     // Near camera
     for (auto& k : camera_key_bindings_) {
-        if (k.tpe == CameraCycleType::FAR) {
+        if (k->tpe == CameraCycleType::FAR) {
             continue;
         }
-        if (k.button_press.keys_pressed()) {
-            selected_cameras_.cycle_camera(k.tpe);
+        if (k->button_press.keys_pressed()) {
+            selected_cameras_.cycle_camera(k->tpe);
         }
     }
 }

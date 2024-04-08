@@ -51,21 +51,22 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void add_camera_key_binding(const CameraKeyBinding& b);
-    const AbsoluteMovableIdleBinding& add_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& b);
-    const AbsoluteMovableKeyBinding& add_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& b);
-    const RelativeMovableKeyBinding& add_relative_movable_key_binding(const RelativeMovableKeyBinding& b);
-    const CarControllerIdleBinding& add_car_controller_idle_binding(const CarControllerIdleBinding& b);
-    const CarControllerKeyBinding& add_car_controller_key_binding(const CarControllerKeyBinding& b);
-    const PlaneControllerIdleBinding& add_plane_controller_idle_binding(const PlaneControllerIdleBinding& b);
-    const PlaneControllerKeyBinding& add_plane_controller_key_binding(const PlaneControllerKeyBinding& b);
-    const AvatarControllerIdleBinding& add_avatar_controller_idle_binding(const AvatarControllerIdleBinding& b);
-    const AvatarControllerKeyBinding& add_avatar_controller_key_binding(const AvatarControllerKeyBinding& b);
-    const WeaponCycleKeyBinding& add_weapon_inventory_key_binding(const WeaponCycleKeyBinding& b);
-    const GunKeyBinding& add_gun_key_binding(const GunKeyBinding& b);
-    const PlayerKeyBinding& add_player_key_binding(const PlayerKeyBinding& b);
-    const PrintNodeInfoKeyBinding& add_print_node_info_key_binding(const PrintNodeInfoKeyBinding& b);
+    CameraKeyBinding& add_camera_key_binding(std::unique_ptr<CameraKeyBinding>&& b);
+    AbsoluteMovableIdleBinding& add_absolute_movable_idle_binding(std::unique_ptr<AbsoluteMovableIdleBinding>&& b);
+    AbsoluteMovableKeyBinding& add_absolute_movable_key_binding(std::unique_ptr<AbsoluteMovableKeyBinding>&& b);
+    RelativeMovableKeyBinding& add_relative_movable_key_binding(std::unique_ptr<RelativeMovableKeyBinding>&& b);
+    CarControllerIdleBinding& add_car_controller_idle_binding(std::unique_ptr<CarControllerIdleBinding>&& b);
+    CarControllerKeyBinding& add_car_controller_key_binding(std::unique_ptr<CarControllerKeyBinding>&& b);
+    PlaneControllerIdleBinding& add_plane_controller_idle_binding(std::unique_ptr<PlaneControllerIdleBinding>&& b);
+    PlaneControllerKeyBinding& add_plane_controller_key_binding(std::unique_ptr<PlaneControllerKeyBinding>&& b);
+    AvatarControllerIdleBinding& add_avatar_controller_idle_binding(std::unique_ptr<AvatarControllerIdleBinding>&& b);
+    AvatarControllerKeyBinding& add_avatar_controller_key_binding(std::unique_ptr<AvatarControllerKeyBinding>&& b);
+    WeaponCycleKeyBinding& add_weapon_inventory_key_binding(std::unique_ptr<WeaponCycleKeyBinding>&& b);
+    GunKeyBinding& add_gun_key_binding(std::unique_ptr<GunKeyBinding>&& b);
+    PlayerKeyBinding& add_player_key_binding(std::unique_ptr<PlayerKeyBinding>&& b);
+    PrintNodeInfoKeyBinding& add_print_node_info_key_binding(std::unique_ptr<PrintNodeInfoKeyBinding>&& b);
 
+    void delete_camera_key_binding(const CameraKeyBinding& deleted_key_binding);
     void delete_absolute_movable_idle_binding(const AbsoluteMovableIdleBinding& deleted_key_binding);
     void delete_absolute_movable_key_binding(const AbsoluteMovableKeyBinding& deleted_key_binding);
     void delete_relative_movable_key_binding(const RelativeMovableKeyBinding& deleted_key_binding);
@@ -91,20 +92,20 @@ private:
         float repeat_factor,
         const PhysicsEngineConfig& cfg);
 
-    std::list<CameraKeyBinding> camera_key_bindings_;
-    std::list<AbsoluteMovableIdleBinding> absolute_movable_idle_bindings_;
-    std::list<AbsoluteMovableKeyBinding> absolute_movable_key_bindings_;
-    std::list<RelativeMovableKeyBinding> relative_movable_key_bindings_;
-    std::list<CarControllerIdleBinding> car_controller_idle_bindings_;
-    std::list<CarControllerKeyBinding> car_controller_key_bindings_;
-    std::list<PlaneControllerIdleBinding> plane_controller_idle_bindings_;
-    std::list<PlaneControllerKeyBinding> plane_controller_key_bindings_;
-    std::list<AvatarControllerIdleBinding> avatar_controller_idle_bindings_;
-    std::list<AvatarControllerKeyBinding> avatar_controller_key_bindings_;
-    std::list<WeaponCycleKeyBinding> weapon_cycle_key_bindings_;
-    std::list<GunKeyBinding> gun_key_bindings_;
-    std::list<PlayerKeyBinding> player_key_bindings_;
-    std::list<PrintNodeInfoKeyBinding> print_node_info_key_bindings_;
+    std::list<std::unique_ptr<CameraKeyBinding>> camera_key_bindings_;
+    std::list<std::unique_ptr<AbsoluteMovableIdleBinding>> absolute_movable_idle_bindings_;
+    std::list<std::unique_ptr<AbsoluteMovableKeyBinding>> absolute_movable_key_bindings_;
+    std::list<std::unique_ptr<RelativeMovableKeyBinding>> relative_movable_key_bindings_;
+    std::list<std::unique_ptr<CarControllerIdleBinding>> car_controller_idle_bindings_;
+    std::list<std::unique_ptr<CarControllerKeyBinding>> car_controller_key_bindings_;
+    std::list<std::unique_ptr<PlaneControllerIdleBinding>> plane_controller_idle_bindings_;
+    std::list<std::unique_ptr<PlaneControllerKeyBinding>> plane_controller_key_bindings_;
+    std::list<std::unique_ptr<AvatarControllerIdleBinding>> avatar_controller_idle_bindings_;
+    std::list<std::unique_ptr<AvatarControllerKeyBinding>> avatar_controller_key_bindings_;
+    std::list<std::unique_ptr<WeaponCycleKeyBinding>> weapon_cycle_key_bindings_;
+    std::list<std::unique_ptr<GunKeyBinding>> gun_key_bindings_;
+    std::list<std::unique_ptr<PlayerKeyBinding>> player_key_bindings_;
+    std::list<std::unique_ptr<PrintNodeInfoKeyBinding>> print_node_info_key_bindings_;
 
     SelectedCameras& selected_cameras_;
     const Focuses& focuses_;

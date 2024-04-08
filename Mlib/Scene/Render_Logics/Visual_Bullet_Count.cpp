@@ -4,28 +4,40 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 
 using namespace Mlib;
 
 VisualBulletCount::VisualBulletCount(
     AdvanceTimes& advance_times,
+    RenderLogics& render_logics,
     Player& player,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
-: RenderTextLogic{
-    ttf_filename,
-    {1.f, 1.f, 1.f},
-    font_height,
-    line_distance},
-  advance_times_{advance_times},
-  player_{player},
-  widget_{std::move(widget)}
+    : RenderTextLogic{
+        ttf_filename,
+        {1.f, 1.f, 1.f},
+        font_height,
+        line_distance }
+    , on_player_delete_externals_{ player.delete_externals }
+    , advance_times_{ advance_times }
+    , render_logics_{ render_logics }
+    , player_{ player }
+    , widget_{ std::move(widget) }
 {}
 
-VisualBulletCount::~VisualBulletCount() = default;
+void VisualBulletCount::init() {
+    advance_times_.add_advance_time(*this);
+    on_player_delete_externals_.add([this]() { render_logics_.remove(*this); });
+    render_logics_.append(nullptr, shared_from_this(), 0 /* z_order */);
+}
+
+VisualBulletCount::~VisualBulletCount() {
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+}
 
 void VisualBulletCount::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);

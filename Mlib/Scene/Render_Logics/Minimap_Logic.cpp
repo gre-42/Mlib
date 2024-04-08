@@ -5,7 +5,10 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -16,6 +19,9 @@
 using namespace Mlib;
 
 MinimapLogic::MinimapLogic(
+    AdvanceTimes& advance_times,
+    RenderLogics& render_logics,
+    Player& player,
     DanglingRef<SceneNode> node,
     const std::string& map_image_resource_name,
     const std::string& locator_image_resource_name,
@@ -25,7 +31,9 @@ MinimapLogic::MinimapLogic(
     float scale,
     const FixedArray<float, 2>& size,
     const FixedArray<double, 2>& offset)
-    : node_{ node }
+    : advance_times_{ advance_times }
+    , render_logics_{ render_logics }
+    , node_{ node }
     , centered_texture_image_logic_{
           RenderingContextStack::primary_rendering_resources(),
           {
@@ -50,9 +58,18 @@ MinimapLogic::MinimapLogic(
     , size_{ size }
     , offset_{ offset }
     , angle_{ NAN }
+    , on_player_delete_externals_{ player.delete_externals }
 {}
 
-MinimapLogic::~MinimapLogic() = default;
+void MinimapLogic::init() {
+    advance_times_.add_advance_time(*this);
+    on_player_delete_externals_.add([this]() { render_logics_.remove(*this); });
+    render_logics_.append(nullptr, shared_from_this(), 0 /* z_order */);
+}
+
+MinimapLogic::~MinimapLogic() {
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+}
 
 void MinimapLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{pose_mutex_};

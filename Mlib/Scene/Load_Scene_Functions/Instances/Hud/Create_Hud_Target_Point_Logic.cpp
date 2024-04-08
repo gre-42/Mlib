@@ -6,7 +6,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Hud_Target_Point_Logic.hpp>
@@ -43,9 +42,7 @@ CreateHudTargetPointLogic::CreateHudTargetPointLogic(RenderableScene& renderable
 
 void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingPtr<SceneNode> gun_node = args.arguments.contains(KnownArgs::gun_node)
-        ? scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC).ptr()
-        : nullptr;
+    DanglingRef<SceneNode> gun_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::gun_node), DP_LOC);
     DanglingPtr<SceneNode> exclusive_node = nullptr;
     if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
         exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
@@ -57,9 +54,12 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
             THROW_OR_ABORT("Relative movable is not a ypln");
         }
     }
-    auto hud_image = std::make_shared<HudTargetPointLogic>(
-        &scene_logic,
-        &physics_engine.collision_query_,
+    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto hpl = std::make_shared<HudTargetPointLogic>(
+        scene_logic,
+        render_logics,
+        player,
+        physics_engine.collision_query_,
         gun_node,
         exclusive_node,
         ypln,
@@ -69,12 +69,5 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    render_logics.append(exclusive_node, hud_image, 0 /* z_order */);
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-    .append_delete_externals(
-        exclusive_node,
-        [&hi=*hud_image, &rl=render_logics](){
-            rl.remove(hi);
-        }
-    );
+    hpl->init();
 }

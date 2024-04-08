@@ -29,7 +29,7 @@ CreatePrintCameraNodeInfoKeyBinding::CreatePrintCameraNodeInfoKeyBinding(Rendera
 
 void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& kb = key_bindings.add_print_node_info_key_binding(PrintNodeInfoKeyBinding{
+    auto& kb = key_bindings.add_print_node_info_key_binding(std::unique_ptr<PrintNodeInfoKeyBinding>(new PrintNodeInfoKeyBinding{
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingPtr<SceneNode> {
             auto name = sc.camera_node_name();
             return scene.get_node(name, DP_LOC).ptr();
@@ -38,8 +38,9 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
-            args.arguments.at<std::string>(KnownArgs::role)} });
-    key_bindings.on_destroy.forever.add([&kbs=key_bindings, &kb]() {
+            args.arguments.at<std::string>(KnownArgs::role)},
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy } }}));
+    kb.on_destroy_key_bindings.add([&kbs=key_bindings, &kb]() {
         kbs.delete_print_node_info_key_binding(kb);
     });
 }

@@ -62,7 +62,7 @@ void HudTrackerTimeAdvancer::advance_time(const FixedArray<double, 3>& point) {
 }
 
 HudTracker::HudTracker(
-    RenderLogic* scene_logic,
+    RenderLogic& scene_logic,
     DanglingPtr<SceneNode> exclusive_node,
     HudErrorBehavior hud_error_behavior,
     const FixedArray<float, 2>& center,
@@ -114,9 +114,9 @@ void HudTracker::render(
         is_visible_ =
             (exclusive_node_ == nullptr) ||
             (exclusive_node_ == frame_id.external_render_pass.camera_node);
-        vp_ = scene_logic_->vp();
-        near_plane_ = scene_logic_->near_plane();
-        far_plane_ = scene_logic_->far_plane();
+        vp_ = scene_logic_.vp();
+        near_plane_ = scene_logic_.near_plane();
+        far_plane_ = scene_logic_.far_plane();
     }
     if (!is_visible_) {
         return;

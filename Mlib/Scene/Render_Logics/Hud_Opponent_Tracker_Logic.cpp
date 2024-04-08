@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -11,7 +12,8 @@
 using namespace Mlib;
 
 HudOpponentTrackerLogic::HudOpponentTrackerLogic(
-    RenderLogic* scene_logic,
+    RenderLogic& scene_logic,
+    RenderLogics& render_logics,
     Players& players,
     Player& player,
     DanglingPtr<SceneNode> exclusive_node,
@@ -32,11 +34,26 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
         size,
         image_resource_name,
         update_cycle }
-{
+    , on_player_delete_externals_{ player.delete_externals }
+    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear }
+    , shutting_down_{ false }
+    , render_logics_{ render_logics }
+    , exclusive_node_{ exclusive_node }
+{}
+
+void HudOpponentTrackerLogic::init() {
+    render_logics_.append(exclusive_node_, shared_from_this(), 0 /* z_order */);
+    if (exclusive_node_ != nullptr) {
+        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
+    }
+    on_player_delete_externals_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
     advance_times_.add_advance_time(*this);
 }
 
 HudOpponentTrackerLogic::~HudOpponentTrackerLogic() {
+    if (!shutting_down_) {
+        verbose_abort("HudOpponentTrackerLogic::~HudOpponentTrackerLogic not shutting down");
+    }
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

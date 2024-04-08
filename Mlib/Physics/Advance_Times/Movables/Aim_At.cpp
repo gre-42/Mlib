@@ -38,6 +38,7 @@ AimAt::AimAt(
     , velocity_estimation_error_{ velocity_estimation_error }
     , gun_node_on_destroy_{ gun_node->on_destroy }
     , follower_node_on_destroy_{ follower_node->on_destroy }
+    , followed_node_on_destroy_{ nullptr }
 {
     gun_node->set_sticky_absolute_observer(*this);
     dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
@@ -111,17 +112,17 @@ bool AimAt::has_followed() const {
 
 void AimAt::set_followed(DanglingPtr<SceneNode> followed_node)
 {
-    followed_node_on_destroy_.reset();
+    followed_node_on_destroy_.clear();
     followed_node_ = followed_node;
     if (followed_node == nullptr) {
         followed_ = nullptr;
     } else {
         followed_ = &get_rigid_body_vehicle(*followed_node);
-        followed_node_on_destroy_.emplace(followed_node_->on_destroy);
-        followed_node_on_destroy_.value().add([this]() {
+        followed_node_on_destroy_.set(followed_node_->on_destroy);
+        followed_node_on_destroy_.add([this]() {
             followed_node_ = nullptr;
             followed_ = nullptr;
-            followed_node_on_destroy_.reset();
+            followed_node_on_destroy_.clear();
             });
     }
 }

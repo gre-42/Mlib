@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Cursor_Movement.hpp>
 #include <functional>
@@ -20,6 +21,10 @@ struct RelativeMovableKeyBinding {
     float speed_cursor;
     ButtonPress button_press;
     std::shared_ptr<CursorMovement> cursor_movement;
+    DestructionFunctionsRemovalTokens on_destroy_key_bindings;
+    DestructionFunctionsRemovalTokens on_node_clear;
+    DestructionFunctionsRemovalTokens on_player_delete_externals;
+
 };
 
 }
