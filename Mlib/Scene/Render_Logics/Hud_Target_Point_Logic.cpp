@@ -48,16 +48,17 @@ HudTargetPointLogic::HudTargetPointLogic(
 void HudTargetPointLogic::init() {
     render_logics_.append(exclusive_node_, shared_from_this(), 0 /* z_order */);
     if (exclusive_node_ != nullptr) {
-        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
+        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
     }
-    on_player_delete_externals_.add([this]() { if (!shutting_down_) { shutting_down_ = true; render_logics_.remove(*this); }});
+    on_player_delete_externals_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
     advance_times_.add_advance_time(*this);
 }
 
 HudTargetPointLogic::~HudTargetPointLogic() {
-    if (!shutting_down_) {
-        verbose_abort("HudTargetPointLogic::~HudTargetPointLogic not shutting down");
+    if (shutting_down_) {
+        verbose_abort("HudTargetPointLogic already shutting down");
     }
+    shutting_down_ = true;
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
