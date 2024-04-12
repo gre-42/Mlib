@@ -42,8 +42,8 @@ HudTargetPointLogic::HudTargetPointLogic(
         image_resource_name,
         update_cycle }
     , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , on_clear_gun_node_{ gun_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
     , exclusive_node_{ exclusive_node }
 {
