@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
@@ -46,7 +47,8 @@ UiBackground::UiBackground(RenderableScene& renderable_scene)
 
 void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
+    auto& bg = object_pool.create<FillPixelRegionWithTextureLogic>(
+        CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources(),
             ColormapWithModifiers{
@@ -62,5 +64,8 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         delay_load_policy_from_string(args.arguments.at<std::string>(KnownArgs::delay_load_policy)),
         FocusFilter{ .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)) });
-    render_logics.append(nullptr, bg, args.arguments.at<int>(KnownArgs::z_order));
+    render_logics.append(
+        { bg, CURRENT_SOURCE_LOCATION },
+        args.arguments.at<int>(KnownArgs::z_order),
+        CURRENT_SOURCE_LOCATION);
 }

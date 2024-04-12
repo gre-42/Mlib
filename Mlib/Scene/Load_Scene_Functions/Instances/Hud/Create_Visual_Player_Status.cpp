@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -72,19 +73,20 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto logger = std::make_shared<VisualMovableLogger>(
+    auto& logger = object_pool.create<VisualMovableLogger>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         physics_engine.advance_times_,
         render_logics,
         node,
         DanglingBaseClassPtr<Player>{ player, CURRENT_SOURCE_LOCATION });
-    logger->init();
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
     if (auto c = args.arguments.try_get_child(KnownArgs::circular); c.has_value()) {
-        logger->add_logger(std::make_unique<VisualMovableCircularLogger>(
+        logger.add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
             args.arguments.path(KnownArgs::ttf_file),
@@ -103,7 +105,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             c->at<float>(CircularArgs::blank_angle) * degrees,
             c->at_vector<std::string>(CircularArgs::ticks, DisplayTick::from_string)));
     } else {
-        logger->add_logger(std::make_unique<VisualMovableTextLogger>(
+        logger.add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
             args.arguments.path(KnownArgs::ttf_file),

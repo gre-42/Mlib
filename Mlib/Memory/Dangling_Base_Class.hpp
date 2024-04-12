@@ -4,6 +4,7 @@
 #include <Mlib/Source_Location.hpp>
 #include <atomic>
 #include <shared_mutex>
+#include <type_traits>
 #include <unordered_map>
 
 namespace Mlib {
@@ -94,21 +95,15 @@ public:
             b_->add_source_location(this, loc);
         }
     }
-    template <class TDerived>
+    template <typename TDerived>
+    requires std::is_convertible_v<TDerived&, T&>
     DanglingBaseClassPtr(TDerived& b, SourceLocation loc)
-        : DanglingBaseClassPtr{ b, b, loc }
+        : DanglingBaseClassPtr{ const_cast<std::remove_const_t<TDerived>&>(b), b, loc }
     {}
-    template <class TDerived>
-    DanglingBaseClassPtr(const TDerived& b, SourceLocation loc)
-        : DanglingBaseClassPtr{ const_cast<TDerived&>(b), b, loc }
-    {}
-    template <class TDerived>
+    template <typename TDerived>
+    requires std::is_convertible_v<TDerived&, T&>
     DanglingBaseClassPtr(TDerived* b, SourceLocation loc)
-        : DanglingBaseClassPtr{ b, b, loc }
-    {}
-    template <class TDerived>
-    DanglingBaseClassPtr(const TDerived* b, SourceLocation loc)
-        : DanglingBaseClassPtr{ const_cast<TDerived*>(b), b, loc }
+        : DanglingBaseClassPtr{ const_cast<std::remove_const_t<TDerived>*>(b), b, loc }
     {}
     DanglingBaseClassPtr& operator = (std::nullptr_t) {
         if (v_ != nullptr) {
@@ -145,7 +140,9 @@ public:
     bool operator != (std::nullptr_t) const {
         return v_ != nullptr;
     }
-    std::strong_ordering operator <=> (const DanglingBaseClassPtr& other) const {
+    template <typename TOther>
+    requires std::is_convertible_v<TOther&, const T&>
+    std::strong_ordering operator <=> (const DanglingBaseClassPtr<TOther>& other) const {
         return v_ <=> other.v_;
     }
 private:

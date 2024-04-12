@@ -17,17 +17,19 @@ FocusedTextLogic::FocusedTextLogic(
     const ILayoutPixels& line_distance,
     Focus focus_mask,
     std::string text)
-: RenderTextLogic{
-    ttf_filename,
-    color,
-    font_height,
-    line_distance},
-  position_{position},
-  text_{std::move(text)},
-  focus_mask_{focus_mask}
+    : RenderTextLogic{
+        ttf_filename,
+        color,
+        font_height,
+        line_distance }
+    , position_{ position }
+    , text_{ std::move(text) }
+    , focus_mask_{ focus_mask }
 {}
 
-FocusedTextLogic::~FocusedTextLogic() = default;
+FocusedTextLogic::~FocusedTextLogic() {
+    on_destroy.clear();
+}
 
 void FocusedTextLogic::render(
     const LayoutConstraintParameters& lx,

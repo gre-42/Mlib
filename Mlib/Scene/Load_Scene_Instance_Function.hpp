@@ -8,6 +8,7 @@ namespace Mlib {
 
 struct LoadSceneUserFunctionArgs;
 class RenderableScene;
+class ObjectPool;
 class SceneNodeResources;
 class ParticleResources;
 class IParticleRenderer;
@@ -45,6 +46,7 @@ public:
 
 protected:
     RenderableScene& renderable_scene;
+    ObjectPool& object_pool;
     RenderingResources& rendering_resources;
     SceneNodeResources& scene_node_resources;
     ParticleResources& particle_resources;

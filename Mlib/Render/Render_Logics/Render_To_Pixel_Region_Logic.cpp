@@ -13,12 +13,15 @@ RenderToPixelRegionLogic::RenderToPixelRegionLogic(
     RenderLogic& render_logic,
     std::unique_ptr<IWidget>&& widget,
     FocusFilter focus_filter)
-: render_logic_{render_logic},
-  widget_{std::move(widget)},
-  focus_filter_{std::move(focus_filter)}
+    : on_render_logic_destroy{ render_logic.on_destroy, CURRENT_SOURCE_LOCATION }
+    , render_logic_{ render_logic }
+    , widget_{ std::move(widget) }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
-RenderToPixelRegionLogic::~RenderToPixelRegionLogic() = default;
+RenderToPixelRegionLogic::~RenderToPixelRegionLogic() {
+    on_destroy.clear();
+}
 
 void RenderToPixelRegionLogic::render(
     const LayoutConstraintParameters& lx,

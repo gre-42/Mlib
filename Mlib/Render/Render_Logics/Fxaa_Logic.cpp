@@ -120,7 +120,9 @@ FxaaLogic::FxaaLogic(RenderLogic& child_logic)
   initialized_{false}
 {}
 
-FxaaLogic::~FxaaLogic() = default;
+FxaaLogic::~FxaaLogic() {
+    on_destroy.clear();
+}
 
 void FxaaLogic::ensure_initialized() {
     if (!initialized_) {

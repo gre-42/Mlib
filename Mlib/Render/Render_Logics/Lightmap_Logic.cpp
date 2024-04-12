@@ -13,6 +13,7 @@
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -27,7 +28,9 @@ LightmapLogic::LightmapLogic(
     bool with_depth_texture,
     int lightmap_width,
     int lightmap_height)
-    : rendering_resources_{ rendering_resources }
+    : on_child_logic_destroy{ child_logic.on_destroy, CURRENT_SOURCE_LOCATION }
+    , on_node_clear{ light_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , rendering_resources_{ rendering_resources }
     , child_logic_{ child_logic }
     , render_pass_type_{ render_pass_type }
     , light_node_{ light_node }
@@ -45,6 +48,7 @@ LightmapLogic::LightmapLogic(
 
 LightmapLogic::~LightmapLogic() {
     deallocate();
+    on_destroy.clear();
 }
 
 void LightmapLogic::deallocate() {

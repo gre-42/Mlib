@@ -1,5 +1,6 @@
 #include "Hud_Opponent_Tracker_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -12,6 +13,7 @@
 using namespace Mlib;
 
 HudOpponentTrackerLogic::HudOpponentTrackerLogic(
+    ObjectPool& object_pool,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     Players& players,
@@ -34,27 +36,21 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
         size,
         image_resource_name,
         update_cycle }
-    , on_player_delete_externals_{ player.delete_externals }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear }
-    , shutting_down_{ false }
+    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
     , exclusive_node_{ exclusive_node }
-{}
-
-void HudOpponentTrackerLogic::init() {
-    render_logics_.append(exclusive_node_, shared_from_this(), 0 /* z_order */);
+{
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     if (exclusive_node_ != nullptr) {
-        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
+        on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     }
-    on_player_delete_externals_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
+    on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     advance_times_.add_advance_time(*this);
 }
 
 HudOpponentTrackerLogic::~HudOpponentTrackerLogic() {
-    if (shutting_down_) {
-        verbose_abort("HudOpponentTrackerLogic already shutting down");
-    }
-    shutting_down_ = true; 
+    on_destroy.clear();
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

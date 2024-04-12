@@ -3,6 +3,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -52,7 +53,9 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
-    auto c = std::make_shared<MinimapLogic>(
+    object_pool.create<MinimapLogic>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         physics_engine.advance_times_,
         render_logics,
         player,
@@ -65,5 +68,4 @@ void Minimap::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<float>(KnownArgs::pointer_scale),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::pointer_size),
         args.arguments.at<FixedArray<double, 2>>(KnownArgs::pointer_offset));
-    c->init();
 }

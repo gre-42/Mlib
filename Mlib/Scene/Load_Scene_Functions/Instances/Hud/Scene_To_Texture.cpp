@@ -1,6 +1,7 @@
 #include "Scene_To_Texture.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Render_Logics/Render_To_Texture_Logic.hpp>
@@ -39,7 +40,8 @@ SceneToTexture::SceneToTexture(RenderableScene& renderable_scene)
 void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& rs = args.renderable_scenes["primary_scene"];
-    auto scene_window_logic = std::make_shared<RenderToTextureLogic>(
+    auto& scene_window_logic = object_pool.create<RenderToTextureLogic>(
+        CURRENT_SOURCE_LOCATION,
         render_logics,                                             // child_logic
         rendering_resources,                                       // rendering_resources
         resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
@@ -50,5 +52,8 @@ void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
-    rs.render_logics_.prepend(nullptr, scene_window_logic, 0 /* z_order */);
+    rs.render_logics_.prepend(
+        { scene_window_logic, CURRENT_SOURCE_LOCATION },
+        0 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
 }

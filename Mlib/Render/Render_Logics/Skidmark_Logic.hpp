@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <string>
 
@@ -33,6 +34,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    DestructionFunctionsRemovalTokens on_skidmark_node_clear;
 private:
     void deallocate();
     RenderingResources& rendering_resources_;

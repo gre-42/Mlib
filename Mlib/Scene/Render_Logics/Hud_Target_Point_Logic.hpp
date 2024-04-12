@@ -16,14 +16,15 @@ enum class ResourceUpdateCycle;
 class CollisionQuery;
 class YawPitchLookAtNodes;
 class RenderLogics;
+class ObjectPool;
 
 class HudTargetPointLogic:
     public RenderLogic,
-    public IAdvanceTime,
-    public std::enable_shared_from_this<HudTargetPointLogic>
+    public IAdvanceTime
 {
 public:
     HudTargetPointLogic(
+        ObjectPool& object_pool,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
         Player& player,
@@ -37,7 +38,6 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);
-    void init();
     ~HudTargetPointLogic();
 
     // IAdvanceTime
@@ -55,14 +55,15 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    ObjectPool& object_pool_;
     CollisionQuery& collision_query_;
     DanglingRef<SceneNode> gun_node_;
     YawPitchLookAtNodes* ypln_;
     AdvanceTimes& advance_times_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_clear_gun_node_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
-    bool shutting_down_;
 
     RenderLogics& render_logics_;
     DanglingPtr<SceneNode> exclusive_node_;

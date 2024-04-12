@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Controls_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -41,14 +42,14 @@ Controls::Controls(RenderableScene& renderable_scene)
 void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::string id = args.arguments.at<std::string>(KnownArgs::id);
-    std::shared_ptr<ControlsLogic> controls_logic;
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
             .title = args.arguments.at<std::string>(KnownArgs::title),
             .icon = args.arguments.at<std::string>(KnownArgs::icon)},
         0);
-    controls_logic = std::make_shared<ControlsLogic>(
+    auto& controls_logic = object_pool.create<ControlsLogic>(
+        CURRENT_SOURCE_LOCATION,
         ColormapWithModifiers{
             .filename = args.arguments.path(KnownArgs::gamepad_texture),
             .color_mode = ColorMode::RGBA
@@ -62,5 +63,8 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } });
-    render_logics.append(nullptr, controls_logic, 1 /* z_order */);
+    render_logics.append(
+        { controls_logic, CURRENT_SOURCE_LOCATION },
+        1 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
 }

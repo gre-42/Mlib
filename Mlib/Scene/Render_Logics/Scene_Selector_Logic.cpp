@@ -76,7 +76,9 @@ SceneSelectorLogic::SceneSelectorLogic(
     });
 }
 
-SceneSelectorLogic::~SceneSelectorLogic() = default;
+SceneSelectorLogic::~SceneSelectorLogic() {
+    on_destroy.clear();
+}
 
 void SceneSelectorLogic::render(
     const LayoutConstraintParameters& lx,

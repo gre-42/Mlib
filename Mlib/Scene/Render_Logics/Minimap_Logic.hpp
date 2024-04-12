@@ -17,14 +17,15 @@ class ILayoutPixels;
 class AdvanceTimes;
 class RenderLogics;
 class Player;
+class ObjectPool;
 
 class MinimapLogic:
     public RenderLogic,
-    public IAdvanceTime,
-    public std::enable_shared_from_this<MinimapLogic>
+    public IAdvanceTime
 {
 public:
     MinimapLogic(
+        ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         Player& player,
@@ -37,7 +38,6 @@ public:
         float scale,
         const FixedArray<float, 2>& size,
         const FixedArray<double, 2>& offset);
-    void init();
     ~MinimapLogic();
 
     // IAdvanceTime

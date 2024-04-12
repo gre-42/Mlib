@@ -17,8 +17,9 @@ ReadPixelsLogic::ReadPixelsLogic(RenderLogic& child_logic)
 : child_logic_{child_logic}
 {}
 
-ReadPixelsLogic::~ReadPixelsLogic()
-{}
+ReadPixelsLogic::~ReadPixelsLogic() {
+    on_destroy.clear();
+}
 
 void ReadPixelsLogic::render(
     const LayoutConstraintParameters& lx,

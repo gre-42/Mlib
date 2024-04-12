@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Resource_Context.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
@@ -131,6 +132,7 @@ public:
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
 
+    ObjectPool object_pool_;
     DeleteNodeMutex delete_node_mutex_;
 
     SceneNodeResources& scene_node_resources_;
@@ -158,19 +160,19 @@ public:
     PhysicsIteration physics_iteration_;
     std::unique_ptr<PhysicsLoop> physics_loop_;
 
+    RenderLogics render_logics_;
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
-    std::shared_ptr<StandardRenderLogic> standard_render_logic_;
-    std::shared_ptr<FlyingCameraLogic> flying_camera_logic_;
+    std::unique_ptr<StandardRenderLogic> standard_render_logic_;
+    std::unique_ptr<FlyingCameraLogic> flying_camera_logic_;
     KeyConfigurations key_configurations_;
-    std::shared_ptr<KeyBindings> key_bindings_;
+    std::unique_ptr<KeyBindings> key_bindings_;
     ReadPixelsLogic read_pixels_logic_;
-    std::shared_ptr<DirtmapLogic> dirtmap_logic_;
-    std::shared_ptr<MotionInterpolationLogic> motion_interp_logic_;
-    std::shared_ptr<PostProcessingLogic> post_processing_logic_;
-    std::shared_ptr<FxaaLogic> fxaa_logic_;
-    std::shared_ptr<RenderLogics> imposter_render_logics_;
-    RenderLogics render_logics_;
+    std::unique_ptr<DirtmapLogic> dirtmap_logic_;
+    std::unique_ptr<MotionInterpolationLogic> motion_interp_logic_;
+    std::unique_ptr<PostProcessingLogic> post_processing_logic_;
+    std::unique_ptr<FxaaLogic> fxaa_logic_;
+    std::unique_ptr<RenderLogics> imposter_render_logics_;
 
     Imposters imposters_;
     Players players_;

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
@@ -17,7 +18,7 @@ class SceneNode;
 class TextResource;
 class ILayoutPixels;
 
-class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
@@ -44,6 +45,7 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    DestructionFunctionsRemovalTokens on_node_clear;
 private:
     std::unique_ptr<TextResource> renderable_text_;
     RenderLogic& scene_logic_;

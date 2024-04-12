@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Focused_Text_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -34,7 +35,8 @@ FocusedText::FocusedText(RenderableScene& renderable_scene)
 
 void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto loading_logic = std::make_shared<FocusedTextLogic>(
+    auto& loading_logic = object_pool.create<FocusedTextLogic>(
+        CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
@@ -43,7 +45,7 @@ void FocusedText::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
         args.arguments.at<std::string>(KnownArgs::text));
     render_logics.append(
-        nullptr,        // scene_node
-        loading_logic,
-        1);             // z_order
+        { loading_logic, CURRENT_SOURCE_LOCATION },
+        1,                          // z_order
+        CURRENT_SOURCE_LOCATION);
 }

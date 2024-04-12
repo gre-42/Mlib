@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -55,7 +56,9 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         }
     }
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto hpl = std::make_shared<HudTargetPointLogic>(
+    object_pool.create<HudTargetPointLogic>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         scene_logic,
         render_logics,
         player,
@@ -69,5 +72,4 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    hpl->init();
 }

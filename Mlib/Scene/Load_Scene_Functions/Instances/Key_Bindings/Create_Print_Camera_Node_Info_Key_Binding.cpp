@@ -39,8 +39,8 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy } }}));
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } }}));
     kb.on_destroy_key_bindings.add([&kbs=key_bindings, &kb]() {
         kbs.delete_print_node_info_key_binding(kb);
-    });
+    }, CURRENT_SOURCE_LOCATION);
 }

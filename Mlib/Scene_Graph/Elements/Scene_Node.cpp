@@ -365,6 +365,7 @@ void SceneNode::clear_unsafe() {
     });
     instances_children_.clear();
     lights_.clear();
+    skidmarks_.clear();
     animation_state_ = nullptr;
     color_styles_.clear();
     animation_state_updater_ = nullptr;

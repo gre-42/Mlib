@@ -8,6 +8,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
 #include <Mlib/Physics/Misc/Track_Element_File.hpp>
 #include <Mlib/Physics/Misc/Track_Element_Vector.hpp>
@@ -147,7 +148,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_top)));
-        auto renderable_pace_notes = std::make_shared<CheckPointsPacenotes>(
+        auto& renderable_pace_notes = object_pool.create<CheckPointsPacenotes>(
+            CURRENT_SOURCE_LOCATION,
             args.gallery,
             args.arguments.at<std::vector<std::string>>(KnownArgs::pacenotes_pictures_left),
             args.arguments.at<std::vector<std::string>>(KnownArgs::pacenotes_pictures_right),
@@ -166,8 +168,8 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             render_logics,
             physics_engine.advance_times_,
             **moving_nodes.begin());
-        render_logics.append(nullptr, renderable_pace_notes, 0 /* z_order */);
-        physics_engine.advance_times_.add_advance_time(*renderable_pace_notes);
+        render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+        physics_engine.advance_times_.add_advance_time(renderable_pace_notes);
     }
     physics_engine.advance_times_.add_advance_time(std::move(check_points));
 }

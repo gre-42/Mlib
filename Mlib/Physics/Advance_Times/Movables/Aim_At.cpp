@@ -36,16 +36,16 @@ AimAt::AimAt(
     , locked_on_cosine_{ locked_on_cosine }
     , target_locked_on_{ false }
     , velocity_estimation_error_{ velocity_estimation_error }
-    , gun_node_on_destroy_{ gun_node->on_destroy }
-    , follower_node_on_destroy_{ follower_node->on_destroy }
-    , followed_node_on_destroy_{ nullptr }
+    , gun_node_on_destroy_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
+    , follower_node_on_destroy_{ follower_node->on_destroy, CURRENT_SOURCE_LOCATION }
+    , followed_node_on_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
 {
     gun_node->set_sticky_absolute_observer(*this);
     dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    gun_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }});
-    follower_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }});
+    gun_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }}, CURRENT_SOURCE_LOCATION);
+    follower_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }}, CURRENT_SOURCE_LOCATION);
 }
 
 AimAt::~AimAt() {
@@ -118,12 +118,12 @@ void AimAt::set_followed(DanglingPtr<SceneNode> followed_node)
         followed_ = nullptr;
     } else {
         followed_ = &get_rigid_body_vehicle(*followed_node);
-        followed_node_on_destroy_.set(followed_node_->on_destroy);
+        followed_node_on_destroy_.set(followed_node_->on_destroy, CURRENT_SOURCE_LOCATION);
         followed_node_on_destroy_.add([this]() {
             followed_node_ = nullptr;
             followed_ = nullptr;
             followed_node_on_destroy_.clear();
-            });
+            }, CURRENT_SOURCE_LOCATION);
     }
 }
 

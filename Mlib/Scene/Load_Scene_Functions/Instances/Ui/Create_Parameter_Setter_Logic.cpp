@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -76,7 +77,8 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             .requires_ = args.arguments.at<std::vector<std::string>>(KnownArgs::required, std::vector<std::string>{})
         },
         args.arguments.at<size_t>(KnownArgs::deflt));
-    auto parameter_setter_logic = std::make_shared<ParameterSetterLogic>(
+    auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
+        CURRENT_SOURCE_LOCATION,
         "",
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.arguments.path(KnownArgs::ttf_file),
@@ -99,5 +101,8 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
                 mle(on_change.value(), nullptr, nullptr);
             }
         });
-    render_logics.append(nullptr, parameter_setter_logic, 1 /* z_order */);
+    render_logics.append(
+        { parameter_setter_logic, CURRENT_SOURCE_LOCATION },
+        1 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
 }

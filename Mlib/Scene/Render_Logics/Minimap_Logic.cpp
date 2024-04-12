@@ -5,6 +5,7 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -19,6 +20,7 @@
 using namespace Mlib;
 
 MinimapLogic::MinimapLogic(
+    ObjectPool& object_pool,
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     Player& player,
@@ -58,16 +60,15 @@ MinimapLogic::MinimapLogic(
     , size_{ size }
     , offset_{ offset }
     , angle_{ NAN }
-    , on_player_delete_externals_{ player.delete_externals }
-{}
-
-void MinimapLogic::init() {
+    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
+{
     advance_times_.add_advance_time(*this);
-    on_player_delete_externals_.add([this]() { render_logics_.remove(*this); });
-    render_logics_.append(nullptr, shared_from_this(), 0 /* z_order */);
+    on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }
 
 MinimapLogic::~MinimapLogic() {
+    on_destroy.clear();
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

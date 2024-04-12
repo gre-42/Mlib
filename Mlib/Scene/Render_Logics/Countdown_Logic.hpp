@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
@@ -16,9 +16,7 @@ class AdvanceTimes;
 class CountDownLogic:
     public RenderLogic,
     public RenderTextLogic,
-    public IAdvanceTime,
-    public DestructionObserver<DanglingRef<SceneNode>>,
-    public DanglingBaseClass {
+    public IAdvanceTime {
 public:
     CountDownLogic(
         DanglingRef<SceneNode> node,
@@ -35,9 +33,6 @@ public:
         Focuses& focuses);
     ~CountDownLogic();
 
-    // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
-
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -51,6 +46,7 @@ public:
     // IAdvanceTime
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 
+    DestructionFunctionsRemovalTokens on_node_clear;
 private:
     DanglingPtr<SceneNode> node_;
     AdvanceTimes& advance_times_;

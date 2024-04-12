@@ -14,16 +14,16 @@ class TextResource;
 class Player;
 class RenderLogics;
 class IWidget;
+class ObjectPool;
 
 class VisualBulletCount:
     public RenderLogic,
-    public DestructionObserver<DanglingRef<SceneNode>>,
     public RenderTextLogic,
-    public IAdvanceTime,
-    public std::enable_shared_from_this<VisualBulletCount>
+    public IAdvanceTime
 {
 public:
     VisualBulletCount(
+        ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         Player& player,
@@ -31,10 +31,7 @@ public:
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance);
-    void init();
     virtual ~VisualBulletCount();
-
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 

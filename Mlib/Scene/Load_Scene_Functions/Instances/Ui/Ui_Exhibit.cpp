@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
@@ -45,7 +46,8 @@ UiExhibit::UiExhibit(RenderableScene& renderable_scene)
 
 void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto bg = std::make_shared<FillPixelRegionWithTextureLogic>(
+    auto& bg = object_pool.create<FillPixelRegionWithTextureLogic>(
+        CURRENT_SOURCE_LOCATION,
         args.gallery[args.arguments.at<std::string>(KnownArgs::id_in_gallery)],
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
@@ -56,5 +58,5 @@ void UiExhibit::execute(const LoadSceneJsonUserFunctionArgs& args)
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
-    render_logics.append(nullptr, bg, args.arguments.at<int>(KnownArgs::z_order));
+    render_logics.append({ bg, CURRENT_SOURCE_LOCATION }, args.arguments.at<int>(KnownArgs::z_order), CURRENT_SOURCE_LOCATION);
 }

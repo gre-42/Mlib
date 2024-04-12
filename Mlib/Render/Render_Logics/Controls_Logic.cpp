@@ -25,7 +25,9 @@ ControlsLogic::ControlsLogic(
   focus_filter_{ std::move(focus_filter) }
 {}
 
-ControlsLogic::~ControlsLogic() = default;
+ControlsLogic::~ControlsLogic() {
+    on_destroy.clear();
+}
 
 void ControlsLogic::render(
     const LayoutConstraintParameters& lx,

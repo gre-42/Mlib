@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Score_Board_Configuration.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -38,7 +39,8 @@ PlayersStats::PlayersStats(RenderableScene& renderable_scene)
 
 void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto players_stats_logic = std::make_shared<PlayersStatsLogic>(
+    auto& players_stats_logic = object_pool.create<PlayersStatsLogic>(
+        CURRENT_SOURCE_LOCATION,
         players,
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -49,5 +51,8 @@ void PlayersStats::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         score_board_configuration_from_string(args.arguments.at<std::string>(KnownArgs::score_board)));
-    render_logics.append(nullptr, players_stats_logic, args.arguments.at<int>(KnownArgs::z_order));
+    render_logics.append(
+        { players_stats_logic, CURRENT_SOURCE_LOCATION },
+        args.arguments.at<int>(KnownArgs::z_order),
+        CURRENT_SOURCE_LOCATION);
 }

@@ -44,7 +44,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& lo = get_status_writer(node);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto logger = std::make_shared<VisualMovable3rdLogger>(
+    auto logger = new VisualMovable3rdLogger(
         scene_logic,
         node,
         physics_engine.advance_times_,
@@ -54,6 +54,10 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
-    render_logics.append(node.ptr(), logger, 0 /* z_order */);
+    logger->on_node_clear.add([logger]() { delete logger; }, CURRENT_SOURCE_LOCATION);
+    render_logics.append(
+        { *logger, CURRENT_SOURCE_LOCATION },
+        0 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
     physics_engine.advance_times_.add_advance_time(*logger);
 }

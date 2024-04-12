@@ -20,7 +20,9 @@ FillPixelRegionWithTextureLogic::FillPixelRegionWithTextureLogic(
     , focus_filter_{ std::move(focus_filter) }
 {}
 
-FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() = default;
+FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() {
+    on_destroy.clear();
+}
 
 void FillPixelRegionWithTextureLogic::render(
     const LayoutConstraintParameters& lx,

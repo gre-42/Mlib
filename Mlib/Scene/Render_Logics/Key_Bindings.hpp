@@ -81,7 +81,6 @@ public:
     void delete_player_key_binding(const PlayerKeyBinding& deleted_key_binding);
     void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
 
-    DestructionFunctions on_destroy;
 private:
     float get_alpha(
         ButtonPress& button_press,

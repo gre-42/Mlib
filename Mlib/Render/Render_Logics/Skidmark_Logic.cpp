@@ -31,7 +31,8 @@ SkidmarkLogic::SkidmarkLogic(
     IParticleRenderer& particle_renderer,
     int texture_width,
     int texture_height)
-    : rendering_resources_{ rendering_resources }
+    : on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , rendering_resources_{ rendering_resources }
     , skidmark_node_{ skidmark_node }
     , resource_suffix_{ std::move(resource_suffix) }
     , particle_renderer_{ particle_renderer }
@@ -43,6 +44,7 @@ SkidmarkLogic::SkidmarkLogic(
 {}
 
 SkidmarkLogic::~SkidmarkLogic() {
+    on_destroy.clear();
     deallocate();
 }
 

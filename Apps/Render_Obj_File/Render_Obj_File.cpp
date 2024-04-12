@@ -22,6 +22,7 @@
 #include <Mlib/Math/Least_Common_Multiple.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
@@ -1028,6 +1029,8 @@ int main(int argc, char** argv) {
             .button_states = button_states,
             .exit_on_escape = true};
         WindowLogic window_logic{render.glfw_window(), window_user_object};
+        UiFocus ui_focus;
+        RenderLogics render_logics{ui_focus};
         FlyingCameraUserClass flying_camera_user_object{
             .button_states = button_states,
             .cursor_states = cursor_states,
@@ -1038,18 +1041,21 @@ int main(int argc, char** argv) {
             .cull_faces = render_config.cull_faces,
             .delete_node_mutex = delete_node_mutex,
             .physics_set_fps = nullptr};
-        auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
+        ObjectPool object_pool;
+        auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(
+            CURRENT_SOURCE_LOCATION,
             scene,
             flying_camera_user_object,
             true,                                       // fly
             !args.has_named("--large_object_mode"));    // rotate
-        auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
-        std::list<std::shared_ptr<LightmapLogic>> lightmap_logics;
+        ReadPixelsLogic read_pixels_logic{ standard_render_logic };
+        std::list<LightmapLogic*> lightmap_logics;
         for (const auto& l : lights) {
             if (any(l.light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {
-                lightmap_logics.push_back(std::make_shared<LightmapLogic>(
+                lightmap_logics.push_back(&object_pool.create<LightmapLogic>(
+                    CURRENT_SOURCE_LOCATION,
                     rendering_resources,
-                    *read_pixels_logic,
+                    read_pixels_logic,
                     l.light.shadow_render_pass,
                     l.node,
                     l.light.resource_suffix,
@@ -1060,21 +1066,23 @@ int main(int argc, char** argv) {
             }
         }
 
-        UiFocus ui_focus;
-        RenderLogics render_logics{ui_focus};
-        render_logics.append(nullptr, flying_camera_logic, 0 /* z_order */);
+        render_logics.append({ flying_camera_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         for (const auto& l : lightmap_logics) {
-            render_logics.append(nullptr, l, 0 /* z_order */);
+            render_logics.append({ *l, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         }
-        render_logics.append(nullptr, read_pixels_logic, 0 /* z_order */);
+        render_logics.append({ read_pixels_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         // The following is required for animations.
         render_logics.append(
-            nullptr,
-            std::make_shared<MoveSceneLogic>(
-                scene,
-                delete_node_mutex,
-                safe_stof(args.named_value("--speed", "1"))),
-            0 /* z_order */);
+            {
+                object_pool.create<MoveSceneLogic>(
+                    CURRENT_SOURCE_LOCATION,
+                    scene,
+                    delete_node_mutex,
+                    safe_stof(args.named_value("--speed", "1"))),
+                CURRENT_SOURCE_LOCATION
+            },
+            0 /* z_order */,
+            CURRENT_SOURCE_LOCATION);
         LambdaRenderLogic lrl{
             [&delete_node_mutex, &render_logics](
                 const LayoutConstraintParameters& lx,

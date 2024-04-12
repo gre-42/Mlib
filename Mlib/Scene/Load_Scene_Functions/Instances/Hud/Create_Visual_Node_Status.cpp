@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -62,7 +63,9 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto logger = std::make_shared<VisualMovableLogger>(
+    auto& logger = object_pool.create<VisualMovableLogger>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         physics_engine.advance_times_,
         render_logics,
         node,
@@ -73,7 +76,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top)));
     if (args.arguments.contains(KnownArgs::ticks)) {
-        logger->add_logger(std::make_unique<VisualMovableCircularLogger>(
+        logger.add_logger(std::make_unique<VisualMovableCircularLogger>(
             *lo,
             log_components,
             args.arguments.path(KnownArgs::ttf_file),
@@ -92,7 +95,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::blank_angle) * degrees,
             args.arguments.at_vector<std::string>(KnownArgs::ticks, DisplayTick::from_string)));
     } else {
-        logger->add_logger(std::make_unique<VisualMovableTextLogger>(
+        logger.add_logger(std::make_unique<VisualMovableTextLogger>(
             *lo,
             log_components,
             args.arguments.path(KnownArgs::ttf_file),

@@ -30,7 +30,9 @@ VisualGlobalLog::VisualGlobalLog(
   widget_{std::move(widget)}
 {}
 
-VisualGlobalLog::~VisualGlobalLog() = default;
+VisualGlobalLog::~VisualGlobalLog() {
+    on_destroy.clear();
+}
 
 void VisualGlobalLog::render(
     const LayoutConstraintParameters& lx,

@@ -1,41 +1,40 @@
 #include "Visual_Movable_Logger.hpp"
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <ostream>
 
 using namespace Mlib;
 
 VisualMovableLogger::VisualMovableLogger(
+    ObjectPool& object_pool,
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     DanglingRef<SceneNode> node,
     DanglingBaseClassPtr<Player> player)
-    : shutting_down_{ false }
-    , player_{ player }
+    : player_{ player }
     , node_{ node }
     , advance_times_ { advance_times }
     , render_logics_{ render_logics }
-    , on_player_delete_externals_{ player != nullptr ? &player->delete_externals : nullptr }
-{}
-
-void VisualMovableLogger::init() {
+    , on_node_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_externals_{ player != nullptr ? &player->delete_externals : nullptr, CURRENT_SOURCE_LOCATION }
+{
     advance_times_.add_advance_time(*this);
     if (!on_player_delete_externals_.is_null()) {
-        on_player_delete_externals_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
+        on_player_delete_externals_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
     }
-    render_logics_.append(node_.ptr(), shared_from_this(), 0 /* z_order */);
+    on_node_clear_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }
 
 VisualMovableLogger::~VisualMovableLogger() {
-    if (shutting_down_) {
-        verbose_abort("VisualMovableLogger already shutting down");
-    }
-    shutting_down_ = true;
+    on_destroy.clear();
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

@@ -12,12 +12,17 @@ RenderToPercentageRegionLogic::RenderToPercentageRegionLogic(
     const FixedArray<float, 2>& size,
     FocusFilter focus_filter,
     bool flip_y)
-    : render_logic_{ render_logic }
+    : on_render_logic_destroy{ render_logic.on_destroy, CURRENT_SOURCE_LOCATION }
+    , render_logic_{ render_logic }
     , position_{ position }
     , size_{ size }
     , focus_filter_{ std::move(focus_filter) }
     , flip_y_{ flip_y }
 {}
+
+RenderToPercentageRegionLogic::~RenderToPercentageRegionLogic() {
+    on_destroy.clear();
+}
 
 void RenderToPercentageRegionLogic::render(
     const LayoutConstraintParameters& lx,

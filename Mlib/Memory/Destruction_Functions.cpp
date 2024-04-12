@@ -10,27 +10,41 @@ DestructionFunctions::DestructionFunctions()
 
 DestructionFunctions::~DestructionFunctions() {
     if (!funcs_.empty()) {
+        print_source_locations();
         verbose_abort("Destruction functions remain");
+    }
+}
+
+void DestructionFunctions::print_source_locations() const {
+    for (const auto& [_, funcs] : funcs_) {
+        for (const auto& e : funcs) {
+            lerr() << e.loc.file_name() << ':' << e.loc.line();
+        }
     }
 }
 
 void DestructionFunctions::add(
     DestructionFunctionsRemovalTokens& tokens,
-    std::function<void()> f)
+    std::function<void()> f,
+    SourceLocation loc)
 {
     if (clearing_) {
         verbose_abort("DestructionFunctions::add called during clearing");
     }
     std::scoped_lock lock{ mutex_ };
-    funcs_[&tokens].emplace_back(std::move(f));
+    funcs_[&tokens].emplace_back(std::move(f), loc);
 }
 
 void DestructionFunctions::remove(DestructionFunctionsRemovalTokens& tokens) {
     if (!clearing_) {
         std::scoped_lock lock{ mutex_ };
-        if (funcs_.erase(&tokens) != 1) {
-            verbose_abort("Could not erase destruction removal token");
-        }
+        // Erase token and ignore result. Destruction order in
+        // DestructionFunctions::clear is arbitrary and the token
+        // can therefore already have been deleted.
+        funcs_.erase(&tokens);
+        // if (funcs_.erase(&tokens) != 1) {
+        //     verbose_abort("Could not erase destruction removal token");
+        // }
     }
 }
 
@@ -42,7 +56,7 @@ void DestructionFunctions::clear() {
     clearing_ = true;
     clear_map_recursively(funcs_, [&lock](auto& node) {
         node.key()->funcs_ = nullptr;
-        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& f) { f(); });
+        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& f) { f.func(); });
     });
     clearing_ = false;
 }
@@ -52,26 +66,31 @@ bool DestructionFunctions::empty() const {
     return funcs_.empty();
 }
 
-DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(DestructionFunctions& funcs)
-    : DestructionFunctionsRemovalTokens{ &funcs }
+DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(
+    DestructionFunctions& funcs,
+    SourceLocation loc)
+    : DestructionFunctionsRemovalTokens{ &funcs, loc }
 {}
 
-DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(DestructionFunctions* funcs)
-    : funcs_{ nullptr }
+DestructionFunctionsRemovalTokens::DestructionFunctionsRemovalTokens(
+    DestructionFunctions* funcs,
+    SourceLocation loc)
+    : loc_{ loc }
+    , funcs_{ nullptr }
 {
-    set(funcs);
+    set(funcs, loc);
 }
 
 DestructionFunctionsRemovalTokens::~DestructionFunctionsRemovalTokens() {
     clear_unsafe();
 }
 
-void DestructionFunctionsRemovalTokens::add(std::function<void()> f) {
+void DestructionFunctionsRemovalTokens::add(std::function<void()> f, SourceLocation loc) {
     std::scoped_lock lock{ mutex_ };
     if (funcs_ == nullptr) {
         verbose_abort("DestructionFunctionsRemovalTokens::add on destroyed functions");
     }
-    funcs_->add(*this, std::move(f));
+    funcs_->add(*this, std::move(f), std::move(loc));
 }
 
 void DestructionFunctionsRemovalTokens::clear() {
@@ -86,13 +105,14 @@ void DestructionFunctionsRemovalTokens::clear_unsafe() {
     }
 }
 
-void DestructionFunctionsRemovalTokens::set(DestructionFunctions& funcs) {
-    set(&funcs);
+void DestructionFunctionsRemovalTokens::set(DestructionFunctions& funcs, SourceLocation loc) {
+    set(&funcs, loc);
 }
 
-void DestructionFunctionsRemovalTokens::set(DestructionFunctions* funcs) {
+void DestructionFunctionsRemovalTokens::set(DestructionFunctions* funcs, SourceLocation loc) {
     std::scoped_lock lock{ mutex_ };
     clear_unsafe();
+    loc_ = loc;
     funcs_ = funcs;
 }
 

@@ -1,20 +1,13 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <compare>
 #include <map>
-#include <memory>
 
 namespace Mlib {
 
-template <class T>
-class DanglingPtr;
-template <class T>
-class DanglingRef;
-class SceneNode;
 struct UiFocus;
 
 struct ZorderAndId {
@@ -23,12 +16,7 @@ struct ZorderAndId {
     std::strong_ordering operator <=> (const ZorderAndId&) const = default;
 };
 
-struct SceneNodeAndRenderLogic {
-    DanglingPtr<SceneNode> node;
-    std::shared_ptr<RenderLogic> render_logic;
-};
-
-class RenderLogics: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public DanglingBaseClass {
+class RenderLogics: public RenderLogic {
 public:
     explicit RenderLogics(UiFocus& ui_focus);
     ~RenderLogics();
@@ -41,14 +29,13 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
-
-    void prepend(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);
-    void append(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, int z_order);
+    void prepend(const DanglingBaseClassRef<RenderLogic>& render_logic, int z_order, SourceLocation loc);
+    void append(const DanglingBaseClassRef<RenderLogic>& render_logic, int z_order, SourceLocation loc);
     void remove(const RenderLogic& render_logic);
+
 private:
-    void insert(DanglingPtr<SceneNode> scene_node, const std::shared_ptr<RenderLogic>& render_logic, bool prepend, int z_order);
-    std::map<ZorderAndId, SceneNodeAndRenderLogic> render_logics_;
+    void insert(const DanglingBaseClassRef<RenderLogic>& render_logic, bool prepend, int z_order, SourceLocation loc);
+    std::map<ZorderAndId, DestructionFunctionsTokensObject<RenderLogic>> render_logics_;
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;

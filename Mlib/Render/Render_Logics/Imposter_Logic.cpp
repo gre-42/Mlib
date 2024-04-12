@@ -73,7 +73,8 @@ ImposterLogic::ImposterLogic(
     float down_sampling,
     float max_deviation,
     float min_distance)
-    : rendering_resources_{ rendering_resources }
+    : on_node_clear{ orig_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , rendering_resources_{ rendering_resources }
     , child_logic_{ child_logic }
     , scene_{ scene }
     , orig_node_{ orig_node }
@@ -109,6 +110,7 @@ ImposterLogic::~ImposterLogic() {
             DeletionFailureMode::WARN);
     }
     delete_imposter_if_exists();
+    on_destroy.clear();
 }
 
 void ImposterLogic::add_imposter(

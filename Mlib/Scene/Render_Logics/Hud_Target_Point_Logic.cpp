@@ -1,5 +1,6 @@
 #include "Hud_Target_Point_Logic.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -13,6 +14,7 @@
 using namespace Mlib;
 
 HudTargetPointLogic::HudTargetPointLogic(
+    ObjectPool& object_pool,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     Player& player,
@@ -26,7 +28,8 @@ HudTargetPointLogic::HudTargetPointLogic(
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
     HudErrorBehavior hud_error_behavior)
-    : collision_query_{ collision_query }
+    : object_pool_{ object_pool }
+    , collision_query_{ collision_query }
     , gun_node_{ gun_node }
     , ypln_{ ypln }
     , advance_times_{ advance_times }
@@ -38,27 +41,23 @@ HudTargetPointLogic::HudTargetPointLogic(
         size,
         image_resource_name,
         update_cycle }
-    , on_player_delete_externals_{ player.delete_externals }
-    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear }
-    , shutting_down_{ false }
+    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , on_clear_gun_node_{ gun_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
     , exclusive_node_{ exclusive_node }
-{}
-
-void HudTargetPointLogic::init() {
-    render_logics_.append(exclusive_node_, shared_from_this(), 0 /* z_order */);
+{
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    on_player_delete_externals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
     if (exclusive_node_ != nullptr) {
-        on_clear_exclusive_node_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
+        on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     }
-    on_player_delete_externals_.add([this]() { if (!shutting_down_) { render_logics_.remove(*this); }});
+    on_clear_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     advance_times_.add_advance_time(*this);
 }
 
 HudTargetPointLogic::~HudTargetPointLogic() {
-    if (shutting_down_) {
-        verbose_abort("HudTargetPointLogic already shutting down");
-    }
-    shutting_down_ = true;
+    on_destroy.clear();
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

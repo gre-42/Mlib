@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 
@@ -67,6 +68,7 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    DestructionFunctionsRemovalTokens on_node_clear;
 private:
     void delete_imposter_if_exists();
     void add_imposter(

@@ -81,22 +81,21 @@ Gun::Gun(
     , muzzle_flash_animation_time_{ muzzle_flash_animation_time }
     , generate_muzzle_flash_hider_{ generate_muzzle_flash_hider }
     , delete_node_mutex_{ delete_node_mutex }
-    , node_on_clear_{ node->on_clear }
+    , node_on_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
 {
     if (punch_angle_node != nullptr) {
-        punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear);
-        punch_angle_node_on_clear_.value().add([this]() {
-            punch_angle_node_ = nullptr;
-            });
+        punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear, CURRENT_SOURCE_LOCATION);
+        punch_angle_node_on_clear_.value().add(
+            [this]() { punch_angle_node_ = nullptr; },
+            CURRENT_SOURCE_LOCATION);
     }
     node->set_absolute_observer(*this);
     dgs_.add([node]() { if (node->has_absolute_observer()) { node->clear_absolute_observer(); }});
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    node_on_clear_.add([this]() {
-        node_ = nullptr;
-        delete this;
-        });
+    node_on_clear_.add(
+        [this]() { node_ = nullptr; delete this; },
+        CURRENT_SOURCE_LOCATION);
 }
 
 Gun::~Gun() = default;

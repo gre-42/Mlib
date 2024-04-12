@@ -5,6 +5,7 @@ using namespace Mlib;
 
 LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable_scene)
     : renderable_scene{ renderable_scene }
+    , object_pool{ renderable_scene.object_pool_ }
     , rendering_resources{ renderable_scene.rendering_resources_ }
     , scene_node_resources{ renderable_scene.scene_node_resources_ }
     , particle_resources{ renderable_scene.particle_resources_ }

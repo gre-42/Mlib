@@ -22,20 +22,22 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     const FixedArray<float, 2>& offset,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
-: scene_logic_{scene_logic},
-  scene_node_{scene_node.ptr()},
-  advance_times_{advance_times},
-  status_writer_{status_writer},
-  log_components_{log_components},
-  offset_{offset},
-  line_distance_{line_distance},
-  ttf_filename_{std::move(ttf_filename)},
-  font_height_{font_height}
+    : on_node_clear{ scene_node->on_clear, CURRENT_SOURCE_LOCATION }
+    , scene_logic_{ scene_logic }
+    , scene_node_{ scene_node.ptr() }
+    , advance_times_{ advance_times }
+    , status_writer_{ status_writer }
+    , log_components_{ log_components }
+    , offset_{ offset }
+    , line_distance_{ line_distance }
+    , ttf_filename_{ std::move(ttf_filename) }
+    , font_height_{ font_height }
 {
     scene_node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() {
+    on_destroy.clear();
     if (scene_node_ != nullptr) {
         scene_node_->clearing_observers.remove(
             { *this, CURRENT_SOURCE_LOCATION },

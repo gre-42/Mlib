@@ -39,16 +39,18 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto resource_suffix = "skidmark" + scene.get_temporary_instance_suffix();
+    auto o = new SkidmarkLogic(
+        rendering_resources,
+        node,
+        resource_suffix,
+        particle_renderer,
+        args.arguments.at<int>(KnownArgs::texture_width),
+        args.arguments.at<int>(KnownArgs::texture_height));
+    o->on_skidmark_node_clear.add([o](){ delete o; }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        node.ptr(),
-        std::make_shared<SkidmarkLogic>(
-            rendering_resources,
-            node,
-            resource_suffix,
-            particle_renderer,
-            args.arguments.at<int>(KnownArgs::texture_width),
-            args.arguments.at<int>(KnownArgs::texture_height)),
-        0 /* z_order */);
+        { *o, CURRENT_SOURCE_LOCATION },
+        0 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
     node->add_skidmark(std::make_unique<Skidmark>(Skidmark{
         .resource_suffix = resource_suffix}));
 }

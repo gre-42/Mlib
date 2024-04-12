@@ -44,8 +44,8 @@ void CreateCarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionArgs
         .steer_angle = args.arguments.at<float>(KnownArgs::steer_angle, 0.f) * degrees,
         .drive_relaxation = args.arguments.at<float>(KnownArgs::drive_relaxation, 0.f),
         .steer_relaxation = args.arguments.at<float>(KnownArgs::steer_relaxation, 0.f),
-        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
-    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); });
-    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); });
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals, CURRENT_SOURCE_LOCATION } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_car_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }

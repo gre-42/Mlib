@@ -66,10 +66,10 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
             args.cursor_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id)),
-        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy } },
-        .on_node_clear{ DestructionFunctionsRemovalTokens{ nullptr } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ nullptr }} }));
+        .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } },
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ nullptr, CURRENT_SOURCE_LOCATION } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ nullptr, CURRENT_SOURCE_LOCATION }} }));
     kb.on_destroy_key_bindings.add([&kbs = key_bindings, &kb]() {
         kbs.delete_relative_movable_key_binding(kb);
-    });
+    }, CURRENT_SOURCE_LOCATION);
 }

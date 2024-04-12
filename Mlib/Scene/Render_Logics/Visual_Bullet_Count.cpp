@@ -2,6 +2,7 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -10,6 +11,7 @@
 using namespace Mlib;
 
 VisualBulletCount::VisualBulletCount(
+    ObjectPool& object_pool,
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
     Player& player,
@@ -22,24 +24,19 @@ VisualBulletCount::VisualBulletCount(
         {1.f, 1.f, 1.f},
         font_height,
         line_distance }
-    , on_player_delete_externals_{ player.delete_externals }
+    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
     , advance_times_{ advance_times }
     , render_logics_{ render_logics }
     , player_{ player }
     , widget_{ std::move(widget) }
-{}
-
-void VisualBulletCount::init() {
+{
     advance_times_.add_advance_time(*this);
-    on_player_delete_externals_.add([this]() { render_logics_.remove(*this); });
-    render_logics_.append(nullptr, shared_from_this(), 0 /* z_order */);
+    on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }
 
 VisualBulletCount::~VisualBulletCount() {
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-}
-
-void VisualBulletCount::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    on_destroy.clear();
     advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 

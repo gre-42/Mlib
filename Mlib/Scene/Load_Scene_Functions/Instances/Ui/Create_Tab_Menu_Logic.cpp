@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -67,7 +68,8 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto reload_transient_objects = args.arguments.at(KnownArgs::reload_transient_objects);
     // If the selection_ids array is not yet initialized, apply the default value.
     args.ui_focus.selection_ids.try_emplace(id, deflt);
-    auto tab_menu_logic = std::make_shared<TabMenuLogic>(
+    auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
+        CURRENT_SOURCE_LOCATION,
         BaseKeyCombination{{{
             BaseKeyBinding{
                 .key = args.arguments.at<std::string>(KnownArgs::key),
@@ -96,5 +98,8 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
                 // macro_line_executor(reload_transient_objects, nullptr);
             }
         });
-    render_logics.append(nullptr, tab_menu_logic, 1 /* z_order */);
+    render_logics.append(
+        { tab_menu_logic, CURRENT_SOURCE_LOCATION },
+        1 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
 }

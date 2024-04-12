@@ -73,7 +73,9 @@ ParameterSetterLogic::ParameterSetterLogic(
     });
 }
 
-ParameterSetterLogic::~ParameterSetterLogic() = default;
+ParameterSetterLogic::~ParameterSetterLogic() {
+    on_destroy.clear();
+}
 
 void ParameterSetterLogic::render(
     const LayoutConstraintParameters& lx,

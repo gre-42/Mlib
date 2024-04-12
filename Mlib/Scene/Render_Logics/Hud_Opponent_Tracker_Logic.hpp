@@ -14,14 +14,15 @@ class Player;
 class Players;
 enum class ResourceUpdateCycle;
 class RenderLogics;
+class ObjectPool;
 
 class HudOpponentTrackerLogic:
     public RenderLogic,
-    public IAdvanceTime,
-    public std::enable_shared_from_this<HudOpponentTrackerLogic>
+    public IAdvanceTime
 {
 public:
     HudOpponentTrackerLogic(
+        ObjectPool& object_pool,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
         Players& players,
@@ -33,7 +34,6 @@ public:
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,
         HudErrorBehavior hud_error_behavior);
-    void init();
     ~HudOpponentTrackerLogic();
 
     // IAdvanceTime
@@ -57,7 +57,6 @@ private:
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
-    bool shutting_down_;
 
     RenderLogics& render_logics_;
     DanglingPtr<SceneNode> exclusive_node_;

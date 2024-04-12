@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -44,7 +45,9 @@ CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& re
 void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto logger = std::make_shared<VisualBulletCount>(
+    object_pool.create<VisualBulletCount>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         physics_engine.advance_times_,
         render_logics,
         player,
@@ -56,5 +59,4 @@ void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs&
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
-    logger->init();
 }

@@ -15,12 +15,12 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
     : rb_{ rb }
     , skateboard_node_{ skateboard_node.ptr() }
     , resource_{ resource }
-    , skateboard_node_on_destroy_{ skateboard_node->on_destroy }
+    , skateboard_node_on_destroy_{ skateboard_node->on_destroy, CURRENT_SOURCE_LOCATION }
 {
     skateboard_node_->set_periodic_animation("<no_animation>");
     skateboard_node_on_destroy_.add([this](){
         skateboard_node_ = nullptr;
-    });
+    }, CURRENT_SOURCE_LOCATION);
 }
 
 void SkaterAnimationUpdater::notify_movement_intent()

@@ -91,7 +91,9 @@ TabMenuLogic::TabMenuLogic(
     key_configurations_.insert("confirm", { key_binding });
 }
 
-TabMenuLogic::~TabMenuLogic() = default;
+TabMenuLogic::~TabMenuLogic() {
+    on_destroy.clear();
+}
 
 void TabMenuLogic::render(
     const LayoutConstraintParameters& lx,

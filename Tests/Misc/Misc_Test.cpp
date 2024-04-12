@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
@@ -132,8 +133,8 @@ void test_parallel_block() {
 
 void test_destruction_functions() {
     DestructionFunctions df;
-    DestructionFunctionsRemovalTokens rt{ df };
-    rt.add([]() { linfo() << "f"; });
+    DestructionFunctionsRemovalTokens rt{ df, CURRENT_SOURCE_LOCATION };
+    rt.add([]() { linfo() << "f"; }, CURRENT_SOURCE_LOCATION);
     df.clear();
 }
 
@@ -149,6 +150,15 @@ void test_dangling_base_class() {
     // new MyContainer{ a.ref<Object>(CURRENT_SOURCE_LOCATION) };
 }
 
+void test_unique_ptrs() {
+    struct A: Object {
+        int i = 5;
+    };
+    ObjectPool p;
+    auto& a = p.create<A>(CURRENT_SOURCE_LOCATION);
+    linfo() << a.i;
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -159,5 +169,6 @@ int main(int argc, const char** argv) {
     test_parallel_block();
     test_destruction_functions();
     test_dangling_base_class();
+    test_unique_ptrs();
     return 0;
 }

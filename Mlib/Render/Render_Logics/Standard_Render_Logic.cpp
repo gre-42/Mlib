@@ -34,7 +34,9 @@ StandardRenderLogic::StandardRenderLogic(
     , large_instances_renderer_{ std::make_shared<ArrayInstancesRenderer>(rendering_resources) }
 {}
 
-StandardRenderLogic::~StandardRenderLogic() = default;
+StandardRenderLogic::~StandardRenderLogic() {
+    on_destroy.clear();
+}
 
 void StandardRenderLogic::render(
     const LayoutConstraintParameters& lx,

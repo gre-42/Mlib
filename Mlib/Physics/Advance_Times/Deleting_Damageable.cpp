@@ -20,8 +20,8 @@ DeletingDamageable::DeletingDamageable(
     , delete_node_when_health_leq_zero_{ delete_node_when_health_leq_zero }
     , rb_{ &get_rigid_body_vehicle(scene.get_node(root_node_name_, DP_LOC)) }
     , shutting_down_{ false }
-    , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear }
-    , rb_on_destroy_{ rb_->on_destroy }
+    , node_on_clear_{ scene_.get_node(root_node_name_, DP_LOC)->on_clear, CURRENT_SOURCE_LOCATION }
+    , rb_on_destroy_{ rb_->on_destroy, CURRENT_SOURCE_LOCATION }
 {
     if (rb_->damageable_ != nullptr) {
         THROW_OR_ABORT("Rigid body already has a damageable");
@@ -30,8 +30,8 @@ DeletingDamageable::DeletingDamageable(
     dgs_.add([this]() { if (rb_ != nullptr) { rb_->damageable_ = nullptr; } });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    node_on_clear_.add([this]() { if (!shutting_down_) { delete this; } });
-    rb_on_destroy_.add([this]() { rb_ = nullptr; if (!shutting_down_) { delete this; } });
+    node_on_clear_.add([this]() { if (!shutting_down_) { delete this; } }, CURRENT_SOURCE_LOCATION);
+    rb_on_destroy_.add([this]() { rb_ = nullptr; if (!shutting_down_) { delete this; } }, CURRENT_SOURCE_LOCATION);
 }
 
 DeletingDamageable::~DeletingDamageable() {

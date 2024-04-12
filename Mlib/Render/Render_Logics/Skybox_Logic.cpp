@@ -97,7 +97,9 @@ SkyboxLogic::SkyboxLogic(RenderLogic& child_logic)
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 
-SkyboxLogic::~SkyboxLogic() = default;
+SkyboxLogic::~SkyboxLogic() {
+    on_destroy.clear();
+}
 
 void SkyboxLogic::deallocate() {
     loaded_ = false;

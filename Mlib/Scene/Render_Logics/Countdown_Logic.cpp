@@ -26,32 +26,26 @@ CountDownLogic::CountDownLogic(
     Focus counting_focus,
     std::string text,
     Focuses& focuses)
-: RenderTextLogic{
-    ttf_filename,
-    color,
-    font_height,
-    line_distance},
-  node_{node.ptr()},
-  advance_times_{advance_times},
-  duration_{duration},
-  pending_focus_{pending_focus},
-  counting_focus_{counting_focus},
-  text_{std::move(text)},
-  focuses_{focuses},
-  position_{position}
+    : RenderTextLogic{
+        ttf_filename,
+        color,
+        font_height,
+        line_distance }
+    , on_node_clear{ node->on_clear, CURRENT_SOURCE_LOCATION }
+    , node_{ node.ptr() }
+    , advance_times_{ advance_times }
+    , duration_{ duration }
+    , pending_focus_{ pending_focus }
+    , counting_focus_{ counting_focus }
+    , text_{ std::move(text) }
+    , focuses_{ focuses }
+    , position_{ position }
 {}
 
 CountDownLogic::~CountDownLogic() {
-    if (node_ != nullptr) {
-        node_->clearing_observers.remove(
-            { *this, CURRENT_SOURCE_LOCATION },
-            ObserverDoesNotExistBehavior::IGNORE);
-    }
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-}
-
-void CountDownLogic::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    on_destroy.clear();
     node_ = nullptr;
+    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void CountDownLogic::render(

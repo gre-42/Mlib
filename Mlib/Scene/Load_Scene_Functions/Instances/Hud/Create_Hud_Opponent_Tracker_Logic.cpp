@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -44,7 +45,9 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
     }
     auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    auto htl = std::make_shared<HudOpponentTrackerLogic>(
+    object_pool.create<HudOpponentTrackerLogic>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         scene_logic,
         render_logics,
         players,
@@ -56,5 +59,4 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
         hud_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::error_behavior)));
-    htl->init();
 }

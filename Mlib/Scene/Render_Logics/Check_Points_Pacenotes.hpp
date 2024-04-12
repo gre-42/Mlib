@@ -21,7 +21,7 @@ class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class CheckPointsPacenotes: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public RenderLogic, public DanglingBaseClass {
+class CheckPointsPacenotes: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public RenderLogic {
 public:
     CheckPointsPacenotes(
         RenderLogicGallery& gallery,

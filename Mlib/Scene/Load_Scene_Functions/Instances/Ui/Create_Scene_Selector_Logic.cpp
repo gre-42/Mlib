@@ -7,6 +7,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -75,7 +76,8 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
             .title=args.arguments.at<std::string>(KnownArgs::title),
             .icon=args.arguments.at<std::string>(KnownArgs::icon)},
         0);
-    auto scene_selector_logic = std::make_shared<SceneSelectorLogic>(
+    auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
+        CURRENT_SOURCE_LOCATION,
         "",
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.arguments.path(KnownArgs::ttf_file),
@@ -100,5 +102,8 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
                 mle(on_change.value(), nullptr, nullptr);
             }
         });
-    render_logics.append(nullptr, scene_selector_logic, 1 /* z_order */);
+    render_logics.append(
+        { scene_selector_logic, CURRENT_SOURCE_LOCATION },
+        1 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
 }

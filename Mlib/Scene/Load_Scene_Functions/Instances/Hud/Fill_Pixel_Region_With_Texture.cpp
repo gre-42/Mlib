@@ -5,6 +5,7 @@
 #include <Mlib/Layout/Screen_Units.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
@@ -48,7 +49,8 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
 {
     std::string source_scene = args.arguments.at<std::string>(KnownArgs::source_scene);
     auto& rs = args.renderable_scenes[source_scene];
-    auto scene_window_logic = std::make_shared<FillPixelRegionWithTextureLogic>(
+    auto& scene_window_logic = object_pool.create<FillPixelRegionWithTextureLogic>(
+        CURRENT_SOURCE_LOCATION,
         std::make_shared<FillWithTextureLogic>(
             rs.rendering_resources_,
             ColormapWithModifiers{
@@ -68,5 +70,5 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = string_to_set(args.arguments.at<std::string>(KnownArgs::submenus, {}))});
-    render_logics.append(nullptr, scene_window_logic, 0 /* z_order */);
+    render_logics.append({ scene_window_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }

@@ -135,7 +135,9 @@ PostProcessingLogic::PostProcessingLogic(
   high_pass_{high_pass}
 {}
 
-PostProcessingLogic::~PostProcessingLogic() {};
+PostProcessingLogic::~PostProcessingLogic() {
+    on_destroy.clear();
+}
 
 void PostProcessingLogic::ensure_initialized() {
     if (!initialized_) {

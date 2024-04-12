@@ -20,7 +20,9 @@ DirtmapLogic::DirtmapLogic(
     , generated_{false}
 {}
 
-DirtmapLogic::~DirtmapLogic() = default;
+DirtmapLogic::~DirtmapLogic() {
+    on_destroy.clear();
+}
 
 void DirtmapLogic::render(
     const LayoutConstraintParameters& lx,

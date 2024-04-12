@@ -156,7 +156,9 @@ FlyingCameraLogic::FlyingCameraLogic(
     }
 }
 
-FlyingCameraLogic::~FlyingCameraLogic() = default;
+FlyingCameraLogic::~FlyingCameraLogic() {
+    on_destroy.clear();
+}
 
 void FlyingCameraLogic::render(
     const LayoutConstraintParameters& lx,

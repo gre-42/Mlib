@@ -26,7 +26,9 @@ PlayersStatsLogic::PlayersStatsLogic(
   widget_{std::move(widget)}
 {}
 
-PlayersStatsLogic::~PlayersStatsLogic() = default;
+PlayersStatsLogic::~PlayersStatsLogic() {
+    on_destroy.clear();
+}
 
 void PlayersStatsLogic::render(
     const LayoutConstraintParameters& lx,

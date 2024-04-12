@@ -25,7 +25,9 @@ StandardCameraLogic::StandardCameraLogic(
   camera_node_{ nullptr }
 {}
 
-StandardCameraLogic::~StandardCameraLogic() = default;
+StandardCameraLogic::~StandardCameraLogic() {
+    on_destroy.clear();
+}
 
 void StandardCameraLogic::render(
     const LayoutConstraintParameters& lx,

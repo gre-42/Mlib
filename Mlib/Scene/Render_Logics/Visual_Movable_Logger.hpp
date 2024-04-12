@@ -14,21 +14,20 @@ class VisualMovableLoggerView;
 class AdvanceTimes;
 class RenderLogics;
 class Player;
+class ObjectPool;
 
 class VisualMovableLogger:
     public RenderLogic,
     public DestructionObserver<DanglingRef<SceneNode>>,
-    public IAdvanceTime,
-    public DanglingBaseClass,
-    public std::enable_shared_from_this<VisualMovableLogger>
+    public IAdvanceTime
 {
 public:
     explicit VisualMovableLogger(
+        ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
         DanglingRef<SceneNode> node,
         DanglingBaseClassPtr<Player> player);
-    void init();
     virtual ~VisualMovableLogger();
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
@@ -47,11 +46,11 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    bool shutting_down_;
     DanglingBaseClassPtr<Player> player_;
     DanglingRef<SceneNode> node_;
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
+    DestructionFunctionsRemovalTokens on_node_clear_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
     std::list<std::unique_ptr<VisualMovableLoggerView>> loggers_;
 };

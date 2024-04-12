@@ -23,11 +23,11 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
     , resource_wo_gun_{ resource_wo_gun }
     , resource_w_gun_{ resource_w_gun }
     , surface_power_{ 0.f }
-    , gun_node_on_destroy_{ gun_node->on_destroy }
+    , gun_node_on_destroy_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
 {
     gun_node_on_destroy_.add([this](){
         gun_node_ = nullptr;
-    });
+    }, CURRENT_SOURCE_LOCATION);
 }
 
 AvatarAnimationUpdater::~AvatarAnimationUpdater() = default;

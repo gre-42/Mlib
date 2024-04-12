@@ -15,11 +15,11 @@ VehicleAiAdvanceTime::VehicleAiAdvanceTime(
 	, vehicle_ai_{ std::move(vehicle_ai) }
 	, follower_{ follower }
 	, followed_{ followed.ptr() }
-	, follower_on_destroy_{ follower->on_destroy }
-	, followed_on_destroy_{ followed->on_destroy }
+	, follower_on_destroy_{ follower->on_destroy, CURRENT_SOURCE_LOCATION }
+	, followed_on_destroy_{ followed->on_destroy, CURRENT_SOURCE_LOCATION }
 {
-	follower_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }});
-	followed_on_destroy_.add([this]() { followed_ = nullptr; });
+	follower_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }}, CURRENT_SOURCE_LOCATION);
+	followed_on_destroy_.add([this]() { followed_ = nullptr; }, CURRENT_SOURCE_LOCATION);
 	advance_times_.add_advance_time(*this);
 	dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
 }

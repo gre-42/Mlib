@@ -12,6 +12,7 @@
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
@@ -224,18 +225,22 @@ void test_physics_engine(unsigned int seed) {
         .physics_set_fps = &physics_set_fps};
     UiFocus ui_focus;
     RenderLogics render_logics{ui_focus};
-    auto flying_camera_logic = std::make_shared<FlyingCameraLogic>(
+    ObjectPool object_pool;
+    auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(
+        CURRENT_SOURCE_LOCATION,
         scene,
         user_object,
         false,  // false = fly
         false); // false = rotate
-    auto read_pixels_logic = std::make_shared<ReadPixelsLogic>(standard_render_logic);
+    auto& read_pixels_logic = object_pool.create<ReadPixelsLogic>(
+        CURRENT_SOURCE_LOCATION,
+        standard_render_logic);
     auto append_lightmap_logic = [&](){
-        std::scoped_lock lock{delete_node_mutex};
+            std::scoped_lock lock{delete_node_mutex};
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
-        auto lightmap_logic = std::make_shared<LightmapLogic>(
+        auto lightmap_logic = new LightmapLogic(
             rendering_resources,
-            *read_pixels_logic,
+            read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
             "light_node",
@@ -243,12 +248,14 @@ void test_physics_engine(unsigned int seed) {
             true,   // with_depth_texture
             2048,   // lightmap_width
             2048);  // lightmap_height
-        render_logics.append(light_node.ptr(), lightmap_logic, 0 /* z_order */);
+        lightmap_logic->on_child_logic_destroy.add([lightmap_logic]() { delete lightmap_logic; }, CURRENT_SOURCE_LOCATION);
+        lightmap_logic->on_node_clear.add([lightmap_logic]() { delete lightmap_logic; }, CURRENT_SOURCE_LOCATION);
+        render_logics.append({ *lightmap_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     };
 
-    render_logics.append(nullptr, flying_camera_logic, 0 /* z_order */);
+    render_logics.append({ flying_camera_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     append_lightmap_logic();
-    render_logics.append(nullptr, read_pixels_logic, 0 /* z_order */);
+    render_logics.append({ read_pixels_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     LambdaRenderLogic lrl{
         [&delete_node_mutex, &render_logics](
             const LayoutConstraintParameters& lx,

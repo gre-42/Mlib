@@ -186,7 +186,9 @@ MotionInterpolationLogic::MotionInterpolationLogic(RenderLogic& child_logic, Int
   interpolation_type_{interpolation_type}
 {}
 
-MotionInterpolationLogic::~MotionInterpolationLogic() = default;
+MotionInterpolationLogic::~MotionInterpolationLogic() {
+    on_destroy.clear();
+}
 
 void MotionInterpolationLogic::ensure_initialized() {
     if (!initialized_) {

@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Data_Display/Visual_Global_Log.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -40,7 +41,8 @@ CreateVisualGlobalLog::CreateVisualGlobalLog(RenderableScene& renderable_scene)
 
 void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto logger = std::make_shared<VisualGlobalLog>(
+    auto& logger = object_pool.create<VisualGlobalLog>(
+        CURRENT_SOURCE_LOCATION,
         base_log,
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -52,5 +54,5 @@ void CreateVisualGlobalLog::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         args.arguments.at<size_t>(KnownArgs::nentries),
         log_entry_severity_from_string(args.arguments.at<std::string>(KnownArgs::severity)));
-    render_logics.append(nullptr, logger, 0 /* z_order */);
+    render_logics.append({ logger, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }

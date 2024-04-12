@@ -80,8 +80,8 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals } }}));
-    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); });
-    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); });
+        .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals, CURRENT_SOURCE_LOCATION } }}));
+    kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }

@@ -43,9 +43,9 @@ CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene)
 void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock_guard{ delete_node_mutex };
-    std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
-    DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
-    ExternalRenderPassType render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
+    auto node_name = args.arguments.at<std::string>(KnownArgs::node);
+    auto node = scene.get_node(node_name, DP_LOC);
+    auto render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));
     if ((render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_GLOBAL_DYNAMIC) &&
         (render_pass != ExternalRenderPassType::LIGHTMAP_BLOBS))
@@ -53,19 +53,21 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
+    auto o = new LightmapLogic(
+        rendering_resources,
+        read_pixels_logic,
+        render_pass,
+        node,
+        resource_suffix,
+        args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
+        args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
+        args.arguments.at<int>(KnownArgs::lightmap_width),
+        args.arguments.at<int>(KnownArgs::lightmap_height));
+    o->on_node_clear.add([o]() { delete o; }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        node.ptr(),
-        std::make_shared<LightmapLogic>(
-            rendering_resources,
-            read_pixels_logic,
-            render_pass,
-            node,
-            resource_suffix,
-            args.arguments.at<std::string>(KnownArgs::black_node),      // black_node_name
-            args.arguments.at<bool>(KnownArgs::with_depth_texture),     // with_depth_texture
-            args.arguments.at<int>(KnownArgs::lightmap_width),
-            args.arguments.at<int>(KnownArgs::lightmap_height)),
-        0 /* z_order */);
+        { *o, CURRENT_SOURCE_LOCATION },
+        0 /* z_order */,
+        CURRENT_SOURCE_LOCATION);
     node->add_light(std::make_unique<Light>(Light{
         .ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient),
         .diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse),
