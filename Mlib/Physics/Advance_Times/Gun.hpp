@@ -48,7 +48,8 @@ public:
             const std::optional<std::string>& player,
             const std::string& bullet_suffix,
             const std::optional<std::string>& target,
-            const FixedArray<float, 3>& velocity)> generate_smart_bullet,
+            const FixedArray<float, 3>& velocity,
+            const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
         ITrailStorage* bullet_trace_storage,
         const std::string& ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -88,7 +89,8 @@ private:
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
         const std::optional<std::string>& target,
-        const FixedArray<float, 3>& velocity)> generate_smart_bullet_;
+        const FixedArray<float, 3>& velocity,
+        const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet_;
     ITrailStorage* bullet_trace_storage_;
     std::string ammo_type_;
     bool triggered_;

@@ -116,7 +116,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
         const std::optional<std::string>& target,
-        const FixedArray<float, 3>& velocity)> generate_smart_bullet;
+        const FixedArray<float, 3>& velocity,
+        const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet;
     if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
             [mle = args.macro_line_executor,
@@ -127,7 +128,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 const std::optional<std::string>& player,
                 const std::string& bullet_suffix,
                 const std::optional<std::string>& target,
-                const FixedArray<float, 3>& velocity)
+                const FixedArray<float, 3>& velocity,
+                const FixedArray<float, 3>& angular_velocity)
             {
                 JsonMacroArguments local_args;
                 if (capture.has_value()) {
@@ -141,6 +143,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 }
                 local_args.set("BULLET_SUFFIX", bullet_suffix);
                 local_args.set("BULLET_VELOCITY", velocity / kph);
+                local_args.set("BULLET_ANGULAR_VELOCITY", angular_velocity / rpm);
                 mle(l, &local_args, nullptr);
             };
     }

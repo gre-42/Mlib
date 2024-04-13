@@ -46,7 +46,8 @@ Gun::Gun(
         const std::optional<std::string>& player,
         const std::string& bullet_suffix,
         const std::optional<std::string>& target,
-        const FixedArray<float, 3>& velocity)> generate_smart_bullet,
+        const FixedArray<float, 3>& velocity,
+        const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
     ITrailStorage* bullet_trace_storage,
     const std::string& ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
@@ -150,7 +151,7 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         1.f);
     auto bullet_velocity =
         - bullet_properties_.velocity * z3_from_3x3(absolute_model_matrix_.R())
-        + parent_rb_.rbp_.v_;
+        + parent_rb_.velocity_at_position(absolute_model_matrix_.t());
     std::string suffix = "_bullet" + scene_.get_temporary_instance_suffix();
     std::string bullet_node_name = "car_node" + suffix;
     if (generate_smart_bullet_) {
@@ -160,7 +161,8 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
             player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
             suffix,
             player_ == nullptr ? std::nullopt : std::optional{ player_->target_name() },
-            bullet_velocity);
+            bullet_velocity,
+            parent_rb_.rbp_.w_);
         auto& rc = get_rigid_body_vehicle(np);
         auto bullet = std::make_unique<Bullet>(
             scene_,
