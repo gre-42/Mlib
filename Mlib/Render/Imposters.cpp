@@ -23,7 +23,8 @@ void Imposters::create_imposter(
     const std::string& debug_prefix,
     uint32_t max_texture_size)
 {
-    auto imposter_logic = new ImposterLogic(
+    auto& imposter_logic = global_object_pool.create<ImposterLogic>(
+        CURRENT_SOURCE_LOCATION,
         rendering_resources_,
         child_logic_,
         scene_,
@@ -31,9 +32,9 @@ void Imposters::create_imposter(
         cameras_,
         debug_prefix,
         max_texture_size);
-    imposter_logic->on_node_clear.add([imposter_logic]() { delete imposter_logic; }, CURRENT_SOURCE_LOCATION);
+    imposter_logic.on_node_clear.add([&imposter_logic]() { global_object_pool.remove(imposter_logic); }, CURRENT_SOURCE_LOCATION);
     render_logics_.prepend(
-        { *imposter_logic, CURRENT_SOURCE_LOCATION },
+        { imposter_logic, CURRENT_SOURCE_LOCATION },
         0,                          // z_order
         CURRENT_SOURCE_LOCATION);
 }

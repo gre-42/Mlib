@@ -2,6 +2,8 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
+#include <Mlib/Object.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
@@ -17,7 +19,7 @@ class RigidBodyVehicle;
 class SceneNode;
 class Scene;
 
-class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter {
+class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual Object {
     DeletingDamageable(const DeletingDamageable&) = delete;
     DeletingDamageable& operator = (const DeletingDamageable&) = delete;
 public:
@@ -46,7 +48,6 @@ protected:
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
     DestructionGuards dgs_;
-    bool shutting_down_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     DestructionFunctionsRemovalTokens rb_on_destroy_;
 };

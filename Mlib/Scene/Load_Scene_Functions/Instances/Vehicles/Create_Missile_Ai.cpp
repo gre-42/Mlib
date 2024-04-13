@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Vehicle_Ai_Advance_Time.hpp>
@@ -76,9 +77,10 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         missile_vehicle.missile_controller(),
         missile_vehicle.rbp_,
         args.arguments.at<float>(KnownArgs::destination_reached_radius));
-    new VehicleAiAdvanceTime(
+    global_object_pool.create<VehicleAiAdvanceTime>(
+        CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         std::move(missile_ai),
-        { missile_vehicle, CURRENT_SOURCE_LOCATION },
-        { target_vehicle, CURRENT_SOURCE_LOCATION });
+        DanglingBaseClassRef<RigidBodyVehicle>{ missile_vehicle, CURRENT_SOURCE_LOCATION },
+        DanglingBaseClassRef<RigidBodyVehicle>{ target_vehicle, CURRENT_SOURCE_LOCATION });
 }

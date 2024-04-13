@@ -1,6 +1,7 @@
 #include "Create_Damageable.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Deleting_Damageable.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -31,7 +32,8 @@ CreateDamageable::CreateDamageable(RenderableScene& renderable_scene)
 
 void CreateDamageable::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    new DeletingDamageable(
+    global_object_pool.create<DeletingDamageable>(
+        CURRENT_SOURCE_LOCATION,
         scene,
         physics_engine.advance_times_,
         args.arguments.at<std::string>(KnownArgs::node),

@@ -1,6 +1,7 @@
 #include "Create_Light_Only_Shadow.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -49,7 +50,8 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"only shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
-    auto o = new LightmapLogic(
+    auto& o = global_object_pool.create<LightmapLogic>(
+        CURRENT_SOURCE_LOCATION,
         rendering_resources,
         read_pixels_logic,
         render_pass,
@@ -59,9 +61,9 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         false,                                                      // with_depth_texture
         args.arguments.at<int>(KnownArgs::lightmap_width),
         args.arguments.at<int>(KnownArgs::lightmap_height));
-    o->on_node_clear.add([o]() { delete o; }, CURRENT_SOURCE_LOCATION);
+    o.on_node_clear.add([&o]() { global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        { *o, CURRENT_SOURCE_LOCATION },
+        { o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_light(std::make_unique<Light>(Light{

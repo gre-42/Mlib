@@ -1,6 +1,7 @@
 #include "Create_Skidmark.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Skidmark_Logic.hpp>
@@ -39,16 +40,17 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto resource_suffix = "skidmark" + scene.get_temporary_instance_suffix();
-    auto o = new SkidmarkLogic(
+    auto& o = global_object_pool.create<SkidmarkLogic>(
+        CURRENT_SOURCE_LOCATION,
         rendering_resources,
         node,
         resource_suffix,
         particle_renderer,
         args.arguments.at<int>(KnownArgs::texture_width),
         args.arguments.at<int>(KnownArgs::texture_height));
-    o->on_skidmark_node_clear.add([o](){ delete o; }, CURRENT_SOURCE_LOCATION);
+    o.on_skidmark_node_clear.add([&o](){ global_object_pool.remove(o); }, CURRENT_SOURCE_LOCATION);
     render_logics.prepend(
-        { *o, CURRENT_SOURCE_LOCATION },
+        { o, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_skidmark(std::make_unique<Skidmark>(Skidmark{

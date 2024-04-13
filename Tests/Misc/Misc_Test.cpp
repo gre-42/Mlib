@@ -154,7 +154,7 @@ void test_unique_ptrs() {
     struct A: Object {
         int i = 5;
     };
-    ObjectPool p;
+    ObjectPool p{ InObjectPoolDestructor::CLEAR };
     auto& a = p.create<A>(CURRENT_SOURCE_LOCATION);
     linfo() << a.i;
 }

@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -20,9 +21,8 @@ AimAt::AimAt(
     bool bullet_feels_gravity,
     float gravity,
     float locked_on_cosine,
-    const std::function<float()>& velocity_estimation_error)
-    : shutting_down_{ false }
-    , absolute_point_to_aim_at_{ NAN }
+    std::function<float()> velocity_estimation_error)
+    : absolute_point_to_aim_at_{ NAN }
     , relative_point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
     , gun_node_{ gun_node.ptr() }
@@ -35,7 +35,7 @@ AimAt::AimAt(
     , gravity_{ gravity }
     , locked_on_cosine_{ locked_on_cosine }
     , target_locked_on_{ false }
-    , velocity_estimation_error_{ velocity_estimation_error }
+    , velocity_estimation_error_{ std::move(velocity_estimation_error) }
     , gun_node_on_destroy_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
     , follower_node_on_destroy_{ follower_node->on_destroy, CURRENT_SOURCE_LOCATION }
     , followed_node_on_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
@@ -44,13 +44,11 @@ AimAt::AimAt(
     dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
-    gun_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }}, CURRENT_SOURCE_LOCATION);
-    follower_node_on_destroy_.add([this]() { if (!shutting_down_) { delete this; }}, CURRENT_SOURCE_LOCATION);
+    gun_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    follower_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
-AimAt::~AimAt() {
-    shutting_down_ = true;
-}
+AimAt::~AimAt() = default;
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {

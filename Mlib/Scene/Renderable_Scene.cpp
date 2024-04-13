@@ -48,7 +48,8 @@ RenderableScene::RenderableScene(
     const std::function<void()>& setup_new_round,
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
-    : scene_node_resources_{ scene_node_resources }
+    : object_pool_{ InObjectPoolDestructor::CLEAR }
+    , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
     , rendering_resources_{
         rendering_resources_name,

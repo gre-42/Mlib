@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -43,7 +44,8 @@ Countdown::Countdown(RenderableScene& renderable_scene)
 void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node = make_dunique<SceneNode>();
-    auto countdown_logic = new CountDownLogic(
+    auto& countdown_logic = global_object_pool.create<CountDownLogic>(
+        CURRENT_SOURCE_LOCATION,
         node.ref(CURRENT_SOURCE_LOCATION),
         physics_engine.advance_times_,
         args.arguments.path(KnownArgs::ttf_file),
@@ -56,10 +58,10 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
-    countdown_logic->on_node_clear.add([countdown_logic]() {delete countdown_logic; }, CURRENT_SOURCE_LOCATION);
-    physics_engine.advance_times_.add_advance_time(*countdown_logic);
+    countdown_logic.on_node_clear.add([&countdown_logic]() { global_object_pool.remove(countdown_logic); }, CURRENT_SOURCE_LOCATION);
+    physics_engine.advance_times_.add_advance_time(countdown_logic);
     render_logics.append(
-        { *countdown_logic, CURRENT_SOURCE_LOCATION },
+        { countdown_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
     scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));

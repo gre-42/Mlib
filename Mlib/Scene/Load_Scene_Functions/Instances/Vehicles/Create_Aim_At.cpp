@@ -1,6 +1,7 @@
 #include "Create_Aim_At.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -66,7 +67,8 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
     bool  bullet_feels_gravity = args.arguments.at<bool>(KnownArgs::bullet_feels_gravity);
     float gravity              = args.arguments.at<float>(KnownArgs::gravity) * meters / (s * s);
 
-    auto aim_at = new AimAt(
+    auto& aim_at = global_object_pool.create<AimAt>(
+        CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         follower_node,
         gun_node,
@@ -76,5 +78,5 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
         gravity,
         std::cos(args.arguments.at<float>(KnownArgs::locked_on_angle) * degrees),
         velocity_estimation_error);
-    aim_at->set_followed(followed_node);
+    aim_at.set_followed(followed_node);
 }

@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Properties.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
@@ -94,7 +95,7 @@ Gun::Gun(
     advance_times_.add_advance_time(*this);
     dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
     node_on_clear_.add(
-        [this]() { node_ = nullptr; delete this; },
+        [this]() { node_ = nullptr; global_object_pool.remove(this); },
         CURRENT_SOURCE_LOCATION);
 }
 

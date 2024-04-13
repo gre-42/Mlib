@@ -3,6 +3,7 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -60,11 +61,11 @@ public:
         float shoot_std,
         float idle_alpha,
         float decay)
-    : idle_rng_{ idle_seed, 0.f, idle_std * std::sqrt(2.f / idle_alpha) },
-      shoot_rng_{ shoot_seed, 0.f, shoot_std },
-      idle_smoother_{ idle_alpha, idle_std },
-      decay_{ decay },
-      punch_angle_{ idle_std }
+    : idle_rng_{ idle_seed, 0.f, idle_std * std::sqrt(2.f / idle_alpha) }
+    , shoot_rng_{ shoot_seed, 0.f, shoot_std }
+    , idle_smoother_{ idle_alpha, idle_std }
+    , decay_{ decay }
+    , punch_angle_{ idle_std }
     {}
     float operator () (bool shooting) {
         punch_angle_ += idle_smoother_(idle_rng_());
@@ -143,7 +144,8 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 mle(l, &local_args, nullptr);
             };
     }
-    new Gun(
+    global_object_pool.create<Gun>(
+        CURRENT_SOURCE_LOCATION,
         &rendering_resources,
         scene,
         scene_node_resources,

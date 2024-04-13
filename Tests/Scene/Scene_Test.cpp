@@ -225,7 +225,7 @@ void test_physics_engine(unsigned int seed) {
         .physics_set_fps = &physics_set_fps};
     UiFocus ui_focus;
     RenderLogics render_logics{ui_focus};
-    ObjectPool object_pool;
+    ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
     auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(
         CURRENT_SOURCE_LOCATION,
         scene,
@@ -238,7 +238,8 @@ void test_physics_engine(unsigned int seed) {
     auto append_lightmap_logic = [&](){
             std::scoped_lock lock{delete_node_mutex};
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
-        auto lightmap_logic = new LightmapLogic(
+        auto& lightmap_logic = global_object_pool.create<LightmapLogic>(
+            CURRENT_SOURCE_LOCATION,
             rendering_resources,
             read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
@@ -248,9 +249,9 @@ void test_physics_engine(unsigned int seed) {
             true,   // with_depth_texture
             2048,   // lightmap_width
             2048);  // lightmap_height
-        lightmap_logic->on_child_logic_destroy.add([lightmap_logic]() { delete lightmap_logic; }, CURRENT_SOURCE_LOCATION);
-        lightmap_logic->on_node_clear.add([lightmap_logic]() { delete lightmap_logic; }, CURRENT_SOURCE_LOCATION);
-        render_logics.append({ *lightmap_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+        lightmap_logic.on_child_logic_destroy.add([&lightmap_logic]() { global_object_pool.remove(lightmap_logic); }, CURRENT_SOURCE_LOCATION);
+        lightmap_logic.on_node_clear.add([&lightmap_logic]() { global_object_pool.remove(lightmap_logic); }, CURRENT_SOURCE_LOCATION);
+        render_logics.append({ lightmap_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     };
 
     render_logics.append({ flying_camera_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);

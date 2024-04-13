@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <functional>
@@ -16,7 +17,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 class RigidBodyVehicle;
 
-class AimAt: public IAbsoluteObserver, public IAdvanceTime {
+class AimAt: public IAbsoluteObserver, public IAdvanceTime, public virtual Object {
 public:
     AimAt(
         AdvanceTimes& advance_times,
@@ -27,7 +28,7 @@ public:
         bool bullet_feels_gravity,
         float gravity,
         float locked_on_cosine,
-        const std::function<float()>& velocity_estimation_error);
+        std::function<float()> velocity_estimation_error);
     ~AimAt();
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
@@ -43,7 +44,6 @@ public:
     const FixedArray<double, 3>& relative_point_to_aim_at() const;
 
 private:
-    bool shutting_down_;
     FixedArray<double, 3> absolute_point_to_aim_at_;
     FixedArray<double, 3> relative_point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;

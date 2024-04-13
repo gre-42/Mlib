@@ -1041,7 +1041,7 @@ int main(int argc, char** argv) {
             .cull_faces = render_config.cull_faces,
             .delete_node_mutex = delete_node_mutex,
             .physics_set_fps = nullptr};
-        ObjectPool object_pool;
+        ObjectPool object_pool{ InObjectPoolDestructor::CLEAR };
         auto& flying_camera_logic = object_pool.create<FlyingCameraLogic>(
             CURRENT_SOURCE_LOCATION,
             scene,

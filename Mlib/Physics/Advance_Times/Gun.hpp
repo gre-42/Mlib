@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
@@ -29,7 +30,7 @@ class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public IAbsoluteObserver, public IAdvanceTime {
+class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual Object {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,

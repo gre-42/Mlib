@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
+#include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <memory>
 
@@ -11,17 +12,16 @@ class IVehicleAi;
 class RigidBodyVehicle;
 class AdvanceTimes;
 
-class VehicleAiAdvanceTime: public IAdvanceTime {
+class VehicleAiAdvanceTime: public IAdvanceTime, public virtual Object {
 public:
 	explicit VehicleAiAdvanceTime(
 		AdvanceTimes& advance_times,
 		std::unique_ptr<IVehicleAi>&& vehicle_ai,
-		DanglingBaseClassRef<RigidBodyVehicle> follower,
-		DanglingBaseClassRef<RigidBodyVehicle> followed);
+		const DanglingBaseClassRef<RigidBodyVehicle>& follower,
+		const DanglingBaseClassRef<RigidBodyVehicle>& followed);
 	virtual ~VehicleAiAdvanceTime();
 	virtual void advance_time(float dt, std::chrono::steady_clock::time_point time);
 private:
-	bool shutting_down_;
 	AdvanceTimes& advance_times_;
 	std::unique_ptr<IVehicleAi> vehicle_ai_;
 	DanglingBaseClassRef<RigidBodyVehicle> follower_;
