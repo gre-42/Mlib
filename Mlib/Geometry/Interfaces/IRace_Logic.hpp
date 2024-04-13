@@ -5,6 +5,8 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
+template <typename TData, size_t... tshape>
+class FixedArray;
 
 class IRaceLogic {
 public:
