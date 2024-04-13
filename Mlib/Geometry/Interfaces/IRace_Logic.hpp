@@ -10,6 +10,8 @@ class IRaceLogic {
 public:
     virtual void set_start_pose(
         const TransformationMatrix<float, double, 3>& pose,
+        const FixedArray<float, 3>& velocity,
+        const FixedArray<float, 3>& angular_velocity,
         unsigned int rank) = 0;
     virtual void set_checkpoints(
         const std::vector<TransformationMatrix<float, double, 3>>& checkpoints) = 0;

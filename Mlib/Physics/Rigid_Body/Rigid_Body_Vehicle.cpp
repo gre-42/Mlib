@@ -831,7 +831,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         ostr << "v: " << std::sqrt(sum(squared(rbp_.v_))) / kph << " km/h" << std::endl;
     }
     if (log_components & StatusComponents::ANGULAR_VELOCITY) {
-        ostr << "w: " << std::sqrt(sum(squared(rbp_.w_))) / (degrees / s) << " °/s" << std::endl;
+        ostr << "w: " << std::sqrt(sum(squared(rbp_.w_))) / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
         ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_))) / WHEEL_RADIUS / (radians / s) << " rad/s" << std::endl;
@@ -840,7 +840,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
-        if (float w2 = sum(squared(rbp_.w_)); w2 > squared(0.01f * degrees / s)) {
+        if (float w2 = sum(squared(rbp_.w_)); w2 > squared(0.001f * rpm)) {
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbp_.v_)) / w2) << " m" << std::endl;
             ostr << "d / d2(g): " << gravity_magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
         } else {

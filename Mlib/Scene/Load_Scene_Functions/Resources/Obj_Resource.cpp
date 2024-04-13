@@ -102,6 +102,8 @@ public:
     }
     void set_start_pose(
         const TransformationMatrix<float, double, 3>& pose,
+        const FixedArray<float, 3>& velocity,
+        const FixedArray<float, 3>& angular_velocity,
         unsigned int rank) override
     {
         if (rank == 0) {
@@ -109,7 +111,9 @@ public:
                 asset_id_,
                 JsonMacroArguments{{
                     {"CAR_NODE_POSITION", pose.t()},
-                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R()) / degrees}
+                    {"CAR_NODE_ANGLES", matrix_2_tait_bryan_angles(pose.R()) / degrees},
+                    {"VEHICLE_VELOCITY", velocity},
+                    {"VEHICLE_ANGULAR_VELOCITY", angular_velocity}
                 }});
         }
     }

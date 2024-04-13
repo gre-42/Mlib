@@ -263,7 +263,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
             // No periodic extension by default.
             if (auto it = nodes.find("AC_PIT_0"); it != nodes.end()) {
-                race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
+                race_logic->set_start_pose(
+                    ac_start_to_car(it->second->hmatrix.casted<float, double>()),
+                    fixed_zeros<float, 3>() / kph,  // velocity
+                    fixed_zeros<float, 3>() / rpm,  // angular_velocity
+                    0);                             // rank
             }
             auto find_ab = [&](
                 const std::string& name_start_l,
@@ -278,7 +282,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         ac_start_to_car(
                             start_l->second->hmatrix.casted<float, double>(),
                             start_r->second->hmatrix.casted<float, double>()),
-                        0);
+                        fixed_zeros<float, 3>() / kph,  // velocity
+                        fixed_zeros<float, 3>() / rpm,  // angular_velocity
+                        0);                             // rank
                     auto finish_l = nodes.find(name_finish_l);
                     auto finish_r = nodes.find(name_finish_r);
                     if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
@@ -300,7 +306,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 "AC_OPEN_FINISH_L",
                 "AC_OPEN_FINISH_R");
             if (auto it = nodes.find("AC_START_0"); it != nodes.end()) {
-                race_logic->set_start_pose(ac_start_to_car(it->second->hmatrix.casted<float, double>()), 0);
+                race_logic->set_start_pose(
+                    ac_start_to_car(it->second->hmatrix.casted<float, double>()),
+                    fixed_zeros<float, 3>() / kph,  // velocity
+                    fixed_zeros<float, 3>() / rpm,  // angular_velocity
+                    0);                             // rank
             }
             // for (const auto& c : checkpoints) {
             //     linfo() << "Checkpoint: " << c.t();

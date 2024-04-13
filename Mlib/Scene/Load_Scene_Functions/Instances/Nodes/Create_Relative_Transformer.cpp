@@ -33,7 +33,7 @@ void CreateRelativeTransformer::execute(const LoadSceneJsonUserFunctionArgs& arg
 {
     Linker linker{ physics_engine.advance_times_ };
     auto v = args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * meters / s;
-    auto w = args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * degrees / s;
+    auto w = args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm;
     auto rt = std::make_unique<RelativeTransformer>(physics_engine.advance_times_, v, w);
     linker.link_relative_movable(scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC), std::move(rt));
 }
