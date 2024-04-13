@@ -28,12 +28,12 @@ ObjectPool::~ObjectPool() {
     }
 }
 
-void ObjectPool::add(void* buffer, Object& o, SourceLocation loc) {
+void ObjectPool::add(std::function<void()> deallocate, Object& o, SourceLocation loc) {
     std::scoped_lock lock{ mutex_ };
     if (clearing_) {
         verbose_abort("ObjectPool::add called during clearing");
     }
-    if (!ptrs_.emplace(buffer, &o, loc).second) {
+    if (!ptrs_.emplace(std::move(deallocate), &o, loc).second) {
         THROW_OR_ABORT("Unique pointer already exists");
     }
 }
@@ -78,7 +78,7 @@ void ObjectPool::delete_(const ObjectAndSourceLocation& o) {
     if (deleting_ptrs_.erase(o.object) != 1) {
         verbose_abort("Could not erase from deleting_ptrs");
     }
-    std::free(o.buffer);
+    o.deallocate();
     if (eptr != nullptr) {
         std::rethrow_exception(eptr);
     }
