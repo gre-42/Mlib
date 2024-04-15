@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -25,8 +26,9 @@ Wheel::Wheel(
     , y0_{ NAN }
 {}
 
-Wheel::~Wheel()
-{}
+Wheel::~Wheel() {
+    on_destroy.clear();
+}
 
 void Wheel::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
@@ -67,5 +69,5 @@ void Wheel::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
         }
         destroyed_object->clear_relative_movable();
     }
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    global_object_pool.remove(this);
 }

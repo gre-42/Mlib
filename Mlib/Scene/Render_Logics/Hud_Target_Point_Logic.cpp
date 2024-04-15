@@ -17,7 +17,7 @@ HudTargetPointLogic::HudTargetPointLogic(
     ObjectPool& object_pool,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
-    Player& player,
+    const DanglingBaseClassRef<Player>& player,
     CollisionQuery& collision_query,
     DanglingRef<SceneNode> gun_node,
     DanglingPtr<SceneNode> exclusive_node,
@@ -32,7 +32,6 @@ HudTargetPointLogic::HudTargetPointLogic(
     , collision_query_{ collision_query }
     , gun_node_{ gun_node }
     , ypln_{ ypln }
-    , advance_times_{ advance_times }
     , hud_tracker_{
         scene_logic,
         exclusive_node,
@@ -41,24 +40,22 @@ HudTargetPointLogic::HudTargetPointLogic(
         size,
         image_resource_name,
         update_cycle }
-    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
     , on_clear_gun_node_{ gun_node->on_clear, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
-    , exclusive_node_{ exclusive_node }
 {
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     on_player_delete_externals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
-    if (exclusive_node_ != nullptr) {
+    if (exclusive_node != nullptr) {
         on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     }
     on_clear_gun_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
-    advance_times_.add_advance_time(*this);
+    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 HudTargetPointLogic::~HudTargetPointLogic() {
     on_destroy.clear();
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void HudTargetPointLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {

@@ -6,15 +6,21 @@
 
 using namespace Mlib;
 
-Team::Team()
-    : nwins_{ 0 }
+Team::Team(std::string name)
+    : name_{ std::move(name) }
+    , nwins_{ 0 }
     , nlosses_{ 0 }
     , nkills_{ 0 }
     , destruction_observers_{ *this }
 {}
 
 Team::~Team() {
+    on_destroy.clear();
     destruction_observers_.clear();
+}
+
+const std::string& Team::name() const {
+    return name_;
 }
 
 void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
@@ -25,7 +31,7 @@ void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     if (player == nullptr) {
         THROW_OR_ABORT("Driver is not a player");
     }
-    if (&player->team() != this) {
+    if (&player->team().get() != this) {
         ++nkills_;
     }
 }

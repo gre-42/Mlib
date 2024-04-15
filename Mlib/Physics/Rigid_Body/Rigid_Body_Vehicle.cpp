@@ -9,6 +9,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Delta_Engine.hpp>
@@ -46,7 +47,6 @@ RigidBodyVehicle::RigidBodyVehicle(
     std::string asset_id,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
     : destruction_observers{ *this }
-    , rigid_bodies_{ nullptr }
     , max_velocity_{ INFINITY }
     , flags_{ RigidBodyVehicleFlags::NONE }
 #ifdef COMPUTE_POWER
@@ -472,10 +472,7 @@ void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object)
         }
         destroyed_object->clear_absolute_movable();
     }
-    if (rigid_bodies_ != nullptr) {
-        // "rigid_bodies_" owns the rigid body and will therefore delete it.
-        rigid_bodies_->delete_rigid_body(this);
-    }
+    global_object_pool.remove(this);
 }
 
 void RigidBodyVehicle::notify_destroyed(const IPlayer& destroyed_object) {
@@ -775,13 +772,6 @@ const std::string& RigidBodyVehicle::asset_id() const {
     return asset_id_;
 }
 
-void RigidBodyVehicle::set_rigid_bodies(RigidBodies& rigid_bodies) {
-    if (rigid_bodies_ != nullptr) {
-        THROW_OR_ABORT("Rigid bodies already set");
-    }
-    rigid_bodies_ = &rigid_bodies;
-}
-
 // void RigidBodyVehicle::set_tire_sliding(size_t id, bool value) {
 //     tire_sliding_[id] = value;
 // }
@@ -936,7 +926,7 @@ bool RigidBodyVehicle::is_activated_avatar() const {
     if (!is_avatar()) {
         return false;
     }
-    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player() == driver_.get());
+    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player().get() == driver_.get());
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {

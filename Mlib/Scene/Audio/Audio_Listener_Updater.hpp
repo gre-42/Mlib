@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <chrono>
 
@@ -8,7 +9,7 @@ class AudioListener;
 class SelectedCameras;
 class Scene;
 
-class AudioListenerUpdater: public IAdvanceTime {
+class AudioListenerUpdater: public IAdvanceTime, public DanglingBaseClass {
 public:
     AudioListenerUpdater(
         const SelectedCameras& selected_cameras,

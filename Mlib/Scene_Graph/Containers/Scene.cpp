@@ -284,8 +284,7 @@ DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION 
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
-    auto res = get_node_that_may_be_scheduled_for_deletion(name);
-    res.set_loc(loc);
+    auto res = get_node_that_may_be_scheduled_for_deletion(name).set_loc(loc);
     // Only for debugging purposes, as it
     // overwrites the debug-message with each call.
     // res->set_debug_message(name);

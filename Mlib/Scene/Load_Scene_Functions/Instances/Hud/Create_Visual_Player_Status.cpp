@@ -66,8 +66,8 @@ CreateVisualPlayerStatus::CreateVisualPlayerStatus(RenderableScene& renderable_s
 
 void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    DanglingRef<SceneNode> node = player.scene_node();
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    DanglingRef<SceneNode> node = player->scene_node();
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
         lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
@@ -79,7 +79,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
         physics_engine.advance_times_,
         render_logics,
         node,
-        DanglingBaseClassPtr<Player>{ player, CURRENT_SOURCE_LOCATION });
+        player.ptr());
     auto widget = std::make_unique<Widget>(
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

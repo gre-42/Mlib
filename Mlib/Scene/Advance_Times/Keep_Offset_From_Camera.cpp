@@ -1,6 +1,7 @@
 #include "Keep_Offset_From_Camera.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -39,8 +40,9 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     }
 {}
 
-KeepOffsetFromCamera::~KeepOffsetFromCamera()
-{}
+KeepOffsetFromCamera::~KeepOffsetFromCamera() {
+    on_destroy.clear();
+}
 
 void KeepOffsetFromCamera::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     auto new_position_abs = scene_.get_node(cameras_.camera_node_name(), DP_LOC)->absolute_model_matrix().t() + offset_.casted<double>();
@@ -76,5 +78,5 @@ void KeepOffsetFromCamera::notify_destroyed(DanglingRef<SceneNode> destroyed_obj
         destroyed_object->clear_absolute_movable();
     }
     follower_node_ = nullptr;
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    global_object_pool.remove(this);
 }

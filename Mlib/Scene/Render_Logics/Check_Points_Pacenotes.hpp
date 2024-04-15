@@ -9,11 +9,10 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <optional>
+#include <vector>
 
 namespace Mlib {
 
-class RenderLogics;
-class AdvanceTimes;
 class SceneNode;
 class CheckPoints;
 class RenderLogicGallery;
@@ -34,14 +33,12 @@ public:
         const std::string& ttf_filename,
         const FixedArray<float, 3>& color,
         const std::string& pacenotes_filename,
-        const CheckPoints& check_points,
+        const DanglingBaseClassRef<const CheckPoints>& check_points,
         size_t nlaps,
         double pacenotes_meters_read_ahead,
         double pacenotes_minimum_covered_meters,
         size_t pacenotes_maximum_number,
-        RenderLogics& render_logics,
-        AdvanceTimes& advance_times,
-        DanglingRef<SceneNode> moving_node);
+        const DanglingRef<SceneNode>& moving_node);
     ~CheckPointsPacenotes();
 
     // IAdvanceTime
@@ -63,13 +60,11 @@ private:
     std::unique_ptr<IWidget> text_widget_;
     std::unique_ptr<IWidget> picture_widget_;
     const ILayoutPixels& font_height_;
-    const CheckPoints* check_points_;
+    DanglingBaseClassPtr<const CheckPoints> check_points_;
     PacenoteReader pacenote_reader_;
     std::vector<const Pacenote*> pacenotes_;
     TextResource text_;
     PacenoteDisplay display_;
-    RenderLogics& render_logics_;
-    AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> moving_node_;
     mutable SafeSharedMutex mutex_;
 };

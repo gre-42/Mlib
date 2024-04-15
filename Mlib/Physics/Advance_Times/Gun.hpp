@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
@@ -30,7 +31,7 @@ class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual Object {
+class Gun final: public IAbsoluteObserver, public IAdvanceTime, public DanglingBaseClass {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,

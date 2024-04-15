@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -26,7 +27,7 @@ public:
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
         Players& players,
-        Player& player,
+        const DanglingBaseClassRef<Player>& player,
         DanglingPtr<SceneNode> exclusive_node,
         AdvanceTimes& advance_times,
         const std::string& image_resource_name,
@@ -52,8 +53,7 @@ public:
 
 private:
     Players& players_;
-    Player& player_;
-    AdvanceTimes& advance_times_;
+    DanglingBaseClassRef<Player> player_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;

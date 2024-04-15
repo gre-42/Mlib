@@ -64,11 +64,11 @@ Bullet::Bullet(
     if (team_ != nullptr) {
         team_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
     }
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 Bullet::~Bullet() {
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    on_destroy.clear();
     if (gunner_ != nullptr) {
         gunner_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
     }
@@ -197,7 +197,7 @@ void Bullet::cause_damage(
         cause_damage(rigid_body, props_.damage);
     } else {
         for (const auto& rbm : rigid_bodies_.objects()) {
-            const RigidBodyVehicle& rb = rbm.rigid_body;
+            const RigidBodyVehicle& rb = rbm.rigid_body.get();
             if ((rb.damageable_ == nullptr) ||
                 (rb.damageable_->health() <= 0.f))
             {

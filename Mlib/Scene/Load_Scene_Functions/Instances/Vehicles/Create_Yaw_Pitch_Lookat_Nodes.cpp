@@ -71,14 +71,12 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
 
     auto& aim_at = get_aim_at(gun_node);
     auto follower_pitch = std::make_unique<PitchLookAtNode>(
-        physics_engine.advance_times_,
         aim_at,
         args.arguments.at<float>(KnownArgs::pitch_min) * degrees,
         args.arguments.at<float>(KnownArgs::pitch_max) * degrees,
         args.arguments.at<float>(KnownArgs::dpitch_max) * degrees / integral_to_float<float>(scene_config.physics_engine_config.nsubsteps),
         increment_pitch_error);
     auto follower = std::make_unique<YawPitchLookAtNodes>(
-        physics_engine.advance_times_,
         aim_at,
         *follower_pitch,
         args.arguments.at<float>(KnownArgs::dyaw_max) * degrees / integral_to_float<float>(scene_config.physics_engine_config.nsubsteps),
@@ -86,6 +84,14 @@ void CreateYawPitchLookatNodes::execute(const LoadSceneJsonUserFunctionArgs& arg
     if (args.arguments.contains(KnownArgs::head_node)) {
         follower->pitch_look_at_node().set_head_node(scene.get_node(args.arguments.at<std::string>(KnownArgs::head_node), DP_LOC));
     }
-    linker.link_relative_movable(yaw_node, std::move(follower));
-    linker.link_relative_movable(pitch_node, std::move(follower_pitch));
+    linker.link_relative_movable(
+        yaw_node,
+        DanglingBaseClassRef<YawPitchLookAtNodes>{ *follower, CURRENT_SOURCE_LOCATION },
+        CURRENT_SOURCE_LOCATION);
+    linker.link_relative_movable(
+        pitch_node,
+        DanglingBaseClassRef<PitchLookAtNode>{ *follower_pitch, CURRENT_SOURCE_LOCATION },
+        CURRENT_SOURCE_LOCATION);
+    global_object_pool.add(std::move(follower), CURRENT_SOURCE_LOCATION);
+    global_object_pool.add(std::move(follower_pitch), CURRENT_SOURCE_LOCATION);
 }

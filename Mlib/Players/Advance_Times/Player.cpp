@@ -7,6 +7,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Pi.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
@@ -100,18 +101,13 @@ Player::Player(
     , plane_ai_{ std::make_unique<PlaneAi>(*this) }
     , drive_or_walk_ai_{ std::make_unique<DriveOrWalkAi>(*this) }
     , destruction_observers_{ *this }
-    , shutting_down_{ false }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
 }
 
-Player::~Player()
-{
-    if (shutting_down_) {
-        verbose_abort("Player already shutting down");
-    }
-    shutting_down_ = true;
+Player::~Player() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    on_destroy.clear();
     destruction_observers_.clear();
 }
 
@@ -246,7 +242,7 @@ const std::string& Player::team_name() const {
     return team_;
 }
 
-Team& Player::team() {
+DanglingBaseClassRef<Team> Player::team() {
     delete_node_mutex_.notify_reading();
     return players_.get_team(team_name());
 }
@@ -513,7 +509,7 @@ void Player::trigger_gun() {
     if (scene_node_scheduled_for_deletion()) {
         THROW_OR_ABORT("Attempt to trigger gun despite scene node scheduled for deletion");
     }
-    gun().trigger(this, &team());
+    gun().trigger(this, &team().get());
 }
 
 bool Player::has_gun_node() const {
@@ -636,7 +632,7 @@ void Player::aim_and_shoot() {
         return;
     }
     if ((target_scene_node_ != nullptr) && (controlled_.aim_at().target_locked_on())) {
-        gun().trigger(this, &team());
+        gun().trigger(this, &team().get());
     }
 }
 
@@ -857,7 +853,7 @@ void Player::select_next_vehicle() {
             next_scene_vehicle_ = &v;
             v.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
         };
-        if (s->has_player() && (&s->get_player() == this)) {
+        if (s->has_player() && (&s->get_player().get() == this)) {
             set_next_scene_vehicle();
             break;
         }

@@ -11,7 +11,6 @@
 namespace Mlib {
 
 class Focuses;
-class AdvanceTimes;
 class SceneNode;
 class RigidBodyPulses;
 
@@ -20,16 +19,15 @@ public:
     RigidBodyRecorder(
         const std::string& filename,
         const TransformationMatrix<double, double, 3>* geographic_mapping,
-        AdvanceTimes& advance_times,
         DanglingRef<SceneNode> recorded_node,
         RigidBodyPulses* rbp,
         const Focuses& focuses);
+    ~RigidBodyRecorder();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
     const Focuses& focuses_;
-    AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> recorded_node_;
     RigidBodyPulses* rbp_;
     TrackWriter track_writer_;

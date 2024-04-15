@@ -2,9 +2,8 @@
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Widget.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <mutex>
 
@@ -21,31 +20,28 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     const std::string& ttf_filename,
     const FixedArray<float, 3>& color,
     const std::string& pacenotes_filename,
-    const CheckPoints& check_points,
+    const DanglingBaseClassRef<const CheckPoints>& check_points,
     size_t nlaps,
     double pacenotes_meters_read_ahead,
     double pacenotes_minimum_covered_meters,
     size_t pacenotes_maximum_number,
-    RenderLogics& render_logics,
-    AdvanceTimes& advance_times,
-    DanglingRef<SceneNode> moving_node)
-: widget_distance_{widget_distance},
-  text_widget_{std::move(text_widget)},
-  picture_widget_{std::move(picture_widget)},
-  font_height_{font_height},
-  check_points_{&check_points},
-  pacenote_reader_{pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters},
-  text_{ttf_filename, color},
-  display_{gallery, text_, pictures_left, pictures_right},
-  render_logics_{render_logics},
-  advance_times_{advance_times},
-  moving_node_{moving_node.ptr()}
+    const DanglingRef<SceneNode>& moving_node)
+    : widget_distance_{ widget_distance }
+    , text_widget_{ std::move(text_widget) }
+    , picture_widget_{ std::move(picture_widget) }
+    , font_height_{ font_height }
+    , check_points_{ check_points.ptr() }
+    , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
+    , text_{ ttf_filename, color }
+    , display_{ gallery, text_, pictures_left, pictures_right }
+    , moving_node_{ moving_node.ptr() }
 {
     pacenotes_.reserve(pacenotes_maximum_number);
     moving_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 CheckPointsPacenotes::~CheckPointsPacenotes() {
+    on_destroy.clear();
     if (moving_node_ != nullptr) {
         moving_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
@@ -74,8 +70,7 @@ void CheckPointsPacenotes::notify_destroyed(DanglingRef<SceneNode> destroyed_obj
     check_points_ = nullptr;
     pacenotes_.clear();
     moving_node_ = nullptr;
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
-    render_logics_.remove(*this);
+    global_object_pool.remove(this);
 }
 
 void CheckPointsPacenotes::render(

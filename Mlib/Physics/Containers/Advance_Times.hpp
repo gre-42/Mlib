@@ -8,21 +8,21 @@
 namespace Mlib {
 
 class IAdvanceTime;
+template <class T>
+class DestructionFunctionsTokensObject;
+template <class T>
+class DanglingBaseClassRef;
 
 class AdvanceTimes {
-    friend class PhysicsEngine;
 public:
     AdvanceTimes();
     ~AdvanceTimes();
-    void add_advance_time(std::unique_ptr<IAdvanceTime>&& advance_time);
-    void add_advance_time(IAdvanceTime& advance_time);
-    void schedule_delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
+    void add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& advance_time, SourceLocation loc);
     void delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
-    void delete_scheduled_advance_times();
+    void advance_time(float dt, std::chrono::steady_clock::time_point time);
 private:
-    std::list<std::unique_ptr<IAdvanceTime>> advance_times_shared_;
-    std::list<IAdvanceTime*> advance_times_ptr_;
-    std::mutex scheduled_deletion_mutex_;
+    bool advancing_time_;
+    std::list<std::pair<std::unique_ptr<DestructionFunctionsTokensObject<IAdvanceTime>>, SourceLocation>> advance_times_;
 };
 
 }

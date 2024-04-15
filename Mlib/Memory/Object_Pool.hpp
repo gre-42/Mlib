@@ -1,10 +1,13 @@
 #pragma once
 #include <Mlib/Object.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <compare>
 #include <functional>
 #include <mutex>
 #include <set>
+#include <type_traits>
+#include <unordered_set>
 
 #ifdef _MSC_VER
 #ifdef MlibMemory_EXPORTS
@@ -27,11 +30,6 @@ struct ObjectAndSourceLocation {
     }
 };
 
-template <class T>
-struct alignas(T) AlignedBuffer {
-    char data[sizeof(T)];
-};
-
 enum class InObjectPoolDestructor {
     CLEAR,
     ASSERT_NO_LEAKS
@@ -44,16 +42,26 @@ public:
     ObjectPool(InObjectPoolDestructor what_to_do_in_dtor);
     ~ObjectPool();
     template<class T, class... Args>
+        requires std::is_convertible_v<T&, Object&>
     T& create(SourceLocation loc, Args&&... args) {
-        auto* buf = new AlignedBuffer<T>();
-        T* o;
+        T* o = std::allocator<T>().allocate(1);
         try {
-            o = new (buf) T(std::forward<Args>(args)...);
+            new (o) T(std::forward<Args>(args)...);
         } catch (...) {
-            delete buf;
+            std::allocator<T>().deallocate(o, 1);
             throw;
         }
-        add([buf](){ delete buf; }, *o, loc);
+        add([o](){ std::allocator<T>().deallocate(o, 1); }, *o, loc);
+        return *o;
+    }
+    template<class T>
+        requires std::is_convertible_v<T&, Object&>
+    T& add(std::unique_ptr<T>&& u, SourceLocation loc) {
+        if (u == nullptr) {
+            verbose_abort("Attempt to add nullptr to object pool");
+        }
+        auto o = u.release();
+        add([o]() { std::allocator<T>().deallocate(o, 1); }, *o, loc);
         return *o;
     }
     void remove(Object* o);
@@ -66,7 +74,7 @@ private:
     mutable std::mutex mutex_;
     InObjectPoolDestructor what_to_do_in_dtor_;
     std::set<ObjectAndSourceLocation> ptrs_;
-    std::set<Object*> deleting_ptrs_;
+    std::unordered_set<Object*> deleting_ptrs_;
     bool clearing_;
 };
 

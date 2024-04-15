@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
@@ -17,7 +18,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 class RigidBodyVehicle;
 
-class AimAt: public IAbsoluteObserver, public IAdvanceTime, public virtual Object {
+class AimAt: public IAbsoluteObserver, public IAdvanceTime, public DanglingBaseClass {
 public:
     AimAt(
         AdvanceTimes& advance_times,
@@ -48,7 +49,6 @@ private:
     FixedArray<double, 3> relative_point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;
     DanglingPtr<SceneNode> gun_node_;
-    AdvanceTimes& advance_times_;
     const RigidBodyVehicle& follower_;
     const RigidBodyVehicle* followed_;
     float bullet_start_offset_;

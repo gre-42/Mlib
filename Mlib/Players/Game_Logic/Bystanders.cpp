@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -50,10 +51,10 @@ bool Bystanders::spawn_for_vip(
     }
     bool success = false;
     spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit({vip_pos, cfg_.r_spawn_far}, [&](const SpawnPoint* sp){
-        if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player().pathfinding_waypoints().has_waypoints())) {
+        if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->pathfinding_waypoints().has_waypoints())) {
             return true;
         }
-        if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player().is_pedestrian())) {
+        if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player()->is_pedestrian())) {
             return true;
         }
         double dist2 = sum(squared(sp->position - vip_pos));
@@ -178,7 +179,7 @@ bool Bystanders::delete_for_vip(
     }
 }
 
-void Bystanders::set_vip(Player* vip) {
+void Bystanders::set_vip(const DanglingBaseClassPtr<Player>& vip) {
     vip_ = vip;
 }
 
@@ -200,11 +201,11 @@ void Bystanders::handle_bystanders() {
     std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % players_.players().size()));
     auto handle_bystander = [&](VehicleSpawner& spawner) {
         if (spawner.has_player()) {
-            auto& player = spawner.get_player();
-            if (spawner.has_player() && (&player == vip_)) {
+            auto player = spawner.get_player();
+            if (spawner.has_player() && (&player.get() == vip_.get())) {
                 return;
             }
-            if (player.game_mode() != GameMode::BYSTANDER) {
+            if (player->game_mode() != GameMode::BYSTANDER) {
                 return;
             }
         }

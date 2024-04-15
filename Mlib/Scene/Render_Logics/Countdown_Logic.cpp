@@ -45,7 +45,6 @@ CountDownLogic::CountDownLogic(
 CountDownLogic::~CountDownLogic() {
     on_destroy.clear();
     node_ = nullptr;
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void CountDownLogic::render(

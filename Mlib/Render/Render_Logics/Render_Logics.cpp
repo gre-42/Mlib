@@ -1,5 +1,6 @@
 #include "Render_Logics.hpp"
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -95,7 +96,7 @@ void RenderLogics::insert(const DanglingBaseClassRef<RenderLogic>& render_logic,
             ? next_smallest_id_--
             : next_largest_id_++
     };
-    auto it = render_logics_.try_emplace(zi, render_logic.ptr(), CURRENT_SOURCE_LOCATION);
+    auto it = render_logics_.try_emplace(zi, render_logic, CURRENT_SOURCE_LOCATION);
     if (!it.second) {
         verbose_abort("Could not insert render logic");
     }

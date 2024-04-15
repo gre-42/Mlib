@@ -28,11 +28,11 @@ GameLogic::GameLogic(
     , players_{ players }
     , supply_depots_{ supply_depots }
 {
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 GameLogic::~GameLogic() {
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    on_destroy.clear();
 }
 
 void GameLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {

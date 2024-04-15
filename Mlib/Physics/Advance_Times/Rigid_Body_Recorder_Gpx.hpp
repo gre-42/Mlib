@@ -21,17 +21,16 @@ class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, 
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,
-        AdvanceTimes& advance_times,
         DanglingRef<SceneNode> recorded_node,
         RigidBodyPulses* rbp,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const Focuses& focuses);
+    ~RigidBodyRecorderGpx();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
     const Focuses& focuses_;
-    AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> recorded_node_;
     RigidBodyPulses* rbp_;
     const TransformationMatrix<double, double, 3>* geographic_coordinates_;

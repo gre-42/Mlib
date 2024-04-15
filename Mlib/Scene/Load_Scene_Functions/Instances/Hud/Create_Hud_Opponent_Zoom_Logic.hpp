@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class DeleteScheduledAdvanceTimes: public LoadSceneInstanceFunction {
+class CreateHudOpponentZoom: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit DeleteScheduledAdvanceTimes(RenderableScene& renderable_scene);
+    explicit CreateHudOpponentZoom(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

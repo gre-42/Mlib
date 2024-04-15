@@ -40,5 +40,8 @@ void LookAtNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         followed_node,
         followed_node->get_absolute_movable());
     linker.link_absolute_movable_and_additional_node(
-        follower_node, followed_node, std::move(follower));
+        follower_node,
+        followed_node,
+        std::move(follower),
+        CURRENT_SOURCE_LOCATION);
 }

@@ -1,6 +1,6 @@
 #include "Rigid_Body_Recorder_Gpx.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -11,13 +11,11 @@ using namespace Mlib;
 
 RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
-    AdvanceTimes& advance_times,
     DanglingRef<SceneNode> recorded_node,
     RigidBodyPulses* rbp,
     const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const Focuses& focuses)
     : focuses_{ focuses }
-    , advance_times_{ advance_times }
     , recorded_node_{ recorded_node.ptr() }
     , rbp_{ rbp }
     , geographic_coordinates_{ geographic_coordinates }
@@ -25,6 +23,10 @@ RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     , start_time_{ std::chrono::steady_clock::now() }
 {
     recorded_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+}
+
+RigidBodyRecorderGpx::~RigidBodyRecorderGpx() {
+    on_destroy.clear();
 }
 
 void RigidBodyRecorderGpx::advance_time(float dt, std::chrono::steady_clock::time_point time) {
@@ -46,5 +48,5 @@ void RigidBodyRecorderGpx::advance_time(float dt, std::chrono::steady_clock::tim
 void RigidBodyRecorderGpx::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     rbp_ = nullptr;
     recorded_node_ = nullptr;
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    global_object_pool.remove(this);
 }

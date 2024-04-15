@@ -28,13 +28,14 @@ DeletingDamageable::DeletingDamageable(
     }
     rb_->damageable_ = this;
     dgs_.add([this]() { if (rb_ != nullptr) { rb_->damageable_ = nullptr; } });
-    advance_times_.add_advance_time(*this);
-    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     node_on_clear_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     rb_on_destroy_.add([this]() { rb_ = nullptr; global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
-DeletingDamageable::~DeletingDamageable() = default;
+DeletingDamageable::~DeletingDamageable() {
+    on_destroy.clear();
+}
 
 void DeletingDamageable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {

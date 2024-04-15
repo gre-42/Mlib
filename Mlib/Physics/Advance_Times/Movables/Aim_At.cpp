@@ -26,7 +26,6 @@ AimAt::AimAt(
     , relative_point_to_aim_at_{ NAN }
     , followed_node_{ nullptr }
     , gun_node_{ gun_node.ptr() }
-    , advance_times_{ advance_times }
     , follower_{ get_rigid_body_vehicle(follower_node) }
     , followed_{ nullptr }
     , bullet_start_offset_{ bullet_start_offset }
@@ -42,13 +41,14 @@ AimAt::AimAt(
 {
     gun_node->set_sticky_absolute_observer(*this);
     dgs_.add([gun_node]() { gun_node->clear_sticky_absolute_observer(); });
-    advance_times_.add_advance_time(*this);
-    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     gun_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     follower_node_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
-AimAt::~AimAt() = default;
+AimAt::~AimAt() {
+    on_destroy.clear();
+}
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {

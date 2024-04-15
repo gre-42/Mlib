@@ -43,7 +43,6 @@ VisualMovable3rdLogger::~VisualMovable3rdLogger() {
             { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
     }
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void VisualMovable3rdLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {

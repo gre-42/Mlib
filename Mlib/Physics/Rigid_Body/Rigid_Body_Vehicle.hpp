@@ -21,7 +21,6 @@
 
 namespace Mlib {
 
-class RigidBodies;
 class RigidBodyEngine;
 class RigidBodyDeltaEngine;
 struct CollisionHistory;
@@ -185,7 +184,6 @@ public:
     const std::string& name() const;
     // This method is currently just a debugging feature.
     const std::string& asset_id() const;
-    void set_rigid_bodies(RigidBodies& rigid_bodies);
     void set_wants_to_jump();
     void set_jump_dv(float value);
     void clear_driver();
@@ -226,8 +224,6 @@ public:
 
     DestructionObservers<const RigidBodyVehicle&> destruction_observers;
     DestructionFunctions on_destroy;
-
-    RigidBodies* rigid_bodies_;
 
     float max_velocity_;
 #ifdef COMPUTE_POWER

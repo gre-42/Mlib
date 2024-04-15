@@ -143,7 +143,7 @@ RenderableScene::RenderableScene(
     , fxaa_logic_{ std::make_unique<FxaaLogic>(*post_processing_logic_) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
-    , players_{ physics_engine_.advance_times_, level_name, max_tracks, save_playback, scene_node_resources, race_identfier }
+    , players_{ level_name, max_tracks, save_playback, scene_node_resources, race_identfier }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
     , game_logic_{
           scene_,
@@ -253,5 +253,5 @@ void RenderableScene::instantiate_audio_listener(
         scene_,
         delay,
         velocity_dt);
-    physics_engine_.advance_times_.add_advance_time(*audio_listener_updater_);
+    physics_engine_.advance_times_.add_advance_time({ *audio_listener_updater_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

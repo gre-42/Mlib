@@ -13,7 +13,6 @@ namespace Mlib {
 template <class T>
 class DanglingRef;
 class PitchLookAtNode;
-class AdvanceTimes;
 struct PhysicsEngineConfig;
 class RigidBodyVehicle;
 class AimAt;
@@ -22,7 +21,6 @@ class SceneNode;
 class YawPitchLookAtNodes: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public DanglingBaseClass {
 public:
     YawPitchLookAtNodes(
-        AdvanceTimes& advance_times,
         AimAt& aim_at,
         PitchLookAtNode& pitch_look_at_node,
         float dyaw_max,
@@ -40,7 +38,6 @@ public:
     PitchLookAtNode& pitch_look_at_node() const;
 
 private:
-    AdvanceTimes& advance_times_;
     AimAt& aim_at_node_;
     float dyaw_;
     float dyaw_max_;

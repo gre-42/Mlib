@@ -1,4 +1,5 @@
 #include "Team_Deathmatch.hpp"
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -18,11 +19,11 @@ TeamDeathmatch::TeamDeathmatch(
     Players& players,
     Spawn& spawn,
     const std::function<void()>& setup_new_round)
-: spawners_{ spawners },
-  players_{ players },
-  spawn_{ spawn },
-  setup_new_round_{ setup_new_round },
-  objective_{Objective::NONE}
+    : spawners_{ spawners }
+    , players_{ players }
+    , spawn_{ spawn }
+    , setup_new_round_{ setup_new_round }
+    , objective_{ Objective::NONE }
 {}
 
 TeamDeathmatch::~TeamDeathmatch()
@@ -70,10 +71,10 @@ void TeamDeathmatch::handle_last_team_standing_objective() {
                     ++p->stats().nlosses;
                 }
             }
-            auto& winner_team = players_.get_team(*winner_teams.begin());
-            winner_team.increase_nwins();
+            auto winner_team = players_.get_team(*winner_teams.begin());
+            winner_team->increase_nwins();
             for (const auto& [_, team] : players_.teams()) {
-                if (team.get() != &winner_team) {
+                if (team != winner_team.ptr()) {
                     team->increase_nlosses();
                 }
             }

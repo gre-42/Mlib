@@ -61,5 +61,5 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         { logger, CURRENT_SOURCE_LOCATION },
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
-    physics_engine.advance_times_.add_advance_time(logger);
+    physics_engine.advance_times_.add_advance_time({ logger, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

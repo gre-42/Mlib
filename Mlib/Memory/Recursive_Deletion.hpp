@@ -25,6 +25,20 @@ void clear_set_recursively(TContainer& container, const TFunction& deleter) {
     }
 }
 
+template <class TContainer, class TLock, class TFunction>
+void clear_set_recursively_with_lock(
+    TContainer& container,
+    TLock& lock,
+    const TFunction& deleter)
+{
+    while (!container.empty()) {
+        auto node = container.extract(container.begin());
+        lock.unlock();
+        deleter(node.value());
+        lock.lock();
+    }
+}
+
 template <class TContainer, class TFunction>
 void clear_list_recursively(TContainer& elements, const TFunction& deleter) {
     while (!elements.empty()) {

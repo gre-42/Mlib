@@ -1,19 +1,18 @@
 #include "Copy_Rotation.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
 
-CopyRotation::CopyRotation(
-    AdvanceTimes& advance_times,
-    DanglingRef<SceneNode> from)
-: advance_times_{advance_times},
-  from_{from.ptr()}
+CopyRotation::CopyRotation(DanglingRef<SceneNode> from)
+    : from_{ from.ptr() }
 {}
 
-CopyRotation::~CopyRotation()
-{}
+CopyRotation::~CopyRotation() {
+    on_destroy.clear();
+}
 
 void CopyRotation::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
 {
@@ -49,6 +48,6 @@ void CopyRotation::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
         if (from_ != nullptr) {
             from_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+        global_object_pool.remove(this);
     }
 }

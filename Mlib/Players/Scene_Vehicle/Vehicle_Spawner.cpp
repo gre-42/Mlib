@@ -13,6 +13,7 @@ using namespace Mlib;
 VehicleSpawner::VehicleSpawner(Scene& scene, const std::string& team_name)
     : scene_{ scene }
     , player_{ nullptr }
+    , on_player_destroy_{ nullptr, CURRENT_SOURCE_LOCATION }
     , team_name_{ team_name }
     , time_since_spawn_{ NAN }
     , time_since_deletion_{ 0.f }
@@ -35,7 +36,7 @@ void VehicleSpawner::notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle
     }
 }
 
-IPlayer* VehicleSpawner::player() {
+DanglingBaseClassPtr<IPlayer> VehicleSpawner::player() {
     return player_;
 }
 
@@ -54,14 +55,16 @@ bool VehicleSpawner::has_player() const {
     return (player_ != nullptr);
 }
 
-void VehicleSpawner::set_player(Player& player) {
+void VehicleSpawner::set_player(const DanglingBaseClassRef<Player>& player) {
     if (player_ != nullptr) {
         THROW_OR_ABORT("Player already set");
     }
-    player_ = &player;
+    player_ = player.ptr();
+    on_player_destroy_.set(player_->on_destroy, CURRENT_SOURCE_LOCATION);
+    on_player_destroy_.add([this]() { player_ = nullptr; }, CURRENT_SOURCE_LOCATION);
 }
 
-Player& VehicleSpawner::get_player() {
+DanglingBaseClassRef<Player> VehicleSpawner::get_player() {
     if (player_ == nullptr) {
         THROW_OR_ABORT("Player not set");
     }

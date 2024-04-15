@@ -27,6 +27,6 @@ PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene)
 
 void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).single_waypoint().set_waypoint(
-        args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)
+        ->single_waypoint().set_waypoint(args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
 }

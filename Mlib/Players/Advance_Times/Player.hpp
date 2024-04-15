@@ -164,7 +164,7 @@ public:
     void set_pathfinding_waypoints(
         const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
     const std::string& team_name() const;
-    Team& team();
+    DanglingBaseClassRef<Team> team();
     PlayerStats& stats();
     const PlayerStats& stats() const;
     float car_health() const;
@@ -290,7 +290,6 @@ private:
     std::unique_ptr<PlaneAi> plane_ai_;
     std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    bool shutting_down_;
 };
 
 };

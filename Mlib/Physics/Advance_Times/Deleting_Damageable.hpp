@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/Object.hpp>
@@ -19,7 +19,7 @@ class RigidBodyVehicle;
 class SceneNode;
 class Scene;
 
-class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual Object {
+class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public DanglingBaseClass {
     DeletingDamageable(const DeletingDamageable&) = delete;
     DeletingDamageable& operator = (const DeletingDamageable&) = delete;
 public:

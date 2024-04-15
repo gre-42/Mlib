@@ -31,7 +31,6 @@ public:
         BaseLog* base_log = nullptr);
     ~PhysicsIteration();
     void operator()(std::chrono::steady_clock::time_point time);
-    void delete_scheduled_advance_times();
 private:
     SceneNodeResources& scene_node_resources_;
     Scene& scene_;

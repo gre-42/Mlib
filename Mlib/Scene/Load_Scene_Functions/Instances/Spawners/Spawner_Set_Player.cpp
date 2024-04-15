@@ -30,5 +30,5 @@ SpawnerSetPlayer::SpawnerSetPlayer(RenderableScene& renderable_scene)
 void SpawnerSetPlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
-    vehicle_spawners.get(name).set_player(players.get_player(name));
+    vehicle_spawners.get(name).set_player(players.get_player(name, CURRENT_SOURCE_LOCATION));
 }

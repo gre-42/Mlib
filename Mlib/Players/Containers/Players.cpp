@@ -1,4 +1,7 @@
 #include "Players.hpp"
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Race_History.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
@@ -14,63 +17,82 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 Players::Players(
-    AdvanceTimes& advance_times,
     const std::string& level_name,
     size_t max_tracks,
     bool save_playback,
     const SceneNodeResources& scene_node_resources,
     const RaceIdentifier& race_identifier)
-: advance_times_{advance_times},
-  race_history_{std::make_unique<RaceHistory>(
-    max_tracks,
-    save_playback,
-    scene_node_resources,
-    race_identifier)}
+    : race_history_{std::make_unique<RaceHistory>(
+        max_tracks,
+        save_playback,
+        scene_node_resources,
+        race_identifier)}
 {}
 
-Players::~Players()
-{
-    for (const auto& [_, p] : players_) {
-        advance_times_.delete_advance_time(*p, CURRENT_SOURCE_LOCATION);
+Players::~Players() {
+    while (!players_.empty()) {
+        global_object_pool.remove(players_.begin()->second.get());
+    }
+    while (!teams_.empty()) {
+        global_object_pool.remove(teams_.begin()->second.get());
     }
 }
 
-void Players::add_player(std::unique_ptr<Player>&& player) {
+void Players::add_player(const DanglingBaseClassRef<Player>& player) {
     std::string player_name = player->name();
-    Player* p = player.get();
-    if (!players_.try_emplace(player->name(), std::move(player)).second) {
-        THROW_OR_ABORT("Player with name \"" + player_name + "\" already exists");
-    }
-    if (!teams_.contains(p->team_name())) {
-        if (!teams_.insert({p->team_name(), std::make_unique<Team>()}).second) {
-            THROW_OR_ABORT("Could not insert team");
+    {
+        auto pit = players_.try_emplace(player->name(), player, CURRENT_SOURCE_LOCATION);
+        if (!pit.second) {
+            THROW_OR_ABORT("Player with name \"" + player_name + "\" already exists");
         }
+        pit.first->second.on_destroy([this, player]() { remove_player(player->name()); }, CURRENT_SOURCE_LOCATION);
     }
-    teams_.at(p->team_name())->add_player(p->name());
+
+    if (!teams_.contains(player->team_name())) {
+        DanglingBaseClassRef<Team> team{ global_object_pool.create<Team>(CURRENT_SOURCE_LOCATION, player->team_name()), CURRENT_SOURCE_LOCATION };
+        auto tit = teams_.try_emplace(player->team_name(), team, CURRENT_SOURCE_LOCATION);
+        if (!tit.second) {
+            verbose_abort("Could not insert team");
+        }
+        tit.first->second.on_destroy([this, team]() { remove_team(team->name()); }, CURRENT_SOURCE_LOCATION);
+    }
+    teams_.at(player->team_name())->add_player(player->name());
 }
 
-Player& Players::get_player(const std::string& name) {
+void Players::remove_player(const std::string& name) {
+    if (players_.erase(name) != 1) {
+        verbose_abort("Could not remove player \"" + name + '"');
+    }
+}
+
+DanglingBaseClassRef<Player> Players::get_player(const std::string& name, SourceLocation loc) {
     auto it = players_.find(name);
     if (it == players_.end()) {
         THROW_OR_ABORT("No player with name \"" + name + "\" exists");
     }
-    return *it->second;
+    return it->second.object().set_loc(loc);
 }
 
-const Player& Players::get_player(const std::string& name) const {
-    return const_cast<Players*>(this)->get_player(name);
+DanglingBaseClassRef<const Player> Players::get_player(const std::string& name, SourceLocation loc) const {
+    return const_cast<Players*>(this)->get_player(name, loc);
 }
 
-Team& Players::get_team(const std::string& name) {
+DanglingBaseClassRef<Team> Players::get_team(const std::string& name) {
     auto it = teams_.find(name);
     if (it == teams_.end()) {
         THROW_OR_ABORT("No team with name \"" + name + "\" exists");
     }
-    return *it->second;
+    return it->second.object();
 }
 
-const Team& Players::get_team(const std::string& name) const {
+DanglingBaseClassRef<const Team> Players::get_team(const std::string& name) const {
     return const_cast<Players*>(this)->get_team(name);
+}
+
+void Players::remove_team(const std::string& name) {
+    if (teams_.erase(name) != 1) {
+        verbose_abort("Could not remove team \"" + name + '"');
+    }
 }
 
 void Players::set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint) {
@@ -132,42 +154,42 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
         }
         sstr << std::endl;
         for (const auto& pname : team->players()) {
-            const auto& p = get_player(pname);
-            if (p.game_mode() == GameMode::BYSTANDER) {
+            auto p = get_player(pname, CURRENT_SOURCE_LOCATION);
+            if (p->game_mode() == GameMode::BYSTANDER) {
                 continue;
             }
             sstr << "Player: " << pname;
             if (any(config & ScoreBoardConfiguration::TEAM)) {
-                sstr << ", team: " << p.team_name();
+                sstr << ", team: " << p->team_name();
             }
             if (any(config & ScoreBoardConfiguration::BEST_LAP_TIME)) {
-                sstr << ", best lap time: " << format_minutes_seconds(p.stats().best_lap_time);
+                sstr << ", best lap time: " << format_minutes_seconds(p->stats().best_lap_time);
             }
             if (any(config & ScoreBoardConfiguration::RACE_TIME)) {
-                if (p.stats().race_time != INFINITY) {
-                    sstr << ", race time: " << format_minutes_seconds(p.stats().race_time);
+                if (p->stats().race_time != INFINITY) {
+                    sstr << ", race time: " << format_minutes_seconds(p->stats().race_time);
                 }
             }
             if (any(config & ScoreBoardConfiguration::LAPS)) {
                 if ((race_history_->race_identifier().laps != 1) &&
-                    (p.stats().nlaps != race_history_->race_identifier().laps))
+                    (p->stats().nlaps != race_history_->race_identifier().laps))
                 {
-                    sstr << ", lap " <<  (p.stats().nlaps + 1) << "/" << race_history_->race_identifier().laps;
+                    sstr << ", lap " <<  (p->stats().nlaps + 1) << "/" << race_history_->race_identifier().laps;
                 }
             }
             if (any(config & ScoreBoardConfiguration::RANK)) {
-                if (p.stats().rank != UINT32_MAX) {
-                    sstr << ", rank " <<  (p.stats().rank + 1);
+                if (p->stats().rank != UINT32_MAX) {
+                    sstr << ", rank " <<  (p->stats().rank + 1);
                 }
             }
             if (any(config & ScoreBoardConfiguration::CAR_HP)) {
-                sstr << ", car HP: " << p.car_health();
+                sstr << ", car HP: " << p->car_health();
             }
             if (any(config & ScoreBoardConfiguration::NWINS)) {
-                sstr << ", wins: " << p.stats().nwins;
+                sstr << ", wins: " << p->stats().nwins;
             }
             if (any(config & ScoreBoardConfiguration::NKILLS)) {
-                sstr << ", kills: " << p.stats().nkills;
+                sstr << ", kills: " << p->stats().nkills;
             }
             sstr << std::endl;
         }
@@ -180,19 +202,19 @@ std::string Players::get_score_board(ScoreBoardConfiguration config) const {
     return sstr.str();
 }
 
-std::map<std::string, std::unique_ptr<Player>>& Players::players() {
+std::map<std::string, DestructionFunctionsTokensObject<Player>>& Players::players() {
     return players_;
 }
 
-const std::map<std::string, std::unique_ptr<Player>>& Players::players() const {
+const std::map<std::string, DestructionFunctionsTokensObject<Player>>& Players::players() const {
     return players_;
 }
 
-std::map<std::string, std::unique_ptr<Team>>& Players::teams() {
+std::map<std::string, DestructionFunctionsTokensObject<Team>>& Players::teams() {
     return teams_;
 }
 
-const std::map<std::string, std::unique_ptr<Team>>& Players::teams() const {
+const std::map<std::string, DestructionFunctionsTokensObject<Team>>& Players::teams() const {
     return teams_;
 }
 

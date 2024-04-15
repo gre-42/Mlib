@@ -13,7 +13,6 @@
 
 namespace Mlib {
 
-class AdvanceTimes;
 class SceneNode;
 class Focuses;
 
@@ -29,11 +28,10 @@ private:
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
-class RigidBodyPlayback: public virtual Object, public IAdvanceTime {
+class RigidBodyPlayback: public IAdvanceTime, public DanglingBaseClass {
 public:
     RigidBodyPlayback(
         std::unique_ptr<ITrackElementSequence>&& sequence,
-        AdvanceTimes& advance_times,
         const Focuses& focuses,
         const TransformationMatrix<double, double, 3>* geographic_mapping,
         float speedup,
@@ -42,7 +40,6 @@ public:
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     DanglingBaseClassRef<IAbsoluteMovable> get_playback_object(size_t i);
 private:
-    AdvanceTimes& advance_times_;
     const Focuses& focuses_;
     float speedup_;
     double progress_;

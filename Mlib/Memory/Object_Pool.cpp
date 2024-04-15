@@ -46,27 +46,31 @@ void ObjectPool::add(std::function<void()> deallocate, Object& o, SourceLocation
 // }
 
 void ObjectPool::remove(Object& o) {
-    std::scoped_lock lock{ mutex_ };
+    std::unique_lock lock{ mutex_ };
     if (deleting_ptrs_.contains(&o)) {
         return;
     }
     auto n = ptrs_.extract({ nullptr, &o, CURRENT_SOURCE_LOCATION });
     if (n.empty()) {
-        verbose_abort("Could not erase unique ptr");
+        verbose_abort("ObjectPool: Could not remove object");
     }
+    lock.unlock();
     delete_(n.value());
 }
 
 void ObjectPool::remove(Object* o) {
     if (o == nullptr) {
-        verbose_abort("Attempt to remove nullptr");
+        verbose_abort("ObjectPool: Attempt to remove nullptr");
     }
     remove(*o);
 }
 
 void ObjectPool::delete_(const ObjectAndSourceLocation& o) {
-    if (!deleting_ptrs_.insert(o.object).second) {
-        verbose_abort("Could not insert into deleting_ptrs");
+    {
+        std::scoped_lock lock{ mutex_ };
+        if (!deleting_ptrs_.insert(o.object).second) {
+            verbose_abort("Could not insert into deleting_ptrs");
+        }
     }
     std::exception_ptr eptr = nullptr;
     try {
@@ -75,8 +79,11 @@ void ObjectPool::delete_(const ObjectAndSourceLocation& o) {
         lwarn() << "Destructor threw an exception";
         eptr = std::current_exception(); 
     }
-    if (deleting_ptrs_.erase(o.object) != 1) {
-        verbose_abort("Could not erase from deleting_ptrs");
+    {
+        std::scoped_lock lock{ mutex_ };
+        if (deleting_ptrs_.erase(o.object) != 1) {
+            verbose_abort("Could not erase from deleting_ptrs");
+        }
     }
     o.deallocate();
     if (eptr != nullptr) {
@@ -85,12 +92,12 @@ void ObjectPool::delete_(const ObjectAndSourceLocation& o) {
 }
 
 void ObjectPool::clear() {
-    std::scoped_lock lock{ mutex_ };
+    std::unique_lock lock{ mutex_ };
     if (clearing_) {
         verbose_abort("ObjectPool already clearing");
     }
     clearing_ = true;
-    clear_set_recursively(ptrs_, [this](auto& o) { delete_(o); });
+    clear_set_recursively_with_lock(ptrs_, lock, [this](auto& o) { delete_(o); });
     clearing_ = false;
 }
 

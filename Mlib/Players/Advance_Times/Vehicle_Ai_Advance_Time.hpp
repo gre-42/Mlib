@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Memory/Destruction_Guards.hpp>
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <memory>
@@ -12,7 +11,7 @@ class IVehicleAi;
 class RigidBodyVehicle;
 class AdvanceTimes;
 
-class VehicleAiAdvanceTime: public IAdvanceTime, public virtual Object {
+class VehicleAiAdvanceTime: public IAdvanceTime, public DanglingBaseClass {
 public:
 	explicit VehicleAiAdvanceTime(
 		AdvanceTimes& advance_times,
@@ -26,7 +25,6 @@ private:
 	std::unique_ptr<IVehicleAi> vehicle_ai_;
 	DanglingBaseClassRef<RigidBodyVehicle> follower_;
 	DanglingBaseClassPtr<RigidBodyVehicle> followed_;
-	DestructionGuards dgs_;
 	DestructionFunctionsRemovalTokens follower_on_destroy_;
 	DestructionFunctionsRemovalTokens followed_on_destroy_;
 };

@@ -81,7 +81,11 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
                 physics_engine.advance_times_,
                 tire_id,
                 radius);
-            Linker{ physics_engine.advance_times_ }.link_relative_movable(wheel_node, std::move(wheel));
+            Linker{ physics_engine.advance_times_ }.link_relative_movable<Wheel>(
+                wheel_node,
+                { *wheel, CURRENT_SOURCE_LOCATION },
+                CURRENT_SOURCE_LOCATION);
+            global_object_pool.add(std::move(wheel), CURRENT_SOURCE_LOCATION);
         }
     }
     {

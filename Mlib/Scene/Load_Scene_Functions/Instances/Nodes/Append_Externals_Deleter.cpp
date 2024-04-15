@@ -43,6 +43,5 @@ void AppendExternalsDeleter::execute(const LoadSceneJsonUserFunctionArgs& args)
     //         }
     //     }
     // );
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player))
-        .append_dependent_node(node_name);
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)->append_dependent_node(node_name);
 }

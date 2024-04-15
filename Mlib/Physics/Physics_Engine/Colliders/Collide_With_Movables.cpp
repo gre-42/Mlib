@@ -17,7 +17,7 @@ static void collide_objects(
     if (&o0.rigid_body == &o1.rigid_body) {
         THROW_OR_ABORT("Cannot collide identical objects");
     }
-    if ((o0.rigid_body.mass() == INFINITY) && (o1.rigid_body.mass() == INFINITY)) {
+    if ((o0.rigid_body->mass() == INFINITY) && (o1.rigid_body->mass() == INFINITY)) {
         return;
     }
     PhysicsMaterial included_materials =
@@ -33,8 +33,8 @@ static void collide_objects(
                 continue;
             }
             collide_convex_meshes(
-                o0.rigid_body,
-                o1.rigid_body,
+                o0.rigid_body.get(),
+                o1.rigid_body.get(),
                 msh0,
                 msh1,
                 history);

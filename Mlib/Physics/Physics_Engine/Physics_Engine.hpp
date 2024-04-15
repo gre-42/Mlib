@@ -55,7 +55,6 @@ private:
     std::list<IExternalForceProvider*> external_force_providers_;
     std::set<IControllable*> controllables_;
     PhysicsEngineConfig cfg_;
-    bool check_objects_deleted_on_destruction_;
 };
 
 }

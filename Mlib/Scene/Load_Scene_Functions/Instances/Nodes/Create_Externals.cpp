@@ -29,6 +29,6 @@ CreateExternals::CreateExternals(RenderableScene& renderable_scene)
 
 void CreateExternals::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    players.get_player(args.arguments.at<std::string>(KnownArgs::player)).create_externals(
-        externals_mode_from_string(args.arguments.at<std::string>(KnownArgs::mode)));
+    players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)
+        ->create_externals(externals_mode_from_string(args.arguments.at<std::string>(KnownArgs::mode)));
 }

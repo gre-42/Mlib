@@ -48,5 +48,8 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::offset),
         FixedArray<float, 3>{ grid2(0), grid2(1), 0.f },
         follower_node);
-    linker.link_absolute_movable(follower_node, std::move(follower));
+    linker.link_absolute_movable(
+        follower_node,
+        std::move(follower),
+        CURRENT_SOURCE_LOCATION);
 }

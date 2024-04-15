@@ -59,7 +59,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::text),
         args.ui_focus.focuses);
     countdown_logic.on_node_clear.add([&countdown_logic]() { global_object_pool.remove(countdown_logic); }, CURRENT_SOURCE_LOCATION);
-    physics_engine.advance_times_.add_advance_time(countdown_logic);
+    physics_engine.advance_times_.add_advance_time({ countdown_logic, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     render_logics.append(
         { countdown_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),

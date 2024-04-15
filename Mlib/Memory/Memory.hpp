@@ -8,11 +8,16 @@ template <class T, class TSender>
 class observer_ptr {
 public:
     template <class TDerived>
+    observer_ptr(const DanglingBaseClassPtr<TDerived>& ptr)
+        : ptr_{ ptr }
+        , observer_{ ptr }
+    {}
+    template <class TDerived>
     observer_ptr(TDerived& ptr, SourceLocation loc)
         : ptr_{ ptr, loc }
         , observer_{ ptr, loc }
     {}
-    observer_ptr(DanglingBaseClassPtr<T> ptr, DanglingBaseClassPtr<DestructionObserver<TSender>> observer)
+    observer_ptr(const DanglingBaseClassPtr<T>& ptr, const DanglingBaseClassPtr<DestructionObserver<TSender>>& observer)
         : ptr_{ ptr }
         , observer_{ observer }
     {}

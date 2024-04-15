@@ -26,5 +26,5 @@ SetVip::SetVip(RenderableScene& renderable_scene)
 
 void SetVip::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.bystanders.set_vip(&players.get_player(args.arguments.at<std::string>(KnownArgs::player)));
+    game_logic.bystanders.set_vip(players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION).ptr());
 }

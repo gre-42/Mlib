@@ -28,7 +28,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Check_Points.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Create_Skidmark.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Define_Winner_Conditionals.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Delete_Scheduled_Advance_Times.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Tracker_Logic.hpp>
@@ -327,7 +326,6 @@ LoadScene::LoadScene() {
     register_json_user_function(DeleteNode::key, DeleteNode::json_user_function);
     register_json_user_function(DeleteRootNodes::key, DeleteRootNodes::json_user_function);
     register_json_user_function(DeleteRootNode::key, DeleteRootNode::json_user_function);
-    register_json_user_function(DeleteScheduledAdvanceTimes::key, DeleteScheduledAdvanceTimes::json_user_function);
     register_json_user_function(ExecuteInPhysicsThread::key, ExecuteInPhysicsThread::json_user_function);
     register_json_user_function(FillPixelRegionWithTexture::key, FillPixelRegionWithTexture::json_user_function);
     register_json_user_function(FocusedText::key, FocusedText::json_user_function);

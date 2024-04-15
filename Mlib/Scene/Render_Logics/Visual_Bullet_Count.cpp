@@ -14,7 +14,7 @@ VisualBulletCount::VisualBulletCount(
     ObjectPool& object_pool,
     AdvanceTimes& advance_times,
     RenderLogics& render_logics,
-    Player& player,
+    const DanglingBaseClassRef<Player>& player,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
@@ -24,29 +24,28 @@ VisualBulletCount::VisualBulletCount(
         {1.f, 1.f, 1.f},
         font_height,
         line_distance }
-    , on_player_delete_externals_{ player.delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
     , advance_times_{ advance_times }
     , render_logics_{ render_logics }
     , player_{ player }
     , widget_{ std::move(widget) }
 {
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }
 
 VisualBulletCount::~VisualBulletCount() {
     on_destroy.clear();
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void VisualBulletCount::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     std::scoped_lock lock{mutex_};
-    if (!player_.has_gun_node()) {
+    if (!player_->has_gun_node()) {
         text_.clear();
         return;
     }
-    text_ = "Ammo: " + std::to_string(player_.nbullets_available());
+    text_ = "Ammo: " + std::to_string(player_->nbullets_available());
 }
 
 void VisualBulletCount::render(

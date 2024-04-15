@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Players/Game_Logic/Bystanders.hpp>
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
@@ -20,7 +21,7 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh;
 class DeleteNodeMutex;
 
-class GameLogic: public IAdvanceTime {
+class GameLogic: public IAdvanceTime, public DanglingBaseClass {
 public:
     GameLogic(
         Scene& scene,

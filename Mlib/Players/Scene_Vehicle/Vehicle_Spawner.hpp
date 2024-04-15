@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <chrono>
@@ -27,7 +28,7 @@ public:
     virtual void notify_destroyed(const RigidBodyVehicle& rigid_body_vehicle) override;
 
     // ISpawner
-    virtual IPlayer* player() override;
+    virtual DanglingBaseClassPtr<IPlayer> player() override;
 
     // Misc
     float get_respawn_cooldown_time() const;
@@ -38,8 +39,8 @@ public:
     std::string get_team_name() const;
     
     bool has_player() const;
-    void set_player(Player& player);
-    Player& get_player();
+    void set_player(const DanglingBaseClassRef<Player>& player);
+    DanglingBaseClassRef<Player> get_player();
     
     bool has_scene_vehicle() const;
     SceneVehicle& get_primary_scene_vehicle();
@@ -59,7 +60,8 @@ private:
     Scene& scene_;
     std::function<void(const SpawnPoint&)> spawn_vehicle_;
     std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
-    Player* player_;
+    DanglingBaseClassPtr<Player> player_;
+    DestructionFunctionsRemovalTokens on_player_destroy_;
     std::string team_name_;
     float time_since_spawn_;
     float time_since_deletion_;

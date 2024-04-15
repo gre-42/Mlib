@@ -35,42 +35,43 @@ private:
     mutable std::shared_mutex loc_mutex_;
 };
 
+struct CopyDanglingClassPtr {};
+struct MoveDanglingClassPtr {};
+
 template <class T>
 class DanglingBaseClassPtr {
-    DanglingBaseClassPtr() = delete;
+    template <class T2>
+    friend class DanglingBaseClassPtr;
+    template <class T2>
+    friend class DanglingBaseClassRef;
 public:
     DanglingBaseClassPtr(std::nullptr_t)
         : b_{ nullptr }
         , v_{ nullptr }
     {}
-    DanglingBaseClassPtr(DanglingBaseClassPtr<T>&& other)
-        : b_{ other.b_ }
-        , v_{ other.v_ }
-    {
-        if (v_ != nullptr) {
-            b_->add_source_location(this, b_->loc(&other));
-            b_->remove_source_location(&other);
-            other.v_ = nullptr;
-        }
+    DanglingBaseClassPtr(DanglingBaseClassPtr&& other)
+        : DanglingBaseClassPtr{ std::move(other), MoveDanglingClassPtr() }
+    {}
+    DanglingBaseClassPtr(const DanglingBaseClassPtr& other)
+        : DanglingBaseClassPtr{ other, CopyDanglingClassPtr() }
+    {}
+    DanglingBaseClassPtr& operator = (const DanglingBaseClassPtr& other) {
+        return assign(other);
     }
-    DanglingBaseClassPtr(const DanglingBaseClassPtr<T>& other)
-        : b_{ other.b_ }
-        , v_{ other.v_ }
-    {
-        if (v_ != nullptr) {
-            b_->add_source_location(this, b_->loc(&other));
-        }
-    }
-    DanglingBaseClassPtr& operator = (const DanglingBaseClassPtr<T>& other) {
-        if (v_ != nullptr) {
-            b_->remove_source_location(this);
-        }
-        b_ = other.b_;
-        v_ = other.v_;
-        if (v_ != nullptr) {
-            b_->add_source_location(this, b_->loc(&other));
-        }
-        return *this;
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr(DanglingBaseClassPtr<TDerived>&& other)
+        : DanglingBaseClassPtr{ std::move(other), MoveDanglingClassPtr() }
+    {}
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr(const DanglingBaseClassPtr<TDerived>& other)
+        : DanglingBaseClassPtr{ other, CopyDanglingClassPtr() }
+    {}
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr& operator = (const DanglingBaseClassPtr<TDerived>& other) {
+        return assign(other);
     }
     // explicit DanglingBaseClassPtr(DanglingBaseClass& b, SourceLocation loc)
     //     : b_{&b}
@@ -81,27 +82,13 @@ public:
     //     }
     //     b_->add_source_location(this, loc);
     // }
-    DanglingBaseClassPtr(DanglingBaseClass& b, T& v, SourceLocation loc)
-        : b_{ &b }
-        , v_{ &v }
-    {
-        b_->add_source_location(this, loc);
-    }
-    DanglingBaseClassPtr(DanglingBaseClass* b, T* v, SourceLocation loc)
-        : b_{ b }
-        , v_{ v }
-    {
-        if (b_ != nullptr) {
-            b_->add_source_location(this, loc);
-        }
-    }
     template <typename TDerived>
-    requires std::is_convertible_v<TDerived&, T&>
+        requires std::is_convertible_v<TDerived&, T&>
     DanglingBaseClassPtr(TDerived& b, SourceLocation loc)
         : DanglingBaseClassPtr{ const_cast<std::remove_const_t<TDerived>&>(b), b, loc }
     {}
     template <typename TDerived>
-    requires std::is_convertible_v<TDerived&, T&>
+        requires std::is_convertible_v<TDerived&, T&>
     DanglingBaseClassPtr(TDerived* b, SourceLocation loc)
         : DanglingBaseClassPtr{ const_cast<std::remove_const_t<TDerived>*>(b), b, loc }
     {}
@@ -114,6 +101,9 @@ public:
     }
     ~DanglingBaseClassPtr() {
         *this = nullptr;
+    }
+    DanglingBaseClassPtr set_loc(SourceLocation loc) const {
+        return DanglingBaseClassPtr{ b_, v_, loc };
     }
     DanglingBaseClassRef<T> operator * () {
         if (v_ == nullptr) {
@@ -145,47 +135,107 @@ public:
     std::strong_ordering operator <=> (const DanglingBaseClassPtr<TOther>& other) const {
         return v_ <=> other.v_;
     }
+    template <typename TOther>
+        requires std::is_convertible_v<TOther&, const T&>
+    bool operator == (const DanglingBaseClassPtr<TOther>& other) const {
+        return v_ == other.v_;
+    }
+    template <typename TOther>
+        requires std::is_convertible_v<TOther&, const T&>
+    bool operator != (const DanglingBaseClassPtr<TOther>& other) const {
+        return v_ != other.v_;
+    }
 private:
+    DanglingBaseClassPtr(DanglingBaseClass& b, T& v, SourceLocation loc)
+        : b_{ &b }
+        , v_{ &v }
+    {
+        b_->add_source_location(this, loc);
+    }
+    DanglingBaseClassPtr(DanglingBaseClass* b, T* v, SourceLocation loc)
+        : b_{ b }
+        , v_{ v }
+    {
+        if (v_ != nullptr) {
+            b_->add_source_location(this, loc);
+        }
+    }
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr(DanglingBaseClassPtr<TDerived>&& other, MoveDanglingClassPtr)
+        : b_{ other.b_ }
+        , v_{ other.v_ }
+    {
+        if (v_ != nullptr) {
+            b_->add_source_location(this, b_->loc(&other));
+            b_->remove_source_location(&other);
+            other.v_ = nullptr;
+        }
+    }
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr(const DanglingBaseClassPtr<TDerived>& other, CopyDanglingClassPtr)
+        : b_{ other.b_ }
+        , v_{ other.v_ }
+    {
+        if (v_ != nullptr) {
+            b_->add_source_location(this, b_->loc(&other));
+        }
+    }
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassPtr& assign(const DanglingBaseClassPtr<TDerived>& other) {
+        if (this == (void*)&other) {
+            return *this;
+        }
+        if (v_ != nullptr) {
+            b_->remove_source_location(this);
+        }
+        b_ = other.b_;
+        v_ = other.v_;
+        if (v_ != nullptr) {
+            b_->add_source_location(this, b_->loc(&other));
+        }
+        return *this;
+    }
     DanglingBaseClass* b_;
     T* v_;
 };
 
 template <class T>
 class DanglingBaseClassRef {
-    DanglingBaseClassRef(DanglingBaseClassRef&&) = delete;
+    template <class T2>
+    friend class DanglingBaseClassPtr;
+    template <class T2>
+    friend class DanglingBaseClassRef;
     DanglingBaseClassRef& operator = (const DanglingBaseClassRef&) = delete;
 public:
-    // explicit DanglingBaseClassRef(DanglingBaseClass& b, SourceLocation loc)
-    //     : b_{b}
-    //     , v_{dynamic_cast<T*>(&b)}
-    // {
-    //     if (v_ == nullptr) {
-    //         verbose_abort("DanglingBaseClassRef: Cannot cast to desired type");
-    //     }
-    //     b_.add_source_location(this, loc);
-    // }
-    explicit DanglingBaseClassRef(DanglingBaseClass& b, T& v, SourceLocation loc)
-        : b_{ b }
-        , v_{ v }
-    {
-        b_.add_source_location(this, loc);
-    }
+    DanglingBaseClassRef(DanglingBaseClassRef&& other)
+        : DanglingBaseClassRef{ other.b_, other.v_, other.b_.loc(&other) }
+    {}
     DanglingBaseClassRef(const DanglingBaseClassRef& other)
-        : b_{ other.b_ }
-        , v_{ other.v_ }
-    {
-        b_.add_source_location(this, b_.loc(&other));
-    }
-    template <class TDerived>
-    DanglingBaseClassRef(TDerived& b, SourceLocation loc)
-        : DanglingBaseClassRef{ b, b, loc }
+        : DanglingBaseClassRef{ other.b_, other.v_, other.b_.loc(&other) }
+    {}
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassRef(DanglingBaseClassRef<TDerived>&& other)
+        : DanglingBaseClassRef{ other.b_, other.v_, other.b_.loc(&other) }
+    {}
+    template <typename TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassRef(const DanglingBaseClassRef<TDerived>& other)
+        : DanglingBaseClassRef{ other.b_, other.v_, other.b_.loc(&other) }
     {}
     template <class TDerived>
-    DanglingBaseClassRef(const TDerived& b, SourceLocation loc)
+        requires std::is_convertible_v<TDerived&, T&>
+    DanglingBaseClassRef(TDerived& b, SourceLocation loc)
         : DanglingBaseClassRef{ const_cast<TDerived&>(b), b, loc }
     {}
     ~DanglingBaseClassRef() {
         b_.remove_source_location(this);
+    }
+    DanglingBaseClassRef set_loc(SourceLocation loc) const {
+        return DanglingBaseClassRef{ b_, v_, loc };
     }
     DanglingBaseClassPtr<T> ptr() const {
         return DanglingBaseClassPtr<T>{ b_, v_, b_.loc(this) };
@@ -193,7 +243,16 @@ public:
     T* operator -> () const {
         return &v_;
     }
+    T& get() const {
+        return v_;
+    }
 private:
+    explicit DanglingBaseClassRef(DanglingBaseClass& b, T& v, SourceLocation loc)
+        : b_{ b }
+        , v_{ v }
+    {
+        b_.add_source_location(this, loc);
+    }
     DanglingBaseClass& b_;
     T& v_;
 };

@@ -6,6 +6,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -42,7 +43,9 @@ FollowMovable::FollowMovable(
     dpos_old_ = followed_->get_new_absolute_model_matrix().t();
 }
 
-FollowMovable::~FollowMovable() = default;
+FollowMovable::~FollowMovable() {
+    on_destroy.clear();
+}
 
 void FollowMovable::initialize(DanglingRef<SceneNode> follower_node) {
     initialized_ = true;
@@ -115,6 +118,6 @@ void FollowMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
             }
             destroyed_object->clear_absolute_movable();
         }
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+        global_object_pool.remove(this);
     }
 }

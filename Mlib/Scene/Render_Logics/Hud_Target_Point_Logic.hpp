@@ -27,7 +27,7 @@ public:
         ObjectPool& object_pool,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
-        Player& player,
+        const DanglingBaseClassRef<Player>& player,
         CollisionQuery& collision_query,
         DanglingRef<SceneNode> gun_node,
         DanglingPtr<SceneNode> exclusive_node,
@@ -59,14 +59,12 @@ private:
     CollisionQuery& collision_query_;
     DanglingRef<SceneNode> gun_node_;
     YawPitchLookAtNodes* ypln_;
-    AdvanceTimes& advance_times_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
     DestructionFunctionsRemovalTokens on_clear_gun_node_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
 
     RenderLogics& render_logics_;
-    DanglingPtr<SceneNode> exclusive_node_;
 };
 
 }

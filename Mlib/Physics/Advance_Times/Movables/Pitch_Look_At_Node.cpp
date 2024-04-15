@@ -5,9 +5,8 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Misc/Aim.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -16,14 +15,12 @@
 using namespace Mlib;
 
 PitchLookAtNode::PitchLookAtNode(
-    AdvanceTimes& advance_times,
     AimAt& aim_at,
     float pitch_min,
     float pitch_max,
     float dpitch_max,
     const std::function<float()>& increment_pitch_error)
-    : advance_times_{ advance_times }
-    , aim_at_node_{ aim_at }
+    : aim_at_node_{ aim_at }
     , dpitch_{ 0.f }
     , pitch_{ NAN }
     , pitch_min_{ pitch_min }
@@ -34,7 +31,9 @@ PitchLookAtNode::PitchLookAtNode(
     , increment_pitch_error_{ increment_pitch_error }
 {}
 
-PitchLookAtNode::~PitchLookAtNode() = default;
+PitchLookAtNode::~PitchLookAtNode() {
+    on_destroy.clear();
+}
 
 void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
@@ -94,7 +93,7 @@ void PitchLookAtNode::notify_destroyed(DanglingRef<SceneNode> destroyed_object) 
             }
             destroyed_object->clear_relative_movable();
         }
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+        global_object_pool.remove(this);
     }
 }
 

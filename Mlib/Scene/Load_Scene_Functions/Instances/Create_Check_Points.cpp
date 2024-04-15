@@ -111,16 +111,16 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         sequence = std::make_unique<TrackElementVector>(args.arguments.at<std::vector<std::vector<double>>>(KnownArgs::track));
     }
-    auto check_points = std::make_unique<CheckPoints>(
+    auto& check_points = object_pool.create<CheckPoints>(
+        CURRENT_SOURCE_LOCATION,
         std::move(sequence),
         nframes,
         nlaps,
         scene_node_resources.get_geographic_mapping("world.inverse"),
-        physics_engine.advance_times_,
         moving_asset_id,
         moving_nodes,
         args.arguments.at<std::string>(KnownArgs::resource),
-        players.get_player(args.arguments.at<std::string>(KnownArgs::player)),
+        players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION),
         args.arguments.at<size_t>(KnownArgs::nbeacons),
         args.arguments.at<float>(KnownArgs::distance),
         args.arguments.at<size_t>(KnownArgs::nahead),
@@ -160,16 +160,14 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.path(KnownArgs::pacenotes_ttf),
             args.arguments.at<FixedArray<float, 3>>(KnownArgs::pacenotes_color),
             args.arguments.path(KnownArgs::pacenotes_filename),
-            *check_points,
+            DanglingBaseClassRef<const CheckPoints>{ check_points, CURRENT_SOURCE_LOCATION },
             nlaps,
             args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
             args.arguments.at<double>(KnownArgs::pacenotes_minimum_covered_meters),
             args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number),
-            render_logics,
-            physics_engine.advance_times_,
             **moving_nodes.begin());
         render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-        physics_engine.advance_times_.add_advance_time(renderable_pace_notes);
+        physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     }
-    physics_engine.advance_times_.add_advance_time(std::move(check_points));
+    physics_engine.advance_times_.add_advance_time({ check_points, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

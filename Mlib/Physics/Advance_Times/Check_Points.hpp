@@ -41,11 +41,10 @@ public:
         size_t nframes,
         size_t nlaps,
         const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
-        AdvanceTimes& advance_times,
         std::string asset_id,
         std::vector<DanglingPtr<SceneNode>> moving_nodes,
         const std::string& resource_name,
-        IPlayer& player,
+        const DanglingBaseClassRef<IPlayer>& player,
         size_t nbeacons,
         float distance,
         size_t nahead,
@@ -66,7 +65,6 @@ public:
     double meters_to_start() const;
     size_t lap_index() const;
 private:
-    AdvanceTimes& advance_times_;
     TrackReader track_reader_;
     size_t nlaps_;
     std::string asset_id_;
@@ -74,7 +72,7 @@ private:
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;
-    IPlayer& player_;
+    const DanglingBaseClassRef<IPlayer>& player_;
     float radius_;
     size_t nbeacons_;
     float distance_;

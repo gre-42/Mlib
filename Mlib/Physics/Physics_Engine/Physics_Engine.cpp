@@ -1,6 +1,7 @@
 #include "Physics_Engine.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Mesh/Sat_Normals.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Rigid_Body_Engine.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
@@ -33,57 +34,9 @@ PhysicsEngine::PhysicsEngine(
     , particle_renderer_{ nullptr }
     , trail_renderer_{ nullptr }
     , cfg_{ cfg }
-    , check_objects_deleted_on_destruction_{ check_objects_deleted_on_destruction }
 {}
 
-PhysicsEngine::~PhysicsEngine() {
-    // The physics thread calls "delete_scheduled_advance_times".
-    // However, scene destruction (which schedules deletion) happens after physics thread joining
-    // and before PhysicsEngine destruction.
-    // => We need to call "delete_scheduled_advance_times" in the PhysicsEngine destructor (in the main thread).
-    // No special handling is required for objects (i.e. rigid bodies), because their deletion is not scheduled,
-    // but happens instantaneously.
-    advance_times_.delete_scheduled_advance_times();
-    if (check_objects_deleted_on_destruction_) {
-        bool success = true;
-        if (!rigid_bodies_.rigid_bodies_.empty()) {
-            success = false;
-            lerr() << "~PhysicsEngine: " << rigid_bodies_.rigid_bodies_.size() << " rigid_bodies still exist.";
-            for (const auto& [k, v] : rigid_bodies_.rigid_bodies_) {
-                lerr() << "  " << k->name();
-            }
-        }
-        if (!rigid_bodies_.objects_.empty()) {
-            success = false;
-            lerr() << "~PhysicsEngine: " << rigid_bodies_.objects_.size() << " objects still exist.";
-            for (const auto& o : rigid_bodies_.objects_) {
-                lerr() << "  " << o.rigid_body.name();
-            }
-        }
-        if (!advance_times_.advance_times_shared_.empty()) {
-            success = false;
-            lerr() << "~PhysicsEngine: " << advance_times_.advance_times_shared_.size() << " advance_times_shared still exist.";
-            for (const auto& o : advance_times_.advance_times_shared_) {
-                if (o == nullptr) {
-                    lerr() << "  nullptr";
-                } else {
-                    const auto& od = *o;
-                    lerr() << "  " << typeid(od).name();
-                }
-            }
-        }
-        if (!advance_times_.advance_times_ptr_.empty()) {
-            success = false;
-            lerr() << "~PhysicsEngine: " << advance_times_.advance_times_ptr_.size() << " advance_times_ptr still exist.";
-            for (const auto& o : advance_times_.advance_times_ptr_) {
-                lerr() << "  " << typeid(*o).name();
-            }
-        }
-        if (!success) {
-            verbose_abort("~PhysicsEngine contains dangling pointers");
-        }
-    }
-}
+PhysicsEngine::~PhysicsEngine() = default;
 
 void PhysicsEngine::collide(
     std::list<Beacon>* beacons,
@@ -93,17 +46,17 @@ void PhysicsEngine::collide(
     std::chrono::steady_clock::time_point time)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
-        return (rbtm.rigid_body.mass() != INFINITY);
+        return (rbtm.rigid_body->mass() != INFINITY);
     });
     {
         std::list<RigidBodyVehicle*> olist;
         for (const auto& o : rigid_bodies_.objects_) {
-            if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
+            if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
             {
                 continue;
             }
-            o.rigid_body.reset_forces(oversampling_iteration);
-            olist.push_back(&o.rigid_body);
+            o.rigid_body->reset_forces(oversampling_iteration);
+            olist.push_back(&o.rigid_body.get());
         }
         for (const auto& co : controllables_) {
             co->notify_reset(burn_in, cfg_);
@@ -142,14 +95,14 @@ void PhysicsEngine::collide(
         .time = time
     };
     for (const auto& o : rigid_bodies_.objects_) {
-        if ((o.rigid_body.mass() == INFINITY) || o.rigid_body.is_deactivated_avatar())
+        if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
         {
             continue;
         }
         if (o.has_meshes()) {
             rigid_bodies_.transform_object_and_add(o);
         }
-        o.rigid_body.collide_with_air(history);
+        o.rigid_body->collide_with_air(history);
     }
     collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
         ? CollisionDirection::BACKWARD
@@ -171,12 +124,12 @@ void PhysicsEngine::collide(
 
 void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
     for (const auto& rbm : rigid_bodies_.objects_) {
-        if (rbm.rigid_body.is_deactivated_avatar()) {
+        if (rbm.rigid_body->is_deactivated_avatar()) {
             continue;
         }
         auto& rb = rbm.rigid_body;
-        assert_true(rb.mass() != INFINITY);
-        rb.advance_time(cfg_, beacons);
+        assert_true(rb->mass() != INFINITY);
+        rb->advance_time(cfg_, beacons);
     }
 }
 
@@ -194,25 +147,15 @@ void PhysicsEngine::move_particles(std::chrono::steady_clock::time_point time) {
 }
 
 void PhysicsEngine::move_advance_times(std::chrono::steady_clock::time_point time) {
-    for (const auto& a : advance_times_.advance_times_shared_) {
-        if (a != nullptr) {
-            a->advance_time(cfg_.dt, time);
-        }
-    }
-    for (const auto& a : advance_times_.advance_times_ptr_) {
-        if (a == nullptr) {
-            verbose_abort("Unexpected nullptr in advance times");
-        }
-        a->advance_time(cfg_.dt, time);
-    }
+    advance_times_.advance_time(cfg_.dt, time);
 }
 
 void PhysicsEngine::burn_in(float duration) {
     for (const auto& o : rigid_bodies_.objects_) {
-        if (o.rigid_body.is_deactivated_avatar()) {
+        if (o.rigid_body->is_deactivated_avatar()) {
             continue;
         }
-        for (auto& [_, e] : o.rigid_body.engines_) {
+        for (auto& [_, e] : o.rigid_body->engines_) {
             e.set_surface_power(EnginePowerIntent{
                 .state = EngineState::OFF,
                 .surface_power = NAN});
@@ -227,10 +170,10 @@ void PhysicsEngine::burn_in(float duration) {
             std::chrono::steady_clock::now());
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
-                if (o.rigid_body.is_deactivated_avatar()) {
+                if (o.rigid_body->is_deactivated_avatar()) {
                     continue;
                 }
-                o.rigid_body.rbp_.w_ = 0;
+                o.rigid_body->rbp_.w_ = 0;
             }
         }
         move_rigid_bodies(nullptr);  // nullptr=beacons

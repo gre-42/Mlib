@@ -3,7 +3,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -27,11 +26,10 @@ CheckPoints::CheckPoints(
     size_t nframes,
     size_t nlaps,
     const TransformationMatrix<double, double, 3>* inverse_geographic_mapping,
-    AdvanceTimes& advance_times,
     std::string asset_id,
     std::vector<DanglingPtr<SceneNode>> moving_nodes,
     const std::string& resource_name,
-    IPlayer& player,
+    const DanglingBaseClassRef<IPlayer>& player,
     size_t nbeacons,
     float distance,
     size_t nahead,
@@ -45,8 +43,7 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& selection_emissive,
     const FixedArray<float, 3>& deselection_emissive,
     const std::function<void()>& on_finish)
-: advance_times_{advance_times},
-  track_reader_{
+: track_reader_{
     std::move(sequence),
     nframes,
     nlaps,
@@ -101,6 +98,7 @@ CheckPoints::CheckPoints(
 }
 
 CheckPoints::~CheckPoints() {
+    on_destroy.clear();
     if (!shutting_down_) {
         verbose_abort("CheckPoints dtor without shutdown");
     }
@@ -127,7 +125,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
     if (just_started) {
         total_elapsed_seconds_ = 0.f;
         lap_elapsed_seconds_ = 0.f;
-        player_.notify_race_started();
+        player_->notify_race_started();
     }
     total_elapsed_seconds_ += dt / s;
     lap_elapsed_seconds_ += dt / s;
@@ -224,7 +222,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
                     vehicle_colors.push_back(style.ambient);
                 }
             }
-            race_state_ = player_.notify_lap_finished(
+            race_state_ = player_->notify_lap_finished(
                 total_elapsed_seconds_,
                 asset_id_,
                 vehicle_colors,
@@ -275,7 +273,6 @@ void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
             }
         }
     }
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 bool CheckPoints::has_meters_to_start() const {

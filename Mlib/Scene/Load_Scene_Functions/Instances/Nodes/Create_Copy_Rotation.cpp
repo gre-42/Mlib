@@ -1,6 +1,8 @@
 #include "Create_Copy_Rotation.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Copy_Rotation.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -32,9 +34,8 @@ void CreateCopyRotation::execute(const LoadSceneJsonUserFunctionArgs& args)
     Linker linker{ physics_engine.advance_times_ };
     DanglingRef<SceneNode> from = scene.get_node(args.arguments.at<std::string>(KnownArgs::from), DP_LOC);
     DanglingRef<SceneNode> to = scene.get_node(args.arguments.at<std::string>(KnownArgs::to), DP_LOC);
-    auto rt = std::make_unique<CopyRotation>(
-        physics_engine.advance_times_, from);
-    auto& rt_p = *rt;
-    linker.link_relative_movable(to, std::move(rt));
-    from->clearing_observers.add({ rt_p, CURRENT_SOURCE_LOCATION });
+    auto rt = std::make_unique<CopyRotation>(from);
+    linker.link_relative_movable<CopyRotation>(to, { *rt, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    from->clearing_observers.add({ *rt, CURRENT_SOURCE_LOCATION });
+    global_object_pool.add(std::move(rt), CURRENT_SOURCE_LOCATION);
 }

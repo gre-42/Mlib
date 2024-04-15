@@ -26,7 +26,7 @@ public:
         ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
-        Player& player,
+        const DanglingBaseClassRef<Player>& player,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
@@ -48,7 +48,7 @@ private:
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
-    Player& player_;
+    DanglingBaseClassRef<Player> player_;
     std::unique_ptr<IWidget> widget_;
     std::string text_;
     std::mutex mutex_;

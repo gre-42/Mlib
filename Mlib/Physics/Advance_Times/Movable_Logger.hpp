@@ -10,20 +10,18 @@ namespace Mlib {
 
 template <class T>
 class DanglingRef;
-class AdvanceTimes;
 class SceneNode;
 
 class MovableLogger: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
 public:
     MovableLogger(
         DanglingRef<SceneNode> scene_node,
-        AdvanceTimes& advance_times,
         StatusWriter& status_writer,
         StatusComponents log_components);
+    ~MovableLogger();
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 private:
-    AdvanceTimes& advance_times_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;
 };

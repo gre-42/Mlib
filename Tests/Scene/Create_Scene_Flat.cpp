@@ -193,10 +193,10 @@ void Mlib::create_scene_flat(
 
     // Must be done when node is already linked to its parents.
     {
-        AbsoluteMovableSetter ams0{scene.get_node("obj", DP_LOC)->get_child("n0"), std::move(rb0)};
-        AbsoluteMovableSetter ams1_0{scene.get_node("obj", DP_LOC)->get_child("n1_0"), std::move(rb1_0)};
-        AbsoluteMovableSetter ams1_1{scene.get_node("obj", DP_LOC)->get_child("n1_1"), std::move(rb1_1)};
-        AbsoluteMovableSetter ams1_2{scene.get_node("obj", DP_LOC)->get_child("n1_2"), std::move(rb1_2)};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams0{scene.get_node("obj", DP_LOC)->get_child("n0"), std::move(rb0)};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_0{scene.get_node("obj", DP_LOC)->get_child("n1_0"), std::move(rb1_0)};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_1{scene.get_node("obj", DP_LOC)->get_child("n1_1"), std::move(rb1_1)};
+        AbsoluteMovableSetter<RigidBodyVehicle> ams1_2{scene.get_node("obj", DP_LOC)->get_child("n1_2"), std::move(rb1_2)};
 
         pe.rigid_bodies_.add_rigid_body(std::move(ams0.absolute_movable), { triangles0 }, {}, CollidableMode::STATIC);
         pe.rigid_bodies_.add_rigid_body(std::move(ams1_0.absolute_movable), quads1, {}, CollidableMode::MOVING);

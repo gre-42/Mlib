@@ -40,18 +40,18 @@ PlayerSetVehicleControlParameters::PlayerSetVehicleControlParameters(RenderableS
 
 void PlayerSetVehicleControlParameters::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    player.vehicle_movement.set_control_parameters(
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    player->vehicle_movement.set_control_parameters(
         args.arguments.at<float>(KnownArgs::surface_power_forward) * W,
         args.arguments.at<float>(KnownArgs::surface_power_backward) * W);
     if (args.arguments.contains_non_null(KnownArgs::max_tire_angle)) {
-        player.car_movement.set_max_tire_angle(
+        player->car_movement.set_max_tire_angle(
             args.arguments.at<float>(KnownArgs::max_tire_angle) * degrees);
     }
     if (args.arguments.contains(KnownArgs::tire_angle_pid)) {
         auto c = args.arguments.child(KnownArgs::tire_angle_pid);
         auto pid = c.at<FixedArray<float, 3>>(TAP::pid);
-        player.car_movement.set_tire_angle_pid(
+        player->car_movement.set_tire_angle_pid(
             PidController<float, float>{
                 pid(0),
                 pid(1),

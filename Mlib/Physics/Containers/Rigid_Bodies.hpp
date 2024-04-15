@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges_Rigid_Body.hpp>
 #include <Mlib/Iterator/Iterable_Wrapper.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <functional>
@@ -21,9 +22,11 @@ class ColoredVertexArray;
 class RigidBodyVehicle;
 class IIntersectableMesh;
 struct PhysicsEngineConfig;
+template <class T>
+class DestructionFunctionsTokensObject;
 
 struct RigidBodyAndMeshes {
-    RigidBodyVehicle& rigid_body;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body;
     std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray<float>>>>> smeshes;
     std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
     inline bool has_meshes() const {
@@ -32,12 +35,12 @@ struct RigidBodyAndMeshes {
 };
 
 struct RigidBodyAndIntersectableMeshes {
-    RigidBodyVehicle& rigid_body;
+    DanglingBaseClassRef<RigidBodyVehicle> rigid_body;
     std::list<TypedMesh<std::shared_ptr<IIntersectableMesh>>> meshes;
 };
 
 struct RigidBodyAndIntersectableMesh {
-    RigidBodyVehicle& rb;
+    DanglingBaseClassRef<RigidBodyVehicle> rb;
     TypedMesh<std::shared_ptr<IIntersectableMesh>> mesh;
 };
 
@@ -90,7 +93,7 @@ private:
     void bake_collision_ridges() const;
     void bake_collision_ridges_if_necessary() const;
     const PhysicsEngineConfig& cfg_;
-    std::unordered_map<const RigidBodyVehicle*, std::unique_ptr<RigidBodyVehicle>> rigid_bodies_;
+    std::unordered_map<const RigidBodyVehicle*, DestructionFunctionsTokensObject<RigidBodyVehicle>> rigid_bodies_;
     std::list<RigidBodyAndMeshes> objects_;
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;

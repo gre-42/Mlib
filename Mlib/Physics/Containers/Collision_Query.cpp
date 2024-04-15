@@ -46,8 +46,8 @@ bool CollisionQuery::can_see(
         BoundingSphere<double, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
-                if (&o0.rigid_body == excluded0 ||
-                    &o0.rigid_body == excluded1)
+                if (&o0.rigid_body.get() == excluded0 ||
+                    &o0.rigid_body.get() == excluded1)
                 {
                     continue;
                 }
@@ -85,7 +85,7 @@ bool CollisionQuery::can_see(
                                     triangle_min = &polygon0;
                                 }
                                 if (seen_object != nullptr) {
-                                    *seen_object = &o0.rigid_body;
+                                    *seen_object = &o0.rigid_body.get();
                                 }
                                 if (seen_mesh != nullptr) {
                                     *seen_mesh = msh0.mesh.get();
@@ -142,7 +142,7 @@ bool CollisionQuery::can_see(
                                 triangle_min = &t0;
                             }
                             if (seen_object != nullptr) {
-                                *seen_object = &rm0.rb;
+                                *seen_object = &rm0.rb.get();
                             }
                             if (seen_mesh != nullptr) {
                                 *seen_mesh = rm0.mesh.mesh.get();

@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Rigid_Body_Recorder_Gpx.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -36,11 +37,12 @@ void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> recorder_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(recorder_node);
-    physics_engine.advance_times_.add_advance_time(std::make_unique<RigidBodyRecorderGpx>(
+    auto& at = global_object_pool.create<RigidBodyRecorderGpx>(
+        CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::filename),
-        physics_engine.advance_times_,
         recorder_node,
         &rb.rbp_,
         scene_node_resources.get_geographic_mapping("world"),
-        args.ui_focus.focuses));
+        args.ui_focus.focuses);
+    physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

@@ -138,24 +138,42 @@ void test_destruction_functions() {
     df.clear();
 }
 
-struct MyClass: DanglingBaseClass {};
+struct MyClass: DanglingBaseClass {
+    int a = 5;
+};
+
+struct MyDerived : public MyClass {};
+
 struct MyContainer {
     DanglingBaseClassRef<Object> o;
 };
 
 void test_dangling_base_class() {
-    MyClass a;
-    DanglingBaseClassRef<Object>{ a, CURRENT_SOURCE_LOCATION };
+    MyDerived a;
+    DanglingBaseClassRef<MyDerived> b{ a, CURRENT_SOURCE_LOCATION };
     // a.ref<Object>(CURRENT_SOURCE_LOCATION);
     // new MyContainer{ a.ref<Object>(CURRENT_SOURCE_LOCATION) };
+    auto xx = b.ptr();
+    linfo() << xx->a;
+    DanglingBaseClassRef<MyClass> V{ b };
+    linfo() << V->a;
 }
 
-void test_unique_ptrs() {
+void test_object_pool_std() {
     struct A: Object {
         int i = 5;
     };
     ObjectPool p{ InObjectPoolDestructor::CLEAR };
     auto& a = p.create<A>(CURRENT_SOURCE_LOCATION);
+    linfo() << a.i;
+}
+
+void test_object_pool_unique() {
+    struct A: Object {
+        int i = 5;
+    };
+    ObjectPool p{ InObjectPoolDestructor::CLEAR };
+    auto& a = p.add(std::make_unique<A>(), CURRENT_SOURCE_LOCATION);
     linfo() << a.i;
 }
 
@@ -169,6 +187,7 @@ int main(int argc, const char** argv) {
     test_parallel_block();
     test_destruction_functions();
     test_dangling_base_class();
-    test_unique_ptrs();
+    test_object_pool_std();
+    test_object_pool_unique();
     return 0;
 }

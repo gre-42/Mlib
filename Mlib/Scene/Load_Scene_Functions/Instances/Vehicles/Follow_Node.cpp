@@ -53,6 +53,9 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         scene_config.physics_engine_config.dt);
     auto& follower_p = *follower;
     linker.link_absolute_movable_and_additional_node(
-        follower_node, followed_node, std::move(follower));
+        follower_node,
+        followed_node,
+        std::move(follower),
+        CURRENT_SOURCE_LOCATION);
     follower_p.initialize(follower_node);
 }

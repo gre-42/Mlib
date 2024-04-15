@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Interfaces/ITeam.hpp>
 #include <cstdint>
@@ -9,10 +11,12 @@ namespace Mlib {
 
 class Player;
 
-class Team final: public ITeam {
+class Team final: public ITeam, public DanglingBaseClass, public DestructionNotifier {
 public:
-    Team();
+    Team(std::string name);
     ~Team();
+
+    const std::string& name() const;
 
     // ITeam
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
@@ -29,6 +33,7 @@ public:
     void increase_nkills();
 
 private:
+    std::string name_;
     std::set<std::string> players_;
     uint32_t nwins_;
     uint32_t nlosses_;

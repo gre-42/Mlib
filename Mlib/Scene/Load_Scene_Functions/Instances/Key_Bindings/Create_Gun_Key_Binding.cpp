@@ -32,15 +32,15 @@ CreateGunKeyBinding::CreateGunKeyBinding(RenderableScene& renderable_scene)
 
 void CreateGunKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto& kb = key_bindings.add_gun_key_binding(std::unique_ptr<GunKeyBinding>(new GunKeyBinding{
-        .player = { player, CURRENT_SOURCE_LOCATION },
+        .player = player,
         .button_press{
             args.button_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player.delete_externals, CURRENT_SOURCE_LOCATION } }}));
+        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player->delete_externals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_player_delete_externals.add(
         [&kbs = key_bindings, &kb]() {
             kbs.delete_gun_key_binding(kb);

@@ -1,4 +1,5 @@
 #include "Keep_Offset_From_Movable.hpp"
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -54,6 +55,6 @@ void KeepOffsetFromMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_ob
             followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
         follower_name_.clear();
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+        global_object_pool.remove(this);
     }
 }

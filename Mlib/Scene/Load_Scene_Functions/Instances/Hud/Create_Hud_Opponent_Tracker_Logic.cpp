@@ -44,7 +44,7 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
     if (args.arguments.contains_non_null(KnownArgs::exclusive_node)) {
         exclusive_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::exclusive_node), DP_LOC).ptr();
     }
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<HudOpponentTrackerLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,

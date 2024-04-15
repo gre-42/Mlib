@@ -104,8 +104,7 @@ void SceneNode::set_parent(DanglingRef<SceneNode> parent) {
     if (has_parent()) {
         THROW_OR_ABORT("Node already has a parent");
     }
-    parent_ = parent.ptr();
-    parent_.set_loc(DP_LOC);
+    parent_ = parent.ptr().set_loc(DP_LOC);
 }
 
 bool SceneNode::has_parent() const {

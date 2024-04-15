@@ -29,8 +29,8 @@ PlayerSetCanSelectOpponent::PlayerSetCanSelectOpponent(RenderableScene& renderab
 
 void PlayerSetCanSelectOpponent::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    Player& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
-    player.set_can_select_opponent(
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
+    player->set_can_select_opponent(
         control_source_from_string(args.arguments.at<std::string>(KnownArgs::source)),
         args.arguments.at<bool>(KnownArgs::value));
 

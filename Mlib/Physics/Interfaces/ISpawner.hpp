@@ -4,10 +4,12 @@
 namespace Mlib {
 
 class IPlayer;
+template <class T>
+class DanglingBaseClassPtr;
 
 class ISpawner {
 public:
-    virtual IPlayer* player() = 0;
+    virtual DanglingBaseClassPtr<IPlayer> player() = 0;
 };
 
 }

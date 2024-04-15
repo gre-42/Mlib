@@ -48,12 +48,11 @@ void PlaybackTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto filename = args.arguments.path(KnownArgs::filename);
     auto playback = std::make_shared<RigidBodyPlayback>(
         std::make_unique<TrackElementFile>(create_ifstream(filename), filename),
-        physics_engine.advance_times_,
         args.ui_focus.focuses,
         scene_node_resources.get_geographic_mapping("world.inverse"),
         args.arguments.at<float>(KnownArgs::speed),
         node_prefixes.size());
-    physics_engine.advance_times_.add_advance_time(*playback);
+    physics_engine.advance_times_.add_advance_time({ *playback, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 
     auto suffix = args.arguments.at<std::string>(KnownArgs::suffix);
     for (const auto& [i, prefix] : enumerate(node_prefixes)) {

@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Components/Status_Writer.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movable_Logger.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -36,10 +37,10 @@ void ConsoleLog::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& lo = get_status_writer(node);
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
-    auto logger = std::make_unique<MovableLogger>(
+    auto& logger = global_object_pool.create<MovableLogger>(
+        CURRENT_SOURCE_LOCATION,
         node,
-        physics_engine.advance_times_,
         lo,
         log_components);
-    physics_engine.advance_times_.add_advance_time(std::move(logger));
+    physics_engine.advance_times_.add_advance_time({ logger, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

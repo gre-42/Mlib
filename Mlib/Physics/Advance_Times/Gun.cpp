@@ -93,14 +93,15 @@ Gun::Gun(
     }
     node->set_absolute_observer(*this);
     dgs_.add([node]() { if (node->has_absolute_observer()) { node->clear_absolute_observer(); }});
-    advance_times_.add_advance_time(*this);
-    dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     node_on_clear_.add(
         [this]() { node_ = nullptr; global_object_pool.remove(this); },
         CURRENT_SOURCE_LOCATION);
 }
 
-Gun::~Gun() = default;
+Gun::~Gun() {
+    on_destroy.clear();
+}
 
 void Gun::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     time_since_last_shot_ += dt;

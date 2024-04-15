@@ -1,6 +1,7 @@
 #include "Create_Player.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
@@ -56,8 +57,8 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),
         delete_node_mutex,
         args.ui_focus.focuses);
-    Player* p = player.get();
-    players.add_player(std::move(player));
-    physics_engine.advance_times_.add_advance_time(*p);
-    physics_engine.add_external_force_provider(*p);
+    players.add_player({ *player, CURRENT_SOURCE_LOCATION });
+    auto& p = global_object_pool.add(std::move(player), CURRENT_SOURCE_LOCATION);
+    physics_engine.advance_times_.add_advance_time({ p, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    physics_engine.add_external_force_provider(p);
 }

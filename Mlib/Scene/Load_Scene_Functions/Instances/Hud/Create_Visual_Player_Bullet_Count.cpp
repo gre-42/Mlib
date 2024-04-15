@@ -44,7 +44,7 @@ CreateVisualPlayerBulletCount::CreateVisualPlayerBulletCount(RenderableScene& re
 
 void CreateVisualPlayerBulletCount::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto& player = players.get_player(args.arguments.at<std::string>(KnownArgs::player));
+    auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     object_pool.create<VisualBulletCount>(
         CURRENT_SOURCE_LOCATION,
         object_pool,

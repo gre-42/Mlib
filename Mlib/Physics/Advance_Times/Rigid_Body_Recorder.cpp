@@ -1,7 +1,7 @@
 #include "Rigid_Body_Recorder.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -12,18 +12,20 @@ using namespace Mlib;
 RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
-    AdvanceTimes& advance_times,
     DanglingRef<SceneNode> recorded_node,
     RigidBodyPulses* rbp,
     const Focuses& focuses)
-    : focuses_{focuses}
-    , advance_times_{advance_times}
-    , recorded_node_{recorded_node.ptr()}
-    , rbp_{rbp}
-    , track_writer_{filename, geographic_mapping}
-    , start_time_{std::chrono::steady_clock::now()}
+    : focuses_{ focuses }
+    , recorded_node_{ recorded_node.ptr() }
+    , rbp_{ rbp }
+    , track_writer_{ filename, geographic_mapping }
+    , start_time_{ std::chrono::steady_clock::now() }
 {
     recorded_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+}
+
+RigidBodyRecorder::~RigidBodyRecorder() {
+    on_destroy.clear();
 }
 
 void RigidBodyRecorder::advance_time(float dt, std::chrono::steady_clock::time_point time) {
@@ -44,5 +46,6 @@ void RigidBodyRecorder::advance_time(float dt, std::chrono::steady_clock::time_p
 void RigidBodyRecorder::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     rbp_ = nullptr;
     recorded_node_ = nullptr;
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+
+    global_object_pool.remove(this);
 }

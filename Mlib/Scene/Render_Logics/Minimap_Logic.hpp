@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -28,7 +29,7 @@ public:
         ObjectPool& object_pool,
         AdvanceTimes& advance_times,
         RenderLogics& render_logics,
-        Player& player,
+        const DanglingBaseClassRef<Player>& player,
         DanglingRef<SceneNode> node,
         const std::string& map_image_resource_name,
         const std::string& locator_image_resource_name,
@@ -55,7 +56,6 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
     DanglingRef<SceneNode> node_;
     CenteredTextureImageLogic centered_texture_image_logic_;

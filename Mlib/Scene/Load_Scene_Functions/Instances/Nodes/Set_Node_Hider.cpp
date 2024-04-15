@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -48,16 +49,17 @@ public:
         const std::function<void()>& on_hide,
         const std::function<void()>& on_destroy,
         const std::function<void()>& on_update)
-    : advance_times_{advance_times},
-      node_to_hide_{node_to_hide.ptr()},
-      camera_node_{camera_node.ptr()},
-      on_hide_{on_hide},
-      on_destroy_{on_destroy},
-      on_update_{on_update},
-      hide_old_{false}
+        : advance_times_{ advance_times }
+        , node_to_hide_{ node_to_hide.ptr() }
+        , camera_node_{ camera_node.ptr() }
+        , on_hide_{ on_hide }
+        , on_destroy_{ on_destroy }
+        , on_update_{ on_update }
+        , hide_old_{ false }
     {}
 
     virtual ~NodeHiderWithEvent() override {
+        on_destroy.clear();
         // This can happen in case of an exception.
         if (camera_node_ != nullptr) {
             camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -82,7 +84,7 @@ public:
         }
         node_to_hide_ = nullptr;
         camera_node_ = nullptr;
-        advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+        global_object_pool.remove(this);
     }
 
     virtual bool node_shall_be_hidden(
@@ -189,8 +191,9 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             macro_line_executor(on_update.value(), &local_args, nullptr);
         });
-    node_to_hide->clearing_observers.add({ *node_hider, CURRENT_SOURCE_LOCATION });
-    camera_node->clearing_observers.add({ *node_hider, CURRENT_SOURCE_LOCATION });
-    node_to_hide->insert_node_hider(*node_hider);
-    physics_engine.advance_times_.add_advance_time(std::move(node_hider));
+    auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
+    node_to_hide->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
+    camera_node->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
+    node_to_hide->insert_node_hider(nh);
+    physics_engine.advance_times_.add_advance_time({ nh, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

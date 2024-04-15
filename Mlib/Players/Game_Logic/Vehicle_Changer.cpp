@@ -26,15 +26,15 @@ void VehicleChanger::change_vehicles() {
         if (!s->has_player()) {
             continue;
         }
-        auto& p = s->get_player();
-        auto next_vehicle = p.next_scene_vehicle();
+        auto p = s->get_player();
+        auto next_vehicle = p->next_scene_vehicle();
         if (next_vehicle == nullptr) {
             continue;
         }
-        if (!p.has_scene_vehicle()) {
+        if (!p->has_scene_vehicle()) {
             continue;
         }
-        if (next_vehicle->scene_node().ptr() == p.scene_node().ptr()) {
+        if (next_vehicle->scene_node().ptr() == p->scene_node().ptr()) {
             THROW_OR_ABORT("Next scene node equals current node");
         }
         auto& next_rb = get_rigid_body_vehicle(next_vehicle->scene_node());
@@ -45,7 +45,7 @@ void VehicleChanger::change_vehicles() {
             if (other_driver == nullptr) {
                 THROW_OR_ABORT("Next vehicle's driver is not a player");
             }
-            swap_vehicles(p, *other_driver);
+            swap_vehicles(p.get(), *other_driver);
         }
     }
 }
@@ -80,11 +80,11 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
     if (b_rb.is_avatar() && (&a.get_primary_scene_vehicle() != &b)) {
         THROW_OR_ABORT("Can only enter the initial avatar");
     }
-    auto& ap = a.get_player();
-    if (&ap.vehicle() == &b) {
+    auto ap = a.get_player();
+    if (&ap->vehicle() == &b) {
         THROW_OR_ABORT("Entering the same vehicle");
     }
-    auto& a_rb_old = ap.rigid_body();
+    auto& a_rb_old = ap->rigid_body();
     if (!a_rb_old.is_avatar()) {
         if (a_rb_old.passengers_.erase(&a.get_primary_scene_vehicle().rb()) != 1) {
             THROW_OR_ABORT("Could not find passenger to be deleted");
@@ -113,12 +113,12 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         b_rb.rbp_.w_ = 0.f;
         b.scene_node()->invalidate_transformation_history();
     }
-    ExternalsMode a_ec_old = ap.externals_mode();
-    ap.reset_node();
-    ap.set_scene_vehicle(b);
-    ap.create_externals(a_ec_old);
-    if (!ap.rigid_body().is_avatar()) {
-        if (!ap.rigid_body().passengers_.insert(&a.get_primary_scene_vehicle().rb()).second) {
+    ExternalsMode a_ec_old = ap->externals_mode();
+    ap->reset_node();
+    ap->set_scene_vehicle(b);
+    ap->create_externals(a_ec_old);
+    if (!ap->rigid_body().is_avatar()) {
+        if (!ap->rigid_body().passengers_.insert(&a.get_primary_scene_vehicle().rb()).second) {
             THROW_OR_ABORT("Passenger already exists");
         }
     }

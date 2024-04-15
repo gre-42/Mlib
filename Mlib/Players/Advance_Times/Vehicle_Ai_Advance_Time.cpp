@@ -20,11 +20,12 @@ VehicleAiAdvanceTime::VehicleAiAdvanceTime(
 {
 	follower_on_destroy_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 	followed_on_destroy_.add([this]() { followed_ = nullptr; }, CURRENT_SOURCE_LOCATION);
-	advance_times_.add_advance_time(*this);
-	dgs_.add([this]() { advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION); });
+	advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
-VehicleAiAdvanceTime::~VehicleAiAdvanceTime() = default;
+VehicleAiAdvanceTime::~VehicleAiAdvanceTime() {
+	on_destroy.clear();
+}
 
 void VehicleAiAdvanceTime::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 	if (followed_ != nullptr) {

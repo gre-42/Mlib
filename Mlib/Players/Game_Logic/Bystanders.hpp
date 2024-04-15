@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <random>
 
 namespace Mlib {
@@ -24,7 +25,7 @@ public:
         Spawn& spawn,
         GameLogicConfig& cfg);
     ~Bystanders();
-    void set_vip(Player* vip);
+    void set_vip(const DanglingBaseClassPtr<Player>& vip);
 private:
     void handle_bystanders();
     bool spawn_for_vip(
@@ -38,7 +39,7 @@ private:
     std::mt19937 current_bystander_rng_;
     std::mt19937 current_bvh_rng_;
     size_t current_bvh_;
-    Player* vip_;
+    DanglingBaseClassPtr<Player> vip_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     Scene& scene_;

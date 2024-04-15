@@ -1,7 +1,6 @@
 #include "Rigid_Body_Playback.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -10,16 +9,22 @@ using namespace Mlib;
 
 RigidBodyPlayback::RigidBodyPlayback(
     std::unique_ptr<ITrackElementSequence>&& sequence,
-    AdvanceTimes& advance_times,
     const Focuses& focuses,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
     float speedup,
     size_t ntransformations)
-: advance_times_{advance_times},
-  focuses_{focuses},
-  speedup_{speedup},
-  progress_{0.},
-  track_reader_{std::move(sequence), 0, 1, geographic_mapping, TrackElementInterpolationKey::ELAPSED_SECONDS, TrackReaderInterpolationMode::LINEAR, ntransformations}  // 1 = nlaps
+    : focuses_{focuses}
+    , speedup_{speedup}
+    , progress_{0.}
+    , track_reader_{
+        std::move(sequence),
+        0, // nframes
+        1, // nlaps
+        geographic_mapping,
+        TrackElementInterpolationKey::ELAPSED_SECONDS,
+        TrackReaderInterpolationMode::LINEAR,
+        ntransformations
+    }
 {
     playback_objects_.resize(ntransformations);
     for (auto& o : playback_objects_) {
@@ -28,7 +33,7 @@ RigidBodyPlayback::RigidBodyPlayback(
 }
 
 RigidBodyPlayback::~RigidBodyPlayback() {
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    on_destroy.clear();
 }
 
 void RigidBodyPlayback::advance_time(float dt, std::chrono::steady_clock::time_point time) {

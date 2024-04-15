@@ -290,13 +290,12 @@ public:
             // check_consistency<T>(*u_);
         }
     }
-    void set_loc(SourceLocation loc) {
+    DanglingPtr set_loc(SourceLocation loc) const {
         if (u_ == nullptr) {
-            verbose_abort("set_loc of nullptr");
+            return nullptr;
+        } else {
+            return DanglingPtr{ *u_, loc };
         }
-        loc_ = loc;
-        remove_source_location<T>(this);
-        add_source_location<T>(this, *u_, loc_);
     }
     T& release() {
         if (u_ == nullptr) {
@@ -406,11 +405,8 @@ public:
         dec(u_);
         // check_consistency<T>(u_);
     }
-    void set_loc(SourceLocation loc) {
-        loc_ = loc;
-        remove_source_location<T>(this);
-        add_source_location<T>(this, u_, loc_);
-        // check_consistency<T>(u_);
+    DanglingRef set_loc(SourceLocation loc) const {
+        return DanglingRef{ u_, loc };
     }
     // T& release() {
     //     dec(u_);
@@ -537,7 +533,7 @@ public:
     explicit DanglingPtr(T* u): u_{u} {}
     DanglingPtr(const DanglingPtr& other) : u_{other.u_} {}
     DanglingPtr(DanglingPtr&& other) noexcept : u_{other.u_} {}
-    void set_loc(SOURCE_LOCATION) {}
+    DanglingPtr set_loc(SOURCE_LOCATION) const { return *this; }
     T& release() {
         T& res = *u_;
         u_ = nullptr;
@@ -595,7 +591,7 @@ public:
     DanglingRef(const DanglingRef& other): DanglingRef{other.u_}
     {}
     ~DanglingRef() = default;
-    void set_loc(SOURCE_LOCATION) {}
+    DanglingRef set_loc(SOURCE_LOCATION) const { return *this; }
     operator DanglingRef<const T>() const {
         return DanglingRef<const T>{u_};
     }

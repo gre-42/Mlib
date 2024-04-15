@@ -25,7 +25,7 @@ VisualMovableLogger::VisualMovableLogger(
     , on_node_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
     , on_player_delete_externals_{ player != nullptr ? &player->delete_externals : nullptr, CURRENT_SOURCE_LOCATION }
 {
-    advance_times_.add_advance_time(*this);
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     if (!on_player_delete_externals_.is_null()) {
         on_player_delete_externals_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
     }
@@ -35,7 +35,6 @@ VisualMovableLogger::VisualMovableLogger(
 
 VisualMovableLogger::~VisualMovableLogger() {
     on_destroy.clear();
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
 }
 
 void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger) {
@@ -43,7 +42,7 @@ void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& 
 }
 
 void VisualMovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    advance_times_.delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    global_object_pool.remove(this);
 }
 
 void VisualMovableLogger::advance_time(float dt, std::chrono::steady_clock::time_point time) {

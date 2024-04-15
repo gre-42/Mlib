@@ -1,6 +1,7 @@
 #include "Look_At_Movable.hpp"
 #include <Mlib/Geometry/Coordinates/Gl_Look_At.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -22,8 +23,9 @@ LookAtMovable::LookAtMovable(
     , followed_{ &followed }
 {}
 
-LookAtMovable::~LookAtMovable()
-{}
+LookAtMovable::~LookAtMovable() {
+    on_destroy.clear();
+}
 
 void LookAtMovable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
     if (followed_ == nullptr) {
@@ -72,5 +74,5 @@ void LookAtMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     }
     follower_node_ = nullptr;
     followed_node_ = nullptr;
-    advance_times_.schedule_delete_advance_time(*this, CURRENT_SOURCE_LOCATION);
+    global_object_pool.remove(this);
 }

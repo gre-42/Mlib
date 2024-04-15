@@ -1,6 +1,5 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <compare>
@@ -9,6 +8,8 @@
 namespace Mlib {
 
 struct UiFocus;
+template <class T>
+class DestructionFunctionsTokensObject;
 
 struct ZorderAndId {
     int z;
