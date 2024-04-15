@@ -11,8 +11,8 @@ FrustumCameraConfig FrustumCameraConfig::from_sensor_aabb(
     return FrustumCameraConfig{
         .near_plane = near_plane,
         .far_plane = far_plane,
-        .left = sensor_aabb.min()(0) * near_plane,
-        .right = sensor_aabb.max()(0) * near_plane,
-        .bottom = sensor_aabb.min()(1) * near_plane,
-        .top = sensor_aabb.max()(1) * near_plane};
+        .left = sensor_aabb.min(0) * near_plane,
+        .right = sensor_aabb.max(0) * near_plane,
+        .bottom = sensor_aabb.min(1) * near_plane,
+        .top = sensor_aabb.max(1) * near_plane};
 }

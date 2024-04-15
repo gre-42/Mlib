@@ -85,6 +85,12 @@ public:
     inline const FixedArray<TData, tndim>& max() const {
         return max_;
     }
+    inline const TData& min(size_t i) const {
+        return min_(i);
+    }
+    inline const TData& max(size_t i) const {
+        return max_(i);
+    }
     template <class TOperation>
     bool for_each_corner(const TOperation& op) const {
         FixedArray<TData, tndim> corner;

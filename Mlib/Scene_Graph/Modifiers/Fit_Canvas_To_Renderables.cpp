@@ -30,10 +30,10 @@ void Mlib::fit_canvas_to_renderables(
     if (any(aabb.min() >= aabb.max())) {
         THROW_OR_ABORT("Scene AABB not positive");
     }
-    camera.set_left_plane((float)aabb.min()(0));
-    camera.set_right_plane((float)aabb.max()(0));
-    camera.set_bottom_plane((float)aabb.min()(1));
-    camera.set_top_plane((float)aabb.max()(1));
-    camera.set_near_plane((float)-aabb.max()(2));
-    camera.set_far_plane((float)-aabb.min()(2));
+    camera.set_left_plane((float)aabb.min(0));
+    camera.set_right_plane((float)aabb.max(0));
+    camera.set_bottom_plane((float)aabb.min(1));
+    camera.set_top_plane((float)aabb.max(1));
+    camera.set_near_plane((float)-aabb.max(2));
+    camera.set_far_plane((float)-aabb.min(2));
 }
