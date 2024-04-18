@@ -206,7 +206,7 @@ void ImposterLogic::render(
         size_t i = 0;
         imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
             auto pc = mv.transform(corner).casted<float>();
-            auto pc_old = v.transform(old_projected_bbox_(i)).casted<float>();
+            auto pc_old = v.transform(old_projected_bbox_(i++)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
                 return true;
             }
@@ -215,7 +215,6 @@ void ImposterLogic::render(
             if (sum(squared(pc_proj - pc_old_proj)) > squared(max_deviation_ / dpi)) {
                 return false;
             }
-            ++i;
             return true;
         });
     } else {

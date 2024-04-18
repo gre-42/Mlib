@@ -32,6 +32,7 @@
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
@@ -1004,23 +1005,24 @@ int main(int argc, char** argv) {
         }
         
         // scene.print();
-        Focuses focuses = {Focus::SCENE};
+        Focuses focuses = { Focus::SCENE };
         ButtonStates button_states;
         CursorStates cursor_states;
         CursorStates scroll_wheel_states;
         StandardCameraLogic standard_camera_logic{
             scene,
-            selected_cameras,
-            delete_node_mutex};
+            selected_cameras};
         StandardRenderLogic standard_render_logic{
-            rendering_resources,
             scene,
             standard_camera_logic,
             {
                 safe_stof(args.named_value("--background_r", "1")),
                 safe_stof(args.named_value("--background_g", "0")),
                 safe_stof(args.named_value("--background_b", "1"))},
-            ClearMode::COLOR_AND_DEPTH};
+            ClearMode::COLOR_AND_DEPTH };
+        AggregateRenderLogic aggregate_render_logic{
+            rendering_resources,
+            standard_camera_logic };
         WindowUserClass window_user_object{
             .window_position{
                 .fullscreen_width = render_config.fullscreen_width,
@@ -1048,7 +1050,7 @@ int main(int argc, char** argv) {
             flying_camera_user_object,
             true,                                       // fly
             !args.has_named("--large_object_mode"));    // rotate
-        ReadPixelsLogic read_pixels_logic{ standard_render_logic };
+        ReadPixelsLogic read_pixels_logic{ aggregate_render_logic };
         std::list<LightmapLogic*> lightmap_logics;
         for (const auto& l : lights) {
             if (any(l.light.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_DEPTH)) {

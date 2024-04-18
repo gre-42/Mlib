@@ -212,6 +212,7 @@ public:
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
+    DanglingPtr<SceneNode> target_scene_node() const;
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;

@@ -1,5 +1,6 @@
 #include "Renderable.hpp"
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -67,6 +68,10 @@ void Renderable::extend_aabb(
 
 AxisAlignedBoundingBox<double, 3> Renderable::aabb() const {
     THROW_OR_ABORT("Renderable::aabb not implemented");
+}
+
+BoundingSphere<double, 3> Renderable::bounding_sphere() const {
+    THROW_OR_ABORT("Renderable::bounding_sphere not implemented");
 }
 
 double Renderable::max_center_distance(uint32_t billboard_id) const {

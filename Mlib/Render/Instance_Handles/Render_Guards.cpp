@@ -37,8 +37,8 @@ bool RenderToScreenGuard::is_active_ = false;
 // }
 
 RenderToFrameBufferGuard::RenderToFrameBufferGuard(const IFrameBuffer& fb)
-: previous_frame_buffer_{last_frame_buffer_}
- {
+    : previous_frame_buffer_{ last_frame_buffer_ }
+{
     if (!fb.is_configured()) {
         THROW_OR_ABORT("Frame buffer has not been configured");
     }

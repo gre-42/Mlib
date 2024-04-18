@@ -17,11 +17,9 @@ using namespace Mlib;
 
 StandardCameraLogic::StandardCameraLogic(
     const Scene& scene,
-    SelectedCameras& cameras,
-    const DeleteNodeMutex& delete_node_mutex)
+    const SelectedCameras& cameras)
 : scene_{ scene },
   cameras_{ cameras },
-  delete_node_mutex_{ delete_node_mutex },
   camera_node_{ nullptr }
 {}
 
@@ -43,7 +41,7 @@ void StandardCameraLogic::render(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
-    delete_node_mutex_.notify_reading();
+    scene_.delete_node_mutex().notify_reading();
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
@@ -51,9 +49,9 @@ void StandardCameraLogic::render(
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = scene_.get_node(cameras_.dirtmap_node_name(), DP_LOC).ptr();
-    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
+    } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
         if (frame_id.external_render_pass.camera_node == nullptr) {
-            THROW_OR_ABORT("Imposter render pass without camera node");
+            THROW_OR_ABORT("Imposter or singular node render pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {

@@ -18,6 +18,9 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
     AxisAlignedBoundingBox<float, 3> aabb{
         fixed_full<float, 3>(-INFINITY),
         fixed_full<float, 3>(INFINITY) };
+    BoundingSphere<float, 3> bounding_sphere(
+        fixed_zeros<float, 3>(),
+        INFINITY);
     return std::make_shared<ColoredVertexArray<float>>(
         "empty_trails",
         Material{
@@ -39,7 +42,8 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},          // triangle_bone_weights
         std::vector<FixedArray<float, 3>>{},                            // continous_triangle_texture_layers
         std::vector<FixedArray<uint8_t, 3>>{},                          // discrete_triangle_texture_layers
-        &aabb);
+        &aabb,
+        &bounding_sphere);
 }
 
 TrailsInstance::TrailsInstance(

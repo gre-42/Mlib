@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
 #include <map>
 #include <unordered_set>
@@ -69,6 +70,7 @@ public:
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<double, 3>& aabb) const override;
     virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
+    virtual BoundingSphere<double, 3> bounding_sphere() const override;
     virtual double max_center_distance(uint32_t billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
@@ -99,6 +101,7 @@ private:
     int continuous_blending_z_order_;
     RenderingResources& secondary_rendering_resources_;
     AxisAlignedBoundingBox<double, 3> aabb_;
+    BoundingSphere<double, 3> bounding_sphere_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderableColoredVertexArray& rcvi);

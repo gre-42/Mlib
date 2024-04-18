@@ -9,8 +9,8 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
-#include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -470,6 +470,7 @@ int main(int argc, char** argv) {
             render_set_fps.set_fps,
             [&render_set_fps]() { return render_set_fps.ft.frame_time(); } };
         render.print_hardware_info();
+        ClearWrapperGuard clear_wrapper_guard;
 
         ButtonStates button_states;
         CursorStates cursor_states;

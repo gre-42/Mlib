@@ -1,8 +1,5 @@
 #include "Standard_Render_Logic.hpp"
 #include <Mlib/Log.hpp>
-#include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
-#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
-#include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
@@ -10,8 +7,6 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
-#include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <mutex>
@@ -19,7 +14,6 @@
 using namespace Mlib;
 
 StandardRenderLogic::StandardRenderLogic(
-    RenderingResources& rendering_resources,
     const Scene& scene,
     RenderLogic& child_logic,
     const FixedArray<float, 3>& background_color,
@@ -28,10 +22,6 @@ StandardRenderLogic::StandardRenderLogic(
     , child_logic_{ child_logic }
     , background_color_{ background_color }
     , clear_mode_{ clear_mode }
-    , small_sorted_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
-    , small_sorted_instances_renderers_{ std::make_shared<ArrayInstancesRenderers>(rendering_resources) }
-    , large_aggregate_renderer_{ std::make_shared<AggregateArrayRenderer>(rendering_resources) }
-    , large_instances_renderer_{ std::make_shared<ArrayInstancesRenderer>(rendering_resources) }
 {}
 
 StandardRenderLogic::~StandardRenderLogic() {
@@ -48,7 +38,6 @@ void StandardRenderLogic::render(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
-    std::shared_lock lock{mutex_};
     RenderToScreenGuard rg;
 
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
@@ -61,6 +50,17 @@ void StandardRenderLogic::render(
             background_color_(1),
             background_color_(2),
             0.f});
+    } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::ZOOM_NODE) {
+        if (all(isnan(background_color_))) {
+            clear_depth(ClearBackend::SHADER);
+        } else {
+            clear_color_and_depth({
+                background_color_(0),
+                background_color_(1),
+                background_color_(2),
+                1.f},
+                ClearBackend::SHADER);
+        }
     } else {
         if (clear_mode_ == ClearMode::COLOR) {
             clear_color({
@@ -84,17 +84,6 @@ void StandardRenderLogic::render(
     }
 
     {
-        bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
-        std::optional<AggregateRendererGuard> arg;
-        std::optional<InstancesRendererGuard> irg;
-        if (create_render_guards) {
-            arg.emplace(
-                small_sorted_aggregate_renderer_,
-                large_aggregate_renderer_);
-            irg.emplace(
-                small_sorted_instances_renderers_,
-                large_instances_renderer_);
-        }
         // Acquire delete node mutex because the "child_logic_.camera_node"
         // is read below.
         std::scoped_lock lock{ scene_.delete_node_mutex() };
@@ -173,12 +162,4 @@ void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {
 void StandardRenderLogic::set_background_color(const FixedArray<float, 3>& color) {
     std::scoped_lock lock{ mutex_ };
     background_color_ = color;
-}
-
-void StandardRenderLogic::invalidate_aggregate_renderers() {
-    std::scoped_lock lock{ mutex_ };
-    small_sorted_aggregate_renderer_->invalidate();
-    small_sorted_instances_renderers_->invalidate();
-    large_aggregate_renderer_->invalidate();
-    large_instances_renderer_->invalidate();
 }

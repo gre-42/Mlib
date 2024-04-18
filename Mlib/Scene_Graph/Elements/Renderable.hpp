@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
 #include <memory>
+#include <type_traits>
 
 namespace Mlib {
 
@@ -10,6 +11,8 @@ template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
+template <class TData, size_t tndim>
+class BoundingSphere;
 template <class TPos>
 class ColoredVertexArray;
 struct TransformedColoredVertexArray;
@@ -76,6 +79,17 @@ public:
         ExternalRenderPassType render_pass,
         AxisAlignedBoundingBox<double, 3>& aabb) const;
     virtual AxisAlignedBoundingBox<double, 3> aabb() const;
+    virtual BoundingSphere<double, 3> bounding_sphere() const;
+    template <class TBoundingPrimitive>
+    TBoundingPrimitive bounding_primitive() const {
+        if constexpr (std::is_same_v<TBoundingPrimitive, AxisAlignedBoundingBox<double, 3>>) {
+            return aabb();
+        } else if constexpr (std::is_same_v<TBoundingPrimitive, BoundingSphere<double, 3>>) {
+            return bounding_sphere();
+        } else {
+            static_assert(false, "Unknown bounding primitive");
+        }
+    }
     virtual double max_center_distance(uint32_t billboard_id) const;
 };
 

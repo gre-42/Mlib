@@ -29,7 +29,8 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
     std::vector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
     std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
-    const AxisAlignedBoundingBox<TPos, 3>* aabb)
+    const AxisAlignedBoundingBox<TPos, 3>* aabb,
+    const BoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
     , material{ material }
     , physics_material{ physics_material }
@@ -51,8 +52,14 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     if (!this->discrete_triangle_texture_layers.empty() && (this->discrete_triangle_texture_layers.size() != this->triangles.size())) {
         THROW_OR_ABORT("Discrete triangle texture layers size mismatch");
     }
+    if ((aabb == nullptr) != (bounding_sphere == nullptr)) {
+        THROW_OR_ABORT("Inconsistent AABB/bounding sphere arguments");
+    }
     if (aabb != nullptr) {
         aabb_ = *aabb;
+    }
+    if (bounding_sphere != nullptr) {
+        bounding_sphere_ = *bounding_sphere;
     }
 }
 
@@ -486,11 +493,28 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
     }
-    aabb_ = AxisAlignedBoundingBox<TPos, 3>();
-    for (const auto& v : vs) {
-        aabb_.value().extend(v);
-    }
+    aabb_ = AxisAlignedBoundingBox<TPos, 3>(vs.begin(), vs.end());
     return aabb_.value();
+}
+
+template <class TPos>
+BoundingSphere<TPos, 3> ColoredVertexArray<TPos>::bounding_sphere() const {
+    {
+        std::shared_lock lock{ bounding_sphere_mutex_.value };
+        if (bounding_sphere_.has_value()) {
+            return bounding_sphere_.value();
+        }
+    }
+    std::scoped_lock lock{ bounding_sphere_mutex_.value };
+    if (bounding_sphere_.has_value()) {
+        return bounding_sphere_.value();
+    }
+    auto vs = vertices();
+    if (vs.empty()) {
+        THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name + "\" because it has no vertices");
+    }
+    bounding_sphere_ = BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end());
+    return bounding_sphere_.value();
 }
 
 template <class TPos>

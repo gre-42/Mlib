@@ -8,8 +8,8 @@ using namespace Mlib;
 PerspectiveCamera::PerspectiveCamera(
     const PerspectiveCameraConfig& cfg,
     Postprocessing postprocessing)
-: cfg_{cfg},
-  postprocessing_{postprocessing}
+    : cfg_{ cfg }
+    , postprocessing_{ postprocessing }
 {}
 
 PerspectiveCamera::~PerspectiveCamera()

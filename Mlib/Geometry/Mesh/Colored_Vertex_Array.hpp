@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
@@ -49,7 +50,8 @@ public:
         std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
         std::vector<FixedArray<float, 3>>&& continous_triangle_texture_layers,
         std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
-        const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr);
+        const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
+        const BoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
     std::string name;
     Material material;
@@ -64,6 +66,7 @@ public:
     
     std::vector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
+    BoundingSphere<TPos, 3> bounding_sphere() const;
     double max_center_distance(uint32_t billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
@@ -148,7 +151,9 @@ public:
     }
 private:
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
+    mutable std::optional<BoundingSphere<TPos, 3>> bounding_sphere_;
     mutable IgnoreCopy<SafeSharedMutex> aabb_mutex_;
+    mutable IgnoreCopy<SafeSharedMutex> bounding_sphere_mutex_;
 };
 
 }

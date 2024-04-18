@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
@@ -67,11 +68,11 @@ SceneNode::SceneNode(
 {}
 
 SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
-: SceneNode{
-    fixed_zeros<double, 3>(),
-    fixed_zeros<float, 3>(),
-    1.f,
-    interpolation_mode}
+    : SceneNode{
+        fixed_zeros<double, 3>(),
+        fixed_zeros<float, 3>(),
+        1.f,
+        interpolation_mode}
 {}
 
 SceneNode::~SceneNode() {
@@ -952,7 +953,7 @@ void SceneNode::append_small_instances_to_queue(
         r->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{ fixed_zeros<double, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
@@ -964,7 +965,7 @@ void SceneNode::append_small_instances_to_queue(
             auto camera_position = m.inverted_scaled().transform(iv.t());
             i.small_instances.visit(
                 AxisAlignedBoundingBox<double, 3>{camera_position, i.max_center_distance},
-                [&, &i=i](const PositionAndYAngle& j){
+                [&, &i = i](const PositionAndYAngle& j) {
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
                     return true;
                 });
@@ -1243,6 +1244,22 @@ std::optional<AxisAlignedBoundingBox<double, 3>> SceneNode::relative_aabb() cons
             } else {
                 result.value().extend(cb.value().transformed(m));
             }
+        }
+    }
+    return result;
+}
+
+BoundingSphere<double, 3> SceneNode::relative_bounding_sphere() const {
+    std::shared_lock lock{ mutex_ };
+    BoundingSphere<double, 3> result(fixed_zeros<double, 3>(), 0.);
+    for (const auto& [_, r] : renderables_) {
+        result.extend(r->bounding_sphere());
+    }
+    for (const auto& [_, c] : children_) {
+        auto cb = c.scene_node->relative_bounding_sphere();
+        if (cb.radius() != 0.) {
+            auto m = c.scene_node->relative_model_matrix();
+            result.extend(cb.transformed(m));
         }
     }
     return result;

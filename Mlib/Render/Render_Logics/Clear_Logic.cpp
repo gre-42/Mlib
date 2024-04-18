@@ -41,6 +41,18 @@ SHADER_VER FRAGMENT_PRECISION
 "    gl_FragDepth = 1.0;\n"
 "}\n";
 
+// vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+static const float quad_vertices[] = {
+    // positions
+    -1.0f,  1.0f,
+    -1.0f, -1.0f,
+    1.0f, -1.0f,
+
+    -1.0f,  1.0f,
+    1.0f, -1.0f,
+    1.0f,  1.0f,
+};
+
 ClearLogic::ClearLogic()
     : va_{
         vertices_,
@@ -53,19 +65,8 @@ ClearLogic::~ClearLogic() = default;
 
 void ClearLogic::ensure_va_initialized() {
     if (!va_.initialized()) {
-        float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-            // positions
-            -1.0f,  1.0f,
-            -1.0f, -1.0f,
-            1.0f, -1.0f,
-
-            -1.0f,  1.0f,
-            1.0f, -1.0f,
-            1.0f,  1.0f,
-        };
-
         va_.initialize();
-        va_.vertex_buffer.set(quadVertices);
+        va_.vertex_buffer.set(quad_vertices);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));

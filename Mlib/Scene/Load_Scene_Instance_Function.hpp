@@ -33,6 +33,7 @@ struct RenderingContext;
 class DirtmapLogic;
 class SkyboxLogic;
 class StandardRenderLogic;
+class AggregateRenderLogic;
 class PostProcessingLogic;
 class Imposters;
 class SupplyDepots;
@@ -71,6 +72,7 @@ protected:
     RenderLogic& read_pixels_logic;
     DirtmapLogic& dirtmap_logic;
     StandardRenderLogic& standard_render_logic;
+    AggregateRenderLogic& aggregate_render_logic;
     PostProcessingLogic& post_processing_logic;
     SkyboxLogic& skybox_logic;
     GameLogic& game_logic;

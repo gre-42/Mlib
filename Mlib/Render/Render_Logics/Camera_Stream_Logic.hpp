@@ -1,22 +1,24 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <memory>
 
 namespace Mlib {
 
 class Scene;
+enum class ClearMode;
+class StandardCameraLogic;
+class StandardRenderLogic;
 class SelectedCameras;
-class DeleteNodeMutex;
 
-class StandardCameraLogic: public RenderLogic {
+class CameraStreamLogic: public RenderLogic {
 public:
-    explicit StandardCameraLogic(
+    CameraStreamLogic(
         const Scene& scene,
-        const SelectedCameras& cameras);
-    ~StandardCameraLogic();
+        const SelectedCameras& selected_cameras,
+        const FixedArray<float, 3>& background_color,
+        ClearMode clear_mode);
+    ~CameraStreamLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -33,13 +35,10 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void reset();
+    void set_background_color(const FixedArray<float, 3>& color);
 private:
-    const Scene& scene_;
-    const SelectedCameras& cameras_;
-    FixedArray<double, 4, 4> vp_;
-    TransformationMatrix<float, double, 3> iv_;
-    DanglingPtr<const SceneNode> camera_node_;
+    std::unique_ptr<StandardCameraLogic> standard_camera_logic_;
+    std::unique_ptr<StandardRenderLogic> standard_render_logic_;
 };
 
 }

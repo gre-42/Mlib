@@ -31,6 +31,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Execute_In_Physics_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Console_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Tracker_Logic.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Opponent_Zoom_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Hud_Target_Point_Logic.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Global_Log.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Hud/Create_Visual_Node_Status.hpp>
@@ -283,6 +284,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateMissileAi::key, CreateMissileAi::json_user_function);
     register_json_user_function(CreateHeliController::key, CreateHeliController::json_user_function);
     register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
+    register_json_user_function(CreateHudOpponentZoom::key, CreateHudOpponentZoom::json_user_function);
     register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
     register_json_user_function(CreateHumanAsAvatarController::key, CreateHumanAsAvatarController::json_user_function);
     register_json_user_function(CreateHumanAsCarController::key, CreateHumanAsCarController::json_user_function);

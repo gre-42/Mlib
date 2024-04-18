@@ -56,6 +56,7 @@ class FxaaLogic;
 class MotionInterpolationLogic;
 class FlyingCameraUserClass;
 class StandardRenderLogic;
+class AggregateRenderLogic;
 
 class AudioListenerUpdater;
 class PhysicsLoop;
@@ -164,6 +165,7 @@ public:
     StandardCameraLogic standard_camera_logic_;
     SkyboxLogic skybox_logic_;
     std::unique_ptr<StandardRenderLogic> standard_render_logic_;
+    std::unique_ptr<AggregateRenderLogic> aggregate_render_logic_;
     std::unique_ptr<FlyingCameraLogic> flying_camera_logic_;
     KeyConfigurations key_configurations_;
     std::unique_ptr<KeyBindings> key_bindings_;

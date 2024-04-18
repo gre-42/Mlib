@@ -34,7 +34,7 @@ bool Mlib::is_visible(
     if ((m.aggregate_mode == AggregateMode::NONE) && (m.blend_mode == BlendMode::INVISIBLE)) {
         return false;
     }
-    if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_NODE)) {
+    if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_OR_ZOOM_NODE)) {
         if (vc.orthographic()) {
             return true;
         }

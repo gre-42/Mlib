@@ -7,6 +7,7 @@
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
@@ -109,17 +110,18 @@ RenderableScene::RenderableScene(
     , render_logics_{ ui_focus }
     , standard_camera_logic_{
           scene_,
-          selected_cameras_,
-          delete_node_mutex_}
+          selected_cameras_}
     , skybox_logic_{ standard_camera_logic_ }
     , standard_render_logic_{std::make_unique<StandardRenderLogic>(
-          rendering_resources_,
           scene_,
           config.with_skybox
             ? (RenderLogic&)skybox_logic_
             : (RenderLogic&)standard_camera_logic_,
           config.background_color,
           config.clear_mode)}
+    , aggregate_render_logic_{std::make_unique<AggregateRenderLogic>(
+        rendering_resources_,
+        *standard_render_logic_)}
     , flying_camera_logic_{config.with_flying_logic
           ? std::make_unique<FlyingCameraLogic>(
             scene_,
@@ -131,7 +133,7 @@ RenderableScene::RenderableScene(
           selected_cameras_,
           ui_focus.focuses,
           players_)}
-    , read_pixels_logic_{ *standard_render_logic_ }
+    , read_pixels_logic_{ *aggregate_render_logic_ }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(

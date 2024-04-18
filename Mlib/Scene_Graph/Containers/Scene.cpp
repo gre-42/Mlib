@@ -415,9 +415,9 @@ void Scene::render(
                 node->append_skidmarks_to_queue(TransformationMatrix<float, double, 3>::identity(), skidmarks);
             }
         }
-        if (external_render_pass.pass == ExternalRenderPassType::IMPOSTER_NODE) {
+        if (any(external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
             if (external_render_pass.singular_node == nullptr) {
-                THROW_OR_ABORT("Imposter node pass without singular node");
+                THROW_OR_ABORT("Imposter or singular node pass without a singular node");
             }
             auto parent_m = external_render_pass.singular_node->has_parent()
                 ? external_render_pass.singular_node->parent()->absolute_model_matrix()

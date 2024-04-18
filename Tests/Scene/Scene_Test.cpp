@@ -202,10 +202,8 @@ void test_physics_engine(unsigned int seed) {
 
     StandardCameraLogic standard_camera_logic{
         scene,
-        selected_cameras,
-        delete_node_mutex};
+        selected_cameras};
     StandardRenderLogic standard_render_logic{
-        rendering_resources,
         scene,
         standard_camera_logic,
         {1.f, 0.f, 1.f},

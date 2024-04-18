@@ -1,22 +1,21 @@
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <memory>
 
 namespace Mlib {
 
-class Scene;
-class SelectedCameras;
-class DeleteNodeMutex;
+class RenderingResources;
+class IAggregateRenderer;
+class IInstancesRenderer;
+class IInstancesRenderers;
 
-class StandardCameraLogic: public RenderLogic {
+class AggregateRenderLogic: public RenderLogic {
 public:
-    explicit StandardCameraLogic(
-        const Scene& scene,
-        const SelectedCameras& cameras);
-    ~StandardCameraLogic();
+    AggregateRenderLogic(
+        RenderingResources& rendering_resources,
+        RenderLogic& child_logic);
+    ~AggregateRenderLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -33,13 +32,14 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void reset();
+    void invalidate_aggregate_renderers();
 private:
-    const Scene& scene_;
-    const SelectedCameras& cameras_;
-    FixedArray<double, 4, 4> vp_;
-    TransformationMatrix<float, double, 3> iv_;
-    DanglingPtr<const SceneNode> camera_node_;
+    RenderLogic& child_logic_;
+    std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
+    std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
+    std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
+    std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
+    SafeSharedMutex mutex_;
 };
 
 }

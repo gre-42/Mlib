@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -99,6 +100,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , secondary_rendering_resources_{ rendering_resources }
+    , bounding_sphere_(fixed_zeros<double, 3>(), 0.f)
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
@@ -169,12 +171,15 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
 
     for (auto& cva : aggregate_off_) {
         aabb_.extend(cva->aabb().casted<double>());
+        bounding_sphere_.extend(cva->bounding_sphere().casted<double>());
     }
     for (auto& cva : aggregate_once_) {
         aabb_.extend(cva->aabb());
+        bounding_sphere_.extend(cva->bounding_sphere());
     }
     for (auto& cva : aggregate_sorted_continuously_) {
         aabb_.extend(cva->aabb());
+        bounding_sphere_.extend(cva->bounding_sphere());
     }
 }
 
@@ -1262,6 +1267,10 @@ void RenderableColoredVertexArray::extend_aabb(
 
 AxisAlignedBoundingBox<double, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
+}
+
+BoundingSphere<double, 3> RenderableColoredVertexArray::bounding_sphere() const {
+    return bounding_sphere_;
 }
 
 double RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {

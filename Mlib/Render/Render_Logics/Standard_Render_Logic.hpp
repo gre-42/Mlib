@@ -1,22 +1,16 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
-#include <memory>
+#include <mutex>
 
 namespace Mlib {
 
 class Scene;
-class RenderingResources;
-class IAggregateRenderer;
-class IInstancesRenderer;
-class IInstancesRenderers;
 enum class ClearMode;
 
 class StandardRenderLogic: public RenderLogic {
 public:
     StandardRenderLogic(
-        RenderingResources& rendering_resources,
         const Scene& scene,
         RenderLogic& child_logic,
         const FixedArray<float, 3>& background_color,
@@ -39,17 +33,12 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void set_background_color(const FixedArray<float, 3>& color);
-    void invalidate_aggregate_renderers();
 private:
     const Scene& scene_;
     RenderLogic& child_logic_;
     FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
-    std::shared_ptr<IAggregateRenderer> small_sorted_aggregate_renderer_;
-    std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
-    std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
-    std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
-    SafeSharedMutex mutex_;
+    mutable std::mutex mutex_;
 };
 
 }

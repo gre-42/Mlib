@@ -72,6 +72,9 @@ public:
         TData dist = dot0d(plane.normal, center_) + plane.intercept;
         return std::abs(dist) <= radius_;
     }
+    void extend(const BoundingSphere& other) {
+        radius_ = std::max(radius_, std::sqrt(sum(squared(other.center_ - center_))) + other.radius_);
+    }
     template <class TDir, class TPos>
     BoundingSphere<TPos, tndim> transformed(const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const {
         return BoundingSphere<TPos, tndim>{
@@ -83,6 +86,12 @@ public:
     }
     inline const TData& radius() const {
         return radius_;
+    }
+    template <class TResultData>
+    BoundingSphere<TResultData, tndim> casted() const {
+        return BoundingSphere<TResultData, tndim>(
+            center_.template casted<TResultData>(),
+            (TResultData)radius_);
     }
 private:
     FixedArray<TData, tndim> center_;

@@ -663,6 +663,10 @@ std::optional<std::string> Player::target_name() const {
     return target_name_;
 }
 
+DanglingPtr<SceneNode> Player::target_scene_node() const {
+    return target_scene_node_;
+}
+
 const RigidBodyVehicle* Player::target_rb() const {
     return target_rb_;
 }
