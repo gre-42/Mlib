@@ -72,7 +72,7 @@ private:
     std::vector<IAbsoluteMovable*> movings_;
     std::vector<BeaconNode> beacon_nodes_;
     std::string resource_name_;
-    const DanglingBaseClassRef<IPlayer>& player_;
+    DanglingBaseClassRef<IPlayer> player_;
     float radius_;
     size_t nbeacons_;
     float distance_;
