@@ -4,6 +4,10 @@
 
 using namespace Mlib;
 
+FixedArray<double, 3> CollisionRidgeSphere::tangent() const {
+    return cross(ray.direction, normal);
+}
+
 bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
     if ((behavior == SingleFaceBehavior::UNTOUCHEABLE) &&
         (min_cos == RIDGE_SINGLE_FACE))
@@ -33,39 +37,41 @@ void CollisionRidgeSphere::combine(
     if (min_cos == RIDGE_360) {
         return;
     }
-    if ((min_cos == RIDGE_SINGLE_FACE) ||
+    if ((min_cos < RIDGE_SPECIAL_THRESHOLD) ||
         (min_cos == RIDGE_UNTOUCHEABLE))
     {
         min_cos = RIDGE_360;
+        lwarn() << "Creating 360 ridge";
         return;
     }
     if (min_cos != RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("Unknown ridge status");
     }
-    auto tangent = cross(edge(1) - edge(0), normal);
     auto other_normal_f = other.normal;
-    if (dot0d(tangent, other_normal_f) < max_min_cos_ridge) {
-        bool ts0 = any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
-        bool ts1 = any(other.physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
-        if (ts0 != ts1) {
-            THROW_OR_ABORT("Conflicting two-sidedness in collision ridges");
-        }
-        if (!ts0) {
+    bool ts0 = any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
+    bool ts1 = any(other.physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
+    if (ts0 != ts1) {
+        THROW_OR_ABORT("Conflicting two-sidedness in collision ridges");
+    }
+    auto tang = tangent();
+    auto c = dot0d(tang, other_normal_f);
+    if (ts0) {
+        if (std::abs(c) < max_min_cos_ridge) {
             min_cos = RIDGE_UNTOUCHEABLE;
             return;
-        } else {
+        }
+        if (c < 0) {
             normal = -normal;
             other_normal_f = -other_normal_f;
         }
+    } else if (c < max_min_cos_ridge) {
+        min_cos = RIDGE_UNTOUCHEABLE;
+        return;
     }
     auto average_normal = (other_normal_f + normal);
     auto len2 = sum(squared(average_normal));
     if (len2 < 1e-7) {
-        auto tlen2 = sum(squared(tangent));
-        if (tlen2 < 1e-12) {
-            THROW_OR_ABORT("Ridge tangent is close to zero");
-        }
-        normal = tangent / std::sqrt(tlen2);
+        normal = tang;
         min_cos = 0.;
         return;
     }
@@ -78,12 +84,7 @@ void CollisionRidgeSphere::finalize() {
         THROW_OR_ABORT("Attempt to finalize an untouchable ridge");
     }
     if (min_cos == RIDGE_SINGLE_FACE) {
-        auto tangent = cross(edge(1) - edge(0), normal);
-        auto tlen2 = sum(squared(tangent));
-        if (tlen2 < 1e-12) {
-            THROW_OR_ABORT("Ridge tangent is close to zero");
-        }
-        normal = tangent / std::sqrt(tlen2);
+        normal = tangent();
         min_cos = 0.;
     }
 }

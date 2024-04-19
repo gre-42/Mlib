@@ -47,7 +47,7 @@ void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, do
 }
 
 void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1) {
-    auto n = cross(e0.edge(1) - e0.edge(0), e1.edge(1) - e1.edge(0));
+    auto n = cross(e0.ray.direction, e1.ray.direction);
     double l2 = sum(squared(n));
     if (l2 < 1e-6) {
         return;

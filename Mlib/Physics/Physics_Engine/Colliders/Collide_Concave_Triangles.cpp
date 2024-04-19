@@ -14,7 +14,7 @@ void Mlib::collide_concave_triangles(
     for (auto& [rb1, cs] : concave_t0_intersections) {
         auto it = ridge_intersection_points.find(rb1);
         if (it != ridge_intersection_points.end()) {
-            RidgeIntersectionPointsBvh bvh{cfg};
+            RidgeIntersectionPointsBvh bvh{ cfg };
             for (const auto& p : it->second) {
                 bvh.insert(p);
             }

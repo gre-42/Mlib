@@ -98,7 +98,7 @@ void Mlib::handle_line_triangle_intersection(
         THROW_OR_ABORT("handle_line_triangle_intersection: Not exactly one of l1/e1 are set");
     }
     const auto& N0 = (c.t0 != nullptr) ? c.t0->polygon.plane() : c.q0->polygon.plane();
-    const auto& L1 = (c.l1 != nullptr) ? c.l1->line : c.r1->edge;
+    const auto& X1 = (c.l1 != nullptr) ? c.l1->ray : c.r1->ray;
 #define l1 DO_NOT_USE_ME
 #define r1 DO_NOT_USE_ME
     CollisionType collision_type = c.default_collision_type;
@@ -127,18 +127,12 @@ void Mlib::handle_line_triangle_intersection(
             return;
         }
         FixedArray<float, 3> d3 = (intersection_point - c.o0.abs_grind_point()).casted<float>();
-        FixedArray<double, 3> rail_direction = L1(1) - L1(0);
-        double rail_len2 = sum(squared(rail_direction));
-        if (rail_len2 < 1e-12) {
-            THROW_OR_ABORT("Grind rail too short");
-        }
-        rail_direction /= std::sqrt(rail_len2);
-        if (std::abs(dot0d(rail_direction, N0.normal)) < c.history.cfg.max_grind_cos) {
+        if (std::abs(dot0d(X1.direction, N0.normal)) < c.history.cfg.max_grind_cos) {
             return;
         }
         bool direction_ok = false;
         if (!any(Mlib::isnan(c.o0.grind_state_.grind_direction_))) {
-            float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, rail_direction.casted<float>()));
+            float vl = std::abs(dot0d(c.o0.grind_state_.grind_direction_, X1.direction.casted<float>()));
             if (vl > c.history.cfg.continuos_grind_cos_threshold) {
                 direction_ok = true;
             }
@@ -147,7 +141,7 @@ void Mlib::handle_line_triangle_intersection(
             if (c.o0.grind_state_.wants_to_grind_counter_ > c.history.cfg.nframes_straight_grind) {
                 float v_len2 = sum(squared(c.o0.rbp_.v_));
                 if (v_len2 > squared(c.history.cfg.continuos_grind_velocity_threshold)) {
-                    float vl = std::abs(dot0d(c.o0.rbp_.v_, rail_direction.casted<float>()) / std::sqrt(v_len2));
+                    float vl = std::abs(dot0d(c.o0.rbp_.v_, X1.direction.casted<float>()) / std::sqrt(v_len2));
                     if (vl < c.history.cfg.continuos_grind_cos_threshold) {
                         return;
                     }
@@ -157,7 +151,7 @@ void Mlib::handle_line_triangle_intersection(
         GrindInfo gi{
             .squared_distance = sum(squared(d3)),
             .intersection_point = intersection_point,
-            .rail_direction = rail_direction,
+            .rail_direction = X1.direction,
             .rail_rb = &c.o1 };
         auto res = c.history.grind_infos.insert({ &c.o0, gi });
         if (!res.second) {

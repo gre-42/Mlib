@@ -53,9 +53,9 @@ bool Mlib::compute_edge_overlap(
         //     return;
         // }
 
-        std::vector<CollisionRidgeSphere> ridges;
-        ridges.reserve(3);
         auto reflect = [&](const auto& corners0){
+            std::vector<CollisionRidgeSphere> ridges;
+            ridges.reserve(corners0.length());
             for (size_t i = 0; i < corners0.length(); ++i) {
                 auto a = OrderableFixedArray{corners0(i)};
                 auto b = OrderableFixedArray{corners0((i + 1) % corners0.length())};

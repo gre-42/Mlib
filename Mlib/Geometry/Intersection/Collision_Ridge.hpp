@@ -7,7 +7,7 @@
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
-static const double RIDGE_SPECIAL_THRESHOLD = 2.f;
+static const double RIDGE_SPECIAL_THRESHOLD = 2.;
 static const double RIDGE_SINGLE_FACE = 3.;
 static const double RIDGE_UNTOUCHEABLE = 4.;
 static const double RIDGE_360 = 5.;
@@ -24,6 +24,7 @@ struct CollisionRidgeSphere {
     RaySegment3D<double> ray;
     FixedArray<double, 3> normal;
     double min_cos;
+    FixedArray<double, 3> tangent() const;
     bool is_touchable(SingleFaceBehavior behavior) const;
     bool is_oriented() const;
     void combine(const CollisionRidgeSphere& other, double max_min_cos_ridge);
