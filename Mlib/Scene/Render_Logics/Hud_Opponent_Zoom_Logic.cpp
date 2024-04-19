@@ -25,7 +25,8 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     const DanglingBaseClassRef<Player>& player,
     DanglingPtr<SceneNode> exclusive_node,
     std::unique_ptr<IWidget>&& widget,
-    float fov)
+    float fov,
+    float zoom)
     : players_{ players }
     , player_{ player }
     , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
@@ -34,6 +35,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     , exclusive_node_{ exclusive_node }
     , widget_{ std::move(widget) }
     , fov_{ fov }
+    , scaled_fov_{ std::atan(std::tan(fov_) / zoom) }
 {
     render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     if (exclusive_node_ != nullptr) {
@@ -87,7 +89,7 @@ void HudOpponentZoomLogic::render(
     zoom_camera_node->set_camera(
         std::make_unique<PerspectiveCamera>(
             PerspectiveCameraConfig{
-                .y_fov = fov_,
+                .y_fov = scaled_fov_,
                 .near_plane = la.value().near_plane,
                 .far_plane = la.value().far_plane },
             PerspectiveCamera::Postprocessing::ENABLED));

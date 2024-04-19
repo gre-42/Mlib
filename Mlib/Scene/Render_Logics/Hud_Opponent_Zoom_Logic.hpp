@@ -24,7 +24,8 @@ public:
         const DanglingBaseClassRef<Player>& player,
         DanglingPtr<SceneNode> exclusive_node,
         std::unique_ptr<IWidget>&& widget,
-        float fov);
+        float fov,
+        float zoom);
     ~HudOpponentZoomLogic();
 
     // RenderLogic
@@ -47,6 +48,7 @@ private:
     DanglingPtr<SceneNode> exclusive_node_;
     std::unique_ptr<IWidget> widget_;
     float fov_;
+    float scaled_fov_;
 };
 
 }

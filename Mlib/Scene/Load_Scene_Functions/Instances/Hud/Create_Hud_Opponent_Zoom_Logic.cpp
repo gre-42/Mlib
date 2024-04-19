@@ -27,6 +27,7 @@ DECLARE_ARGUMENT(right);
 DECLARE_ARGUMENT(bottom);
 DECLARE_ARGUMENT(top);
 DECLARE_ARGUMENT(fov);
+DECLARE_ARGUMENT(zoom);
 DECLARE_ARGUMENT(background_color);
 }
 
@@ -67,5 +68,6 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::top))),
-        args.arguments.at<float>(KnownArgs::fov) * degrees);
+        args.arguments.at<float>(KnownArgs::fov) * degrees,
+        args.arguments.at<float>(KnownArgs::zoom));
 }
