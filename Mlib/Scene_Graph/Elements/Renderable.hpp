@@ -87,7 +87,7 @@ public:
         } else if constexpr (std::is_same_v<TBoundingPrimitive, BoundingSphere<double, 3>>) {
             return bounding_sphere();
         } else {
-            static_assert(false, "Unknown bounding primitive");
+            static_assert(sizeof(TBoundingPrimitive) == 0, "Unknown bounding primitive");
         }
     }
     virtual double max_center_distance(uint32_t billboard_id) const;
