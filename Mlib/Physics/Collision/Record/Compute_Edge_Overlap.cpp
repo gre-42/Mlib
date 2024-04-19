@@ -39,6 +39,10 @@ bool Mlib::compute_edge_overlap(
             throw std::runtime_error(
                 "Could not compute collision plane of meshes \"" + c.mesh0->name() + "\" and \"" + c.mesh1->name() + "\": " + e.what());
         }
+        // Not necessary, "get_collision_plane" throws an exception if no overlap can be computed.
+        // if (overlap == INFINITY) {
+        //     return false;
+        // }
     } else if (
         any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&
         any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX))
