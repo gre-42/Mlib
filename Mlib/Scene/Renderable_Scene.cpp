@@ -102,6 +102,7 @@ RenderableScene::RenderableScene(
     , gefp_{ gravity_vector }
     , physics_iteration_{
           scene_node_resources,
+          rendering_resources_,
           scene_,
           physics_engine_,
           delete_node_mutex_,

@@ -6,6 +6,7 @@
 namespace Mlib {
 
 class SceneNodeResources;
+class RenderingResources;
 class Scene;
 class PhysicsEngine;
 struct PhysicsEngineConfig;
@@ -24,6 +25,7 @@ class PhysicsIteration {
 public:
     PhysicsIteration(
         SceneNodeResources& scene_node_resources,
+        RenderingResources& rendering_resources,
         Scene& scene,
         PhysicsEngine& physics_engine,
         DeleteNodeMutex& delete_node_mutex,
@@ -33,6 +35,7 @@ public:
     void operator()(std::chrono::steady_clock::time_point time);
 private:
     SceneNodeResources& scene_node_resources_;
+    RenderingResources& rendering_resources_;
     Scene& scene_;
     PhysicsEngine& physics_engine_;
     DeleteNodeMutex& delete_node_mutex_;

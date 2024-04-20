@@ -19,17 +19,19 @@ thread_local std::list<Beacon> Mlib::g_beacons;
 
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
+    RenderingResources& rendering_resources,
     Scene& scene,
     PhysicsEngine& physics_engine,
     DeleteNodeMutex& delete_node_mutex,
     const PhysicsEngineConfig& physics_cfg,
     BaseLog* base_log)
-: scene_node_resources_{ scene_node_resources },
-  scene_{ scene },
-  physics_engine_{ physics_engine },
-  delete_node_mutex_{ delete_node_mutex },
-  physics_cfg_{ physics_cfg },
-  base_log_{ base_log }
+    : scene_node_resources_{ scene_node_resources }
+    , rendering_resources_{ rendering_resources }
+    , scene_{ scene }
+    , physics_engine_{ physics_engine }
+    , delete_node_mutex_{ delete_node_mutex }
+    , physics_cfg_{ physics_cfg }
+    , base_log_{ base_log }
 {}
 
 PhysicsIteration::~PhysicsIteration() = default;
@@ -78,6 +80,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                 scene_node_resources_.instantiate_renderable(
                     beacon.resource_name,
                     InstantiationOptions{
+                        .rendering_resources = &rendering_resources_,
                         .instance_name = "beacon",
                         .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});

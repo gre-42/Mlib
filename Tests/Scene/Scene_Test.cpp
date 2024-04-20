@@ -181,6 +181,7 @@ void test_physics_engine(unsigned int seed) {
     };
     PhysicsIteration pi{
         scene_node_resources,
+        rendering_resources,
         scene,
         pe,
         delete_node_mutex,
