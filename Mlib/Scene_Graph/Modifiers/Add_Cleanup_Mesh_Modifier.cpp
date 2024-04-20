@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Merge_Neighboring_Points.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Remove_Degenerate_Triangles.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Make_Triangles_With_Opposing_Normals_Two_Sided.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -20,26 +21,27 @@ void Mlib::add_cleanup_mesh_modifier(
     PhysicsMaterial min_distance_material_filter,
     bool modulo_uv)
 {
-    auto min_distance_filter = PhysicsMaterial::NONE;
     scene_node_resources.add_modifier(
         resource_name,
-        [min_distance_filter,
+        [min_distance_material_filter,
         min_vertex_distance,
         modulo_uv]
         (ISceneNodeResource& resource)
         {
-            auto cleanup = [min_distance_filter, min_vertex_distance, modulo_uv]<class TPos>(
+            auto cleanup = [min_distance_material_filter, min_vertex_distance, modulo_uv]<class TPos>(
                 Bvh<TPos, FixedArray<TPos, 3>, 3>& bvh,
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
-                cvas.remove_if([&bvh, min_distance_filter, min_vertex_distance, modulo_uv](auto& cva){
+                cvas.remove_if([&](auto& cva){
                     if ((min_vertex_distance != 0) &&
-                        any(cva->physics_material & min_distance_filter))
+                        any(cva->physics_material & min_distance_material_filter))
                     {
                         merge_neighboring_points<TPos>(*cva, bvh, min_vertex_distance);
                     }
                     remove_degenerate_triangles(*cva);
+                    // remove_duplicate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
+                    make_triangles_with_opposing_normals_two_sided(*cva, cvas);
                     if (modulo_uv) {
                         Mlib::modulo_uv(*cva);
                     }

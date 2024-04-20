@@ -204,6 +204,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     IDdsResources* dds_resources,
     IRaceLogic* race_logic)
 {
+    const bool show_only_collidables = false;
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     std::set<std::string> grass_materials;
     std::set<std::string> occluding_meshes;
@@ -679,7 +680,19 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     {},                                         // b01
                     cfg.triangle_tangent_error_behavior);
             }
-            result.push_back(tl.triangle_array());
+            if (show_only_collidables) {
+                if (any(tl.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+                    tl.physics_material |= PhysicsMaterial::ATTR_VISIBLE;
+                    tl.material.textures_color.clear();
+                    tl.material.textures_alpha.clear();
+                    tl.material.shading.ambient *= 0.3f;
+                    tl.material.shading.specular *= 0.3f;
+                    tl.material.shading.diffuse *= 0.3f;
+                    result.push_back(tl.triangle_array());
+                }
+            } else {
+                result.push_back(tl.triangle_array());
+            }
         }
     };
     {

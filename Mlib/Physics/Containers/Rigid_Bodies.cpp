@@ -88,88 +88,88 @@ void RigidBodies::add_rigid_body(
                         line_bvh_.insert(t.aabb, { rb, t.base });
                     }
                 } else {
-                        bool is_convex = any(m->physics_material & PhysicsMaterial::ATTR_CONVEX);
-                        bool is_concave = any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE);
-                        if (is_convex == is_concave) {
-                            THROW_OR_ABORT(
-                                "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
-                                "\", mesh \"" + m->name +
-                                " convex: " + std::to_string(int(is_convex)) +
-                                ", concave: " + std::to_string(int(is_concave)));
+                    bool is_convex = any(m->physics_material & PhysicsMaterial::ATTR_CONVEX);
+                    bool is_concave = any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE);
+                    if (is_convex == is_concave) {
+                        THROW_OR_ABORT(
+                            "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
+                            "\", mesh \"" + m->name +
+                            " convex: " + std::to_string(int(is_convex)) +
+                            ", concave: " + std::to_string(int(is_concave)));
+                    }
+                    if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+                        auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
+                        std::set<OrderableFixedArray<double, 3>> vertex_set;
+                        std::vector<const FixedArray<double, 3>*> vertex_vector;
+                        vertex_vector.reserve(3 * transformed.size());
+                        for (const CollisionPolygonAabb<3>& t : transformed) {
+                            for (const auto& v : t.base.corners.flat_iterable()) {
+                                if (vertex_set.insert(OrderableFixedArray{v}).second) {
+                                    vertex_vector.push_back(&v);
+                                }
+                            }
                         }
-                        if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-                            auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
-                            std::set<OrderableFixedArray<double, 3>> vertex_set;
-                            std::vector<const FixedArray<double, 3>*> vertex_vector;
-                            vertex_vector.reserve(3 * transformed.size());
-                            for (const CollisionPolygonAabb<3>& t : transformed) {
-                                for (const auto& v : t.base.corners.flat_iterable()) {
-                                    if (vertex_set.insert(OrderableFixedArray{v}).second) {
-                                        vertex_vector.push_back(&v);
-                                    }
-                                }
-                            }
-                            AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
-                            BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
-                            std::vector<CollisionPolygonSphere<3>> triangles;
-                            std::vector<CollisionRidgeSphere> ridges;
-                            std::vector<CollisionLineSphere> lines;
-                            triangles.reserve(transformed.size());
-                            for (const CollisionPolygonAabb<3>& t : transformed) {
-                                triangles.push_back(t.base);
-                            }
+                        AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
+                        BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
+                        std::vector<CollisionPolygonSphere<3>> triangles;
+                        std::vector<CollisionRidgeSphere> ridges;
+                        std::vector<CollisionLineSphere> lines;
+                        triangles.reserve(transformed.size());
+                        for (const CollisionPolygonAabb<3>& t : transformed) {
+                            triangles.push_back(t.base);
+                        }
 
-                            CollisionRidges collision_ridges;
-                            for (const auto& t : triangles) {
-                                collision_ridges.insert(
-                                    t.corners,
-                                    t.polygon.plane().normal,
-                                    cfg_.max_min_cos_ridge,
-                                    t.physics_material);
+                        CollisionRidges collision_ridges;
+                        for (const auto& t : triangles) {
+                            collision_ridges.insert(
+                                t.corners,
+                                t.polygon.plane().normal,
+                                cfg_.max_min_cos_ridge,
+                                t.physics_material);
+                        }
+                        ridges.reserve(collision_ridges.size());
+                        for (const auto& e : collision_ridges) {
+                            if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
+                                ridges.emplace_back(e.collision_ridge_sphere).finalize();
                             }
-                            ridges.reserve(collision_ridges.size());
-                            for (const auto& e : collision_ridges) {
-                                if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
-                                    ridges.emplace_back(e.collision_ridge_sphere).finalize();
-                                }
-                            }
+                        }
 
-                            convex_mesh_bvh_.insert(
-                                aabb,
-                                RigidBodyAndIntersectableMesh{
-                                    .rb = { rb, CURRENT_SOURCE_LOCATION },
-                                    .mesh = {
-                                        .physics_material = m->physics_material,
-                                        .mesh = std::make_shared<StaticTransformedMesh>(
-                                            m->name,
-                                            aabb,
-                                            bounding_sphere,
-                                            std::vector<CollisionPolygonSphere<4>>(),
-                                            std::move(triangles),
-                                            std::move(lines),
-                                            std::vector<CollisionLineSphere>{},
-                                            std::move(ridges))}});
-                        } else {
-                            if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
-                                THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
-                            }
-                            auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
-                            for (const auto& t : transformed) {
-                                triangle_bvh_.insert(t.aabb, {rb, t.base});
-                            }
-                            if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
-                                THROW_OR_ABORT("Collision ridges already baked");
-                            }
-                            for (const auto& t : transformed) {
-                                collision_ridges_.insert(
-                                    t.base.corners,
-                                    t.base.polygon.plane().normal,
-                                    cfg_.max_min_cos_ridge,
-                                    t.base.physics_material,
-                                    rb);
-                            }
+                        convex_mesh_bvh_.insert(
+                            aabb,
+                            RigidBodyAndIntersectableMesh{
+                                .rb = { rb, CURRENT_SOURCE_LOCATION },
+                                .mesh = {
+                                    .physics_material = m->physics_material,
+                                    .mesh = std::make_shared<StaticTransformedMesh>(
+                                        m->name,
+                                        aabb,
+                                        bounding_sphere,
+                                        std::vector<CollisionPolygonSphere<4>>(),
+                                        std::move(triangles),
+                                        std::move(lines),
+                                        std::vector<CollisionLineSphere>{},
+                                        std::move(ridges))}});
+                    } else {
+                        if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
+                            THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
+                        }
+                        auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
+                        for (const auto& t : transformed) {
+                            triangle_bvh_.insert(t.aabb, {rb, t.base});
+                        }
+                        if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
+                            THROW_OR_ABORT("Collision ridges already baked");
+                        }
+                        for (const auto& t : transformed) {
+                            collision_ridges_.insert(
+                                t.base.corners,
+                                t.base.polygon.plane().normal,
+                                cfg_.max_min_cos_ridge,
+                                t.base.physics_material,
+                                rb);
                         }
                     }
+                }
             }
         };
         add_hitboxes(s_hitboxes);

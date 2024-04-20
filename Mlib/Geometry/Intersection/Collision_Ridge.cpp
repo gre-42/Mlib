@@ -10,7 +10,8 @@ FixedArray<double, 3> CollisionRidgeSphere::tangent() const {
 
 bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
     if ((behavior == SingleFaceBehavior::UNTOUCHABLE) &&
-        (min_cos == RIDGE_SINGLE_FACE))
+        (min_cos == RIDGE_SINGLE_FACE) &&
+        !any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED))
     {
         return false;
     }
@@ -51,17 +52,18 @@ void CollisionRidgeSphere::combine(
     bool ts0 = any(physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
     bool ts1 = any(other.physics_material & PhysicsMaterial::ATTR_TWO_SIDED);
     if (ts0 != ts1) {
-        THROW_OR_ABORT("Conflicting two-sidedness in collision ridges");
+        physics_material |= PhysicsMaterial::ATTR_TWO_SIDED;
+        ts0 = true;
+        lwarn() << "Conflicting two-sidedness in collision ridges";
     }
     auto tang = tangent();
-    auto c = dot0d(tang, other_normal_f);
-    if (ts0) {
+    if (auto c = dot0d(tang, other_normal_f); ts0) {
         if (std::abs(c) < max_min_cos_ridge) {
             min_cos = RIDGE_UNTOUCHABLE;
             return;
         }
-        if (c < 0) {
-            normal = -normal;
+        normal = -normal;
+        if (dot0d(normal, other_normal_f) < 0.) {
             other_normal_f = -other_normal_f;
         }
     } else if (c < max_min_cos_ridge) {
