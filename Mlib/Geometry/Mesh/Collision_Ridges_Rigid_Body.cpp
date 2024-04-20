@@ -17,8 +17,8 @@ void CollisionRidgesRigidBody::insert(
     PhysicsMaterial physics_material,
     RigidBodyVehicle& rb)
 {
-    for (size_t i = 0; i < 3; ++i) {
-        size_t j = (i + 1) % 3;
+    for (size_t i = 0; i < tnvertices; ++i) {
+        size_t j = (i + 1) % tnvertices;
         try {
             insert(polygon(i), polygon(j), normal, max_min_cos_ridge, physics_material, rb);
         } catch (const EdgeException<double>& e) {
