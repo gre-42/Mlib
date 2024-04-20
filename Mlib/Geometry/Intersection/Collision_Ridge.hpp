@@ -9,12 +9,12 @@ namespace Mlib {
 enum class PhysicsMaterial: uint32_t;
 static const double RIDGE_SPECIAL_THRESHOLD = 2.;
 static const double RIDGE_SINGLE_FACE = 3.;
-static const double RIDGE_UNTOUCHEABLE = 4.;
+static const double RIDGE_UNTOUCHABLE = 4.;
 static const double RIDGE_360 = 5.;
 
 enum class SingleFaceBehavior {
     TOUCHABLE,
-    UNTOUCHEABLE
+    UNTOUCHABLE
 };
 
 struct CollisionRidgeSphere {

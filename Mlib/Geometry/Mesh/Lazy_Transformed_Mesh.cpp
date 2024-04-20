@@ -159,7 +159,7 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
             }
             transformed_ridges_.reserve(ridges.size());
             for (const auto& e : ridges) {
-                if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHEABLE)) {
+                if (e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
                     transformed_ridges_.emplace_back(e.collision_ridge_sphere).finalize();
                 }
             }

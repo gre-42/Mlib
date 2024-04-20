@@ -9,19 +9,19 @@ FixedArray<double, 3> CollisionRidgeSphere::tangent() const {
 }
 
 bool CollisionRidgeSphere::is_touchable(SingleFaceBehavior behavior) const {
-    if ((behavior == SingleFaceBehavior::UNTOUCHEABLE) &&
+    if ((behavior == SingleFaceBehavior::UNTOUCHABLE) &&
         (min_cos == RIDGE_SINGLE_FACE))
     {
         return false;
     }
-    return min_cos != RIDGE_UNTOUCHEABLE;
+    return min_cos != RIDGE_UNTOUCHABLE;
 }
 
 bool CollisionRidgeSphere::is_oriented() const {
     if (min_cos == RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("CollisionRidgeSphere has not been finalized");
     }
-    if (min_cos == RIDGE_UNTOUCHEABLE) {
+    if (min_cos == RIDGE_UNTOUCHABLE) {
         THROW_OR_ABORT("Collision attempt with untouchable CollisionRidgeSphere");
     }
     return min_cos < RIDGE_SPECIAL_THRESHOLD;
@@ -38,7 +38,7 @@ void CollisionRidgeSphere::combine(
         return;
     }
     if ((min_cos < RIDGE_SPECIAL_THRESHOLD) ||
-        (min_cos == RIDGE_UNTOUCHEABLE))
+        (min_cos == RIDGE_UNTOUCHABLE))
     {
         min_cos = RIDGE_360;
         lwarn() << "Creating 360 ridge";
@@ -57,7 +57,7 @@ void CollisionRidgeSphere::combine(
     auto c = dot0d(tang, other_normal_f);
     if (ts0) {
         if (std::abs(c) < max_min_cos_ridge) {
-            min_cos = RIDGE_UNTOUCHEABLE;
+            min_cos = RIDGE_UNTOUCHABLE;
             return;
         }
         if (c < 0) {
@@ -65,7 +65,7 @@ void CollisionRidgeSphere::combine(
             other_normal_f = -other_normal_f;
         }
     } else if (c < max_min_cos_ridge) {
-        min_cos = RIDGE_UNTOUCHEABLE;
+        min_cos = RIDGE_UNTOUCHABLE;
         return;
     }
     auto average_normal = (other_normal_f + normal);
@@ -80,7 +80,7 @@ void CollisionRidgeSphere::combine(
 }
 
 void CollisionRidgeSphere::finalize() {
-    if (min_cos == RIDGE_UNTOUCHEABLE) {
+    if (min_cos == RIDGE_UNTOUCHABLE) {
         THROW_OR_ABORT("Attempt to finalize an untouchable ridge");
     }
     if (min_cos == RIDGE_SINGLE_FACE) {
