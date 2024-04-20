@@ -103,7 +103,7 @@ void GenericLineContactInfo1<tnullspace>::solve(float dt, float relaxation, size
     if (len2 > 1e-12) {
         FixedArray<float, 3> n = dv / std::sqrt(len2);
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
-        FixedArray<float, 3> lambda = - mc0 * dv;
+        FixedArray<float, 3> lambda = - relaxation * mc0 * dv;
         rbp0_.integrate_impulse({
             .vector = -lambda,
             .position = lec_.pec.p0});
@@ -135,7 +135,7 @@ void GenericLineContactInfo2<tnullspace>::solve(float dt, float relaxation, size
         FixedArray<float, 3> n = dv / std::sqrt(len2);
         float mc0 = rbp0_.effective_mass({ .vector = n, .position = lec_.pec.p0 });
         float mc1 = rbp1_.effective_mass({ .vector = n, .position = lec_.pec.p1 });
-        FixedArray<float, 3> lambda = - (mc0 * mc1 / (mc0 + mc1)) * dv;
+        FixedArray<float, 3> lambda = - relaxation * (mc0 * mc1 / (mc0 + mc1)) * dv;
         rbp0_.integrate_impulse({
             .vector = -lambda,
             .position = lec_.pec.p0});
@@ -518,7 +518,7 @@ void ShockAbsorberContactInfo2::solve(float dt, float relaxation, size_t iterati
         dot0d(
             rbp1_.velocity_at_position(p_) - rbp0_.velocity_at_position(p_),
             sc.normal_impulse.normal.casted<float>());
-    float J = sc_.clamped_lambda(1.f / (float)niterations * F * dt);
+    float J = sc_.clamped_lambda(relaxation / (float)niterations * F * dt);
     auto lambda = sc.normal_impulse.normal.casted<float>() * J;
     rbp0_.integrate_impulse({
         .vector = lambda,
