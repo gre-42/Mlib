@@ -42,7 +42,7 @@ void GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::solv
     rbp_.integrate_impulse({
         .vector = -snormal * lambda,
         .position = p_});
-    // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
+    // linfo() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
 }
 
 NormalContactInfo2::NormalContactInfo2(
