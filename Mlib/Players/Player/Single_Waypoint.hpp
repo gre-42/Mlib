@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <chrono>
 #include <string>
 
@@ -13,7 +14,7 @@ class SingleWaypoint {
     SingleWaypoint(const SingleWaypoint&) = delete;
     SingleWaypoint& operator = (const SingleWaypoint&) = delete;
 public:
-    explicit SingleWaypoint(Player& player);
+    explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();
     void move_to_waypoint();
     void draw_waypoint_history(const std::string& filename) const;
@@ -27,7 +28,7 @@ public:
     size_t target_waypoint_id() const;
     size_t previous_waypoint_id() const;
 private:
-    Player& player_;
+    DanglingBaseClassRef<Player> player_;
     float target_velocity_;
     FixedArray<double, 3> waypoint_;
     size_t waypoint_id_;

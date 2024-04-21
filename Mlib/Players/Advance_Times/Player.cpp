@@ -92,7 +92,7 @@ Player::Player(
     , delete_node_mutex_{ delete_node_mutex }
     , next_scene_vehicle_{ nullptr }
     , externals_mode_{ ExternalsMode::NONE }
-    , single_waypoint_{ *this }
+    , single_waypoint_{ { *this, CURRENT_SOURCE_LOCATION } }
     , pathfinding_waypoints_{ *this, cfg }
     , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
     , playback_waypoints_{ *this }
@@ -414,7 +414,7 @@ void Player::increment_external_forces(
     if (!has_vehicle_controller()) {
         return;
     }
-    if (has_scene_vehicle()) {
+    {
         bool countdown_active;
         {
             std::shared_lock lock{focuses_.mutex};
@@ -441,7 +441,11 @@ void Player::increment_external_forces(
             }
         }
     }
-    single_waypoint_.move_to_waypoint();
+    // unstuck() might have deleted the vehicle, so a "has_scene_vehicle()"
+    // check is required.
+    if (has_scene_vehicle()) {
+        single_waypoint_.move_to_waypoint();
+    }
 }
 
 bool Player::unstuck() {

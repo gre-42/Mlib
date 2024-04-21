@@ -12,7 +12,7 @@ using namespace Mlib;
 
 // namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
 
-SingleWaypoint::SingleWaypoint(Player& player)
+SingleWaypoint::SingleWaypoint(const DanglingBaseClassRef<Player>& player)
     : player_{ player }
     , target_velocity_{ NAN }
     , waypoint_{ fixed_nans <double, 3>() }
@@ -32,7 +32,7 @@ void SingleWaypoint::set_target_velocity(float v) {
 void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
     previous_waypoint_id_ = waypoint_id_;
     waypoint_ = waypoint;
-    waypoint_(1) += player_.driving_mode_.waypoint_ofs;
+    waypoint_(1) += player_->driving_mode_.waypoint_ofs;
     waypoint_id_ = waypoint_id;
     if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
         waypoint_history_.push_back(waypoint);
@@ -45,8 +45,8 @@ void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
 }
 
 void SingleWaypoint::move_to_waypoint() {
-    player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (any(player_.vehicle_ai().move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
+    player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (any(player_->vehicle_ai().move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
         }
@@ -71,7 +71,7 @@ void SingleWaypoint::notify_spawn() {
 }
 
 void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
-    player_.delete_node_mutex_.notify_reading();
+    player_->delete_node_mutex_.notify_reading();
     if (!record_waypoints_) {
         THROW_OR_ABORT("draw_waypoint_history but recording is not enabled");
     }
