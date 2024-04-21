@@ -4,8 +4,10 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
+#include <Mlib/Geometry/Primitive_Dimensions.hpp>
 #include <Mlib/Ignore_Copy.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/To_Underlying.hpp>
 #include <cereal/access.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -57,13 +59,30 @@ public:
     Material material;
     PhysicsMaterial physics_material;
     ModifierBacklog modifier_backlog;
-    std::vector<FixedArray<ColoredVertex<TPos>, 4>> quads;
-    std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
-    std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
+    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
+    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
+    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::LINE)>> lines;
     std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
     std::vector<FixedArray<float, 3>> continuous_triangle_texture_layers;
     std::vector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     
+    template <PrimitiveDimensions tdims>
+    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
+        if constexpr (tdims == PrimitiveDimensions::QUAD) {
+            return quads;
+        } else if constexpr (tdims == PrimitiveDimensions::TRIANGLE) {
+            return triangles;
+        } else if constexpr (tdims == PrimitiveDimensions::LINE) {
+            return lines;
+        } else {
+            static_assert(tdims == PrimitiveDimensions::LINE, "Unknown primitive dimension");
+        }
+    }
+    template <PrimitiveDimensions tdims>
+    const std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() const {
+        return const_cast<ColoredVertexArray*>(this)->primitives<tdims>();
+    }
+    bool empty() const;
     std::vector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
     BoundingSphere<TPos, 3> bounding_sphere() const;
@@ -150,6 +169,8 @@ public:
             std::move(discrete_triangle_texture_layers));
     }
 private:
+    template <PrimitiveDimensions tfirst_dim>
+    bool empty_from() const;
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
     mutable std::optional<BoundingSphere<TPos, 3>> bounding_sphere_;
     mutable IgnoreCopy<SafeSharedMutex> aabb_mutex_;

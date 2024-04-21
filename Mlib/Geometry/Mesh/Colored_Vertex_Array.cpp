@@ -73,6 +73,21 @@ ColoredVertexArray<TPos>::~ColoredVertexArray()
 #endif
 
 template <class TPos>
+bool ColoredVertexArray<TPos>::empty() const {
+    return empty_from<PrimitiveDimensions::BEGIN>();
+}
+
+template <class TPos>
+template <PrimitiveDimensions tfirst_dim>
+bool ColoredVertexArray<TPos>::empty_from() const {
+    if constexpr (tfirst_dim == PrimitiveDimensions::END) {
+        return true;
+    } else {
+        return primitives<tfirst_dim>().empty() && empty_from<tfirst_dim + 1>();
+    }
+}
+
+template <class TPos>
 std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
     std::vector<FixedArray<TPos, 3>> res;
     res.reserve(quads.size() * 4 + triangles.size() * 3 + lines.size() * 2);

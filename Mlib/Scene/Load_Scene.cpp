@@ -207,6 +207,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Import_Bone_Weights.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Make_Triangles_With_Opposing_Normals_Two_Sided.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Meshes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Textures.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Modify_Physics_Material_Tags.hpp>
@@ -441,6 +442,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);
     register_json_user_function(CreateSquareResource::key, CreateSquareResource::json_user_function);
     register_json_user_function(CreateGridResource::key, CreateGridResource::json_user_function);
+    register_json_user_function(MakeTrianglesWithOpposingNormalsTwoSided::key, MakeTrianglesWithOpposingNormalsTwoSided::json_user_function);
     register_json_user_function(MergeBlendedMaterials::key, MergeBlendedMaterials::json_user_function);
     register_json_user_function(MergeMeshes::key, MergeMeshes::json_user_function);
     register_json_user_function(ModifyPhysicsMaterialTags::key, ModifyPhysicsMaterialTags::json_user_function);

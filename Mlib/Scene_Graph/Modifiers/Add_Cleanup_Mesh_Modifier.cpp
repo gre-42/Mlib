@@ -6,7 +6,6 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Merge_Neighboring_Points.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Cleanup/Remove_Degenerate_Triangles.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Make_Triangles_With_Opposing_Normals_Two_Sided.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -41,11 +40,10 @@ void Mlib::add_cleanup_mesh_modifier(
                     remove_degenerate_triangles(*cva);
                     // remove_duplicate_triangles(*cva);
                     // remove_triangles_with_opposing_normals(*cva);
-                    make_triangles_with_opposing_normals_two_sided(*cva, cvas);
                     if (modulo_uv) {
                         Mlib::modulo_uv(*cva);
                     }
-                    return cva->triangles.empty();
+                    return cva->empty();
                     });
             };
             Bvh<float, FixedArray<float, 3>, 3> sbvh{FixedArray<float, 3>{0.1f, 0.1f, 0.1f}, 17};
