@@ -23,12 +23,11 @@ GameLogic::GameLogic(
     , bystanders{ vehicle_spawners, players, scene, spawn, cfg }
     , team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round }
     , vehicle_changer_{ vehicle_spawners, delete_node_mutex }
-    , advance_times_{ advance_times }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
     , supply_depots_{ supply_depots }
 {
-    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 GameLogic::~GameLogic() {

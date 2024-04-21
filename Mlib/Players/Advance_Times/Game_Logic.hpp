@@ -38,7 +38,6 @@ public:
     TeamDeathmatch team_deathmatch;
 private:
     VehicleChanger vehicle_changer_;
-    AdvanceTimes& advance_times_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     SupplyDepots& supply_depots_;

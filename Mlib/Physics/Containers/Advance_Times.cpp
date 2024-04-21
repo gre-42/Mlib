@@ -13,8 +13,8 @@ AdvanceTimes::~AdvanceTimes()
 {
     if (!advance_times_.empty()) {
         lerr() << "~AdvanceTimes: " << advance_times_.size() << " advance_times still exist.";
-        for (const auto& [o, loc] : advance_times_) {
-            lerr() << "  " << typeid(*o.get()).name() << ' ' << loc.file_name() << ':' << loc.line();
+        for (const auto& [_, loc] : advance_times_) {
+            lerr() << "  " << loc.file_name() << ':' << loc.line();
         }
     }
 }
