@@ -11,11 +11,13 @@ AdvanceTimes::AdvanceTimes()
 
 AdvanceTimes::~AdvanceTimes()
 {
+    advance_times_.remove_if([](const auto& a){ return a.first == nullptr; });
     if (!advance_times_.empty()) {
         lerr() << "~AdvanceTimes: " << advance_times_.size() << " advance_times still exist.";
         for (const auto& [_, loc] : advance_times_) {
             lerr() << "  " << loc.file_name() << ':' << loc.line();
         }
+        verbose_abort("Aborting due to dangling pointers in AdvanceTimes");
     }
 }
 
