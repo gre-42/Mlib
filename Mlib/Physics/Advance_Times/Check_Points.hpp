@@ -95,7 +95,6 @@ private:
     FixedArray<float, 3> selection_emissive_;
     FixedArray<float, 3> deselection_emissive_;
     std::function<void()> on_finish_;
-    bool shutting_down_;
 };
 
 }

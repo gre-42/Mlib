@@ -111,7 +111,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         sequence = std::make_unique<TrackElementVector>(args.arguments.at<std::vector<std::vector<double>>>(KnownArgs::track));
     }
-    auto& check_points = object_pool.create<CheckPoints>(
+    auto& check_points = global_object_pool.create<CheckPoints>(
         CURRENT_SOURCE_LOCATION,
         std::move(sequence),
         nframes,
@@ -148,7 +148,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_right)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_bottom)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::pacenotes_picture_top)));
-        auto& renderable_pace_notes = object_pool.create<CheckPointsPacenotes>(
+        auto& renderable_pace_notes = global_object_pool.create<CheckPointsPacenotes>(
             CURRENT_SOURCE_LOCATION,
             args.gallery,
             args.arguments.at<std::vector<std::string>>(KnownArgs::pacenotes_pictures_left),

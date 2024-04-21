@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Race_State.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -43,39 +44,38 @@ CheckPoints::CheckPoints(
     const FixedArray<float, 3>& selection_emissive,
     const FixedArray<float, 3>& deselection_emissive,
     const std::function<void()>& on_finish)
-: track_reader_{
-    std::move(sequence),
-    nframes,
-    nlaps,
-    inverse_geographic_mapping,
-    TrackElementInterpolationKey::METERS_TO_START,
-    TrackReaderInterpolationMode::NEAREST_NEIGHBOR,
-    1},
-  nlaps_{nlaps},
-  asset_id_{std::move(asset_id)},
-  moving_nodes_{std::move(moving_nodes)},
-  resource_name_{resource_name},
-  player_{player},
-  radius_{radius},
-  nbeacons_{nbeacons},
-  distance_{distance},
-  nahead_{nahead},
-  i01_{0},
-  lap_index_{0},
-  progress_{0.},
-  rendering_resources_{rendering_resources},
-  scene_node_resources_{scene_node_resources},
-  scene_{scene},
-  delete_node_mutex_{delete_node_mutex},
-  focuses_{focuses},
-  total_elapsed_seconds_{NAN},
-  lap_elapsed_seconds_{NAN},
-  race_state_{RaceState::COUNTDOWN},
-  enable_height_changed_mode_{enable_height_changed_mode},
-  selection_emissive_{selection_emissive},
-  deselection_emissive_{deselection_emissive},
-  on_finish_{on_finish},
-  shutting_down_{false}
+    : track_reader_{
+        std::move(sequence),
+        nframes,
+        nlaps,
+        inverse_geographic_mapping,
+        TrackElementInterpolationKey::METERS_TO_START,
+        TrackReaderInterpolationMode::NEAREST_NEIGHBOR,
+        1 }
+    , nlaps_{ nlaps }
+    , asset_id_{ std::move(asset_id) }
+    , moving_nodes_{ std::move(moving_nodes) }
+    , resource_name_{ resource_name }
+    , player_{ player }
+    , radius_{ radius }
+    , nbeacons_{ nbeacons }
+    , distance_{ distance }
+    , nahead_{ nahead }
+    , i01_{ 0 }
+    , lap_index_{ 0 }
+    , progress_{ 0. }
+    , rendering_resources_{ rendering_resources }
+    , scene_node_resources_{ scene_node_resources }
+    , scene_{ scene }
+    , delete_node_mutex_{ delete_node_mutex }
+    , focuses_{ focuses }
+    , total_elapsed_seconds_{ NAN }
+    , lap_elapsed_seconds_{ NAN }
+    , race_state_{ RaceState::COUNTDOWN }
+    , enable_height_changed_mode_{ enable_height_changed_mode }
+    , selection_emissive_{ selection_emissive }
+    , deselection_emissive_{ deselection_emissive }
+    , on_finish_{ on_finish }
 {
     if (nbeacons == 0) {
         THROW_OR_ABORT("Need at least one beacon node");
@@ -99,9 +99,6 @@ CheckPoints::CheckPoints(
 
 CheckPoints::~CheckPoints() {
     on_destroy.clear();
-    if (!shutting_down_) {
-        verbose_abort("CheckPoints dtor without shutdown");
-    }
 }
 
 void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point time) {
@@ -244,12 +241,6 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
 }
 
 void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (shutting_down_) {
-        verbose_abort("CheckPoints received multiple shutdown requests");
-    }
-
-    shutting_down_ = true;
-
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -273,6 +264,7 @@ void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
             }
         }
     }
+    global_object_pool.remove(this);
 }
 
 bool CheckPoints::has_meters_to_start() const {
