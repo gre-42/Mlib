@@ -100,11 +100,11 @@ public:
         GLFWwindow& glfw_window,
 #endif
         const SceneConfigResource& config,
-        const std::string& level_name,
+        std::string level_name,
         size_t max_tracks,
         bool save_playback,
         const RaceIdentifier& race_identfier,
-        const std::function<void()>& setup_new_round,
+        std::function<void()> setup_new_round,
         const FocusFilter& focus_filter,
         DependentSleeper& dependent_sleeper);
     ~RenderableScene();

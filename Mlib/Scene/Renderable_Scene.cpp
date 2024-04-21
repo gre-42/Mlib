@@ -42,11 +42,11 @@ RenderableScene::RenderableScene(
     GLFWwindow& glfw_window,
 #endif
     const SceneConfigResource& config,
-    const std::string& level_name,
+    std::string level_name,
     size_t max_tracks,
     bool save_playback,
     const RaceIdentifier& race_identfier,
-    const std::function<void()>& setup_new_round,
+    std::function<void()> setup_new_round,
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
@@ -146,7 +146,7 @@ RenderableScene::RenderableScene(
     , fxaa_logic_{ std::make_unique<FxaaLogic>(*post_processing_logic_) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
-    , players_{ level_name, max_tracks, save_playback, scene_node_resources, race_identfier }
+    , players_{ std::move(level_name), max_tracks, save_playback, scene_node_resources, race_identfier }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
     , game_logic_{
           scene_,
@@ -155,7 +155,7 @@ RenderableScene::RenderableScene(
           players_,
           supply_depots_,
           delete_node_mutex_,
-          setup_new_round}
+          std::move(setup_new_round)}
 #ifndef WITHOUT_ALUT
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 #endif
