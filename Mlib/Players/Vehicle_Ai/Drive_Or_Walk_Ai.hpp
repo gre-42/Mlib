@@ -1,17 +1,16 @@
 #pragma once
-#include <Mlib/Players/Vehicle_Ai/IVehicle_Ai.hpp>
+#include <Mlib/Physics/IVehicle_Ai.hpp>
 
 namespace Mlib {
 
 class Player;
-class RigidBodyVehicle;
 
 class DriveOrWalkAi: public IVehicleAi {
+	DriveOrWalkAi(const DriveOrWalkAi&) = delete;
+	DriveOrWalkAi& operator = (const DriveOrWalkAi&) = delete;
 public:
-	DriveOrWalkAi(Player& player);
+	explicit DriveOrWalkAi(Player& player);
 	virtual ~DriveOrWalkAi() override;
-	void set_car_controller();
-	void set_avatar_controller();
 	virtual VehicleAiMoveToStatus move_to(
 		const FixedArray<double, 3>& position_of_destination,
 		const FixedArray<float, 3>& velocity_of_destination,

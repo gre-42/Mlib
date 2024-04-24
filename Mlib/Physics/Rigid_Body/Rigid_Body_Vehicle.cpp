@@ -21,6 +21,7 @@
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
+#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
@@ -83,7 +84,8 @@ RigidBodyVehicle::RigidBodyVehicle(
     , fly_forward_state_{
         .wants_to_fly_forward_factor_ = NAN }
     , geographic_mapping_{ geographic_mapping }
-    , vehicle_domain_{ VehicleDomain::UNDEFINED }
+    , current_vehicle_domain_{ VehicleDomain::UNDEFINED }
+    , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
@@ -134,6 +136,8 @@ void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
     grind_state_.grinding_ = false;
     align_to_surface_state_.touches_alignment_plane_ = false;
     align_to_surface_state_.surface_normal_ = NAN;
+    current_vehicle_domain_ = next_vehicle_domain_;
+    next_vehicle_domain_ = VehicleDomain::AIR;
 }
 
 void RigidBodyVehicle::set_wants_to_jump() {
@@ -653,6 +657,7 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
             THROW_OR_ABORT("No delta engine with name \"" + tire.delta_engine.value() + "\" exists");
         }
     }
+    next_vehicle_domain_ = VehicleDomain::GROUND;
     return e->second.consume_tire_power(
         id,
         &tire.angular_velocity,

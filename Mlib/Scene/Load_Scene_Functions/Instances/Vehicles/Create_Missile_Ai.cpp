@@ -6,7 +6,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Missile_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Vehicle_Ai_Advance_Time.hpp>
-#include <Mlib/Players/Vehicle_Ai/Missile_Ai.hpp>
+#include <Mlib/Players/Vehicle_Ai/Autonomous_Missile_Ai.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -70,7 +70,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         OutOfRangeBehavior::CLAMP };
     auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
     auto& target_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::target), DP_LOC));
-    auto missile_ai = std::make_unique<MissileAi>(
+    auto missile_ai = std::make_unique<AutonomousMissileAi>(
         pid_controller,
         std::move(dy),
         args.arguments.at<double>(KnownArgs::eta_max) * s,

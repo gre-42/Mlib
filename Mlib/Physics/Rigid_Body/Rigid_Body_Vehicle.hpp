@@ -31,6 +31,7 @@ struct Beacon;
 class IDamageable;
 class ISpawner;
 class IPlayer;
+class IVehicleAi;
 class AnimationStateUpdater;
 class RigidBodyAvatarController;
 class RigidBodyPlaneController;
@@ -44,6 +45,7 @@ class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 enum class VehicleDomain;
+enum class VehicleType;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -258,6 +260,7 @@ public:
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     std::unique_ptr<RigidBodyMissileController> missile_controller_;
+    std::unique_ptr<IVehicleAi> autonomous_missile_ai_;
     float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;
@@ -266,8 +269,11 @@ public:
     FlyForwardState fly_forward_state_;
     TrailerHitches trailer_hitches_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
-    VehicleDomain vehicle_domain_;
+    VehicleDomain current_vehicle_domain_;
+    VehicleType vehicle_type_;
+    void set_vehicle_type(VehicleType type);
 private:
+    VehicleDomain next_vehicle_domain_;
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };
 

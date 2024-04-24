@@ -50,7 +50,7 @@ class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
 class IVehicleAi;
-class PlaneAi;
+class PlayerControlledMissileAi;
 class DriveOrWalkAi;
 
 enum class GameMode {
@@ -216,7 +216,7 @@ public:
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;
-    IVehicleAi& vehicle_ai();
+    IVehicleAi* vehicle_ai();
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
@@ -288,7 +288,7 @@ private:
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
     double select_opponent_hysteresis_factor_;
-    std::unique_ptr<PlaneAi> plane_ai_;
+    std::unique_ptr<PlayerControlledMissileAi> missile_ai_;
     std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
     DestructionObservers<const IPlayer&> destruction_observers_;
 };

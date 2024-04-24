@@ -1,10 +1,10 @@
 #include "Single_Waypoint.hpp"
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
-#include <Mlib/Players/Vehicle_Ai/IVehicle_Ai.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -46,7 +46,14 @@ void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
 
 void SingleWaypoint::move_to_waypoint() {
     player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (any(player_->vehicle_ai().move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
+    if (!player_->has_scene_vehicle()) {
+        return;
+    }
+    auto* ai = player_->vehicle_ai();
+    if (ai == nullptr) {
+        return;
+    }
+    if (any(ai->move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
         }

@@ -7,8 +7,9 @@ enum class VehicleType {
     UNDEFINED,
     AVATAR,
     CAR,
-    PLANE,
     HELICOPTER,
+    MISSILE,
+    PLANE,
     SKATEBOARD
 };
 

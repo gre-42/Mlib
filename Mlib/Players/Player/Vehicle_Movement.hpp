@@ -3,6 +3,8 @@
 namespace Mlib {
 
 class VehicleMovement {
+    VehicleMovement(const VehicleMovement&) = delete;
+    VehicleMovement& operator = (const VehicleMovement&) = delete;
 public:
     VehicleMovement();
     ~VehicleMovement();

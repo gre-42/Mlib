@@ -1,20 +1,20 @@
 #include "Vehicle_Type.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 
 using namespace Mlib;
 
 VehicleType Mlib::vehicle_type_from_string(const std::string& s) {
-    if (s == "avatar") {
-        return VehicleType::AVATAR;
-    } else if (s == "car") {
-        return VehicleType::CAR;
-    } else if (s == "plane") {
-        return VehicleType::PLANE;
-    } else if (s == "helicopter") {
-        return VehicleType::HELICOPTER;
-    } else if (s == "skateboard") {
-        return VehicleType::SKATEBOARD;
-    } else {
+    static const std::map<std::string, VehicleType> m{
+        { "avatar", VehicleType::AVATAR },
+        { "car", VehicleType::CAR },
+        { "helicopter", VehicleType::HELICOPTER },
+        { "missile", VehicleType::MISSILE},
+        { "plane", VehicleType::PLANE },
+        { "skateboard", VehicleType::SKATEBOARD }};
+    auto it = m.find(s);
+    if (it == m.end()) {
         THROW_OR_ABORT("Unknown vehicle type: \"" + s + '"');
     }
+    return it->second;
 }

@@ -8,7 +8,8 @@ class Player;
 class SingleWaypoint;
 
 class CarMovement {
-    friend SingleWaypoint;
+    CarMovement(const CarMovement&) = delete;
+    CarMovement& operator = (const CarMovement&) = delete;
 public:
     explicit CarMovement(Player& player);
     ~CarMovement();

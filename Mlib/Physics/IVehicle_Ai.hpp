@@ -10,12 +10,13 @@ class FixedArray;
 enum class VehicleAiMoveToStatus {
 	NONE = 0,
 	SCENE_VEHICLE_IS_NULL = (1 << 0),
-	SKILL_MISSING = (1 << 1),
-	WAYPOINT_IS_NAN = (1 << 2),
-	POWER_IS_NAN = (1 << 3),
-	DESTINATION_REACHED = (1 << 4),
-	RESTING_POSITION_REACHED = (1 << 5),
-	STOPPED_TO_AVOID_COLLISION = (1 << 6)
+	AUTOPILOT_IS_NULL = (1 << 1),
+	SKILL_MISSING = (1 << 2),
+	WAYPOINT_IS_NAN = (1 << 3),
+	POWER_IS_NAN = (1 << 4),
+	DESTINATION_REACHED = (1 << 5),
+	RESTING_POSITION_REACHED = (1 << 6),
+	STOPPED_TO_AVOID_COLLISION = (1 << 7)
 };
 
 inline VehicleAiMoveToStatus& operator |= (VehicleAiMoveToStatus& a, VehicleAiMoveToStatus b) {

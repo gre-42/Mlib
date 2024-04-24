@@ -24,6 +24,17 @@ public:
         initialized_ = true;
         return result;
     }
+    PidController changed_time_step(const TFloat& from, const TFloat& to) {
+        // The factor f4 was determined by trial and error.
+        auto f = from / to;
+        auto f2 = f * f;
+        auto f4 = f2 * f2;
+        return {
+            p_ * f4,
+            i_ * f4,
+            d_ * f4,
+            std::pow(a_, f) };
+    }
 private:
     bool initialized_;
     TFloat p_;

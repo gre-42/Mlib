@@ -1,4 +1,4 @@
-#include "Missile_Ai.hpp"
+#include "Autonomous_Missile_Ai.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
@@ -6,7 +6,7 @@
 
 using namespace Mlib;
 
-MissileAi::MissileAi(
+AutonomousMissileAi::AutonomousMissileAi(
 	const PidController<FixedArray<float, 3>, float>& pid,
 	Interp<float, float> dy,
 	double eta_max,
@@ -21,9 +21,9 @@ MissileAi::MissileAi(
 	, missile_{ missile }
 {}
 
-MissileAi::~MissileAi() = default;
+AutonomousMissileAi::~AutonomousMissileAi() = default;
 
-VehicleAiMoveToStatus MissileAi::move_to(
+VehicleAiMoveToStatus AutonomousMissileAi::move_to(
 	const FixedArray<double, 3>& position_of_destination,
 	const FixedArray<float, 3>& velocity_of_destination,
 	const std::optional<FixedArray<float, 3>>& velocity_at_destination)

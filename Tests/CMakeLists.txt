@@ -15,6 +15,7 @@ add_subdirectory(Registration)
 # add_subdirectory(Rigid_Body_Physics)
 add_subdirectory(Physics)
 add_subdirectory(SaddleDetector)
+add_subdirectory(Signal)
 add_subdirectory(Stats)
 
 if (BUILD_CV)
