@@ -913,6 +913,8 @@ IVehicleAi* Player::vehicle_ai() {
         case VehicleType::HELICOPTER:
         case VehicleType::SKATEBOARD:
             return drive_or_walk_ai_.get();
+        case VehicleType::UNDEFINED:
+            THROW_OR_ABORT("Vehicle type is undefined");
         }
         THROW_OR_ABORT("Unknown vehicle type");
     case VehicleDomain::GROUND:
