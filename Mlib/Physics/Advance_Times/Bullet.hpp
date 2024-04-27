@@ -36,7 +36,7 @@ class Bullet:
     public DestructionObserver<const ITeam&>,
     public CollisionObserver,
     public IAdvanceTime,
-    public DanglingBaseClass
+    public virtual DanglingBaseClass
 {
 public:
     Bullet(

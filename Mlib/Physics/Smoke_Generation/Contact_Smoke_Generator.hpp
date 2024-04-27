@@ -17,7 +17,7 @@ struct IntersectionScene;
 struct SurfaceContactInfo;
 class SurfaceContactDb;
 
-class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public DanglingBaseClass {
+class ContactSmokeGenerator: public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
 public:
     explicit ContactSmokeGenerator(
         SurfaceContactDb& surface_contact_db,

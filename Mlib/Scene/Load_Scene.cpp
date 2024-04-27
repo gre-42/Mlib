@@ -12,6 +12,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Vehicle_Follower_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Fit_Canvas_To_Renderables.hpp>
@@ -337,6 +339,8 @@ LoadScene::LoadScene() {
     register_json_user_function(InvalidateAggregateRenderers::key, InvalidateAggregateRenderers::json_user_function);
     register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
     register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
+    register_json_user_function(CreateDriveOrWalkAi::key, CreateDriveOrWalkAi::json_user_function);
+    register_json_user_function(CreateVehicleFollowerAi::key, CreateVehicleFollowerAi::json_user_function);
     register_json_user_function(CreateOrthoCamera::key, CreateOrthoCamera::json_user_function);
     register_json_user_function(CreatePerspectiveCamera::key, CreatePerspectiveCamera::json_user_function);
     register_json_user_function(PlaybackTrack::key, PlaybackTrack::json_user_function);

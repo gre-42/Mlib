@@ -17,7 +17,7 @@ class SceneVehicle;
 class RigidBodyVehicle;
 class Player;
 
-class VehicleSpawner final : public ISpawner, public DestructionObserver<const RigidBodyVehicle&>, public DanglingBaseClass {
+class VehicleSpawner final : public ISpawner, public DestructionObserver<const RigidBodyVehicle&>, public virtual DanglingBaseClass {
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:

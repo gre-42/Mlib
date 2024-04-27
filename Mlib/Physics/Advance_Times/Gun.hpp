@@ -31,7 +31,7 @@ class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
 
-class Gun final: public IAbsoluteObserver, public IAdvanceTime, public DanglingBaseClass {
+class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     Gun(RenderingResources* rendering_resources,
         Scene& scene,

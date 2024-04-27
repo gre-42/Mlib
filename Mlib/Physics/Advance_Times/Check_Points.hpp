@@ -34,7 +34,7 @@ struct BeaconNode {
     CheckPointPose* check_point_pose;
 };
 
-class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,

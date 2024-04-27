@@ -21,7 +21,7 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh;
 class DeleteNodeMutex;
 
-class GameLogic: public IAdvanceTime, public DanglingBaseClass {
+class GameLogic: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     GameLogic(
         Scene& scene,

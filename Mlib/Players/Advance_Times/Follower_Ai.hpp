@@ -7,22 +7,19 @@
 
 namespace Mlib {
 
-class IVehicleAi;
 class RigidBodyVehicle;
 class AdvanceTimes;
 
-class VehicleAiAdvanceTime: public IAdvanceTime, public DanglingBaseClass {
+class FollowerAi: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
-	explicit VehicleAiAdvanceTime(
+	explicit FollowerAi(
 		AdvanceTimes& advance_times,
-		std::unique_ptr<IVehicleAi>&& vehicle_ai,
 		const DanglingBaseClassRef<RigidBodyVehicle>& follower,
 		const DanglingBaseClassRef<RigidBodyVehicle>& followed);
-	virtual ~VehicleAiAdvanceTime();
+	virtual ~FollowerAi();
 	virtual void advance_time(float dt, std::chrono::steady_clock::time_point time);
 private:
 	AdvanceTimes& advance_times_;
-	std::unique_ptr<IVehicleAi> vehicle_ai_;
 	DanglingBaseClassRef<RigidBodyVehicle> follower_;
 	DanglingBaseClassPtr<RigidBodyVehicle> followed_;
 	DestructionFunctionsRemovalTokens follower_on_destroy_;

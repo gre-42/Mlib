@@ -16,7 +16,7 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 
-class FollowMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public DanglingBaseClass {
+class FollowMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     FollowMovable(
         AdvanceTimes& advance_times,

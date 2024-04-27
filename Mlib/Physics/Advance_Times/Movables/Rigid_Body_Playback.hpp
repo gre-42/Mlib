@@ -19,7 +19,7 @@ class Focuses;
 class ITrackElementSequence;
 class RigidBodyPlayback;
 
-class RigidBodySinglePlayback: public IAbsoluteMovable, public DanglingBaseClass {
+class RigidBodySinglePlayback: public IAbsoluteMovable, public virtual DanglingBaseClass {
     friend RigidBodyPlayback;
 public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -28,7 +28,7 @@ private:
     TransformationMatrix<float, double, 3> transformation_matrix_;
 };
 
-class RigidBodyPlayback: public IAdvanceTime, public DanglingBaseClass {
+class RigidBodyPlayback: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyPlayback(
         std::unique_ptr<ITrackElementSequence>&& sequence,

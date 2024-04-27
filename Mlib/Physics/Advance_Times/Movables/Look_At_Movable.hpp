@@ -14,7 +14,7 @@ class AdvanceTimes;
 class Scene;
 class SceneNode;
 
-class LookAtMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public DanglingBaseClass {
+class LookAtMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     LookAtMovable(
         AdvanceTimes& advance_times,

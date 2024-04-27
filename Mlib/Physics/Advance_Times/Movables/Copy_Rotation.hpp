@@ -14,7 +14,7 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 
-class CopyRotation: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public DanglingBaseClass {
+class CopyRotation: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit CopyRotation(DanglingRef<SceneNode> from);
     ~CopyRotation();

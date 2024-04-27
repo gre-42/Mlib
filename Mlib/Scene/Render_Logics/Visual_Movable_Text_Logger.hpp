@@ -11,7 +11,7 @@ class TextResource;
 class StatusWriter;
 class IWidget;
 
-class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic, public DanglingBaseClass {
+class VisualMovableTextLogger: public VisualMovableLoggerView, private RenderTextLogic, public virtual DanglingBaseClass {
 public:
     VisualMovableTextLogger(
         StatusWriter& status_writer,

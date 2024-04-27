@@ -49,7 +49,7 @@ void SingleWaypoint::move_to_waypoint() {
     if (!player_->has_scene_vehicle()) {
         return;
     }
-    auto* ai = player_->vehicle_ai();
+    auto ai = player_->vehicle_ai();
     if (ai == nullptr) {
         return;
     }

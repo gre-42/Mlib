@@ -12,7 +12,7 @@ template <class T>
 class DanglingRef;
 class SceneNode;
 
-class RelativeTransformer: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public DanglingBaseClass {
+class RelativeTransformer: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit RelativeTransformer(
         const FixedArray<float, 3>& v = {0, 0, 0},

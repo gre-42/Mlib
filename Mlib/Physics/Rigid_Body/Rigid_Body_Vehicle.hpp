@@ -45,7 +45,6 @@ class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 enum class VehicleDomain;
-enum class VehicleType;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -96,7 +95,7 @@ class RigidBodyVehicle:
     public IAbsoluteMovable,
     public StatusWriter,
     public INodeHider,
-    public DanglingBaseClass {
+    public virtual DanglingBaseClass {
 public:
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
@@ -190,6 +189,10 @@ public:
     void set_jump_dv(float value);
     void clear_driver();
     void set_driver(DanglingBaseClassRef<IPlayer> driver);
+    void set_autopilot(const std::string& name, const DanglingBaseClassRef<IVehicleAi>& ai);
+    DanglingBaseClassRef<IVehicleAi> get_autopilot(const std::string& name);
+    bool has_autopilot(const std::string& name) const;
+    void remove_autopilot(const std::string& name);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -260,7 +263,7 @@ public:
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     std::unique_ptr<RigidBodyMissileController> missile_controller_;
-    std::unique_ptr<IVehicleAi> autonomous_missile_ai_;
+    std::map<std::string, DestructionFunctionsTokensObject<IVehicleAi>> autopilots_;
     float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;
@@ -270,8 +273,6 @@ public:
     TrailerHitches trailer_hitches_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
     VehicleDomain current_vehicle_domain_;
-    VehicleType vehicle_type_;
-    void set_vehicle_type(VehicleType type);
 private:
     VehicleDomain next_vehicle_domain_;
     void advance_time_skate(const PhysicsEngineConfig& cfg);

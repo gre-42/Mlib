@@ -50,8 +50,6 @@ class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
 class IVehicleAi;
-class PlayerControlledMissileAi;
-class DriveOrWalkAi;
 
 enum class GameMode {
     RAMMING,
@@ -115,7 +113,7 @@ class Player:
     public DestructionObserver<const RigidBodyVehicle&>,
     public IAdvanceTime,
     public IExternalForceProvider,
-    public DanglingBaseClass
+    public virtual DanglingBaseClass
 {
     friend PathfindingWaypoints;
     friend PlaybackWaypoints;
@@ -216,7 +214,7 @@ public:
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;
-    IVehicleAi* vehicle_ai();
+    DanglingBaseClassPtr<IVehicleAi> vehicle_ai();
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
@@ -288,8 +286,6 @@ private:
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
     double select_opponent_hysteresis_factor_;
-    std::unique_ptr<PlayerControlledMissileAi> missile_ai_;
-    std::unique_ptr<DriveOrWalkAi> drive_or_walk_ai_;
     DestructionObservers<const IPlayer&> destruction_observers_;
 };
 

@@ -18,7 +18,7 @@ struct PhysicsEngineConfig;
 class SceneNode;
 class RigidBodyVehicle;
 
-class AimAt: public IAbsoluteObserver, public IAdvanceTime, public DanglingBaseClass {
+class AimAt: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     AimAt(
         AdvanceTimes& advance_times,

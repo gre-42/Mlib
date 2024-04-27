@@ -19,8 +19,6 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Type.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
@@ -29,8 +27,6 @@
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Players/Team/Team.hpp>
-#include <Mlib/Players/Vehicle_Ai/Drive_Or_Walk_Ai.hpp>
-#include <Mlib/Players/Vehicle_Ai/Player_Controlled_Missile_Ai.hpp>
 #include <Mlib/Scene_Graph/Animation/Animation_State_Updater.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -99,8 +95,6 @@ Player::Player(
     , playback_waypoints_{ *this }
     , focuses_{ focuses }
     , select_opponent_hysteresis_factor_{ 0.9 }
-    , missile_ai_{ std::make_unique<PlayerControlledMissileAi>(*this) }
-    , drive_or_walk_ai_{ std::make_unique<DriveOrWalkAi>(*this) }
     , destruction_observers_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -901,28 +895,10 @@ DrivingDirection Player::driving_direction() const {
     return driving_direction_;
 }
 
-IVehicleAi* Player::vehicle_ai() {
-    switch (rigid_body().current_vehicle_domain_) {
-    case VehicleDomain::AIR:
-        switch (rigid_body().vehicle_type_) {
-        case VehicleType::MISSILE:
-        case VehicleType::PLANE:
-            return missile_ai_.get();
-        case VehicleType::AVATAR:
-        case VehicleType::CAR:
-        case VehicleType::HELICOPTER:
-        case VehicleType::SKATEBOARD:
-            return drive_or_walk_ai_.get();
-        case VehicleType::UNDEFINED:
-            THROW_OR_ABORT("Vehicle type is undefined");
-        }
-        THROW_OR_ABORT("Unknown vehicle type");
-    case VehicleDomain::GROUND:
-        return drive_or_walk_ai_.get();
-    case VehicleDomain::UNDEFINED:
-        return nullptr;
-    }
-    THROW_OR_ABORT("Player \"" + name_ + "\": Unknown vehicle domain");
+DanglingBaseClassPtr<IVehicleAi> Player::vehicle_ai() {
+    return rigid_body().has_autopilot("default")
+        ? rigid_body().get_autopilot("default").ptr()
+        : nullptr;
 }
 
 ExternalsMode Player::externals_mode() const {

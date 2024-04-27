@@ -9,6 +9,7 @@
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Delta_Intent.hpp>
@@ -996,6 +997,36 @@ void RigidBodyVehicle::clear_driver() {
 void RigidBodyVehicle::set_driver(DanglingBaseClassRef<IPlayer> driver) {
     driver_ = driver.ptr();
     driver->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+}
+
+void RigidBodyVehicle::set_autopilot(
+    const std::string& name,
+    const DanglingBaseClassRef<IVehicleAi>& ai)
+{
+    auto it = autopilots_.try_emplace(name, ai, CURRENT_SOURCE_LOCATION);
+    if (!it.second) {
+        THROW_OR_ABORT("Autopilot with name \"" + name + "\" already exists");
+    }
+    it.first->second.on_destroy([this, name]() { remove_autopilot(name); }, CURRENT_SOURCE_LOCATION);
+}
+
+DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const std::string& name)
+{
+    auto it = autopilots_.find(name);
+    if (it == autopilots_.end()) {
+        THROW_OR_ABORT("No autopilot with name \"" + name + "\" exists");
+    }
+    return it->second.object();
+}
+
+bool RigidBodyVehicle::has_autopilot(const std::string& name) const {
+    return autopilots_.contains(name);
+}
+
+void RigidBodyVehicle::remove_autopilot(const std::string& name) {
+    if (autopilots_.erase(name) != 1) {
+        verbose_abort("Could not remove autopilot with name \"" + name + '"');
+    }
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {

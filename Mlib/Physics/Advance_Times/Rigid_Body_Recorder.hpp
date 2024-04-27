@@ -14,7 +14,7 @@ class Focuses;
 class SceneNode;
 class RigidBodyPulses;
 
-class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorder(
         const std::string& filename,

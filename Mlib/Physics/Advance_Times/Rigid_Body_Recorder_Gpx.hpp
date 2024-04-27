@@ -17,7 +17,7 @@ class RigidBodyPulses;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,

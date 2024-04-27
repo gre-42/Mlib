@@ -14,7 +14,7 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 
-class KeepOffsetFromMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public DanglingBaseClass {
+class KeepOffsetFromMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromMovable(
         AdvanceTimes& advance_times,

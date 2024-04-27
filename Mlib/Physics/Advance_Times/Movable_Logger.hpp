@@ -12,7 +12,7 @@ template <class T>
 class DanglingRef;
 class SceneNode;
 
-class MovableLogger: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class MovableLogger: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     MovableLogger(
         DanglingRef<SceneNode> scene_node,

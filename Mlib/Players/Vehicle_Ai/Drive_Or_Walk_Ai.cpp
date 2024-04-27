@@ -10,11 +10,14 @@
 
 using namespace Mlib;
 
-DriveOrWalkAi::DriveOrWalkAi(Player& player)
+DriveOrWalkAi::DriveOrWalkAi(const DanglingBaseClassRef<Player>& player)
 	: player_{ player }
+    , on_player_delete_externals{ player->delete_externals, CURRENT_SOURCE_LOCATION }
 {}
 
-DriveOrWalkAi::~DriveOrWalkAi() = default;
+DriveOrWalkAi::~DriveOrWalkAi() {
+    on_destroy.clear();
+}
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     const FixedArray<double, 3>& position_of_destination,
@@ -24,21 +27,21 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     // if (!any(Mlib::isnan(waypoint_))) {
     //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
     // }
-    if (!player_.has_scene_vehicle()) {
+    if (!player_->has_scene_vehicle()) {
         return VehicleAiMoveToStatus::SCENE_VEHICLE_IS_NULL;
     }
-    if (!player_.skills(ControlSource::AI).can_drive) {
+    if (!player_->skills(ControlSource::AI).can_drive) {
         return VehicleAiMoveToStatus::SKILL_MISSING;
     }
-    auto& player_rb = player_.rigid_body();
+    auto& player_rb = player_->rigid_body();
     // Disabled, using "steer" instead to enable the PID-controller.
     // player_rb.vehicle_controller().reset_parameters(
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
     auto step_on_brakes_and_apply = [this, &player_rb](){
-        player_.car_movement.step_on_brakes();
-        player_.car_movement.steer(0.f);
+        player_->car_movement.step_on_brakes();
+        player_->car_movement.steer(0.f);
         player_rb.vehicle_controller().apply();
         };
     player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
@@ -52,55 +55,55 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     float lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
-        squared(player_.driving_mode().lookahead_velocity));
-    if (distance_to_waypoint2 < squared(player_.driving_mode().waypoint_reached_radius) * lookahead_fac2) {
+        squared(player_->driving_mode().lookahead_velocity));
+    if (distance_to_waypoint2 < squared(player_->driving_mode().waypoint_reached_radius) * lookahead_fac2) {
         result |= VehicleAiMoveToStatus::DESTINATION_REACHED;
     }
-    if (std::isnan(player_.vehicle_movement.surface_power_forward()) ||
-        std::isnan(player_.vehicle_movement.surface_power_backward()))
+    if (std::isnan(player_->vehicle_movement.surface_power_forward()) ||
+        std::isnan(player_->vehicle_movement.surface_power_backward()))
     {
         step_on_brakes_and_apply();
         return result | VehicleAiMoveToStatus::POWER_IS_NAN;
     }
     // Stop when distance to waypoint is small enough (brake).
-    if (!player_.ramming()) {
-        if (distance_to_waypoint2 < squared(player_.driving_mode().rest_radius) * lookahead_fac2) {
+    if (!player_->ramming()) {
+        if (distance_to_waypoint2 < squared(player_->driving_mode().rest_radius) * lookahead_fac2) {
             step_on_brakes_and_apply();
             return result | VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
         }
     }
     float d_wpt = 0;
     // Avoid collisions with other players (brake).
-    for (const auto& [_, p] : player_.players().players()) {
-        if (p.get() == &player_) {
+    for (const auto& [_, p] : player_->players().players()) {
+        if (p.get() == &player_.get()) {
             continue;
         }
         if (!p->has_scene_vehicle()) {
             continue;
         }
         auto& p_rb = p->rigid_body();
-        if (player_.ramming() &&
-            (&p_rb == player_.target_rb()))
+        if (player_->ramming() &&
+            (&p_rb == player_->target_rb()))
         {
             continue;
         }
         FixedArray<double, 3> d = p_rb.rbp_.abs_position() - player_rb.rbp_.abs_position();
         double dl2 = sum(squared(d));
-        if (dl2 < squared(player_.driving_mode().collision_avoidance_radius_brake)) {
+        if (dl2 < squared(player_->driving_mode().collision_avoidance_radius_brake)) {
             auto z = player_rb.rbp_.abs_z();
             if (dot0d(d, z.casted<double>()) < 0) {
                 step_on_brakes_and_apply();
                 return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
             }
-        } else if (dl2 < squared(player_.driving_mode().collision_avoidance_radius_correct)) {
+        } else if (dl2 < squared(player_->driving_mode().collision_avoidance_radius_correct)) {
             if (dl2 > 1e-12) {
                 if ((player_rb.avatar_controller_ != nullptr) ||
-                    (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_.driving_mode().collision_avoidance_cos))
+                    (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_->driving_mode().collision_avoidance_cos))
                 {
-                    if (player_.driving_direction() == DrivingDirection::CENTER || player_.driving_direction() == DrivingDirection::RIGHT) {
-                        d_wpt = player_.driving_mode().collision_avoidance_delta;
-                    } else if (player_.driving_direction() == DrivingDirection::LEFT) {
-                        d_wpt = -player_.driving_mode().collision_avoidance_delta;
+                    if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
+                        d_wpt = player_->driving_mode().collision_avoidance_delta;
+                    } else if (player_->driving_direction() == DrivingDirection::LEFT) {
+                        d_wpt = -player_->driving_mode().collision_avoidance_delta;
                     } else {
                         THROW_OR_ABORT("Unknown driving direction");
                     }
@@ -115,25 +118,25 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     {
         float target_vel = velocity_at_destination.has_value()
             ? std::sqrt(sum(squared(velocity_at_destination.value())))
-            : player_.driving_mode().max_velocity;
+            : player_->driving_mode().max_velocity;
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->walk(player_.vehicle_movement.surface_power_forward(), 1.f);
+                player_rb.avatar_controller_->walk(player_->vehicle_movement.surface_power_forward(), 1.f);
             } else {
-                player_.car_movement.drive_forward();
+                player_->car_movement.drive_forward();
             }
-        } else if (dvel < player_.driving_mode().max_delta_velocity_brake) {
+        } else if (dvel < player_->driving_mode().max_delta_velocity_brake) {
             if (player_rb.avatar_controller_ != nullptr) {
                 player_rb.avatar_controller_->walk(0.f, 1.f);
             } else {
-                player_.car_movement.roll_tires();
+                player_->car_movement.roll_tires();
             }
         } else {
             if (player_rb.avatar_controller_ != nullptr) {
                 player_rb.avatar_controller_->stop();
             } else {
-                player_.car_movement.step_on_brakes();
+                player_->car_movement.step_on_brakes();
             }
         }
     }
@@ -159,7 +162,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             if (player_rb.avatar_controller_ != nullptr) {
                 player_rb.avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / std::sqrt(wpt2)).casted<float>());
                 // player_rb.avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
-                if (player_.target_rb() == nullptr) {
+                if (player_->target_rb() == nullptr) {
                     // Rotate waypoint back to global coordinates.
                     auto wpt0 = dot(wpt, m);
                     player_rb.avatar_controller_->set_target_yaw((float)std::atan2(-wpt0(0), -wpt0(1)));
@@ -170,11 +173,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                 if (wpt(1) > 0) {
                     // The waypoint is behind us => full, inverted steering.
                     if (wpt(0) < 0) {
-                        player_.car_movement.steer_left_full();
+                        player_->car_movement.steer_left_full();
                         player_rb.vehicle_controller().apply();
                         return result;
                     } else {
-                        player_.car_movement.steer_right_full();
+                        player_->car_movement.steer_right_full();
                         player_rb.vehicle_controller().apply();
                         return result;
                     }
@@ -182,11 +185,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     // The waypoint is in front of us => partial, inverted steering.
                     float angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
                     if (wpt(0) < 0) {
-                        player_.car_movement.steer_left_partial(angle);
+                        player_->car_movement.steer_left_partial(angle);
                         player_rb.vehicle_controller().apply();
                         return result;
                     } else {
-                        player_.car_movement.steer_right_partial(angle);
+                        player_->car_movement.steer_right_partial(angle);
                         player_rb.vehicle_controller().apply();
                         return result;
                     }
@@ -197,7 +200,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     if (player_rb.avatar_controller_ != nullptr) {
         player_rb.avatar_controller_->apply();
     } else {
-        player_.car_movement.steer(0.f);
+        player_->car_movement.steer(0.f);
         player_rb.vehicle_controller().apply();
     }
     return result;

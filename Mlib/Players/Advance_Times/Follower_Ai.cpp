@@ -1,4 +1,4 @@
-#include "Vehicle_Ai_Advance_Time.hpp"
+#include "Follower_Ai.hpp"
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/IVehicle_Ai.hpp>
@@ -6,13 +6,11 @@
 
 using namespace Mlib;
 
-VehicleAiAdvanceTime::VehicleAiAdvanceTime(
+FollowerAi::FollowerAi(
 	AdvanceTimes& advance_times,
-	std::unique_ptr<IVehicleAi>&& vehicle_ai,
 	const DanglingBaseClassRef<RigidBodyVehicle>& follower,
 	const DanglingBaseClassRef<RigidBodyVehicle>& followed)
 	: advance_times_{ advance_times }
-	, vehicle_ai_{ std::move(vehicle_ai) }
 	, follower_{ follower }
 	, followed_{ followed.ptr() }
 	, follower_on_destroy_{ follower->on_destroy, CURRENT_SOURCE_LOCATION }
@@ -23,12 +21,12 @@ VehicleAiAdvanceTime::VehicleAiAdvanceTime(
 	advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
-VehicleAiAdvanceTime::~VehicleAiAdvanceTime() {
+FollowerAi::~FollowerAi() {
 	on_destroy.clear();
 }
 
-void VehicleAiAdvanceTime::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 	if (followed_ != nullptr) {
-		vehicle_ai_->move_to(followed_->abs_com(), followed_->rbp_.v_, std::nullopt);
+		follower_->get_autopilot("default")->move_to(followed_->abs_com(), followed_->rbp_.v_, std::nullopt);
 	}
 }

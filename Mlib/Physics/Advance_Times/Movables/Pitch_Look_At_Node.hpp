@@ -15,7 +15,7 @@ class RigidBodyVehicle;
 class AimAt;
 class SceneNode;
 
-class PitchLookAtNode: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public DanglingBaseClass {
+class PitchLookAtNode: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     PitchLookAtNode(
         AimAt& aim_at,

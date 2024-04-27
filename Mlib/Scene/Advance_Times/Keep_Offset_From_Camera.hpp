@@ -18,7 +18,7 @@ class Scene;
 class SelectedCameras;
 class EventReceiverDeletionToken;
 
-class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public DanglingBaseClass {
+class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromCamera(
         AdvanceTimes& advance_times,

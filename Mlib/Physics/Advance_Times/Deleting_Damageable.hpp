@@ -19,7 +19,7 @@ class RigidBodyVehicle;
 class SceneNode;
 class Scene;
 
-class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public DanglingBaseClass {
+class DeletingDamageable: public IDamageable, public IAdvanceTime, public StatusWriter, public virtual DanglingBaseClass {
     DeletingDamageable(const DeletingDamageable&) = delete;
     DeletingDamageable& operator = (const DeletingDamageable&) = delete;
 public:

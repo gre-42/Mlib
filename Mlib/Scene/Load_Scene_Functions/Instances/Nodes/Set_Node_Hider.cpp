@@ -40,7 +40,7 @@ SetNodeHider::SetNodeHider(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-class NodeHiderWithEvent: public INodeHider, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public DanglingBaseClass {
+class NodeHiderWithEvent: public INodeHider, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     NodeHiderWithEvent(
         AdvanceTimes& advance_times,

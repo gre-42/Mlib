@@ -9,7 +9,7 @@ class AudioListener;
 class SelectedCameras;
 class Scene;
 
-class AudioListenerUpdater: public IAdvanceTime, public DanglingBaseClass {
+class AudioListenerUpdater: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     AudioListenerUpdater(
         const SelectedCameras& selected_cameras,

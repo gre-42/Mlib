@@ -14,7 +14,7 @@ class SceneNode;
 class AdvanceTimes;
 class RigidBodyVehicle;
 
-class Wheel: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public DanglingBaseClass {
+class Wheel: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit Wheel(
         RigidBodyVehicle& rigid_body,

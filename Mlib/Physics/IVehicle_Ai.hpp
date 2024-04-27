@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <cstddef>
 #include <optional>
 
@@ -36,7 +38,7 @@ inline bool any(VehicleAiMoveToStatus a) {
 	return a != VehicleAiMoveToStatus::NONE;
 }
 
-class IVehicleAi {
+class IVehicleAi: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
 	virtual ~IVehicleAi() = default;
 	virtual VehicleAiMoveToStatus move_to(

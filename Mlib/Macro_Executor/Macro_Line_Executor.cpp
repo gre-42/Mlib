@@ -189,21 +189,30 @@ void MacroLineExecutor::operator () (
         auto context = jv.at<std::string>(MacroKeys::context, context_);
         auto global_args = global_json_macro_arguments_.json_macro_arguments();
         bool include = true;
-        if (jv.contains(MacroKeys::required)) {
-            for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::required)) {
-                if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
-                    include = false;
-                    break;
+        try {
+            if (jv.contains(MacroKeys::required)) {
+                for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::required)) {
+                    if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
+                        include = false;
+                        break;
+                    }
                 }
             }
-        }
-        if (jv.contains(MacroKeys::exclude)) {
-            for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                if (eval<bool>(e, global_args, merged_args, asset_references_)) {
-                    include = false;
-                    break;
+            if (jv.contains(MacroKeys::exclude)) {
+                for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
+                    if (eval<bool>(e, global_args, merged_args, asset_references_)) {
+                        include = false;
+                        break;
+                    }
                 }
             }
+        } catch (const std::exception& e) {
+            std::stringstream msg;
+            msg << "Exception while evaluating conditionals in \"" << j << "\n\n" << e.what();
+            if (verbose_) {
+                linfo() << msg.str();
+            }
+            throw std::runtime_error(msg.str());
         }
         if (include) {
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
@@ -235,7 +244,16 @@ void MacroLineExecutor::operator () (
                 auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
                     context);
-                mle2(macro_it->second.content, &args, nullptr);
+                try {
+                    mle2(macro_it->second.content, &args, nullptr);
+                } catch (const std::runtime_error& e) {
+                    std::stringstream msg;
+                    msg << "Exception while executing macro \"" << name << "\". Line: " << macro_it->second.content << "\n\n" << e.what();
+                    if (verbose_) {
+                        linfo() << msg.str();
+                    }
+                    throw std::runtime_error(msg.str());
+                }
             } else if (jv.contains(MacroKeys::call)) {
                 auto name = j_subst.at<std::string>(MacroKeys::call);
                 bool success;

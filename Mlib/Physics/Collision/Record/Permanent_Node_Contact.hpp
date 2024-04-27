@@ -10,7 +10,7 @@ class RigidBodyPulses;
 class PermanentContacts;
 class SceneNode;
 
-class PermanentNodeContact: public IPermanentContact, public DestructionObserver<DanglingRef<SceneNode>>, public DanglingBaseClass {
+class PermanentNodeContact: public IPermanentContact, public DestructionObserver<DanglingRef<SceneNode>>, public virtual DanglingBaseClass {
 public:
     PermanentNodeContact(
         PermanentContacts& permanent_contacts,
