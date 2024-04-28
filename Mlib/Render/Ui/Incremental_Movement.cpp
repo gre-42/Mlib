@@ -64,8 +64,12 @@ float IncrementalMovement::axis_alpha(const BaseCursorAxisBinding& binding, floa
     if (sign(v) != sign(binding.sign_and_scale)) {
         return NAN;
     }
+    // Read "v" cursor ticks, ignore everything that is above the "ncached" threshold.
     v = signed_min(v, ncached / std::abs(binding.sign_and_scale));
+    // Compute the alpha-value from "v".
     auto result = std::min(binding.sign_and_scale * v, 1.f);
+    // Compute the unused cursor ticks and add them back to the cursor position.
+    // Ticks above "ncached" will be thrown away.
     auto da = std::max(std::abs(v - result / binding.sign_and_scale), 0.f) * sign(binding.sign_and_scale);
     increment_cursor_unsafe(binding.axis, da);
     return result;
