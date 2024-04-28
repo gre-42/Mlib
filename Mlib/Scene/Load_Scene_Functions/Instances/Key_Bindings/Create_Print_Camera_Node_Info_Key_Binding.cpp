@@ -6,6 +6,7 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Key_Bindings.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
 
@@ -39,6 +40,7 @@ void CreatePrintCameraNodeInfoKeyBinding::execute(const LoadSceneJsonUserFunctio
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
+        .geographic_mapping = scene_node_resources.get_geographic_mapping("world"),
         .on_destroy_key_bindings{ DestructionFunctionsRemovalTokens{ key_bindings.on_destroy, CURRENT_SOURCE_LOCATION } }}));
     kb.on_destroy_key_bindings.add([&kbs=key_bindings, &kb]() {
         kbs.delete_print_node_info_key_binding(kb);

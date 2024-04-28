@@ -8,9 +8,9 @@ using namespace Mlib;
 TrackWriter::TrackWriter(
     const std::string& filename,
     const TransformationMatrix<double, double, 3>* geographic_mapping)
-: filename_{filename},
-  geographic_mapping_{geographic_mapping},
-  ofstr_{create_ofstream(filename)}
+    : filename_{ filename }
+    , geographic_mapping_{ geographic_mapping }
+    , ofstr_{ create_ofstream(filename) }
 {
     if (ofstr_->fail()) {
         THROW_OR_ABORT("Could not open track file for write \"" + filename + '"');
