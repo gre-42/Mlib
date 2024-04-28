@@ -5,6 +5,8 @@ using namespace Mlib;
 
 std::string Mlib::road_type_to_string(RoadType st) {
     switch (st) {
+    case RoadType::NONE:
+        return "none";
     case RoadType::PATH:
         return "path";
     case RoadType::STREET:
@@ -17,6 +19,8 @@ std::string Mlib::road_type_to_string(RoadType st) {
         return "runway_displacement_threshold";
     case RoadType::WALL:
         return "wall";
+    case RoadType::ANY_PLANE_ROAD:
+        return "any_plane_road";
     }
     THROW_OR_ABORT("Unknown street type");
 }

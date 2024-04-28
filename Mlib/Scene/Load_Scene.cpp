@@ -13,6 +13,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Missile_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Plane_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Vehicle_Follower_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
@@ -154,7 +155,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Delta_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Engine.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Missile_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>

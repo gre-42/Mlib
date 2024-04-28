@@ -73,6 +73,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         {
             global_object_pool.create<FlyingMissileAi>(
                 CURRENT_SOURCE_LOCATION,
+                missile_vehicle,
                 pid_controller,
                 std::move(dy),
                 args.arguments.at<double>(KnownArgs::eta_max) * s,

@@ -1,25 +1,31 @@
 #include "Flying_Missile_Ai.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 
 using namespace Mlib;
 
 FlyingMissileAi::FlyingMissileAi(
+	RigidBodyVehicle& rigid_body,
 	const PidController<FixedArray<float, 3>, float>& pid,
 	Interp<float, float> dy,
 	double eta_max,
 	RigidBodyMissileController& controller,
 	RigidBodyPulses& missile,
 	float destination_reached_radius)
-	: pid_{ pid }
+	: on_destroy_rigid_body_{ rigid_body.on_destroy, CURRENT_SOURCE_LOCATION }
+	, pid_{ pid }
 	, dy_{ std::move(dy) }
 	, eta_max_{ eta_max }
 	, destination_reached_radius_squared_{ squared(destination_reached_radius) }
 	, controller_{ controller }
 	, missile_{ missile }
-{}
+{
+	on_destroy_rigid_body_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+}
 
 FlyingMissileAi::~FlyingMissileAi() {
 	on_destroy.clear();
