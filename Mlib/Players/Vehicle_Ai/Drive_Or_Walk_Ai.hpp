@@ -18,8 +18,8 @@ public:
 		const FixedArray<double, 3>& position_of_destination,
 		const FixedArray<float, 3>& velocity_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_at_destination) override;
-	DestructionFunctionsRemovalTokens on_player_delete_externals;
 private:
+	DestructionFunctionsRemovalTokens on_player_delete_externals_;
 	DanglingBaseClassRef<Player> player_;
 };
 

@@ -6,6 +6,7 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Entrance_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Extended_Image.hpp>
+#include <Mlib/Osm_Loader/Osm_Map_Resource/Height.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Node_Height_Binding.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Map_Resource_Helpers.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Osm_Triangle_Lists.hpp>
@@ -72,10 +73,17 @@ void Mlib::apply_heightmap(
             if ((layer != 0) && !layer_heights.is_within_range((double)layer)) {
                 continue;
             }
-            double bridge_height = parse_meters(w.second.tags, "bridge_height", NAN);
-            bool ref_is_ground =
-                !std::isnan(bridge_height) &&
-                w.second.tags.contains("bridge_height_reference", "ground");
+            auto bridge_height_with_reference = parse_height_with_reference(
+                w.second.tags,
+                "bridge_height",
+                "bridge_height_reference",
+                w.first);
+            double bridge_height = bridge_height_with_reference.has_value()
+                ? bridge_height_with_reference.value().height
+                : NAN;
+            bool ref_is_ground = bridge_height_with_reference.has_value()
+                ? bridge_height_with_reference.value().reference == HeightReference::GROUND
+                : false;
             for (auto it = w.second.nd.begin(); it != w.second.nd.end(); ++it) {
                 auto s = it;
                 ++s;

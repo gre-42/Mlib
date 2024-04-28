@@ -1,5 +1,6 @@
 #include "Drive_Or_Walk_Ai.hpp"
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
@@ -11,9 +12,11 @@
 using namespace Mlib;
 
 DriveOrWalkAi::DriveOrWalkAi(const DanglingBaseClassRef<Player>& player)
-	: player_{ player }
-    , on_player_delete_externals{ player->delete_externals, CURRENT_SOURCE_LOCATION }
-{}
+	: on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
+    , player_{ player }
+{
+    on_player_delete_externals_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+}
 
 DriveOrWalkAi::~DriveOrWalkAi() {
     on_destroy.clear();

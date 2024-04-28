@@ -38,6 +38,5 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
     player->rigid_body().set_autopilot(
         args.arguments.at<std::string>(KnownArgs::ai_name),
         { *ai, CURRENT_SOURCE_LOCATION });
-    ai->on_player_delete_externals.add([&ai=*ai]() { global_object_pool.remove(ai); }, CURRENT_SOURCE_LOCATION);
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }

@@ -4,15 +4,21 @@
 using namespace Mlib;
 
 std::string Mlib::road_type_to_string(RoadType st) {
-    if (st == RoadType::PATH) {
+    switch (st) {
+    case RoadType::PATH:
         return "path";
-    } else if (st == RoadType::STREET) {
+    case RoadType::STREET:
         return "street";
-    } else if (st == RoadType::WALL) {
+    case RoadType::TAXIWAY:
+        return "taxiway";
+    case RoadType::RUNWAY:
+        return "runway";
+    case RoadType::RUNWAY_DISPLACEMENT_THRESHOLD:
+        return "runway_displacement_threshold";
+    case RoadType::WALL:
         return "wall";
-    } else {
-        THROW_OR_ABORT("Unknown street type");
     }
+    THROW_OR_ABORT("Unknown street type");
 }
 
 std::string Mlib::to_string(RoadType st) {

@@ -1,4 +1,5 @@
 #include "Plane_Ai.hpp"
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 
@@ -6,12 +7,19 @@ using namespace Mlib;
 
 PlaneAi::PlaneAi(
 	const DanglingBaseClassRef<RigidBodyVehicle>& rigid_body,
-	std::unique_ptr<IVehicleAi>&& drive_ai,
-	std::unique_ptr<IVehicleAi>&& fly_ai)
-	: rigid_body_{ rigid_body }
-	, drive_ai_{ std::move(drive_ai) }
-	, fly_ai_{ std::move(fly_ai) }
-{}
+	const DanglingBaseClassRef<IVehicleAi>& drive_ai,
+	const DanglingBaseClassRef<IVehicleAi>& fly_ai)
+	: on_destroy_rigid_body_{ rigid_body->on_destroy, CURRENT_SOURCE_LOCATION }
+	, on_destroy_drive_ai_{ drive_ai->on_destroy, CURRENT_SOURCE_LOCATION }
+	, on_destroy_fly_ai_{ fly_ai->on_destroy, CURRENT_SOURCE_LOCATION }
+	, rigid_body_{ rigid_body }
+	, drive_ai_{ drive_ai }
+	, fly_ai_{ fly_ai }
+{
+	on_destroy_rigid_body_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+	on_destroy_drive_ai_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+	on_destroy_fly_ai_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+}
 
 PlaneAi::~PlaneAi() {
 	on_destroy.clear();
@@ -31,9 +39,9 @@ VehicleAiMoveToStatus PlaneAi::move_to(
 IVehicleAi& PlaneAi::active_ai() {
 	switch (rigid_body_->current_vehicle_domain_) {
 	case VehicleDomain::AIR:
-		return *fly_ai_;
+		return fly_ai_.get();
 	case VehicleDomain::GROUND:
-		return *drive_ai_;
+		return drive_ai_.get();
 	case VehicleDomain::UNDEFINED:
 		THROW_OR_ABORT("Vehicle \"" + rigid_body_->name() + "\": Undefined vehicle domain");
 	}

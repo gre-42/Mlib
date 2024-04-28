@@ -13,6 +13,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Plane_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Vehicle_Follower_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Ortho_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Create_Perspective_Camera.hpp>
@@ -109,6 +110,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Playback_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoint.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoints_Filter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
@@ -340,6 +342,7 @@ LoadScene::LoadScene() {
     register_json_user_function(LoadPlayers::key, LoadPlayers::json_user_function);
     register_json_user_function(LookAtNode::key, LookAtNode::json_user_function);
     register_json_user_function(CreateDriveOrWalkAi::key, CreateDriveOrWalkAi::json_user_function);
+    register_json_user_function(CreatePlaneAi::key, CreatePlaneAi::json_user_function);
     register_json_user_function(CreateVehicleFollowerAi::key, CreateVehicleFollowerAi::json_user_function);
     register_json_user_function(CreateOrthoCamera::key, CreateOrthoCamera::json_user_function);
     register_json_user_function(CreatePerspectiveCamera::key, CreatePerspectiveCamera::json_user_function);
@@ -356,6 +359,7 @@ LoadScene::LoadScene() {
     register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
     register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
     register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
+    register_json_user_function(PlayerSetWaypointsFilter::key, PlayerSetWaypointsFilter::json_user_function);
     register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
     register_json_user_function(Preload::key, Preload::json_user_function);
     register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);

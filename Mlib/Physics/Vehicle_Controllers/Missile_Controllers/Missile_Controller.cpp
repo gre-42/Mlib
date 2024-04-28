@@ -7,29 +7,15 @@ using namespace Mlib;
 
 MissileController::MissileController(
     RigidBodyVehicle& rb,
-    const MissileWingController& left_front,
-    const MissileWingController& right_front,
-    const MissileWingController& down_front,
-    const MissileWingController& up_front,
-    const MissileWingController& left_rear,
-    const MissileWingController& right_rear,
-    const MissileWingController& down_rear,
-    const MissileWingController& up_rear)
+    std::vector<MissileWingController> wing_controllers)
     : RigidBodyMissileController{ rb }
-    , left_front_{ left_front }
-    , right_front_{ right_front }
-    , down_front_{ down_front }
-    , up_front_{ up_front }
-    , left_rear_{ left_rear }
-    , right_rear_{ right_rear }
-    , down_rear_{ down_rear }
-    , up_rear_{ up_rear }
+    , wing_controllers_{ std::move(wing_controllers) }
 {}
 
 MissileController::~MissileController() = default;
 
 void MissileController::apply() {
-    rb_.set_surface_power("rocket_engine", EnginePowerIntent{
+    rb_.set_surface_power("turbine", EnginePowerIntent{
         .surface_power = rocket_engine_power_,
         .drive_relaxation = rocket_engine_power_relaxation_});
 
@@ -44,15 +30,7 @@ void MissileController::apply() {
             fake_dir /= l2;
         }
     }
-    auto set_angle_of_attack = [this, &fake_dir](MissileWingController& mwc, size_t axis) {
-        rb_.set_wing_angle_of_attack(mwc.i, mwc.gain * fake_dir(axis));
-        };
-    set_angle_of_attack(left_front_, 1);
-    set_angle_of_attack(right_front_, 1);
-    set_angle_of_attack(down_front_, 0);
-    set_angle_of_attack(up_front_, 0);
-    set_angle_of_attack(left_rear_, 1);
-    set_angle_of_attack(right_rear_, 1);
-    set_angle_of_attack(down_rear_, 0);
-    set_angle_of_attack(up_rear_, 0);
+    for (const auto& wing_controller : wing_controllers_) {
+        rb_.set_wing_angle_of_attack(wing_controller.i, dot0d(wing_controller.gain, fake_dir));
+    }
 }

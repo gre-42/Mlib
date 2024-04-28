@@ -599,7 +599,7 @@ Gun& Player::gun() {
 
 bool Player::is_pedestrian() const {
     delete_node_mutex_.notify_reading();
-    return driving_mode_.way_point_location == WayPointLocation::SIDEWALK;
+    return driving_mode_.way_point_locations == WayPointLocation::SIDEWALK;
 }
 
 void Player::aim_and_shoot() {
@@ -979,16 +979,30 @@ DestructionObservers<const IPlayer&>& Player::destruction_observers() {
     return destruction_observers_;
 }
 
-void Player::set_pathfinding_waypoints(
-    const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points)
+void Player::set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points)
 {
-    auto it = way_points.find(driving_mode_.way_point_location);
-    if (it == way_points.end()) {
-        THROW_OR_ABORT(
-            "Could not find waypoints for location \"" +
-            way_point_location_to_string(driving_mode_.way_point_location) +
-            '"');
+    way_points_ = way_points;
+}
+
+void Player::set_way_point_location_filter(WayPointLocation filter) {
+    auto final_filter = driving_mode_.way_point_locations & filter;
+    size_t nfound = 0;
+    for (const auto& [location, wp] : way_points_) {
+        if (!any(location & final_filter)) {
+            continue;
+        }
+        if (nfound != 0) {
+            THROW_OR_ABORT(
+                "Player \"" + name_ + "\": Found multiple waypoints for final filter \"" +
+                way_point_location_to_string(final_filter) + '"');
+        }
+        pathfinding_waypoints_.set_waypoints(wp);
+        supply_depots_waypoints_.set_waypoints(wp);
+        ++nfound;
     }
-    pathfinding_waypoints_.set_waypoints(it->second);
-    supply_depots_waypoints_.set_waypoints(it->second);
+    if (nfound == 0) {
+        THROW_OR_ABORT(
+            "Player \"" + name_ + "\": Could not find waypoints for final filter \"" +
+            way_point_location_to_string(final_filter) + '"');
+    }
 }

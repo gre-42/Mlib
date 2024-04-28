@@ -117,7 +117,7 @@ private:
     void draw_streets_find_hole_waypoints(
         const OsmRectangle2D& rect,
         const std::string& node_id,
-        const std::string& neighbor_id,
+        const AngleWay& angle_way,
         float curb_alpha,
         float curb2_alpha,
         float lane_shift);

@@ -30,7 +30,7 @@ struct DrivingMode {
     float stuck_velocity;
     float stuck_seconds;
     float unstuck_seconds;
-    WayPointLocation way_point_location;
+    WayPointLocation way_point_locations;
 };
 
 MLIB_PHYSICS_API extern std::map<std::string, DrivingMode> driving_modes;

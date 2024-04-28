@@ -1,5 +1,6 @@
 #include "Shortest_Path_Intermediate_Points_Creator.hpp"
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
+#include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Navigation/Sample_SoloMesh.hpp>
@@ -12,9 +13,9 @@ ShortestPathIntermediatePointsCreator::ShortestPathIntermediatePointsCreator(
     const Sample_SoloMesh& ssm,
     const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs,
     float step_size)
-: ssm_{ ssm },
-  poly_refs_{ poly_refs },
-  step_size_{ step_size }
+    : ssm_{ ssm }
+    , poly_refs_{ poly_refs }
+    , step_size_{ step_size }
 {}
 
 std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operator () (
@@ -24,11 +25,11 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
 {
     auto lp0_it = poly_refs_.find(OrderableFixedArray{p0});
     if (lp0_it == poly_refs_.end()) {
-        THROW_OR_ABORT("Could not find poly for start");
+        THROW_OR_ABORT2((PointException{ p0, "Could not find poly for start" }));
     }
     auto lp1_it = poly_refs_.find(OrderableFixedArray{p1});
     if (lp1_it == poly_refs_.end()) {
-        THROW_OR_ABORT("Could not find poly for end");
+        THROW_OR_ABORT2((PointException{ p1, "Could not find poly for end" }));
     }
     auto res = ssm_.shortest_path(
         LocalizedNavmeshNode{
@@ -39,7 +40,7 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
             .polyRef = lp1_it->second},
         step_size_);
     if (res.size() < 2) {
-        throw EdgeException{p0, p1, "Unexpected path length"};
+        THROW_OR_ABORT2((EdgeException{p0, p1, "Unexpected path length"}));
     } else if (res.size() == 2) {
         return {};
     } else {
@@ -61,6 +62,8 @@ std::vector<FixedArray<double, 3>> ShortestPathIntermediatePointsCreator::operat
         }
         return result;
     } catch (const EdgeException<float>& e) {
-        throw EdgeException<double>{e.a.casted<double>(), e.b.casted<double>(), e.what()};
+        THROW_OR_ABORT2((EdgeException<double>{e.a.casted<double>(), e.b.casted<double>(), e.what()}));
+    } catch (const PointException<float, 3>& e) {
+        THROW_OR_ABORT2((PointException<double, 3>{e.point.casted<double>(), e.what()}));
     }
 }

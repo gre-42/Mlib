@@ -8,32 +8,18 @@ namespace Mlib {
 
 struct MissileWingController {
     size_t i;
-    float gain;
+    FixedArray<float, 2> gain;
 };
 
 class MissileController: public RigidBodyMissileController {
 public:
     MissileController(
         RigidBodyVehicle& rb,
-        const MissileWingController& left_front,
-        const MissileWingController& right_front,
-        const MissileWingController& down_front,
-        const MissileWingController& up_front,
-        const MissileWingController& left_rear,
-        const MissileWingController& right_rear,
-        const MissileWingController& down_rear,
-        const MissileWingController& up_rear);
+        std::vector<MissileWingController> wing_controllers);
     virtual ~MissileController() override;
     virtual void apply() override;
 private:
-    MissileWingController left_front_;
-    MissileWingController right_front_;
-    MissileWingController down_front_;
-    MissileWingController up_front_;
-    MissileWingController left_rear_;
-    MissileWingController right_rear_;
-    MissileWingController down_rear_;
-    MissileWingController up_rear_;
+    std::vector<MissileWingController> wing_controllers_;
 };
 
 }
