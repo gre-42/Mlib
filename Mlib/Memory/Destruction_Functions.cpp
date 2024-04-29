@@ -36,11 +36,13 @@ void DestructionFunctions::add(
 }
 
 void DestructionFunctions::remove(DestructionFunctionsRemovalTokens& tokens) {
-    if (!clearing_) {
+    // Erase token and ignore result. Destruction order in
+    // DestructionFunctions::clear is arbitrary and the token
+    // can therefore already have been deleted.
+    if (clearing_) {
+        funcs_.erase(&tokens);
+    } else {
         std::scoped_lock lock{ mutex_ };
-        // Erase token and ignore result. Destruction order in
-        // DestructionFunctions::clear is arbitrary and the token
-        // can therefore already have been deleted.
         funcs_.erase(&tokens);
         // if (funcs_.erase(&tokens) != 1) {
         //     verbose_abort("Could not erase destruction removal token");
@@ -56,7 +58,7 @@ void DestructionFunctions::clear() {
     clearing_ = true;
     clear_map_recursively(funcs_, [&lock](auto& node) {
         node.key()->funcs_ = nullptr;
-        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& f) { f.func(); });
+        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& e) { lerr() << e.loc.file_name() << ':' << e.loc.line(); e.func(); });
     });
     clearing_ = false;
 }
