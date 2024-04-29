@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -60,6 +61,8 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     {
         THROW_OR_ABORT("Unexpected c.l1_is_normal value");
     }
+    c.o0.next_vehicle_domain_ = VehicleDomain::GROUND;
+    c.o1.next_vehicle_domain_ = VehicleDomain::GROUND;
     if (c.l1_is_normal) {
         IntersectionSceneAndContact cc{
             .scene = c,

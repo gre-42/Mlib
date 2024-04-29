@@ -1,6 +1,7 @@
 #include "Physics_Iteration.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
+#include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -12,10 +13,6 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
 using namespace Mlib;
-
-#ifndef WITHOUT_THREAD_LOCAL
-thread_local std::list<Beacon> Mlib::g_beacons;
-#endif
 
 PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
@@ -38,11 +35,7 @@ PhysicsIteration::~PhysicsIteration() = default;
 
 void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
     // Note that g_beacons is delayed by one frame.
-#ifndef WITHOUT_THREAD_LOCAL
-    std::list<Beacon> beacons = std::move(g_beacons);
-#else
-    std::list<Beacon> beacons;
-#endif
+    std::list<Beacon> beacons = std::move(get_beacons());
     {
         if (physics_cfg_.nsubsteps == 0) {
             THROW_OR_ABORT("Number of substeps is zero");

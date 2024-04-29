@@ -658,7 +658,6 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
             THROW_OR_ABORT("No delta engine with name \"" + tire.delta_engine.value() + "\" exists");
         }
     }
-    next_vehicle_domain_ = VehicleDomain::GROUND;
     return e->second.consume_tire_power(
         id,
         &tire.angular_velocity,

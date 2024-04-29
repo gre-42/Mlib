@@ -13,8 +13,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
-// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; };
-
 using namespace Mlib;
 
 bool Mlib::compute_edge_overlap(

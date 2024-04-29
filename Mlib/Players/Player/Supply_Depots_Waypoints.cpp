@@ -5,8 +5,6 @@
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 
-// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
-
 using namespace Mlib;
 
 SupplyDepotsWaypoints::SupplyDepotsWaypoints(

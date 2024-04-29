@@ -16,9 +16,6 @@ class DeleteNodeMutex;
 class DeleteRigidBodyMutex;
 class PhysicsLoop;
 struct Beacon;
-#ifndef WITHOUT_THREAD_LOCAL
-thread_local extern std::list<Beacon> g_beacons;
-#endif
 
 class PhysicsIteration {
     friend PhysicsLoop;

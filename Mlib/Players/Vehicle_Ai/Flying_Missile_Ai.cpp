@@ -39,6 +39,12 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 	controller_.reset_parameters();
 	controller_.reset_relaxation();
 
+	if (any(isnan(position_of_destination))) {
+		controller_.throttle_engine(0.f, 1.f);
+		controller_.set_desired_direction(fixed_zeros<float, 3>(), 1.f);
+		controller_.apply();
+		return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
+	}
 	controller_.throttle_engine(INFINITY, 1.f);
 
 	auto distance2 = sum(squared(position_of_destination - missile_.abs_position()));

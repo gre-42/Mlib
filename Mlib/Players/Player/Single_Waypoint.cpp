@@ -10,8 +10,6 @@
 
 using namespace Mlib;
 
-// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; }
-
 SingleWaypoint::SingleWaypoint(const DanglingBaseClassRef<Player>& player)
     : player_{ player }
     , target_velocity_{ NAN }

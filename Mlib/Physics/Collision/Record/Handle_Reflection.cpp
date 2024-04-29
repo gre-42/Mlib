@@ -14,8 +14,6 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
-// namespace Mlib { thread_local extern std::list<Beacon> g_beacons; };
-
 #ifdef __GNUC__
     #pragma GCC push_options
     #pragma GCC optimize ("O3")

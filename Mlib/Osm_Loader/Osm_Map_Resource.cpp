@@ -1710,7 +1710,7 @@ void OsmMapResource::print(std::ostream& ostr) const {
     }
 }
 
-void plot_way_points_and_obstacles(
+static void plot_way_points_and_obstacles(
     const std::string& filename,
     const PointsAndAdjacency<double, 3>& pa,
     const std::list<FixedArray<double, 2>>& bounding_contour,

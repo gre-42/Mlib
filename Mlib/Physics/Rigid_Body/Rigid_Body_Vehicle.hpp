@@ -273,8 +273,8 @@ public:
     TrailerHitches trailer_hitches_;
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
     VehicleDomain current_vehicle_domain_;
-private:
     VehicleDomain next_vehicle_domain_;
+private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };
 
