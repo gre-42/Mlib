@@ -170,7 +170,7 @@ void DrawStreets::calculate_neighbors() {
                 continue;
             }
         }
-        if (tags.contains("highway") && !excluded_highways.contains(tags.at("highway")) ||
+        if ((tags.contains("highway") && !excluded_highways.contains(tags.at("highway"))) ||
             (tags.contains("aeroway") && included_aeroways.contains(tags.at("aeroway")))) {
             if (only_raceways_and_walls &&
                     !tags.contains("highway", "raceway") &&
