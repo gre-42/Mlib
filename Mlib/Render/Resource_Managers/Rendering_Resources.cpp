@@ -692,7 +692,12 @@ std::string RenderingResources::get_texture_filename(
         !color.mean_color.all_equal(-1.f) ||
         !color.lighten.all_equal(0.f))
     {
-        auto sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
+        std::vector<StbInfo<uint8_t>> sis;
+        if (manual_atlas_tile_descriptors_.contains(color.filename)) {
+            sis = std::move(get_texture_array_data(color, role, FlipMode::VERTICAL));
+        } else {
+            sis.push_back(get_texture_data(color, role, FlipMode::VERTICAL));
+        }
         if (sis.empty()) {
             THROW_OR_ABORT("Texture array \"" + color.filename + "\" has no layers");
         }

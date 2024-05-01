@@ -170,7 +170,8 @@ void DrawStreets::calculate_neighbors() {
                 continue;
             }
         }
-        if (tags.find("highway") != tags.end() && (!excluded_highways.contains(tags.at("highway")))) {
+        if (tags.contains("highway") && !excluded_highways.contains(tags.at("highway")) ||
+            (tags.contains("aeroway") && included_aeroways.contains(tags.at("aeroway")))) {
             if (only_raceways_and_walls &&
                     !tags.contains("highway", "raceway") &&
                     !tags.contains("raceway", "yes") &&
@@ -199,24 +200,29 @@ void DrawStreets::calculate_neighbors() {
                 }
             }
             RoadType road_type = RoadType::STREET;
-            if (path_tags.contains(tags.at("highway")) ||
-                ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1"))
-            {
-                road_type = RoadType::PATH;
-            }
-            if (tags.at("highway") == "wall")
-            {
-                road_type = RoadType::WALL;
-            }
-            if (tags.contains("runway", "displaced_threshold")) {
-                if (!tags.contains("aeroway", "runway")) {
-                    THROW_OR_ABORT("Way \"" + way_id + "\" is no runway but contains an aeroway=runway tag");
+            if (tags.contains("highway")) {
+                if (path_tags.contains(tags.at("highway")) ||
+                    ((tags.find("lanes") != tags.end()) && tags.at("lanes") == "1"))
+                {
+                    road_type = RoadType::PATH;
                 }
-                road_type = RoadType::RUNWAY_DISPLACEMENT_THRESHOLD;
-            } else if (tags.contains("aeroway", "runway")) {
-                road_type = RoadType::RUNWAY;
-            } else if (tags.contains("aeroway", "taxiway")) {
-                road_type = RoadType::TAXIWAY;
+                if (tags.at("highway") == "wall")
+                {
+                    road_type = RoadType::WALL;
+                }
+            } else if (tags.contains("aeroway")) {
+                if (tags.contains("runway", "displaced_threshold")) {
+                    if (!tags.contains("aeroway", "runway")) {
+                        THROW_OR_ABORT("Way \"" + way_id + "\" is no runway but contains an aeroway=runway tag");
+                    }
+                    road_type = RoadType::RUNWAY_DISPLACEMENT_THRESHOLD;
+                } else if (tags.contains("aeroway", "runway")) {
+                    road_type = RoadType::RUNWAY;
+                } else if (tags.contains("aeroway", "taxiway")) {
+                    road_type = RoadType::TAXIWAY;
+                }
+            } else {
+                THROW_OR_ABORT("Unknown way type");
             }
             int layer = (tags.find("layer") == tags.end()) ? 0 : safe_stoi(tags.at("layer"));
             if ((layer != 0) && !layer_heights.is_within_range((float)layer)) {
@@ -497,8 +503,8 @@ void DrawStreets::draw_holes() {
         RoadType road_type = RoadType::PATH;
         OsmTriangleLists* tlist2 = &air_triangles;
         for (const auto& [_, a] : node_angles.at(nid)) {
-            if (a.road_type == RoadType::STREET) {
-                road_type = RoadType::STREET;
+            if (a.road_type != RoadType::PATH) {
+                road_type = a.road_type;
             }
             if (a.layer == 0) {
                 tlist2 = &ground_triangles;

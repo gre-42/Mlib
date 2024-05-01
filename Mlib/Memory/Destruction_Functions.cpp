@@ -58,7 +58,10 @@ void DestructionFunctions::clear() {
     clearing_ = true;
     clear_map_recursively(funcs_, [&lock](auto& node) {
         node.key()->funcs_ = nullptr;
-        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& e) { lerr() << e.loc.file_name() << ':' << e.loc.line(); e.func(); });
+        clear_list_recursively_with_lock(node.mapped(), lock, [](auto& e) {
+            // lerr() << e.loc.file_name() << ':' << e.loc.line();
+            e.func();
+        });
     });
     clearing_ = false;
 }

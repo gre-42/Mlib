@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -34,9 +35,8 @@ void PathfindingWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& wa
         FixedArray<double, 3>{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size},
         cfg_.bvh_levels);
     waypoints_ = std::make_unique<PointsAndAdjacency<double, 3>>(waypoints);
-    size_t i = 0;
-    for (const FixedArray<double, 3>& p : waypoints.points) {
-        waypoints_bvh_->insert(p, i++);
+    for (const auto& [i, p] : enumerate(waypoints.points)) {
+        waypoints_bvh_->insert(p, i);
     }
     // waypoints_bvh_->optimize_search_time(std::cout);
     player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
@@ -52,6 +52,13 @@ void PathfindingWaypoints::select_next_waypoint() {
     if (!has_waypoints()) {
         return;
     }
+    // if (waypoints_->points.size() > 1000) {
+    //     lwarn() << "Refusing to add beacons, number of points is > 1000";
+    // } else {
+    //     for (const auto& p : waypoints_->points) {
+    //         add_beacon(Beacon::create(p, "flag"));
+    //     }
+    // }
     assert_true(waypoints_->adjacency.initialized());
     if (!player_.has_scene_vehicle()) {
         return;

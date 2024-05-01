@@ -75,6 +75,7 @@ struct DrawStreetsInput {
     const std::string& name_pattern;
     const std::set<std::string>& excluded_highways;
     const std::set<std::string>& path_tags;
+    const std::set<std::string>& included_aeroways;
     float curb_alpha_;
     float curb2_alpha_;
     FixedArray<float, 2> curb_uv;

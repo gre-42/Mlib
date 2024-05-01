@@ -28,6 +28,7 @@ class IncludeWay {
 public:
     explicit IncludeWay(
         const std::set<std::string>& included_highways,
+        const std::set<std::string>& included_aeroways,
         const Way& way)
     {
         if (way.tags.contains("smoothen", "no")) {
@@ -39,7 +40,9 @@ public:
             include_way_ =
                 force_include_ ||
                 (way.tags.contains("highway") &&
-                 included_highways.contains(way.tags.get("highway")));
+                    included_highways.contains(way.tags.get("highway"))) ||
+                (way.tags.contains("aeroway") &&
+                    included_aeroways.contains(way.tags.get("aeroway")));;
             include_some_nodes_ =
                 include_way_ ||
                 way.tags.contains("terrain_region") ||
@@ -77,6 +80,7 @@ private:
 NodesAndWays Mlib::smoothen_ways(
     const NodesAndWays& naws,
     const std::set<std::string>& included_highways,
+    const std::set<std::string>& included_aeroways,
     float default_street_width,
     float default_lane_width,
     float scale,
@@ -85,7 +89,7 @@ NodesAndWays Mlib::smoothen_ways(
     std::map<std::string, std::set<std::string>> node_neighbors;
     std::map<std::string, std::set<std::string>> node_ways;
     for (const auto& [way_id, way] : naws.ways) {
-        IncludeWay iw{included_highways, way};
+        IncludeWay iw{ included_highways, included_aeroways, way };
         if (!iw.include_some()) {
             continue;
         }
@@ -108,7 +112,7 @@ NodesAndWays Mlib::smoothen_ways(
     result.nodes = naws.nodes;
     size_t segment_ctr = 0;
     for (const auto& [way_id, way] : naws.ways) {
-        IncludeWay iw{included_highways, way};
+        IncludeWay iw{ included_highways, included_aeroways, way };
         if (!iw.include_some()) {
             result.ways[way_id] = way;
             continue;

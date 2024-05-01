@@ -44,6 +44,9 @@ DECLARE_ARGUMENT(path_mudmap);
 DECLARE_ARGUMENT(terrain_materials);
 DECLARE_ARGUMENT(street_materials);
 DECLARE_ARGUMENT(path_materials);
+DECLARE_ARGUMENT(taxiway_materials);
+DECLARE_ARGUMENT(runway_materials);
+DECLARE_ARGUMENT(runway_displacement_threshold_materials);
 DECLARE_ARGUMENT(wall_materials);
 DECLARE_ARGUMENT(terrain_undefined_textures);
 DECLARE_ARGUMENT(terrain_grass_textures);
@@ -65,6 +68,9 @@ DECLARE_ARGUMENT(street_dirt_texture);
 DECLARE_ARGUMENT(street_reflection_map);
 DECLARE_ARGUMENT(path_reflection_map);
 DECLARE_ARGUMENT(street_crossing_textures);
+DECLARE_ARGUMENT(taxiway_crossing_textures);
+DECLARE_ARGUMENT(runway_crossing_textures);
+DECLARE_ARGUMENT(runway_displacement_threshold_crossing_textures);
 DECLARE_ARGUMENT(street_alpha_textures);
 DECLARE_ARGUMENT(path_alpha_textures);
 DECLARE_ARGUMENT(path_mud_textures);
@@ -74,6 +80,9 @@ DECLARE_ARGUMENT(street_textures);
 DECLARE_ARGUMENT(path_crossing_textures);
 DECLARE_ARGUMENT(path_texture);
 DECLARE_ARGUMENT(path_textures);
+DECLARE_ARGUMENT(taxiway_textures);
+DECLARE_ARGUMENT(runway_textures);
+DECLARE_ARGUMENT(runway_displacement_threshold_textures);
 DECLARE_ARGUMENT(wall_textures);
 DECLARE_ARGUMENT(curb_street_texture);
 DECLARE_ARGUMENT(curb_path_texture);
@@ -147,6 +156,9 @@ DECLARE_ARGUMENT(uv_period_terrain);
 DECLARE_ARGUMENT(uv_scale_street);
 DECLARE_ARGUMENT(uv_scale_path);
 DECLARE_ARGUMENT(uv_scale_wall);
+DECLARE_ARGUMENT(uv_scale_taxiway);
+DECLARE_ARGUMENT(uv_scale_runway);
+DECLARE_ARGUMENT(uv_scale_runway_displacement_threshold);
 DECLARE_ARGUMENT(uv_scale_facade);
 DECLARE_ARGUMENT(uv_scale_ceiling);
 DECLARE_ARGUMENT(uv_scale_barrier_wall);
@@ -195,6 +207,7 @@ DECLARE_ARGUMENT(highway_name_pattern);
 DECLARE_ARGUMENT(excluded_highways);
 DECLARE_ARGUMENT(path_tags);
 DECLARE_ARGUMENT(smoothed_highways);
+DECLARE_ARGUMENT(smoothed_aeroways);
 DECLARE_ARGUMENT(max_smooth_highway_length);
 DECLARE_ARGUMENT(steiner_point_distances_road);
 DECLARE_ARGUMENT(steiner_point_distances_steiner);
@@ -379,6 +392,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::path_materials)) {
             config.street_materials[RoadType::PATH] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::path_materials));
         }
+        if (args.arguments.contains(KnownArgs::taxiway_materials)) {
+            config.street_materials[RoadType::TAXIWAY] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::taxiway_materials));
+        }
+        if (args.arguments.contains(KnownArgs::runway_materials)) {
+            config.street_materials[RoadType::RUNWAY] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::runway_materials));
+        }
+        if (args.arguments.contains(KnownArgs::runway_displacement_threshold_materials)) {
+            config.street_materials[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::runway_displacement_threshold_materials));
+        }
         if (args.arguments.contains(KnownArgs::wall_materials)) {
             config.street_materials[RoadType::WALL] = physics_material_from_string(args.arguments.at<std::string>(KnownArgs::wall_materials));
         }
@@ -442,6 +464,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::street_crossing_textures)) {
             config.street_crossing_textures[RoadType::STREET] = fpathps(KnownArgs::street_crossing_textures);
         }
+        if (args.arguments.contains(KnownArgs::taxiway_crossing_textures)) {
+            config.street_crossing_textures[RoadType::TAXIWAY] = fpathps(KnownArgs::taxiway_crossing_textures);
+        }
+        if (args.arguments.contains(KnownArgs::runway_crossing_textures)) {
+            config.street_crossing_textures[RoadType::RUNWAY] = fpathps(KnownArgs::runway_crossing_textures);
+        }
+        if (args.arguments.contains(KnownArgs::runway_displacement_threshold_crossing_textures)) {
+            config.street_crossing_textures[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = fpathps(KnownArgs::runway_displacement_threshold_crossing_textures);
+        }
         if (args.arguments.contains(KnownArgs::street_alpha_textures)) {
             config.street_alpha_textures[RoadType::STREET] = fpathps(KnownArgs::street_alpha_textures);
         }
@@ -472,6 +503,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::path_textures)) {
             add_street_textures(RoadType::PATH, args.arguments.children(KnownArgs::path_textures));
+        }
+        if (args.arguments.contains_non_null(KnownArgs::taxiway_textures)) {
+            add_street_textures(RoadType::TAXIWAY, args.arguments.children(KnownArgs::taxiway_textures));
+        }
+        if (args.arguments.contains_non_null(KnownArgs::runway_textures)) {
+            add_street_textures(RoadType::RUNWAY, args.arguments.children(KnownArgs::runway_textures));
+        }
+        if (args.arguments.contains_non_null(KnownArgs::runway_displacement_threshold_textures)) {
+            add_street_textures(RoadType::RUNWAY_DISPLACEMENT_THRESHOLD, args.arguments.children(KnownArgs::runway_displacement_threshold_textures));
         }
         if (args.arguments.contains_non_null(KnownArgs::wall_textures)) {
             add_street_textures(RoadType::WALL, args.arguments.children(KnownArgs::wall_textures));
@@ -699,6 +739,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains(KnownArgs::uv_scale_wall)) {
             config.uv_scales_street[RoadType::WALL] = args.arguments.at<float>(KnownArgs::uv_scale_wall);
         }
+        if (args.arguments.contains(KnownArgs::uv_scale_taxiway)) {
+            config.uv_scales_street[RoadType::TAXIWAY] = args.arguments.at<float>(KnownArgs::uv_scale_taxiway);
+        }
+        if (args.arguments.contains(KnownArgs::uv_scale_runway)) {
+            config.uv_scales_street[RoadType::RUNWAY] = args.arguments.at<float>(KnownArgs::uv_scale_runway);
+        }
+        if (args.arguments.contains(KnownArgs::uv_scale_runway_displacement_threshold)) {
+            config.uv_scales_street[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = args.arguments.at<float>(KnownArgs::uv_scale_runway_displacement_threshold);
+        }
         if (args.arguments.contains(KnownArgs::uv_scale_facade)) {
             config.uv_scale_facade = args.arguments.at<float>(KnownArgs::uv_scale_facade);
         }
@@ -842,6 +891,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains_non_null(KnownArgs::smoothed_highways)) {
             config.smoothed_highways = args.arguments.at<std::set<std::string>>(KnownArgs::smoothed_highways);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::smoothed_aeroways)) {
+            config.smoothed_aeroways = args.arguments.at<std::set<std::string>>(KnownArgs::smoothed_aeroways);
         }
         if (args.arguments.contains(KnownArgs::max_smooth_highway_length)) {
             config.max_smooth_highway_length = args.arguments.at<float>(KnownArgs::max_smooth_highway_length) * meters;
