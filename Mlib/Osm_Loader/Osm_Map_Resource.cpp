@@ -1560,7 +1560,7 @@ void OsmMapResource::save_to_obj_file(
                 .specular = m.shading.specular};
             if (!m.textures_color.empty()) {
                 const auto& desc = m.textures_color[0].texture_descriptor;
-                result.color_texture = get_filename(desc.color, TextureRole::COLOR);
+                result.color_texture = get_filename(desc.color, TextureRole::COLOR_FROM_DB);
                 result.bump_texture = get_filename(desc.normal, TextureRole::NORMAL);
                 result.has_alpha_texture = (desc.color.color_mode == ColorMode::RGBA);
             }
