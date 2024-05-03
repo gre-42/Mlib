@@ -73,6 +73,9 @@ DECLARE_ARGUMENT(runway_crossing_textures);
 DECLARE_ARGUMENT(runway_displacement_threshold_crossing_textures);
 DECLARE_ARGUMENT(street_alpha_textures);
 DECLARE_ARGUMENT(path_alpha_textures);
+DECLARE_ARGUMENT(taxiway_alpha_textures);
+DECLARE_ARGUMENT(runway_alpha_textures);
+DECLARE_ARGUMENT(runway_displacement_threshold_alpha_textures);
 DECLARE_ARGUMENT(path_mud_textures);
 DECLARE_ARGUMENT(path_mud_alpha_textures);
 DECLARE_ARGUMENT(street_texture);
@@ -241,6 +244,9 @@ DECLARE_ARGUMENT(bump_height);
 DECLARE_ARGUMENT(driving_direction);
 DECLARE_ARGUMENT(blend_street);
 DECLARE_ARGUMENT(blend_path);
+DECLARE_ARGUMENT(blend_taxiway);
+DECLARE_ARGUMENT(blend_runway);
+DECLARE_ARGUMENT(blend_runway_displacement_threshold);
 DECLARE_ARGUMENT(emissive_factor);
 DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
@@ -478,6 +484,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::path_alpha_textures)) {
             config.street_alpha_textures[RoadType::PATH] = fpathps(KnownArgs::path_alpha_textures);
+        }
+        if (args.arguments.contains(KnownArgs::taxiway_alpha_textures)) {
+            config.street_alpha_textures[RoadType::TAXIWAY] = fpathps(KnownArgs::taxiway_alpha_textures);
+        }
+        if (args.arguments.contains(KnownArgs::runway_alpha_textures)) {
+            config.street_alpha_textures[RoadType::RUNWAY] = fpathps(KnownArgs::runway_alpha_textures);
+        }
+        if (args.arguments.contains(KnownArgs::runway_displacement_threshold_alpha_textures)) {
+            config.street_alpha_textures[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = fpathps(KnownArgs::runway_displacement_threshold_alpha_textures);
         }
         if (args.arguments.contains(KnownArgs::path_mud_textures)) {
             config.street_mud_textures[RoadType::PATH] = fpathps(KnownArgs::path_mud_textures);
@@ -994,6 +1009,15 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::blend_path)) {
             config.blend_street[RoadType::PATH] = args.arguments.at<bool>(KnownArgs::blend_path);
+        }
+        if (args.arguments.contains(KnownArgs::blend_taxiway)) {
+            config.blend_street[RoadType::TAXIWAY] = args.arguments.at<bool>(KnownArgs::blend_taxiway);
+        }
+        if (args.arguments.contains(KnownArgs::blend_runway)) {
+            config.blend_street[RoadType::RUNWAY] = args.arguments.at<bool>(KnownArgs::blend_runway);
+        }
+        if (args.arguments.contains(KnownArgs::blend_runway_displacement_threshold)) {
+            config.blend_street[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = args.arguments.at<bool>(KnownArgs::blend_runway_displacement_threshold);
         }
         if (args.arguments.contains(KnownArgs::emissive_factor)) {
             config.emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor);
