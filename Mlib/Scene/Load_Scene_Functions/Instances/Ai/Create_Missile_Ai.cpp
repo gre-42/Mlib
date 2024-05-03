@@ -14,7 +14,6 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(ai_name);
 DECLARE_ARGUMENT(missile);
 DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(dy);
@@ -68,8 +67,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         jdy.at<std::vector<float>>(DyArgs::dy),
         OutOfRangeBehavior::CLAMP };
     auto& missile_vehicle = get_rigid_body_vehicle(scene.get_node(args.arguments.at<std::string>(KnownArgs::missile), DP_LOC));
-    missile_vehicle.set_autopilot(
-        args.arguments.at<std::string>(KnownArgs::ai_name),
+    missile_vehicle.add_autopilot(
         {
             global_object_pool.create<FlyingMissileAi>(
                 CURRENT_SOURCE_LOCATION,

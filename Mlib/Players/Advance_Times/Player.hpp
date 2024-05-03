@@ -49,7 +49,6 @@ class Focuses;
 class SceneVehicle;
 class VehicleSpawner;
 class VehicleSpawners;
-class IVehicleAi;
 
 enum class GameMode {
     RAMMING,
@@ -214,7 +213,6 @@ public:
     const RigidBodyVehicle* target_rb() const;
     const DrivingMode& driving_mode() const;
     DrivingDirection driving_direction() const;
-    DanglingBaseClassPtr<IVehicleAi> vehicle_ai();
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();

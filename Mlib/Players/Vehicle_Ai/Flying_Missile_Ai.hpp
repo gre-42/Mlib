@@ -25,9 +25,10 @@ public:
 		float destination_reached_radius);
 	virtual ~FlyingMissileAi() override;
 	virtual VehicleAiMoveToStatus move_to(
-		const FixedArray<double, 3>& position_of_destination,
-		const FixedArray<float, 3>& velocity_of_destination,
+		const std::optional<FixedArray<double, 3>>& position_of_destination,
+		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_at_destination) override;
+	virtual std::vector<SkillFactor> skills() const override;
 private:
 	DestructionFunctionsRemovalTokens on_destroy_rigid_body_;
 	PidController<FixedArray<float, 3>, float> pid_;

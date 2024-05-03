@@ -65,7 +65,7 @@ void PathfindingWaypoints::select_next_waypoint() {
     }
     FixedArray<float, 3> z3 = player_.rigid_body().rbp_.abs_z();
     FixedArray<double, 3> pos3 = player_.rigid_body().rbp_.abs_position();
-    if (player_.single_waypoint_.waypoint_id_ == SIZE_MAX) {
+    if (!player_.single_waypoint_.waypoint_defined()) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
         size_t closest_id = SIZE_MAX;
@@ -91,12 +91,14 @@ void PathfindingWaypoints::select_next_waypoint() {
             set_waypoint(closest_id);
         }
     } else {
-        if (player_.single_waypoint_.waypoint_reached_) {
-            if (player_.single_waypoint_.nwaypoints_reached_ < 2) {
+        if (player_.single_waypoint_.waypoint_reached() &&
+            (player_.single_waypoint_.target_waypoint_id() != SIZE_MAX))
+        {
+            if (player_.single_waypoint_.nwaypoints_reached() < 2) {
                 // If we already have less than two waypoints, go further forward.
                 size_t best_id = SIZE_MAX;
                 double best_distance = INFINITY;
-                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.waypoint_id_)) {
+                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                     double dist = dot0d(waypoints_->points.at(rs.first) - pos3, z3.casted<double>());
                     if (dist < best_distance) {
                         best_id = rs.first;
@@ -112,13 +114,13 @@ void PathfindingWaypoints::select_next_waypoint() {
                 auto deflt = std::chrono::steady_clock::time_point();
                 size_t best_id = SIZE_MAX;
                 auto best_time = deflt;
-                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.waypoint_id_)) {
+                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                     if ((best_id == SIZE_MAX) ||
-                        (player_.single_waypoint_.last_visited_.at(rs.first) == deflt) ||
-                        ((best_time != deflt) && (player_.single_waypoint_.last_visited_.at(rs.first) < best_time)))
+                        (player_.single_waypoint_.last_visited(rs.first) == deflt) ||
+                        ((best_time != deflt) && (player_.single_waypoint_.last_visited(rs.first) < best_time)))
                     {
                         best_id = rs.first;
-                        best_time = player_.single_waypoint_.last_visited_.at(rs.first);
+                        best_time = player_.single_waypoint_.last_visited(rs.first);
                     }
                 }
                 if (best_id == SIZE_MAX) {

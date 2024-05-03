@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 VehicleDomain Mlib::vehicle_domain_from_string(const std::string& str) {
-    const std::map<std::string, VehicleDomain> m{
+    static const std::map<std::string, VehicleDomain> m{
         {"undefined", VehicleDomain::UNDEFINED},
         {"air", VehicleDomain::AIR},
         {"ground", VehicleDomain::GROUND}
@@ -14,4 +14,18 @@ VehicleDomain Mlib::vehicle_domain_from_string(const std::string& str) {
         THROW_OR_ABORT("Unknown vehicle domain: \"" + str + '"');
     }
     return it->second;
+}
+
+std::string Mlib::vehicle_domain_to_string(VehicleDomain domain) {
+    switch (domain) {
+    case VehicleDomain::UNDEFINED:
+        return "undefined";
+    case VehicleDomain::AIR:
+        return "air";
+    case VehicleDomain::GROUND:
+        return "ground";
+    case VehicleDomain::END:
+        ; // Fall through
+    }
+    THROW_OR_ABORT("Unknown vehicle domain: " + std::to_string((int)domain));
 }

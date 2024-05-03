@@ -15,7 +15,6 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(ai_name);
 DECLARE_ARGUMENT(player);
 }
 
@@ -35,8 +34,6 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto ai = std::make_unique<DriveOrWalkAi>(player);
-    player->rigid_body().set_autopilot(
-        args.arguments.at<std::string>(KnownArgs::ai_name),
-        { *ai, CURRENT_SOURCE_LOCATION });
+    player->rigid_body().add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }

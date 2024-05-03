@@ -3,7 +3,6 @@
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Plane_As_Car_Controller.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -19,7 +18,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(node);
 DECLARE_ARGUMENT(tire_ids);
 DECLARE_ARGUMENT(tire_angles);
-DECLARE_ARGUMENT(vehicle_domain);
 }
 
 const std::string CreatePlaneAsCarController::key = "create_plane_as_car_controller";
@@ -56,8 +54,5 @@ void CreatePlaneAsCarController::execute(const LoadSceneJsonUserFunctionArgs& ar
             THROW_OR_ABORT("Duplicate tire ID");
         }
     }
-    rb.vehicle_controller_ = std::make_unique<PlaneAsCarController>(
-        rb,
-        tire_angles_map,
-        vehicle_domain_from_string(args.arguments.at(KnownArgs::vehicle_domain)));
+    rb.vehicle_controller_ = std::make_unique<PlaneAsCarController>(rb, tire_angles_map);
 }

@@ -1,7 +1,10 @@
 #include "Drive_Or_Walk_Ai.hpp"
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
+#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
@@ -23,18 +26,15 @@ DriveOrWalkAi::~DriveOrWalkAi() {
 }
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
-    const FixedArray<double, 3>& position_of_destination,
-    const FixedArray<float, 3>& velocity_of_destination,
+    const std::optional<FixedArray<double, 3>>& position_of_destination,
+    const std::optional<FixedArray<float, 3>>& velocity_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_at_destination)
 {
-    // if (!any(Mlib::isnan(waypoint_))) {
-    //     g_beacons.push_back(Beacon::create(waypoint_, "flag"));
+    // if (waypoint_defined()) {
+    //     g_beacons.push_back(Beacon::create(waypoint_.value(), "flag"));
     // }
     if (!player_->has_scene_vehicle()) {
         return VehicleAiMoveToStatus::SCENE_VEHICLE_IS_NULL;
-    }
-    if (!player_->skills(ControlSource::AI).can_drive) {
-        return VehicleAiMoveToStatus::SKILL_MISSING;
     }
     auto& player_rb = player_->rigid_body();
     // Disabled, using "steer" instead to enable the PID-controller.
@@ -48,13 +48,14 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb.vehicle_controller().apply();
         };
     player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
-    if (any(Mlib::isnan(position_of_destination))) {
+    if (!position_of_destination.has_value()) {
         step_on_brakes_and_apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
+    const auto& pod = position_of_destination.value();
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
-    double distance_to_waypoint2 = sum(squared(pos3 - position_of_destination));
+    double distance_to_waypoint2 = sum(squared(pos3 - pod));
     float lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
@@ -154,7 +155,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
         auto p = player_rb.rbp_.abs_position();
-        auto wpt = FixedArray<double, 2>{position_of_destination(0), position_of_destination(2)} - FixedArray<double, 2>{p(0), p(2)};
+        auto wpt = FixedArray<double, 2>{pod(0), pod(2)} - FixedArray<double, 2>{p(0), p(2)};
         auto m = FixedArray<double, 2, 2>::init(
             z(1), -z(0),
             z(0), z(1));
@@ -207,4 +208,13 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb.vehicle_controller().apply();
     }
     return result;
+}
+
+std::vector<SkillFactor> DriveOrWalkAi::skills() const {
+    return { SkillFactor{
+        .scenario = SkillScenario{
+            .actor_type = ActorType::TIRES,
+            .vehicle_domain = VehicleDomain::GROUND},
+        .factor = 1.f
+    }};
 }

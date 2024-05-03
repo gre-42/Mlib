@@ -895,12 +895,6 @@ DrivingDirection Player::driving_direction() const {
     return driving_direction_;
 }
 
-DanglingBaseClassPtr<IVehicleAi> Player::vehicle_ai() {
-    return rigid_body().has_autopilot("default")
-        ? rigid_body().get_autopilot("default").ptr()
-        : nullptr;
-}
-
 ExternalsMode Player::externals_mode() const {
     return externals_mode_;
 }

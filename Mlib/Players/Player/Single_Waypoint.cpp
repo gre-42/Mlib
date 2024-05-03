@@ -2,6 +2,7 @@
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/IVehicle_Ai.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
@@ -13,7 +14,7 @@ using namespace Mlib;
 SingleWaypoint::SingleWaypoint(const DanglingBaseClassRef<Player>& player)
     : player_{ player }
     , target_velocity_{ NAN }
-    , waypoint_{ fixed_nans <double, 3>() }
+    , waypoint_{ std::nullopt }
     , waypoint_id_{ SIZE_MAX }
     , previous_waypoint_id_{ SIZE_MAX }
     , waypoint_reached_{ false }
@@ -27,19 +28,32 @@ void SingleWaypoint::set_target_velocity(float v) {
     target_velocity_ = v;
 }
 
-void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
+void SingleWaypoint::set_waypoint_internal(const std::optional<FixedArray<double, 3>>& waypoint, size_t waypoint_id) {
     previous_waypoint_id_ = waypoint_id_;
+    if (!waypoint.has_value()) {
+        waypoint_ = { 4., 2., 42. };
+    }
     waypoint_ = waypoint;
-    waypoint_(1) += player_->driving_mode_.waypoint_ofs;
     waypoint_id_ = waypoint_id;
-    if (record_waypoints_ && !any(Mlib::isnan(waypoint))) {
-        waypoint_history_.push_back(waypoint);
+    if (waypoint_defined()) {
+        waypoint_.value()(1) += player_->driving_mode_.waypoint_ofs;
+        if (record_waypoints_) {
+            waypoint_history_.push_back(waypoint.value());
+        }
     }
     waypoint_reached_ = false;
 }
 
+void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
+    set_waypoint_internal(waypoint, waypoint_id);
+}
+
 void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
-    set_waypoint(waypoint, SIZE_MAX);
+    set_waypoint_internal(waypoint, SIZE_MAX);
+}
+
+void SingleWaypoint::clear_waypoint() {
+    set_waypoint_internal(std::nullopt, SIZE_MAX);
 }
 
 void SingleWaypoint::move_to_waypoint() {
@@ -47,11 +61,11 @@ void SingleWaypoint::move_to_waypoint() {
     if (!player_->has_scene_vehicle()) {
         return;
     }
-    auto ai = player_->vehicle_ai();
-    if (ai == nullptr) {
+    if (!player_->skills(ControlSource::AI).can_drive) {
         return;
     }
-    if (any(ai->move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
+    auto& rb = player_->rigid_body();
+    if (any(rb.move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
         }
@@ -70,7 +84,7 @@ void SingleWaypoint::notify_spawn() {
     for (auto& l : last_visited_) {
         l = std::chrono::steady_clock::time_point();
     }
-    set_waypoint(fixed_nans<double, 3>());
+    clear_waypoint();
     nwaypoints_reached_ = 0;
     waypoint_history_.clear();
 }
@@ -104,11 +118,15 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
 }
 
 bool SingleWaypoint::waypoint_defined() const {
-    return !any(Mlib::isnan(waypoint_));
+    return waypoint_.has_value();
 }
 
 bool SingleWaypoint::waypoint_reached() const {
     return waypoint_reached_;
+}
+
+size_t SingleWaypoint::nwaypoints_reached() const {
+    return nwaypoints_reached_;
 }
 
 size_t SingleWaypoint::target_waypoint_id() const {
@@ -117,4 +135,11 @@ size_t SingleWaypoint::target_waypoint_id() const {
 
 size_t SingleWaypoint::previous_waypoint_id() const {
     return previous_waypoint_id_;
+}
+
+std::chrono::steady_clock::time_point SingleWaypoint::last_visited(size_t waypoint_id) const {
+    if (waypoint_id >= last_visited_.size()) {
+        THROW_OR_ABORT("Waypoint ID too large");
+    }
+    return last_visited_.at(waypoint_id);
 }

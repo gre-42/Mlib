@@ -2,8 +2,11 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Gravity.hpp>
+#include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
+#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 
 using namespace Mlib;
@@ -32,24 +35,26 @@ FlyingMissileAi::~FlyingMissileAi() {
 }
 
 VehicleAiMoveToStatus FlyingMissileAi::move_to(
-	const FixedArray<double, 3>& position_of_destination,
-	const FixedArray<float, 3>& velocity_of_destination,
+	const std::optional<FixedArray<double, 3>>& position_of_destination,
+	const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 	const std::optional<FixedArray<float, 3>>& velocity_at_destination)
 {
 	controller_.reset_parameters();
 	controller_.reset_relaxation();
 
-	if (any(isnan(position_of_destination))) {
+	if (!position_of_destination.has_value()) {
 		controller_.throttle_engine(0.f, 1.f);
 		controller_.set_desired_direction(fixed_zeros<float, 3>(), 1.f);
 		controller_.apply();
 		return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
 	}
+	const auto& pod = position_of_destination.value();
+	auto vod = velocity_of_destination.value_or(fixed_zeros<float, 3>());
 	controller_.throttle_engine(INFINITY, 1.f);
 
-	auto distance2 = sum(squared(position_of_destination - missile_.abs_position()));
+	auto distance2 = sum(squared(pod - missile_.abs_position()));
 	auto eta = std::min(eta_max_, std::sqrt(distance2 / sum(squared(missile_.v_))));
-	auto corrected_position_of_destination = position_of_destination + eta * velocity_of_destination.casted<double>();
+	auto corrected_position_of_destination = pod + eta * vod.casted<double>();
 
 	auto dir_d = corrected_position_of_destination - missile_.abs_position();
 	auto l2_d = sum(squared(dir_d));
@@ -71,4 +76,14 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 	controller_.set_desired_direction(pid_(dir), 1.f);
 	controller_.apply();
 	return VehicleAiMoveToStatus::NONE;
+}
+
+
+std::vector<SkillFactor> FlyingMissileAi::skills() const {
+	return { SkillFactor{
+		.scenario = SkillScenario{
+			.actor_type = ActorType::WINGS,
+			.vehicle_domain = VehicleDomain::AIR},
+			.factor = 1.f
+	}};
 }

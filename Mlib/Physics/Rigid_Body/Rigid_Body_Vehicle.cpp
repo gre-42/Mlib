@@ -22,7 +22,6 @@
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
-#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
@@ -30,6 +29,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
+#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
@@ -998,34 +998,82 @@ void RigidBodyVehicle::set_driver(DanglingBaseClassRef<IPlayer> driver) {
     driver->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
-void RigidBodyVehicle::set_autopilot(
-    const std::string& name,
-    const DanglingBaseClassRef<IVehicleAi>& ai)
+void RigidBodyVehicle::add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai)
 {
-    auto it = autopilots_.try_emplace(name, ai, CURRENT_SOURCE_LOCATION);
-    if (!it.second) {
-        THROW_OR_ABORT("Autopilot with name \"" + name + "\" already exists");
+    for (const auto& sf : ai->skills()) {
+        auto& amap = autopilots_[sf.scenario.vehicle_domain];
+        auto it = amap.find(sf.scenario.actor_type);
+        if ((it == amap.end()) || (sf.factor > it->second.skill)) {
+            auto it = amap.try_emplace(
+                sf.scenario.actor_type,
+                ai,
+                CURRENT_SOURCE_LOCATION,
+                sf.factor);
+            if (!it.second) {
+                verbose_abort("Fatal error, could not insert autopilot");
+            }
+            it.first->second.ai.on_destroy([this, s=sf.scenario]() { remove_autopilot(s); }, CURRENT_SOURCE_LOCATION);
+        }
     }
-    it.first->second.on_destroy([this, name]() { remove_autopilot(name); }, CURRENT_SOURCE_LOCATION);
 }
 
-DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const std::string& name)
+DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const SkillScenario& scenario)
 {
-    auto it = autopilots_.find(name);
+    auto dit = autopilots_.find(scenario.vehicle_domain);
+    if (dit == autopilots_.end()) {
+        THROW_OR_ABORT("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
+    }
+    auto vit = dit->second.find(scenario.actor_type);
+    if (vit == dit->second.end()) {
+        THROW_OR_ABORT("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
+    }
+    return vit->second.ai.object();
+}
+
+bool RigidBodyVehicle::has_autopilot(const SkillScenario& scenario) const {
+    auto dit = autopilots_.find(scenario.vehicle_domain);
+    if (dit == autopilots_.end()) {
+        return false;
+    }
+    auto vit = dit->second.find(scenario.actor_type);
+    if (vit == dit->second.end()) {
+        return false;
+    }
+    return true;
+}
+
+void RigidBodyVehicle::remove_autopilot(const SkillScenario& scenario) {
+    auto dit = autopilots_.find(scenario.vehicle_domain);
+    if (dit == autopilots_.end()) {
+        verbose_abort("Could not remove autopilot with scenario \"" + skill_scenario_to_string(scenario) + '"');
+    }
+    auto vit = dit->second.find(scenario.actor_type);
+    if (vit == dit->second.end()) {
+        verbose_abort("Could not remove autopilot with scenario \"" + skill_scenario_to_string(scenario) + '"');
+    }
+    dit->second.erase(vit);
+    if (dit->second.empty()) {
+        autopilots_.erase(dit);
+    }
+}
+
+VehicleAiMoveToStatus RigidBodyVehicle::move_to(
+    const std::optional<FixedArray<double, 3>>& position_of_destination,
+    const std::optional<FixedArray<float, 3>>& velocity_of_destination,
+    const std::optional<FixedArray<float, 3>>& velocity_at_destination)
+{
+    auto it = autopilots_.find(current_vehicle_domain_);
     if (it == autopilots_.end()) {
-        THROW_OR_ABORT("No autopilot with name \"" + name + "\" exists");
+        return VehicleAiMoveToStatus::AUTOPILOT_IS_NULL;
     }
-    return it->second.object();
-}
-
-bool RigidBodyVehicle::has_autopilot(const std::string& name) const {
-    return autopilots_.contains(name);
-}
-
-void RigidBodyVehicle::remove_autopilot(const std::string& name) {
-    if (autopilots_.erase(name) != 1) {
-        verbose_abort("Could not remove autopilot with name \"" + name + '"');
+    auto status = VehicleAiMoveToStatus::NONE;
+    for (auto& ai : it->second) {
+        status |= ai.second.ai->move_to(
+            position_of_destination,
+            velocity_of_destination,
+            velocity_at_destination);
     }
+    return status;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {

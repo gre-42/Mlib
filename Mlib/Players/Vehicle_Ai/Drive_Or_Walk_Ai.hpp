@@ -15,9 +15,10 @@ public:
 	explicit DriveOrWalkAi(const DanglingBaseClassRef<Player>& player);
 	virtual ~DriveOrWalkAi() override;
 	virtual VehicleAiMoveToStatus move_to(
-		const FixedArray<double, 3>& position_of_destination,
-		const FixedArray<float, 3>& velocity_of_destination,
+		const std::optional<FixedArray<double, 3>>& position_of_destination,
+		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_at_destination) override;
+	virtual std::vector<SkillFactor> skills() const override;
 private:
 	DestructionFunctionsRemovalTokens on_player_delete_externals_;
 	DanglingBaseClassRef<Player> player_;

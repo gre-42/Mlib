@@ -4,9 +4,11 @@
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
+#include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
+#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
@@ -21,6 +23,7 @@
 
 namespace Mlib {
 
+struct SkillScenario;
 class RigidBodyEngine;
 class RigidBodyDeltaEngine;
 struct CollisionHistory;
@@ -45,6 +48,8 @@ class Wing;
 enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 enum class VehicleDomain;
+enum class ActorType;
+enum class VehicleAiMoveToStatus;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -75,6 +80,15 @@ struct RevertSurfacePowerState {
 
 struct FlyForwardState {
     float wants_to_fly_forward_factor_;
+};
+
+struct VehicleAiWithSkill {
+    VehicleAiWithSkill(const DanglingBaseClassRef<IVehicleAi>& o, SourceLocation loc, float skill)
+        : ai{ o, loc }
+        , skill{ skill }
+    {}
+    DestructionFunctionsTokensObject<IVehicleAi> ai;
+    float skill;
 };
 
 struct TrailerHitches {
@@ -189,10 +203,14 @@ public:
     void set_jump_dv(float value);
     void clear_driver();
     void set_driver(DanglingBaseClassRef<IPlayer> driver);
-    void set_autopilot(const std::string& name, const DanglingBaseClassRef<IVehicleAi>& ai);
-    DanglingBaseClassRef<IVehicleAi> get_autopilot(const std::string& name);
-    bool has_autopilot(const std::string& name) const;
-    void remove_autopilot(const std::string& name);
+    void add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai);
+    DanglingBaseClassRef<IVehicleAi> get_autopilot(const SkillScenario& scenario);
+    bool has_autopilot(const SkillScenario& scenario) const;
+    void remove_autopilot(const SkillScenario& scenario);
+    VehicleAiMoveToStatus move_to(
+        const std::optional<FixedArray<double, 3>>& position_of_destination,
+        const std::optional<FixedArray<float, 3>>& velocity_of_destination,
+        const std::optional<FixedArray<float, 3>>& velocity_at_destination);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -263,7 +281,7 @@ public:
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     std::unique_ptr<RigidBodyMissileController> missile_controller_;
-    std::map<std::string, DestructionFunctionsTokensObject<IVehicleAi>> autopilots_;
+    std::map<VehicleDomain, std::map<ActorType, VehicleAiWithSkill>> autopilots_;
     float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;

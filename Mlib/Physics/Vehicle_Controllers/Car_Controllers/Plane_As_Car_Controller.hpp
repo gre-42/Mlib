@@ -6,19 +6,15 @@
 
 namespace Mlib {
 
-enum class VehicleDomain;
-
 class PlaneAsCarController: public RigidBodyVehicleController {
 public:
     PlaneAsCarController(
         RigidBodyVehicle& rb,
-        const std::map<size_t, float>& tire_angles,
-        VehicleDomain vehicle_domain);
+        const std::map<size_t, float>& tire_angles);
     virtual ~PlaneAsCarController() override;
     virtual void apply() override;
 private:
     std::map<size_t, float> tire_angles_;
-    VehicleDomain vehicle_domain_;
 };
 
 }

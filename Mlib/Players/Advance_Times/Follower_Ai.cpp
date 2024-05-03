@@ -27,6 +27,6 @@ FollowerAi::~FollowerAi() {
 
 void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 	if (followed_ != nullptr) {
-		follower_->get_autopilot("default")->move_to(followed_->abs_com(), followed_->rbp_.v_, std::nullopt);
+		follower_->move_to(followed_->abs_com(), followed_->rbp_.v_, std::nullopt);
 	}
 }

@@ -11,11 +11,9 @@ using namespace Mlib;
 
 PlaneAsCarController::PlaneAsCarController(
     RigidBodyVehicle& rb,
-    const std::map<size_t, float>& tire_angles,
-    VehicleDomain vehicle_domain)
-: RigidBodyVehicleController{ rb, SteeringType::CAR },
-  tire_angles_{ tire_angles },
-  vehicle_domain_{ vehicle_domain }
+    const std::map<size_t, float>& tire_angles)
+    : RigidBodyVehicleController{ rb, SteeringType::CAR }
+    , tire_angles_{ tire_angles }
 {
     ascend_to(rb.rbp_.abs_position()(1));
 }
@@ -24,21 +22,31 @@ PlaneAsCarController::~PlaneAsCarController()
 {}
 
 void PlaneAsCarController::apply() {
-    if (vehicle_domain_ == VehicleDomain::AIR) {
-        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = NAN});  // NAN=break
+    auto forward = [this](){
         for (const auto& x : tire_angles_) {
             rb_.set_tire_angle_y(x.first, 0.f);
-        }
-        rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = 0.f});
-    } else if (vehicle_domain_ == VehicleDomain::GROUND) {
-        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = surface_power_});  // NAN=break
+        }};
+    auto steer = [this](){
         for (const auto& x : tire_angles_) {
             float ang = signed_min(steer_angle_, x.second);
             rb_.set_tire_angle_y(x.first, ang);
-        }
-    } else {
-        THROW_OR_ABORT("Unknown vehicle domain");
+        }};
+    switch (rb_.current_vehicle_domain_) {
+    case VehicleDomain::AIR:
+    case VehicleDomain::UNDEFINED:
+        forward();
+        rb_.set_surface_power("wheels", EnginePowerIntent{ .surface_power = NAN });  // NAN=break
+        rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = surface_power_});
+        return;
+    case VehicleDomain::GROUND:
+        steer();
+        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});
+        rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = surface_power_});
+        return;
+    case VehicleDomain::END:
+        THROW_OR_ABORT("Invalid vehicle domain");
     }
+    THROW_OR_ABORT("Unknown vehicle domain");
     if (rb_.animation_state_updater_ != nullptr) {
         rb_.animation_state_updater_->notify_movement_intent();
     }
