@@ -134,8 +134,7 @@ private:
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> air_support_node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> tunnel_node_hole_contours;
-    std::map<std::string, HoleWaypoint> node_hole_waypoints_street;
-    std::map<std::string, HoleWaypoint> node_hole_waypoints_sidewalk;
+    std::map<WayPointLocation, std::map<std::string, HoleWaypoint>> node_hole_waypoints;
     std::map<std::string, NodeWayInfo> node_way_info;
 };
 

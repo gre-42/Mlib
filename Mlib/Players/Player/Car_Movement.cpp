@@ -50,6 +50,8 @@ void CarMovement::steer(float angle) {
     player_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (max_tire_angle_.has_value()) {
         angle = signed_min(angle, max_tire_angle_.value());
+    } else if (!std::isfinite(angle)) {
+        THROW_OR_ABORT("Infinite steering angle without max tire angle");
     }
     if (tire_angle_pid_.has_value()) {
         angle = tire_angle_pid_.value()(angle);
