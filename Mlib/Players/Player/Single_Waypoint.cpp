@@ -1,12 +1,15 @@
 #include "Single_Waypoint.hpp"
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Physics/IVehicle_Ai.hpp>
+#include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -19,7 +22,7 @@ SingleWaypoint::SingleWaypoint(const DanglingBaseClassRef<Player>& player)
     , previous_waypoint_id_{ SIZE_MAX }
     , waypoint_reached_{ false }
     , nwaypoints_reached_{ 0 }
-    , record_waypoints_{ false }
+    , max_waypoint_history_length_{ 10 }
 {}
 
 SingleWaypoint::~SingleWaypoint() = default;
@@ -28,27 +31,30 @@ void SingleWaypoint::set_target_velocity(float v) {
     target_velocity_ = v;
 }
 
-void SingleWaypoint::set_waypoint_internal(const std::optional<FixedArray<double, 3>>& waypoint, size_t waypoint_id) {
+void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoint, size_t waypoint_id) {
     previous_waypoint_id_ = waypoint_id_;
     if (!waypoint.has_value()) {
-        waypoint_ = { 4., 2., 42. };
+        waypoint_ = { { 4., 2., 42. }, WayPointLocation::NONE };
     }
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
     if (waypoint_defined()) {
-        waypoint_.value()(1) += player_->driving_mode_.waypoint_ofs;
-        if (record_waypoints_) {
+        waypoint_.value().position(1) += player_->driving_mode_.waypoint_ofs;
+        if (max_waypoint_history_length_ > 0) {
             waypoint_history_.push_back(waypoint.value());
+            if (waypoint_history_.size() > max_waypoint_history_length_) {
+                waypoint_history_.pop_front();
+            }
         }
     }
     waypoint_reached_ = false;
 }
 
-void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint, size_t waypoint_id) {
+void SingleWaypoint::set_waypoint(const WayPoint& waypoint, size_t waypoint_id) {
     set_waypoint_internal(waypoint, waypoint_id);
 }
 
-void SingleWaypoint::set_waypoint(const FixedArray<double, 3>& waypoint) {
+void SingleWaypoint::set_waypoint(const WayPoint& waypoint) {
     set_waypoint_internal(waypoint, SIZE_MAX);
 }
 
@@ -57,6 +63,9 @@ void SingleWaypoint::clear_waypoint() {
 }
 
 void SingleWaypoint::move_to_waypoint() {
+    if (waypoint_.has_value()) {
+        add_beacon(Beacon::create(waypoint_.value().position, "beacon"));
+    }
     player_->delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!player_->has_scene_vehicle()) {
         return;
@@ -65,7 +74,12 @@ void SingleWaypoint::move_to_waypoint() {
         return;
     }
     auto& rb = player_->rigid_body();
-    if (any(rb.move_to(waypoint_, fixed_zeros<float, 3>(), std::nullopt) & VehicleAiMoveToStatus::DESTINATION_REACHED)) {
+    if (any(rb.move_to(
+        waypoint_,
+        fixed_zeros<float, 3>(),
+        std::nullopt,
+        &waypoint_history_) & VehicleAiMoveToStatus::DESTINATION_REACHED))
+    {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();
         }
@@ -91,7 +105,7 @@ void SingleWaypoint::notify_spawn() {
 
 void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     player_->delete_node_mutex_.notify_reading();
-    if (!record_waypoints_) {
+    if (max_waypoint_history_length_ == 0) {
         THROW_OR_ABORT("draw_waypoint_history but recording is not enabled");
     }
     std::ofstream ofstr{filename};
@@ -105,8 +119,8 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     y.resize(waypoint_history_.size());
     size_t i = 0;
     for (const auto& w : waypoint_history_) {
-        x[i] = w(0);
-        y[i] = w(2);
+        x[i] = w.position(0);
+        y[i] = w.position(2);
         ++i;
     }
     svg.plot(x, y);

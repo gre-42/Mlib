@@ -15,6 +15,7 @@
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
 #include <Mlib/Geometry/Mesh/Lines_To_Rectangles.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
@@ -512,23 +513,38 @@ void test_rotate_intrinsic_matrix() {
         rotated_intrinsic_matrix(intrinsic_matrix, sensor_size, 4).affine());
 }
 
+enum class TestPointFlags {
+    A = 1 << 0,
+    B = 1 << 1,
+    C = 1 << 2
+};
+
+inline TestPointFlags operator | (TestPointFlags a, TestPointFlags b) {
+    return (TestPointFlags)((int)a | (int)b);
+}
+
+inline std::ostream& operator << (std::ostream& ostr, TestPointFlags f) {
+    return (ostr << (int)f);
+}
+
 void test_subdivide_points_and_adjacency() {
-    PointsAndAdjacency<float, 2> pa;
-    pa.points = {FixedArray<float, 2>{0.1f, 0.2f}, FixedArray<float, 2>{0.78f, 0.56f}};
+    using TPoint = PointAndFlags<FixedArray<float, 2>, TestPointFlags>;
+    PointsAndAdjacency<TPoint> pa;
+    pa.points = { TPoint{{0.1f, 0.2f}, TestPointFlags::A }, TPoint{{0.78f, 0.56f}, TestPointFlags::B} };
     pa.adjacency = SparseArrayCcs<float>(ArrayShape{ 2, 2 });
     pa.adjacency(0, 1) = 0.4f;
     pa.adjacency(1, 0) = 0.4f;
-    std::cerr << pa.adjacency << std::endl;
-    auto interpolate = interpolate_default<float, 2>;
-    InterpolatedIntermediatePointsCreator<float, 2, decltype(interpolate)> iipc(0.1f, interpolate);
+    linfo() << '\n' << pa.adjacency;
+    auto interpolate = interpolate_default<TPoint>;
+    InterpolatedIntermediatePointsCreator<TPoint, decltype(interpolate)> iipc(0.1f, interpolate);
     pa.subdivide(
         [&](size_t r, size_t c, const float& distance) {
             return iipc(pa.points.at(r), pa.points.at(c), distance);
         },
         SubdivisionType::SYMMETRIC);
-    std::cerr << pa.adjacency << std::endl;
+    linfo() << '\n' << pa.adjacency;
     for (const auto& p : pa.points) {
-        std::cerr << p << std::endl;
+        linfo() << p;
     }
 }
 
@@ -556,7 +572,7 @@ void test_welzl_tetrahedron() {
 }
 
 void test_shortest_path() {
-    PointsAndAdjacency<double, 2> points_and_adjacency;
+    PointsAndAdjacency<FixedArray<double, 2>> points_and_adjacency;
     points_and_adjacency.adjacency = SparseArrayCcs<double>{ArrayShape{4, 4}};
     points_and_adjacency.points = std::vector<FixedArray<double, 2>>{
         FixedArray<double, 2>{0., 0.},

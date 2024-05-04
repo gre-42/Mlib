@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <cstddef>
 #include <vector>
 
@@ -7,24 +8,28 @@ namespace Mlib {
 class Player;
 class SingleWaypoint;
 class SupplyDepots;
-template <class TData, size_t tndim>
+template <class TPoint>
 struct PointsAndAdjacency;
 template <typename TData, size_t... tshape>
 class FixedArray;
+enum class WayPointLocation;
 
 class SupplyDepotsWaypoints {
 public:
+    using WaypointAndFlags = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<WaypointAndFlags>;
+
     SupplyDepotsWaypoints(
         Player& player,
         SingleWaypoint& single_waypoint,
         SupplyDepots& supply_depots);
     bool select_next_waypoint();
-    void set_waypoints(const PointsAndAdjacency<double, 3>& waypoints);
+    void set_waypoints(const PointsAndAdjacencyResource& waypoints);
 private:
     Player& player_;
     SingleWaypoint& single_waypoint_;
     SupplyDepots& supply_depots_;
-    std::vector<FixedArray<double, 3>> waypoint_positions_;
+    std::vector<WaypointAndFlags> waypoint_positions_;
     std::vector<size_t> predecessors_;
     std::vector<double> total_distances_;
 };

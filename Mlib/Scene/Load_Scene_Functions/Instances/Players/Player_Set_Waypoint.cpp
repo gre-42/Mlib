@@ -4,6 +4,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
 using namespace Mlib;
 
@@ -28,5 +29,5 @@ PlayerSetWaypoint::PlayerSetWaypoint(RenderableScene& renderable_scene)
 void PlayerSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION)
-        ->single_waypoint().set_waypoint(args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
+        ->single_waypoint().set_waypoint({ args.arguments.at<FixedArray<double, 3>>(KnownArgs::position), WayPointLocation::UNKNOWN });
 }

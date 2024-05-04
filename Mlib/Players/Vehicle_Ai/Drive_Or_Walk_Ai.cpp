@@ -11,6 +11,7 @@
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
 using namespace Mlib;
 
@@ -26,9 +27,10 @@ DriveOrWalkAi::~DriveOrWalkAi() {
 }
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
-    const std::optional<FixedArray<double, 3>>& position_of_destination,
+    const std::optional<WayPoint>& position_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-    const std::optional<FixedArray<float, 3>>& velocity_at_destination)
+    const std::optional<FixedArray<float, 3>>& velocity_at_destination,
+    const std::list<WayPoint>* waypoint_history)
 {
     // if (waypoint_defined()) {
     //     g_beacons.push_back(Beacon::create(waypoint_.value(), "flag"));
@@ -52,7 +54,8 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         step_on_brakes_and_apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
-    const auto& pod = position_of_destination.value();
+    const auto& waypoint = position_of_destination.value();
+    const auto& pod = waypoint.position;
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
     double distance_to_waypoint2 = sum(squared(pos3 - pod));
@@ -120,9 +123,20 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     }
     // Keep velocity within the specified range.
     {
-        float target_vel = velocity_at_destination.has_value()
-            ? std::sqrt(sum(squared(velocity_at_destination.value())))
-            : player_->driving_mode().max_velocity;
+        float target_vel;
+        if (velocity_at_destination.has_value()) {
+            target_vel = std::sqrt(sum(squared(velocity_at_destination.value())));
+        } else if (
+            any(waypoint.flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&
+            !any(waypoint.flags & WayPointLocation::TAXIWAY) &&
+            (waypoint_history != nullptr) &&
+            (waypoint_history->size() >= 2) &&
+            any((++waypoint_history->rbegin())->flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)))
+        {
+            target_vel = player_->driving_mode().takeoff_velocity;
+        } else {
+            target_vel = player_->driving_mode().max_velocity;
+        }
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {

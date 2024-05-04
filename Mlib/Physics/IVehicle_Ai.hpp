@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <cstddef>
+#include <list>
 #include <optional>
 #include <vector>
 
@@ -10,6 +11,9 @@ namespace Mlib {
 struct SkillFactor;
 template <typename TData, size_t... tshape>
 class FixedArray;
+template <class TPoint, class TFlags>
+struct PointAndFlags;
+enum class WayPointLocation;
 
 enum class VehicleAiMoveToStatus {
 	NONE = 0,
@@ -41,11 +45,14 @@ inline bool any(VehicleAiMoveToStatus a) {
 
 class IVehicleAi: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
+	using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+
 	virtual ~IVehicleAi() = default;
 	virtual VehicleAiMoveToStatus move_to(
-		const std::optional<FixedArray<double, 3>>& position_of_destination,
+		const std::optional<WayPoint>& position_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_at_destination) = 0;
+		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
+		const std::list<WayPoint>* waypoint_history) = 0;
 	virtual std::vector<SkillFactor> skills() const = 0;
 };
 

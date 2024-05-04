@@ -1058,9 +1058,10 @@ void RigidBodyVehicle::remove_autopilot(const SkillScenario& scenario) {
 }
 
 VehicleAiMoveToStatus RigidBodyVehicle::move_to(
-    const std::optional<FixedArray<double, 3>>& position_of_destination,
+    const std::optional<WayPoint>& position_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-    const std::optional<FixedArray<float, 3>>& velocity_at_destination)
+    const std::optional<FixedArray<float, 3>>& velocity_at_destination,
+    const std::list<WayPoint>* waypoint_history)
 {
     auto it = autopilots_.find(current_vehicle_domain_);
     if (it == autopilots_.end()) {
@@ -1071,7 +1072,8 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
         status |= ai.second.ai->move_to(
             position_of_destination,
             velocity_of_destination,
-            velocity_at_destination);
+            velocity_at_destination,
+            waypoint_history);
     }
     return status;
 }

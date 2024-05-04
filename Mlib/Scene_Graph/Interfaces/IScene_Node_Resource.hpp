@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <list>
@@ -12,8 +13,9 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-template <class TData, size_t tndim>
+template <class TPoint>
 struct PointsAndAdjacency;
+enum class WayPointLocation;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
@@ -34,6 +36,8 @@ enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
+
     ISceneNodeResource();
     virtual ~ISceneNodeResource();
     // Misc
@@ -42,7 +46,7 @@ public:
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const;
+    virtual std::map<WayPointLocation, PointsAndAdjacencyResource> way_points() const;
 
     // Output
     virtual void save_to_obj_file(

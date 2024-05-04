@@ -95,7 +95,7 @@ void Players::remove_team(const std::string& name) {
     }
 }
 
-void Players::set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint) {
+void Players::set_team_waypoint(const std::string& team_name, const WaypointAndFlags& waypoint) {
     for (auto& p : players_) {
         if (p.second->team_name() == team_name) {
             p.second->single_waypoint().set_waypoint(waypoint);

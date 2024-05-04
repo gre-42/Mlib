@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Vector_At_Position.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
@@ -111,6 +112,8 @@ class RigidBodyVehicle:
     public INodeHider,
     public virtual DanglingBaseClass {
 public:
+    using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
         std::string name,
@@ -208,9 +211,10 @@ public:
     bool has_autopilot(const SkillScenario& scenario) const;
     void remove_autopilot(const SkillScenario& scenario);
     VehicleAiMoveToStatus move_to(
-        const std::optional<FixedArray<double, 3>>& position_of_destination,
+        const std::optional<WayPoint>& position_of_destination,
         const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-        const std::optional<FixedArray<float, 3>>& velocity_at_destination);
+        const std::optional<FixedArray<float, 3>>& velocity_at_destination,
+        const std::list<WayPoint>* waypoint_history);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;

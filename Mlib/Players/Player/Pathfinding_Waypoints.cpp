@@ -29,14 +29,14 @@ void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
     player_.single_waypoint_.set_waypoint(waypoints_->points.at(waypoint_id), waypoint_id);
 }
 
-void PathfindingWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& waypoints)
+void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
 {
     waypoints_bvh_ = std::make_unique<Bvh<double, size_t, 3>>(
         FixedArray<double, 3>{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size},
         cfg_.bvh_levels);
-    waypoints_ = std::make_unique<PointsAndAdjacency<double, 3>>(waypoints);
+    waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
     for (const auto& [i, p] : enumerate(waypoints.points)) {
-        waypoints_bvh_->insert(p, i);
+        waypoints_bvh_->insert(p.position, i);
     }
     // waypoints_bvh_->optimize_search_time(std::cout);
     player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
@@ -74,7 +74,7 @@ void PathfindingWaypoints::select_next_waypoint() {
             {pos3, max_distance},
             [&](size_t i)
         {
-            const auto& rs = waypoints_->points.at(i);
+            const auto& rs = waypoints_->points.at(i).position;
             auto diff = rs - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
@@ -99,7 +99,7 @@ void PathfindingWaypoints::select_next_waypoint() {
                 size_t best_id = SIZE_MAX;
                 double best_distance = INFINITY;
                 for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
-                    double dist = dot0d(waypoints_->points.at(rs.first) - pos3, z3.casted<double>());
+                    double dist = dot0d(waypoints_->points.at(rs.first).position - pos3, z3.casted<double>());
                     if (dist < best_distance) {
                         best_id = rs.first;
                         best_distance = dist;

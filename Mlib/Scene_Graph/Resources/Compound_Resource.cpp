@@ -1,5 +1,6 @@
 #include "Compound_Resource.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
@@ -71,8 +72,8 @@ std::list<SpawnPoint> CompoundResource::spawn_points() const {
     return result;
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_points() const {
-    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> result;
+std::map<WayPointLocation, ISceneNodeResource::PointsAndAdjacencyResource> CompoundResource::way_points() const {
+    std::map<WayPointLocation, PointsAndAdjacencyResource> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
@@ -80,7 +81,7 @@ std::map<WayPointLocation, PointsAndAdjacency<double, 3>> CompoundResource::way_
         for (const auto& [l, a] : wpts) {
             auto& rl = result[l];
             if (!rl.adjacency.initialized()) {
-                rl = PointsAndAdjacency<double, 3>(0);
+                rl = PointsAndAdjacencyResource(0);
             }
             rl.insert(a);
         }

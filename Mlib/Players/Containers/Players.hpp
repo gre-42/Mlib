@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
 #include <map>
@@ -25,12 +26,15 @@ class DanglingBaseClassRef;
 template <class T>
 class DestructionFunctionsTokensObject;
 class ObjectPool;
+enum class WayPointLocation;
 
 class Players {
     friend std::ostream& operator << (std::ostream& ostr, const Players& players);
     Players(const Players&) = delete;
     Players& operator = (const Players&) = delete;
 public:
+    using WaypointAndFlags = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+
     explicit Players(
         const std::string& level_name,
         size_t max_tracks,
@@ -45,7 +49,7 @@ public:
     DanglingBaseClassRef<Team> get_team(const std::string& name);
     DanglingBaseClassRef<const Team> get_team(const std::string& name) const;
     void remove_team(const std::string& name);
-    void set_team_waypoint(const std::string& team_name, const FixedArray<double, 3>& waypoint);
+    void set_team_waypoint(const std::string& team_name, const WaypointAndFlags& waypoint);
     const RaceIdentifier& race_identifier() const;
     void set_race_identifier_and_reload_history(const RaceIdentifier& race_identifier);
     void start_race(const RaceConfiguration& race_configuration);

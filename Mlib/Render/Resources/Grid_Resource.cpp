@@ -74,7 +74,7 @@ std::list<SpawnPoint> GridResource::spawn_points() const {
     return {};
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<double, 3>> GridResource::way_points() const
+std::map<WayPointLocation, GridResource::PointsAndAdjacencyResource> GridResource::way_points() const
 {
     return {};
 }

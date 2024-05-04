@@ -35,9 +35,10 @@ FlyingMissileAi::~FlyingMissileAi() {
 }
 
 VehicleAiMoveToStatus FlyingMissileAi::move_to(
-	const std::optional<FixedArray<double, 3>>& position_of_destination,
+	const std::optional<WayPoint>& position_of_destination,
 	const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-	const std::optional<FixedArray<float, 3>>& velocity_at_destination)
+	const std::optional<FixedArray<float, 3>>& velocity_at_destination,
+	const std::list<WayPoint>* waypoint_history)
 {
 	controller_.reset_parameters();
 	controller_.reset_relaxation();
@@ -48,7 +49,8 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 		controller_.apply();
 		return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
 	}
-	const auto& pod = position_of_destination.value();
+	const auto& waypoint = position_of_destination.value();
+	const auto& pod = waypoint.position;
 	auto vod = velocity_of_destination.value_or(fixed_zeros<float, 3>());
 	controller_.throttle_engine(INFINITY, 1.f);
 
@@ -84,6 +86,6 @@ std::vector<SkillFactor> FlyingMissileAi::skills() const {
 		.scenario = SkillScenario{
 			.actor_type = ActorType::WINGS,
 			.vehicle_domain = VehicleDomain::AIR},
-			.factor = 1.f
+		.factor = 1.f
 	}};
 }

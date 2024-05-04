@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -123,6 +124,8 @@ class Player:
     Player(const Player&) = delete;
     Player& operator = (const Player&) = delete;
 public:
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
+
     Player(
         Scene& scene,
         SupplyDepots& supply_depots,
@@ -158,7 +161,7 @@ public:
     const SceneVehicle& vehicle() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
-    void set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points);
+    void set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacencyResource>& way_points);
     void set_way_point_location_filter(WayPointLocation filter);
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();
@@ -285,7 +288,7 @@ private:
     const Focuses& focuses_;
     double select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points_;
+    std::map<WayPointLocation, PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>> way_points_;
 };
 
 };

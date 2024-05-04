@@ -429,7 +429,7 @@ void Player::increment_external_forces(
     } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
         if (ramming()) {
             auto tpos = target_rb_->abs_target();
-            single_waypoint_.set_waypoint(tpos);
+            single_waypoint_.set_waypoint({ tpos, WayPointLocation::UNKNOWN });
         } else {
             if (!supply_depots_waypoints_.select_next_waypoint()) {
                 pathfinding_waypoints_.select_next_waypoint();
@@ -973,7 +973,7 @@ DestructionObservers<const IPlayer&>& Player::destruction_observers() {
     return destruction_observers_;
 }
 
-void Player::set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacency<double, 3>>& way_points)
+void Player::set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacencyResource>& way_points)
 {
     way_points_ = way_points;
 }

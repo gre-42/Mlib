@@ -18,8 +18,11 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-template <class TData, size_t tndim>
+template <class TPoint>
 struct PointsAndAdjacency;
+template <class TPoint, class TFlags>
+struct PointAndFlags;
+enum class WayPointLocation;
 
 class ISceneNodeResource;
 class SceneNode;
@@ -41,6 +44,8 @@ class SceneNodeResources {
 public:
     SceneNodeResources();
     ~SceneNodeResources();
+
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
 
     // Preload
     void write_loaded_resources(const std::string& filename) const;
@@ -73,7 +78,7 @@ public:
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
-    std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points(const std::string& name) const;
+    std::map<WayPointLocation, PointsAndAdjacencyResource> way_points(const std::string& name) const;
     void add_companion(
         const std::string& resource_name,
         const std::string& companion_resource_name,

@@ -4,6 +4,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 
 using namespace Mlib;
@@ -30,5 +31,5 @@ void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     players.set_team_waypoint(
         args.arguments.at<std::string>(KnownArgs::team),
-        args.arguments.at<FixedArray<double, 3>>(KnownArgs::position));
+        { args.arguments.at<FixedArray<double, 3>>(KnownArgs::position), WayPointLocation::UNKNOWN });
 }

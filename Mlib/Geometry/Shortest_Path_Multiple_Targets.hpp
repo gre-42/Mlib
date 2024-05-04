@@ -4,13 +4,14 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
+template <class TPoint>
 void shortest_path_multiple_targets(
-    const PointsAndAdjacency<TData, tndim>& points_and_adjacency,
+    const PointsAndAdjacency<TPoint>& points_and_adjacency,
     const std::vector<size_t>& targets,
     std::vector<size_t>& predecessors,
-    std::vector<TData>& total_distances)
+    std::vector<typename TPoint::value_type>& total_distances)
 {
+    using TData = typename TPoint::value_type;
     predecessors = std::vector<size_t>(points_and_adjacency.points.size(), SIZE_MAX);
     total_distances = std::vector<TData>(points_and_adjacency.points.size(), std::numeric_limits<TData>::max());
     for (size_t i : targets) {

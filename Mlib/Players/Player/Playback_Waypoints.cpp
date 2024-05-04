@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Misc/Track_Element.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 
@@ -41,7 +42,7 @@ void PlaybackWaypoints::select_next_waypoint() {
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }
     }
-    player_.single_waypoint().set_waypoint(current_track_element_->transformation().position());
+    player_.single_waypoint().set_waypoint({ current_track_element_->transformation().position(), WayPointLocation::UNKNOWN });
 }
 
 void PlaybackWaypoints::set_waypoints(

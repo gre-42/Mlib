@@ -21,6 +21,7 @@ struct DrivingMode {
     double waypoint_reached_radius;
     float rest_radius;
     float lookahead_velocity;
+    float takeoff_velocity;
     float max_velocity;
     float max_delta_velocity_brake;
     double collision_avoidance_radius_brake;

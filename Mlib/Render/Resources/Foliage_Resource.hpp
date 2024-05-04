@@ -32,7 +32,7 @@ public:
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
+    virtual std::map<WayPointLocation, PointsAndAdjacencyResource> way_points() const override;
 
     // Output
     virtual void save_to_obj_file(

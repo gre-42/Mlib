@@ -76,6 +76,7 @@ struct NodeHoleWaypoint {
     std::string node;
     std::pair<float, float> alpha;
     std::pair<FixedArray<double, 2>, FixedArray<double, 2>> edge;
+    WayPointLocation location;
 };
 
 struct HoleWaypoint {
@@ -423,8 +424,8 @@ void DrawStreets::draw_holes() {
                             continue;
                         }
                         way_point_edge_descriptors.push_back({
-                            StreetWayPoint{.alpha = x.alpha, .edge = o23(x.edge)},
-                            StreetWayPoint{.alpha = y.alpha, .edge = o23(y.edge)}});
+                            StreetWayPoint{.alpha = x.alpha, .edge = o23(x.edge), .location = x.location | y.location},
+                            StreetWayPoint{.alpha = y.alpha, .edge = o23(y.edge), .location = x.location | y.location}});
                     }
                 }
             }
@@ -689,19 +690,25 @@ void DrawStreets::draw_streets_add_waypoints(
     if ((driving_direction == DrivingDirection::CENTER) ||
         any(angle_way.road_type & RoadType::ANY_PLANE_ROAD))
     {
-        WayPointLocation way_location;
+        WayPointLocation way_context;
+        WayPointLocation way_loc;
         switch (angle_way.road_type) {
         case RoadType::TAXIWAY:
+            way_context = WayPointLocation::RUNWAY_OR_TAXIWAY;
+            way_loc = WayPointLocation::TAXIWAY;
+            break;
         case RoadType::RUNWAY:
-            way_location = WayPointLocation::RUNWAY_OR_TAXIWAY;
+            way_context = WayPointLocation::RUNWAY_OR_TAXIWAY;
+            way_loc = WayPointLocation::RUNWAY;
             break;
         default:
-            way_location = WayPointLocation::STREET;
+            way_context = WayPointLocation::STREET;
+            way_loc = WayPointLocation::STREET;
         }
         CurbedStreet c5{ rect, -curb_alpha, curb_alpha };
-        way_point_edge_descriptors[way_location].push_back({
-            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(0, 0), c5.s(0, 1))}},
-            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(1, 0), c5.s(1, 1))}}});
+        way_point_edge_descriptors[way_context].push_back({
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(0, 0), c5.s(0, 1))}, .location = way_loc},
+            StreetWayPoint{.alpha{0.5f, 0.5f}, .edge{o23(c5.s(1, 0), c5.s(1, 1))}, .location = way_loc}});
     } else {
         auto add = [this, &rect, &angle_way](
             float start,
@@ -1384,6 +1391,9 @@ void DrawStreets::draw_streets_find_hole_waypoints(
     float lane_shift)
 {
     if (angle_way.road_type == RoadType::RUNWAY_DISPLACEMENT_THRESHOLD) {
+        return;
+    }
+    if (ways.at(angle_way.way_id).tags.contains("access", "discouraged")) {
         return;
     }
     bool is_runway = (angle_way.road_type == RoadType::TAXIWAY) || (angle_way.road_type == RoadType::RUNWAY);

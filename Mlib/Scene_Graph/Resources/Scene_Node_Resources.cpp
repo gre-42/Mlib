@@ -1,6 +1,7 @@
 #include "Scene_Node_Resources.hpp"
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Json/Misc.hpp>
@@ -252,7 +253,7 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
     }
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<double, 3>> SceneNodeResources::way_points(const std::string& name) const
+std::map<WayPointLocation, SceneNodeResources::PointsAndAdjacencyResource> SceneNodeResources::way_points(const std::string& name) const
 {
     auto resource = get_resource(name);
     try {

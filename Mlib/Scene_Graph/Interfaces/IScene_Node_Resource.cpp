@@ -89,7 +89,7 @@ std::list<SpawnPoint> ISceneNodeResource::spawn_points() const {
     THROW_OR_ABORT("spawn_points not implemented");
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<double, 3>> ISceneNodeResource::way_points() const {
+std::map<WayPointLocation, ISceneNodeResource::PointsAndAdjacencyResource> ISceneNodeResource::way_points() const {
     THROW_OR_ABORT("way_points not implemented");
 }
 

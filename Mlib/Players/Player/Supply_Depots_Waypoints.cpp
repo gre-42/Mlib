@@ -11,9 +11,9 @@ SupplyDepotsWaypoints::SupplyDepotsWaypoints(
     Player& player,
     SingleWaypoint& single_waypoint,
     SupplyDepots& supply_depots)
-: player_{player},
-  single_waypoint_{single_waypoint},
-  supply_depots_{supply_depots}
+    : player_{ player }
+    , single_waypoint_{ single_waypoint }
+    , supply_depots_{ supply_depots }
 {}
 
 struct WaypointAndTTotalDistance {
@@ -68,7 +68,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
             //         .resource_name = "flag"
             //     });
             return WaypointAndTTotalDistance{
-                .ttotal_distance = std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id)))) + total_distances_.at(waypoint_id),
+                .ttotal_distance = std::sqrt(sum(squared(p - waypoint_positions_.at(waypoint_id).position))) + total_distances_.at(waypoint_id),
                 .waypoint_id = waypoint_id};
         };
         auto ctarget = compute_ttotal_distance(single_waypoint_.target_waypoint_id());
@@ -84,14 +84,14 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
     }
 }
 
-void SupplyDepotsWaypoints::set_waypoints(const PointsAndAdjacency<double, 3>& waypoints)
+void SupplyDepotsWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
 {
     std::vector<size_t> targets;
     targets.reserve(waypoints.points.size());
     size_t i = 0;
     for (const auto& p : waypoints.points) {
         if (!supply_depots_.visit_supply_depots(
-            p,
+            p.position,
             [](const SupplyDepot& supply_depot)
             {
                 return false;

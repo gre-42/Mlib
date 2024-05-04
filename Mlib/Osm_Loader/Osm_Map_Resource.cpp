@@ -10,6 +10,7 @@
 #include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Plot.hpp>
+#include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Geometry/Mesh/Save_Obj.hpp>
 #include <Mlib/Geometry/Mesh/Terrain_Uv.hpp>
@@ -1361,7 +1362,8 @@ OsmMapResource::OsmMapResource(
                     way_points_[WayPointLocation::STREET],
                     {},
                     WayPointsClass::NONE,
-                    way_point_edge_descriptors[WayPointLocation::STREET],
+                    way_point_edge_descriptors,
+                    WayPointLocation::STREET,
                     nodes,
                     *ground_bvh,
                     nullptr,        // to_meters
@@ -1373,7 +1375,8 @@ OsmMapResource::OsmMapResource(
                     way_points_[WayPointLocation::SIDEWALK],
                     {},
                     WayPointsClass::NONE,
-                    way_point_edge_descriptors[WayPointLocation::SIDEWALK],
+                    way_point_edge_descriptors,
+                    WayPointLocation::SIDEWALK,
                     nodes,
                     *ground_bvh,
                     nullptr,        // to_meters
@@ -1391,7 +1394,8 @@ OsmMapResource::OsmMapResource(
                         way_points_[WayPointLocation::EXPLICIT_GROUND],
                         terrain_way_point_lines,
                         WayPointsClass::GROUND,
-                        way_point_edge_descriptors[WayPointLocation::EXPLICIT_GROUND],
+                        way_point_edge_descriptors,
+                        WayPointLocation::EXPLICIT_GROUND,
                         nodes,
                         *ground_bvh,
                         nullptr,        // to_meters
@@ -1401,7 +1405,8 @@ OsmMapResource::OsmMapResource(
                         way_points_[WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
                         WayPointsClass::AIRWAY,
-                        way_point_edge_descriptors[WayPointLocation::RUNWAY_OR_TAXIWAY],
+                        way_point_edge_descriptors,
+                        WayPointLocation::RUNWAY_OR_TAXIWAY,
                         nodes,
                         *ground_bvh,
                         nullptr,        // to_meters
@@ -1432,7 +1437,8 @@ OsmMapResource::OsmMapResource(
                         way_points_[WayPointLocation::EXPLICIT_GROUND],
                         terrain_way_point_lines,
                         WayPointsClass::GROUND,
-                        way_point_edge_descriptors[WayPointLocation::EXPLICIT_GROUND],
+                        way_point_edge_descriptors,
+                        WayPointLocation::EXPLICIT_GROUND,
                         nodes,
                         *ground_bvh,
                         &scaled_rotation,
@@ -1442,7 +1448,8 @@ OsmMapResource::OsmMapResource(
                         way_points_[WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
                         WayPointsClass::AIRWAY,
-                        way_point_edge_descriptors[WayPointLocation::RUNWAY_OR_TAXIWAY],
+                        way_point_edge_descriptors,
+                        WayPointLocation::RUNWAY_OR_TAXIWAY,
                         nodes,
                         *ground_bvh,
                         &scaled_rotation,
@@ -1701,7 +1708,7 @@ std::list<SpawnPoint> OsmMapResource::spawn_points() const {
     return spawn_points_;
 }
 
-std::map<WayPointLocation, PointsAndAdjacency<double, 3>> OsmMapResource::way_points() const {
+std::map<WayPointLocation, ISceneNodeResource::PointsAndAdjacencyResource> OsmMapResource::way_points() const {
     return way_points_;
 }
 
@@ -1717,7 +1724,7 @@ void OsmMapResource::print(std::ostream& ostr) const {
 
 static void plot_way_points_and_obstacles(
     const std::string& filename,
-    const PointsAndAdjacency<double, 3>& pa,
+    const ISceneNodeResource::PointsAndAdjacencyResource& pa,
     const std::list<FixedArray<double, 2>>& bounding_contour,
     const std::list<FixedArray<double, 3>>& hitbox_positions)
 {
@@ -1729,8 +1736,8 @@ static void plot_way_points_and_obstacles(
         for (const auto& r : pa.adjacency.column(c)) {
             if (r.first != c) {
                 edges.push_back(FixedArray<FixedArray<double, 2>, 2>{
-                    FixedArray<double, 2>{pa.points.at(c)(0), pa.points.at(c)(1)},
-                    FixedArray<double, 2>{pa.points.at(r.first)(0), pa.points.at(r.first)(1)}});
+                    FixedArray<double, 2>{pa.points.at(c).position(0), pa.points.at(c).position(1)},
+                    FixedArray<double, 2>{pa.points.at(r.first).position(0), pa.points.at(r.first).position(1)}});
             }
         }
     }

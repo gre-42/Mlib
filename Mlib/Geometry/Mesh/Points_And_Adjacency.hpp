@@ -15,9 +15,11 @@ class TransformationMatrix;
 template <class TSize>
 class Svg;
 
-template <class TData, size_t tndim>
+template <class TPoint>
 struct PointsAndAdjacency {
-    std::vector<FixedArray<TData, tndim>> points;
+    using TData = typename TPoint::value_type;
+    static const size_t tndim = TPoint::ndim();
+    std::vector<TPoint> points;
     SparseArrayCcs<TData> adjacency;
 
     PointsAndAdjacency() = default;

@@ -23,7 +23,7 @@ public:
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
-    virtual std::map<WayPointLocation, PointsAndAdjacency<double, 3>> way_points() const override;
+    virtual std::map<WayPointLocation, PointsAndAdjacencyResource> way_points() const override;
 
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
