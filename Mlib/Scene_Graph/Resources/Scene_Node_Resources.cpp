@@ -253,7 +253,7 @@ std::list<SpawnPoint> SceneNodeResources::spawn_points(const std::string& name) 
     }
 }
 
-std::map<WayPointLocation, SceneNodeResources::PointsAndAdjacencyResource> SceneNodeResources::way_points(const std::string& name) const
+std::map<JoinedWayPointSandbox, SceneNodeResources::PointsAndAdjacencyResource> SceneNodeResources::way_points(const std::string& name) const
 {
     auto resource = get_resource(name);
     try {

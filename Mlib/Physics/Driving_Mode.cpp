@@ -1,6 +1,6 @@
 #include "Driving_Mode.hpp"
 #include <Mlib/Physics/Units.hpp>
-#include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 
 using namespace Mlib;
 
@@ -20,7 +20,7 @@ MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 6,
         .unstuck_seconds = 5,
-        .way_point_locations = WayPointLocation::SIDEWALK}},
+        .joined_way_point_sandbox = JoinedWayPointSandbox::SIDEWALK}},
     {"car_city", {
         .waypoint_ofs = 0.7f * meters,
         .waypoint_reached_radius = 5 * meters,
@@ -36,7 +36,7 @@ MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 6,
         .unstuck_seconds = 5,
-        .way_point_locations = WayPointLocation::STREET}},
+        .joined_way_point_sandbox = JoinedWayPointSandbox::STREET}},
     {"car_arena", {
         .waypoint_ofs = 0.7f * meters,
         .waypoint_reached_radius = 10 * meters,
@@ -52,7 +52,9 @@ MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
-        .way_point_locations = WayPointLocation::EXPLICIT_GROUND | WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY}},
+        .joined_way_point_sandbox =
+            JoinedWayPointSandbox::EXPLICIT_GROUND |
+            JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY}},
     {"car_rally", {
         .waypoint_ofs = 0.7f * meters,
         .waypoint_reached_radius = 15 * meters,
@@ -68,7 +70,7 @@ MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
-        .way_point_locations = WayPointLocation::EXPLICIT_GROUND}},
+        .joined_way_point_sandbox = JoinedWayPointSandbox::EXPLICIT_GROUND}},
     {"human_arena", {
         .waypoint_ofs = 0.7f * meters,
         .waypoint_reached_radius = 0.5f * meters,
@@ -84,4 +86,5 @@ MLIB_PHYSICS_API std::map<std::string, DrivingMode> Mlib::driving_modes{
         .stuck_velocity = 2 * kph,
         .stuck_seconds = 3,
         .unstuck_seconds = 5,
-        .way_point_locations = WayPointLocation::EXPLICIT_GROUND}},};
+        .joined_way_point_sandbox = JoinedWayPointSandbox::EXPLICIT_GROUND}}
+};

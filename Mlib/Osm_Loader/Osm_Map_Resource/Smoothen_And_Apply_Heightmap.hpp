@@ -22,7 +22,7 @@ template <class TData>
 class NormalizedPointsFixed;
 struct ObjectResourceDescriptor;
 struct ResourceInstanceDescriptor;
-enum class WayPointLocation;
+enum class WayPointSandbox;
 struct OsmResourceConfig;
 class NodeHeightBinding;
 template <class TPos>
@@ -51,6 +51,6 @@ void smoothen_and_apply_heightmap(
     std::list<SteinerPointInfo>& steiner_points,
     std::list<FixedArray<double, 3>>& map_outer_contour3,
     std::list<StreetRectangle>& street_rectangles,
-    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors);
+    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors);
 
 }

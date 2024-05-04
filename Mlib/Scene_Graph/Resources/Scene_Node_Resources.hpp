@@ -22,7 +22,6 @@ template <class TPoint>
 struct PointsAndAdjacency;
 template <class TPoint, class TFlags>
 struct PointAndFlags;
-enum class WayPointLocation;
 
 class ISceneNodeResource;
 class SceneNode;
@@ -37,6 +36,7 @@ struct InstantiationOptions;
 
 enum class AggregateMode;
 enum class WayPointLocation;
+enum class JoinedWayPointSandbox;
 enum class PhysicsMaterial: uint32_t;
 enum class SmoothnessTarget;
 
@@ -78,7 +78,7 @@ public:
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
-    std::map<WayPointLocation, PointsAndAdjacencyResource> way_points(const std::string& name) const;
+    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points(const std::string& name) const;
     void add_companion(
         const std::string& resource_name,
         const std::string& companion_resource_name,

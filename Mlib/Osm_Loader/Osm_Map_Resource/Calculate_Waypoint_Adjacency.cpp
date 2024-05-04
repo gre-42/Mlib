@@ -23,8 +23,7 @@ void Mlib::calculate_waypoint_adjacency(
     PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>& way_points,
     const std::list<TerrainWayPoints>& raw_terrain_way_point_lines,
     WayPointsClass terrain_way_point_filter,
-    const std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& street_way_point_edge_descriptors,
-    WayPointLocation street_way_point_filter,
+    const std::list<std::pair<StreetWayPoint, StreetWayPoint>>& street_way_point_edge_descriptors,
     const std::map<std::string, Node>& nodes,
     const GroundBvh& ground_bvh,
     const FixedArray<double, 3, 3>* to_meters,
@@ -57,18 +56,13 @@ void Mlib::calculate_waypoint_adjacency(
         }
     }
     std::map<OrderableFixedArray<double, 3>, std::pair<size_t, WayPointLocation>> indices_street_wpts;
-    for (const auto& [l, es] : street_way_point_edge_descriptors) {
-        if (!any(l & street_way_point_filter)) {
-            continue;
-        }
-        for (const auto& e : es) {
-            auto p0 = e.first.position();
-            auto p1 = e.second.position();
-            auto it0 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p0 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
-            auto it1 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p1 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
-            it0.first->second.second |= e.first.location;
-            it1.first->second.second |= e.second.location;
-        }
+    for (const auto& e : street_way_point_edge_descriptors) {
+        auto p0 = e.first.position();
+        auto p1 = e.second.position();
+        auto it0 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p0 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
+        auto it1 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p1 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
+        it0.first->second.second |= e.first.location;
+        it1.first->second.second |= e.second.location;
     }
     way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
     std::set<size_t> grounded_way_points;
@@ -140,19 +134,14 @@ void Mlib::calculate_waypoint_adjacency(
         }
     }
     {
-        for (const auto& [l, es] : street_way_point_edge_descriptors) {
-            if (!any(l & street_way_point_filter)) {
-                continue;
-            }
-            for (const auto& e : es) {
-                auto p0 = e.first.position();
-                auto p1 = e.second.position();
-                double dist = std::sqrt(sum(squared(p0 - p1)));
-                size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p0 }).first;
-                size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p1 }).first;
-                if (!way_points.adjacency.column(col_id_0).insert({ col_id_1, dist }).second) {
-                    THROW_OR_ABORT("Could not insert waypoint (3)");
-                }
+        for (const auto& e : street_way_point_edge_descriptors) {
+            auto p0 = e.first.position();
+            auto p1 = e.second.position();
+            double dist = std::sqrt(sum(squared(p0 - p1)));
+            size_t col_id_0 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p0 }).first;
+            size_t col_id_1 = indices_terrain_wpts.size() + indices_street_wpts.at(OrderableFixedArray{ p1 }).first;
+            if (!way_points.adjacency.column(col_id_0).insert({ col_id_1, dist }).second) {
+                THROW_OR_ABORT("Could not insert waypoint (3)");
             }
         }
         for (size_t i = 0; i < indices_street_wpts.size(); ++i) {

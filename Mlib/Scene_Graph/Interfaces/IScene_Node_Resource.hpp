@@ -16,6 +16,7 @@ class OffsetAndQuaternion;
 template <class TPoint>
 struct PointsAndAdjacency;
 enum class WayPointLocation;
+enum class JoinedWayPointSandbox;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
@@ -24,7 +25,6 @@ template <class TPos>
 class ColoredVertexArray;
 class Scene;
 class SceneNode;
-enum class WayPointLocation;
 enum class AggregateMode;
 struct SpawnPoint;
 struct ColoredVertexArrayFilter;
@@ -46,7 +46,7 @@ public:
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;
-    virtual std::map<WayPointLocation, PointsAndAdjacencyResource> way_points() const;
+    virtual std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points() const;
 
     // Output
     virtual void save_to_obj_file(

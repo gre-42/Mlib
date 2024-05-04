@@ -63,7 +63,7 @@ std::list<SpawnPoint> FoliageResource::spawn_points() const {
     return {};
 }
 
-std::map<WayPointLocation, FoliageResource::PointsAndAdjacencyResource> FoliageResource::way_points() const {
+std::map<JoinedWayPointSandbox, FoliageResource::PointsAndAdjacencyResource> FoliageResource::way_points() const {
     return {};
 }
 

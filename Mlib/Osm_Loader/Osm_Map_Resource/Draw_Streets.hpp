@@ -24,7 +24,7 @@ class ResourceNameCycle;
 enum class DrivingDirection;
 struct Node;
 struct Way;
-enum class WayPointLocation;
+enum class WayPointSandbox;
 struct AngleWay;
 struct NeighborWay;
 struct AngleCurb;
@@ -51,7 +51,7 @@ struct DrawStreetsInput {
     BatchResourceInstantiator& bri;
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings;
-    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
+    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
     std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
     std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments;
@@ -134,7 +134,7 @@ private:
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> air_support_node_hole_contours;
     std::map<std::string, std::map<AngleCurb, NodeHoleVertex>> tunnel_node_hole_contours;
-    std::map<WayPointLocation, std::map<std::string, HoleWaypoint>> node_hole_waypoints;
+    std::map<WayPointSandbox, std::map<std::string, HoleWaypoint>> node_hole_waypoints;
     std::map<std::string, NodeWayInfo> node_way_info;
 };
 

@@ -14,7 +14,7 @@
 
 namespace Mlib {
 
-enum class WayPointLocation;
+enum class JoinedWayPointSandbox;
 
 struct DrivingMode {
     float waypoint_ofs;
@@ -31,7 +31,7 @@ struct DrivingMode {
     float stuck_velocity;
     float stuck_seconds;
     float unstuck_seconds;
-    WayPointLocation way_point_locations;
+    JoinedWayPointSandbox joined_way_point_sandbox;
 };
 
 MLIB_PHYSICS_API extern std::map<std::string, DrivingMode> driving_modes;

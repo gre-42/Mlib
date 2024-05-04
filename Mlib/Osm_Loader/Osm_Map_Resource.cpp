@@ -95,9 +95,11 @@
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
+#include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <cereal/access.hpp>
@@ -162,7 +164,7 @@ OsmMapResource::OsmMapResource(
     std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>> vertex_height_bindings;
     std::list<SteinerPointInfo> steiner_points;
     std::list<StreetRectangle> street_rectangles;
-    std::map<WayPointLocation, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
+    std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     {
         auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
             auto& scvas = scene_node_resources.get_physics_arrays(resource_name)->scvas;
@@ -1359,11 +1361,10 @@ OsmMapResource::OsmMapResource(
         try {
             if (config.with_street_way_points) {
                 calculate_waypoint_adjacency(
-                    way_points_[WayPointLocation::STREET],
+                    way_points_[JoinedWayPointSandbox::STREET],
                     {},
                     WayPointsClass::NONE,
-                    way_point_edge_descriptors,
-                    WayPointLocation::STREET,
+                    way_point_edge_descriptors[WayPointSandbox::STREET],
                     nodes,
                     *ground_bvh,
                     nullptr,        // to_meters
@@ -1372,11 +1373,10 @@ OsmMapResource::OsmMapResource(
             }
             if (config.with_sidewalk_way_points) {
                 calculate_waypoint_adjacency(
-                    way_points_[WayPointLocation::SIDEWALK],
+                    way_points_[JoinedWayPointSandbox::SIDEWALK],
                     {},
                     WayPointsClass::NONE,
-                    way_point_edge_descriptors,
-                    WayPointLocation::SIDEWALK,
+                    way_point_edge_descriptors[WayPointSandbox::SIDEWALK],
                     nodes,
                     *ground_bvh,
                     nullptr,        // to_meters
@@ -1384,29 +1384,27 @@ OsmMapResource::OsmMapResource(
                     config.scale);
             }
             if (!terrain_way_point_lines.empty() ||
-                !way_point_edge_descriptors[WayPointLocation::EXPLICIT_GROUND].empty())
+                !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty())
             {
                 const auto& navigation_dcvas = config.navmesh_resource.empty()
                     ? get_physics_arrays()->dcvas
                     : scene_node_resources.get_physics_arrays(config.navmesh_resource)->dcvas;
                 if (!config.refine_explicit_waypoints) {
                     calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::EXPLICIT_GROUND],
+                        way_points_[JoinedWayPointSandbox::EXPLICIT_GROUND],
                         terrain_way_point_lines,
                         WayPointsClass::GROUND,
-                        way_point_edge_descriptors,
-                        WayPointLocation::EXPLICIT_GROUND,
+                        way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND],
                         nodes,
                         *ground_bvh,
                         nullptr,        // to_meters
                         nullptr,        // sample_solo_mesh
                         config.scale);
                     calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
+                        way_points_[JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
                         WayPointsClass::AIRWAY,
-                        way_point_edge_descriptors,
-                        WayPointLocation::RUNWAY_OR_TAXIWAY,
+                        way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY],
                         nodes,
                         *ground_bvh,
                         nullptr,        // to_meters
@@ -1434,22 +1432,20 @@ OsmMapResource::OsmMapResource(
                             .agent_radius = config.agent_radius}};
                     auto scaled_rotation = rotation.casted<double>() / scale_;
                     calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::EXPLICIT_GROUND],
+                        way_points_[JoinedWayPointSandbox::EXPLICIT_GROUND],
                         terrain_way_point_lines,
                         WayPointsClass::GROUND,
-                        way_point_edge_descriptors,
-                        WayPointLocation::EXPLICIT_GROUND,
+                        way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND],
                         nodes,
                         *ground_bvh,
                         &scaled_rotation,
                         &nmb.ssm,
                         config.scale);
                     calculate_waypoint_adjacency(
-                        way_points_[WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
+                        way_points_[JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
                         WayPointsClass::AIRWAY,
-                        way_point_edge_descriptors,
-                        WayPointLocation::RUNWAY_OR_TAXIWAY,
+                        way_point_edge_descriptors[WayPointSandbox::RUNWAY_OR_TAXIWAY],
                         nodes,
                         *ground_bvh,
                         &scaled_rotation,
@@ -1708,7 +1704,7 @@ std::list<SpawnPoint> OsmMapResource::spawn_points() const {
     return spawn_points_;
 }
 
-std::map<WayPointLocation, ISceneNodeResource::PointsAndAdjacencyResource> OsmMapResource::way_points() const {
+std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> OsmMapResource::way_points() const {
     return way_points_;
 }
 
@@ -1768,17 +1764,17 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<double, 2>{-r, +r},
             FixedArray<double, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
-        if (way_points_.contains(WayPointLocation::STREET)) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "street.svg", way_points_.at(WayPointLocation::STREET), bounding_contour, hitbox_positions);
+        if (auto it = way_points_.find(JoinedWayPointSandbox::STREET); it != way_points_.end()) {
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
         }
-        if (way_points_.contains(WayPointLocation::SIDEWALK)) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "sidewalk.svg", way_points_.at(WayPointLocation::SIDEWALK), bounding_contour, hitbox_positions);
+        if (auto it = way_points_.find(JoinedWayPointSandbox::SIDEWALK); it != way_points_.end()) {
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "sidewalk.svg", it->second, bounding_contour, hitbox_positions);
         }
-        if (way_points_.contains(WayPointLocation::EXPLICIT_GROUND)) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "explicit_ground.svg", way_points_.at(WayPointLocation::EXPLICIT_GROUND), bounding_contour, hitbox_positions);
+        if (auto it = way_points_.find(JoinedWayPointSandbox::EXPLICIT_GROUND); it != way_points_.end()) {
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "explicit_ground.svg", it->second, bounding_contour, hitbox_positions);
         }
-        if (way_points_.contains(WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY)) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "runway_or_taxiway_or_airway.svg", way_points_.at(WayPointLocation::RUNWAY_OR_TAXIWAY_OR_AIRWAY), bounding_contour, hitbox_positions);
+        if (auto it = way_points_.find(JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY); it != way_points_.end()) {
+            plot_way_points_and_obstacles(wf.value() + debug_prefix + "runway_or_taxiway_or_airway.svg", it->second, bounding_contour, hitbox_positions);
         }
     }
 }

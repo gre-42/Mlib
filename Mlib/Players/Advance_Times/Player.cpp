@@ -34,6 +34,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
@@ -599,7 +600,7 @@ Gun& Player::gun() {
 
 bool Player::is_pedestrian() const {
     delete_node_mutex_.notify_reading();
-    return driving_mode_.way_point_locations == WayPointLocation::SIDEWALK;
+    return driving_mode_.joined_way_point_sandbox == JoinedWayPointSandbox::SIDEWALK;
 }
 
 void Player::aim_and_shoot() {
@@ -973,13 +974,13 @@ DestructionObservers<const IPlayer&>& Player::destruction_observers() {
     return destruction_observers_;
 }
 
-void Player::set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacencyResource>& way_points)
+void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points)
 {
     way_points_ = way_points;
 }
 
-void Player::set_way_point_location_filter(WayPointLocation filter) {
-    auto final_filter = driving_mode_.way_point_locations & filter;
+void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
+    auto final_filter = driving_mode_.joined_way_point_sandbox & filter;
     size_t nfound = 0;
     for (const auto& [location, wp] : way_points_) {
         if (!any(location & final_filter)) {
@@ -988,7 +989,7 @@ void Player::set_way_point_location_filter(WayPointLocation filter) {
         if (nfound != 0) {
             THROW_OR_ABORT(
                 "Player \"" + name_ + "\": Found multiple waypoints for final filter \"" +
-                way_point_location_to_string(final_filter) + '"');
+                joined_way_point_sandbox_to_string(final_filter) + '"');
         }
         pathfinding_waypoints_.set_waypoints(wp);
         supply_depots_waypoints_.set_waypoints(wp);
@@ -997,6 +998,6 @@ void Player::set_way_point_location_filter(WayPointLocation filter) {
     if (nfound == 0) {
         THROW_OR_ABORT(
             "Player \"" + name_ + "\": Could not find waypoints for final filter \"" +
-            way_point_location_to_string(final_filter) + '"');
+            joined_way_point_sandbox_to_string(final_filter) + '"');
     }
 }

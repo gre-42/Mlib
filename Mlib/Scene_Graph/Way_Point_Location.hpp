@@ -11,9 +11,7 @@ enum class WayPointLocation {
     RUNWAY = 1 << 3,
     TAXIWAY = 1 << 4,
     AIRWAY = 1 << 5,
-    EXPLICIT_GROUND = 1 << 6,
-    RUNWAY_OR_TAXIWAY = RUNWAY | TAXIWAY,
-    RUNWAY_OR_TAXIWAY_OR_AIRWAY = RUNWAY | TAXIWAY | AIRWAY
+    EXPLICIT_GROUND = 1 << 6
 };
 
 static inline bool any(WayPointLocation a) {

@@ -41,6 +41,7 @@ class CollisionQuery;
 class AimAt;
 class Gun;
 enum class DrivingDirection;
+enum class JoinedWayPointSandbox;
 enum class WayPointLocation;
 class DeleteNodeMutex;
 class Bystanders;
@@ -161,8 +162,8 @@ public:
     const SceneVehicle& vehicle() const;
     void set_gun_node(DanglingRef<SceneNode> gun_node);
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
-    void set_pathfinding_waypoints(const std::map<WayPointLocation, PointsAndAdjacencyResource>& way_points);
-    void set_way_point_location_filter(WayPointLocation filter);
+    void set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points);
+    void set_way_point_location_filter(JoinedWayPointSandbox filter);
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();
     PlayerStats& stats();
@@ -288,7 +289,7 @@ private:
     const Focuses& focuses_;
     double select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    std::map<WayPointLocation, PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>> way_points_;
+    std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>> way_points_;
 };
 
 };

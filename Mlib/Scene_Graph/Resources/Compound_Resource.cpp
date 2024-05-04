@@ -72,8 +72,8 @@ std::list<SpawnPoint> CompoundResource::spawn_points() const {
     return result;
 }
 
-std::map<WayPointLocation, ISceneNodeResource::PointsAndAdjacencyResource> CompoundResource::way_points() const {
-    std::map<WayPointLocation, PointsAndAdjacencyResource> result;
+std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> CompoundResource::way_points() const {
+    std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> result;
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& resource_name : resource_names_) {
         RecursionGuard rg{recursion_counter};
