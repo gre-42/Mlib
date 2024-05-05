@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         // IndexedFaceSet<float, size_t> indexed_face_set{ triangles };
         // NavigationMeshBuilder nmb{indexed_face_set};
         
-        std::cerr << "Point on navmesh" << std::endl;
+        linfo() << "Point on navmesh";
         auto start = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f });
         auto end = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f });
         if (!start.has_value()) {
@@ -41,14 +41,14 @@ int main(int argc, char** argv) {
         if (!end.has_value()) {
             THROW_OR_ABORT("Could not localize end");
         }
-        std::cerr << "Start " << start.value().position << std::endl;
-        std::cerr << "End " << end.value().position << std::endl;
-        std::cerr << "Shortest path" << std::endl;
+        linfo() << "Start " << start.value().position;
+        linfo() << "End " << end.value().position;
+        linfo() << "Shortest path";
         for (const auto& p : nmb.ssm.shortest_path(start.value(), end.value(), 2.f)) {
-            std::cerr << p << std::endl;
+            linfo() << p;
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        linfo() << e.what();
         return 1;
     }
     return 0;

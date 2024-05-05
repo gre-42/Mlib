@@ -28,7 +28,9 @@ void Mlib::calculate_waypoint_adjacency(
     const GroundBvh& ground_bvh,
     const FixedArray<double, 3, 3>* to_meters,
     const Sample_SoloMesh* ssm,
-    double scale)
+    double scale,
+    double merge_radius,
+    double error_radius)
 {
     using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
 
@@ -242,4 +244,8 @@ void Mlib::calculate_waypoint_adjacency(
             },
             SubdivisionType::ASYMMETRIC);
     }
+    way_points.merge_neighbors(
+        merge_radius * scale,
+        error_radius * scale,
+        [](auto& a, const auto& b) { a |= b; });
 }

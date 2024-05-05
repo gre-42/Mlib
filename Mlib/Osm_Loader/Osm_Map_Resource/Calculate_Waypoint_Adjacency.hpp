@@ -29,6 +29,8 @@ void calculate_waypoint_adjacency(
     const GroundBvh& ground_bvh,
     const FixedArray<double, 3, 3>* to_meters,
     const Sample_SoloMesh* ssm,
-    double scale);
+    double scale,
+    double merge_radius,
+    double error_radius);
 
 }

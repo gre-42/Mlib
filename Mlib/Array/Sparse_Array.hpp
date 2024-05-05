@@ -21,11 +21,11 @@ public:
     }
 
     explicit SparseArrayCcs(size_t r, size_t c)
-    : SparseArrayCcs{ArrayShape{r, c}}
+        : SparseArrayCcs{ArrayShape{r, c}}
     {}
 
     explicit SparseArrayCcs(const Array<TData>& rhs)
-    : SparseArrayCcs{rhs.shape()}
+        : SparseArrayCcs{rhs.shape()}
     {
         assert(rhs.ndim() == 2);
         for (size_t r = 0; r < rhs.shape(0); ++r) {
@@ -123,24 +123,35 @@ public:
         return res;
     }
 
+    // Apply an operation to all defined (e.g. non-zero or finite, depending on the application) entries
     template <class TResultData = TData, class TOperation>
-    SparseArrayCcs<TResultData> apply_to_defined(const TOperation& op) const {
+    SparseArrayCcs<TResultData> applied_to_defined(const TOperation& op) const {
         SparseArrayCcs<TResultData> result{shape()};
         for (size_t c = 0; c < shape(1); ++c) {
-            for (const auto& d : column(c)) {
-                result(d.first, c) = op(d.second);
+            for (const auto& [r, value] : column(c)) {
+                result(r, c) = op(value);
             }
         }
         return result;
     }
 
+    // Apply an operation to all defined (e.g. non-zero or finite, depending on the application) entries
+    template <class TOperation>
+    void apply_to_defined(const TOperation& op) {
+        for (size_t c = 0; c < shape(1); ++c) {
+            for (auto& [_, value] : column(c)) {
+                op(value);
+            }
+        }
+    }
+
     template <class TResultData>
     SparseArrayCcs<TResultData> casted() const {
-        return apply_to_defined<TResultData>([](const TData& v){ return v; });
+        return applied_to_defined<TResultData>([](const TData& v){ return v; });
     }
 
     SparseArrayCcs<bool> is_defined() const {
-        return apply_to_defined<bool>([](const TData& v){ return true; });
+        return applied_to_defined<bool>([](const TData& v){ return true; });
     }
 
     Array<bool> row_is_defined() const {
@@ -255,13 +266,25 @@ std::ostream& operator << (std::ostream& ostr, const SparseArrayCcs<TData>& ar) 
 }
 
 template <class TData>
+SparseArrayCcs<TData>& operator *= (SparseArrayCcs<TData>& a, const TData& b) {
+    a.apply_to_defined([&b](TData& x){ x *= b; });
+    return a;
+}
+
+template <class TData>
+SparseArrayCcs<TData>& operator /= (SparseArrayCcs<TData>& a, const TData& b) {
+    a.apply_to_defined([&b](TData& x){ x /= b; });
+    return a;
+}
+
+template <class TData>
 SparseArrayCcs<TData> operator * (const SparseArrayCcs<TData>& a, const TData& b) {
-    return a.apply_to_defined([&b](const TData& x){ return x * b; });
+    return a.applied_to_defined([&b](const TData& x){ return x * b; });
 }
 
 template <class TData>
 SparseArrayCcs<TData> operator / (const SparseArrayCcs<TData>& a, const TData& b) {
-    return a.apply_to_defined([&b](const TData& x){ return x / b; });
+    return a.applied_to_defined([&b](const TData& x){ return x / b; });
 }
 
 }

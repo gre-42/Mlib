@@ -7,14 +7,14 @@ template <class TPosition, class TFlags>
 struct PointAndFlags {
 	using Point = TPosition;
 	using value_type = TPosition::value_type;
-	static consteval size_t ndim() {
-		return TPosition::ndim();
+	static consteval size_t length() {
+		return TPosition::length();
 	}
 	PointAndFlags& operator = (const Point& other) {
 		position = other;
 		return *this;
 	}
-	operator const Point& () {
+	operator const Point& () const {
 		return position;
 	}
 	PointAndFlags operator * (const value_type& f) const {
@@ -31,6 +31,10 @@ struct PointAndFlags {
 	}
 	TPosition operator - (const PointAndFlags& other) const {
 		return position - other.position;
+	}
+	PointAndFlags& operator |= (const PointAndFlags& other) {
+		flags |= other.flags;
+		return *this;
 	}
 	template <class Archive>
 	void serialize(Archive& archive) {

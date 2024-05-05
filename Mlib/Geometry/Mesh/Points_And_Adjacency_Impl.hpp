@@ -1,6 +1,8 @@
 #pragma once
 #include "Points_And_Adjacency.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Fuzzy_Set_Of_Points_impl.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -10,22 +12,29 @@ namespace Mlib {
 
 template <class TPoint>
 PointsAndAdjacency<TPoint>::PointsAndAdjacency(size_t npoints)
-: points(npoints),
-  adjacency(npoints, npoints)
+    : points(npoints)
+    , adjacency(npoints, npoints)
 {}
 
 template <class TPoint>
 void PointsAndAdjacency<TPoint>::update_adjacency() {
     for (auto&& [c, col] : enumerate(adjacency.columns())) {
-        for (auto& row : col) {
-            row.second = std::sqrt(sum(squared(points.at(c) - points.at(row.first))));
+        for (auto& [r, value] : col) {
+            value = std::sqrt(sum(squared(points.at(c) - points.at(r))));
         }
     }
 }
 
 template <class TPoint>
-void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, double, 3>& m) {
-    adjacency = adjacency * (double)m.get_scale();
+void PointsAndAdjacency<TPoint>::update_adjacency_diagonal() {
+    for (auto&& [c, col] : enumerate(adjacency.columns())) {
+        col[c] = 0;
+    }
+}
+
+template <class TPoint>
+void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, TData, tlength>& m) {
+    adjacency *= (TData)m.get_scale();
     for (auto& p : points) {
         p = m.transform(p);
     }
@@ -123,14 +132,56 @@ void PointsAndAdjacency<TPoint>::insert(const PointsAndAdjacency& other)
 }
 
 template <class TPoint>
-void PointsAndAdjacency<TPoint>::merge_neighbors(TData radius) {
-    THROW_OR_ABORT("PointsAndAdjacency<TPoint>::merge_neighbors not yet implemented");
+template <class TCombinePoints>
+PointsAndAdjacency<TPoint> PointsAndAdjacency<TPoint>::merged_neighbors(
+    const TData& merge_radius,
+    const TData& error_radius,
+    const TCombinePoints& combine_points) const
+{
+    std::vector<size_t> new_ids(points.size());
+    std::vector<TPoint> result_points;
+    result_points.reserve(points.size());
+    FuzzySetOfPoints<TData, tlength> point_bvh{ merge_radius, error_radius };
+    for (const auto& [i, p] : enumerate(points)) {
+        size_t neighbor_id;
+        if (point_bvh.insert(p, neighbor_id)) {
+            result_points.push_back(p);
+        } else {
+            combine_points(result_points[neighbor_id], p);
+        }
+        new_ids[i] = neighbor_id;
+    }
+    // {
+    //     auto info = linfo();
+    //     point_bvh.optimize_search_time(info);
+    // }
+    PointsAndAdjacency<TPoint> result(result_points.size());
+    result.points = result_points;
+    result_points.clear();
+    for (const auto& [c, col] : enumerate(adjacency.columns())) {
+        auto& new_column = result.adjacency.column(new_ids[c]);
+        for (const auto& [r, value] : col) {
+            new_column.try_emplace(new_ids[r], value);
+        }
+    }
+    result.update_adjacency_diagonal();
+    return result;
+}
+
+template <class TPoint>
+template <class TCombinePoints>
+void PointsAndAdjacency<TPoint>::merge_neighbors(
+    const TData& merge_radius,
+    const TData& error_radius,
+    const TCombinePoints& combine_points)
+{
+    *this = merged_neighbors(merge_radius, error_radius, combine_points);
 }
 
 template <class TPoint>
 template <class TSize>
 void PointsAndAdjacency<TPoint>::plot(Svg<TSize>& svg, float line_width) const {
-    static_assert(tndim >= 2);
+    static_assert(tlength >= 2);
     std::vector<TData> x_start;
     std::vector<TData> y_start;
     std::vector<TData> x_stop;

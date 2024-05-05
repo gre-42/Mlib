@@ -519,11 +519,15 @@ enum class TestPointFlags {
     C = 1 << 2
 };
 
-inline TestPointFlags operator | (TestPointFlags a, TestPointFlags b) {
+static inline TestPointFlags operator | (TestPointFlags a, TestPointFlags b) {
     return (TestPointFlags)((int)a | (int)b);
 }
 
-inline std::ostream& operator << (std::ostream& ostr, TestPointFlags f) {
+static inline TestPointFlags& operator |= (TestPointFlags& a, TestPointFlags b) {
+    return (TestPointFlags&)((int&)a |= (int)b);
+}
+
+static inline std::ostream& operator << (std::ostream& ostr, TestPointFlags f) {
     return (ostr << (int)f);
 }
 
@@ -531,7 +535,7 @@ void test_subdivide_points_and_adjacency() {
     using TPoint = PointAndFlags<FixedArray<float, 2>, TestPointFlags>;
     PointsAndAdjacency<TPoint> pa;
     pa.points = { TPoint{{0.1f, 0.2f}, TestPointFlags::A }, TPoint{{0.78f, 0.56f}, TestPointFlags::B} };
-    pa.adjacency = SparseArrayCcs<float>(ArrayShape{ 2, 2 });
+    pa.adjacency = SparseArrayCcs<float>(2, 2);
     pa.adjacency(0, 1) = 0.4f;
     pa.adjacency(1, 0) = 0.4f;
     linfo() << '\n' << pa.adjacency;
@@ -542,6 +546,25 @@ void test_subdivide_points_and_adjacency() {
             return iipc(pa.points.at(r), pa.points.at(c), distance);
         },
         SubdivisionType::SYMMETRIC);
+    linfo() << '\n' << pa.adjacency;
+    for (const auto& p : pa.points) {
+        linfo() << p;
+    }
+}
+
+void test_combine_points_and_adjacency() {
+    using TPoint = PointAndFlags<FixedArray<float, 2>, TestPointFlags>;
+    PointsAndAdjacency<TPoint> pa;
+    pa.points = {
+        TPoint{{0.1f, 0.2f}, TestPointFlags::A },
+        TPoint{{0.78f, 0.56f}, TestPointFlags::B},
+        TPoint{{0.79f, 0.56f}, TestPointFlags::C} };
+    pa.adjacency = SparseArrayCcs<float>(3, 3);
+    pa.adjacency(0, 1) = 0.4f;
+    pa.adjacency(1, 0) = 0.4f;
+    pa.adjacency(1, 2) = 0.01f;
+    linfo() << '\n' << pa.adjacency;
+    pa.merge_neighbors(1e-1f, 5e-1f, [](auto& a, const auto& b) { a |= b; });
     linfo() << '\n' << pa.adjacency;
     for (const auto& p : pa.points) {
         linfo() << p;
@@ -653,6 +676,7 @@ int main(int argc, const char** argv) {
     test_smallest_angle_in_triangle();
     test_rotate_intrinsic_matrix();
     // test_subdivide_points_and_adjacency();
+    // test_combine_points_and_adjacency();
     test_welzl_triangle();
     test_welzl_tetrahedron();
     test_shortest_path();

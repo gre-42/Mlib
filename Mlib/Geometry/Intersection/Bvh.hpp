@@ -36,8 +36,8 @@ template <class TData, class TPayload, size_t tndim>
 class Bvh {
 public:
     explicit Bvh(const FixedArray<TData, tndim>& max_size, size_t level)
-    : max_size_{max_size},
-      level_{level}
+        : max_size_{max_size}
+        , level_{level}
     {}
 
     TPayload* insert(

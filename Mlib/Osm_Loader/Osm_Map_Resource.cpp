@@ -1369,7 +1369,9 @@ OsmMapResource::OsmMapResource(
                     *ground_bvh,
                     nullptr,        // to_meters
                     nullptr,        // sample_solo_mesh
-                    config.scale);
+                    config.scale,
+                    config.waypoint_merge_radius,
+                    config.waypoint_error_radius);
             }
             if (config.with_sidewalk_way_points) {
                 calculate_waypoint_adjacency(
@@ -1381,7 +1383,9 @@ OsmMapResource::OsmMapResource(
                     *ground_bvh,
                     nullptr,        // to_meters
                     nullptr,        // sample_solo_mesh
-                    config.scale);
+                    config.scale,
+                    config.waypoint_merge_radius,
+                    config.waypoint_error_radius);
             }
             if (!terrain_way_point_lines.empty() ||
                 !way_point_edge_descriptors[WayPointSandbox::EXPLICIT_GROUND].empty())
@@ -1399,7 +1403,9 @@ OsmMapResource::OsmMapResource(
                         *ground_bvh,
                         nullptr,        // to_meters
                         nullptr,        // sample_solo_mesh
-                        config.scale);
+                        config.scale,
+                        config.waypoint_merge_radius,
+                        config.waypoint_error_radius);
                     calculate_waypoint_adjacency(
                         way_points_[JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
@@ -1409,7 +1415,9 @@ OsmMapResource::OsmMapResource(
                         *ground_bvh,
                         nullptr,        // to_meters
                         nullptr,        // sample_solo_mesh
-                        config.scale);
+                        config.scale,
+                        config.waypoint_merge_radius,
+                        config.waypoint_error_radius);
                 } else {
                     // Apply the inverse rotation that is applied to the hitboxes,
                     // and divide by scale as opposed to multiplying.
@@ -1442,7 +1450,9 @@ OsmMapResource::OsmMapResource(
                         *ground_bvh,
                         &scaled_rotation,
                         &nmb.ssm,
-                        config.scale);
+                        config.scale,
+                        config.waypoint_merge_radius,
+                        config.waypoint_error_radius);
                     calculate_waypoint_adjacency(
                         way_points_[JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY],
                         terrain_way_point_lines,
@@ -1452,7 +1462,9 @@ OsmMapResource::OsmMapResource(
                         *ground_bvh,
                         &scaled_rotation,
                         &nmb.ssm,
-                        config.scale);
+                        config.scale,
+                        config.waypoint_merge_radius,
+                        config.waypoint_error_radius);
                 }
             }
         } catch (const PointException<double, 2>& e) {
