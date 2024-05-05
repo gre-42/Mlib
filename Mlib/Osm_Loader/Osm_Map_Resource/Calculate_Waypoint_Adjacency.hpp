@@ -31,6 +31,7 @@ void calculate_waypoint_adjacency(
     const Sample_SoloMesh* ssm,
     double scale,
     double merge_radius,
-    double error_radius);
+    double error_radius,
+    double waypoint_distance);
 
 }

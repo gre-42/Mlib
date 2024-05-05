@@ -30,7 +30,8 @@ void Mlib::calculate_waypoint_adjacency(
     const Sample_SoloMesh* ssm,
     double scale,
     double merge_radius,
-    double error_radius)
+    double error_radius,
+    double waypoint_distance)
 {
     using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
 
@@ -74,7 +75,7 @@ void Mlib::calculate_waypoint_adjacency(
         auto hwr = parse_height_with_reference(node.tags, "height", "height_reference", osm_id);
         if (hwr.has_value() && hwr.value().reference == HeightReference::WATER) {
             way_points.points[adjacency_id.first] = {
-                FixedArray<double, 3>{p2(0), p2(1), hwr.value().height* scale},
+                FixedArray<double, 3>{p2(0), p2(1), hwr.value().height * scale},
                 adjacency_id.second };
         } else {
             double height;
@@ -152,6 +153,10 @@ void Mlib::calculate_waypoint_adjacency(
             }
         }
     }
+    way_points.merge_neighbors(
+        merge_radius * scale,
+        error_radius * scale,
+        [](auto& a, const auto& b) { a |= b; });
     auto interpolator = [&](
         const WayPoint& p0,
         const WayPoint& p1,
@@ -169,7 +174,7 @@ void Mlib::calculate_waypoint_adjacency(
     }
     auto idef = interpolate_default<WayPoint>;
     InterpolatedIntermediatePointsCreator<WayPoint, decltype(idef)> default_iipc{
-        50. * scale,
+        waypoint_distance,
         idef };
     if (ssm != nullptr) {
         std::map<OrderableFixedArray<float, 3>, dtPolyRef> poly_refs;
@@ -195,7 +200,7 @@ void Mlib::calculate_waypoint_adjacency(
             THROW_OR_ABORT("Could not compute inverse to_meters mapping");
         }
         const auto& itm = oitm.value();
-        ShortestPathIntermediatePointsCreator spipc{*ssm, poly_refs, 2.f};
+        ShortestPathIntermediatePointsCreator spipc{ *ssm, poly_refs, (float)waypoint_distance };
         try {
             way_points.subdivide(
                 [&](size_t r, size_t c, const double& distance) -> std::vector<WayPoint> {
@@ -223,8 +228,10 @@ void Mlib::calculate_waypoint_adjacency(
         }
         for (auto& p : way_points.points) {
             p.position = dot1d(itm, p.position);
-            if (!ground_bvh.height3d(p.position(2), p.position)) {
-                throw PointException<double, 3>{ p.position, "Could not determine height of shortest-path waypoint" };
+            if (!any(p.flags & WayPointLocation::AIRWAY)) {
+                if (!ground_bvh.height3d(p.position(2), p.position)) {
+                    throw PointException<double, 3>{ p.position, "Could not determine height of shortest-path waypoint" };
+                }
             }
         }
         way_points.update_adjacency();
@@ -244,8 +251,4 @@ void Mlib::calculate_waypoint_adjacency(
             },
             SubdivisionType::ASYMMETRIC);
     }
-    way_points.merge_neighbors(
-        merge_radius * scale,
-        error_radius * scale,
-        [](auto& a, const auto& b) { a |= b; });
 }

@@ -132,6 +132,7 @@ struct OsmResourceConfig {
     float scale = 1;
     double waypoint_merge_radius = 1 * cm;
     double waypoint_error_radius = 2 * cm;
+    double waypoint_distance = 2 * meters;
     double height_scale = 1;
     float uv_scale_terrain = 1;
     float uv_period_terrain = 1;
