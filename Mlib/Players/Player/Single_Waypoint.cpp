@@ -2,11 +2,10 @@
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Physics/IVehicle_Ai.hpp>
+#include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
-#include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
@@ -62,7 +61,7 @@ void SingleWaypoint::clear_waypoint() {
     set_waypoint_internal(std::nullopt, SIZE_MAX);
 }
 
-void SingleWaypoint::move_to_waypoint() {
+void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
     if (waypoint_.has_value()) {
         add_beacon(Beacon::create(waypoint_.value().position, "beacon"));
     }
@@ -70,15 +69,13 @@ void SingleWaypoint::move_to_waypoint() {
     if (!player_->has_scene_vehicle()) {
         return;
     }
-    if (!player_->skills(ControlSource::AI).can_drive) {
-        return;
-    }
     auto& rb = player_->rigid_body();
     if (any(rb.move_to(
         waypoint_,
         fixed_zeros<float, 3>(),
         std::nullopt,
-        &waypoint_history_) & VehicleAiMoveToStatus::DESTINATION_REACHED))
+        &waypoint_history_,
+        &skills) & VehicleAiMoveToStatus::DESTINATION_REACHED))
     {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();

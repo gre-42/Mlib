@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Destruction_Functions.hpp>
-#include <Mlib/Physics/IVehicle_Ai.hpp>
+#include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 
 namespace Mlib {
 
@@ -18,7 +18,8 @@ public:
 		const std::optional<WayPoint>& position_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-		const std::list<WayPoint>* waypoint_history) override;
+		const std::list<WayPoint>* waypoint_history,
+		const SkillMap* skills) override;
 	virtual std::vector<SkillFactor> skills() const override;
 private:
 	DestructionFunctionsRemovalTokens on_player_delete_externals_;

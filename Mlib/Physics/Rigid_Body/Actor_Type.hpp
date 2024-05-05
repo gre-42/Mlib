@@ -4,6 +4,7 @@
 namespace Mlib {
 
 enum class ActorType {
+    DESTINATION_REACHED_STATUS,
     TIRES,
     WINGS,
     END

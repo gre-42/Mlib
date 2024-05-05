@@ -13,6 +13,7 @@
 #include <Mlib/Physics/Advance_Times/Bullet.hpp>
 #include <Mlib/Physics/Advance_Times/Gun.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Aim_At.hpp>
+#include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
@@ -22,7 +23,6 @@
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
-#include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
@@ -84,9 +84,6 @@ Player::Player(
     , driving_mode_{ driving_mode }
     , driving_direction_{ driving_direction }
     , nunstucked_{ 0 }
-    , skills_{
-        {ControlSource::AI, Skills{}},
-        {ControlSource::USER, Skills{}} }
     , delete_node_mutex_{ delete_node_mutex }
     , next_scene_vehicle_{ nullptr }
     , externals_mode_{ ExternalsMode::NONE }
@@ -109,27 +106,27 @@ Player::~Player() {
 
 void Player::set_can_drive(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_drive = value;
+    skills_.skills(control_source).can_drive = value;
 }
 
 void Player::set_can_aim(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_aim = value;
+    skills_.skills(control_source).can_aim = value;
 }
 
 void Player::set_can_shoot(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_shoot = value;
+    skills_.skills(control_source).can_shoot = value;
 }
 
 void Player::set_can_select_weapon(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_select_weapon = value;
+    skills_.skills(control_source).can_select_weapon = value;
 }
 
 void Player::set_can_select_opponent(ControlSource control_source, bool value) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    skills_.at(control_source).can_select_opponent = value;
+    skills_.skills(control_source).can_select_opponent = value;
 }
 
 void Player::set_select_opponent_hysteresis_factor(double factor) {
@@ -437,7 +434,7 @@ void Player::increment_external_forces(
             }
         }
     }
-    single_waypoint_.move_to_waypoint();
+    single_waypoint_.move_to_waypoint(skills_);
 }
 
 bool Player::unstuck() {
@@ -605,12 +602,12 @@ bool Player::is_pedestrian() const {
 
 void Player::aim_and_shoot() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!skills_.at(ControlSource::AI).can_aim) {
+    if (!skills_.skills(ControlSource::AI).can_aim) {
         return;
     }
     assert_true((target_scene_node_ == nullptr) == (target_rb_ == nullptr));
     assert_true((target_scene_node_ != nullptr) == (target_name_.has_value()));
-    if (skills_.at(ControlSource::AI).can_select_opponent) {
+    if (skills_.skills(ControlSource::AI).can_select_opponent) {
         select_opponent(OpponentSelectionStrategy::BEST);
     } else {
         select_opponent(OpponentSelectionStrategy::KEEP);
@@ -624,7 +621,7 @@ void Player::aim_and_shoot() {
     if (controlled_.gun_node == nullptr) {
         return;
     }
-    if (!skills_.at(ControlSource::AI).can_shoot) {
+    if (!skills_.skills(ControlSource::AI).can_shoot) {
         return;
     }
     if ((target_scene_node_ != nullptr) && (controlled_.aim_at().target_locked_on())) {
@@ -634,7 +631,7 @@ void Player::aim_and_shoot() {
 
 void Player::select_best_weapon_in_inventory() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!skills_.at(ControlSource::AI).can_select_weapon) {
+    if (!skills_.skills(ControlSource::AI).can_select_weapon) {
         return;
     }
     if (!has_scene_vehicle()) {
@@ -877,11 +874,7 @@ void Player::create_externals(ExternalsMode externals_mode) {
 }
 
 const Skills& Player::skills(ControlSource control_source) const {
-    auto it = skills_.find(control_source);
-    if (it == skills_.end()) {
-        THROW_OR_ABORT("Player \"" + name_ + "\": Could not find skill");
-    }
-    return it->second;
+    return skills_.skills(control_source);
 }
 
 Players& Player::players() {

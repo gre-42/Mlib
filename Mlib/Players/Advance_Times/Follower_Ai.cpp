@@ -1,8 +1,8 @@
 #include "Follower_Ai.hpp"
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
-#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
@@ -33,6 +33,7 @@ void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point ti
 			RigidBodyVehicle::WayPoint{ followed_->abs_com(), WayPointLocation::UNKNOWN },
 			followed_->rbp_.v_,
 			std::nullopt,
+			nullptr,
 			nullptr);
 	}
 }

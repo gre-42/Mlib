@@ -5,6 +5,7 @@ using namespace Mlib;
 
 ActorType Mlib::actor_type_from_string(const std::string& str) {
     static const std::map<std::string, ActorType> m{
+        {"destination_reached_status", ActorType::DESTINATION_REACHED_STATUS},
         {"tires", ActorType::TIRES},
         {"wings", ActorType::WINGS}
     };
@@ -17,6 +18,8 @@ ActorType Mlib::actor_type_from_string(const std::string& str) {
 
 std::string Mlib::actor_type_to_string(ActorType actor_type) {
     switch (actor_type) {
+    case ActorType::DESTINATION_REACHED_STATUS:
+        return "destination_reached_status";
     case ActorType::TIRES:
         return "tires";
     case ActorType::WINGS:

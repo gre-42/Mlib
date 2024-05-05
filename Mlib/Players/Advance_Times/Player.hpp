@@ -8,6 +8,8 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
 #include <Mlib/Object.hpp>
+#include <Mlib/Physics/Ai/Skill_Map.hpp>
+#include <Mlib/Physics/Ai/Skills.hpp>
 #include <Mlib/Physics/Driving_Mode.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
@@ -20,14 +22,12 @@
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
-#include <Mlib/Players/Scene_Vehicle/Skills.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
 #include <mutex>
 #include <optional>
 #include <string>
-#include <unordered_map>
 
 namespace Mlib {
 
@@ -277,7 +277,7 @@ private:
     DrivingMode driving_mode_;
     DrivingDirection driving_direction_;
     size_t nunstucked_;
-    std::unordered_map<ControlSource, Skills> skills_;
+    SkillMap skills_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
     std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;

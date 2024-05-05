@@ -8,8 +8,8 @@
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Destruction_Observers.hpp>
+#include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
-#include <Mlib/Physics/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
@@ -214,7 +214,8 @@ public:
         const std::optional<WayPoint>& position_of_destination,
         const std::optional<FixedArray<float, 3>>& velocity_of_destination,
         const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-        const std::list<WayPoint>* waypoint_history);
+        const std::list<WayPoint>* waypoint_history,
+        const SkillMap* skills);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;

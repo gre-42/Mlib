@@ -11,6 +11,7 @@ namespace Mlib {
 class Player;
 class PathfindingWaypoints;
 enum class WayPointLocation;
+class SkillMap;
 
 class SingleWaypoint {
     SingleWaypoint(const SingleWaypoint&) = delete;
@@ -20,7 +21,7 @@ public:
 
     explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();
-    void move_to_waypoint();
+    void move_to_waypoint(const SkillMap& skills);
     void draw_waypoint_history(const std::string& filename) const;
     void set_waypoint(const WayPoint& waypoint, size_t waypoint_id);
     void set_waypoint(const WayPoint& waypoint);

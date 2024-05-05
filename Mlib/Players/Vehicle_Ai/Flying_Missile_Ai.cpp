@@ -1,12 +1,14 @@
 #include "Flying_Missile_Ai.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Control_Source.hpp>
+#include <Mlib/Physics/Ai/Skill_Factor.hpp>
+#include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
-#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 
 using namespace Mlib;
@@ -38,11 +40,15 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 	const std::optional<WayPoint>& position_of_destination,
 	const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 	const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-	const std::list<WayPoint>* waypoint_history)
+	const std::list<WayPoint>* waypoint_history,
+	const SkillMap* skills)
 {
 	controller_.reset_parameters();
 	controller_.reset_relaxation();
 
+	if ((skills != nullptr) && !skills->skills(ControlSource::AI).can_drive) {
+		return VehicleAiMoveToStatus::SKILL_IS_MISSING;
+	}
 	if (!position_of_destination.has_value()) {
 		controller_.throttle_engine(0.f, 1.f);
 		controller_.set_desired_direction(fixed_zeros<float, 3>(), 1.f);

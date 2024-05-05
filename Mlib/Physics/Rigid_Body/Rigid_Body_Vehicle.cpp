@@ -19,6 +19,7 @@
 #include <Mlib/Physics/Actuators/Tire.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Physics/Actuators/Wing.hpp>
+#include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
 #include <Mlib/Physics/Gravity.hpp>
@@ -29,7 +30,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
-#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
@@ -1061,7 +1061,8 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     const std::optional<WayPoint>& position_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-    const std::list<WayPoint>* waypoint_history)
+    const std::list<WayPoint>* waypoint_history,
+    const SkillMap* skills)
 {
     auto it = autopilots_.find(current_vehicle_domain_);
     if (it == autopilots_.end()) {
@@ -1073,7 +1074,8 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
             position_of_destination,
             velocity_of_destination,
             velocity_at_destination,
-            waypoint_history);
+            waypoint_history,
+            skills);
     }
     return status;
 }

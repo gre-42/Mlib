@@ -12,6 +12,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Destination_Reached_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Missile_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Vehicle_Follower_Ai.hpp>
@@ -280,6 +281,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateCrash::key, CreateCrash::json_user_function);
     register_json_user_function(CreateDamageable::key, CreateDamageable::json_user_function);
     register_json_user_function(CreateDeltaEngine::key, CreateDeltaEngine::json_user_function);
+    register_json_user_function(CreateDestinationReachedAi::key, CreateDestinationReachedAi::json_user_function);
     register_json_user_function(CreateDriverKeyBinding::key, CreateDriverKeyBinding::json_user_function);
     register_json_user_function(CreateEngine::key, CreateEngine::json_user_function);
     register_json_user_function(CreateExternals::key, CreateExternals::json_user_function);

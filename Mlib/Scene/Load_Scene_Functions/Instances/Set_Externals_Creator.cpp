@@ -2,8 +2,10 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Keys.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Physics/Ai/Control_Source.hpp>
+#include <Mlib/Physics/Ai/Skill_Map.hpp>
+#include <Mlib/Physics/Ai/Skills.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
-#include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Players/Scene_Vehicle/Externals_Mode.hpp>
 #include <Mlib/Players/Scene_Vehicle/Scene_Vehicle.hpp>
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
@@ -48,7 +50,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
          capture](
             const std::string& player_name,
             ExternalsMode externals_mode,
-            const std::unordered_map<ControlSource, Skills>& skills)
+            const SkillMap& skills)
         {
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
@@ -58,9 +60,9 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"SPAWNER_NAME", spawner_name},
                 {"PLAYER_NAME", player_name},
                 {"IF_PC", (externals_mode == ExternalsMode::PC)},
-                {"IF_MANUAL_AIM", skills.at(ControlSource::USER).can_aim},
-                {"IF_MANUAL_SHOOT", skills.at(ControlSource::USER).can_shoot},
-                {"IF_MANUAL_DRIVE", skills.at(ControlSource::USER).can_drive}
+                {"IF_MANUAL_AIM", skills.skills(ControlSource::USER).can_aim},
+                {"IF_MANUAL_SHOOT", skills.skills(ControlSource::USER).can_shoot},
+                {"IF_MANUAL_DRIVE", skills.skills(ControlSource::USER).can_drive}
             });
             macro_line_executor(macro, &local_args, nullptr);
         }

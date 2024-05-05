@@ -9,6 +9,7 @@
 namespace Mlib {
 
 struct SkillFactor;
+class SkillMap;
 template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TPoint, class TFlags>
@@ -19,11 +20,12 @@ enum class VehicleAiMoveToStatus {
 	NONE = 0,
 	SCENE_VEHICLE_IS_NULL = (1 << 0),
 	AUTOPILOT_IS_NULL = (1 << 1),
-	WAYPOINT_IS_NAN = (1 << 2),
-	POWER_IS_NAN = (1 << 3),
-	DESTINATION_REACHED = (1 << 4),
-	RESTING_POSITION_REACHED = (1 << 5),
-	STOPPED_TO_AVOID_COLLISION = (1 << 6)
+	SKILL_IS_MISSING = (1 << 2),
+	WAYPOINT_IS_NAN = (1 << 3),
+	POWER_IS_NAN = (1 << 4),
+	DESTINATION_REACHED = (1 << 5),
+	RESTING_POSITION_REACHED = (1 << 6),
+	STOPPED_TO_AVOID_COLLISION = (1 << 7)
 };
 
 inline VehicleAiMoveToStatus& operator |= (VehicleAiMoveToStatus& a, VehicleAiMoveToStatus b) {
@@ -52,7 +54,8 @@ public:
 		const std::optional<WayPoint>& position_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
 		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-		const std::list<WayPoint>* waypoint_history) = 0;
+		const std::list<WayPoint>* waypoint_history,
+		const SkillMap* skills) = 0;
 	virtual std::vector<SkillFactor> skills() const = 0;
 };
 

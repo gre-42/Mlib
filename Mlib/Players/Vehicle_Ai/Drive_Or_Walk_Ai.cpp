@@ -1,15 +1,15 @@
 #include "Drive_Or_Walk_Ai.hpp"
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Control_Source.hpp>
+#include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
-#include <Mlib/Physics/Skill_Factor.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
-#include <Mlib/Players/Scene_Vehicle/Control_Source.hpp>
 #include <Mlib/Scene_Graph/Driving_Direction.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
@@ -30,13 +30,17 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     const std::optional<WayPoint>& position_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-    const std::list<WayPoint>* waypoint_history)
+    const std::list<WayPoint>* waypoint_history,
+    const SkillMap* skills)
 {
     // if (waypoint_defined()) {
     //     g_beacons.push_back(Beacon::create(waypoint_.value(), "flag"));
     // }
     if (!player_->has_scene_vehicle()) {
         return VehicleAiMoveToStatus::SCENE_VEHICLE_IS_NULL;
+    }
+    if ((skills != nullptr) && !skills->skills(ControlSource::AI).can_drive) {
+        return VehicleAiMoveToStatus::SKILL_IS_MISSING;
     }
     auto& player_rb = player_->rigid_body();
     // Disabled, using "steer" instead to enable the PID-controller.

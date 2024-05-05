@@ -23,7 +23,7 @@ SceneVehicle::~SceneVehicle() {
 void SceneVehicle::create_externals(
     const std::string& player_name,
     ExternalsMode externals_mode,
-    const std::unordered_map<ControlSource, Skills>& skills) const
+    const SkillMap& skills) const
 {
     if (!create_externals_) {
         THROW_OR_ABORT("create_externals not set");
