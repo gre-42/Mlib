@@ -514,9 +514,10 @@ void Sample_SoloMesh::resetCommonSettings() {
     m_detailSampleDist = 6.0f;
     m_detailSampleMaxError = 1.0f;
     m_partitionType = SAMPLE_PARTITION_WATERSHED;
+    m_polyPickExtent = { 6.f, 8.f, 6.f };
 }
 
-inline bool inRange(const float* v1, const float* v2, const float r, const float h)
+static inline bool inRange(const float* v1, const float* v2, const float r, const float h)
 {
     const float dx = v2[0] - v1[0];
     const float dy = v2[1] - v1[1];
@@ -813,21 +814,20 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
     return smoothPath;
 }
 
-LocalizedNavmeshNode Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<float, 3>& point) const
+std::optional<LocalizedNavmeshNode> Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<float, 3>& point) const
 {
     LocalizedNavmeshNode result;
-    FixedArray<float, 3> polyPickExt{ 6.f, 8.f, 6.f };
-    if (!dtStatusSucceed(m_navQuery->findNearestPoly(point.flat_begin(), polyPickExt.flat_begin(), &m_filter, &result.polyRef, nullptr))) {
-        return LocalizedNavmeshNode{
-            .position = fixed_nans<float, 3>(),
-            .polyRef = std::numeric_limits<dtPolyRef>::max()
-        };
+    if (!dtStatusSucceed(m_navQuery->findNearestPoly(
+        point.flat_begin(),
+        m_polyPickExtent.flat_begin(),
+        &m_filter,
+        &result.polyRef,
+        nullptr)))
+    {
+        return std::nullopt;
     }
     if (!dtStatusSucceed(m_navQuery->closestPointOnPoly(result.polyRef, point.flat_begin(), result.position.flat_begin(), nullptr))) {
-        return LocalizedNavmeshNode{
-            .position = fixed_nans<float, 3>(),
-            .polyRef = std::numeric_limits<dtPolyRef>::max()
-        };
+        return std::nullopt;
     }
     return result;
 }

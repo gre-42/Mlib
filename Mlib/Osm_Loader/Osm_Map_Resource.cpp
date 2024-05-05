@@ -1424,7 +1424,9 @@ OsmMapResource::OsmMapResource(
                         }
                     }
                     IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };
-                    // save_obj("/tmp/asd.obj", indexed_face_set, nullptr);
+                    if (auto nm = try_getenv("OSM_NAVMESH_FILENAME"); nm.has_value()) {
+                        save_obj(nm.value(), indexed_face_set, nullptr);
+                    }
                     NavigationMeshBuilder nmb{
                         indexed_face_set,
                         NavigationMeshConfig{

@@ -33,18 +33,18 @@ int main(int argc, char** argv) {
         // NavigationMeshBuilder nmb{indexed_face_set};
         
         std::cerr << "Point on navmesh" << std::endl;
-        LocalizedNavmeshNode start = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f });
-        LocalizedNavmeshNode end = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f });
-        if (any(Mlib::isnan(start.position))) {
+        auto start = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1534.788086f, 159.749268f, 756.568665f });
+        auto end = nmb.ssm.closest_point_on_navmesh(FixedArray<float, 3>{ -1386.703369f, 164.245132f, 734.361694f });
+        if (!start.has_value()) {
             THROW_OR_ABORT("Could not localize start");
         }
-        if (any(Mlib::isnan(end.position))) {
+        if (!end.has_value()) {
             THROW_OR_ABORT("Could not localize end");
         }
-        std::cerr << "Start " << start.position << std::endl;
-        std::cerr << "End " << end.position << std::endl;
+        std::cerr << "Start " << start.value().position << std::endl;
+        std::cerr << "End " << end.value().position << std::endl;
         std::cerr << "Shortest path" << std::endl;
-        for (const auto& p : nmb.ssm.shortest_path(start, end, 2.f)) {
+        for (const auto& p : nmb.ssm.shortest_path(start.value(), end.value(), 2.f)) {
             std::cerr << p << std::endl;
         }
     } catch (const std::runtime_error& e) {

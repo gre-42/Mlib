@@ -42,7 +42,7 @@ public:
                 (way.tags.contains("highway") &&
                     included_highways.contains(way.tags.get("highway"))) ||
                 (way.tags.contains("aeroway") &&
-                    included_aeroways.contains(way.tags.get("aeroway")));;
+                    included_aeroways.contains(way.tags.get("aeroway")));
             include_some_nodes_ =
                 include_way_ ||
                 way.tags.contains("terrain_region") ||

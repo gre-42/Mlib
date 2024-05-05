@@ -7,6 +7,7 @@
 #include <Recast.h>
 #pragma clang diagnostic pop
 #include <list>
+#include <optional>
 
 class InputGeom;
 
@@ -60,6 +61,7 @@ public:
     float m_detailSampleDist;
     float m_detailSampleMaxError;
     int m_partitionType;
+    FixedArray<float, 3> m_polyPickExtent;
 
     Sample_SoloMesh(
         rcContext& ctx,
@@ -68,7 +70,7 @@ public:
     
     void resetCommonSettings();
     bool build();
-    LocalizedNavmeshNode closest_point_on_navmesh(const FixedArray<float, 3>& point) const;
+    std::optional<LocalizedNavmeshNode> closest_point_on_navmesh(const FixedArray<float, 3>& point) const;
     std::list<FixedArray<float, 3>> shortest_path(
         const LocalizedNavmeshNode& start,
         const LocalizedNavmeshNode& end,
