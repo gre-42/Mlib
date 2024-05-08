@@ -21,8 +21,8 @@ public:
 		Interp<float, float> dy,
 		double eta_max,
 		RigidBodyMissileController& controller,
-		RigidBodyPulses& missile,
-		float destination_reached_radius);
+		float destination_reached_radius,
+		float maximum_velocity);
 	virtual ~FlyingMissileAi() override;
 	virtual VehicleAiMoveToStatus move_to(
 		const std::optional<WayPoint>& position_of_destination,
@@ -38,7 +38,8 @@ private:
 	double eta_max_;
 	float destination_reached_radius_squared_;
 	RigidBodyMissileController& controller_;
-	RigidBodyPulses& missile_;
+	RigidBodyVehicle& rigid_body_;
+	float maximum_velocity_;
 };
 
 }

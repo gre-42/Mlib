@@ -15,9 +15,15 @@ MissileController::MissileController(
 MissileController::~MissileController() = default;
 
 void MissileController::apply() {
-    rb_.set_surface_power("turbine", EnginePowerIntent{
-        .surface_power = rocket_engine_power_,
-        .drive_relaxation = rocket_engine_power_relaxation_});
+    if (dot0d(rb_.rbp_.v_, rb_.rbp_.rotation_.column(2)) > -200 * kph) {
+        rb_.set_surface_power("turbine", EnginePowerIntent{
+            .surface_power = rocket_engine_power_,
+            .drive_relaxation = rocket_engine_power_relaxation_ });
+    } else {
+        rb_.set_surface_power("turbine", EnginePowerIntent{
+            .surface_power = 0.f,
+            .drive_relaxation = rocket_engine_power_relaxation_ });
+    }
 
     auto rel_dir = dot(desired_direction_, rb_.rbp_.rotation_);
     FixedArray<float, 2> fake_dir{ rel_dir(0), rel_dir(1) };
@@ -30,7 +36,11 @@ void MissileController::apply() {
             fake_dir /= l2;
         }
     }
+    auto roll_strength = rb_.rbp_.rotation_(1, 0);
     for (const auto& wing_controller : wing_controllers_) {
-        rb_.set_wing_angle_of_attack(wing_controller.i, dot0d(wing_controller.gain, fake_dir));
+        rb_.set_wing_angle_of_attack(
+            wing_controller.i,
+            dot0d(wing_controller.gain, fake_dir) +
+            wing_controller.antiroll_angle * roll_strength);
     }
 }

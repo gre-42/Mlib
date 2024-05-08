@@ -28,6 +28,7 @@
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
 #include <Mlib/Physics/Misc/Beacon.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
+#include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle_Flags.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Avatar_Controllers/Rigid_Body_Avatar_Controller.hpp>
@@ -87,6 +88,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , geographic_mapping_{ geographic_mapping }
     , current_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
+    , actor_task_{ ActorTask::UNDEFINED }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
@@ -1001,7 +1003,7 @@ void RigidBodyVehicle::set_driver(DanglingBaseClassRef<IPlayer> driver) {
 void RigidBodyVehicle::add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai)
 {
     for (const auto& sf : ai->skills()) {
-        auto& amap = autopilots_[sf.scenario.vehicle_domain];
+        auto& amap = autopilots_[sf.scenario.actor_task];
         auto it = amap.find(sf.scenario.actor_type);
         if ((it == amap.end()) || (sf.factor > it->second.skill)) {
             auto it = amap.try_emplace(
@@ -1019,7 +1021,7 @@ void RigidBodyVehicle::add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai)
 
 DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const SkillScenario& scenario)
 {
-    auto dit = autopilots_.find(scenario.vehicle_domain);
+    auto dit = autopilots_.find(scenario.actor_task);
     if (dit == autopilots_.end()) {
         THROW_OR_ABORT("No autopilot for scenario \"" + skill_scenario_to_string(scenario) + "\" exists");
     }
@@ -1030,8 +1032,12 @@ DanglingBaseClassRef<IVehicleAi> RigidBodyVehicle::get_autopilot(const SkillScen
     return vit->second.ai.object();
 }
 
+bool RigidBodyVehicle::has_autopilot(const ActorTask& actor_task) const {
+    return autopilots_.contains(actor_task);
+}
+
 bool RigidBodyVehicle::has_autopilot(const SkillScenario& scenario) const {
-    auto dit = autopilots_.find(scenario.vehicle_domain);
+    auto dit = autopilots_.find(scenario.actor_task);
     if (dit == autopilots_.end()) {
         return false;
     }
@@ -1043,7 +1049,7 @@ bool RigidBodyVehicle::has_autopilot(const SkillScenario& scenario) const {
 }
 
 void RigidBodyVehicle::remove_autopilot(const SkillScenario& scenario) {
-    auto dit = autopilots_.find(scenario.vehicle_domain);
+    auto dit = autopilots_.find(scenario.actor_task);
     if (dit == autopilots_.end()) {
         verbose_abort("Could not remove autopilot with scenario \"" + skill_scenario_to_string(scenario) + '"');
     }
@@ -1064,7 +1070,7 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     const std::list<WayPoint>* waypoint_history,
     const SkillMap* skills)
 {
-    auto it = autopilots_.find(current_vehicle_domain_);
+    auto it = autopilots_.find(actor_task_);
     if (it == autopilots_.end()) {
         return VehicleAiMoveToStatus::AUTOPILOT_IS_NULL;
     }

@@ -30,6 +30,7 @@ void Mlib::parse_osm_xml(
         THROW_OR_ABORT("Could not open OSM XML-file \"" + filename + '"');
     }
     static const DECLARE_REGEX(node_reg, "^ +<node id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].* lat=[\"']([\\w.-]+)[\"'] lon=[\"']([\\w.-]+)[\"'].*>$");
+    static const DECLARE_REGEX(node_end_reg, " +</node>");
     static const DECLARE_REGEX(way_reg, "^ +<way id=[\"'](-?\\w+)[\"'](?: action=[\"']([^\"']+)[\"'])? .*visible=[\"'](true|false)[\"'].*>$");
     static const DECLARE_REGEX(way_end_reg, "^ +</way>$");
     static const DECLARE_REGEX(node_ref_reg, "^  +<nd ref=[\"'](-?\\w+)[\"'] */>$");
@@ -40,7 +41,6 @@ void Mlib::parse_osm_xml(
         "<\\?xml .*|"
         "<osm .*|"
         " +<node.*action=[\"']delete[\"'].*/>|"
-        " +</node>|"
         " +<relation .*|"
         "  +<member .*|"
         " +</relation>|"
@@ -48,7 +48,7 @@ void Mlib::parse_osm_xml(
 
     FixedArray<double, 2> bounds_min_merged = fixed_full<double, 2>(INFINITY);
     FixedArray<double, 2> bounds_max_merged = fixed_full<double, 2>(-INFINITY);
-    FixedArray<double, 2> coords_ref;
+    FixedArray<double, 2> current_node_position = fixed_nans<double, 2>();
     bool normalization_matrix_defined = false;
     std::string current_way = "<none>";
     std::string current_node = "<none>";
@@ -74,7 +74,7 @@ void Mlib::parse_osm_xml(
                 safe_stod(match[4].str())};
             bounds_min_merged = minimum(bounds_min, bounds_min_merged);
             bounds_max_merged = maximum(bounds_max, bounds_max_merged);
-            coords_ref = (bounds_min_merged + bounds_max_merged) / 2.0;
+            auto coords_ref = (bounds_min_merged + bounds_max_merged) / 2.0;
             auto m = latitude_longitude_2_meters_mapping(
                 coords_ref(0),
                 coords_ref(1)).pre_scaled(scale);
@@ -106,21 +106,11 @@ void Mlib::parse_osm_xml(
                 if (nodes.find(current_node) != nodes.end()) {
                     THROW_OR_ABORT("Found duplicate node id: " + current_node);
                 }
-                auto rpos = FixedArray<double, 2>{
+                current_node_position = FixedArray<double, 2>{
                     safe_stod(lat),
                     safe_stod(lon)};
-                if (any(rpos < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
-                    std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of minimum bounds " << bounds_min_merged;
-                    THROW_OR_ABORT(sstr.str());
-                }
-                if (any(rpos > bounds_max_merged + FixedArray<double, 2>{0.01, 0.01})) {
-                    std::stringstream sstr;
-                    sstr << "Node with ID " << current_node << " and coordinates " << rpos << " is out of maximum bounds " << bounds_max_merged;
-                    THROW_OR_ABORT(sstr.str());
-                }
-                auto pos = normalization_matrix.transform(rpos);
-                auto opos = OrderableFixedArray<double, 2>{pos};
+                auto pos = normalization_matrix.transform(current_node_position);
+                auto opos = OrderableFixedArray<double, 2>{ pos };
                 auto it = ordered_node_positions.find(opos);
                 if (it != ordered_node_positions.end()) {
                     lwarn() << "Detected duplicate points: " + current_node + ", " + it->second;
@@ -134,6 +124,22 @@ void Mlib::parse_osm_xml(
                 // }
             } else {
                 current_node = "<none>";
+            }
+        } else if (Mlib::re::regex_match(line, match, node_end_reg)) {
+            if (any(isnan(current_node_position))) {
+                THROW_OR_ABORT("Closing node tag with NAN position");
+            }
+            if (!nodes.at(current_node).tags.contains("height_reference", "water")) {
+                if (any(current_node_position < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
+                    std::stringstream sstr;
+                    sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of minimum bounds " << bounds_min_merged;
+                    THROW_OR_ABORT(sstr.str());
+                }
+                if (any(current_node_position > bounds_max_merged + FixedArray<double, 2>{0.01, 0.01})) {
+                    std::stringstream sstr;
+                    sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of maximum bounds " << bounds_max_merged;
+                    THROW_OR_ABORT(sstr.str());
+                }
             }
         } else if (Mlib::re::regex_match(line, match, way_reg)) {
             current_node = "<none>";

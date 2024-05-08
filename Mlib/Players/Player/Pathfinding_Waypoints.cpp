@@ -52,11 +52,15 @@ void PathfindingWaypoints::select_next_waypoint() {
     if (!has_waypoints()) {
         return;
     }
-    // if (waypoints_->points.size() > 1000) {
-    //     lwarn() << "Refusing to add beacons, number of points is > 1000";
+    // if (waypoints_->points.size() > 30'000) {
+    //     lwarn() << "Refusing to add beacons, number of points is " << waypoints_->points.size() << " > 30,000";
     // } else {
+    //     auto pp = player_.rigid_body().rbp_.abs_position();
     //     for (const auto& p : waypoints_->points) {
-    //         add_beacon(Beacon::create(p, "flag"));
+    //         if (sum(squared(p.position - pp)) > squared(200 * meters)) {
+    //             continue;
+    //         }
+    //         add_beacon(Beacon::create(p, "beacon"));
     //     }
     // }
     assert_true(waypoints_->adjacency.initialized());

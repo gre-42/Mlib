@@ -4,10 +4,10 @@
 namespace Mlib {
 
 enum class ActorType;
-enum class VehicleDomain;
+enum class ActorTask;
 struct SkillScenario {
 	ActorType actor_type;
-	VehicleDomain vehicle_domain;
+	ActorTask actor_task;
 	std::strong_ordering operator <=> (const SkillScenario&) const = default;
 };
 

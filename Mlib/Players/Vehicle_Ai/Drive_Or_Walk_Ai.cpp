@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
+#include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
@@ -26,6 +27,20 @@ DriveOrWalkAi::~DriveOrWalkAi() {
     on_destroy.clear();
 }
 
+static ActorTask get_initial_actor_task(const RigidBodyVehicle& rb) {
+    switch (rb.current_vehicle_domain_) {
+    case VehicleDomain::GROUND:
+        return ActorTask::GROUND_CRUISE;
+    case VehicleDomain::AIR:
+        return ActorTask::AIR_CRUISE;
+    case VehicleDomain::UNDEFINED:
+        return ActorTask::UNDEFINED;
+    case VehicleDomain::END:
+        ; // Do nothing
+    }
+    THROW_OR_ABORT("Unknown vehicle domain: " + vehicle_domain_to_string(rb.current_vehicle_domain_));
+}
+
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     const std::optional<WayPoint>& position_of_destination,
     const std::optional<FixedArray<float, 3>>& velocity_of_destination,
@@ -43,6 +58,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         return VehicleAiMoveToStatus::SKILL_IS_MISSING;
     }
     auto& player_rb = player_->rigid_body();
+    if (player_rb.actor_task_ == ActorTask::UNDEFINED) {
+        player_rb.actor_task_ = get_initial_actor_task(player_rb);
+    }
+    if (player_rb.actor_task_ == ActorTask::UNDEFINED) {
+        return VehicleAiMoveToStatus::SKILL_IS_MISSING;
+    }
     // Disabled, using "steer" instead to enable the PID-controller.
     // player_rb.vehicle_controller().reset_parameters(
     //     0.f, // surface_power
@@ -127,21 +148,25 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     }
     // Keep velocity within the specified range.
     {
-        float target_vel;
-        if (velocity_at_destination.has_value()) {
-            target_vel = std::sqrt(sum(squared(velocity_at_destination.value())));
-        } else if (
+        bool is_accelerating_on_runway =
+            player_rb.has_autopilot(ActorTask::RUNWAY_TAKEOFF) &&
             any(waypoint.flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&
             !any(waypoint.flags & WayPointLocation::TAXIWAY) &&
             (waypoint_history != nullptr) &&
             (waypoint_history->size() >= 2) &&
-            any((++waypoint_history->rbegin())->flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)))
-        {
+            any((++waypoint_history->rbegin())->flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY));
+        float target_vel;
+        if (velocity_at_destination.has_value()) {
+            target_vel = std::sqrt(sum(squared(velocity_at_destination.value())));
+        } else if (is_accelerating_on_runway) {
             target_vel = player_->driving_mode().takeoff_velocity;
         } else {
             target_vel = player_->driving_mode().max_velocity;
         }
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
+        if (is_accelerating_on_runway && (std::abs(dvel) < 4.f * kph)) {
+            player_rb.actor_task_ = ActorTask::RUNWAY_TAKEOFF;
+        }
         if (dvel < 0) {
             if (player_rb.avatar_controller_ != nullptr) {
                 player_rb.avatar_controller_->walk(player_->vehicle_movement.surface_power_forward(), 1.f);
@@ -229,10 +254,26 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
 }
 
 std::vector<SkillFactor> DriveOrWalkAi::skills() const {
-    return { SkillFactor{
-        .scenario = SkillScenario{
-            .actor_type = ActorType::TIRES,
-            .vehicle_domain = VehicleDomain::GROUND},
-        .factor = 1.f
-    }};
+    return {
+        SkillFactor{
+            .scenario = SkillScenario{
+                .actor_type = ActorType::TIRES,
+                .actor_task = ActorTask::UNDEFINED},
+            .factor = 1.f},
+        SkillFactor{
+            .scenario = SkillScenario{
+                .actor_type = ActorType::TIRES,
+                .actor_task = ActorTask::GROUND_CRUISE},
+            .factor = 1.f},
+        SkillFactor{
+            .scenario = SkillScenario{
+                .actor_type = ActorType::TIRES,
+                .actor_task = ActorTask::RUNWAY_ACCELERATE},
+            .factor = 1.f},
+        SkillFactor{
+            .scenario = SkillScenario{
+                .actor_type = ActorType::TIRES,
+                .actor_task = ActorTask::RUNWAY_TAKEOFF},
+            .factor = 1.f}
+    };
 }

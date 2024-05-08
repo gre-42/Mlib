@@ -50,6 +50,7 @@ enum class VelocityClassification;
 enum class RigidBodyVehicleFlags;
 enum class VehicleDomain;
 enum class ActorType;
+enum class ActorTask;
 enum class VehicleAiMoveToStatus;
 
 struct JumpState {
@@ -208,6 +209,7 @@ public:
     void set_driver(DanglingBaseClassRef<IPlayer> driver);
     void add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai);
     DanglingBaseClassRef<IVehicleAi> get_autopilot(const SkillScenario& scenario);
+    bool has_autopilot(const ActorTask& actor_task) const;
     bool has_autopilot(const SkillScenario& scenario) const;
     void remove_autopilot(const SkillScenario& scenario);
     VehicleAiMoveToStatus move_to(
@@ -286,7 +288,7 @@ public:
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;
     std::unique_ptr<RigidBodyMissileController> missile_controller_;
-    std::map<VehicleDomain, std::map<ActorType, VehicleAiWithSkill>> autopilots_;
+    std::map<ActorTask, std::map<ActorType, VehicleAiWithSkill>> autopilots_;
     float jump_dv_ = 17.f * kph;
     JumpState jump_state_;
     GrindState grind_state_;
@@ -297,6 +299,7 @@ public:
     const TransformationMatrix<double, double, 3>* geographic_mapping_;
     VehicleDomain current_vehicle_domain_;
     VehicleDomain next_vehicle_domain_;
+    ActorTask actor_task_;
 private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };

@@ -22,8 +22,9 @@ DECLARE_ARGUMENT(wing_controllers);
 namespace MWC {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(i);
-DECLARE_ARGUMENT(gain);
-DECLARE_ARGUMENT(angle);
+DECLARE_ARGUMENT(angle_of_attack);
+DECLARE_ARGUMENT(normal_angle);
+DECLARE_ARGUMENT(antiroll_angle);
 }
 
 namespace Mlib {
@@ -31,9 +32,10 @@ void from_json(const nlohmann::json& j, MissileWingController& c) {
     JsonView jv{ j };
     jv.validate(MWC::options);
     j.at(MWC::i).get_to(c.i);
-    float gain = jv.at<float>(MWC::gain);
-    float angle = jv.at<float>(MWC::angle) * degrees;
-    c.gain = gain * FixedArray<float, 2>{ std::cos(angle), std::sin(angle) };
+    float angle_of_attack = jv.at<float>(MWC::angle_of_attack) * degrees;
+    float normal_angle = jv.at<float>(MWC::normal_angle) * degrees;
+    c.gain = angle_of_attack * FixedArray<float, 2>{ std::cos(normal_angle), std::sin(normal_angle) };
+    c.antiroll_angle = jv.at<float>(MWC::antiroll_angle) * degrees;
 }
 }
 

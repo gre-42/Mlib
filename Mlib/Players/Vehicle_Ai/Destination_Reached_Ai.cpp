@@ -4,10 +4,10 @@
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
+#include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
-#include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 
 using namespace Mlib;
 
@@ -51,18 +51,27 @@ VehicleAiMoveToStatus DestinationReachedAi::move_to(
 	return VehicleAiMoveToStatus::NONE;
 }
 
-
 std::vector<SkillFactor> DestinationReachedAi::skills() const {
 	return {
 		SkillFactor{
 			.scenario = SkillScenario{
 				.actor_type = ActorType::DESTINATION_REACHED_STATUS,
-				.vehicle_domain = VehicleDomain::AIR},
+				.actor_task = ActorTask::AIR_CRUISE},
 			.factor = 1.f},
 		SkillFactor{
 			.scenario = SkillScenario{
 				.actor_type = ActorType::DESTINATION_REACHED_STATUS,
-				.vehicle_domain = VehicleDomain::GROUND},
-			.factor = 1.f}
+				.actor_task = ActorTask::GROUND_CRUISE},
+			.factor = 1.f},
+		SkillFactor{
+			.scenario = SkillScenario{
+				.actor_type = ActorType::DESTINATION_REACHED_STATUS,
+				.actor_task = ActorTask::RUNWAY_ACCELERATE},
+			.factor = 1.f},
+		SkillFactor{
+			.scenario = SkillScenario{
+				.actor_type = ActorType::DESTINATION_REACHED_STATUS,
+				.actor_task = ActorTask::RUNWAY_TAKEOFF},
+			.factor = 1.f},
 	};
 }
