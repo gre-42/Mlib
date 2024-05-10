@@ -103,6 +103,9 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             return result | VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
         }
     }
+    auto z3 = player_rb.rbp_.abs_z();
+    auto z = FixedArray<float, 2>{ z3(0), z3(2) };
+    auto p3 = player_rb.rbp_.abs_position();
     float d_wpt = 0;
     // Avoid collisions with other players (brake).
     for (const auto& [_, p] : player_->players().players()) {
@@ -118,55 +121,53 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         {
             continue;
         }
-        FixedArray<double, 3> d = p_rb.rbp_.abs_position() - player_rb.rbp_.abs_position();
+        auto p_p3 = p_rb.rbp_.abs_position();
+        auto d = p_p3 - p3;
         double dl2 = sum(squared(d));
         if (dl2 < squared(player_->driving_mode().collision_avoidance_radius_brake)) {
-            auto z = player_rb.rbp_.abs_z();
-            if (dot0d(d, z.casted<double>()) < 0) {
+            if (dot0d(d, z3.casted<double>()) < 0) {
                 step_on_brakes_and_apply();
                 return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
             }
         } else if (dl2 < squared(player_->driving_mode().collision_avoidance_radius_correct)) {
-            auto p = player_rb.rbp_.abs_position();
-            auto p_p = p_rb.rbp_.abs_position();
-            auto z = player_rb.rbp_.abs_z();
-            auto p_z = p_rb.rbp_.abs_z();
-            FixedArray<double, 2> intersection;
-            if (!intersect_rays(
-                intersection,
-                FixedArray<double, 2>{ p(0), p(2) },
-                FixedArray<double, 2>{ z(0), z(2) },
-                FixedArray<double, 2>{ p_p(0), p_p(2) },
-                FixedArray<double, 2>{ p_z(0), p_z(2) },
-                0.,
-                0.))
-            {
-                step_on_brakes_and_apply();
-                return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
-            }
-            auto iv0 = intersection - FixedArray<double, 2>{ p(0), p(2) };
-            auto iv1 = intersection - FixedArray<double, 2>{ p_p(0), p_p(2) };
-            if (dot0d(intersection, iv0) < 0) {
-                auto d2_0 = sum(squared(iv0));
-                auto d2_1 = sum(squared(iv1));
-                if (d2_0 > d2_1) {
+            auto p_z3 = p_rb.rbp_.abs_z();
+            if (std::abs(dot0d(z3, p_z3)) < std::cos(30. * degrees)) {
+                FixedArray<double, 2> intersection;
+                if (!intersect_rays(
+                    intersection,
+                    FixedArray<double, 2>{ p3(0), p3(2) },
+                    FixedArray<double, 2>{ z3(0), z3(2) },
+                    FixedArray<double, 2>{ p_p3(0), p_p3(2) },
+                    FixedArray<double, 2>{ p_z3(0), p_z3(2) },
+                    0.,
+                    0.))
+                {
                     step_on_brakes_and_apply();
                     return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
                 }
+                auto iv0 = intersection - FixedArray<double, 2>{ p3(0), p3(2) };
+                auto iv1 = intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) };
+                if (dot0d(intersection, iv0) < 0) {
+                    auto d2_0 = sum(squared(iv0));
+                    auto d2_1 = sum(squared(iv1));
+                    if (d2_0 > d2_1) {
+                        step_on_brakes_and_apply();
+                        return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+                    }
+                }
+            } else if (dl2 > 1e-12) {
+                if ((player_rb.avatar_controller_ != nullptr) ||
+                    (dot0d(d, z3.casted<double>()) / std::sqrt(dl2) < -player_->driving_mode().collision_avoidance_cos))
+                {
+                    if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
+                        d_wpt = player_->driving_mode().collision_avoidance_delta;
+                    } else if (player_->driving_direction() == DrivingDirection::LEFT) {
+                        d_wpt = -player_->driving_mode().collision_avoidance_delta;
+                    } else {
+                        THROW_OR_ABORT("Unknown driving direction");
+                    }
+                }
             }
-            // if (dl2 > 1e-12) {
-            //     if ((player_rb.avatar_controller_ != nullptr) ||
-            //         (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_->driving_mode().collision_avoidance_cos))
-            //     {
-            //         if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
-            //             d_wpt = player_->driving_mode().collision_avoidance_delta;
-            //         } else if (player_->driving_direction() == DrivingDirection::LEFT) {
-            //             d_wpt = -player_->driving_mode().collision_avoidance_delta;
-            //         } else {
-            //             THROW_OR_ABORT("Unknown driving direction");
-            //         }
-            //     }
-            // }
         }
     }
     if (player_rb.avatar_controller_ != nullptr) {
@@ -218,22 +219,20 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     // auto m = vehicle_.rb->get_new_absolute_model_matrix();
     // auto v = inverted_scaled_se3(m);
     // auto wpt = dehomogenized_3(dot1d(v, homogenized_4(wp)));
-    auto z3 = player_rb.rbp_.abs_z();
-    FixedArray<float, 2> z{z3(0), z3(2)};
     float zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
-        auto p = player_rb.rbp_.abs_position();
-        auto wpt = FixedArray<double, 2>{pod(0), pod(2)} - FixedArray<double, 2>{p(0), p(2)};
+        auto wpt = FixedArray<double, 2>{ pod(0), pod(2) } - FixedArray<double, 2>{ p3(0), p3(2) };
         auto m = FixedArray<double, 2, 2>::init(
             z(1), -z(0),
             z(0), z(1));
         wpt = dot1d(m, wpt);
-        wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) * double(d_wpt);
-        double wpt2 = sum(squared(wpt));
+        auto wpt2 = sum(squared(wpt));
         if (wpt2 > 1e-12) {
+            wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) / std::sqrt(wpt2) * double(d_wpt);
+            auto wpt2c = std::sqrt(sum(squared(wpt)));
             if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / std::sqrt(wpt2)).casted<float>());
+                player_rb.avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / wpt2c).casted<float>());
                 // player_rb.avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
                 if (player_->target_rb() == nullptr) {
                     // Rotate waypoint back to global coordinates.
