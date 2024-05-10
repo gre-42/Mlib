@@ -1,4 +1,5 @@
 #include "Drive_Or_Walk_Ai.hpp"
+#include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
@@ -126,19 +127,46 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                 return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
             }
         } else if (dl2 < squared(player_->driving_mode().collision_avoidance_radius_correct)) {
-            if (dl2 > 1e-12) {
-                if ((player_rb.avatar_controller_ != nullptr) ||
-                    (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_->driving_mode().collision_avoidance_cos))
-                {
-                    if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
-                        d_wpt = player_->driving_mode().collision_avoidance_delta;
-                    } else if (player_->driving_direction() == DrivingDirection::LEFT) {
-                        d_wpt = -player_->driving_mode().collision_avoidance_delta;
-                    } else {
-                        THROW_OR_ABORT("Unknown driving direction");
-                    }
+            auto p = player_rb.rbp_.abs_position();
+            auto p_p = p_rb.rbp_.abs_position();
+            auto z = player_rb.rbp_.abs_z();
+            auto p_z = p_rb.rbp_.abs_z();
+            FixedArray<double, 2> intersection;
+            if (!intersect_rays(
+                intersection,
+                FixedArray<double, 2>{ p(0), p(2) },
+                FixedArray<double, 2>{ z(0), z(2) },
+                FixedArray<double, 2>{ p_p(0), p_p(2) },
+                FixedArray<double, 2>{ p_z(0), p_z(2) },
+                0.,
+                0.))
+            {
+                step_on_brakes_and_apply();
+                return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+            }
+            auto iv0 = intersection - FixedArray<double, 2>{ p(0), p(2) };
+            auto iv1 = intersection - FixedArray<double, 2>{ p_p(0), p_p(2) };
+            if (dot0d(intersection, iv0) < 0) {
+                auto d2_0 = sum(squared(iv0));
+                auto d2_1 = sum(squared(iv1));
+                if (d2_0 > d2_1) {
+                    step_on_brakes_and_apply();
+                    return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
                 }
             }
+            // if (dl2 > 1e-12) {
+            //     if ((player_rb.avatar_controller_ != nullptr) ||
+            //         (dot0d(d, player_rb.rbp_.abs_z().casted<double>()) / std::sqrt(dl2) < -player_->driving_mode().collision_avoidance_cos))
+            //     {
+            //         if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
+            //             d_wpt = player_->driving_mode().collision_avoidance_delta;
+            //         } else if (player_->driving_direction() == DrivingDirection::LEFT) {
+            //             d_wpt = -player_->driving_mode().collision_avoidance_delta;
+            //         } else {
+            //             THROW_OR_ABORT("Unknown driving direction");
+            //         }
+            //     }
+            // }
         }
     }
     if (player_rb.avatar_controller_ != nullptr) {
