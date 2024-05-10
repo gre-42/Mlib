@@ -79,7 +79,7 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
         result |= VehicleAiMoveToStatus::WAYPOINT_REACHED;
     }
     if (l2_d < resting_position_reached_radius_squared_) {
-        return VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
+        return result | VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
     }
     auto dir = (dir_d / std::sqrt(l2_d)).casted<float>();
 
