@@ -145,9 +145,9 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     step_on_brakes_and_apply();
                     return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
                 }
-                auto iv0 = intersection - FixedArray<double, 2>{ p3(0), p3(2) };
-                auto iv1 = intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) };
-                if (dot0d(intersection, iv0) < 0) {
+                auto iv0 = (intersection - FixedArray<double, 2>{ p3(0), p3(2) }).casted<float>();
+                auto iv1 = (intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) }).casted<float>();
+                if (dot0d(z, iv0) < 0) {
                     auto d2_0 = sum(squared(iv0));
                     auto d2_1 = sum(squared(iv1));
                     if (d2_0 > d2_1) {
