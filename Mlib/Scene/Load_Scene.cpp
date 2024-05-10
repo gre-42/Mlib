@@ -164,6 +164,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Wing.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Follow_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Actor_Task.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Dv.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
@@ -377,6 +378,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetAvatarStyleUpdater::key, SetAvatarStyleUpdater::json_user_function);
     register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
     register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
+    register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
     register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
     register_json_user_function(SetCamera::key, SetCamera::json_user_function);
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);

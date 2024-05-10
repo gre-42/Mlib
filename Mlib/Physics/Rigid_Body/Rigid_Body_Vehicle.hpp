@@ -213,6 +213,7 @@ public:
     VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
         const SkillMap* skills);
+    void set_actor_task(ActorTask actor_task);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;

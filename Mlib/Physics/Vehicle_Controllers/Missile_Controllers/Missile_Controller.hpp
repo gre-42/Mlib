@@ -16,11 +16,13 @@ class MissileController: public RigidBodyMissileController {
 public:
     MissileController(
         RigidBodyVehicle& rb,
-        std::vector<MissileWingController> wing_controllers);
+        std::vector<MissileWingController> wing_controllers,
+        std::string engine_name);
     virtual ~MissileController() override;
     virtual void apply() override;
 private:
     std::vector<MissileWingController> wing_controllers_;
+    std::string engine_name_;
 };
 
 }

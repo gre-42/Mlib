@@ -1078,6 +1078,10 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     return status;
 }
 
+void RigidBodyVehicle::set_actor_task(ActorTask actor_task) {
+    actor_task_ = actor_task;
+}
+
 FixedArray<float, 3> TrailerHitches::get_position_female() const {
     if (!female_.has_value()) {
         THROW_OR_ABORT("Vehicle has no female trailer hitch");

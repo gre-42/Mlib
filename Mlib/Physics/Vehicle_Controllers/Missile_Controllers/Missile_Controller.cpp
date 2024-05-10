@@ -7,23 +7,19 @@ using namespace Mlib;
 
 MissileController::MissileController(
     RigidBodyVehicle& rb,
-    std::vector<MissileWingController> wing_controllers)
+    std::vector<MissileWingController> wing_controllers,
+    std::string engine_name)
     : RigidBodyMissileController{ rb }
     , wing_controllers_{ std::move(wing_controllers) }
+    , engine_name_{ std::move(engine_name) }
 {}
 
 MissileController::~MissileController() = default;
 
 void MissileController::apply() {
-    if (dot0d(rb_.rbp_.v_, rb_.rbp_.rotation_.column(2)) > -200 * kph) {
-        rb_.set_surface_power("turbine", EnginePowerIntent{
-            .surface_power = rocket_engine_power_,
-            .drive_relaxation = rocket_engine_power_relaxation_ });
-    } else {
-        rb_.set_surface_power("turbine", EnginePowerIntent{
-            .surface_power = 0.f,
-            .drive_relaxation = rocket_engine_power_relaxation_ });
-    }
+    rb_.set_surface_power(engine_name_, EnginePowerIntent{
+        .surface_power = rocket_engine_power_,
+        .drive_relaxation = rocket_engine_power_relaxation_ });
 
     auto rel_dir = dot(desired_direction_, rb_.rbp_.rotation_);
     FixedArray<float, 2> fake_dir{ rel_dir(0), rel_dir(1) };
