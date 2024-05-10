@@ -51,7 +51,7 @@ void PlaneController::apply() {
         rb_.set_wing_angle_of_attack(i, yaw_amount_ * yaw_relaxation_);
     }
     for (size_t i : right_rudder_wing_ids_) {
-        rb_.set_wing_angle_of_attack(i, -yaw_amount_ * yaw_relaxation_);
+        rb_.set_wing_angle_of_attack(i, yaw_amount_ * yaw_relaxation_);
     }
     for (size_t i : left_flap_wing_ids_) {
         rb_.set_wing_brake_angle(i, brake_amount_ * throttle_relaxation_);
