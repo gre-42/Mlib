@@ -18,7 +18,8 @@ DECLARE_ARGUMENT(missile);
 DECLARE_ARGUMENT(pid);
 DECLARE_ARGUMENT(dy);
 DECLARE_ARGUMENT(eta_max);
-DECLARE_ARGUMENT(destination_reached_radius);
+DECLARE_ARGUMENT(waypoint_reached_radius);
+DECLARE_ARGUMENT(resting_position_reached_radius);
 DECLARE_ARGUMENT(maximum_velocity);
 }
 
@@ -77,7 +78,8 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
                 std::move(dy),
                 args.arguments.at<double>(KnownArgs::eta_max) * s,
                 missile_vehicle.missile_controller(),
-                args.arguments.at<float>(KnownArgs::destination_reached_radius) * meters,
+                args.arguments.at<float>(KnownArgs::waypoint_reached_radius) * meters,
+                args.arguments.at<float>(KnownArgs::resting_position_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::maximum_velocity) * kph),
             CURRENT_SOURCE_LOCATION
         });

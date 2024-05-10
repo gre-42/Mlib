@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
 #include <Mlib/Geometry/Mesh/Interpolated_Intermediate_Points_Creator.hpp>
@@ -646,6 +647,16 @@ void test_frustum3() {
         FixedArray<float, 3>{1.f, 1.f, -3.1f}}), true);
 }
 
+void test_ray_sphere_intersection() {
+    FixedArray<double, 3> R{ 15., 0., 0. };
+    FixedArray<double, 3> v{ 1., 0., 0. };
+    FixedArray<double, 3> C{ 10., 0., 0. };
+    double r = 7;
+    double lambda;
+    assert_isequal(ray_intersects_sphere(R, v, C, squared(r), &lambda, (double*)nullptr), true);
+    assert_isclose(lambda, 2.);
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -681,5 +692,6 @@ int main(int argc, const char** argv) {
     test_welzl_tetrahedron();
     test_shortest_path();
     test_frustum3();
+    test_ray_sphere_intersection();
     return 0;
 }

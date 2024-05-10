@@ -113,8 +113,6 @@ class RigidBodyVehicle:
     public INodeHider,
     public virtual DanglingBaseClass {
 public:
-    using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
-
     RigidBodyVehicle(
         const RigidBodyPulses& rbp,
         std::string name,
@@ -213,10 +211,7 @@ public:
     bool has_autopilot(const SkillScenario& scenario) const;
     void remove_autopilot(const SkillScenario& scenario);
     VehicleAiMoveToStatus move_to(
-        const std::optional<WayPoint>& position_of_destination,
-        const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-        const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-        const std::list<WayPoint>* waypoint_history,
+        const AiWaypoint& ai_waypoint,
         const SkillMap* skills);
 
     // IAbsoluteMovable

@@ -1,6 +1,7 @@
 #include "Follower_Ai.hpp"
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/IVehicle_Ai.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -30,10 +31,15 @@ FollowerAi::~FollowerAi() {
 void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point time) {
 	if (followed_ != nullptr) {
 		follower_->move_to(
-			RigidBodyVehicle::WayPoint{ followed_->abs_com(), WayPointLocation::UNKNOWN },
-			followed_->rbp_.v_,
-			std::nullopt,
-			nullptr,
+			AiWaypoint{
+				.position_of_destination = AiWaypoint::WayPoint{
+					followed_->abs_com(),
+					WayPointLocation::UNKNOWN
+				},
+				.velocity_of_destination = followed_->rbp_.v_,
+				.velocity_at_destination = std::nullopt,
+				.waypoint_history = nullptr
+			},
 			nullptr);
 	}
 }

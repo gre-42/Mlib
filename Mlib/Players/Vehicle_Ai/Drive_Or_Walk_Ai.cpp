@@ -1,6 +1,7 @@
 #include "Drive_Or_Walk_Ai.hpp"
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
@@ -42,10 +43,7 @@ static ActorTask get_initial_actor_task(const RigidBodyVehicle& rb) {
 }
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
-    const std::optional<WayPoint>& position_of_destination,
-    const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-    const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-    const std::list<WayPoint>* waypoint_history,
+    const AiWaypoint& ai_waypoint,
     const SkillMap* skills)
 {
     // if (waypoint_defined()) {
@@ -75,11 +73,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         player_rb.vehicle_controller().apply();
         };
     player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
-    if (!position_of_destination.has_value()) {
+    if (!ai_waypoint.position_of_destination.has_value()) {
         step_on_brakes_and_apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
-    const auto& waypoint = position_of_destination.value();
+    const auto& waypoint = ai_waypoint.position_of_destination.value();
     const auto& pod = waypoint.position;
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
     FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
@@ -89,7 +87,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         sum(squared(player_rb.rbp_.v_)) /
         squared(player_->driving_mode().lookahead_velocity));
     if (distance_to_waypoint2 < squared(player_->driving_mode().waypoint_reached_radius) * lookahead_fac2) {
-        result |= VehicleAiMoveToStatus::DESTINATION_REACHED;
+        result |= VehicleAiMoveToStatus::WAYPOINT_REACHED;
     }
     if (std::isnan(player_->vehicle_movement.surface_power_forward()) ||
         std::isnan(player_->vehicle_movement.surface_power_backward()))
@@ -152,12 +150,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             player_rb.has_autopilot(ActorTask::RUNWAY_TAKEOFF) &&
             any(waypoint.flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&
             !any(waypoint.flags & WayPointLocation::TAXIWAY) &&
-            (waypoint_history != nullptr) &&
-            (waypoint_history->size() >= 2) &&
-            any((++waypoint_history->rbegin())->flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY));
+            (ai_waypoint.waypoint_history != nullptr) &&
+            (ai_waypoint.waypoint_history->size() >= 2) &&
+            any((++ai_waypoint.waypoint_history->rbegin())->flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY));
         float target_vel;
-        if (velocity_at_destination.has_value()) {
-            target_vel = std::sqrt(sum(squared(velocity_at_destination.value())));
+        if (ai_waypoint.velocity_at_destination.has_value()) {
+            target_vel = std::sqrt(sum(squared(ai_waypoint.velocity_at_destination.value())));
         } else if (is_accelerating_on_runway) {
             target_vel = player_->driving_mode().takeoff_velocity;
         } else {

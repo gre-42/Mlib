@@ -1,6 +1,7 @@
 #include "Destination_Reached_Ai.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
+#include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
@@ -28,25 +29,22 @@ DestinationReachedAi::~DestinationReachedAi() {
 }
 
 VehicleAiMoveToStatus DestinationReachedAi::move_to(
-	const std::optional<WayPoint>& position_of_destination,
-	const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-	const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-	const std::list<WayPoint>* waypoint_history,
+	const AiWaypoint& ai_waypoint,
 	const SkillMap* skills)
 {
 	if ((skills != nullptr) && !skills->skills(control_source_).can_drive) {
 		return VehicleAiMoveToStatus::SKILL_IS_MISSING;
 	}
-	if (!position_of_destination.has_value()) {
+	if (!ai_waypoint.position_of_destination.has_value()) {
 		return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
 	}
-	const auto& waypoint = position_of_destination.value();
+	const auto& waypoint = ai_waypoint.position_of_destination.value();
 	const auto& pod = waypoint.position;
 
 	auto distance2 = sum(squared(pod - rigid_body_.rbp_.abs_position()));
 
 	if (distance2 < destination_reached_radius_squared_) {
-		return VehicleAiMoveToStatus::DESTINATION_REACHED;
+		return VehicleAiMoveToStatus::WAYPOINT_REACHED;
 	}
 	return VehicleAiMoveToStatus::NONE;
 }

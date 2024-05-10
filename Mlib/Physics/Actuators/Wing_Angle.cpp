@@ -5,9 +5,9 @@
 using namespace Mlib;
 
 WingAngle::WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis)
-    : node_{node}
-    , angle_{angle}
-    , rotation_axis_{rotation_axis}
+    : node_{ node }
+    , angle_{ angle }
+    , rotation_axis_{ rotation_axis }
 {
     if (node != nullptr) {
         node->set_relative_movable({ *this, CURRENT_SOURCE_LOCATION });

@@ -10,11 +10,7 @@ namespace Mlib {
 
 struct SkillFactor;
 class SkillMap;
-template <typename TData, size_t... tshape>
-class FixedArray;
-template <class TPoint, class TFlags>
-struct PointAndFlags;
-enum class WayPointLocation;
+struct AiWaypoint;
 
 enum class VehicleAiMoveToStatus {
 	NONE = 0,
@@ -23,7 +19,7 @@ enum class VehicleAiMoveToStatus {
 	SKILL_IS_MISSING = (1 << 2),
 	WAYPOINT_IS_NAN = (1 << 3),
 	POWER_IS_NAN = (1 << 4),
-	DESTINATION_REACHED = (1 << 5),
+	WAYPOINT_REACHED = (1 << 5),
 	RESTING_POSITION_REACHED = (1 << 6),
 	STOPPED_TO_AVOID_COLLISION = (1 << 7)
 };
@@ -47,14 +43,9 @@ inline bool any(VehicleAiMoveToStatus a) {
 
 class IVehicleAi: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
-	using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
-
 	virtual ~IVehicleAi() = default;
 	virtual VehicleAiMoveToStatus move_to(
-		const std::optional<WayPoint>& position_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-		const std::list<WayPoint>* waypoint_history,
+		const AiWaypoint& ai_waypoint,
 		const SkillMap* skills) = 0;
 	virtual std::vector<SkillFactor> skills() const = 0;
 };

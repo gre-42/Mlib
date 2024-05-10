@@ -15,10 +15,7 @@ public:
 	explicit DriveOrWalkAi(const DanglingBaseClassRef<Player>& player);
 	virtual ~DriveOrWalkAi() override;
 	virtual VehicleAiMoveToStatus move_to(
-		const std::optional<WayPoint>& position_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-		const std::list<WayPoint>* waypoint_history,
+		const AiWaypoint& ai_waypoint,
 		const SkillMap* skills) override;
 	virtual std::vector<SkillFactor> skills() const override;
 private:

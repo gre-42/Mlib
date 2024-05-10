@@ -21,14 +21,12 @@ public:
 		Interp<float, float> dy,
 		double eta_max,
 		RigidBodyMissileController& controller,
-		float destination_reached_radius,
+		float waypoint_reached_radius,
+		float resting_position_reached_radius,
 		float maximum_velocity);
 	virtual ~FlyingMissileAi() override;
 	virtual VehicleAiMoveToStatus move_to(
-		const std::optional<WayPoint>& position_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_of_destination,
-		const std::optional<FixedArray<float, 3>>& velocity_at_destination,
-		const std::list<WayPoint>* waypoint_history,
+		const AiWaypoint& ai_waypoint,
 		const SkillMap* skills) override;
 	virtual std::vector<SkillFactor> skills() const override;
 private:
@@ -36,7 +34,8 @@ private:
 	PidController<FixedArray<float, 3>, float> pid_;
 	Interp<float, float> dy_;
 	double eta_max_;
-	float destination_reached_radius_squared_;
+	float waypoint_reached_radius_squared_;
+	float resting_position_reached_radius_squared_;
 	RigidBodyMissileController& controller_;
 	RigidBodyVehicle& rigid_body_;
 	float maximum_velocity_;
