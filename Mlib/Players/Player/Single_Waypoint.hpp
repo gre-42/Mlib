@@ -29,7 +29,8 @@ public:
     void set_target_velocity(float v);
     void notify_set_waypoints(size_t nwaypoints);
     void notify_spawn();
-    bool waypoint_defined() const;
+    bool has_waypoint() const;
+    const WayPoint& get_waypoint() const;
     bool waypoint_reached() const;
     size_t nwaypoints_reached() const;
     size_t target_waypoint_id() const;

@@ -39,7 +39,7 @@ void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoi
     }
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
-    if (waypoint_defined()) {
+    if (has_waypoint()) {
         waypoint_.value().position(1) += player_->driving_mode_.waypoint_ofs;
         if (max_waypoint_history_length_ > 0) {
             waypoint_history_.push_back(waypoint.value());
@@ -137,12 +137,19 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     }
 }
 
-bool SingleWaypoint::waypoint_defined() const {
+bool SingleWaypoint::has_waypoint() const {
     return waypoint_.has_value();
 }
 
 bool SingleWaypoint::waypoint_reached() const {
     return waypoint_reached_;
+}
+
+const SingleWaypoint::WayPoint& SingleWaypoint::get_waypoint() const {
+    if (!has_waypoint()) {
+        THROW_OR_ABORT("Waypoint not defined");
+    }
+    return waypoint_.value();
 }
 
 size_t SingleWaypoint::nwaypoints_reached() const {

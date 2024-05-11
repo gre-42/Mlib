@@ -26,7 +26,7 @@ void PlaybackWaypoints::select_next_waypoint() {
     if (track_.empty()) {
         THROW_OR_ABORT("Track is empty, cannot select next waypoint");
     }
-    if (!player_.single_waypoint().waypoint_defined()) {
+    if (!player_.single_waypoint().has_waypoint()) {
         current_track_element_ = track_.begin();
     } else if (player_.single_waypoint().waypoint_reached()) {
         assert_true(current_track_element_ != track_.end());

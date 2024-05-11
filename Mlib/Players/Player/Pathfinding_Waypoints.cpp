@@ -69,7 +69,7 @@ void PathfindingWaypoints::select_next_waypoint() {
     }
     FixedArray<float, 3> z3 = player_.rigid_body().rbp_.abs_z();
     FixedArray<double, 3> pos3 = player_.rigid_body().rbp_.abs_position();
-    if (!player_.single_waypoint_.waypoint_defined()) {
+    if (!player_.single_waypoint_.has_waypoint()) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
         size_t closest_id = SIZE_MAX;
