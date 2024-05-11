@@ -35,11 +35,10 @@ VehicleAiMoveToStatus DestinationReachedAi::move_to(
 	if ((skills != nullptr) && !skills->skills(control_source_).can_drive) {
 		return VehicleAiMoveToStatus::SKILL_IS_MISSING;
 	}
-	if (!ai_waypoint.position_of_destination.has_value()) {
+	if (!ai_waypoint.has_position_of_destination()) {
 		return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
 	}
-	const auto& waypoint = ai_waypoint.position_of_destination.value();
-	const auto& pod = waypoint.position;
+	auto pod = ai_waypoint.position_of_destination(rigid_body_.waypoint_ofs_);
 
 	auto distance2 = sum(squared(pod - rigid_body_.rbp_.abs_position()));
 

@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class PlayerSetWaypointsFilter: public LoadSceneInstanceFunction {
+class PlayerSetBehavior: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit PlayerSetWaypointsFilter(RenderableScene& renderable_scene);
+    explicit PlayerSetBehavior(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

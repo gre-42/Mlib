@@ -12,7 +12,18 @@ class DriveOrWalkAi final: public IVehicleAi {
 	DriveOrWalkAi(const DriveOrWalkAi&) = delete;
 	DriveOrWalkAi& operator = (const DriveOrWalkAi&) = delete;
 public:
-	explicit DriveOrWalkAi(const DanglingBaseClassRef<Player>& player);
+	explicit DriveOrWalkAi(
+		const DanglingBaseClassRef<Player>& player,
+		double waypoint_reached_radius,
+		float rest_radius,
+		float lookahead_velocity,
+		float takeoff_velocity,
+		float max_velocity,
+		float max_delta_velocity_brake,
+		double collision_avoidance_radius_brake,
+		double collision_avoidance_radius_correct,
+		float collision_avoidance_cos,
+		float collision_avoidance_delta);
 	virtual ~DriveOrWalkAi() override;
 	virtual VehicleAiMoveToStatus move_to(
 		const AiWaypoint& ai_waypoint,
@@ -21,6 +32,16 @@ public:
 private:
 	DestructionFunctionsRemovalTokens on_player_delete_externals_;
 	DanglingBaseClassRef<Player> player_;
+	double waypoint_reached_radius_;
+	float rest_radius_;
+	float lookahead_velocity_;
+	float takeoff_velocity_;
+	float max_velocity_;
+	float max_delta_velocity_brake_;
+	double collision_avoidance_radius_brake_;
+	double collision_avoidance_radius_correct_;
+	float collision_avoidance_cos_;
+	float collision_avoidance_delta_;
 };
 
 }

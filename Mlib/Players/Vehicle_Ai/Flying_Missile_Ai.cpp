@@ -52,15 +52,15 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
     if ((skills != nullptr) && !skills->skills(ControlSource::AI).can_drive) {
         return VehicleAiMoveToStatus::SKILL_IS_MISSING;
     }
-    if (!ai_waypoint.position_of_destination.has_value()) {
+    if (!ai_waypoint.has_position_of_destination()) {
         controller_.throttle_engine(0.f, 1.f);
         controller_.set_desired_direction(fixed_zeros<float, 3>(), 1.f);
         controller_.apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
-    const auto& waypoint = ai_waypoint.position_of_destination.value();
-    const auto& pod = waypoint.position;
-    auto vod = ai_waypoint.velocity_of_destination.value_or(fixed_zeros<float, 3>());
+    auto pod = ai_waypoint.position_of_destination(rigid_body_.waypoint_ofs_);
+    auto vod = ai_waypoint.velocity_of_destination(fixed_zeros<float, 3>());
+    auto flags = ai_waypoint.flags();
 
     if (dot0d(rigid_body_.rbp_.v_, rigid_body_.rbp_.rotation_.column(2)) > -maximum_velocity_) {
         controller_.throttle_engine(INFINITY, 1.f);
@@ -92,7 +92,7 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
         }
         dir /= l;
     }
-    if (any(waypoint.flags & WayPointLocation::AIRWAY) &&
+    if (any(flags & WayPointLocation::AIRWAY) &&
         (rigid_body_.current_vehicle_domain_ == VehicleDomain::GROUND))
     {
         dir(1) += 0.5f;

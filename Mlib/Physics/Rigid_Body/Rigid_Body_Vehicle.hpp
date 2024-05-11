@@ -214,6 +214,7 @@ public:
         const AiWaypoint& ai_waypoint,
         const SkillMap* skills);
     void set_actor_task(ActorTask actor_task);
+    void set_waypoint_ofs(float dy);
 
     // IAbsoluteMovable
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
@@ -296,6 +297,7 @@ public:
     VehicleDomain current_vehicle_domain_;
     VehicleDomain next_vehicle_domain_;
     ActorTask actor_task_;
+    float waypoint_ofs_;
 private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };

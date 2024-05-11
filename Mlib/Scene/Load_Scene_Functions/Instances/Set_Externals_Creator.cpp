@@ -50,7 +50,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
          capture](
             const std::string& player_name,
             ExternalsMode externals_mode,
-            const SkillMap& skills)
+            const SkillMap& skills,
+            const std::string& behavior)
         {
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
@@ -62,7 +63,8 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"IF_PC", (externals_mode == ExternalsMode::PC)},
                 {"IF_MANUAL_AIM", skills.skills(ControlSource::USER).can_aim},
                 {"IF_MANUAL_SHOOT", skills.skills(ControlSource::USER).can_shoot},
-                {"IF_MANUAL_DRIVE", skills.skills(ControlSource::USER).can_drive}
+                {"IF_MANUAL_DRIVE", skills.skills(ControlSource::USER).can_drive},
+                {"behavior", behavior}
             });
             macro_line_executor(macro, &local_args, nullptr);
         }

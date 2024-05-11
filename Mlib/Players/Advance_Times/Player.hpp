@@ -10,7 +10,6 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
 #include <Mlib/Physics/Ai/Skills.hpp>
-#include <Mlib/Physics/Driving_Mode.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IExternal_Force_Provider.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
@@ -134,11 +133,11 @@ public:
         CollisionQuery& collision_query,
         VehicleSpawners& vehicle_spawners,
         Players& players,
-        const std::string& name,
-        const std::string& team,
+        std::string name,
+        std::string team,
         GameMode game_mode,
         UnstuckMode unstuck_mode,
-        const DrivingMode& driving_mode,
+        std::string behavior,
         DrivingDirection driving_direction,
         DeleteNodeMutex& delete_node_mutex,
         const Focuses& focuses);
@@ -215,7 +214,11 @@ public:
     bool ramming() const;
     DanglingPtr<SceneNode> target_scene_node() const;
     const RigidBodyVehicle* target_rb() const;
-    const DrivingMode& driving_mode() const;
+    void set_behavior(
+        float stuck_velocity,
+        float stuck_duration,
+        float unstuck_duration,
+        JoinedWayPointSandbox joined_way_point_sandbox);
     DrivingDirection driving_direction() const;
     ExternalsMode externals_mode() const;
     SingleWaypoint& single_waypoint();
@@ -274,7 +277,11 @@ private:
     std::chrono::steady_clock::time_point stuck_start_;
     std::chrono::steady_clock::time_point unstuck_start_;
     UnstuckMode unstuck_mode_;
-    DrivingMode driving_mode_;
+    std::string behavior_;
+    float stuck_velocity_;
+    float stuck_duration_;
+    float unstuck_duration_;
+    JoinedWayPointSandbox joined_way_point_sandbox_;
     DrivingDirection driving_direction_;
     size_t nunstucked_;
     SkillMap skills_;

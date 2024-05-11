@@ -23,12 +23,13 @@ SceneVehicle::~SceneVehicle() {
 void SceneVehicle::create_externals(
     const std::string& player_name,
     ExternalsMode externals_mode,
-    const SkillMap& skills) const
+    const SkillMap& skills,
+    const std::string& behavior) const
 {
     if (!create_externals_) {
         THROW_OR_ABORT("create_externals not set");
     }
-    create_externals_(player_name, externals_mode, skills);
+    create_externals_(player_name, externals_mode, skills, behavior);
 }
 
 void SceneVehicle::set_create_externals(const CreateExternals& create_externals)

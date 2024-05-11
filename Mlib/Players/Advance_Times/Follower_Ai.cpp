@@ -32,13 +32,13 @@ void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point ti
 	if (followed_ != nullptr) {
 		follower_->move_to(
 			AiWaypoint{
-				.position_of_destination = AiWaypoint::WayPoint{
+				AiWaypoint::WayPoint{			// position_of_destination
 					followed_->abs_com(),
 					WayPointLocation::UNKNOWN
 				},
-				.velocity_of_destination = followed_->rbp_.v_,
-				.velocity_at_destination = std::nullopt,
-				.waypoint_history = nullptr
+				followed_->rbp_.v_,				// velocity_of_destination
+				std::nullopt,					// velocity_at_destination 
+				nullptr							// waypoint_history
 			},
 			nullptr);
 	}

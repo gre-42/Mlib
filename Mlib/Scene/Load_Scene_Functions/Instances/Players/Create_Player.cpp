@@ -20,7 +20,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(team);
 DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
-DECLARE_ARGUMENT(driving_mode);
+DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(driving_direction);
 }
 
@@ -38,10 +38,6 @@ CreatePlayer::CreatePlayer(RenderableScene& renderable_scene)
 
 void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto driving_mode = driving_modes.find(args.arguments.at<std::string>(KnownArgs::driving_mode));
-    if (driving_mode == driving_modes.end()) {
-        THROW_OR_ABORT("Could not find driving mode with name \"" + args.arguments.at<std::string>(KnownArgs::driving_mode) + '"');
-    }
     auto player = std::make_unique<Player>(
         scene,
         supply_depots,
@@ -53,7 +49,7 @@ void CreatePlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::team),
         game_mode_from_string(args.arguments.at<std::string>(KnownArgs::game_mode)),
         unstuck_mode_from_string(args.arguments.at<std::string>(KnownArgs::unstuck_mode)),
-        driving_mode->second,
+        args.arguments.at<std::string>(KnownArgs::behavior),
         driving_direction_from_string(args.arguments.at<std::string>(KnownArgs::driving_direction)),
         delete_node_mutex,
         args.ui_focus.focuses);

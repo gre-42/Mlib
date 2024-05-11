@@ -17,7 +17,7 @@ class SceneVehicle {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
-    using CreateExternals = std::function<void(const std::string&, ExternalsMode, const SkillMap&)>;
+    using CreateExternals = std::function<void(const std::string&, ExternalsMode, const SkillMap&, const std::string&)>;
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         std::string scene_node_name,
@@ -27,7 +27,8 @@ public:
     void create_externals(
         const std::string& player_name,
         ExternalsMode externals_mode,
-        const SkillMap& skills) const;
+        const SkillMap& skills,
+        const std::string& behavior) const;
     void set_create_externals(const CreateExternals& create_externals);
     std::string& scene_node_name();
     const std::string& scene_node_name() const;

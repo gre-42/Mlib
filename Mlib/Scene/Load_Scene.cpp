@@ -102,6 +102,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Change_Aiming_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Aiming_Gun.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Behavior.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Aim.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Drive.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Can_Select_Opponent.hpp>
@@ -111,7 +112,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Playback_Waypoints.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Vehicle_Control_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoint.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Set_Waypoints_Filter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Respawn_All_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Preferred_Car_Spawner.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Set_Race_Identifier_And_Reload_History.hpp>
@@ -173,6 +173,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Target.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Skater_Style_Updater.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Trailer_Hitch_Positions.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Waypoint_Ofs.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Ypln_Update_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Additive_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Constant_Screen_Constraint.hpp>
@@ -351,6 +352,7 @@ LoadScene::LoadScene() {
     register_json_user_function(PlaybackWinnerTrack::key, PlaybackWinnerTrack::json_user_function);
     register_json_user_function(PlayerChangeAimingGun::key, PlayerChangeAimingGun::json_user_function);
     register_json_user_function(PlayerSetAimingGun::key, PlayerSetAimingGun::json_user_function);
+    register_json_user_function(PlayerSetBehavior::key, PlayerSetBehavior::json_user_function);
     register_json_user_function(PlayerSetCanAim::key, PlayerSetCanAim::json_user_function);
     register_json_user_function(PlayerSetCanDrive::key, PlayerSetCanDrive::json_user_function);
     register_json_user_function(PlayerSetCanSelectBestWeapon::key, PlayerSetCanSelectBestWeapon::json_user_function);
@@ -360,7 +362,6 @@ LoadScene::LoadScene() {
     register_json_user_function(PlayerSetPlaybackWaypoints::key, PlayerSetPlaybackWaypoints::json_user_function);
     register_json_user_function(PlayerSetVehicleControlParameters::key, PlayerSetVehicleControlParameters::json_user_function);
     register_json_user_function(PlayerSetWaypoint::key, PlayerSetWaypoint::json_user_function);
-    register_json_user_function(PlayerSetWaypointsFilter::key, PlayerSetWaypointsFilter::json_user_function);
     register_json_user_function(PlayersStats::key, PlayersStats::json_user_function);
     register_json_user_function(Preload::key, Preload::json_user_function);
     register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
@@ -398,6 +399,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetRigidBodyTarget::key, SetRigidBodyTarget::json_user_function);
     register_json_user_function(SetSkaterStyleUpdater::key, SetSkaterStyleUpdater::json_user_function);
     register_json_user_function(SetTrailerHitchPositions::key, SetTrailerHitchPositions::json_user_function);
+    register_json_user_function(SetWaypointOfs::key, SetWaypointOfs::json_user_function);
     register_json_user_function(SetSkybox::key, SetSkybox::json_user_function);
     register_json_user_function(SetObjective::key, SetObjective::json_user_function);
     register_json_user_function(ResetSupplyDepotCooldowns::key, ResetSupplyDepotCooldowns::json_user_function);

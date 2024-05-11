@@ -59,11 +59,11 @@ Player::Player(
     CollisionQuery& collision_query,
     VehicleSpawners& vehicle_spawners,
     Players& players,
-    const std::string& name,
-    const std::string& team,
+    std::string name,
+    std::string team,
     GameMode game_mode,
     UnstuckMode unstuck_mode,
-    const DrivingMode& driving_mode,
+    std::string behavior,
     DrivingDirection driving_direction,
     DeleteNodeMutex& delete_node_mutex,
     const Focuses& focuses)
@@ -73,15 +73,19 @@ Player::Player(
     , collision_query_{ collision_query }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
-    , name_{ name }
-    , team_{ team }
+    , name_{ std::move(name) }
+    , team_{ std::move(team) }
     , vehicle_{ nullptr }
     , controlled_{ .gun_node = nullptr }
     , target_scene_node_{ nullptr }
     , target_rb_{ nullptr }
     , game_mode_{ game_mode }
     , unstuck_mode_{ unstuck_mode }
-    , driving_mode_{ driving_mode }
+    , behavior_{ behavior }
+    , stuck_velocity_{ NAN }
+    , stuck_duration_{ NAN }
+    , unstuck_duration_{ NAN }
+    , joined_way_point_sandbox_{ JoinedWayPointSandbox::NONE }
     , driving_direction_{ driving_direction }
     , nunstucked_{ 0 }
     , delete_node_mutex_{ delete_node_mutex }
@@ -442,19 +446,19 @@ bool Player::unstuck() {
     if (!has_scene_vehicle()) {
         return false;
     }
-    if ((sum(squared(vehicle_->rb().rbp_.v_)) > squared(driving_mode_.stuck_velocity)) ||
+    if ((sum(squared(vehicle_->rb().rbp_.v_)) > squared(stuck_velocity_)) ||
         (unstuck_start_ != std::chrono::steady_clock::time_point()))
     {
         stuck_start_ = std::chrono::steady_clock::now();
     } else if (
         (stuck_start_ != std::chrono::steady_clock::time_point()) &&
         (unstuck_start_ == std::chrono::steady_clock::time_point()) &&
-        std::chrono::duration<float>(std::chrono::steady_clock::now() - stuck_start_).count() > driving_mode_.stuck_seconds)
+        std::chrono::duration<float>(std::chrono::steady_clock::now() - stuck_start_).count() * s > stuck_duration_)
     {
         unstuck_start_ = std::chrono::steady_clock::now();
     }
     if (unstuck_start_ != std::chrono::steady_clock::time_point()) {
-        if (std::chrono::duration<float>(std::chrono::steady_clock::now() - unstuck_start_).count() > driving_mode_.unstuck_seconds)
+        if (std::chrono::duration<float>(std::chrono::steady_clock::now() - unstuck_start_).count() * s > unstuck_duration_)
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
@@ -597,7 +601,7 @@ Gun& Player::gun() {
 
 bool Player::is_pedestrian() const {
     delete_node_mutex_.notify_reading();
-    return driving_mode_.joined_way_point_sandbox == JoinedWayPointSandbox::SIDEWALK;
+    return joined_way_point_sandbox_ == JoinedWayPointSandbox::SIDEWALK;
 }
 
 void Player::aim_and_shoot() {
@@ -869,7 +873,7 @@ void Player::create_externals(ExternalsMode externals_mode) {
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Create_externals without scene vehicle");
     }
-    vehicle_->create_externals(name(), externals_mode, skills_);
+    vehicle_->create_externals(name(), externals_mode, skills_, behavior_);
     externals_mode_ = externals_mode;
 }
 
@@ -881,8 +885,16 @@ Players& Player::players() {
     return players_;
 }
 
-const DrivingMode& Player::driving_mode() const {
-    return driving_mode_;
+void Player::set_behavior(
+    float stuck_velocity,
+    float stuck_duration,
+    float unstuck_duration,
+    JoinedWayPointSandbox joined_way_point_sandbox)
+{
+    stuck_velocity_ = stuck_velocity;
+    stuck_duration_ = stuck_duration;
+    unstuck_duration_ = unstuck_duration;
+    joined_way_point_sandbox_ = joined_way_point_sandbox;
 }
 
 DrivingDirection Player::driving_direction() const {
@@ -973,7 +985,7 @@ void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, Poi
 }
 
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
-    auto final_filter = driving_mode_.joined_way_point_sandbox & filter;
+    auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
     for (const auto& [location, wp] : way_points_) {
         if (!any(location & final_filter)) {

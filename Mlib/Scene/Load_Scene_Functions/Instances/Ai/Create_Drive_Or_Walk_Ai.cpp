@@ -16,6 +16,16 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(player);
+DECLARE_ARGUMENT(waypoint_reached_radius);
+DECLARE_ARGUMENT(rest_radius);
+DECLARE_ARGUMENT(lookahead_velocity);
+DECLARE_ARGUMENT(takeoff_velocity);
+DECLARE_ARGUMENT(max_velocity);
+DECLARE_ARGUMENT(max_delta_velocity_brake);
+DECLARE_ARGUMENT(collision_avoidance_radius_brake);
+DECLARE_ARGUMENT(collision_avoidance_radius_correct);
+DECLARE_ARGUMENT(collision_avoidance_cos);
+DECLARE_ARGUMENT(collision_avoidance_delta);
 }
 
 const std::string CreateDriveOrWalkAi::key = "create_drive_or_walk_ai";
@@ -33,7 +43,18 @@ CreateDriveOrWalkAi::CreateDriveOrWalkAi(RenderableScene& renderable_scene)
 void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
-    auto ai = std::make_unique<DriveOrWalkAi>(player);
+    auto ai = std::make_unique<DriveOrWalkAi>(
+        player,
+		args.arguments.at<double>(KnownArgs::waypoint_reached_radius),
+		args.arguments.at<float>(KnownArgs::rest_radius),
+		args.arguments.at<float>(KnownArgs::lookahead_velocity),
+		args.arguments.at<float>(KnownArgs::takeoff_velocity),
+		args.arguments.at<float>(KnownArgs::max_velocity),
+		args.arguments.at<float>(KnownArgs::max_delta_velocity_brake),
+		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_brake),
+		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_correct),
+		args.arguments.at<float>(KnownArgs::collision_avoidance_cos),
+		args.arguments.at<float>(KnownArgs::collision_avoidance_delta));
     player->rigid_body().add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }

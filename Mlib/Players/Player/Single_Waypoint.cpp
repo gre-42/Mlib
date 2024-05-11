@@ -40,7 +40,6 @@ void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoi
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
     if (has_waypoint()) {
-        waypoint_.value().position(1) += player_->driving_mode_.waypoint_ofs;
         if (max_waypoint_history_length_ > 0) {
             waypoint_history_.push_back(waypoint.value());
             if (waypoint_history_.size() > max_waypoint_history_length_) {
@@ -79,10 +78,10 @@ void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
     auto& rb = player_->rigid_body();
     if (any(rb.move_to(
         AiWaypoint{
-            .position_of_destination = waypoint_,
-            .velocity_of_destination = fixed_zeros<float, 3>(),
-            .velocity_at_destination = std::nullopt,
-            .waypoint_history = &waypoint_history_
+            waypoint_,                  // position_of_destination
+            fixed_zeros<float, 3>(),    // velocity_of_destination
+            std::nullopt,               // velocity_at_destination
+            &waypoint_history_          // waypoint_history
         },
         &skills) & VehicleAiMoveToStatus::WAYPOINT_REACHED))
     {

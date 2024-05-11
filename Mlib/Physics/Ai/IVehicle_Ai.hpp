@@ -10,7 +10,7 @@ namespace Mlib {
 
 struct SkillFactor;
 class SkillMap;
-struct AiWaypoint;
+class AiWaypoint;
 
 enum class VehicleAiMoveToStatus {
 	NONE = 0,

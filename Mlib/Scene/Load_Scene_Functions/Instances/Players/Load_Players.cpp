@@ -39,6 +39,7 @@ DECLARE_ARGUMENT(controller);
 DECLARE_ARGUMENT(spawned_vehicle);
 DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
+DECLARE_ARGUMENT(behavior);
 DECLARE_ARGUMENT(set_way_points);
 }
 
@@ -169,6 +170,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"CAR_NAME", vehicle_name},
                             {"TEAM", team},
                             {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
+                            {"behavior", get(PlayerKeys::behavior).get<std::string>()},
                             {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
                             {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
                             {"IF_HUMAN_STYLE", true},

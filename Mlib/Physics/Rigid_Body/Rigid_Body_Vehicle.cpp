@@ -89,6 +89,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , current_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , actor_task_{ ActorTask::UNDEFINED }
+    , waypoint_ofs_{ 0.f }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
@@ -1080,6 +1081,10 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
 
 void RigidBodyVehicle::set_actor_task(ActorTask actor_task) {
     actor_task_ = actor_task;
+}
+
+void RigidBodyVehicle::set_waypoint_ofs(float dy) {
+    waypoint_ofs_ = dy;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_female() const {
