@@ -223,8 +223,8 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
             bullet_node_name,
             bullet_properties_,
             bullet_trace_storage_ == nullptr
-            ? nullptr
-            : bullet_trace_storage_->add_trail_extender(),
+                ? nullptr
+                : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
             delete_node_mutex_,
             time,
