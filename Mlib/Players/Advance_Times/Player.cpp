@@ -424,11 +424,12 @@ void Player::increment_external_forces(
             return;
         }
     }
+    bool unstucking = false;
     if (game_mode_ == GameMode::RACING) {
         if (playback_waypoints_.has_waypoints()) {
             playback_waypoints_.select_next_waypoint();
         }
-    } else if ((unstuck_mode_ == UnstuckMode::OFF) || !unstuck()) {
+    } else if ((unstuck_mode_ == UnstuckMode::OFF) || !(unstucking = unstuck())) {
         if (ramming()) {
             auto tpos = target_rb_->abs_target();
             single_waypoint_.set_waypoint({ tpos, WayPointLocation::UNKNOWN });
@@ -438,7 +439,9 @@ void Player::increment_external_forces(
             }
         }
     }
-    single_waypoint_.move_to_waypoint(skills_);
+    if (!unstucking) {
+        single_waypoint_.move_to_waypoint(skills_);
+    }
 }
 
 bool Player::unstuck() {
