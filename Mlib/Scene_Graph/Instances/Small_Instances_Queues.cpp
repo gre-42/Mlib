@@ -37,21 +37,19 @@ void SmallInstancesQueues::insert(
         {
             TransformedColoredVertexArray* tcva;
             if (scva->material.blend_mode == BlendMode::INVISIBLE) {
-                invisible_queue_.push_back(TransformedColoredVertexArray{
+                tcva = &invisible_queue_.emplace_back(TransformedColoredVertexArray{
                     .scva = scva,
                     .trafo = TransformationAndBillboardId{
                         .transformation_matrix = m_shifted,
                         .billboard_id = billboard_id}});
-                tcva = &invisible_queue_.back();
             } else {
-                standard_queue_.push_back({
+                tcva = &standard_queue_.emplace_back(
                     (float)vc.sorting_key(scva->material),
                     TransformedColoredVertexArray{
                         .scva = scva,
                         .trafo = TransformationAndBillboardId{
                             .transformation_matrix = m_shifted,
-                            .billboard_id = billboard_id}}});
-                tcva = &standard_queue_.back().second;
+                            .billboard_id = billboard_id}}).second;
             }
             for (auto& [rp, instances] : black_queues_) {
                 assert_true(rp != main_render_pass_);
