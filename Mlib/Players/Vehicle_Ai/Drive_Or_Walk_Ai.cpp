@@ -24,24 +24,28 @@ DriveOrWalkAi::DriveOrWalkAi(
     float rest_radius,
     float lookahead_velocity,
     float takeoff_velocity,
+    float takeoff_velocity_delta,
     float max_velocity,
     float max_delta_velocity_brake,
     double collision_avoidance_radius_brake,
     double collision_avoidance_radius_correct,
-    float collision_avoidance_cos,
-    float collision_avoidance_delta)
+    float collision_avoidance_intersect_cos,
+    float collision_avoidance_step_aside_cos,
+    float collision_avoidance_step_aside_distance)
 	: on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
     , player_{ player }
     , waypoint_reached_radius_{ waypoint_reached_radius }
     , rest_radius_{ rest_radius }
     , lookahead_velocity_{ lookahead_velocity }
     , takeoff_velocity_{ takeoff_velocity }
+    , takeoff_velocity_delta_{ takeoff_velocity_delta }
     , max_velocity_{ max_velocity }
     , max_delta_velocity_brake_{ max_delta_velocity_brake }
     , collision_avoidance_radius_brake_{ collision_avoidance_radius_brake }
     , collision_avoidance_radius_correct_{ collision_avoidance_radius_correct }
-    , collision_avoidance_cos_{ collision_avoidance_cos }
-    , collision_avoidance_delta_{ collision_avoidance_delta }
+    , collision_avoidance_intersect_cos_{ collision_avoidance_intersect_cos }
+    , collision_avoidance_step_aside_cos_{ collision_avoidance_step_aside_cos }
+    , collision_avoidance_step_aside_distance_{ collision_avoidance_step_aside_distance }
 {
     on_player_delete_externals_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
@@ -152,7 +156,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             }
         } else if (dl2 < squared(collision_avoidance_radius_correct_)) {
             auto p_z3 = p_rb.rbp_.abs_z();
-            if (std::abs(dot0d(z3, p_z3)) < std::cos(30. * degrees)) {
+            if (std::abs(dot0d(z3, p_z3)) < collision_avoidance_intersect_cos_) {
                 FixedArray<double, 2> intersection;
                 if (!intersect_rays(
                     intersection,
@@ -178,12 +182,12 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                 }
             } else if (dl2 > 1e-12) {
                 if ((player_rb.avatar_controller_ != nullptr) ||
-                    (dot0d(d, z3.casted<double>()) / std::sqrt(dl2) < -collision_avoidance_cos_))
+                    (dot0d(d, z3.casted<double>()) / std::sqrt(dl2) < -collision_avoidance_step_aside_cos_))
                 {
                     if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
-                        d_wpt = collision_avoidance_delta_;
+                        d_wpt = collision_avoidance_step_aside_distance_;
                     } else if (player_->driving_direction() == DrivingDirection::LEFT) {
-                        d_wpt = -collision_avoidance_delta_;
+                        d_wpt = -collision_avoidance_step_aside_distance_;
                     } else {
                         THROW_OR_ABORT("Unknown driving direction");
                     }
@@ -210,7 +214,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             target_vel = max_velocity_;
         }
         float dvel = -dot0d(player_rb.rbp_.v_, player_rb.rbp_.abs_z()) - target_vel;
-        if (is_accelerating_on_runway && (std::abs(dvel) < 4.f * kph)) {
+        if (is_accelerating_on_runway && (std::abs(dvel) < takeoff_velocity_delta_)) {
             player_rb.actor_task_ = ActorTask::RUNWAY_TAKEOFF;
         }
         if (dvel < 0) {

@@ -18,12 +18,14 @@ public:
 		float rest_radius,
 		float lookahead_velocity,
 		float takeoff_velocity,
+		float takeoff_velocity_delta,
 		float max_velocity,
 		float max_delta_velocity_brake,
 		double collision_avoidance_radius_brake,
 		double collision_avoidance_radius_correct,
-		float collision_avoidance_cos,
-		float collision_avoidance_delta);
+		float collision_avoidance_intersect_cos,
+		float collision_avoidance_step_aside_cos,
+		float collision_avoidance_step_aside_distance);
 	virtual ~DriveOrWalkAi() override;
 	virtual VehicleAiMoveToStatus move_to(
 		const AiWaypoint& ai_waypoint,
@@ -36,12 +38,14 @@ private:
 	float rest_radius_;
 	float lookahead_velocity_;
 	float takeoff_velocity_;
+	float takeoff_velocity_delta_;
 	float max_velocity_;
 	float max_delta_velocity_brake_;
 	double collision_avoidance_radius_brake_;
 	double collision_avoidance_radius_correct_;
-	float collision_avoidance_cos_;
-	float collision_avoidance_delta_;
+	float collision_avoidance_intersect_cos_;
+	float collision_avoidance_step_aside_cos_;
+	float collision_avoidance_step_aside_distance_;
 };
 
 }

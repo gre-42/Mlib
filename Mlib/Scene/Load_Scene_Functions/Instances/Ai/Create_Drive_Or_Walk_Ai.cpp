@@ -20,12 +20,14 @@ DECLARE_ARGUMENT(waypoint_reached_radius);
 DECLARE_ARGUMENT(rest_radius);
 DECLARE_ARGUMENT(lookahead_velocity);
 DECLARE_ARGUMENT(takeoff_velocity);
+DECLARE_ARGUMENT(takeoff_velocity_delta);
 DECLARE_ARGUMENT(max_velocity);
 DECLARE_ARGUMENT(max_delta_velocity_brake);
 DECLARE_ARGUMENT(collision_avoidance_radius_brake);
 DECLARE_ARGUMENT(collision_avoidance_radius_correct);
-DECLARE_ARGUMENT(collision_avoidance_cos);
-DECLARE_ARGUMENT(collision_avoidance_delta);
+DECLARE_ARGUMENT(collision_avoidance_intersect_angle);
+DECLARE_ARGUMENT(collision_avoidance_step_aside_angle);
+DECLARE_ARGUMENT(collision_avoidance_step_aside_distance);
 }
 
 const std::string CreateDriveOrWalkAi::key = "create_drive_or_walk_ai";
@@ -49,12 +51,14 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 		args.arguments.at<float>(KnownArgs::rest_radius) * meters,
 		args.arguments.at<float>(KnownArgs::lookahead_velocity) * kph,
 		args.arguments.at<float>(KnownArgs::takeoff_velocity) * kph,
+		args.arguments.at<float>(KnownArgs::takeoff_velocity_delta) * kph,
 		args.arguments.at<float>(KnownArgs::max_velocity) * kph,
 		args.arguments.at<float>(KnownArgs::max_delta_velocity_brake) * kph,
 		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_brake) * meters,
 		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_correct) * meters,
-		args.arguments.at<float>(KnownArgs::collision_avoidance_cos),
-		args.arguments.at<float>(KnownArgs::collision_avoidance_delta) * meters);
+		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_intersect_angle) * degrees),
+		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_angle) * degrees),
+		args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_distance) * meters);
     player->rigid_body().add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }
