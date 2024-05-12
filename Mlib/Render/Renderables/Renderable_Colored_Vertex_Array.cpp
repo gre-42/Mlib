@@ -1082,9 +1082,22 @@ void RenderableColoredVertexArray::render_cva(
                 // AperiodicLagFinder lag_finder{ "update " + std::to_string(instances->num_instances()) + " instances " + cva->name + ": ", std::chrono::milliseconds{5} };
                 instances->update();
             }
-            CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
+            try {
+                CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error(
+                    "Could not render instanced triangles. "
+                    "#triangles: " + std::to_string(si.ntriangles()) +
+                    ", #instances: " + std::to_string(instances->num_instances()) + ", " + e.what());
+            }
         } else {
-            CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles())));
+            try {
+                CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles())));
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error(
+                    "Could not render triangles. "
+                    "#triangles: " + std::to_string(si.ntriangles()) + ", " + e.what());
+            }
         }
         CHK(glBindVertexArray(0));
     }
