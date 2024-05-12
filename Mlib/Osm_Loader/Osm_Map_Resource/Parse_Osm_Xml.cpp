@@ -126,10 +126,10 @@ void Mlib::parse_osm_xml(
                 current_node = "<none>";
             }
         } else if (Mlib::re::regex_match(line, match, node_end_reg)) {
-            if (any(isnan(current_node_position))) {
-                THROW_OR_ABORT("Closing node tag with NAN position");
-            }
-            if (!nodes.at(current_node).tags.contains("height_reference", "water")) {
+            if ((current_node != "<none>") && !nodes.at(current_node).tags.contains("height_reference", "water")) {
+                if (any(isnan(current_node_position))) {
+                    THROW_OR_ABORT("Closing node tag with NAN position");
+                }
                 if (any(current_node_position < bounds_min_merged - FixedArray<double, 2>{0.01, 0.01})) {
                     std::stringstream sstr;
                     sstr << "Node with ID " << current_node << " and coordinates " << current_node_position << " is out of minimum bounds " << bounds_min_merged;
