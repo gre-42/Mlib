@@ -1,15 +1,19 @@
 #include "Mipmap_Mode.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 
 using namespace Mlib;
 
 MipmapMode Mlib::mipmap_mode_from_string(const std::string& str) {
-    if (str == "with_mipmaps") {
-        return MipmapMode::WITH_MIPMAPS;
-    } else if (str == "no_mipmaps") {
-        return MipmapMode::NO_MIPMAPS;
+    static const std::map<std::string, MipmapMode> m{
+        {"with_mipmaps", MipmapMode::WITH_MIPMAPS},
+        {"no_mipmaps", MipmapMode::NO_MIPMAPS}
+    };
+    auto it = m.find(str);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown mipmap mode: \"" + str + '"');
     }
-    THROW_OR_ABORT("Unknown mipmap mode");
+    return it->second;
 }
 
 std::string Mlib::mipmap_mode_to_string(const MipmapMode& mode) {

@@ -52,9 +52,8 @@ LoadSceneJsonUserFunction AddTextureDescriptor::json_user_function = [](const Lo
 
 void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto mipmap_mode = args.arguments.contains(KnownArgs::mipmap_mode)
-        ? mipmap_mode_from_string(args.arguments.at<std::string>(KnownArgs::mipmap_mode))
-        : MipmapMode::WITH_MIPMAPS;
+    auto mipmap_mode = mipmap_mode_from_string(
+        args.arguments.at<std::string>(KnownArgs::mipmap_mode, "with_mipmaps"));
     auto anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::anisotropic_filtering_level);
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
