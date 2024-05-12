@@ -1422,7 +1422,7 @@ void RenderingResources::save_array_to_file(
 {
     for (const auto& [i, img] : enumerate(get_texture_array_data(color, role, FlipMode::NONE)))
     {
-        auto filename = filename_prefix + std::to_string(i);
+        auto filename = filename_prefix + std::to_string(i) + ".png";
         if (!stbi_write_png(
             filename.c_str(),
             img.width,

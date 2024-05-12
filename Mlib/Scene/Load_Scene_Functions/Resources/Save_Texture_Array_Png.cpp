@@ -1,4 +1,4 @@
-#include "Save_Texture_Atlas_Png.hpp"
+#include "Save_Texture_Array_Png.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
@@ -14,22 +14,22 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(filename);
+DECLARE_ARGUMENT(filename_prefix);
 DECLARE_ARGUMENT(color_mode);
 }
 
-const std::string SaveTextureAtlasPng::key = "save_texture_atlas_png";
+const std::string SaveTextureArrayPng::key = "save_texture_array_png";
 
-LoadSceneJsonUserFunction SaveTextureAtlasPng::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
+LoadSceneJsonUserFunction SaveTextureArrayPng::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
     execute(args);
 };
 
-void SaveTextureAtlasPng::execute(const LoadSceneJsonUserFunctionArgs& args)
+void SaveTextureArrayPng::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextStack::primary_rendering_resources().save_to_file(
-        args.arguments.at<std::string>(KnownArgs::filename),
+    RenderingContextStack::primary_rendering_resources().save_array_to_file(
+        args.arguments.at<std::string>(KnownArgs::filename_prefix),
         ColormapWithModifiers{
             .filename = args.arguments.at<std::string>(KnownArgs::name),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))},

@@ -74,16 +74,16 @@ TrackElement TrackElement::from_vector(
     }
     result.elapsed_seconds = (float)data[0];
     result.transformations.resize(ntransformations);
-    for (auto it : enumerate(result.transformations)) {
+    for (auto&& [i, trafo] : enumerate(result.transformations)) {
         auto pos = FixedArray<double, 3>{
-            data[1 + it.first * 6],
-            data[2 + it.first * 6],
-            data[3 + it.first * 6]};
-        it.second.rotation() = {
-            (float)data[4 + it.first * 6],
-            (float)data[5 + it.first * 6],
-            (float)data[6 + it.first * 6]};
-        it.second.position() = inverse_geographic_mapping.transform(pos);
+            data[1 + i * 6],
+            data[2 + i * 6],
+            data[3 + i * 6]};
+        trafo.rotation() = {
+            (float)data[4 + i * 6],
+            (float)data[5 + i * 6],
+            (float)data[6 + i * 6]};
+        trafo.position() = inverse_geographic_mapping.transform(pos);
     }
     return result;
 }
