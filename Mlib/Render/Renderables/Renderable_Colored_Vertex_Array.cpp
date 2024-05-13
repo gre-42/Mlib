@@ -811,11 +811,9 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniformMatrix3fv(rp.r_location, 1, GL_TRUE, m.R().T().flat_begin()));
     }
     if (!rcva_->triangles_res_->bone_indices.empty()) {
-        size_t i = 0;
-        for (const auto& l : absolute_bone_transformations) {
+        for (const auto& [i, l] : enumerate(absolute_bone_transformations)) {
             CHK(glUniform3fv(rp.pose_positions.at(i), 1, l.offset().flat_begin()));
             CHK(glUniform4fv(rp.pose_quaternions.at(i), 1, l.quaternion().vector().flat_begin()));
-            ++i;
         }
     }
     if (has_horizontal_detailmap) {
@@ -904,8 +902,8 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER));
             auto border_brightness = (float)!any(filtered_lights.at(i).second->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK);
-            float borderColor[] = { border_brightness, border_brightness, border_brightness, 1.f};
-            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));
+            float border_color[] = { border_brightness, border_brightness, border_brightness, 1.f};
+            CHK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color));
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
@@ -1032,7 +1030,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     if ((render_pass.external.pass != ExternalRenderPassType::DIRTMAP) &&
         !is_lightmap &&
-        cva->material.draw_distance_noperations > 0 &&
+        (cva->material.draw_distance_noperations > 0) &&
         (
             std::isnan(render_config.draw_distance_add) ||
             (render_config.draw_distance_add != INFINITY)))
