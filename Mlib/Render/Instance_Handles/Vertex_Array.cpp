@@ -35,9 +35,12 @@ bool VertexArray::initialized() const {
 }
 
 void VertexArray::initialize() {
+    if (initialized()) {
+        THROW_OR_ABORT("Vertex-array already initialized");
+    }
     CHK(glGenVertexArrays(1, &vertex_array_));
     CHK(glBindVertexArray(vertex_array_));
-    if (vertex_array_ == (GLuint)-1) {
+    if (!initialized()) {
         THROW_OR_ABORT("Unexpected vertex-array index");
     }
 }
@@ -73,7 +76,7 @@ void VertexArray::bind() const {
 }
 
 void VertexArray::deallocate(DeallocationMode mode) {
-    if (vertex_array_ != (GLuint)-1) {
+    if (initialized()) {
         if (mode == DeallocationMode::DIRECT) {
             ABORT(glDeleteVertexArrays(1, &vertex_array_));
         } else if (mode == DeallocationMode::GARBAGE_COLLECTION) {
