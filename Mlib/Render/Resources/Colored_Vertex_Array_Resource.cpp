@@ -1101,7 +1101,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (!has_lightmap_depth && !light_shadow_indices.empty()) {
             for (size_t i : light_shadow_indices) {
                 assert_true(i < lights.size());
-                sstr << "        {" << std::endl;
+                sstr << "    {" << std::endl;
                 if (has_lightmap_color) {
                     sstr << "        vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
                     sstr << "        vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
