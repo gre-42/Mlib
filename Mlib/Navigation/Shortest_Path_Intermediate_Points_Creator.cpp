@@ -39,8 +39,12 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
             .position = p1,
             .polyRef = lp1_it->second},
         step_size_);
-    if (res.size() < 2) {
-        THROW_OR_ABORT2((EdgeException{p0, p1, "Unexpected path length"}));
+    if (res.empty()) {
+        THROW_OR_ABORT2("Empty shortest path");
+    } else if (res.size() == 1) {
+        // THROW_OR_ABORT2((EdgeException{p0, p1, "Unexpected path length"}));
+        lwarn() << "Shortest path consists of a single point, probably due to duplicate points";
+        return {};
     } else if (res.size() == 2) {
         return {};
     } else {

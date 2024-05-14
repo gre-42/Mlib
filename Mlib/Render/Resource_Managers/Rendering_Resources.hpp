@@ -112,6 +112,12 @@ enum class TextureRole {
     NORMAL
 };
 
+enum class TextureType {
+    TEXTURE_2D,
+    TEXTURE_2D_ARRAY,
+    TEXTURE_3D
+};
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;
@@ -130,6 +136,7 @@ public:
         TextureRole role = TextureRole::COLOR,
         CallerType caller_type = CallerType::RENDER) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
+    TextureType texture_type(const ColormapWithModifiers& name, TextureRole role) const;
     void set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
@@ -202,7 +209,7 @@ private:
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
-    GLuint initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
+    std::pair<GLuint, TextureType> initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
     TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
@@ -210,6 +217,7 @@ private:
     mutable ThreadsafeMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable ThreadsafeMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
     mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;

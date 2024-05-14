@@ -559,6 +559,18 @@ void RenderableColoredVertexArray::render_cva(
             break;
         }
     }
+    if (has_discrete_atlas_texture_layer) {
+        if (cva->material.textures_color.size() != 1) {
+            THROW_OR_ABORT("Unexpected number of color textures");
+        }
+        const auto& t = cva->material.textures_color[0];
+        auto ttype = secondary_rendering_resources_.contains_texture(t.texture_descriptor.color)
+            ? secondary_rendering_resources_.texture_type(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB)
+            : rcva_->rendering_resources_.texture_type(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
+        if (ttype != TextureType::TEXTURE_2D_ARRAY) {
+            THROW_OR_ABORT("Unexpected texture type (expected a 2D array)");
+        }
+    }
     IVertexData& si = rcva_->get_vertex_array(cva);
     if (si.has_discrete_triangle_texture_layers() &&
         has_discrete_atlas_texture_layer)
@@ -1084,17 +1096,23 @@ void RenderableColoredVertexArray::render_cva(
                 CHK(glDrawArraysInstanced(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles()), instances->num_instances()));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
+                    (std::stringstream() <<
                     "Could not render instanced triangles. "
-                    "#triangles: " + std::to_string(si.ntriangles()) +
-                    ", #instances: " + std::to_string(instances->num_instances()) + ", " + e.what());
+                    "#triangles: " << si.ntriangles() <<
+                    ", #instances: " << instances->num_instances() <<
+                    ", material: " << cva->material.identifier() <<
+                    ", " << e.what()).str());
             }
         } else {
             try {
                 CHK(glDrawArrays(GL_TRIANGLES, 0, integral_cast<GLsizei>(3 * si.ntriangles())));
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error(
+                    (std::stringstream() <<
                     "Could not render triangles. "
-                    "#triangles: " + std::to_string(si.ntriangles()) + ", " + e.what());
+                    "#triangles: " << si.ntriangles() <<
+                    ", material: " << cva->material.identifier() <<
+                    ", " << e.what()).str());
             }
         }
         CHK(glBindVertexArray(0));

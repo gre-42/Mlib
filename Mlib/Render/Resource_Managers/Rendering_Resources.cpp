@@ -521,6 +521,9 @@ RenderingResources::RenderingResources(std::string name,
         [](const ColormapWithModifiers& e) { return e.filename; } }
     , preloaded_raw_texture_data_{ "Preloaded raw texture data" }
     , preloaded_texture_dds_data_{ "Preloaded texture DDS data" }
+    , texture_types_{
+        "Texture types",
+        [](const ColormapWithModifiers& e) { return e.filename; } }
     , texture_descriptors_{ "Texture descriptor" }
     , textures_{ "Texture", [](const ColormapWithModifiers& e) { return e.filename; } }
     , manual_atlas_tile_descriptors_{ "Manual atlas tile descriptor" }
@@ -561,6 +564,7 @@ void RenderingResources::deallocate() {
         }
         return false;
     });
+    texture_types_.clear();
     font_textures_.clear();
 }
 
@@ -660,6 +664,41 @@ bool RenderingResources::texture_is_loaded_unsafe(const ColormapWithModifiers& n
 bool RenderingResources::contains_texture(const ColormapWithModifiers& name) const {
     std::shared_lock lock{mutex_};
     return textures_.contains(name) || auto_atlas_tile_descriptors_.contains(name.filename);
+}
+
+TextureType RenderingResources::texture_type(
+    const ColormapWithModifiers& name,
+    TextureRole role) const
+{
+    if (role == TextureRole::COLOR_FROM_DB) {
+        return texture_type(colormap(name), TextureRole::COLOR);
+    }
+    if (auto_atlas_tile_descriptors_.contains(name.filename)) {
+        return TextureType::TEXTURE_2D_ARRAY;
+    }
+    if (auto it = manual_atlas_tile_descriptors_.try_get(name.filename); it != nullptr) {
+        return it->nlayers == 1
+            ? TextureType::TEXTURE_2D
+            : it->depth_interpolation == InterpolationMode::NEAREST
+                ? TextureType::TEXTURE_2D_ARRAY
+                : TextureType::TEXTURE_3D;
+    }
+    if (auto it = preloaded_processed_texture_array_data_.try_get(name); it != nullptr) {
+        return it->size() == 1 ? TextureType::TEXTURE_2D : TextureType::TEXTURE_2D_ARRAY;
+    }
+    if (auto it = preloaded_raw_texture_data_.try_get(name.filename); it != nullptr) {
+        return it->size() == 1 ? TextureType::TEXTURE_2D : TextureType::TEXTURE_2D_ARRAY;
+    }
+    if (preloaded_processed_texture_data_.contains(name)) {
+        return TextureType::TEXTURE_2D;
+    }
+    if (auto it = texture_types_.try_get(name); it != nullptr) {
+        return *it;
+    }
+    if (fs::exists(name.filename)) {
+        return TextureType::TEXTURE_2D;
+    }
+    THROW_OR_ABORT("Could not find texture:\n" + (std::stringstream() << name).str());
 }
 
 const ColormapWithModifiers& RenderingResources::colormap(const ColormapWithModifiers& name) const
@@ -866,7 +905,9 @@ GLuint RenderingResources::get_texture(
         } else if (cubemap_descriptors_.contains(color.filename)) {
             texture = get_cubemap_unsafe(color.filename);
         } else {
-            texture = initialize_non_dds_texture(color, role, aniso);
+            auto t = initialize_non_dds_texture(color, role, aniso);
+            texture_types_.emplace(color, t.second);
+            texture = t.first;
         }
     }
 
@@ -1502,8 +1543,22 @@ void RenderingResources::insert_texture(
     }
 }
 
-GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifiers& color, TextureRole role, float aniso) const
+std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(const ColormapWithModifiers& color, TextureRole role, float aniso) const
 {
+    if (role == TextureRole::COLOR_FROM_DB) {
+        return initialize_non_dds_texture(colormap(color), TextureRole::COLOR, aniso);
+    }
+    auto chk_type = [&](TextureType actual_texture_type){
+        auto expected_texture_type = texture_type(color, role);
+        if (expected_texture_type != actual_texture_type) {
+            THROW_OR_ABORT(
+                (std::stringstream() << "Unexpected texture return type (conflicting interpolation modes?). " <<
+                "Expected: " << (int)expected_texture_type <<
+                ", Actual: " << (int)actual_texture_type <<
+                ", Color: " << color).str());
+        }
+        return actual_texture_type;
+        };
     auto generate_texture = [&color, &aniso](
         const uint8_t* data,
         int width,
@@ -1545,7 +1600,7 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
         CHK(glBindTexture(GL_TEXTURE_2D, 0));
         return texture;
     };
-    auto generate_texture_array = [&color, &aniso](const std::vector<StbInfo<uint8_t>>& data)
+    auto generate_texture_array = [&color, &aniso, &chk_type](const std::vector<StbInfo<uint8_t>>& data) -> std::pair<GLuint, TextureType>
     {
         if (data.empty()) {
             THROW_OR_ABORT("Texture array is empty");
@@ -1594,27 +1649,27 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
             CHK(glGenerateMipmap(target));
         }
         CHK(glBindTexture(target, 0));
-        return texture;
+        return { texture, chk_type(target == GL_TEXTURE_2D_ARRAY ? TextureType::TEXTURE_2D_ARRAY : TextureType::TEXTURE_3D) };
     };
 
     if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_data_, color); it != nullptr) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture: " << color;
         }
-        return generate_texture(it->data.get(), it->width, it->height, it->nrChannels);
+        return { generate_texture(it->data.get(), it->width, it->height, it->nrChannels), TextureType::TEXTURE_2D };
     } else if (auto it = get_or_extract<EXTRACT_PROCESSED>(preloaded_processed_texture_array_data_, color); it != nullptr) {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Using preloaded texture array: " << color;
         }
         if (it->size() == 1) {
             const auto& data = (*it)[0];
-            return generate_texture(data.data.get(), data.width, data.height, data.nrChannels);
+            return { generate_texture(data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
         } else {
             return generate_texture_array(*it);
         }
     } else if (auto it = get_or_extract<EXTRACT_RAW>(preloaded_raw_texture_data_, color.filename); it != nullptr) {
         auto si = stb_load8(color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
-        return generate_texture(si.data.get(), si.width, si.height, si.nrChannels);
+        return { generate_texture(si.data.get(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
     } else {
         if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
             linfo() << this << " Could not find preloaded texture: " << color;
@@ -1623,13 +1678,13 @@ GLuint RenderingResources::initialize_non_dds_texture(const ColormapWithModifier
             auto sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
             if (it->nlayers == 1) {
                 const auto& data = sis[0];
-                return generate_texture(data.data.get(), data.width, data.height, data.nrChannels);
+                return { generate_texture(data.data.get(), data.width, data.height, data.nrChannels), chk_type(TextureType::TEXTURE_2D) };
             } else {
                 return generate_texture_array(sis);
             }
         } else {
             auto si = get_texture_data(color, role, FlipMode::VERTICAL);
-            return generate_texture(si.data.get(), si.width, si.height, si.nrChannels);
+            return { generate_texture(si.data.get(), si.width, si.height, si.nrChannels), chk_type(TextureType::TEXTURE_2D) };
         }
     }
 }

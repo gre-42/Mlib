@@ -1,5 +1,6 @@
 #include "Add_Texture_Descriptor.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -37,6 +38,7 @@ DECLARE_ARGUMENT(plus);
 DECLARE_ARGUMENT(abs);
 DECLARE_ARGUMENT(invert);
 DECLARE_ARGUMENT(mipmap_mode);
+DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
 DECLARE_ARGUMENT(wrap_mode_s);
 DECLARE_ARGUMENT(wrap_mode_t);
@@ -86,6 +88,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
+                .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes},
             .specular = {
