@@ -197,9 +197,11 @@ static GenShaderText vertex_shader_text_gen{[](
         if (lights.empty()) {
             THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
         }
-        sstr << "uniform mat4 MVP_light[" << lights.size() << "];" << std::endl;
-        // vec4 to avoid clipping problems
-        sstr << "out vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
+        for (size_t i : lightmap_indices) {
+            sstr << "uniform mat4 MVP_light" << i << ";" << std::endl;
+            // vec4 to avoid clipping problems
+            sstr << "out vec4 FragPosLightSpace" << i << ";" << std::endl;
+        }
     }
     if (nskidmarks != 0) {
         sstr << "uniform mat4 MVP_skidmarks[" << nskidmarks << "];" << std::endl;
@@ -339,7 +341,7 @@ static GenShaderText vertex_shader_text_gen{[](
     }
     if (has_lightmap_color || has_lightmap_depth) {
         for (size_t i : lightmap_indices) {
-            sstr << "    FragPosLightSpace[" << i << "] = MVP_light[" << i << "] * vec4(vPosInstance, 1.0);" << std::endl;
+            sstr << "    FragPosLightSpace" << i << " = MVP_light" << i << " * vec4(vPosInstance, 1.0);" << std::endl;
         }
     }
     for (size_t i = 0; i < nskidmarks; ++i) {
@@ -418,6 +420,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_alpha,
+    const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     const NotSortedArray<std::vector<size_t>>& light_noshadow_indices,
     const NotSortedArray<std::vector<size_t>>& light_shadow_indices,
     const NotSortedArray<std::vector<size_t>>& black_shadow_indices,
@@ -511,17 +514,23 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (lights.empty()) {
             THROW_OR_ABORT("No lights despite has_lightmap_color or has_lightmap_depth");
         }
-        sstr << "in vec4 FragPosLightSpace[" << lights.size() << "];" << std::endl;
+        for (size_t i : lightmap_indices) {
+            sstr << "in vec4 FragPosLightSpace" << i << ";" << std::endl;
+        }
     }
     if (nskidmarks != 0) {
         sstr << "in vec4 FragPosSkidmarkSpace[" << nskidmarks << "];" << std::endl;
     }
     assert_true(!(has_lightmap_color && has_lightmap_depth));
     if (has_lightmap_color) {
-        sstr << "uniform sampler2D texture_light_color[" << lights.size() << "];" << std::endl;
+        for (size_t i : lightmap_indices) {
+            sstr << "uniform sampler2D texture_light_color" << i << ";" << std::endl;
+        }
     }
     if (has_lightmap_depth) {
-        sstr << "uniform sampler2D texture_light_depth[" << lights.size() << "];" << std::endl;
+        for (size_t i : lightmap_indices) {
+            sstr << "uniform sampler2D texture_light_depth" << i << ";" << std::endl;
+        }
     }
     if (!skidmarks.empty()) {
         sstr << "uniform sampler2D texture_skidmarks[" << skidmarks.size() << "];" << std::endl;
@@ -1056,9 +1065,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             for (size_t i : black_shadow_indices) {
                 assert_true(i < lights.size());
                 sstr << "        {" << std::endl;
-                sstr << "            vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
+                sstr << "            vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
                 sstr << "            vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "            black_fac = min(black_fac, texture(texture_light_color[" << i << "], proj_coords01.xy).rgb);" << std::endl;
+                sstr << "            black_fac = min(black_fac, texture(texture_light_color" << i << ", proj_coords01.xy).rgb);" << std::endl;
                 sstr << "        }" << std::endl;
             }
             sstr << "    }" << std::endl;
@@ -1078,9 +1087,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (has_lightmap_depth) {
             for (size_t i = 0; i < lights.size(); ++i) {
                 sstr << "    {" << std::endl;
-                sstr << "        vec3 proj_coords11 = FragPosLightSpace[" << i << "].xyz / FragPosLightSpace[" << i << "].w;" << std::endl;
+                sstr << "        vec3 proj_coords11 = FragPosLightSpace" << i << ".xyz / FragPosLightSpace" << i << ".w;" << std::endl;
                 sstr << "        vec3 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth[" << i << "], proj_coords01.xy).r) {" << std::endl;
+                sstr << "        if (proj_coords01.z - 0.00002 < texture(texture_light_depth" << i << ", proj_coords01.xy).r) {" << std::endl;
                 if (!ambient.all_equal(0) && any(lights[i].second->ambient != 0.f)) {
                     sstr << "            frag_brightness_emissive_ambient_diffuse += phong_ambient(" << i << ");" << std::endl;
                 }
@@ -1103,9 +1112,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 assert_true(i < lights.size());
                 sstr << "    {" << std::endl;
                 if (has_lightmap_color) {
-                    sstr << "        vec2 proj_coords11 = FragPosLightSpace[" << i << "].xy / FragPosLightSpace[" << i << "].w;" << std::endl;
+                    sstr << "        vec2 proj_coords11 = FragPosLightSpace" << i << ".xy / FragPosLightSpace" << i << ".w;" << std::endl;
                     sstr << "        vec2 proj_coords01 = proj_coords11 * 0.5 + 0.5;" << std::endl;
-                    sstr << "        vec3 light_fac = texture(texture_light_color[" << i << "], proj_coords01.xy).rgb;" << std::endl;
+                    sstr << "        vec3 light_fac = texture(texture_light_color" << i << ", proj_coords01.xy).rgb;" << std::endl;
                 } else {
                     sstr << "        vec3 light_fac = vec3(1.0, 1.0, 1.0);" << std::endl;
                 }
@@ -1632,6 +1641,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         NotSortedArray{ filtered_skidmarks },
         NotSortedArray{ textures_color },
         NotSortedArray{ textures_alpha },
+        NotSortedArray{ lightmap_indices },
         NotSortedArray{ light_noshadow_indices },
         NotSortedArray{ light_shadow_indices },
         NotSortedArray{ black_shadow_indices },
@@ -1706,7 +1716,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         if (!id.lightmap_indices_color.empty() || !id.lightmap_indices_depth.empty()) {
             for (size_t i : lightmap_indices) {
-                rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light[" + std::to_string(i) + "]").c_str());
+                rp->mvp_light_locations[i] = checked_glGetUniformLocation(rp->program, ("MVP_light" + std::to_string(i)).c_str());
             }
         } else {
             // Do nothing
@@ -1744,7 +1754,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         assert(id.lightmap_indices_color.empty() || id.lightmap_indices_depth.empty());
         if (!id.lightmap_indices_color.empty()) {
             for (size_t i : lightmap_indices) {
-                rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color[" + std::to_string(i) + "]").c_str());
+                rp->texture_lightmap_color_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_color" + std::to_string(i)).c_str());
             }
         } else {
             // Do nothing
@@ -1752,7 +1762,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
         if (!id.lightmap_indices_depth.empty()) {
             for (size_t i : lightmap_indices) {
-                rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth[" + std::to_string(i) + "]").c_str());
+                rp->texture_lightmap_depth_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_light_depth" + std::to_string(i)).c_str());
             }
         } else {
             // Do nothing
