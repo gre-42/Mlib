@@ -15,6 +15,7 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(texture);
+DECLARE_ARGUMENT(emissive);
 DECLARE_ARGUMENT(times);
 DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(max_num_triangles);
@@ -30,12 +31,13 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
         args.arguments.at<std::string>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
          texture = args.arguments.at<std::string>(KnownArgs::texture),
+         emissive = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive, fixed_zeros<float, 3>()),
          times = args.arguments.at<std::vector<float>>(KnownArgs::times),
          w = args.arguments.at<std::vector<float>>(KnownArgs::w),
          max_num_triangles = args.arguments.at<size_t>(KnownArgs::max_num_triangles),
          filter = RenderableResourceFilter{}]
         ()
         {
-            return std::make_shared<TrailsInstance>(texture, times, w, max_num_triangles, filter);
+            return std::make_shared<TrailsInstance>(texture, emissive, times, w, max_num_triangles, filter);
         });
 };

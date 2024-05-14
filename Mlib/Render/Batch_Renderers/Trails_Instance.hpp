@@ -29,6 +29,7 @@ class TrailsInstance {
 public:
     explicit TrailsInstance(
         const std::string& texture,
+        const FixedArray<float, 3>& emissive,
         const std::vector<float>& continuous_layer_x,
         const std::vector<float>& continuous_layer_y,
         size_t max_num_segments,
