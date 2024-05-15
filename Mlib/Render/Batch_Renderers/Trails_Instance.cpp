@@ -12,7 +12,7 @@ using namespace Mlib;
 
 static std::shared_ptr<ColoredVertexArray<float>> gen_array(
     const std::string& texture,
-    const FixedArray<float, 3>& emissive,
+    const Shading& shading,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y)
 {
@@ -35,9 +35,7 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
             .continuous_layer_y = continuous_layer_y,
             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .cull_faces = false,
-            .shading{
-                .emissive = OrderableFixedArray{ emissive }
-            } },
+            .shading = shading },
         PhysicsMaterial::ATTR_VISIBLE,
         ModifierBacklog{},
         std::vector<FixedArray<ColoredVertex<float>, 4>>{},             // quads
@@ -52,14 +50,14 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
 
 TrailsInstance::TrailsInstance(
     const std::string& texture,
-    const FixedArray<float, 3>& emissive,
+    const Shading& shading,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
     : offset_(NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayer>(max_num_segments) }
-    , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, emissive, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
+    , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, shading, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
     , filter_{ filter }
 {}

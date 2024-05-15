@@ -21,6 +21,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 struct ExternalRenderPass;
 struct TrailSequence;
+struct Shading;
 
 class TrailsInstance {
     TrailsInstance(const TrailsInstance&) = delete;
@@ -29,7 +30,7 @@ class TrailsInstance {
 public:
     explicit TrailsInstance(
         const std::string& texture,
-        const FixedArray<float, 3>& emissive,
+        const Shading& shading,
         const std::vector<float>& continuous_layer_x,
         const std::vector<float>& continuous_layer_y,
         size_t max_num_segments,
