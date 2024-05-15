@@ -2,6 +2,7 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
