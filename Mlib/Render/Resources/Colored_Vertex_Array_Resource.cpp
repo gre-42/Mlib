@@ -1160,9 +1160,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (textures_color.size() != 1) {
             THROW_OR_ABORT("Specular maps not supported for blended textures");
         }
-        sstr << "    vec3 fragSpecularity = texture(texture_specularmap, " << tex_coords(*textures_color[0]) << ").rgb;" << std::endl;
+        sstr << "    vec3 frag_specular = texture(texture_specularmap, " << tex_coords(*textures_color[0]) << ").rgb;" << std::endl;
     } else {
-        sstr << "    float fragSpecularity = 1.0;" << std::endl;
+        sstr << "    float frag_specular = 1.0;" << std::endl;
     }
     if ((reflection_strength != 0.f) || (fresnel.exponent != 0.f)) {
         if (!orthographic) {
@@ -1172,9 +1172,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (fresnel.exponent != 0.f) {
         sstr << "    {" << std::endl;
         // Note that normalmaps can generate opposing normals (which the abs(...) kind of deals with).
-        sstr << "        float fresnelFactor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0.0), " << fresnel.exponent << ");" << std::endl;
-        sstr << "        float fresnelFactor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnelFactor0;" << std::endl;
-        sstr << "        fragSpecularity *= fresnelFactor;" << std::endl;
+        sstr << "        float fresnel_factor0 = pow(max(1.0 - abs(dot(viewDir, norm)), 0.0), " << fresnel.exponent << ");" << std::endl;
+        sstr << "        float fresnel_factor = " << fresnel.min << " + " << (fresnel.max - fresnel.min) << " * fresnel_factor0;" << std::endl;
+        sstr << "        frag_specular *= fresnel_factor;" << std::endl;
         sstr << "    }" << std::endl;
     }
     if (reflection_strength != 0.f) {
@@ -1188,8 +1188,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_brightness_specular += " << reflection_strength << " * texture(texture_reflection, vec3(reflectedDir.xy, -reflectedDir.z)).rgb;" << std::endl;
     }
     if (!fresnel_emissive.all_equal(0.f)) {
-        sstr << "    vec3 fresnelEmissivity = vec3(" << fresnel_emissive(0) << ", " << fresnel_emissive(1) << ", " << fresnel_emissive(2) << ");" << std::endl;
-        sstr << "    frag_brightness_specular += fresnelEmissivity;" << std::endl;
+        sstr << "    vec3 fresnel_emissive = vec3(" << fresnel_emissive(0) << ", " << fresnel_emissive(1) << ", " << fresnel_emissive(2) << ");" << std::endl;
+        sstr << "    frag_brightness_specular += fresnel_emissive;" << std::endl;
     }
     if (has_lightmap_color && !black_shadow_indices.empty()) {
         sstr << "    frag_brightness_emissive_ambient_diffuse *= black_fac;" << std::endl;
@@ -1231,7 +1231,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     }
     sstr << "    frag_color.rgb *= frag_brightness_emissive_ambient_diffuse;" << std::endl;
     if ((fresnel.exponent != 0.f) || has_specularmap) {
-        sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, fragSpecularity);" << std::endl;
+        sstr << "    frag_color.rgb = mix(frag_color.rgb, frag_brightness_specular, frag_specular);" << std::endl;
     } else {
         sstr << "    frag_color.rgb += frag_brightness_specular;" << std::endl;
     }

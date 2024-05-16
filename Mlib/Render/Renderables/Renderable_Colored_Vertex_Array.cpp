@@ -402,9 +402,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
     for (const auto& [_, light] : filtered_lights) {
-        if (!any(light->shadow_render_pass & ExternalRenderPassType::LIGHTMAP_IS_BLACK_MASK)) {
-            sum_light_fresnel_ambient += light->fresnel_ambient;
-        }
+        sum_light_fresnel_ambient += light->fresnel_ambient;
     }
     FixedArray<float, 3> emissive;
     FixedArray<float, 3> ambient;
