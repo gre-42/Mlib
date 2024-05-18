@@ -67,7 +67,6 @@ FixedArray<double, 3> AiWaypoint::position_of_destination(float dy) const {
 	return res;
 }
 
-
 WayPointLocation AiWaypoint::flags() const {
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desintation not defined");

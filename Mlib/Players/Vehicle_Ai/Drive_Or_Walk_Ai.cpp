@@ -28,6 +28,7 @@ DriveOrWalkAi::DriveOrWalkAi(
     float max_velocity,
     float max_delta_velocity_brake,
     double collision_avoidance_radius_brake,
+    double collision_avoidance_radius_wait,
     double collision_avoidance_radius_correct,
     float collision_avoidance_intersect_cos,
     float collision_avoidance_step_aside_cos,
@@ -42,6 +43,7 @@ DriveOrWalkAi::DriveOrWalkAi(
     , max_velocity_{ max_velocity }
     , max_delta_velocity_brake_{ max_delta_velocity_brake }
     , collision_avoidance_radius_brake_{ collision_avoidance_radius_brake }
+    , collision_avoidance_radius_wait_{ collision_avoidance_radius_wait }
     , collision_avoidance_radius_correct_{ collision_avoidance_radius_correct }
     , collision_avoidance_intersect_cos_{ collision_avoidance_intersect_cos }
     , collision_avoidance_step_aside_cos_{ collision_avoidance_step_aside_cos }
@@ -93,14 +95,11 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     //     0.f, // surface_power
     //     0.f  // steer_angle
     // );
-    auto step_on_brakes_and_apply = [this, &player_rb](){
+    player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
+    if (!ai_waypoint.has_position_of_destination()) {
         player_->car_movement.step_on_brakes();
         player_->car_movement.steer(0.f);
         player_rb.vehicle_controller().apply();
-        };
-    player_rb.vehicle_controller().reset_relaxation(0.f, 0.f);
-    if (!ai_waypoint.has_position_of_destination()) {
-        step_on_brakes_and_apply();
         return VehicleAiMoveToStatus::WAYPOINT_IS_NAN;
     }
     auto waypoint_flags = ai_waypoint.flags();
@@ -118,14 +117,14 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     if (std::isnan(player_->vehicle_movement.surface_power_forward()) ||
         std::isnan(player_->vehicle_movement.surface_power_backward()))
     {
-        step_on_brakes_and_apply();
-        return result | VehicleAiMoveToStatus::POWER_IS_NAN;
+        player_->car_movement.step_on_brakes();
+        result |= VehicleAiMoveToStatus::POWER_IS_NAN;
     }
     // Stop when distance to waypoint is small enough (brake).
     if (!player_->ramming()) {
         if (distance_to_waypoint2 < squared(rest_radius_) * lookahead_fac2) {
-            step_on_brakes_and_apply();
-            return result | VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
+            player_->car_movement.step_on_brakes();
+            result |= VehicleAiMoveToStatus::RESTING_POSITION_REACHED;
         }
     }
     auto z3 = player_rb.rbp_.abs_z();
@@ -149,38 +148,48 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         auto p_p3 = p_rb.rbp_.abs_position();
         auto d = p_p3 - p3;
         double dl2 = sum(squared(d));
-        if (dl2 < squared(collision_avoidance_radius_brake_)) {
-            if (dot0d(d, z3.casted<double>()) < 0) {
-                step_on_brakes_and_apply();
-                return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
-            }
-        } else if (dl2 < squared(collision_avoidance_radius_correct_)) {
-            auto p_z3 = p_rb.rbp_.abs_z();
-            if (std::abs(dot0d(z3, p_z3)) < collision_avoidance_intersect_cos_) {
-                FixedArray<double, 2> intersection;
-                if (!intersect_rays(
-                    intersection,
-                    FixedArray<double, 2>{ p3(0), p3(2) },
-                    FixedArray<double, 2>{ z3(0), z3(2) },
-                    FixedArray<double, 2>{ p_p3(0), p_p3(2) },
-                    FixedArray<double, 2>{ p_z3(0), p_z3(2) },
-                    0.,
-                    0.))
-                {
-                    step_on_brakes_and_apply();
-                    return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+        [&]() {
+            if (dl2 < squared(collision_avoidance_radius_brake_)) {
+                if (dot0d(d, z3.casted<double>()) < 0) {
+                    player_->car_movement.step_on_brakes();
+                    result |= VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+                    return;
                 }
-                auto iv0 = (intersection - FixedArray<double, 2>{ p3(0), p3(2) }).casted<float>();
-                auto iv1 = (intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) }).casted<float>();
-                if (dot0d(z, iv0) < 0) {
-                    auto d2_0 = sum(squared(iv0));
-                    auto d2_1 = sum(squared(iv1));
-                    if (d2_0 > d2_1) {
-                        step_on_brakes_and_apply();
-                        return VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+            }
+            if (dl2 < squared(collision_avoidance_radius_wait_)) {
+                auto p_z3 = p_rb.rbp_.abs_z();
+                if (std::abs(dot0d(z3, p_z3)) < collision_avoidance_intersect_cos_) {
+                    FixedArray<double, 2> intersection;
+                    if (!intersect_rays(
+                        intersection,
+                        FixedArray<double, 2>{ p3(0), p3(2) },
+                        FixedArray<double, 2>{ z3(0), z3(2) },
+                        FixedArray<double, 2>{ p_p3(0), p_p3(2) },
+                        FixedArray<double, 2>{ p_z3(0), p_z3(2) },
+                        0.,
+                        0.))
+                    {
+                        player_->car_movement.step_on_brakes();
+                        result |= VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+                        return;
+                    }
+                    auto iv0 = (intersection - FixedArray<double, 2>{ p3(0), p3(2) }).casted<float>();
+                    auto iv1 = (intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) }).casted<float>();
+                    if (dot0d(z, iv0) < 0) {
+                        auto d2_0 = sum(squared(iv0));
+                        auto d2_1 = sum(squared(iv1));
+                        if (d2_0 > d2_1) {
+                            player_->car_movement.step_on_brakes();
+                            result |= VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
+                            return;
+                        }
                     }
                 }
-            } else if (dl2 > 1e-12) {
+            }
+            if (any(ai_waypoint.flags() & WayPointLocation::EXPLICIT_GROUND) &&
+                (dl2 > 1e-12) &&
+                (dl2 < squared(collision_avoidance_radius_correct_)))
+            {
                 if ((player_rb.avatar_controller_ != nullptr) ||
                     (dot0d(d, z3.casted<double>()) / std::sqrt(dl2) < -collision_avoidance_step_aside_cos_))
                 {
@@ -191,15 +200,16 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     } else {
                         THROW_OR_ABORT("Unknown driving direction");
                     }
+                    return;
                 }
             }
-        }
+        }();
     }
     if (player_rb.avatar_controller_ != nullptr) {
         player_rb.avatar_controller_->reset();
     }
     // Keep velocity within the specified range.
-    {
+    if (!any(result & VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION)) {
         bool is_accelerating_on_runway =
             player_rb.has_autopilot(ActorTask::RUNWAY_TAKEOFF) &&
             any(waypoint_flags & (WayPointLocation::RUNWAY | WayPointLocation::AIRWAY)) &&

@@ -22,6 +22,7 @@ public:
 		float max_velocity,
 		float max_delta_velocity_brake,
 		double collision_avoidance_radius_brake,
+		double collision_avoidance_radius_wait,
 		double collision_avoidance_radius_correct,
 		float collision_avoidance_intersect_cos,
 		float collision_avoidance_step_aside_cos,
@@ -42,6 +43,7 @@ private:
 	float max_velocity_;
 	float max_delta_velocity_brake_;
 	double collision_avoidance_radius_brake_;
+	double collision_avoidance_radius_wait_;
 	double collision_avoidance_radius_correct_;
 	float collision_avoidance_intersect_cos_;
 	float collision_avoidance_step_aside_cos_;

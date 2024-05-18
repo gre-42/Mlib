@@ -24,6 +24,7 @@ DECLARE_ARGUMENT(takeoff_velocity_delta);
 DECLARE_ARGUMENT(max_velocity);
 DECLARE_ARGUMENT(max_delta_velocity_brake);
 DECLARE_ARGUMENT(collision_avoidance_radius_brake);
+DECLARE_ARGUMENT(collision_avoidance_radius_wait);
 DECLARE_ARGUMENT(collision_avoidance_radius_correct);
 DECLARE_ARGUMENT(collision_avoidance_intersect_angle);
 DECLARE_ARGUMENT(collision_avoidance_step_aside_angle);
@@ -55,6 +56,7 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
 		args.arguments.at<float>(KnownArgs::max_velocity) * kph,
 		args.arguments.at<float>(KnownArgs::max_delta_velocity_brake) * kph,
 		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_brake) * meters,
+		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_wait) * meters,
 		args.arguments.at<double>(KnownArgs::collision_avoidance_radius_correct) * meters,
 		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_intersect_angle) * degrees),
 		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_angle) * degrees),

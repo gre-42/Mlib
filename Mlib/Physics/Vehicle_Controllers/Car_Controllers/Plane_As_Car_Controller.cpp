@@ -23,13 +23,13 @@ PlaneAsCarController::~PlaneAsCarController()
 
 void PlaneAsCarController::apply() {
     auto forward = [this](){
-        for (const auto& x : tire_angles_) {
-            rb_.set_tire_angle_y(x.first, 0.f);
+        for (const auto& [tire_id, _] : tire_angles_) {
+            rb_.set_tire_angle_y(tire_id, 0.f);
         }};
     auto steer = [this](){
-        for (const auto& x : tire_angles_) {
-            float ang = signed_min(steer_angle_, x.second);
-            rb_.set_tire_angle_y(x.first, ang);
+        for (const auto& [tire_id, max_angle] : tire_angles_) {
+            float ang = signed_min(steer_angle_, max_angle);
+            rb_.set_tire_angle_y(tire_id, ang);
         }};
     switch (rb_.current_vehicle_domain_) {
     case VehicleDomain::AIR:
@@ -40,7 +40,7 @@ void PlaneAsCarController::apply() {
         return;
     case VehicleDomain::GROUND:
         steer();
-        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = 0.f});
+        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = std::isnan(surface_power_) ? NAN : 0.f});
         rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = surface_power_});
         return;
     case VehicleDomain::END:
