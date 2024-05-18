@@ -123,13 +123,13 @@ void PathfindingWaypoints::select_next_waypoint() {
                 auto deflt = std::chrono::steady_clock::time_point();
                 size_t best_id = SIZE_MAX;
                 auto best_time = deflt;
-                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
+                for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                     if ((best_id == SIZE_MAX) ||
-                        (player_.single_waypoint_.last_visited(rs.first) == deflt) ||
-                        ((best_time != deflt) && (player_.single_waypoint_.last_visited(rs.first) < best_time)))
+                        (player_.single_waypoint_.last_visited(r) == deflt) ||
+                        ((best_time != deflt) && (player_.single_waypoint_.last_visited(r) < best_time)))
                     {
-                        best_id = rs.first;
-                        best_time = player_.single_waypoint_.last_visited(rs.first);
+                        best_id = r;
+                        best_time = player_.single_waypoint_.last_visited(r);
                     }
                 }
                 if (best_id == SIZE_MAX) {
