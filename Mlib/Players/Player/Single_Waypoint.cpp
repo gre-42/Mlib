@@ -63,7 +63,7 @@ void SingleWaypoint::clear_waypoint() {
 }
 
 void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
-    if (getenv_default_bool("DRAW_WAYPOINT_BEACONS", false)) {
+    if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
             add_beacon(Beacon::create(waypoint_.value().position, "beacon"));
         }

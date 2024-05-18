@@ -1,9 +1,12 @@
 #include "Pathfinding_Waypoints.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Physics/Misc/Beacon.hpp>
+#include <Mlib/Physics/Physics_Engine/Beacons.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Units.hpp>
@@ -52,17 +55,19 @@ void PathfindingWaypoints::select_next_waypoint() {
     if (!has_waypoints()) {
         return;
     }
-    // if (waypoints_->points.size() > 30'000) {
-    //     lwarn() << "Refusing to add beacons, number of points is " << waypoints_->points.size() << " > 30,000";
-    // } else {
-    //     auto pp = player_.rigid_body().rbp_.abs_position();
-    //     for (const auto& p : waypoints_->points) {
-    //         if (sum(squared(p.position - pp)) > squared(200 * meters)) {
-    //             continue;
-    //         }
-    //         add_beacon(Beacon::create(p, "beacon"));
-    //     }
-    // }
+    if (getenv_default_bool("DRAW_ALL_WAYPOINTS", false)) {
+        if (waypoints_->points.size() > 30'000) {
+            lwarn() << "Refusing to add beacons, number of points is " << waypoints_->points.size() << " > 30,000";
+        } else {
+            auto pp = player_.rigid_body().rbp_.abs_position();
+            for (const auto& p : waypoints_->points) {
+                if (sum(squared(p.position - pp)) > squared(200 * meters)) {
+                    continue;
+                }
+                add_beacon(Beacon::create(p, "beacon"));
+            }
+        }
+    }
     assert_true(waypoints_->adjacency.initialized());
     if (!player_.has_scene_vehicle()) {
         return;
