@@ -59,13 +59,13 @@ void Mlib::calculate_waypoint_adjacency(
         }
     }
     std::map<OrderableFixedArray<double, 3>, std::pair<size_t, WayPointLocation>> indices_street_wpts;
-    for (const auto& e : street_way_point_edge_descriptors) {
-        auto p0 = e.first.position();
-        auto p1 = e.second.position();
+    for (const auto& [w0, w1] : street_way_point_edge_descriptors) {
+        auto p0 = w0.position();
+        auto p1 = w1.position();
         auto it0 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p0 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
         auto it1 = indices_street_wpts.insert({ OrderableFixedArray<double, 3>{ p1 }, {indices_street_wpts.size(), WayPointLocation::NONE} });
-        it0.first->second.second |= e.first.location;
-        it1.first->second.second |= e.second.location;
+        it0.first->second.second |= w0.location;
+        it1.first->second.second |= w1.location;
     }
     way_points.points.resize(indices_terrain_wpts.size() + indices_street_wpts.size());
     std::set<size_t> grounded_way_points;
