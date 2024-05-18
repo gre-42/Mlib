@@ -103,40 +103,47 @@ void PathfindingWaypoints::select_next_waypoint() {
         if (player_.single_waypoint_.waypoint_reached() &&
             (player_.single_waypoint_.target_waypoint_id() != SIZE_MAX))
         {
-            if (player_.single_waypoint_.nwaypoints_reached() < 2) {
-                // If we already have less than two waypoints, go further forward.
-                size_t best_id = SIZE_MAX;
-                double best_distance = INFINITY;
-                for (const auto& rs : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
-                    double dist = dot0d(waypoints_->points.at(rs.first).position - pos3, z3.casted<double>());
-                    if (dist < best_distance) {
-                        best_id = rs.first;
-                        best_distance = dist;
+            auto deflt = std::chrono::steady_clock::time_point();
+            size_t best_id = SIZE_MAX;
+            auto best_time = deflt;
+            double best_distance = NAN;
+            for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
+                auto candidate_time = player_.single_waypoint_.last_visited(r);
+                auto candidate_distance = dot0d(waypoints_->points.at(r).position - pos3, z3.casted<double>());
+                auto r_is_better = [&]() {
+                    if (best_id == SIZE_MAX) {
+                        return true;
                     }
-                }
-                if (best_id == SIZE_MAX) {
-                    THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
-                }
-                set_waypoint(best_id);
-            } else {
-                // If we already have two waypoints, pick oldest neighbor.
-                auto deflt = std::chrono::steady_clock::time_point();
-                size_t best_id = SIZE_MAX;
-                auto best_time = deflt;
-                for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
-                    if ((best_id == SIZE_MAX) ||
-                        (player_.single_waypoint_.last_visited(r) == deflt) ||
-                        ((best_time != deflt) && (player_.single_waypoint_.last_visited(r) < best_time)))
-                    {
-                        best_id = r;
-                        best_time = player_.single_waypoint_.last_visited(r);
+                    if (best_time != deflt) {
+                        if (candidate_time == deflt) {
+                            // best_time      != default
+                            // candidate_time == default
+                            return true;
+                        } else {
+                            // best_time      != default
+                            // candidate_time != default
+                            return (candidate_time < best_time);
+                        }
+                    } else if (candidate_time == deflt) {
+                        // best_time      == default
+                        // candidate_time == default
+                        return (candidate_distance < best_distance);
+                    } else {
+                        // best_time      == default
+                        // candidate_time != default
+                        return false;
                     }
+                    };
+                if (r_is_better()) {
+                    best_id = r;
+                    best_time = candidate_time;
+                    best_distance = candidate_distance;
                 }
-                if (best_id == SIZE_MAX) {
-                    THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
-                }
-                set_waypoint(best_id);
             }
+            if (best_id == SIZE_MAX) {
+                THROW_OR_ABORT("Select next waypoint failed. Forgot diagonal elements of adjacency matrix?");
+            }
+            set_waypoint(best_id);
         }
     }
 }

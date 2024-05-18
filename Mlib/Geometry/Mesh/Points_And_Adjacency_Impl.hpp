@@ -140,15 +140,17 @@ PointsAndAdjacency<TPoint> PointsAndAdjacency<TPoint>::merged_neighbors(
     std::vector<size_t> new_ids(points.size());
     std::vector<TPoint> result_points;
     result_points.reserve(points.size());
-    FuzzySetOfPoints<TData, tlength> point_bvh{ merge_radius, error_radius };
-    for (const auto& [i, p] : enumerate(points)) {
-        size_t neighbor_id;
-        if (point_bvh.insert(p, neighbor_id)) {
-            result_points.push_back(p);
-        } else {
-            combine_points(result_points[neighbor_id], p);
+    {
+        FuzzySetOfPoints<TData, tlength> point_bvh{ merge_radius, error_radius };
+        for (const auto& [i, p] : enumerate(points)) {
+            size_t neighbor_id;
+            if (point_bvh.insert(p, neighbor_id)) {
+                result_points.push_back(p);
+            } else {
+                combine_points(result_points[neighbor_id], p);
+            }
+            new_ids[i] = neighbor_id;
         }
-        new_ids[i] = neighbor_id;
     }
     // {
     //     auto info = linfo();
