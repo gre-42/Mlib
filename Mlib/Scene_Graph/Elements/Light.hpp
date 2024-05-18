@@ -13,6 +13,7 @@ struct Light {
     FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
     std::string resource_suffix;
     ExternalRenderPassType shadow_render_pass;
+    bool light_emits_colors() const;
 };
 
 }

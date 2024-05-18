@@ -319,9 +319,7 @@ void RenderableColoredVertexArray::render_cva(
                 if (cva->material.occluded_pass < l.shadow_render_pass) {
                     continue;
                 }
-                bool light_emits_colors =
-                    (l.shadow_render_pass == ExternalRenderPassType::NONE) ||
-                    any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_EMITS_COLORS_MASK);
+                bool light_emits_colors = l.light_emits_colors();
                 bool light_casts_shadows = any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
                 if (!light_emits_colors && !light_casts_shadows) {
@@ -402,7 +400,9 @@ void RenderableColoredVertexArray::render_cva(
     }
     FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
     for (const auto& [_, light] : filtered_lights) {
-        sum_light_fresnel_ambient += light->fresnel_ambient;
+        if (light->light_emits_colors()) {
+            sum_light_fresnel_ambient += light->fresnel_ambient;
+        }
     }
     FixedArray<float, 3> emissive;
     FixedArray<float, 3> ambient;
