@@ -61,7 +61,7 @@ private:
     YawPitchLookAtNodes* ypln_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_externals_;
-    DestructionFunctionsRemovalTokens on_clear_gun_node_;
+    DestructionFunctionsRemovalTokens on_destroy_gun_node_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
 
     RenderLogics& render_logics_;
