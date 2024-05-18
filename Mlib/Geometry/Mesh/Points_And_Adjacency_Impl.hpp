@@ -67,8 +67,7 @@ void PointsAndAdjacency<TPoint>::subdivide(
                     col.erase(row++);
                     size_t old_id = c;
                     auto old_point = points.at(c);
-                    for (size_t i = 0; i < intermediate_points.size(); ++i) {
-                        const auto& pn = intermediate_points[i];
+                    for (const auto& [i, pn] : enumerate(intermediate_points)) {
                         auto key = (r < c) || (subdivision_type == SubdivisionType::ASYMMETRIC)
                             ? std::tuple<size_t, size_t, size_t>{r, c, i}
                             : std::tuple<size_t, size_t, size_t>{c, r, intermediate_points.size() - i - 1};
