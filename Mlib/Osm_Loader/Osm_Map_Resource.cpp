@@ -1749,11 +1749,11 @@ static void plot_way_points_and_obstacles(
     std::list<std::list<FixedArray<double, 2>>> contours;
     std::list<FixedArray<double, 2>> highlighted_nodes;
     for (size_t c = 0; c < pa.adjacency.shape(1); ++c) {
-        for (const auto& r : pa.adjacency.column(c)) {
-            if (r.first != c) {
+        for (const auto& [r, _] : pa.adjacency.column(c)) {
+            if (r != c) {
                 edges.push_back(FixedArray<FixedArray<double, 2>, 2>{
                     FixedArray<double, 2>{pa.points.at(c).position(0), pa.points.at(c).position(1)},
-                    FixedArray<double, 2>{pa.points.at(r.first).position(0), pa.points.at(r.first).position(1)}});
+                    FixedArray<double, 2>{pa.points.at(r).position(0), pa.points.at(r).position(1)}});
             }
         }
     }
