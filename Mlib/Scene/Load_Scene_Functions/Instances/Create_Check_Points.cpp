@@ -164,8 +164,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
             nlaps,
             args.arguments.at<double>(KnownArgs::pacenotes_meters_ahead),
             args.arguments.at<double>(KnownArgs::pacenotes_minimum_covered_meters),
-            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number),
-            **moving_nodes.begin());
+            args.arguments.at<size_t>(KnownArgs::pacenotes_maximum_number));
         render_logics.append({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
         physics_engine.advance_times_.add_advance_time({ renderable_pace_notes, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
     }

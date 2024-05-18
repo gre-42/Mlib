@@ -24,8 +24,7 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     size_t nlaps,
     double pacenotes_meters_read_ahead,
     double pacenotes_minimum_covered_meters,
-    size_t pacenotes_maximum_number,
-    const DanglingRef<SceneNode>& moving_node)
+    size_t pacenotes_maximum_number)
     : widget_distance_{ widget_distance }
     , text_widget_{ std::move(text_widget) }
     , picture_widget_{ std::move(picture_widget) }
@@ -34,17 +33,15 @@ CheckPointsPacenotes::CheckPointsPacenotes(
     , pacenote_reader_{ pacenotes_filename, nlaps, pacenotes_meters_read_ahead, pacenotes_minimum_covered_meters }
     , text_{ ttf_filename, color }
     , display_{ gallery, text_, pictures_left, pictures_right }
-    , moving_node_{ moving_node.ptr() }
+    , on_destroy_check_points_{ check_points->on_destroy, CURRENT_SOURCE_LOCATION }
 {
     pacenotes_.reserve(pacenotes_maximum_number);
-    moving_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    on_destroy_check_points_.add([this](){ global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 CheckPointsPacenotes::~CheckPointsPacenotes() {
     on_destroy.clear();
-    if (moving_node_ != nullptr) {
-        moving_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-    }
+    pacenotes_.clear();
 }
 
 void CheckPointsPacenotes::advance_time(float dt, std::chrono::steady_clock::time_point time) {
@@ -64,13 +61,6 @@ void CheckPointsPacenotes::advance_time(float dt, std::chrono::steady_clock::tim
     // if (pacenote_ != nullptr) {
     //     linfo() << *pacenote_;
     // }
-}
-
-void CheckPointsPacenotes::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    check_points_ = nullptr;
-    pacenotes_.clear();
-    moving_node_ = nullptr;
-    global_object_pool.remove(this);
 }
 
 void CheckPointsPacenotes::render(

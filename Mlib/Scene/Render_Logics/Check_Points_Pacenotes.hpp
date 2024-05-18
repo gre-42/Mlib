@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Misc/Pacenote_Reader.hpp>
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
@@ -20,7 +19,7 @@ class IWidget;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class CheckPointsPacenotes: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public RenderLogic {
+class CheckPointsPacenotes: public IAdvanceTime, public RenderLogic {
 public:
     CheckPointsPacenotes(
         RenderLogicGallery& gallery,
@@ -37,14 +36,11 @@ public:
         size_t nlaps,
         double pacenotes_meters_read_ahead,
         double pacenotes_minimum_covered_meters,
-        size_t pacenotes_maximum_number,
-        const DanglingRef<SceneNode>& moving_node);
+        size_t pacenotes_maximum_number);
     ~CheckPointsPacenotes();
 
     // IAdvanceTime
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
-    // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,
@@ -65,7 +61,7 @@ private:
     std::vector<const Pacenote*> pacenotes_;
     TextResource text_;
     PacenoteDisplay display_;
-    DanglingPtr<SceneNode> moving_node_;
+    DestructionFunctionsRemovalTokens on_destroy_check_points_;
     mutable SafeSharedMutex mutex_;
 };
 
