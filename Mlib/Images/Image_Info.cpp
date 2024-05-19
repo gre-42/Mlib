@@ -2,6 +2,7 @@
 #include <Mlib/Images/Dds_Info.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <stb_cpp/stb_image_load.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 

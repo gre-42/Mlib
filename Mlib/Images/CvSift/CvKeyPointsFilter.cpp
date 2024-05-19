@@ -1,6 +1,7 @@
 #include "CvKeyPointsFilter.hpp"
 #include <Mlib/Images/CvSift/CvCompat.hpp>
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
+#include <algorithm>
 
 using namespace Mlib::ocv;
 using namespace Mlib::ocv::KeyPointsFilter;

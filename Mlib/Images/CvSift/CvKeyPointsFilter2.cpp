@@ -42,6 +42,7 @@
 #include "CvKeypointsFilter2.hpp"
 #include <Mlib/Images/CvSift/KeyPoint.hpp>
 #include <Mlib/Images/CvSift/CvCompat.hpp>
+#include <algorithm>
 
 namespace Mlib::ocv {
 
