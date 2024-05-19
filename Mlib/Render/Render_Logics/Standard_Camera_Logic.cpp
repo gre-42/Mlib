@@ -43,17 +43,17 @@ void StandardCameraLogic::render(
 
     scene_.delete_node_mutex().notify_reading();
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
-        if (frame_id.external_render_pass.camera_node == nullptr) {
+        if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
         }
-        camera_node_ = frame_id.external_render_pass.camera_node;
+        camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = scene_.get_node(cameras_.dirtmap_node_name(), DP_LOC).ptr();
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
-        if (frame_id.external_render_pass.camera_node == nullptr) {
+        if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Imposter or singular node render pass without camera node");
         }
-        camera_node_ = frame_id.external_render_pass.camera_node;
+        camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         camera_node_ = scene_.get_node(cameras_.camera_node_name(), DP_LOC).ptr();
     } else {

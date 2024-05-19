@@ -4,7 +4,6 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 
 using namespace Mlib;
@@ -113,7 +112,7 @@ void HudTracker::render(
         std::scoped_lock lock{ render_mutex_ };
         is_visible_ =
             (exclusive_node_ == nullptr) ||
-            (exclusive_node_ == frame_id.external_render_pass.camera_node);
+            (exclusive_node_ == scene_logic_.camera_node().ptr());
         vp_ = scene_logic_.vp();
         near_plane_ = scene_logic_.near_plane();
         far_plane_ = scene_logic_.far_plane();
