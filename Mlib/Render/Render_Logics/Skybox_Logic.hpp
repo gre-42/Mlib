@@ -38,6 +38,7 @@ public:
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
+    void clear_alias();
     void set_alias(const std::string& alias);
 private:
     void deallocate();

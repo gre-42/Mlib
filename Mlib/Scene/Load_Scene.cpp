@@ -120,6 +120,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Clear_Skybox.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Dirtmap.hpp>
@@ -267,6 +268,7 @@ LoadScene::LoadScene() {
     register_json_user_function(ClearNodesNotAllowedToBeUnregistered::key, ClearNodesNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
     register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
+    register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
     register_json_user_function(ConsoleLog::key, ConsoleLog::json_user_function);
     register_json_user_function(Controls::key, Controls::json_user_function);
     register_json_user_function(Countdown::key, Countdown::json_user_function);

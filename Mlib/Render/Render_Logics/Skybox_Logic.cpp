@@ -189,6 +189,10 @@ bool SkyboxLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
 
+void SkyboxLogic::clear_alias() {
+    alias_.clear();
+}
+
 void SkyboxLogic::set_alias(const std::string& alias) {
     if (!alias_.empty()) {
         THROW_OR_ABORT("SkyboxLogic::set_alias called multiple times");
