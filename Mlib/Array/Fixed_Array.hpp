@@ -437,7 +437,7 @@ std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape
     typedef FixedArray<TData, tshape0, tshape...> A;
     if constexpr (A::ndim() == 1) {
         for (size_t i = 0; i < a.length(); ++i) {
-            ostream << WriteNum(a(i)) << (i == a.length() -1 ? "" : " ");
+            ostream << WriteNum(a(i)) << (i == a.length() - 1 ? "" : " ");
         }
     } else if constexpr (A::ndim() != 0) {
         for (size_t i = 0; i < tshape0; ++i) {
