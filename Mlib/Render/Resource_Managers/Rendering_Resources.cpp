@@ -699,7 +699,7 @@ TextureType RenderingResources::texture_type(
         return it->size() == 1 ? TextureType::TEXTURE_2D : TextureType::TEXTURE_2D_ARRAY;
     }
     if (auto it = preloaded_raw_texture_data_.try_get(name.filename); it != nullptr) {
-        return it->size() == 1 ? TextureType::TEXTURE_2D : TextureType::TEXTURE_2D_ARRAY;
+        return TextureType::TEXTURE_2D;
     }
     if (preloaded_processed_texture_data_.contains(name)) {
         return TextureType::TEXTURE_2D;
