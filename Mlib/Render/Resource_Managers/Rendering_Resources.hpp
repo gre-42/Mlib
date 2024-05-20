@@ -118,6 +118,8 @@ enum class TextureType {
     TEXTURE_3D
 };
 
+std::ostream& operator << (std::ostream& ostr, TextureType texture_type);
+
 class RenderingResources final: public IDdsResources {
     RenderingResources(const RenderingResources&) = delete;
     RenderingResources& operator = (const RenderingResources&) = delete;

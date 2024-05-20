@@ -127,10 +127,22 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const AutoTextureAtlasDescr
     return ostr;
 }
 
+std::ostream& Mlib::operator << (std::ostream& ostr, TextureType texture_type) {
+    switch (texture_type) {
+    case TextureType::TEXTURE_2D:
+        return ostr << "texture_2d";
+    case TextureType::TEXTURE_2D_ARRAY:
+        return ostr << "texture_2d_array";
+    case TextureType::TEXTURE_3D:
+        return ostr << "texture_3d";
+    }
+    THROW_OR_ABORT("Unknown texture type: " + std::to_string((int)texture_type));
+}
+
 /**
  * From: https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
  */
-int log2(int n) {
+static int log2(int n) {
     int result = 0;
     while (n >>= 1) ++result;
     return result;
@@ -1553,8 +1565,8 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
         if (expected_texture_type != actual_texture_type) {
             THROW_OR_ABORT(
                 (std::stringstream() << "Unexpected texture return type (conflicting interpolation modes?). " <<
-                "Expected: " << (int)expected_texture_type <<
-                ", Actual: " << (int)actual_texture_type <<
+                "Expected: " << expected_texture_type <<
+                ", Actual: " << actual_texture_type <<
                 ", Color: " << color).str());
         }
         return actual_texture_type;
