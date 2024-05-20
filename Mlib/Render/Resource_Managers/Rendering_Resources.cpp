@@ -16,7 +16,6 @@
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
-#include <Mlib/Memory/Float_To_Integral.hpp>
 #include <Mlib/Memory/Integral_To_Float.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -901,7 +900,7 @@ GLuint RenderingResources::get_texture(
                 sinfo.height,
                 // https://stackoverflow.com/questions/9572414/how-many-mipmaps-does-a-texture-have-in-opengl
                 (sinfo.mip_level_count == 0)
-                    ? float_to_integral<GLsizei>(std::floor(std::log2(std::max(sinfo.width, sinfo.height))))
+                    ? integral_cast<GLsizei>(log2(std::max(sinfo.width, sinfo.height)))
                     : sinfo.mip_level_count,
                 aniso,
                 nchannels2sized_internal_format(integral_cast<size_t>(sinfo.nchannels)),
