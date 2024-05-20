@@ -5,7 +5,7 @@
 #include <Mlib/Players/Game_Logic/Spawn.hpp>
 #include <Mlib/Players/Game_Logic/Team_Deathmatch.hpp>
 #include <Mlib/Players/Game_Logic/Vehicle_Changer.hpp>
-
+#include <functional>
 
 namespace Mlib {
 
@@ -30,7 +30,7 @@ public:
         Players& players,
         SupplyDepots& supply_depots,
         DeleteNodeMutex& delete_node_mutex,
-        const std::function<void()>& setup_new_round);
+        std::function<void()> setup_new_round);
     ~GameLogic();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     Spawn spawn;
@@ -41,7 +41,6 @@ private:
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     SupplyDepots& supply_depots_;
-    std::function<void()> setup_new_round_;
 };
 
 }

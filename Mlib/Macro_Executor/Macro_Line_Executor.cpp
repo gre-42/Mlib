@@ -198,10 +198,11 @@ void MacroLineExecutor::operator () (
                     }
                 }
             }
-            if (jv.contains(MacroKeys::exclude)) {
+            if (include && jv.contains(MacroKeys::exclude)) {
+                include = false;
                 for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                    if (eval<bool>(e, global_args, merged_args, asset_references_)) {
-                        include = false;
+                    if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
+                        include = true;
                         break;
                     }
                 }

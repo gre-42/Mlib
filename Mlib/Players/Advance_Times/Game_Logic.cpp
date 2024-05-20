@@ -18,10 +18,10 @@ GameLogic::GameLogic(
     Players& players,
     SupplyDepots& supply_depots,
     DeleteNodeMutex& delete_node_mutex,
-    const std::function<void()>& setup_new_round)
+    std::function<void()> setup_new_round)
     : spawn{ vehicle_spawners, players, cfg, delete_node_mutex, scene }
     , bystanders{ vehicle_spawners, players, scene, spawn, cfg }
-    , team_deathmatch{ vehicle_spawners, players, spawn, setup_new_round }
+    , team_deathmatch{ vehicle_spawners, players, spawn, std::move(setup_new_round) }
     , vehicle_changer_{ vehicle_spawners, delete_node_mutex }
     , vehicle_spawners_{ vehicle_spawners }
     , players_{ players }
