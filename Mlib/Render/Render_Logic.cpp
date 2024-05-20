@@ -38,6 +38,10 @@ bool RenderLogic::requires_postprocessing() const {
     THROW_OR_ABORT("requires_postprocessing not implemented");
 }
 
+void RenderLogic::reset() {
+    THROW_OR_ABORT("reset not implemented");
+}
+
 // void RenderLogic::print(std::ostream& ostr, size_t depth) const {
 //     THROW_OR_ABORT("print not implemented");
 // }

@@ -12,6 +12,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -301,6 +302,7 @@ void ImposterLogic::render(
             // RenderToScreenGuard rsg;
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+            DestructionGuard dg{ [this]() { child_logic_.reset(); } };
             child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = NAN,

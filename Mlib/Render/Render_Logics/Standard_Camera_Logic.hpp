@@ -31,9 +31,9 @@ public:
     virtual const TransformationMatrix<float, double, 3>& iv() const override;
     virtual DanglingRef<const SceneNode> camera_node() const override;
     virtual bool requires_postprocessing() const override;
+    virtual void reset() override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
-    void reset();
 private:
     const Scene& scene_;
     const SelectedCameras& cameras_;

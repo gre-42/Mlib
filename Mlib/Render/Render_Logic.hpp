@@ -37,6 +37,7 @@ public:
     virtual const TransformationMatrix<float, double, 3>& iv() const;
     virtual DanglingRef<const SceneNode> camera_node() const;
     virtual bool requires_postprocessing() const;
+    virtual void reset();
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };
 

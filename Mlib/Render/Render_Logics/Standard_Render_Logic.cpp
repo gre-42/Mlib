@@ -154,6 +154,10 @@ bool StandardRenderLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
 
+void StandardRenderLogic::reset() {
+    child_logic_.reset();
+}
+
 void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "StandardRenderLogic\n";
     child_logic_.print(ostr, depth + 1);

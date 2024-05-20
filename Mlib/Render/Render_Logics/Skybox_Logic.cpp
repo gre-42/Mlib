@@ -189,6 +189,10 @@ bool SkyboxLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
 
+void SkyboxLogic::reset() {
+    child_logic_.reset();
+}
+
 void SkyboxLogic::clear_alias() {
     alias_.clear();
 }

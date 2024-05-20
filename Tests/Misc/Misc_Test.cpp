@@ -42,7 +42,6 @@ void test_substitute() {
 }
 
 DP_IMPLEMENT(int);
-DP_IMPLEMENT(const int);
 
 void test_dangling_unique() {
     std::list<DanglingPtr<int>> lst;
@@ -52,6 +51,27 @@ void test_dangling_unique() {
         lst.push_back(a.get(DP_LOC));
         lst.clear();
         assert_true(*b == 5);
+    }
+}
+
+struct Ads {
+    int i;
+    Ads* ptr() { return this; }
+};
+
+DP_IMPLEMENT(Ads);
+
+struct D {
+    D(DanglingRef<Ads> p) : p{ p } {}
+    DanglingRef<Ads> p;
+};
+
+void test_dangling_unique2() {
+    for (size_t i = 0; i < 1000; ++i) {
+        auto n = make_dunique<Ads>(5);
+        D n0(DanglingRef<Ads>::from_object(*n->ptr(), DP_LOC));
+        D n1(DanglingRef<Ads>::from_object(*n->ptr(), DP_LOC));
+        n.get(DP_LOC);
     }
 }
 
@@ -189,5 +209,6 @@ int main(int argc, const char** argv) {
     test_dangling_base_class();
     test_object_pool_std();
     test_object_pool_unique();
+    test_dangling_unique2();
     return 0;
 }

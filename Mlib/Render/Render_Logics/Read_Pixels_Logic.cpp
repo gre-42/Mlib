@@ -104,6 +104,10 @@ bool ReadPixelsLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
 }
 
+void ReadPixelsLogic::reset() {
+    child_logic_.reset();
+}
+
 void ReadPixelsLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "ReadPixelsLogic\n";
     child_logic_.print(ostr, depth + 1);
