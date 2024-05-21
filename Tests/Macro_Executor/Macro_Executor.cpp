@@ -7,32 +7,6 @@
 
 using namespace Mlib;
 
-void test_scn() {
-    MacroLineExecutor::JsonUserFunction json_user_function = [](
-        const std::string& context,
-        const MacroLineExecutor& macro_line_executor,
-        const std::string& name,
-        const JsonMacroArguments& arguments,
-        JsonMacroArguments* local_json_macro_arguments)
-    {
-        return true;
-    };
-    std::list<std::string> search_path{"."};
-    NotifyingJsonMacroArguments global_substitutions;
-    AssetReferences asset_references;
-    MacroRecorder mr;
-    MacroLineExecutor mle{
-        mr,
-        "script.scn",
-        &search_path,
-        json_user_function,
-        "context",
-        global_substitutions,
-        asset_references,
-        true};
-    mr(mle, nullptr);
-}
-
 void test_json() {
     MacroLineExecutor::JsonUserFunction json_user_function = [](
         const std::string& context,
@@ -55,6 +29,7 @@ void test_json() {
         &search_path,
         json_user_function,
         "context",
+        nlohmann::json::object(),
         global_substitutions,
         asset_references,
         true};
@@ -66,7 +41,6 @@ int main(int argc, char** argv) {
     set_app_reldir("macro_executor_test");
 #endif
     try {
-        test_scn();
         test_json();
     } catch (const std::runtime_error& e) {
         std::cerr << e.what() << std::endl;

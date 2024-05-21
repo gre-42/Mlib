@@ -35,8 +35,8 @@ JsonMacroArguments::JsonMacroArguments(JsonMacroArguments&& other) noexcept
 }
 
 JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
-: JsonView{j_, CheckIsObjectBehavior::NO_CHECK},
-  j_(std::move(j))
+    : JsonView{ j_, CheckIsObjectBehavior::NO_CHECK }
+    , j_(std::move(j))
 {
     if (j_.type() != nlohmann::detail::value_t::object) {
         THROW_OR_ABORT("JSON is not of type object");
