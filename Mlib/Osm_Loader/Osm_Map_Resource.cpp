@@ -1024,7 +1024,8 @@ OsmMapResource::OsmMapResource(
             config.zonemap_multiplier,
             config.zonemap_jitter,
             config.zonemap_step_size,
-            config.scale);
+            config.scale,
+            config.water_height);
     }
 
     if (config.forest_outline_tree_distance != INFINITY && !config.tree_resource_names.empty()) {

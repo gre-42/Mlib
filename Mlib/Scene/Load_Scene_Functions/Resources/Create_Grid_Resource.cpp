@@ -33,6 +33,7 @@ DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces);
 DECLARE_ARGUMENT(rotation);
 DECLARE_ARGUMENT(translation);
+DECLARE_ARGUMENT(tile_length);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(uv_scale);
 DECLARE_ARGUMENT(period);
@@ -71,6 +72,7 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             args.arguments.at<FixedArray<double, 3>>(
                 KnownArgs::translation,
                 fixed_zeros<double, 3>()) * (double)meters),
+        args.arguments.at<double>(KnownArgs::tile_length),
         args.arguments.at<double>(KnownArgs::scale),
         args.arguments.at<double>(KnownArgs::uv_scale),
         args.arguments.at<double>(KnownArgs::period),

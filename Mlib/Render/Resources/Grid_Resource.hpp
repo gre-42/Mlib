@@ -13,6 +13,7 @@ public:
     GridResource(
         const FixedArray<size_t, 2>& size,
         const TransformationMatrix<float, double, 3>& transformation,
+        double tile_length,
         double scale,
         double uv_scale,
         double period,

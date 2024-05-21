@@ -11,6 +11,7 @@ class JsonMacroArguments;
 struct JsonMacro {
     std::string filename;
     nlohmann::json content;
+    nlohmann::json block_arguments;
 };
 
 class MacroRecorder {

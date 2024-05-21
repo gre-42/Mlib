@@ -11,11 +11,14 @@ using namespace Mlib;
 GridResource::GridResource(
     const FixedArray<size_t, 2>& size,
     const TransformationMatrix<float, double, 3>& transformation,
+    double tile_length,
     double scale,
     double uv_scale,
     double period,
     const Material& material)
 {
+    auto trafo = transformation;
+    trafo.t() *= scale;
     TriangleList<double> triangles{
         "grid",
         material,
@@ -23,16 +26,16 @@ GridResource::GridResource(
 
     for (size_t r = 0; r < size(0); ++r) {
         for (size_t c = 0; c < size(1); ++c) {
-            auto p00 = scale * FixedArray<double, 2>{(double)r, (double)c};
-            auto p10 = scale * FixedArray<double, 2>{(double)r + 1, (double)c};
-            auto p11 = scale * FixedArray<double, 2>{(double)r + 1, (double)c + 1};
-            auto p01 = scale * FixedArray<double, 2>{(double)r, (double)c + 1};
-            auto uv = terrain_uv(p00, p10, p11, p01, 1.0, uv_scale, period);
+            auto p00 = scale * tile_length * FixedArray<double, 2>{(double)r, (double)c};
+            auto p10 = scale * tile_length * FixedArray<double, 2>{(double)r + 1, (double)c};
+            auto p11 = scale * tile_length * FixedArray<double, 2>{(double)r + 1, (double)c + 1};
+            auto p01 = scale * tile_length * FixedArray<double, 2>{(double)r, (double)c + 1};
+            auto uv = terrain_uv(p00, p10, p11, p01, scale, uv_scale, period);
             triangles.draw_rectangle_wo_normals(
-                transformation.transform(FixedArray<double, 3>{p00(0), p00(1), 0.}),
-                transformation.transform(FixedArray<double, 3>{p10(0), p10(1), 0.}),
-                transformation.transform(FixedArray<double, 3>{p11(0), p11(1), 0.}),
-                transformation.transform(FixedArray<double, 3>{p01(0), p01(1), 0.}),
+                trafo.transform(FixedArray<double, 3>{p00(0), p00(1), 0.}),
+                trafo.transform(FixedArray<double, 3>{p10(0), p10(1), 0.}),
+                trafo.transform(FixedArray<double, 3>{p11(0), p11(1), 0.}),
+                trafo.transform(FixedArray<double, 3>{p01(0), p01(1), 0.}),
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),
                 fixed_ones<float, 3>(),

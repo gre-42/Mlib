@@ -25,7 +25,8 @@ void Mlib::add_trees_to_zonemap(
     double tree_density_multiplier,
     float jitter,
     double step_size,
-    double position_scale)
+    double position_scale,
+    double min_height)
 {
     FastUniformRandomNumberGenerator<double> prob_rng{ 0 };
     FastNormalRandomNumberGenerator<float> scale_rng{ 0, 1.f, 0.2f };
@@ -55,7 +56,7 @@ void Mlib::add_trees_to_zonemap(
             }
             if (std::isnan(min_dist_to_road) || !street_bvh.has_neighbor(pos, min_dist_to_road * position_scale)) {
                 double height;
-                if (ground_bvh.height(height, pos)) {
+                if (ground_bvh.height(height, pos) && (height > min_height * position_scale)) {
                     if (auto prn = rnc.try_multiple_times(10); prn != nullptr) {
                         bri.add_parsed_resource_name(pos, height, *prn, 0.f, scale_rng());
                     }

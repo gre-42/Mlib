@@ -30,16 +30,19 @@ public:
         const std::list<std::string>* search_path,
         JsonUserFunction json_user_function,
         std::string context,
+        nlohmann::json block_arguments,
         const NotifyingJsonMacroArguments& global_json_macro_arguments,
         const AssetReferences& asset_references,
         bool verbose);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
     MacroLineExecutor changed_context(
-        std::string context) const;
+        std::string context,
+        nlohmann::json block_arguments) const;
     MacroLineExecutor changed_script_filename_and_context(
         std::string script_filename,
-        std::string context) const;
+        std::string context,
+        nlohmann::json block_arguments) const;
     void operator () (
         const nlohmann::json& j,
         const JsonMacroArguments* caller_args,
@@ -50,6 +53,7 @@ private:
     const std::list<std::string>* search_path_;
     JsonUserFunction json_user_function_;
     std::string context_;
+    nlohmann::json block_arguments_;
     const NotifyingJsonMacroArguments& global_json_macro_arguments_;
     const AssetReferences& asset_references_;
     bool verbose_;

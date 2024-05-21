@@ -100,17 +100,19 @@ MacroLineExecutor::MacroLineExecutor(
     const std::list<std::string>* search_path,
     JsonUserFunction json_user_function,
     std::string context,
+    nlohmann::json block_arguments,
     const NotifyingJsonMacroArguments& global_json_macro_arguments,
     const AssetReferences& asset_references,
     bool verbose)
-: macro_recorder_{macro_recorder},
-  script_filename_{std::move(script_filename)},
-  search_path_{search_path},
-  json_user_function_{std::move(json_user_function)},
-  context_{std::move(context)},
-  global_json_macro_arguments_{global_json_macro_arguments},
-  asset_references_{asset_references},
-  verbose_{verbose}
+    : macro_recorder_{ macro_recorder }
+    , script_filename_{ std::move(script_filename) }
+    , search_path_{ search_path }
+    , json_user_function_{ std::move(json_user_function) }
+    , context_{ std::move(context) }
+    , block_arguments_(std::move(block_arguments))
+    , global_json_macro_arguments_{ global_json_macro_arguments }
+    , asset_references_{ asset_references }
+    , verbose_{ verbose }
 {}
 
 MacroLineExecutor MacroLineExecutor::changed_script_filename(
@@ -122,13 +124,15 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         search_path_,
         json_user_function_,
         context_,
+        block_arguments_,
         global_json_macro_arguments_,
         asset_references_,
         verbose_};
 }
 
 MacroLineExecutor MacroLineExecutor::changed_context(
-    std::string context) const
+    std::string context,
+    nlohmann::json block_arguments) const
 {
     return MacroLineExecutor{
         macro_recorder_,
@@ -136,6 +140,7 @@ MacroLineExecutor MacroLineExecutor::changed_context(
         search_path_,
         json_user_function_,
         std::move(context),
+        std::move(block_arguments),
         global_json_macro_arguments_,
         asset_references_,
         verbose_};
@@ -143,7 +148,8 @@ MacroLineExecutor MacroLineExecutor::changed_context(
 
 MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
     std::string script_filename,
-    std::string context) const
+    std::string context,
+    nlohmann::json block_arguments) const
 {
     return MacroLineExecutor{
         macro_recorder_,
@@ -151,6 +157,7 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename_and_context(
         search_path_,
         json_user_function_,
         std::move(context),
+        std::move(block_arguments),
         global_json_macro_arguments_,
         asset_references_,
         verbose_};
@@ -165,7 +172,7 @@ void MacroLineExecutor::operator () (
         linfo() << "Processing object " << j;
     }
 
-    JsonMacroArguments merged_args;
+    JsonMacroArguments merged_args{ block_arguments_ };
     if (caller_args != nullptr) {
         merged_args.merge(*caller_args);
     }
@@ -219,13 +226,17 @@ void MacroLineExecutor::operator () (
             merged_args.insert_json("__DIR__", fs::path(script_filename_).parent_path().string());
             merged_args.insert_json("__APPDATA__", get_appdata_directory());
             JsonMacroArguments args;
-            PathResolver path_resolver{search_path_, script_filename_};
+            PathResolver path_resolver{ search_path_, script_filename_ };
             args.set_fpathes([path_resolver](const std::filesystem::path& path){return path_resolver.fpathes(path);});
             args.set_fpath([path_resolver](const std::filesystem::path& path){return path_resolver.fpath(path);});
             args.set_spath([path_resolver](const std::filesystem::path& path){return path_resolver.spath(path);});
+            JsonMacroArguments let{ block_arguments_ };
             try {
                 if (jv.contains(MacroKeys::arguments)) {
                     args.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::arguments), global_args, asset_references_));
+                }
+                if (jv.contains(MacroKeys::let)) {
+                    let.insert_json(merged_args.subst_and_replace(jv.at(MacroKeys::let), global_args, asset_references_));
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
@@ -242,9 +253,11 @@ void MacroLineExecutor::operator () (
                 if (macro_it == macro_recorder_.json_macros_.end()) {
                     THROW_OR_ABORT("No JSON macro with name " + name + " exists");
                 }
+                let.insert_json(macro_it->second.block_arguments);
                 auto mle2 = changed_script_filename_and_context(
                     macro_it->second.filename,
-                    context);
+                    context,
+                    let.json());
                 try {
                     mle2(macro_it->second.content, &args, nullptr);
                 } catch (const std::runtime_error& e) {
@@ -282,12 +295,13 @@ void MacroLineExecutor::operator () (
                     THROW_OR_ABORT(msg.str());
                 }
             } else if (jv.contains(MacroKeys::execute)) {
-                auto mle2 = changed_context(context);
+                auto mle2 = changed_context(context, let.json());
                 mle2(j_subst.at(MacroKeys::execute), &args, nullptr);
             } else if (jv.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
-                    context);
+                    context,
+                    let.json());
                 macro_recorder_(mle2, &args);
             } else if (jv.contains(MacroKeys::declare_macro)) {
                 jv.validate(DeclareMacroArgs::options);
@@ -299,7 +313,8 @@ void MacroLineExecutor::operator () (
                     name,
                     JsonMacro{
                         .filename = script_filename_,
-                        .content = jv.at(DeclareMacroArgs::content)
+                        .content = jv.at(DeclareMacroArgs::content),
+                        .block_arguments = let.json()
                     }).second)
                 {
                     THROW_OR_ABORT("Macro with name \"" + name + "\" already exists");

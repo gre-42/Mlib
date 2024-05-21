@@ -559,6 +559,7 @@ void LoadScene::operator()(
         search_path,
         json_user_function,
         "no_scene_specified",
+        nlohmann::json::object(),
         external_json_macro_arguments,
         asset_references,
         verbose};

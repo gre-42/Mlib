@@ -24,6 +24,7 @@ void add_trees_to_zonemap(
     double tree_density_multiplier,
     float jitter,
     double step_size,
-    double position_scale);
+    double position_scale,
+    double min_height);
 
 }
