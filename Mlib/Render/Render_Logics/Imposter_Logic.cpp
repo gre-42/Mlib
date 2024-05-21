@@ -128,7 +128,8 @@ void ImposterLogic::add_imposter(
             .filename = texture_id_,
             .color_mode = ColorMode::RGBA}}} },
         .shading{
-            .ambient = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
+            .emissive = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
+            .ambient = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
             .diffuse = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
             .specular = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}};
     material.compute_color_mode();
