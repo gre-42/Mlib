@@ -36,8 +36,7 @@ size_t SubmenuHeaderContents::num_entries() const {
 
 bool SubmenuHeaderContents::is_visible(size_t index) const {
     auto variables = substitutions_.json_macro_arguments();
-    const auto& requires_ = ui_focus_.submenu_headers.at(index).requires_;
-    for (const auto& r : requires_) {
+    for (const auto& r : ui_focus_.submenu_headers.at(index).requires_) {
         if (!eval<bool>(r, variables, asset_references_)) {
             return false;
         }

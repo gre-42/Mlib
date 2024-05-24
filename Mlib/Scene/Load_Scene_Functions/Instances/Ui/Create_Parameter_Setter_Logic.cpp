@@ -6,6 +6,7 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
@@ -19,6 +20,19 @@
 
 using namespace Mlib;
 
+namespace Mlib {
+
+struct DatabaseFilter {
+    std::string database;
+    std::string variable;
+};
+
+static void from_json(const nlohmann::json& j, DatabaseFilter& item) {
+    j.at("database").get_to(item.database);
+    j.at("variable").get_to(item.variable);
+}
+
+}
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
@@ -36,6 +50,8 @@ DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(on_change);
 DECLARE_ARGUMENT(assets);
 DECLARE_ARGUMENT(asset_prefix);
+DECLARE_ARGUMENT(database_filter);
+DECLARE_ARGUMENT(hide_if_trivial);
 DECLARE_ARGUMENT(parameters);
 }
 
@@ -67,6 +83,30 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             auto prefix = args.arguments.at<std::string>(KnownArgs::asset_prefix, "");
             rp.globals.merge(a.rp.globals, prefix);
             rp.globals.set(prefix + "ID", a.rp.id);
+        }
+    }
+    if (args.arguments.contains(KnownArgs::database_filter)) {
+        auto f = args.arguments.at<DatabaseFilter>(KnownArgs::database_filter);
+        auto& assets = args.asset_references[f.database];
+        std::set<std::string> ents;
+        for (const auto& [_, a] : assets) {
+            try {
+                for (const auto& v : a.rp.database.at<std::vector<std::string>>(f.variable)) {
+                    ents.insert(v);
+                }
+            } catch (const std::runtime_error& e) {
+                throw std::runtime_error("Error processing asset \"" + a.rp.id + "\": " + e.what());
+            }
+        }
+        rps.remove_if([&ents](const ReplacementParameter& rp) { return (!ents.contains(rp.id)); });
+    }
+    if (args.arguments.at<bool>(KnownArgs::hide_if_trivial, false)) {
+        if (rps.empty()) {
+            return;
+        }
+        if (rps.size() == 1) {
+            args.external_json_macro_arguments.merge_and_notify(rps.front().globals);
+            return;
         }
     }
     args.ui_focus.insert_submenu(

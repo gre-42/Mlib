@@ -87,7 +87,8 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             {"MINIMAP_SIZE", minimap_size},
             {"MINIMAP_OFFSET", minimap_offset}});
         auto database = JsonMacroArguments(nlohmann::json{
-            {"IF_RACEWAY_CIRCULAR", circular}});
+            {"IF_RACEWAY_CIRCULAR", circular},
+            {"game_modes", std::vector<std::string>{"rally"}} });
         auto required = std::vector<std::string>({"%GAME_MODE == 'rally'"});
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{

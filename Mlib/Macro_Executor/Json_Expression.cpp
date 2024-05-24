@@ -220,7 +220,7 @@ nlohmann::json Mlib::eval(
     return eval(
         expression,
         variables,
-        JsonView{nlohmann::json(nlohmann::json::value_t::object)},
+        JsonView{ nlohmann::json::object() },
         asset_references);
 }
 
@@ -247,6 +247,6 @@ bool Mlib::eval<bool>(
     return eval<bool>(
         expression,
         variables,
-        JsonView{nlohmann::json(nlohmann::json::value_t::object)},
+        JsonView{ nlohmann::json::object() },
         asset_references);
 }

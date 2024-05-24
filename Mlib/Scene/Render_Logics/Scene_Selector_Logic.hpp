@@ -18,15 +18,21 @@ class IWidget;
 class ILayoutPixels;
 class NotifyingJsonMacroArguments;
 class AssetReferences;
+struct ReplacementParameterAndFilename;
 
-struct SceneEntry {
-    std::string name;
-    std::string filename;
-    JsonMacroArguments globals;
-    std::vector<std::string> requires_;
-    inline bool operator < (const SceneEntry& other) const {
-        return name < other.name;
-    }
+class SceneEntry {
+public:
+    explicit SceneEntry(const ReplacementParameterAndFilename& rpe);
+    const std::string& id() const;
+    const std::string& name() const;
+    const std::string& filename() const;
+    const JsonMacroArguments& globals() const;
+    const std::vector<std::string>& required() const;
+    JsonView locals() const;
+    bool operator < (const SceneEntry& other) const;
+private:
+    const ReplacementParameterAndFilename& rpe_;
+    nlohmann::json locals_;
 };
 
 class SceneEntryContents: public IListViewContents {
@@ -48,7 +54,7 @@ private:
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
-        const std::string& title,
+        std::string globals_prefix,
         std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
@@ -76,6 +82,7 @@ public:
 
 private:
     void merge_substitutions() const;
+    std::string globals_prefix_;
     std::unique_ptr<TextResource> renderable_text_;
     std::vector<SceneEntry> scene_files_;
     SceneEntryContents contents_;

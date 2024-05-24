@@ -36,8 +36,8 @@ void NotifyingJsonMacroArguments::clear_observers() {
 }
 
 JsonMacroArgumentsAndLock::JsonMacroArgumentsAndLock(const NotifyingJsonMacroArguments& args)
-: lock_{args.mutex_},
-  args_{args}
+    : lock_{ args.mutex_ }
+    , args_{ args }
 {}
 
 JsonMacroArgumentsAndLock::operator const JsonMacroArguments&() const {

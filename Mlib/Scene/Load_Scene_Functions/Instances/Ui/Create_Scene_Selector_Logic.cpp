@@ -53,17 +53,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
 {
     std::list<SceneEntry> scene_entries;
     for (const auto& [_, rpe] : args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)]) {
-        try {
-            auto& entry = scene_entries.emplace_back(SceneEntry{
-                .name = rpe.rp.title,
-                .filename = rpe.filename,
-                .requires_ = rpe.rp.required});
-            auto prefix = args.arguments.at<std::string>(KnownArgs::asset_prefix, "");
-            entry.globals.merge(rpe.rp.globals, prefix);
-            entry.globals.set(prefix + "LEVEL_ID", rpe.rp.id);
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error processing manifest file \"" + rpe.filename + "\": " + e.what());
-        }
+        scene_entries.emplace_back(rpe);
     }
     if (scene_entries.empty()) {
         THROW_OR_ABORT("Could not find a single scene file");
@@ -78,7 +68,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         0);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
-        "",
+        args.arguments.at<std::string>(KnownArgs::asset_prefix, ""),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
