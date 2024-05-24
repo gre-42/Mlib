@@ -1,5 +1,6 @@
 #include "Vehicle_Domain.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 
 using namespace Mlib;
 

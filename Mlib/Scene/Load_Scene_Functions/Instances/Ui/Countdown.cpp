@@ -47,7 +47,6 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& countdown_logic = global_object_pool.create<CountDownLogic>(
         CURRENT_SOURCE_LOCATION,
         node.ref(CURRENT_SOURCE_LOCATION),
-        physics_engine.advance_times_,
         args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),

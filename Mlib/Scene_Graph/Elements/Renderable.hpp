@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <list>
 #include <memory>
 #include <type_traits>

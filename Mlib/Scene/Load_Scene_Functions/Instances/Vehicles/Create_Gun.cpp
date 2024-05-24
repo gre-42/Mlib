@@ -122,8 +122,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         generate_smart_bullet =
             [mle = args.macro_line_executor,
              l = g.value(),
-             capture = args.arguments.try_at_non_null(KnownArgs::capture),
-             &scene = scene]
+             capture = args.arguments.try_at_non_null(KnownArgs::capture)]
             (
                 const std::optional<std::string>& player,
                 const std::string& bullet_suffix,

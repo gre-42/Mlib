@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Type_Traits/Get_Scalar.hpp>
 
@@ -9,7 +10,7 @@ TData mean(const BaseDenseArray<TDerived, TData>& a) {
     const auto& av = *a;  // Workaround for MSVC
     assert(av.nelements() > 0);
     typedef typename ScalarType<TData>::value_type ScalarType;
-    return sum(a) / (ScalarType)av.nelements();
+    return sum(a) / (ScalarType)CW::nelements(av);
 }
 
 template <class TData>

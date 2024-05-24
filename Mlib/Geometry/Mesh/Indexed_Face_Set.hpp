@@ -68,8 +68,8 @@ public:
                         uv_indices.insert({ OrderableFixedArray{v.uv}, uv_indices.size() });
                         normal_indices.insert({ OrderableFixedArray{v.normal}, normal_indices.size() });
                     }
-                    FixedArray<IndexVertex<TIndex>, ipoly.length()> opolygon;
-                    for (size_t i = 0; i < ipoly.length(); ++i) {
+                    FixedArray<IndexVertex<TIndex>, std::remove_reference_t<decltype(ipoly)>::length()> opolygon;
+                    for (size_t i = 0; i < CW::length(ipoly); ++i) {
                         opolygon(i).position = vertex_indices.at(OrderableFixedArray{ ipoly(i).position });
                         opolygon(i).uv = uv_indices.at(OrderableFixedArray{ ipoly(i).uv });
                         opolygon(i).normal = normal_indices.at(OrderableFixedArray{ ipoly(i).normal });

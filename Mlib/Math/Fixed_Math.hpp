@@ -46,10 +46,10 @@ constexpr auto outer(
         const auto& b2 = b.rows_as_1D();
         auto r = outer2d(a2, b2);
         auto r_shape =
-            a.shape()
+            std::remove_reference_t<decltype(a)>::shape()
             .erased_last()
             .concatenated(
-                b.shape()
+                std::remove_reference_t<decltype(b)>::shape()
                 .erased_last());
         return r.reshaped(r_shape);
     } else {

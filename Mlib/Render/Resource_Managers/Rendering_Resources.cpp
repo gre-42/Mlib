@@ -65,7 +65,6 @@
 #include <vector>
 
 using namespace Mlib;
-namespace fs = std::filesystem;
 
 #ifdef __ANDROID__
 static const bool EXTRACT_PROCESSED = false;
@@ -179,7 +178,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     if ((source_color_mode == ColorMode::RGBA) &&
         color.alpha.empty() &&
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
-        !fs::exists(touch_file))
+        !path_exists(touch_file))
     {
         linfo() << "Extrapolating RGBA image \"" << color << '"';
         auto img = StbImage4::load_from_file(color.filename);
@@ -189,8 +188,8 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             img,
             sigma,
             niterations).save_to_file(color.filename);
-        std::ofstream ofstr{ touch_file };
-        if (ofstr.fail()) {
+        auto ofstr = create_ofstream(touch_file);
+        if (ofstr->fail()) {
             THROW_OR_ABORT("Could not create file \"" + touch_file + '"');
         }
     }
@@ -394,7 +393,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("selected_color_far out of bounds");
         }
         auto si1 = stb_create<uint8_t>(si0.width, si0.height, 1);
-        assert_isequal(si0.nrChannels, integral_cast<int>(color.selected_color.length()));
+        assert_isequal(si0.nrChannels, integral_cast<int>(CW::length(color.selected_color)));
         stb_generate_color_mask(
             si0.data.get(),
             si1.data.get(),
@@ -706,7 +705,7 @@ TextureType RenderingResources::texture_type(
     if (auto it = texture_types_.try_get(name); it != nullptr) {
         return *it;
     }
-    if (fs::exists(name.filename)) {
+    if (path_exists(name.filename)) {
         return TextureType::TEXTURE_2D;
     }
     THROW_OR_ABORT("Could not find texture:\n" + (std::stringstream() << name).str());
@@ -744,7 +743,7 @@ std::string RenderingResources::get_texture_filename(
     {
         std::vector<StbInfo<uint8_t>> sis;
         if (manual_atlas_tile_descriptors_.contains(color.filename)) {
-            sis = std::move(get_texture_array_data(color, role, FlipMode::VERTICAL));
+            sis = get_texture_array_data(color, role, FlipMode::VERTICAL);
         } else {
             sis.push_back(get_texture_data(color, role, FlipMode::VERTICAL));
         }

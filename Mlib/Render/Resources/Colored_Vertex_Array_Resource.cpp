@@ -1958,7 +1958,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
         for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
             const auto& td = cva->triangle_bone_weights[tid];  // std::vector of bone weights.
             auto& ts = triangle_bone_weights[tid];             // FixedArray of sorted bone weights.
-            for (size_t vid = 0; vid < td.length(); ++vid) {
+            for (size_t vid = 0; vid < CW::length(td); ++vid) {
                 auto vd = td(vid);   // Copy of std::vector of bone weights, to be sorted.
                 auto& vs = ts(vid);  // Reference to FixedArray of sorted bone weights.
                 // Sort in descending order

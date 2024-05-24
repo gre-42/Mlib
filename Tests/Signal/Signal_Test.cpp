@@ -16,7 +16,7 @@ struct Pms {
 void test_pid() {
     size_t n = 150;
     float dt0 = 0.056f;
-    float dt1 = n * dt0;
+    float dt1 = (float)n * dt0;
     PidController<float, float> pid0{
         2.f,        // P
         0.5f,       // I

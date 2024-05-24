@@ -43,14 +43,12 @@ SetNodeHider::SetNodeHider(RenderableScene& renderable_scene)
 class NodeHiderWithEvent: public INodeHider, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     NodeHiderWithEvent(
-        AdvanceTimes& advance_times,
         DanglingRef<SceneNode> node_to_hide,
         DanglingRef<SceneNode> camera_node,
         const std::function<void()>& on_hide,
         const std::function<void()>& on_destroy,
         const std::function<void()>& on_update)
-        : advance_times_{ advance_times }
-        , node_to_hide_{ node_to_hide.ptr() }
+        : node_to_hide_{ node_to_hide.ptr() }
         , camera_node_{ camera_node.ptr() }
         , on_hide_{ on_hide }
         , on_destroy_{ on_destroy }
@@ -116,7 +114,6 @@ public:
     }
 
 private:
-    AdvanceTimes& advance_times_;
     DanglingPtr<SceneNode> node_to_hide_;
     DanglingPtr<SceneNode> camera_node_;
     std::function<void()> on_hide_;
@@ -134,7 +131,6 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
         : nullptr;
     auto capture = args.arguments.try_at_non_null(KnownArgs::capture);
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
-        physics_engine.advance_times_,
         node_to_hide,
         camera_node,
         [

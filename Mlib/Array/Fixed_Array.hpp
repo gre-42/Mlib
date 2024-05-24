@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Base_Dense_Fixed_Array.hpp>
+#include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Array/Fixed_Array_Shape.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
@@ -436,8 +437,8 @@ template <typename TData, size_t tshape0, size_t... tshape>
 std::ostream& operator << (std::ostream& ostream, const FixedArray<TData, tshape0, tshape...>& a) {
     typedef FixedArray<TData, tshape0, tshape...> A;
     if constexpr (A::ndim() == 1) {
-        for (size_t i = 0; i < a.length(); ++i) {
-            ostream << WriteNum(a(i)) << (i == a.length() - 1 ? "" : " ");
+        for (size_t i = 0; i < CW::length(a); ++i) {
+            ostream << WriteNum(a(i)) << (i == CW::length(a) - 1 ? "" : " ");
         }
     } else if constexpr (A::ndim() != 0) {
         for (size_t i = 0; i < tshape0; ++i) {

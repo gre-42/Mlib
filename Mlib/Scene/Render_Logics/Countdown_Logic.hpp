@@ -20,7 +20,6 @@ class CountDownLogic:
 public:
     CountDownLogic(
         DanglingRef<SceneNode> node,
-        AdvanceTimes& advance_times,
         const std::string& ttf_filename,
         const FixedArray<float, 3>& color,
         const FixedArray<float, 2>& position,
@@ -49,7 +48,6 @@ public:
     DestructionFunctionsRemovalTokens on_node_clear;
 private:
     DanglingPtr<SceneNode> node_;
-    AdvanceTimes& advance_times_;
     float elapsed_time_;
     float duration_;
     Focus pending_focus_;

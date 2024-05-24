@@ -338,8 +338,8 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
     std::map<std::pair<O, O>, FixedArray<TPos, 3>> edge_normals;
     for (const auto& t : triangles) {
         auto n = triangle_normal<TPos>({ t(0).position, t(1).position, t(2).position });
-        for (size_t i = 0; i < t.length(); ++i) {
-            std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
+        for (size_t i = 0; i < CW::length(t); ++i) {
+            std::pair<O, O> edge0{ t(i).position, t((i + 1) % CW::length(t)).position };
             auto it = edge_normals.find(edge0);
             if (it != edge_normals.end()) {
                 if (dot0d(n, it->second) > cos_edge_angle) {
@@ -354,9 +354,9 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
                 if (m(1) < cos_averaged_normal_angle) {
                     continue;
                 }
-                grind_lines.push_back({ t(i), t((i + 1) % t.length()) });
+                grind_lines.push_back({ t(i), t((i + 1) % CW::length(t)) });
             } else {
-                std::pair<O, O> edge1{ t((i + 1) % t.length()).position, t(i).position };
+                std::pair<O, O> edge1{ t((i + 1) % CW::length(t)).position, t(i).position };
                 edge_normals.insert({ edge1, n });
             }
         }
@@ -380,8 +380,8 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
     using O = OrderableFixedArray<TPos, 3>;
     std::set<std::pair<O, O>> edges;
     for (const auto& t : triangles) {
-        for (size_t i = 0; i < t.length(); ++i) {
-            std::pair<O, O> edge0{ t(i).position, t((i + 1) % t.length()).position };
+        for (size_t i = 0; i < CW::length(t); ++i) {
+            std::pair<O, O> edge0{ t(i).position, t((i + 1) % CW::length(t)).position };
             if (!edges.insert(edge0).second) {
                 THROW_OR_ABORT("Could not insert edge for contour edge calculation");
             }

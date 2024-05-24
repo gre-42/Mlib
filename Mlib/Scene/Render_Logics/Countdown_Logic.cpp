@@ -3,7 +3,6 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
@@ -15,7 +14,6 @@ using namespace Mlib;
 
 CountDownLogic::CountDownLogic(
     DanglingRef<SceneNode> node,
-    AdvanceTimes& advance_times,
     const std::string& ttf_filename,
     const FixedArray<float, 3>& color,
     const FixedArray<float, 2>& position,
@@ -33,7 +31,6 @@ CountDownLogic::CountDownLogic(
         line_distance }
     , on_node_clear{ node->on_clear, CURRENT_SOURCE_LOCATION }
     , node_{ node.ptr() }
-    , advance_times_{ advance_times }
     , duration_{ duration }
     , pending_focus_{ pending_focus }
     , counting_focus_{ counting_focus }
