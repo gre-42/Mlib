@@ -71,7 +71,6 @@ void SkidmarkLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("SkidmarkLogic received wrong rendering");
     }
-    ViewportGuard vg{ texture_width_, texture_height_ };
     size_t new_fbs_id = 1 - old_fbs_id_;
     if (fbs_(new_fbs_id) == nullptr) {
         fbs_(new_fbs_id) = std::make_unique<FrameBuffer>();
@@ -104,11 +103,7 @@ void SkidmarkLogic::render(
         RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
         RenderToScreenGuard rsg;
         {
-            ViewportGuard vg{
-                0.f,
-                0.f,
-                (float)texture_width_,
-                (float)texture_height_ };
+            ViewportGuard vg{texture_width_, texture_height_ };
             clear_color({ 1.f, 1.f, 1.f, 1.f });
         }
         if (fbs_(old_fbs_id_) != nullptr) {
@@ -124,11 +119,7 @@ void SkidmarkLogic::render(
             old_render_texture_logic_->render_wo_update_and_bind();
         }
         {
-            ViewportGuard vg{
-                0.f,
-                0.f,
-                (float)texture_width_,
-                (float)texture_height_ };
+            ViewportGuard vg{texture_width_, texture_height_ };
             RenderConfigGuard rcg{ render_config, ExternalRenderPassType::STANDARD };
             particle_renderer_.render(
                 ParticleSubstrate::SKIDMARK,
