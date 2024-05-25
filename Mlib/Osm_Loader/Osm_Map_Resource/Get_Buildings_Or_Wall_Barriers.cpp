@@ -66,8 +66,8 @@ std::list<Building> Mlib::get_buildings_or_wall_barriers(
         building_top = parse_meters(w.tags, "building:height", building_top);
 
         auto vss = w.tags.try_get("vertical_subdivision");
-        auto vertical_subdivision = vss.has_value()
-            ? vertical_subdivision_from_string(vss.value())
+        auto vertical_subdivision = (vss != nullptr)
+            ? vertical_subdivision_from_string(*vss)
             : default_vertical_subdivision;
 
         FacadeTextureDescriptor entrance_ftd;

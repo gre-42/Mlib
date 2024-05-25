@@ -771,6 +771,42 @@ void DrawStreets::draw_streets_add_waypoints(
     }
 }
 
+class OptionalString {
+public:
+    explicit OptionalString(const std::string* s)
+        : s_{ s }
+    {}
+    OptionalString& operator = (std::nullptr_t) {
+        s_ = nullptr;
+        return *this;
+    }
+    bool operator == (const OptionalString& other) const {
+        auto& a = s_;
+        auto& b = other.s_;
+        if (!a != !b) {
+            return false;
+        }
+        if (!a) {
+            return true;
+        }
+        return *a == *b;
+    }
+    bool operator != (const OptionalString& other) const {
+        return !(*this == other);
+    }
+    bool operator != (const std::string* other) const {
+        return *this != OptionalString{ other };
+    }
+    const std::string* operator -> () const {
+        return s_;
+    }
+    const std::string& operator * () const {
+        return *s_;
+    }
+private:
+    const std::string* s_;
+};
+
 std::string DrawStreets::auto_model_name(
     const std::string& node_id,
     const AngleWay& angle_way,
@@ -778,18 +814,18 @@ std::string DrawStreets::auto_model_name(
     const Map<RoadType, std::string>& endpoint0_resource_names,
     const Map<RoadType, std::string>& endpoint1_resource_names) const
 {
-    auto model_name = [&](const std::map<RoadType, std::string>& res) -> std::optional<const std::string> {
+    auto model_name = [&](const std::map<RoadType, std::string>& res) -> const std::string* {
         auto it = res.find(angle_way.road_type);
         if (it == res.end()) {
-            return std::nullopt;
+            return nullptr;
         } else {
-            return it->second;
+            return &it->second;
         }
     };
-    std::optional<const std::string> model_name_central = model_name(central_resource_names);
-    std::optional<const std::string> model_name_endpoint0 = model_name(endpoint0_resource_names);
-    std::optional<const std::string> model_name_endpoint1 = model_name(endpoint1_resource_names);
-    std::optional<const std::string> model_name_central_orig = model_name_central;
+    OptionalString model_name_central{ model_name(central_resource_names) };
+    OptionalString model_name_endpoint0{ model_name(endpoint0_resource_names) };
+    OptionalString model_name_endpoint1{ model_name(endpoint1_resource_names) };
+    OptionalString model_name_central_orig = model_name_central;
     auto get_neighbor_road_connection_type = [this](
         const std::string& node_id,
         const std::string& not_node_id,
@@ -827,61 +863,61 @@ std::string DrawStreets::auto_model_name(
     }
     if (!central_resource_names.empty()) {
         if (node_angles0.size() != 2) {
-            model_name_central = std::nullopt;
-            model_name_endpoint0 = std::nullopt;
+            model_name_central = nullptr;
+            model_name_endpoint0 = nullptr;
         } else {
             RoadType rt0;
             RoadConnectionType rct0;
             get_neighbor_road_connection_type(node_id, angle_way.neighbor_id, rt0, rct0);
-            std::optional<const std::string> model_central_0 = central_resource_names.try_get(rt0);
+            OptionalString model_central_0{ central_resource_names.try_get(rt0) };
             if ((node_way_info0 == node_way_info.end()) ||
                 (rct0 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info0->second.layer) ||
                 (angle_way.layer != 0) ||
                 (model_name_central_orig != model_central_0))
             {
-                model_name_central = std::nullopt;
-                model_name_endpoint0 = std::nullopt;
+                model_name_central = nullptr;
+                model_name_endpoint0 = nullptr;
             }
         }
         if (node_angles1.size() != 2) {
-            model_name_central = std::nullopt;
-            model_name_endpoint1 = std::nullopt;
+            model_name_central = nullptr;
+            model_name_endpoint1 = nullptr;
         } else {
             RoadType rt1;
             RoadConnectionType rct1;
             get_neighbor_road_connection_type(angle_way.neighbor_id, node_id, rt1, rct1);
-            std::optional<const std::string> model_central_1 = central_resource_names.try_get(rt1);
+            OptionalString model_central_1{ central_resource_names.try_get(rt1) };
             if ((node_way_info1 == node_way_info.end()) ||
                 (rct1 == RoadConnectionType::ENDPOINT) ||
                 std::isnan(node_way_info1->second.layer) ||
                 (angle_way.layer != 0) ||
                 (model_name_central_orig != model_central_1))
             {
-                model_name_central = std::nullopt;
-                model_name_endpoint1 = std::nullopt;
+                model_name_central = nullptr;
+                model_name_endpoint1 = nullptr;
             }
         }
     }
-    if ((model_name_central != std::nullopt) ||
-        (model_name_endpoint0 != std::nullopt) ||
-        (model_name_endpoint1 != std::nullopt))
+    if ((model_name_central != nullptr) ||
+        (model_name_endpoint0 != nullptr) ||
+        (model_name_endpoint1 != nullptr))
     {
-        if (model_name_central != std::nullopt) {
+        if (model_name_central != nullptr) {
             assert_true(node_angles0.size() == 2);
             assert_true(node_angles1.size() == 2);
-            if ((*model_name_central).empty()) {
+            if (model_name_central->empty()) {
                 THROW_OR_ABORT("Empty model names not supported");
             }
             return *model_name_central;
-        } else if (model_name_endpoint0 != std::nullopt) {
+        } else if (model_name_endpoint0 != nullptr) {
             // assert_true(node_angles.at(node_id).size() != 2);
             assert_true(node_angles0.size() == 2);
             if ((*model_name_endpoint0).empty()) {
                 THROW_OR_ABORT("Empty model names not supported");
             }
             return *model_name_endpoint0;
-        } else if (model_name_endpoint1 != std::nullopt) {
+        } else if (model_name_endpoint1 != nullptr) {
             assert_true(node_angles1.size() == 2);
             // assert_true(node_angles.at(angle_way.neighbor_id).size() != 2);
             if ((*model_name_endpoint1).empty()) {

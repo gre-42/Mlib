@@ -61,13 +61,13 @@ public:
 private:
     static bool include(const Node& node, bool deflt) {
         auto v = node.tags.try_get("smoothen");
-        if (!v.has_value()) {
+        if (v == nullptr) {
             return deflt;
         }
-        if (v.value() == "yes") {
+        if (*v == "yes") {
             return true;
         }
-        if (v.value() == "no") {
+        if (*v == "no") {
             return false;
         }
         THROW_OR_ABORT("Unsupported smoothing mode");

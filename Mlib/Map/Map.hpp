@@ -1,7 +1,6 @@
 #pragma once
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
-#include <optional>
 #include <stdexcept>
 
 namespace Mlib {
@@ -48,12 +47,12 @@ public:
         return it->second;
     }
 
-    const std::optional<const TValue> try_get(const TKey& key) const {
+    const TValue* try_get(const TKey& key) const {
         auto it = this->find(key);
         if (it == this->end()) {
-            return std::nullopt;
+            return nullptr;
         }
-        return it->second;
+        return &it->second;
     }
 };
 
