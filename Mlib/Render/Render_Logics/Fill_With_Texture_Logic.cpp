@@ -15,12 +15,12 @@
 using namespace Mlib;
 
 FillWithTextureRenderProgram::FillWithTextureRenderProgram()
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+: deallocation_token_{render_deallocator.insert([this](){invalidate_texture_id();})}
 {}
 
 FillWithTextureRenderProgram::~FillWithTextureRenderProgram() = default;
 
-void FillWithTextureRenderProgram::deallocate() {
+void FillWithTextureRenderProgram::invalidate_texture_id() {
     texture_id_ = (GLuint)-1;
 }
 
@@ -53,7 +53,7 @@ std::string fragment_shader_text_layer(size_t layer) {
 
 FillWithTextureLogic::FillWithTextureLogic(
     RenderingResources& rendering_resources,
-    ColormapWithModifiers image_resource_name,
+    const ColormapWithModifiers& image_resource_name,
     ResourceUpdateCycle update_cycle,
     CullFaceMode cull_face_mode,
     AlphaChannelRole alpha_channel_role,

@@ -29,7 +29,7 @@ public:
     GLint texture_location = -1;
     GLuint texture_id_ = (GLuint)-1;
 private:
-    void deallocate();
+    void invalidate_texture_id();
     DeallocationToken deallocation_token_;
 };
 
@@ -37,7 +37,7 @@ class FillWithTextureLogic: public GenericPostProcessingLogic {
 public:
     FillWithTextureLogic(
         RenderingResources& rendering_resources,
-        ColormapWithModifiers image_resource_name,
+        const ColormapWithModifiers& image_resource_name,
         ResourceUpdateCycle update_cycle,
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
         AlphaChannelRole alpha_channel_role = AlphaChannelRole::BLEND,

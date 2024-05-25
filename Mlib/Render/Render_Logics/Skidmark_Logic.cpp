@@ -96,7 +96,7 @@ void SkidmarkLogic::render(
                 ColormapWithModifiers{ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB },
                 ResourceUpdateCycle::ALWAYS,
                 CullFaceMode::NO_CULL);
-        } else {
+        } else if (fbs_(old_fbs_id_) != nullptr) {
             old_render_texture_logic_->update_texture_id();
         }
         std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
