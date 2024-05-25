@@ -90,6 +90,7 @@ private:
 
 namespace DeclareMacroArgs {
 BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(exclude);
 DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(content);
 }
@@ -304,7 +305,11 @@ void MacroLineExecutor::operator () (
                     let.json());
                 macro_recorder_(mle2, &args);
             } else if (jv.contains(MacroKeys::declare_macro)) {
-                jv.validate(DeclareMacroArgs::options);
+                try {
+                    jv.validate(DeclareMacroArgs::options);
+                } catch (const std::runtime_error& e) {
+                    throw std::runtime_error((std::stringstream() << e.what() << "\nCould not validate " << jv.json()).str());
+                }
                 auto name = jv.at<std::string>(MacroKeys::declare_macro);
                 if (verbose_) {
                     linfo() << "Storing macro \"" << name << '"';

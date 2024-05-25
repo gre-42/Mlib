@@ -558,7 +558,7 @@ int main(int argc, char** argv) {
                     {"IF_DEVEL", args.has_named("--devel_mode")},
                     {"IF_SHOW_DEBUG_WHEELS", args.has_named("--show_debug_wheels")},
                     {"IF_ANDROID", false},
-                    {"flavor": args.named_value("--flavor", "extended")},
+                    {"flavor", args.named_value("--flavor", "extended")},
                     {"SCENE_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--scene_lightmap_width", "2048"))},
                     {"SCENE_LIGHTMAP_HEIGHT", safe_stoi(args.named_value("--scene_lightmap_height", "2048"))},
                     {"BLACK_LIGHTMAP_WIDTH", safe_stoi(args.named_value("--black_lightmap_width", "1024"))},
