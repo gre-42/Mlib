@@ -91,6 +91,7 @@ private:
 namespace DeclareMacroArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(exclude);
+DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(content);
 }
