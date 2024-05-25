@@ -37,7 +37,7 @@ private:
 class ParameterSetterLogic: public RenderLogic {
 public:
     ParameterSetterLogic(
-        const std::string& title,
+        std::string debug_hint,
         std::vector<ReplacementParameter> options,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,

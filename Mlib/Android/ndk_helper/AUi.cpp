@@ -79,3 +79,15 @@ void AUi::SetRequestedScreenOrientation(ScreenOrientation orientation) {
     jmethodID methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
     jni->CallVoidMethod(App().activity->clazz, methodID, (int)orientation);
 }
+
+std::string AUi::GetFlavor() {
+    JNIEnv* jni = ndk_helper::JNIHelper::GetInstance()->AttachCurrentThread();
+    jclass clazz = jni->GetObjectClass(App().activity->clazz);
+    jmethodID methodID = jni->GetMethodID(clazz, "flavor", "()Ljava/lang/String;");
+    auto flavorJstring = (jstring)jni->CallObjectMethod(App().activity->clazz, methodID);
+    const char* flavorUtf = jni->GetStringUTFChars(flavorJstring, nullptr);
+    auto result = std::string{flavorUtf};
+    jni->ReleaseStringUTFChars(flavorJstring, flavorUtf);
+    jni->DeleteLocalRef(flavorJstring);
+    return result;
+}

@@ -8,7 +8,8 @@
 namespace Mlib {
 
 static const Map<std::string, int> mouse_buttons_map{
-    {"1", AMOTION_EVENT_BUTTON_PRIMARY},
+    {"LEFT", AMOTION_EVENT_BUTTON_PRIMARY},
+    {"RIGHT", AMOTION_EVENT_BUTTON_SECONDARY},
 };
 
 }

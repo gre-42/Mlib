@@ -17,6 +17,7 @@ struct LayoutConstraintParameters;
 class ListView {
 public:
     ListView(
+        std::string debug_hint,
         ButtonStates& button_states,
         std::atomic_size_t& selection_index,
         const IListViewContents& contents,
@@ -37,6 +38,7 @@ private:
         const LayoutConstraintParameters& ly,
         IListViewDrawer& drawer);
     void handle_input(size_t left, size_t right);
+    std::string debug_hint_;
     std::atomic_size_t& selection_index_;
     const IListViewContents& contents_;
     const std::function<void()> on_change_;

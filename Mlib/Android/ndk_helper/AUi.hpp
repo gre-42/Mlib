@@ -25,6 +25,7 @@ public:
     static bool PathExists(const std::filesystem::path& path);
     static ndk_helper::DirectoryIterator ListDir(const std::filesystem::path& dirname);
     static std::string GetExternalFilesDir();
+    static std::string GetFlavor();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
     static void RequestReadExternalStoragePermission();
 };

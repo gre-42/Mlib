@@ -52,13 +52,15 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     }
 
     json j;
-    std::ifstream f{filename};
-    if (f.fail()) {
-        THROW_OR_ABORT("Could not open file " + filename);
-    }
-    f >> j;
-    if (f.fail()) {
-        THROW_OR_ABORT("Could not read from file " + filename);
+    {
+        auto f = create_ifstream(filename);
+        if (f->fail()) {
+            THROW_OR_ABORT("Could not open file " + filename);
+        }
+        *f >> j;
+        if (f->fail()) {
+            THROW_OR_ABORT("Could not read from file " + filename);
+        }
     }
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();

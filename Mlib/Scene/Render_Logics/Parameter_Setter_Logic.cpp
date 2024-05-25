@@ -36,7 +36,7 @@ bool ReplacementParameterContents::is_visible(size_t index) const {
 }
 
 ParameterSetterLogic::ParameterSetterLogic(
-    const std::string& title,
+    std::string debug_hint,
     std::vector<ReplacementParameter> options,
     const std::string& ttf_filename,
     std::unique_ptr<IWidget>&& widget,
@@ -59,6 +59,7 @@ ParameterSetterLogic::ParameterSetterLogic(
     , focus_filter_{ std::move(focus_filter) }
     , substitutions_{ substitutions }
     , list_view_{
+        std::move(debug_hint),
         button_states,
         selection_index,
         contents_,

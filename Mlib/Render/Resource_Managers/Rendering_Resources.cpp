@@ -66,6 +66,8 @@
 
 using namespace Mlib;
 
+// Android makes use of the "deallocation_token_" and probably keeps the
+// processed data for performance reasons.
 #ifdef __ANDROID__
 static const bool EXTRACT_PROCESSED = false;
 static const bool EXTRACT_RAW = false;

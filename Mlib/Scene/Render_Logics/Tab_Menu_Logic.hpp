@@ -44,6 +44,7 @@ private:
 class TabMenuLogic: public RenderLogic {
 public:
     TabMenuLogic(
+        std::string debug_hint,
         BaseKeyCombination key_binding,
         const std::vector<SubmenuHeader>& options,
         RenderLogicGallery& gallery,

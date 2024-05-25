@@ -71,6 +71,7 @@ bool SceneEntryContents::is_visible(size_t index) const {
 }
 
 SceneSelectorLogic::SceneSelectorLogic(
+    std::string debug_hint,
     std::string globals_prefix,
     std::vector<SceneEntry> scene_files,
     const std::string& ttf_filename,
@@ -97,6 +98,7 @@ SceneSelectorLogic::SceneSelectorLogic(
     , substitutions_{ substitutions }
     , next_scene_filename_{ next_scene_filename }
     , list_view_{
+        std::move(debug_hint),
         button_states,
         selection_index,
         contents_,

@@ -19,20 +19,20 @@ FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& na
     } else {
         THROW_OR_ABORT("Unknown parameter transformation: " + name);
     }
-};
+}
 
 BvhLoader::BvhLoader(
     const std::string& filename,
     const BvhConfig& cfg)
-: cfg_{cfg},
-  frame_time_{NAN}
+    : cfg_{ cfg }
+    , frame_time_{ NAN }
 {
     if (!all(cfg.rotation_order < size_t(3))) {
         THROW_OR_ABORT("Rotation order out of bounds");
     }
-    std::ifstream f{filename};
-    if (f.fail()) {
-        THROW_OR_ABORT("Could not open " + filename);
+    auto file = create_ifstream(filename);
+    if (file->fail()) {
+        THROW_OR_ABORT("Could not open \"" + filename + '"');
     }
     std::vector<std::map<std::string, FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
@@ -40,10 +40,10 @@ BvhLoader::BvhLoader(
     std::list<std::string> joint_stack;
     bool in_data_section = false;
     size_t nframes = SIZE_MAX;
-    while (std::getline(f, line)) {
+    while (std::getline(*file, line)) {
         if (!in_data_section) {
             static const DECLARE_REGEX(name_re, "^\\s*(ROOT|JOINT)\\s+(.+?)\\s*$");
-            static const DECLARE_REGEX(closing_re, "^\\s*}\\s*$");
+            static const DECLARE_REGEX(closing_re, "^\\s*\\}\\s*$");
             static const DECLARE_REGEX(ends_re, "^\\s*End Site\\s*$");
             static const DECLARE_REGEX(offs_re, "^\\s*OFFSET\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
             static const DECLARE_REGEX(chan_re, "^\\s*CHANNELS\\s+(\\d+)\\s+(.+)\\s*$");
@@ -112,7 +112,7 @@ BvhLoader::BvhLoader(
             } else if (Mlib::re::regex_match(line, match, motion_re)) {
                 static const DECLARE_REGEX(frames_re, "^\\s*Frames:\\s*(\\d+)\\s*");
                 static const DECLARE_REGEX(frame_time_re, "^\\s*Frame Time:\\s*(\\S+)\\s*");
-                if (!std::getline(f, line)) {
+                if (!std::getline(*file, line)) {
                     THROW_OR_ABORT("Could not get line");
                 }
                 if (!Mlib::re::regex_match(line, match, frames_re)) {
@@ -120,7 +120,7 @@ BvhLoader::BvhLoader(
                 }
                 nframes = safe_stoz(match[1].str());
                 raw_frames.reserve(nframes);
-                if (!std::getline(f, line)) {
+                if (!std::getline(*file, line)) {
                     THROW_OR_ABORT("Could not get line");
                 }
                 if (!Mlib::re::regex_match(line, match, frame_time_re)) {
@@ -202,6 +202,9 @@ BvhLoader::BvhLoader(
     if (cfg.periodic && !raw_frames.empty()) {
         transformed_frames_[transformed_frames_.size() - 1] = transformed_frames_[0];
     }
+    if (!file->eof() && file->fail()) {
+        THROW_OR_ABORT("Error reading from file: \"" + filename + '"');
+    }
 }
 
 const std::map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
@@ -217,8 +220,8 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative
     }
     float i = time / frame_time_;
     i = std::clamp(i, float{0}, float(transformed_frames_.size() - 1));
-    size_t i0 = size_t(i);
-    size_t i1 = i0 + 1;
+    auto i0 = size_t(i);
+    auto i1 = i0 + 1;
     if (i1 > transformed_frames_.size()) {
         THROW_OR_ABORT("Frame interpolation internal error");
     }
@@ -277,8 +280,8 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute
     return result;
 }
 
-int mod(int x, int N) {
-    return (x % N + N) % N;
+int mod(int x, int n) {
+    return (x % n + n) % n;
 }
 
 void BvhLoader::smoothen() {

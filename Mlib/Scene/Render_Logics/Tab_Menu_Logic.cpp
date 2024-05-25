@@ -24,10 +24,10 @@ SubmenuHeaderContents::SubmenuHeaderContents(
     const NotifyingJsonMacroArguments& substitutions,
     const AssetReferences& asset_references,
     UiFocus& ui_focus)
-: options_{options},
-  substitutions_{substitutions},
-  asset_references_{asset_references},
-  ui_focus_{ui_focus}
+    : options_{ options }
+    , substitutions_{ substitutions }
+    , asset_references_{ asset_references }
+    , ui_focus_{ ui_focus }
 {}
     
 size_t SubmenuHeaderContents::num_entries() const {
@@ -45,6 +45,7 @@ bool SubmenuHeaderContents::is_visible(size_t index) const {
 }
 
 TabMenuLogic::TabMenuLogic(
+    std::string debug_hint,
     BaseKeyCombination key_binding,
     const std::vector<SubmenuHeader>& options,
     RenderLogicGallery& gallery,
@@ -63,31 +64,32 @@ TabMenuLogic::TabMenuLogic(
     std::atomic_size_t& selection_index,
     std::function<void()> reload_transient_objects,
     const std::function<void()>& on_change)
-: confirm_button_press_{ button_states, key_configurations_, "confirm", "" },
-  renderable_text_{std::make_unique<TextResource>(
-    ttf_filename,
-    FixedArray<float, 3>{1.f, 1.f, 1.f})},
-  options_{options},
-  contents_{options, substitutions, asset_references, ui_focus},
-  gallery_{gallery},
-  list_view_style_{list_view_style},
-  selection_marker_{selection_marker},
-  icon_widget_{std::move(icon_widget)},
-  widget_{std::move(widget)},
-  font_height_{font_height},
-  line_distance_{line_distance},
-  substitutions_{substitutions},
-  previous_level_id_{ substitutions.at<std::string>("LEVEL_ID", "") },
-  num_renderings_{ num_renderings },
-  reload_transient_objects_{ std::move(reload_transient_objects) },
-  list_view_{
-      button_states,
-      ui_focus.submenu_number,
-      contents_,
-      ListViewOrientation::HORIZONTAL,
-      on_change}
+    : confirm_button_press_{ button_states, key_configurations_, "confirm", "" }
+    , renderable_text_{ std::make_unique<TextResource>(
+        ttf_filename,
+        FixedArray<float, 3>{1.f, 1.f, 1.f}) }
+    , options_{ options }
+    , contents_{ options, substitutions, asset_references, ui_focus }
+    , gallery_{ gallery }
+    , list_view_style_{ list_view_style }
+    , selection_marker_{ selection_marker }
+    , icon_widget_{ std::move(icon_widget) }
+    , widget_{ std::move(widget) }
+    , font_height_{ font_height }
+    , line_distance_{ line_distance }
+    , substitutions_{ substitutions }
+    , previous_level_id_{ substitutions.at<std::string>("LEVEL_ID", "") }
+    , num_renderings_{ num_renderings }
+    , reload_transient_objects_{ std::move(reload_transient_objects) }
+    , list_view_{
+        std::move(debug_hint),
+        button_states,
+        ui_focus.submenu_number,
+        contents_,
+        ListViewOrientation::HORIZONTAL,
+        on_change }
 {
-    key_configurations_.insert("confirm", { key_binding });
+    key_configurations_.insert("confirm", { std::move(key_binding) });
 }
 
 TabMenuLogic::~TabMenuLogic() {

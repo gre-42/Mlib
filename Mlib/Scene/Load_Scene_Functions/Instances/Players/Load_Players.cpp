@@ -121,13 +121,15 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
     try {
         auto filename = args.arguments.path(KnownArgs::json);
         json j;
-        std::ifstream f{ filename };
-        if (f.fail()) {
-            THROW_OR_ABORT("Could not open players JSON file \"" + filename + '"');
-        }
-        f >> j;
-        if (f.fail()) {
-            THROW_OR_ABORT("Could not read from \"" + filename + '"');
+        {
+            auto f = create_ifstream(filename);
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not open players JSON file \"" + filename + '"');
+            }
+            *f >> j;
+            if (f->fail()) {
+                THROW_OR_ABORT("Could not read from \"" + filename + '"');
+            }
         }
         JsonView jv{ j };
         jv.validate(ToplevelKeys::options);

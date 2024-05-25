@@ -12,12 +12,14 @@
 namespace Mlib {
 
 ListView::ListView(
+    std::string debug_hint,
     ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const IListViewContents& contents,
     ListViewOrientation orientation,
     std::function<void()> on_change)
-    : selection_index_{ selection_index }
+    : debug_hint_{ std::move(debug_hint) }
+    , selection_index_{ selection_index }
     , contents_{ contents }
     , on_change_{ std::move(on_change) }
     , previous_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "left" : "up", "" }
@@ -190,7 +192,7 @@ std::pair<size_t, size_t> ListView::render(
         }
     }
     if (filtered_selection_index == SIZE_MAX) {
-        THROW_OR_ABORT("Unexpected filtered_selection_index");
+        THROW_OR_ABORT(debug_hint_ + ": Unexpected filtered_selection_index");
     }
     auto [left, right] = get_visible_window(
         filtered_options.size(),
@@ -244,7 +246,7 @@ void ListView::notify_change_visibility() {
             }
         }
         if ((contents_.num_entries() != 0) && !has_selected_element()) {
-            THROW_OR_ABORT("No listview element is selected");
+            THROW_OR_ABORT(debug_hint_ + ": No listview element is selected");
         }
     }
 }

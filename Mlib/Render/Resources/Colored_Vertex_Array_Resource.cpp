@@ -678,7 +678,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "                best_axis = " << axis << ';' << std::endl;
             sstr << "                best_sign = true;" << std::endl;
             sstr << "                best_uv = ((rel_view_pos + alpha * rel_view_dir - vec3(bottom, 0)) / interior_size)." << axis0 << axis1 << ';' << std::endl;
-            sstr << "                best_uv[" << axis << "] = 1 + best_uv[" << axis << "];" << std::endl;
+            sstr << "                best_uv[" << axis << "] = 1.0 + best_uv[" << axis << "];" << std::endl;
             sstr << "            }" << std::endl;
             sstr << "        }" << std::endl;
             sstr << "    }" << std::endl;

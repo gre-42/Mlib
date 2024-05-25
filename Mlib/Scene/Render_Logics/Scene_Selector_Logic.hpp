@@ -54,6 +54,7 @@ private:
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
+        std::string debug_hint,
         std::string globals_prefix,
         std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,

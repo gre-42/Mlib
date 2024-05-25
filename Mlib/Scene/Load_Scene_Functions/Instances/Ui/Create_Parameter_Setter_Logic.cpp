@@ -119,7 +119,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         args.arguments.at<size_t>(KnownArgs::deflt));
     auto& parameter_setter_logic = object_pool.create<ParameterSetterLogic>(
         CURRENT_SOURCE_LOCATION,
-        "",
+        "id = " + id,
         std::vector<ReplacementParameter>{rps.begin(), rps.end()},
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(

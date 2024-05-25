@@ -59,7 +59,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         THROW_OR_ABORT("Could not find a single scene file");
     }
     scene_entries.sort();
-    std::string id = args.arguments.at<std::string>(KnownArgs::id);
+    auto id = args.arguments.at<std::string>(KnownArgs::id);
     args.ui_focus.insert_submenu(
         id,
         SubmenuHeader{
@@ -68,6 +68,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         0);
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
+        "id = " + id,
         args.arguments.at<std::string>(KnownArgs::asset_prefix, ""),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.arguments.path(KnownArgs::ttf_file),

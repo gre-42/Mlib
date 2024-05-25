@@ -70,6 +70,7 @@ void CreateTabMenuLogic::execute(const LoadSceneJsonUserFunctionArgs& args)
     args.ui_focus.selection_ids.try_emplace(id, deflt);
     auto& tab_menu_logic = object_pool.create<TabMenuLogic>(
         CURRENT_SOURCE_LOCATION,
+        "id = " + id,
         BaseKeyCombination{{{
             BaseKeyBinding{
                 .key = args.arguments.at<std::string>(KnownArgs::key),
