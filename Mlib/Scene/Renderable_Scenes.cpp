@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 RenderableScenes::RenderableScenes()
-: state_{RenderableScenesState::RUNNING}
+    : state_{RenderableScenesState::RUNNING}
 {}
 
 RenderableScenes::~RenderableScenes() {
@@ -77,12 +77,20 @@ const RenderableScene& RenderableScenes::operator[](const std::string& name) con
     return const_cast<RenderableScenes&>(*this)[name];
 }
 
-bool RenderableScenes::contains(const std::string& name) const {
+RenderableScene* RenderableScenes::try_get(const std::string& name) {
     std::shared_lock lock{mutex_};
     if (shutting_down()) {
         verbose_abort("Renderable scenes are shutting down (1)");
     }
-    return renderable_scenes_.contains(name);
+    auto res = renderable_scenes_.find(name);
+    if (res == renderable_scenes_.end()) {
+        return nullptr;
+    }
+    return &res->second;
+}
+
+const RenderableScene* RenderableScenes::try_get(const std::string& name) const {
+    return const_cast<RenderableScenes*>(this)->try_get(name);
 }
 
 bool RenderableScenes::shutting_down() const {

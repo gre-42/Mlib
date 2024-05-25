@@ -35,7 +35,8 @@ public:
     map_type::iterator unsafe_end();
     RenderableScene& operator[](const std::string& name);
     const RenderableScene& operator[](const std::string& name) const;
-    bool contains(const std::string& name) const;
+    RenderableScene* try_get(const std::string& name);
+    const RenderableScene* try_get(const std::string& name) const;
     template<class... Args>
     std::pair<map_type::iterator, InsertionStatus> try_emplace(const std::string& k, Args&&... args) {
         // 1. Construct the scene without the "mutex_"

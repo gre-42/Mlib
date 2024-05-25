@@ -99,11 +99,10 @@ std::future<void> render_thread(
                                 r.physics_set_fps_.execute_oldest_funcs();
                             }
                         }
-                    } else if (renderable_scenes.contains("loading")) {
-                        auto& rs = renderable_scenes["loading"];
-                        std::scoped_lock lock{rs.scene_.delete_node_mutex()};
-                        if (rs.scene_.contains_node(rs.selected_cameras_.camera_node_name())) {
-                            rs.render(
+                    } else if (auto rs = renderable_scenes.try_get("loading"); rs != nullptr) {
+                        std::scoped_lock lock{rs->scene_.delete_node_mutex()};
+                        if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
+                            rs->render(
                                 lx,
                                 ly,
                                 render_config,
