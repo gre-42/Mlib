@@ -82,15 +82,6 @@ public:
     void delete_print_node_info_key_binding(const PrintNodeInfoKeyBinding& deleted_key_binding);
 
 private:
-    float get_alpha(
-        ButtonPress& button_press,
-        CursorMovement* cursor_movement,
-        ScrollWheelMovement* scroll_wheel_movement,
-        GamepadAnalogAxesPosition* gamepad_analog_axes_position,
-        float press_factor,
-        float repeat_factor,
-        const PhysicsEngineConfig& cfg);
-
     std::list<std::unique_ptr<CameraKeyBinding>> camera_key_bindings_;
     std::list<std::unique_ptr<AbsoluteMovableIdleBinding>> absolute_movable_idle_bindings_;
     std::list<std::unique_ptr<AbsoluteMovableKeyBinding>> absolute_movable_key_bindings_;

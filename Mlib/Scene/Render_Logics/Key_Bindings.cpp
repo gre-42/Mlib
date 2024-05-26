@@ -214,7 +214,7 @@ void KeyBindings::delete_print_node_info_key_binding(const PrintNodeInfoKeyBindi
     }
 }
 
-float KeyBindings::get_alpha(
+static float get_alpha(
     ButtonPress& button_press,
     CursorMovement* cursor_movement,
     ScrollWheelMovement* scroll_wheel_movement,
@@ -305,18 +305,11 @@ void KeyBindings::increment_external_forces(
                 rb.set_max_velocity(k->max_velocity);
             }
             if (k->tire_id != SIZE_MAX) {
-                if (false) {
-                    float a = gravity_magnitude * 1.f;
-                    float l = 2.55f;
-                    float r = sum(squared(rb.rbp_.v_)) / a;
-                    float angle = std::asin(std::clamp(l / r, 0.f, 1.f));
-                    rb.set_tire_angle_y(k->tire_id, angle * alpha * sign(k->tire_angle_interp(0)));
-                }
                 // float v = std::sqrt(sum(squared(rb->rbp_.v_)));
                 float v = std::abs(dot0d(
                     rb.rbp_.v_,
                     rb.rbp_.rotation_.column(2)));
-                rb.set_tire_angle_y(k->tire_id, alpha * degrees * k->tire_angle_interp(v * 3.6f));
+                rb.set_tire_angle_y(k->tire_id, alpha * degrees * k->tire_angle_interp(v));
                 // rb->set_tire_accel_x(k->tire_id, alpha * sign(k->tire_angle_interp(0)));
             }
             if (any(k->tires_z != 0.f)) {
@@ -350,17 +343,17 @@ void KeyBindings::increment_external_forces(
     }
     // Relative movable
     {
-        std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> v;
-        v.reserve(relative_movable_key_bindings_.size());
+        std::vector<std::pair<RelativeMovableKeyBinding&, DanglingRef<SceneNode>>> k_n;
+        k_n.reserve(relative_movable_key_bindings_.size());
         for (auto& k : relative_movable_key_bindings_) {
             auto node = k->dynamic_node();
             if (node == nullptr) {
                 continue;
             }
-            v.emplace_back(*k, *node);
+            k_n.emplace_back(*k, *node);
         }
         if (enable_controls) {
-            for (const auto& [k, node] : v) {
+            for (const auto& [k, node] : k_n) {
                 auto& m = node->get_relative_movable();
                 auto rt = dynamic_cast<RelativeTransformer*>(&m);
                 auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
@@ -375,7 +368,7 @@ void KeyBindings::increment_external_forces(
                 }
             }
         }
-        for (auto& [k, node] : v) {
+        for (auto& [k, node] : k_n) {
             auto& m = node->get_relative_movable();
             auto rt = dynamic_cast<RelativeTransformer*>(&m);
             auto ypln = dynamic_cast<YawPitchLookAtNodes*>(&m);
