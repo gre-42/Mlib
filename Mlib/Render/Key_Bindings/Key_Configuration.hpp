@@ -8,7 +8,7 @@ namespace Mlib {
 
 struct KeyConfiguration {
     BaseKeyCombination base_combo;
-    BaseGamepadAnalogAxesBinding base_gamepad_analog_axes;
+    BaseAnalogAxesListBinding base_gamepad_analog_axes;
     BaseCursorAxisBinding base_cursor_axis;
     BaseCursorAxisBinding base_scroll_wheel_axis;
 };

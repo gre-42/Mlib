@@ -23,21 +23,11 @@ GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(
 
 GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
-float GamepadAnalogAxesPosition::axis_alpha()
-{
-    if (id_.empty()) {
-        return NAN;
+float GamepadAnalogAxesPosition::axis_alpha(const BaseAnalogAxisBinding& b) {
+    if (std::isnan(b.sign_and_scale)) {
+        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + b.axis + '"');
     }
-    const auto& key_combination = key_configurations_.get(id_);
-
-    auto* b = key_combination.base_gamepad_analog_axes.get_joystick_axis(role_);
-    if (b == nullptr) {
-        return NAN;
-    }
-    if (std::isnan(b->sign_and_scale)) {
-        THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + b->axis + '"');
-    }
-    auto id = joystick_axes_map.get(b->axis);
+    auto id = joystick_axes_map.get(b.axis);
     if (!id.has_value()) {
         return NAN;
     }
@@ -46,15 +36,43 @@ float GamepadAnalogAxesPosition::axis_alpha()
         return NAN;
     }
     auto transform = [&b](float r) {
-        auto denom = std::pow(1.f - b->deadzone, b->exponent);
-        return std::pow(std::max(std::abs(r) - b->deadzone, 0.f), b->exponent) * sign(r) / denom;
+        auto denom = std::pow(1.f - b.deadzone, b.exponent);
+        return std::pow(std::max(std::abs(r) - b.deadzone, 0.f), b.exponent) * sign(r) / denom;
     };
-    if (b->sign_and_scale == 0) {
+    if (b.sign_and_scale == 0) {
         return transform((1.f + v) / 2.f);
     } else {
-        if (sign(v) != sign(b->sign_and_scale)) {
+        if (sign(v) != sign(b.sign_and_scale)) {
             return NAN;
         }
-        return std::min(transform(b->sign_and_scale * v), 1.f);
+        return std::min(transform(b.sign_and_scale * v), 1.f);
     }
+}
+
+float GamepadAnalogAxesPosition::axis_alpha()
+{
+    if (id_.empty()) {
+        return NAN;
+    }
+    const auto& key_combination = key_configurations_.get(id_);
+
+    auto* b = key_combination
+        .base_gamepad_analog_axes
+        .get_joystick_axis(role_);
+    if (b == nullptr) {
+        return NAN;
+    }
+    float result = NAN;
+    auto update_result = [&](float v){
+        if (std::isnan(result) || (!std::isnan(v) && (v > result))) {
+            result = v;
+        }
+    };
+    if (b->joystick.has_value()) {
+        update_result(axis_alpha(b->joystick.value()));
+    }
+    if (b->tap.has_value()) {
+        update_result(axis_alpha(b->tap.value()));
+    }
+    return result;
 }

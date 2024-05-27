@@ -28,13 +28,19 @@ namespace KeyConfigurationArgs {
     DECLARE_ARGUMENT(tap_button2);
 }
 
-namespace JoystickDigitalAxisArgs {
+namespace AnalogDigitalAxisArgs {
     BEGIN_ARGUMENT_LIST;
     DECLARE_ARGUMENT(axis);
-    DECLARE_ARGUMENT(sign);
+    DECLARE_ARGUMENT(sign_and_threshold);
 }
 
-namespace BaseGamepadAnalogAxisBindingArgs {
+namespace BaseAnalogAxesBindingArgs {
+    BEGIN_ARGUMENT_LIST;
+    DECLARE_ARGUMENT(joystick);
+    DECLARE_ARGUMENT(tap);
+}
+
+namespace BaseAnalogAxisBindingArgs {
     BEGIN_ARGUMENT_LIST;
     DECLARE_ARGUMENT(axis);
     DECLARE_ARGUMENT(sign_and_scale);
@@ -44,23 +50,43 @@ namespace BaseGamepadAnalogAxisBindingArgs {
 
 namespace Mlib {
 
-void from_json(const nlohmann::json& j, JoystickDigitalAxis& obj)
+void from_json(const nlohmann::json& j, AnalogDigitalAxis& obj)
 {
-    validate(j, JoystickDigitalAxisArgs::options);
-    j.at(JoystickDigitalAxisArgs::axis).get_to(obj.joystick_axis);
-    j.at(JoystickDigitalAxisArgs::sign).get_to(obj.joystick_axis_sign);
+    validate(j, AnalogDigitalAxisArgs::options);
+    j.at(AnalogDigitalAxisArgs::axis).get_to(obj.axis);
+    j.at(AnalogDigitalAxisArgs::sign_and_threshold).get_to(obj.sign_and_threshold);
 }
 
-void from_json(const nlohmann::json& j, BaseGamepadAnalogAxisBinding& obj)
+
+void from_json(const nlohmann::json& j, AnalogDigitalAxes& obj)
 {
     JsonView jv{ j };
-    jv.validate(BaseGamepadAnalogAxisBindingArgs::options);
-    j.at(BaseGamepadAnalogAxisBindingArgs::axis).get_to(obj.axis);
-    j.at(BaseGamepadAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
-    obj.deadzone = jv.at<float>(BaseGamepadAnalogAxisBindingArgs::deadzone, 0);
-    obj.exponent = jv.at<float>(BaseGamepadAnalogAxisBindingArgs::exponent, 1);
+    jv.validate(BaseAnalogAxesBindingArgs::options);
+    obj.joystick = jv.try_at<AnalogDigitalAxis>(BaseAnalogAxesBindingArgs::joystick);
+    obj.tap = jv.try_at<AnalogDigitalAxis>(BaseAnalogAxesBindingArgs::tap);
+}
+
+void from_json(const nlohmann::json& j, BaseAnalogAxisBinding& obj)
+{
+    JsonView jv{ j };
+    jv.validate(BaseAnalogAxisBindingArgs::options);
+    j.at(BaseAnalogAxisBindingArgs::axis).get_to(obj.axis);
+    j.at(BaseAnalogAxisBindingArgs::sign_and_scale).get_to(obj.sign_and_scale);
+    obj.deadzone = jv.at<float>(BaseAnalogAxisBindingArgs::deadzone, 0);
+    obj.exponent = jv.at<float>(BaseAnalogAxisBindingArgs::exponent, 1);
     if (std::isnan(obj.deadzone) || (obj.deadzone < 0.f) || (obj.deadzone > 1.f)) {
         THROW_OR_ABORT("Joystick deadzone must be >= 0 and <= 1");
+    }
+}
+
+void from_json(const nlohmann::json& j, BaseAnalogAxesBinding& obj) {
+    JsonView jv{ j };
+    jv.validate(BaseAnalogAxesBindingArgs::options);
+    if (auto b = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::joystick); b.has_value()) {
+        obj.joystick = b.value();
+    }
+    if (auto b = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::tap); b.has_value()) {
+        obj.tap = b.value();
     }
 }
 
@@ -102,14 +128,14 @@ void KeyConfigurations::load(
         };
         auto digital_axes = [&e](const std::string& key){
             if (e.contains(key)) {
-                return e[key].get<std::map<std::string, JoystickDigitalAxis>>();
+                return e[key].get<std::map<std::string, AnalogDigitalAxes>>();
             }
-            return std::map<std::string, JoystickDigitalAxis>{};
+            return std::map<std::string, AnalogDigitalAxes>{};
         };
         auto analog_axes = [&e](const std::string& key){
-            std::map<std::string, BaseGamepadAnalogAxisBinding> result;
+            std::map<std::string, BaseAnalogAxesBinding> result;
             if (e.contains(key)) {
-                return e[key].get<std::map<std::string, BaseGamepadAnalogAxisBinding>>();
+                return e[key].get<std::map<std::string, BaseAnalogAxesBinding>>();
             }
             return result;
         };

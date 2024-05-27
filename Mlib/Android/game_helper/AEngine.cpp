@@ -5,6 +5,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
+#include <Mlib/Try_Get_Value.hpp>
 
 //-------------------------------------------------------------------------
 // Ctor
@@ -114,8 +115,11 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
         {
             std::scoped_lock lock{eng->tap_buttons_states_.mutex};
-            for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
-                tb.pressed = false;
+            for (auto &[_, tb]: eng->tap_buttons_states_.button_down) {
+                tb = false;
+            }
+            for (auto &[_, tb]: eng->tap_buttons_states_.joystick_axis_position) {
+                tb = NAN;
             }
             for (size_t i = 0; i < AMotionEvent_getPointerCount(event); ++i) {
                 if ((AMotionEvent_getAction(event) == AMOTION_EVENT_ACTION_DOWN) ||
@@ -123,15 +127,26 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                 {
                     float x = AMotionEvent_getX(event, i);
                     float y = AMotionEvent_getY(event, i);
-                    for (auto &[_, tb]: eng->tap_buttons_states_.button_states) {
+                    for (auto &tb: eng->tap_buttons_states_.button_states) {
                         auto ew = tb.widget->evaluate(
                             eng->LayoutParametersX(),
                             eng->LayoutParametersY(),
                             Mlib::YOrientation::SWAPPED);
-                        if ((x >= ew->left()) && (x <= ew->right()) &&
+                        if ((ew->width() > 0.f) && (ew->height() > 0.f) &&
+                            (x >= ew->left()) && (x <= ew->right()) &&
                             (y >= ew->bottom()) && (y <= ew->top()))
                         {
-                            tb.pressed = true;
+                            if (auto k = Mlib::try_get_value(tb.key); k != nullptr) {
+                                eng->tap_buttons_states_.button_down[*k] = true;
+                            }
+                            if (auto v = Mlib::try_get_value(tb.joystick_xaxis); v != nullptr) {
+                                eng->tap_buttons_states_.joystick_axis_position[*v] =
+                                    std::clamp((2.f * x - (ew->left() + ew->right())) / ew->width(), -1.f, 1.f);
+                            }
+                            if (auto v = Mlib::try_get_value(tb.joystick_yaxis); v != nullptr) {
+                                eng->tap_buttons_states_.joystick_axis_position[*v] =
+                                    std::clamp((2.f * y - (ew->bottom() + ew->top())) / ew->height(), -1.f, 1.f);
+                            }
                         }
                     }
                 }

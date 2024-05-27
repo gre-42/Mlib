@@ -6,18 +6,23 @@
 
 namespace Mlib {
 
-struct JoystickDigitalAxis {
-    std::string joystick_axis;
-    float joystick_axis_sign;
+struct AnalogDigitalAxis {
+    std::string axis;
+    float sign_and_threshold;
+};
+
+struct AnalogDigitalAxes {
+    std::optional<AnalogDigitalAxis> joystick;
+    std::optional<AnalogDigitalAxis> tap;
 };
 
 struct BaseKeyBinding {
     std::string key;
     std::string mouse_button;
     std::string gamepad_button;
-    std::map<std::string, JoystickDigitalAxis> joystick_axes;
+    std::map<std::string, AnalogDigitalAxes> joystick_axes;
     std::string tap_button;
-    inline const JoystickDigitalAxis* get_joystick_axis(const std::string& role) const {
+    inline const AnalogDigitalAxes* get_joystick_axis(const std::string& role) const {
         if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
             return &it->second;
         }

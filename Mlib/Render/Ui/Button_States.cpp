@@ -1,18 +1,31 @@
 #include "Button_States.hpp"
+#include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Input_Map/Gamepad_Button_Map.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Key_Events.hpp>
 #include <Mlib/Render/Input_Map/Key_Map.hpp>
 #include <Mlib/Render/Input_Map/Mouse_Button_Map.hpp>
+#include <Mlib/Render/Input_Map/Tap_Analog_Axes_Map.hpp>
 #include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Try_Get_Value.hpp>
 #include <cmath>
 #include <iostream>
 #include <mutex>
 
 using namespace Mlib;
+
+static bool make_digital(float v, float sign_and_threshold) {
+    if (std::isnan(v)) {
+        return false;
+    }
+    if (sign(v) != sign(sign_and_threshold)) {
+        return false;
+    }
+    return (std::abs(v) >= std::abs(sign_and_threshold));
+}
 
 #ifndef __ANDROID__
 ButtonStates::ButtonStates()
@@ -72,12 +85,12 @@ void ButtonStates::notify_gamepad_axis(int axis, float value) {
 }
 #endif
 
-bool ButtonStates::get_gamepad_digital_axis(int axis, float sign) const {
-    float v = get_gamepad_axis(axis);
-    if (std::isnan(v)) {
-        return false;
-    }
-    return (v == (float)sign);
+bool ButtonStates::get_gamepad_digital_axis(int axis, float sign_and_threshold) const {
+    return make_digital(get_gamepad_axis(axis), sign_and_threshold);
+}
+
+bool ButtonStates::get_tap_analog_digital_axis(int axis, float sign_and_threshold) const {
+    return make_digital(get_tap_joystick_axis(axis), sign_and_threshold);
 }
 
 void ButtonStates::notify_key_event(int key, int action) {
@@ -114,40 +127,52 @@ bool ButtonStates::get_mouse_button_down(int button) const {
 
 bool ButtonStates::get_tap_button_down(int button) const {
     std::shared_lock lock{tap_buttons_.mutex};
-    auto it = tap_buttons_.button_states.find(button);
-    if (it == tap_buttons_.button_states.end()) {
+    auto it = tap_buttons_.button_down.find(button);
+    if (it == tap_buttons_.button_down.end()) {
         // The tap button might not yet exist (it is created dynamically),
         // so this is not an error.
         return false;
     }
-    return it->second.pressed;
+    return it->second;
+}
+
+float ButtonStates::get_tap_joystick_axis(int axis) const {
+    std::shared_lock lock{tap_buttons_.mutex};
+    auto it = tap_buttons_.joystick_axis_position.find(axis);
+    if (it == tap_buttons_.joystick_axis_position.end()) {
+        // The tap button might not yet exist (it is created dynamically),
+        // so this is not an error.
+        return 0.f;
+    }
+    return it->second;
 }
 
 void ButtonStates::print(bool physical, bool only_pressed) const {
+    std::stringstream sstr;
     for (const auto& [name, code] : keys_map) {
         if (get_key_down(code)) {
-            std::cerr << name << " ";
+            sstr << name << " ";
         }
     }
 #ifndef __ANDROID__
-    std::cerr << "\n\n";
+    sstr << "\n\n";
     std::shared_lock lock{gamepad_state_mutex_};
     if (has_gamepad_) {
-        std::cerr << std::endl;
-        std::cerr << std::endl;
+        sstr << std::endl;
+        sstr << std::endl;
         if (physical) {
             for (size_t i = 0; i < 15; ++i) {
                 if (only_pressed && !gamepad_state_.buttons[i]) {
                     continue;
                 }
-                std::cerr << i << "=" << (unsigned int)gamepad_state_.buttons[i] << " ";
+                sstr << i << "=" << (unsigned int)gamepad_state_.buttons[i] << " ";
             }
-            std::cerr << std::endl;
+            sstr << std::endl;
             for (size_t i = 0; i < 6; ++i) {
                 if (only_pressed && (std::fabs(gamepad_state_.axes[i]) != 1.0)) {
                     continue;
                 }
-                std::cerr << i << "=" << gamepad_state_.axes[i] << " ";
+                sstr << i << "=" << gamepad_state_.axes[i] << " ";
             }
         } else {
             for (const auto& [n, b] : gamepad_buttons_map) {
@@ -157,9 +182,9 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
                 if (only_pressed && !gamepad_state_.buttons[b.value()]) {
                     continue;
                 }
-                std::cerr << n << "=" << (unsigned int)gamepad_state_.buttons[b.value()] << " ";
+                sstr << n << "=" << (unsigned int)gamepad_state_.buttons[b.value()] << " ";
             }
-            std::cerr << std::endl;
+            sstr << std::endl;
             for (const auto& [n, b] : joystick_axes_map) {
                 if (!b.has_value()) {
                     continue;
@@ -167,21 +192,32 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
                 if (only_pressed && (std::fabs(gamepad_state_.axes[b.value()]) != 1.0)) {
                     continue;
                 }
-                std::cerr << n << "=" << gamepad_state_.axes[b.value()] << " ";
+                sstr << n << "=" << gamepad_state_.axes[b.value()] << " ";
             }
         }
-        std::cerr << std::endl;
+        sstr << std::endl;
     } else {
-        std::cerr << "No gamepad attached." << std::endl;
+        sstr << "No gamepad attached." << std::endl;
     }
 #endif
+    linfo() << sstr.str();
 }
 
 bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) const {
     if (auto joystick_axis = k.get_joystick_axis(role); joystick_axis != nullptr) {
-        auto axis = joystick_axes_map.get(joystick_axis->joystick_axis);
-        if (axis.has_value() && get_gamepad_digital_axis(axis.value(), joystick_axis->joystick_axis_sign)) {
-            return true;
+        if (auto j = try_get_value(joystick_axis->joystick); j != nullptr) {
+            if (auto axis = try_get_value(joystick_axes_map.get(j->axis));
+                    (axis != nullptr) &&
+                    get_gamepad_digital_axis(*axis, j->sign_and_threshold))
+            {
+                return true;
+            }
+        }
+        if (auto j = try_get_value(joystick_axis->tap); j != nullptr) {
+            auto axis = tap_analog_axes_map.get(j->axis);
+            if (get_tap_analog_digital_axis(axis, j->sign_and_threshold)) {
+                return true;
+            }
         }
     }
     if (!k.gamepad_button.empty()) {

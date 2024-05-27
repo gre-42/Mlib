@@ -24,12 +24,14 @@ public:
     ~ButtonStates();
     float get_gamepad_axis(int axis) const;
     bool get_gamepad_button_down(int button) const;
-    bool get_gamepad_digital_axis(int axis, float sign) const;
+    bool get_gamepad_digital_axis(int axis, float sign_and_threshold) const;
+    bool get_tap_analog_digital_axis(int axis, float sign_and_threshold) const;
     void notify_key_event(int key, int action);
     bool get_key_down(int key) const;
     void notify_mouse_button_event(int button, int action);
     bool get_mouse_button_down(int button) const;
     bool get_tap_button_down(int button) const;
+    float get_tap_joystick_axis(int axis) const;
 #ifdef __ANDROID__
     void notify_gamepad_axis(int axis, float value);
 #else

@@ -15,9 +15,15 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_
         ostr << "gamepad button: " << base_key_binding.gamepad_button << '\n';
     }
     for (const auto& [k, v] : base_key_binding.joystick_axes) {
-        ostr << "joystick role: " << k << '\n';
-        ostr << "joystick axis: " <<  v.joystick_axis << '\n';
-        ostr << "joystick axis sign: " << v.joystick_axis_sign << '\n';
+        ostr << "analog role: " << k << '\n';
+        if (v.joystick.has_value()) {
+            ostr << "joystick axis: " <<  v.joystick.value().axis << '\n';
+            ostr << "joystick axis sign and threshold: " << v.joystick.value().sign_and_threshold << '\n';
+        }
+        if (v.tap.has_value()) {
+            ostr << "tap axis: " <<  v.tap.value().axis << '\n';
+            ostr << "tap axis sign and threshold: " << v.tap.value().sign_and_threshold << '\n';
+        }
     }
     return ostr;
 }

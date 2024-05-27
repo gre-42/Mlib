@@ -1,28 +1,26 @@
 #pragma once
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <string>
 
 namespace Mlib {
 
-struct BaseGamepadAnalogAxisBinding {
+struct BaseAnalogAxisBinding {
     std::string axis;
     float sign_and_scale;
     float deadzone;
     float exponent;
 };
 
-struct BaseGamepadAnalogAxesBinding {
-    std::map<std::string, BaseGamepadAnalogAxisBinding> joystick_axes;
-    inline const BaseGamepadAnalogAxisBinding* get_joystick_axis(const std::string& role) const {
-        if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
-            return &it->second;
-        }
-        if (auto it = joystick_axes.find("default"); it != joystick_axes.end()) {
-            return &it->second;
-        }
-        return nullptr;
-    }
+struct BaseAnalogAxesBinding {
+    std::optional<BaseAnalogAxisBinding> joystick;
+    std::optional<BaseAnalogAxisBinding> tap;
+};
+
+struct BaseAnalogAxesListBinding {
+    std::map<std::string, BaseAnalogAxesBinding> joystick_axes;
+    const BaseAnalogAxesBinding* get_joystick_axis(const std::string& role) const;
 };
 
 }

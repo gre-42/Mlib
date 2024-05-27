@@ -3,7 +3,7 @@
 
 namespace Mlib {
 
-struct BaseGamepadAnalogAxesBinding;
+struct BaseAnalogAxisBinding;
 class KeyConfigurations;
 class ButtonStates;
 
@@ -19,8 +19,8 @@ public:
 
     float axis_alpha();
 private:
+    float axis_alpha(const BaseAnalogAxisBinding& b);
     const ButtonStates& button_states_;
-
     const KeyConfigurations& key_configurations_;
     std::string id_;
     std::string role_;

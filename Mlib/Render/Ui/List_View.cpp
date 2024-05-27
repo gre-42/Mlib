@@ -29,10 +29,26 @@ ListView::ListView(
     , first_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "home", "" }
     , last_{ button_states, key_configurations_, orientation == ListViewOrientation::HORIZONTAL ? "" : "end", "" }
 {
-    key_configurations_.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = -1}}}, .tap_button = "LEFT"}} } });
-    key_configurations_.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick_axis = "1", .joystick_axis_sign = 1}}}, .tap_button = "RIGHT"}} } });
-    key_configurations_.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = -1}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
-    key_configurations_.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick_axis = "2", .joystick_axis_sign = 1}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    AnalogDigitalAxis left{
+            .axis = "1",
+            .sign_and_threshold = -0.5
+    };
+    AnalogDigitalAxis right{
+            .axis = "1",
+            .sign_and_threshold = 0.5
+    };
+    AnalogDigitalAxis up{
+            .axis = "2",
+            .sign_and_threshold = -0.5
+    };
+    AnalogDigitalAxis down{
+            .axis = "2",
+            .sign_and_threshold = 0.5
+    };
+    key_configurations_.insert("left", { { {{.key = "LEFT", .joystick_axes = {{"default", {.joystick=left, .tap = left}}}, .tap_button = "LEFT"}} } });
+    key_configurations_.insert("right", { { {{.key = "RIGHT", .joystick_axes = {{"default", {.joystick=right, .tap = right}}}, .tap_button = "RIGHT"}} } });
+    key_configurations_.insert("up", { {.key_bindings = {{.key = "UP", .joystick_axes = {{"default", {.joystick = up, .tap = up}}}, .tap_button = "UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
+    key_configurations_.insert("down", { {.key_bindings = {{.key = "DOWN", .joystick_axes = {{"default", {.joystick = down, .tap = down}}}, .tap_button = "DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
     key_configurations_.insert("page_up", { {.key_bindings = {{.key = "PAGE_UP"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
     key_configurations_.insert("page_down", { {.key_bindings = {{.key = "PAGE_DOWN"}}, .not_key_binding = BaseKeyBinding{.key = "LEFT_CONTROL"}} });
     key_configurations_.insert("home", { { {{.key = "HOME"}} } });
@@ -159,8 +175,8 @@ static std::pair<size_t, size_t> get_visible_window(
     }
     // Left border exceeded
     if (selected_index < dleft) {
-        size_t right = std::min(max_elements_visible, nelements) - 1;
-        return {0, right};
+        size_t right2 = std::min(max_elements_visible, nelements) - 1;
+        return {0, right2};
     }
     // No border exceeded
     size_t left = selected_index - dleft;
