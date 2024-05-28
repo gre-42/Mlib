@@ -18,17 +18,16 @@ PlaneAsCarController::PlaneAsCarController(
     ascend_to(rb.rbp_.abs_position()(1));
 }
 
-PlaneAsCarController::~PlaneAsCarController()
-{}
+PlaneAsCarController::~PlaneAsCarController() = default;
 
-void PlaneAsCarController::apply() {
+void PlaneAsCarController::apply_this() {
     auto forward = [this](){
         for (const auto& [tire_id, _] : tire_angles_) {
             rb_.set_tire_angle_y(tire_id, 0.f);
         }};
     auto steer = [this](){
         for (const auto& [tire_id, max_angle] : tire_angles_) {
-            float ang = signed_min(steer_angle_, max_angle);
+            float ang = signed_min(steer_angle_ * steer_relaxation_, max_angle);
             rb_.set_tire_angle_y(tire_id, ang);
         }};
     switch (rb_.current_vehicle_domain_) {
@@ -47,6 +46,10 @@ void PlaneAsCarController::apply() {
         THROW_OR_ABORT("Invalid vehicle domain");
     }
     THROW_OR_ABORT("Unknown vehicle domain");
+}
+
+void PlaneAsCarController::apply() {
+    apply_this();
     if (rb_.animation_state_updater_ != nullptr) {
         rb_.animation_state_updater_->notify_movement_intent();
     }

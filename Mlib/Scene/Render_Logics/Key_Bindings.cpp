@@ -50,6 +50,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Try_Get_Value.hpp>
 #include <map>
 
 using namespace Mlib;
@@ -507,16 +508,14 @@ void KeyBindings::increment_external_forces(
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = get_rigid_body_vehicle(*k->node);
-            if (k->surface_power.has_value()) {
-                rb.vehicle_controller().drive(
-                    k->surface_power.value(),
-                    alpha);
+            if (auto* sp = try_get_value(k->surface_power); sp != nullptr) {
+                rb.vehicle_controller().drive(*sp, alpha);
             }
-            if (k->steer_left_amount.has_value()) {
-                rb.vehicle_controller().set_stearing_wheel_amount(k->steer_left_amount.value(), alpha);
+            if (auto* lm = try_get_value(k->steer_left_amount); lm != nullptr) {
+                rb.vehicle_controller().set_stearing_wheel_amount(*lm, alpha);
             }
-            if (k->ascend_velocity.has_value()) {
-                rb.vehicle_controller().ascend_by(k->ascend_velocity.value() * cfg.dt_substeps());
+            if (auto* av = try_get_value(k->ascend_velocity)) {
+                rb.vehicle_controller().ascend_by((*av) * cfg.dt_substeps());
             }
         }
     }

@@ -1,11 +1,13 @@
 #include "Gamepad_Analog_Axes_Position.hpp"
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Render/Input_Map/Joystick_Axes_Map.hpp>
+#include <Mlib/Render/Input_Map/Tap_Analog_Axes_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Gamepad_Analog_Axis_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Try_Get_Value.hpp>
 #include <cmath>
 
 using namespace Mlib;
@@ -23,15 +25,10 @@ GamepadAnalogAxesPosition::GamepadAnalogAxesPosition(
 
 GamepadAnalogAxesPosition::~GamepadAnalogAxesPosition() = default;
 
-float GamepadAnalogAxesPosition::axis_alpha(const BaseAnalogAxisBinding& b) {
+static float axis_alpha(const BaseAnalogAxisBinding& b, float v) {
     if (std::isnan(b.sign_and_scale)) {
         THROW_OR_ABORT("Gamepad axis sign_and_scale is NAN, axis=\"" + b.axis + '"');
     }
-    auto id = joystick_axes_map.get(b.axis);
-    if (!id.has_value()) {
-        return NAN;
-    }
-    float v = button_states_.get_gamepad_axis(id.value());
     if (std::isnan(v)) {
         return NAN;
     }
@@ -56,23 +53,29 @@ float GamepadAnalogAxesPosition::axis_alpha()
     }
     const auto& key_combination = key_configurations_.get(id_);
 
-    auto* b = key_combination
+    auto* axes = key_combination
         .base_gamepad_analog_axes
         .get_joystick_axis(role_);
-    if (b == nullptr) {
+    if (axes == nullptr) {
         return NAN;
     }
     float result = NAN;
     auto update_result = [&](float v){
-        if (std::isnan(result) || (!std::isnan(v) && (v > result))) {
+        if (std::isnan(result) || (!std::isnan(v) && (std::abs(v) > std::abs(result)))) {
             result = v;
         }
     };
-    if (b->joystick.has_value()) {
-        update_result(axis_alpha(b->joystick.value()));
+    if (const auto* b = try_get_value(axes->joystick); b != nullptr) {
+        auto id = joystick_axes_map.get(b->axis);
+        if (auto* idv = try_get_value(id); idv != nullptr) {
+            float v = button_states_.get_gamepad_axis(*idv);
+            update_result(::axis_alpha(*b, v));
+        }
     }
-    if (b->tap.has_value()) {
-        update_result(axis_alpha(b->tap.value()));
+    if (const auto* b = try_get_value(axes->tap); b != nullptr) {
+        auto id = tap_analog_axes_map.get(b->axis);
+        float v = button_states_.get_tap_joystick_axis(id);
+        update_result(::axis_alpha(*b, v));
     }
     return result;
 }

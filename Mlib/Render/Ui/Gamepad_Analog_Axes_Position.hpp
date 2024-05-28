@@ -19,7 +19,6 @@ public:
 
     float axis_alpha();
 private:
-    float axis_alpha(const BaseAnalogAxisBinding& b);
     const ButtonStates& button_states_;
     const KeyConfigurations& key_configurations_;
     std::string id_;

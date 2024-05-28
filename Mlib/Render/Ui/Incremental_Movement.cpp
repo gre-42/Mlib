@@ -60,7 +60,7 @@ float IncrementalMovement::axis_alpha(const BaseCursorAxisBinding& binding, floa
         THROW_OR_ABORT("Cursor axis sign_and_scale is NAN");
     }
     std::scoped_lock lock{cursor_coordinates_mutex_};
-    float v = (float)consume_cursor_unsafe(binding.axis);
+    auto v = (float)consume_cursor_unsafe(binding.axis);
     if (sign(v) != sign(binding.sign_and_scale)) {
         return NAN;
     }

@@ -10,7 +10,7 @@ namespace KeyConfigurationArgs {
     DECLARE_ARGUMENT(key);
     DECLARE_ARGUMENT(mouse_button);
     DECLARE_ARGUMENT(gamepad_button);
-    DECLARE_ARGUMENT(joystick_digital_axes);
+    DECLARE_ARGUMENT(analog_digital_axes);
     DECLARE_ARGUMENT(tap_button);
     DECLARE_ARGUMENT(cursor_axis);
     DECLARE_ARGUMENT(cursor_sign_and_scale);
@@ -19,12 +19,12 @@ namespace KeyConfigurationArgs {
     DECLARE_ARGUMENT(not_key);
     DECLARE_ARGUMENT(not_mouse_button);
     DECLARE_ARGUMENT(not_gamepad_button);
-    DECLARE_ARGUMENT(not_joystick_digital_axes);
+    DECLARE_ARGUMENT(not_analog_digital_axes);
     DECLARE_ARGUMENT(not_tap_button);
-    DECLARE_ARGUMENT(joystick_analog_axes);
+    DECLARE_ARGUMENT(analog_axes);
     DECLARE_ARGUMENT(key2);
     DECLARE_ARGUMENT(gamepad_button2);
-    DECLARE_ARGUMENT(joystick_digital_axes2);
+    DECLARE_ARGUMENT(analog_digital_axes2);
     DECLARE_ARGUMENT(tap_button2);
 }
 
@@ -82,12 +82,8 @@ void from_json(const nlohmann::json& j, BaseAnalogAxisBinding& obj)
 void from_json(const nlohmann::json& j, BaseAnalogAxesBinding& obj) {
     JsonView jv{ j };
     jv.validate(BaseAnalogAxesBindingArgs::options);
-    if (auto b = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::joystick); b.has_value()) {
-        obj.joystick = b.value();
-    }
-    if (auto b = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::tap); b.has_value()) {
-        obj.tap = b.value();
-    }
+    obj.joystick = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::joystick);
+    obj.tap = jv.try_at<BaseAnalogAxisBinding>(BaseAnalogAxesBindingArgs::tap);
 }
 
 }
@@ -146,16 +142,16 @@ void KeyConfigurations::load(
                     .key = str(KeyConfigurationArgs::key),
                     .mouse_button = str(KeyConfigurationArgs::mouse_button),
                     .gamepad_button = str(KeyConfigurationArgs::gamepad_button),
-                    .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes),
+                    .joystick_axes = digital_axes(KeyConfigurationArgs::analog_digital_axes),
                     .tap_button = str(KeyConfigurationArgs::tap_button)}}},
                 BaseKeyBinding{
                     .key = str(KeyConfigurationArgs::not_key),
                     .mouse_button = str(KeyConfigurationArgs::not_mouse_button),
                     .gamepad_button = str(KeyConfigurationArgs::not_gamepad_button),
-                    .joystick_axes = digital_axes(KeyConfigurationArgs::not_joystick_digital_axes),
+                    .joystick_axes = digital_axes(KeyConfigurationArgs::not_analog_digital_axes),
                     .tap_button = str(KeyConfigurationArgs::not_tap_button)}
             },
-            .base_gamepad_analog_axes = {analog_axes(KeyConfigurationArgs::joystick_analog_axes)},
+            .base_gamepad_analog_axes = {analog_axes(KeyConfigurationArgs::analog_axes)},
             .base_cursor_axis = {
                 .axis = e.contains(KeyConfigurationArgs::cursor_axis) ? e[KeyConfigurationArgs::cursor_axis].get<size_t>() : SIZE_MAX,
                 .sign_and_scale = e.contains(KeyConfigurationArgs::cursor_sign_and_scale) ? e[KeyConfigurationArgs::cursor_sign_and_scale].get<float>() : NAN,
@@ -167,13 +163,13 @@ void KeyConfigurations::load(
         };
         if (e.contains(KeyConfigurationArgs::key2) ||
             e.contains(KeyConfigurationArgs::gamepad_button2) ||
-            e.contains(KeyConfigurationArgs::joystick_digital_axes2) ||
+            e.contains(KeyConfigurationArgs::analog_digital_axes2) ||
             e.contains(KeyConfigurationArgs::tap_button2))
         {
             key_config.base_combo.key_bindings.push_back(BaseKeyBinding{
                 .key = str(KeyConfigurationArgs::key2),
                 .gamepad_button = str(KeyConfigurationArgs::gamepad_button2),
-                .joystick_axes = digital_axes(KeyConfigurationArgs::joystick_digital_axes2),
+                .joystick_axes = digital_axes(KeyConfigurationArgs::analog_digital_axes2),
                 .tap_button = str(KeyConfigurationArgs::tap_button2)});
         }
         if (!key_configurations_.insert({id, std::move(key_config)}).second) {

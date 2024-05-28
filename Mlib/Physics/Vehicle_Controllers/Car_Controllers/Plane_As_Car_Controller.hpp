@@ -14,6 +14,7 @@ public:
     virtual ~PlaneAsCarController() override;
     virtual void apply() override;
 private:
+    void apply_this();
     std::map<size_t, float> tire_angles_;
 };
 
