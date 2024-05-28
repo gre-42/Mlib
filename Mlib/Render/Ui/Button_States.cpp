@@ -29,8 +29,8 @@ static bool make_digital(float v, float sign_and_threshold) {
 
 #ifndef __ANDROID__
 ButtonStates::ButtonStates()
-: gamepad_state_{{}},
-  has_gamepad_{false}
+    : gamepad_state_{ {} }
+    , has_gamepad_{ false }
 {}
 #else
 ButtonStates::ButtonStates() = default;
@@ -40,7 +40,7 @@ ButtonStates::~ButtonStates() = default;
 
 #ifndef __ANDROID__
 float ButtonStates::get_gamepad_axis(int axis) const {
-    std::shared_lock lock{gamepad_state_mutex_};
+    std::shared_lock lock{ gamepad_state_mutex_ };
     if (!has_gamepad_) {
         return NAN;
     }
@@ -51,7 +51,7 @@ float ButtonStates::get_gamepad_axis(int axis) const {
 }
 
 bool ButtonStates::get_gamepad_button_down(int button) const {
-    std::shared_lock lock{gamepad_state_mutex_};
+    std::shared_lock lock{ gamepad_state_mutex_ };
     if (!has_gamepad_) {
         return false;
     }
@@ -67,7 +67,7 @@ void ButtonStates::update_gamepad_state() {
 }
 #else
 float ButtonStates::get_gamepad_axis(int axis) const {
-    std::shared_lock lock{gamepad_axes_mutex_};
+    std::shared_lock lock{ gamepad_axes_mutex_ };
     auto it = gamepad_axes_.find(axis);
     if (it == gamepad_axes_.end()) {
         return NAN;
@@ -80,7 +80,7 @@ bool ButtonStates::get_gamepad_button_down(int button) const {
 }
 
 void ButtonStates::notify_gamepad_axis(int axis, float value) {
-    std::scoped_lock lock{gamepad_axes_mutex_};
+    std::scoped_lock lock{ gamepad_axes_mutex_ };
     gamepad_axes_[axis] = value;
 }
 #endif
@@ -95,38 +95,38 @@ bool ButtonStates::get_tap_analog_digital_axis(int axis, float sign_and_threshol
 
 void ButtonStates::notify_key_event(int key, int action) {
     if (action == KEY_PRESS) {
-        std::scoped_lock lock{keys_mutex_};
+        std::scoped_lock lock{ keys_mutex_ };
         keys_down_.insert(key);
     }
     if (action == KEY_RELEASE) {
-        std::scoped_lock lock{keys_mutex_};
+        std::scoped_lock lock{ keys_mutex_ };
         keys_down_.erase(key);
     }
 }
 
 bool ButtonStates::get_key_down(int key) const {
-    std::shared_lock lock{keys_mutex_};
+    std::shared_lock lock{ keys_mutex_ };
     return keys_down_.contains(key);
 }
 
 void ButtonStates::notify_mouse_button_event(int button, int action) {
     if (action == KEY_PRESS) {
-        std::scoped_lock lock{mouse_button_mutex_};
+        std::scoped_lock lock{ mouse_button_mutex_ };
         mouse_buttons_down_.insert(button);
     }
     if (action == KEY_RELEASE) {
-        std::scoped_lock lock{mouse_button_mutex_};
+        std::scoped_lock lock{ mouse_button_mutex_ };
         mouse_buttons_down_.erase(button);
     }
 }
 
 bool ButtonStates::get_mouse_button_down(int button) const {
-    std::shared_lock lock{mouse_button_mutex_};
+    std::shared_lock lock{ mouse_button_mutex_ };
     return mouse_buttons_down_.contains(button);
 }
 
 bool ButtonStates::get_tap_button_down(int button) const {
-    std::shared_lock lock{tap_buttons_.mutex};
+    std::shared_lock lock{ tap_buttons_.mutex };
     auto it = tap_buttons_.button_down.find(button);
     if (it == tap_buttons_.button_down.end()) {
         // The tap button might not yet exist (it is created dynamically),
@@ -137,7 +137,7 @@ bool ButtonStates::get_tap_button_down(int button) const {
 }
 
 float ButtonStates::get_tap_joystick_axis(int axis) const {
-    std::shared_lock lock{tap_buttons_.mutex};
+    std::shared_lock lock{ tap_buttons_.mutex };
     auto it = tap_buttons_.joystick_axis_position.find(axis);
     if (it == tap_buttons_.joystick_axis_position.end()) {
         // The tap button might not yet exist (it is created dynamically),
@@ -156,7 +156,7 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
     }
 #ifndef __ANDROID__
     sstr << "\n\n";
-    std::shared_lock lock{gamepad_state_mutex_};
+    std::shared_lock lock{ gamepad_state_mutex_ };
     if (has_gamepad_) {
         sstr << std::endl;
         sstr << std::endl;
