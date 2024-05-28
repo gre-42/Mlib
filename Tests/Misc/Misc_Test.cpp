@@ -9,6 +9,7 @@
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
+#include <Mlib/Try_Find.hpp>
 #include <iostream>
 
 using namespace Mlib;
@@ -197,6 +198,13 @@ void test_object_pool_unique() {
     linfo() << a.i;
 }
 
+void test_try_find() {
+    std::map<int, std::string> m;
+    if (try_find(m, 42) != nullptr) {
+        throw std::runtime_error("Expected nullptr");
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -210,5 +218,6 @@ int main(int argc, const char** argv) {
     test_object_pool_std();
     test_object_pool_unique();
     test_dangling_unique2();
+    test_try_find();
     return 0;
 }

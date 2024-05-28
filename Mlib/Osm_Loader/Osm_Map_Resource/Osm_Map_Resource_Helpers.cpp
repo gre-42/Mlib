@@ -11,6 +11,7 @@
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Try_Find.hpp>
 
 using namespace Mlib;
 
@@ -130,12 +131,11 @@ std::string Mlib::parse_string(
     const std::string& key,
     const std::string& default_value)
 {
-    auto it = tags.find(key);
-    if (it != tags.end()) {
-        return it->second;
-    } else {
+    auto* value = try_find(tags, key);
+    if (value == nullptr) {
         return default_value;
     }
+    return *value;
 }
 
 float Mlib::parse_meters(
@@ -143,23 +143,22 @@ float Mlib::parse_meters(
     const std::string& key,
     float default_value)
 {
-    auto it = tags.find(key);
-    if (it == tags.end()) {
+    auto* value = try_find(tags, key);
+    if (value == nullptr) {
         return default_value;
     }
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(m|'|ft)?");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(it->second, match, re)) {
-        float res = safe_stof(match[1].str());
-        if ((match[2].str() == "'") ||
-            (match[2].str() == "ft"))
-        {
-            res *= 0.3048f;
-        }
-        return res;
-    } else {
-        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + it->second + '"');
+    if (!Mlib::re::regex_match(*value, match, re)) {
+        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
+    float res = safe_stof(match[1].str());
+    if ((match[2].str() == "'") ||
+        (match[2].str() == "ft"))
+    {
+        res *= 0.3048f;
+    }
+    return res;
 }
 
 float Mlib::parse_radians(
@@ -167,17 +166,16 @@ float Mlib::parse_radians(
     const std::string& key,
     float default_value)
 {
-    auto it = tags.find(key);
-    if (it == tags.end()) {
+    auto* value = try_find(tags, key);
+    if (value == nullptr) {
         return default_value;
     }
     static const DECLARE_REGEX(re, "^([\\d.-]+) *(?:°)?");
     Mlib::re::smatch match;
-    if (Mlib::re::regex_match(it->second, match, re)) {
-        return safe_stof(match[1].str()) * float(M_PI / 180.);
-    } else {
-        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + it->second + '"');
+    if (!Mlib::re::regex_match(*value, match, re)) {
+        THROW_OR_ABORT("Could not parse \"" + key + "\" value: \"" + *value + '"');
     }
+    return safe_stof(match[1].str()) * float(M_PI / 180.);
 }
 
 FixedArray<float, 3> Mlib::parse_color(
@@ -185,16 +183,15 @@ FixedArray<float, 3> Mlib::parse_color(
     const std::string& key,
     const FixedArray<float, 3>& default_value)
 {
-    auto rgb_it = tags.find(key);
-    if (rgb_it != tags.end()) {
-        auto l = string_to_vector(rgb_it->second, safe_stof);
-        if (l.size() != 3) {
-            THROW_OR_ABORT("\"color\" tag does not have 3 values");
-        }
-        return FixedArray<float, 3>{l[0], l[1], l[2]};
-    } else {
+    auto rgb = try_find(tags, key);
+    if (rgb == nullptr) {
         return default_value;
     }
+    auto l = string_to_vector(*rgb, safe_stof);
+    if (l.size() != 3) {
+        THROW_OR_ABORT("\"color\" tag does not have 3 values");
+    }
+    return { l[0], l[1], l[2] };
 }
 
 float Mlib::parse_float(
@@ -202,12 +199,11 @@ float Mlib::parse_float(
     const std::string& key,
     float default_value)
 {
-    auto it = tags.find(key);
-    if (it != tags.end()) {
-        return safe_stof(it->second);
-    } else {
+    auto* value = try_find(tags, key);
+    if (value == nullptr) {
         return default_value;
     }
+    return safe_stof(*value);
 }
 
 bool Mlib::parse_bool(
@@ -215,12 +211,11 @@ bool Mlib::parse_bool(
     const std::string& key,
     bool default_value)
 {
-    auto it = tags.find(key);
-    if (it != tags.end()) {
-        return safe_stob(it->second);
-    } else {
+    auto* value = try_find(tags, key);
+    if (value == nullptr) {
         return default_value;
     }
+    return safe_stob(*value);
 }
 
 //class PolygonDrawer {
