@@ -3,13 +3,13 @@
 
 using namespace Mlib;
 
-const BaseAnalogAxesBinding* BaseAnalogAxesListBinding::get_joystick_axis(
+const BaseAnalogAxesBinding* BaseAnalogAxesListBinding::get_analog_axes(
     const std::string& role) const
 {
-    if (auto it = joystick_axes.find(role); it != joystick_axes.end()) {
+    if (auto it = analog_axes.find(role); it != analog_axes.end()) {
         return &it->second;
     }
-    if (auto it = joystick_axes.find("default"); it != joystick_axes.end()) {
+    if (auto it = analog_axes.find("default"); it != analog_axes.end()) {
         return &it->second;
     }
     return nullptr;

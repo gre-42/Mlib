@@ -142,7 +142,7 @@ float ButtonStates::get_tap_joystick_axis(int axis) const {
     if (it == tap_buttons_.joystick_axis_position.end()) {
         // The tap button might not yet exist (it is created dynamically),
         // so this is not an error.
-        return 0.f;
+        return NAN;
     }
     return it->second;
 }

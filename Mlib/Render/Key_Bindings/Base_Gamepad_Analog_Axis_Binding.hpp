@@ -19,8 +19,8 @@ struct BaseAnalogAxesBinding {
 };
 
 struct BaseAnalogAxesListBinding {
-    std::map<std::string, BaseAnalogAxesBinding> joystick_axes;
-    const BaseAnalogAxesBinding* get_joystick_axis(const std::string& role) const;
+    std::map<std::string, BaseAnalogAxesBinding> analog_axes;
+    const BaseAnalogAxesBinding* get_analog_axes(const std::string& role) const;
 };
 
 }

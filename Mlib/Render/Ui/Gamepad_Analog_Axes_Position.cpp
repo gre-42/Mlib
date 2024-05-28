@@ -55,7 +55,7 @@ float GamepadAnalogAxesPosition::axis_alpha()
 
     auto* axes = key_combination
         .base_gamepad_analog_axes
-        .get_joystick_axis(role_);
+        .get_analog_axes(role_);
     if (axes == nullptr) {
         return NAN;
     }
@@ -66,7 +66,7 @@ float GamepadAnalogAxesPosition::axis_alpha()
         }
     };
     if (const auto* b = try_get_value(axes->joystick); b != nullptr) {
-        auto id = joystick_axes_map.get(b->axis);
+        const auto& id = joystick_axes_map.get(b->axis);
         if (auto* idv = try_get_value(id); idv != nullptr) {
             float v = button_states_.get_gamepad_axis(*idv);
             update_result(::axis_alpha(*b, v));
