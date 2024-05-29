@@ -40,7 +40,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         if (physics_cfg_.nsubsteps == 0) {
             THROW_OR_ABORT("Number of substeps is zero");
         }
-        auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(physics_cfg_.dt_substeps() / s));
+        auto idt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(std::chrono::duration<float>(physics_cfg_.dt_substeps() / seconds));
         for (size_t i = 0; i < physics_cfg_.nsubsteps; ++i) {
             std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
                 ? &beacons

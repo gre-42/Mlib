@@ -31,7 +31,7 @@ DECLARE_ARGUMENT(minimum_length);
 const std::string AnimatedTrails::key = "animated_trails";
 
 inline float to_seconds(float value) {
-    return value * s;
+    return value * seconds;
 }
 
 LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)

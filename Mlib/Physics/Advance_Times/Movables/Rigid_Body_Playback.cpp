@@ -44,7 +44,7 @@ void RigidBodyPlayback::advance_time(float dt, std::chrono::steady_clock::time_p
         }
     }
     if (track_reader_.read(progress_)) {
-        progress_ += dt / s * speedup_;
+        progress_ += dt / seconds * speedup_;
         const auto& t = track_reader_.track_element().element.transformations;
         if (t.size() != playback_objects_.size()) {
             THROW_OR_ABORT("Conflicting playback sizees");

@@ -63,7 +63,7 @@ void TrailExtender::append_location(
                         previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 0.f) {
-                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
+                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }
@@ -87,7 +87,7 @@ void TrailExtender::append_location(
                         }
                         t(i) = t0(i).casted<double>().transformed_uv(op);
                         t(i).position = it->second;
-                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * s;
+                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }

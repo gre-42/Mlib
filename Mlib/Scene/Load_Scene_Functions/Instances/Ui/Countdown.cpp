@@ -52,7 +52,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
-        args.arguments.at<float>(KnownArgs::nseconds) * s,
+        args.arguments.at<float>(KnownArgs::nseconds) * seconds,
         focus_from_string(args.arguments.at<std::string>(KnownArgs::pending_focus)),
         focus_from_string(args.arguments.at<std::string>(KnownArgs::counting_focus)),
         args.arguments.at<std::string>(KnownArgs::text),

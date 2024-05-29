@@ -15,7 +15,7 @@ float WeaponInfo::score(double distance_to_target) const {
     {
         return -INFINITY;
     }
-    return bullet_properties.damage / (cool_down / s);
+    return bullet_properties.damage / (cool_down / seconds);
 }
 
 WeaponCycle::WeaponCycle() = default;

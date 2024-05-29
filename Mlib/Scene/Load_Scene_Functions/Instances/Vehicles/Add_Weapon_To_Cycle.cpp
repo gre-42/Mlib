@@ -74,7 +74,7 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             },
             .ammo_type = ammo_type,
             .bullet_properties = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type)),
-            .cool_down = cool_down * s,
+            .cool_down = cool_down * seconds,
             .range_min = args.arguments.at<float>(KnownArgs::range_min) * meters,
             .range_max = args.arguments.at<float>(KnownArgs::range_max) * meters});
 }

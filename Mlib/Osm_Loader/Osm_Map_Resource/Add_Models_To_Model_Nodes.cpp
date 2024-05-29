@@ -19,7 +19,6 @@ void Mlib::add_models_to_model_nodes(
     const SceneNodeResources& resources,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, Way>& ways,
-    double scale,
     const std::string& game_level)
 {
     std::map<std::string, std::string> prev_neighbor;
@@ -76,7 +75,7 @@ void Mlib::add_models_to_model_nodes(
                 Mlib::re::smatch supplies_match;
                 if (Mlib::re::regex_match(k, supplies_match, supplies_re)) {
                     if (supplies_match[1].str() == "meta:cooldown_seconds") {
-                        prn.supplies_cooldown = safe_stof(v) * s;
+                        prn.supplies_cooldown = safe_stof(v) * seconds;
                     } else if (!prn.supplies.try_emplace(supplies_match[1].str(), safe_stox<uint32_t>(v, "supplies")).second) {
                         THROW_OR_ABORT("Could not insert supplies");
                     }

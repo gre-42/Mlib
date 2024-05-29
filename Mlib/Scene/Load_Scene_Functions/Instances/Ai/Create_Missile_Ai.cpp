@@ -61,7 +61,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
         pid(0) / meters,
         pid(1) / meters,
         pid(2) / meters,
-        pid_alpha}.changed_time_step(1.f / 60.f * s, physics_engine.config().dt);
+        pid_alpha}.changed_time_step(1.f / 60.f * seconds, physics_engine.config().dt);
     auto jdy = args.arguments.child(KnownArgs::dy);
     jdy.validate(DyArgs::options);
     Interp<float, float> dy{
@@ -76,7 +76,7 @@ void CreateMissileAi::execute(const LoadSceneJsonUserFunctionArgs& args)
                 missile_vehicle,
                 pid_controller,
                 std::move(dy),
-                args.arguments.at<double>(KnownArgs::eta_max) * s,
+                args.arguments.at<double>(KnownArgs::eta_max) * seconds,
                 missile_vehicle.missile_controller(),
                 args.arguments.at<float>(KnownArgs::waypoint_reached_radius) * meters,
                 args.arguments.at<float>(KnownArgs::resting_position_reached_radius) * meters,

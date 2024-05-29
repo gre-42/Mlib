@@ -30,5 +30,5 @@ void SpawnerSetRespawnCooldownTime::execute(const LoadSceneJsonUserFunctionArgs&
 {
     vehicle_spawners
         .get(args.arguments.at<std::string>(KnownArgs::spawner))
-        .set_respawn_cooldown_time(args.arguments.at<float>(KnownArgs::time) * s);
+        .set_respawn_cooldown_time(args.arguments.at<float>(KnownArgs::time) * seconds);
 }

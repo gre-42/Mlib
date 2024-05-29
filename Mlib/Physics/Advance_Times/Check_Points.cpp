@@ -124,8 +124,8 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
         lap_elapsed_seconds_ = 0.f;
         player_->notify_race_started();
     }
-    total_elapsed_seconds_ += dt / s;
-    lap_elapsed_seconds_ += dt / s;
+    total_elapsed_seconds_ += dt / seconds;
+    lap_elapsed_seconds_ += dt / seconds;
 
     TrackElement te{.elapsed_seconds = total_elapsed_seconds_};
     te.transformations.reserve(movings_.size());

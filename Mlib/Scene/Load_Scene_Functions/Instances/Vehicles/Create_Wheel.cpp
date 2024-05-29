@@ -100,7 +100,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<float>(KnownArgs::brake_force) * N,
             args.arguments.at<float>(KnownArgs::brake_torque) * N * meters,
             args.arguments.at<float>(KnownArgs::Ks) * N,
-            args.arguments.at<float>(KnownArgs::Ka) * N / (meters / s),
+            args.arguments.at<float>(KnownArgs::Ka) * N / (meters / seconds),
             mus,
             CombinedMagicFormula<float>{
                 .f = FixedArray<MagicFormulaArgmax<float>, 2>{

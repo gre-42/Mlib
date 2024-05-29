@@ -56,7 +56,7 @@ void AudioSource::set_position(const AudioSourceState<double>& position) {
         return;
     }
     AL_CHK(alSourcefv(source_, AL_POSITION, (relpos.value().position / meters).flat_begin()));
-    AL_CHK(alSourcefv(source_, AL_VELOCITY, (relpos.value().velocity / (meters / s)).flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_VELOCITY, (relpos.value().velocity / (meters / seconds)).flat_begin()));
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
             AL_CHK(alSourcef(source_, AL_GAIN, gain_));

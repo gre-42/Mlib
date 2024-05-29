@@ -54,7 +54,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
             animation_loop_end = RenderingContextStack::primary_scene_node_resources()
                 .get_animation_duration(args.arguments.at<std::string>(KnownArgs::animation_loop_name));
         } else {
-            animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end) * s;
+            animation_loop_end = args.arguments.at<float>(KnownArgs::animation_loop_end) * seconds;
         }
     } else {
         animation_loop_end = NAN;
@@ -65,13 +65,13 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name, ""),
         .periodic_skelletal_animation_frame = {
             .frame = AnimationFrame{
-                .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * s,
-                .end = animation_loop_end * s,
-                .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * s}},
+                .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
+                .end = animation_loop_end * seconds,
+                .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
         .aperiodic_animation_frame = {
             .frame = AnimationFrame{
-                .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * s,
-                .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * s,
-                .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * s}},
+                .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
+                .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
+                .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},
         .delete_node_when_aperiodic_animation_finished = args.arguments.at<bool>(KnownArgs::delete_node_when_aperiodic_animation_finished, false)}));
 }

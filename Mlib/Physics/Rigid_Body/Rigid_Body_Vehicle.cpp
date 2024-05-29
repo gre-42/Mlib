@@ -832,7 +832,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         ostr << "w: " << std::sqrt(sum(squared(rbp_.w_))) / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::WHEEL_ANGULAR_VELOCITY) {
-        ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_))) / WHEEL_RADIUS / (radians / s) << " rad/s" << std::endl;
+        ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_))) / WHEEL_RADIUS / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::DIAMETER) {
         // T = 2 PI r / v, T = 2 PI / w
@@ -1005,17 +1005,17 @@ void RigidBodyVehicle::add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai)
 {
     for (const auto& sf : ai->skills()) {
         auto& amap = autopilots_[sf.scenario.actor_task];
-        auto it = amap.find(sf.scenario.actor_type);
-        if ((it == amap.end()) || (sf.factor > it->second.skill)) {
-            auto it = amap.try_emplace(
+        auto it0 = amap.find(sf.scenario.actor_type);
+        if ((it0 == amap.end()) || (sf.factor > it0->second.skill)) {
+            auto it1 = amap.try_emplace(
                 sf.scenario.actor_type,
                 ai,
                 CURRENT_SOURCE_LOCATION,
                 sf.factor);
-            if (!it.second) {
+            if (!it1.second) {
                 verbose_abort("Fatal error, could not insert autopilot");
             }
-            it.first->second.ai.on_destroy([this, s=sf.scenario]() { remove_autopilot(s); }, CURRENT_SOURCE_LOCATION);
+            it1.first->second.ai.on_destroy([this, s=sf.scenario]() { remove_autopilot(s); }, CURRENT_SOURCE_LOCATION);
         }
     }
 }

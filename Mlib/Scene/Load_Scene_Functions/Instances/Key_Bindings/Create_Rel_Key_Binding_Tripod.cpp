@@ -54,8 +54,8 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         .rotation_axis = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation_axis, fixed_zeros<float, 3>()),
         .velocity_press = args.arguments.at<double>(KnownArgs::velocity_press, 0.) * kph,
         .velocity_repeat = args.arguments.at<double>(KnownArgs::velocity_repeat, 0.) * kph,
-        .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / s,
-        .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat, 0.f) * radians / s,
+        .angular_velocity_press = args.arguments.at<float>(KnownArgs::angular_velocity_press, 0.f) * radians / seconds,
+        .angular_velocity_repeat = args.arguments.at<float>(KnownArgs::angular_velocity_repeat, 0.f) * radians / seconds,
         .speed_cursor = args.arguments.at<float>(KnownArgs::speed_cursor),
         .button_press{
             args.button_states,

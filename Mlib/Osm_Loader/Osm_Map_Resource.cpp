@@ -944,7 +944,6 @@ OsmMapResource::OsmMapResource(
                 scene_node_resources,
                 nodes,
                 ways,
-                config.scale,
                 config.game_level);
         } catch (const TriangleException<double>& e) {
             if (auto prefix = try_getenv("EXCEPT_MESH_AROUND_PREFIX"); prefix.has_value()) {

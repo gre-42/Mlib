@@ -63,9 +63,9 @@ void CreateAimAt::execute(const LoadSceneJsonUserFunctionArgs& args)
         ExponentialSmoother<float>{ error_alpha, velocity_error_std } };
 
     float bullet_start_offset  = args.arguments.at<float>(KnownArgs::bullet_start_offset) * meters;
-    float bullet_velocity      = args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / s;
+    float bullet_velocity      = args.arguments.at<float>(KnownArgs::bullet_velocity) * meters / seconds;
     bool  bullet_feels_gravity = args.arguments.at<bool>(KnownArgs::bullet_feels_gravity);
-    float gravity              = args.arguments.at<float>(KnownArgs::gravity) * meters / (s * s);
+    float gravity              = args.arguments.at<float>(KnownArgs::gravity) * meters / (seconds * seconds);
 
     auto& aim_at = global_object_pool.create<AimAt>(
         CURRENT_SOURCE_LOCATION,

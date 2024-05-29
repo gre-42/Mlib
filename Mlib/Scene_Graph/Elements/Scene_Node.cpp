@@ -1195,7 +1195,7 @@ FixedArray<float, 3> SceneNode::velocity(
 {
     auto p0 = absolute_model_matrix(time - dt);
     auto p1 = absolute_model_matrix(time + dt);
-    return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * s);
+    return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
 }
 
 void SceneNode::set_absolute_pose(

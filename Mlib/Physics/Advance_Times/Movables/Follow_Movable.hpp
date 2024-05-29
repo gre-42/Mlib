@@ -28,8 +28,8 @@ public:
         float snappiness = 2.f,
         float y_adaptivity = 15.f,
         float y_snappiness = 0.05f,
-        float dt = 1.f / 60.f * s,
-        float dt_ref = 1.f / 60.f * s);
+        float dt = 1.f / 60.f * seconds,
+        float dt_ref = 1.f / 60.f * seconds);
     ~FollowMovable();
     void initialize(DanglingRef<SceneNode> follower_node);
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;

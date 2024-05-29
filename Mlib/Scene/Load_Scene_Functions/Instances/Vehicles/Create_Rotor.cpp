@@ -101,7 +101,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     float max_align_to_gravity = args.arguments.contains(KnownArgs::max_align_to_gravity)
         ? args.arguments.at<float>(KnownArgs::max_align_to_gravity) * degrees
         : NAN;
-    size_t rotor_id = args.arguments.at<size_t>(KnownArgs::rotor_id);
+    auto rotor_id = args.arguments.at<size_t>(KnownArgs::rotor_id);
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
     auto pid_child = args.arguments.try_get_child(KnownArgs::align_to_gravity_pid);
     FixedArray<float, 3> pid_params = pid_child.has_value()
@@ -129,7 +129,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 ? args.arguments.at<float>(KnownArgs::drift_reduction_factor)
                 : NAN,
             args.arguments.contains(KnownArgs::drift_reduction_reference_velocity)
-                ? args.arguments.at<float>(KnownArgs::drift_reduction_reference_velocity) * meters / s
+                ? args.arguments.at<float>(KnownArgs::drift_reduction_reference_velocity) * kph
                 : NAN,
             vehicle_mount_0,
             vehicle_mount_1,

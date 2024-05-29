@@ -15,8 +15,7 @@ PlaybackWaypoints::PlaybackWaypoints(Player& player)
   speedup_{NAN}
 {}
 
-PlaybackWaypoints::~PlaybackWaypoints()
-{}
+PlaybackWaypoints::~PlaybackWaypoints() = default;
 
 bool PlaybackWaypoints::has_waypoints() const {
     return !track_.empty();
@@ -38,7 +37,7 @@ void PlaybackWaypoints::select_next_waypoint() {
             float ds = (float)std::sqrt(sum(squared(
                 current_track_element_->transformation().position() -
                 old_element->transformation().position()))) * meters;
-            float dt = (current_track_element_->elapsed_seconds - old_element->elapsed_seconds) * s;
+            float dt = (current_track_element_->elapsed_seconds - old_element->elapsed_seconds) * seconds;
             player_.single_waypoint().set_target_velocity(speedup_ * ds / dt);
         }
     }

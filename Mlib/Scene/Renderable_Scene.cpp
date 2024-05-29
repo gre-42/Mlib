@@ -87,8 +87,8 @@ RenderableScene::RenderableScene(
       }}
     , physics_sleeper_{
           "Physics FPS: ",
-          scene_config_.physics_engine_config.dt / s,
-          scene_config_.physics_engine_config.max_residual_time / s,
+          scene_config_.physics_engine_config.dt / seconds,
+          scene_config_.physics_engine_config.max_residual_time / seconds,
           scene_config_.physics_engine_config.print_residual_time}
     , physics_set_fps_{
           scene_config_.physics_engine_config.control_fps

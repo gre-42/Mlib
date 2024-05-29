@@ -31,7 +31,7 @@ void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
             THROW_OR_ABORT("AnimatedTextureLayer::update without previous move");
         }
     } else {
-        auto time_offset = std::chrono::duration<float>(time - time_).count() * s;
+        auto time_offset = std::chrono::duration<float>(time - time_).count() * seconds;
         for (size_t i = 0; i < tmp_length(); ++i) {
             const auto& ai = animation_times_[i];
             const auto& bi = *animation_sequences_[i];

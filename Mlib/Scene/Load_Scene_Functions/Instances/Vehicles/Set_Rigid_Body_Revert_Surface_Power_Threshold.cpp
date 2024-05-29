@@ -33,5 +33,5 @@ void SetRigidBodyRevertSurfacePowerThreshold::execute(const LoadSceneJsonUserFun
 {
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
-    rb.revert_surface_power_state_.revert_surface_power_threshold_ = args.arguments.at<float>(KnownArgs::value) * meters / s;
+    rb.revert_surface_power_state_.revert_surface_power_threshold_ = args.arguments.at<float>(KnownArgs::value) * meters / seconds;
 }

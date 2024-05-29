@@ -46,7 +46,7 @@ void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     }
     item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::resource_name);
     item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::instance_prefix);
-    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::animation_duration) * s;
+    item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::animation_duration) * seconds;
 }
 
 }

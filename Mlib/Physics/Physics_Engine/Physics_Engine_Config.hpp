@@ -12,9 +12,9 @@ struct PhysicsEngineConfig {
         return dt_io / dt_substeps();
     }
 
-    float dt = 0.01667f * s;
-    float dt_io = 0.01667f * s;
-    float max_residual_time = 0.5f * s;
+    float dt = 0.01667f * seconds;
+    float dt_io = 0.01667f * seconds;
+    float max_residual_time = 0.5f * seconds;
     bool control_fps = true;
     bool print_residual_time = false;
 
@@ -58,9 +58,9 @@ struct PhysicsEngineConfig {
     // Grind
     float max_grind_cos = 0.5;
     size_t nframes_straight_grind = 30;
-    float continuos_grind_velocity_threshold = 0.1f * meters / s;
+    float continuos_grind_velocity_threshold = 0.1f * meters / seconds;
     float continuos_grind_cos_threshold = 0.5f;
-    float grind_jump_dv = 5.f * meters / s;
+    float grind_jump_dv = 5.f * meters / seconds;
 
     // Alignment
     float alignment_surface_cos = float(1e-6);

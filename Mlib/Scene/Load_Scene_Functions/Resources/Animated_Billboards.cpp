@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
                 particles_instance,
                 BillboardSequence{
                     .billboard_ids = frames,
-                    .duration = duration * s}));
+                    .duration = duration * seconds}));
         });
     pr.insert_creator_to_instance(name, animatable);
 };

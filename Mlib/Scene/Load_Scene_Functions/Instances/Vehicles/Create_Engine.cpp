@@ -81,7 +81,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
                 OutOfRangeBehavior::CLAMP},
             args.arguments.at<std::vector<float>>(KnownArgs::gear_ratios),
             args.arguments.at<float>(KnownArgs::w_clutch) * rpm,
-            args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / s};
+            args.arguments.at<float>(KnownArgs::max_dw, INFINITY) * rpm / seconds};
     }
 #ifndef WITHOUT_ALUT
     std::shared_ptr<EngineAudio> av;

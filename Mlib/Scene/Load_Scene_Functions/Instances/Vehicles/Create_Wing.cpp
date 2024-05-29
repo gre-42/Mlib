@@ -17,9 +17,9 @@
 
 using namespace Mlib;
 
-static const float LIFT_COEFF_UNITS = N / squared(meters / s);
-static const float ANGLE_COEFF_UNITS = N / degrees / squared(meters / s);
-static const float DRAG_COEFF_UNITS = N / squared(meters / s);
+static const float LIFT_COEFF_UNITS = N / squared(meters / seconds);
+static const float ANGLE_COEFF_UNITS = N / degrees / squared(meters / seconds);
+static const float DRAG_COEFF_UNITS = N / squared(meters / seconds);
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;

@@ -155,7 +155,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         dynamic_lights,
         physics_engine.rigid_bodies_,
         physics_engine.advance_times_,
-        args.arguments.at<float>(KnownArgs::cool_down) * s,
+        args.arguments.at<float>(KnownArgs::cool_down) * seconds,
         rb,
         node,
         punch_angle_node,
@@ -166,7 +166,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         punch_angle_rng,
         args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),
         args.arguments.at<FixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
-        args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * s,
+        args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * seconds,
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash_hider),
          capture = args.arguments.try_at_non_null(KnownArgs::capture)](const std::string& muzzle_flash_suffix)

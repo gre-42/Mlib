@@ -58,7 +58,7 @@ void CreateAvatarControllerKeyBinding::execute(const LoadSceneJsonUserFunctionAr
         .press_factor = args.arguments.at<float>(KnownArgs::press_factor, 0.f),
         .repeat_factor = args.arguments.at<float>(KnownArgs::repeat_factor, 1.f),
         .angular_velocity = args.arguments.contains(KnownArgs::angular_velocity)
-            ? args.arguments.at<float>(KnownArgs::angular_velocity) * radians / s
+            ? args.arguments.at<float>(KnownArgs::angular_velocity) * radians / seconds
             : std::optional<float>(),
         .speed_cursor = args.arguments.contains(KnownArgs::speed_cursor)
             ? args.arguments.at<float>(KnownArgs::speed_cursor) * radians

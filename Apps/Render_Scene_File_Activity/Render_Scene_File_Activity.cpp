@@ -533,7 +533,7 @@ void android_main(android_app* app) {
             button_states.tap_buttons_.clear();
 
             PhysicsEngineConfig physics_engine_config{
-                .dt = physics_dt * s,
+                .dt = physics_dt * seconds,
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH

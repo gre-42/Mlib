@@ -62,7 +62,7 @@ void CountDownLogic::render(
             position_,
             {lx.flength(), ly.flength()},
             text_.empty()
-                ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / s))
+                ? std::to_string((unsigned int)std::ceil((duration_ - elapsed_time_) / seconds))
                 : text_,
             AlignText::BOTTOM,
             line_distance_.to_pixels(ly));

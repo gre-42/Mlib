@@ -147,8 +147,8 @@ void test_com() {
     // Hack to get identical values in the following tests.
     r1->rbp_.I_ = r0->rbp_.I_;
     float dt = cfg.dt_substeps();
-    r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
-    r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (s * s) * dt, 0.f});
+    r0->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
+    r1->rbp_.integrate_delta_v({0.f, -9.8f * meters / (seconds * seconds) * dt, 0.f});
     {
         r0->rbp_.advance_time(dt);
     }
@@ -158,8 +158,8 @@ void test_com() {
     
     // std::cerr << r0->rbp_.v_ << std::endl;
     // std::cerr << r1->rbp_.v_ << std::endl;
-    assert_allclose(r0->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
-    assert_allclose(r1->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / s, 0.f}, (float)1e-12);
+    assert_allclose(r0->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
+    assert_allclose(r1->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     r1->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com1.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
     {

@@ -36,8 +36,8 @@ void PlayerSetBehavior::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     player->set_behavior(
         args.arguments.at<float>(KnownArgs::stuck_velocity) * kph,
-        args.arguments.at<float>(KnownArgs::stuck_duration) * s,
-        args.arguments.at<float>(KnownArgs::unstuck_duration) * s,
+        args.arguments.at<float>(KnownArgs::stuck_duration) * seconds,
+        args.arguments.at<float>(KnownArgs::unstuck_duration) * seconds,
         joined_way_point_sandbox_from_string(args.arguments.at<std::string>(KnownArgs::player_way_points_filter)));
     player->set_way_point_location_filter(
         joined_way_point_sandbox_from_string(args.arguments.at<std::string>(KnownArgs::vehicle_way_points_filter)));
