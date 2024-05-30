@@ -40,6 +40,7 @@ DECLARE_ARGUMENT(spawned_vehicle);
 DECLARE_ARGUMENT(game_mode);
 DECLARE_ARGUMENT(unstuck_mode);
 DECLARE_ARGUMENT(behavior);
+DECLARE_ARGUMENT(role);
 DECLARE_ARGUMENT(set_way_points);
 }
 
@@ -140,9 +141,13 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
             auto get = [&defaults, &player](const std::string& name){
-                return player.contains(name)
-                    ? player.at(name)
-                    : defaults.at(name);
+                if (player.contains(name)) {
+                    return player.at(name);
+                }
+                if (defaults.contains(name)) {
+                    return defaults.at(name);
+                }
+                THROW_OR_ABORT("Could not find key \"" + name + "\" in player or defaults");
             };
             auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
@@ -173,6 +178,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"TEAM", team},
                             {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
                             {"behavior", get(PlayerKeys::behavior).get<std::string>()},
+                            {"role", get(PlayerKeys::role).get<std::string>()},
                             {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
                             {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
                             {"IF_HUMAN_STYLE", true},

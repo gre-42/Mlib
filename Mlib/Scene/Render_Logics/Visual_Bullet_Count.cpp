@@ -24,14 +24,14 @@ VisualBulletCount::VisualBulletCount(
         {1.f, 1.f, 1.f},
         font_height,
         line_distance }
-    , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , advance_times_{ advance_times }
     , render_logics_{ render_logics }
     , player_{ player }
     , widget_{ std::move(widget) }
 {
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
 }
 

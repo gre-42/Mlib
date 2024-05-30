@@ -69,7 +69,7 @@ private:
     std::mutex pose_mutex_;
     FixedArray<double, 2> position_;
     float angle_;
-    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
 };
 
 }

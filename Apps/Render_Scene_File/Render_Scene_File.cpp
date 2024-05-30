@@ -510,7 +510,7 @@ int main(int argc, char** argv) {
                 .renderable_hider = args.has_named("--with_hider") ? &tty_renderable_hider : nullptr };
 
             PhysicsEngineConfig physics_engine_config{
-                .dt = physics_dt * s,
+                .dt = physics_dt * seconds,
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH

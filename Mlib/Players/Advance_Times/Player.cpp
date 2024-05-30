@@ -141,10 +141,7 @@ void Player::set_select_opponent_hysteresis_factor(double factor) {
 void Player::reset_node() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ != nullptr) {
-        if (vehicle_->rb().driver_.get() != dynamic_cast<IPlayer*>(this)) {
-            THROW_OR_ABORT("Rigid body's driver is not player");
-        }
-        vehicle_->rb().clear_driver();
+        on_clear_vehicle_.clear();
         vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         vehicle_ = nullptr;
     }
@@ -168,9 +165,13 @@ void Player::reset_node() {
     car_movement.reset_node();
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
-    if (!delete_externals.empty()) {
+    if (!delete_vehicle_externals.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
-        delete_externals.clear();
+        delete_vehicle_externals.clear();
+    }
+    if (!delete_vehicle_internals.empty()) {
+        std::scoped_lock lock{ delete_node_mutex_ };
+        delete_vehicle_internals.clear();
     }
     if (!dependent_nodes_.empty()) {
         std::scoped_lock lock{ delete_node_mutex_ };
@@ -180,16 +181,33 @@ void Player::reset_node() {
             });
     }
     externals_mode_ = ExternalsMode::NONE;
+    internals_mode_.role.clear();
 }
 
-void Player::set_scene_vehicle(SceneVehicle& pv) {
+void Player::set_scene_vehicle(
+    SceneVehicle& pv,
+    const std::string& desired_role)
+{
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ != nullptr) {
         THROW_OR_ABORT("Scene vehicle already set");
     }
+    if (!internals_mode_.role.empty()) {
+        THROW_OR_ABORT("Old role is not empty");
+    }
+    if (desired_role.empty()) {
+        THROW_OR_ABORT("Desired role is empty");
+    }
+    if (!pv.rb().drivers_.role_exists(desired_role)) {
+        THROW_OR_ABORT("Role \"" + desired_role + "\" does not exist in vehicle \"" + pv.rb().name() + '"');
+    }
+    if (!pv.rb().drivers_.role_is_free(desired_role)) {
+        THROW_OR_ABORT("Role \"" + desired_role + "\" is already occupied in vehicle \"" + pv.rb().name() + '"');
+    }
+    pv.rb().drivers_.add(desired_role, { *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+    pv.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    internals_mode_.role = desired_role;
     vehicle_ = &pv;
-    pv.rb().set_driver({ *this, CURRENT_SOURCE_LOCATION });
-    vehicle_->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
 RigidBodyVehicle& Player::rigid_body() {
@@ -384,8 +402,8 @@ void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
     if (&destroyed_object != &vehicle_->rb()) {
         verbose_abort("Player::notify_destroyed: Unexpected rigid body vehicle");
     }
-    if (destroyed_object.driver_.get() != this) {
-        verbose_abort("Player::notify_destroyed: Destroyed object's driver is not this player");
+    if (destroyed_object.drivers_.try_get(internals_mode_.role).get() != this) {
+        verbose_abort("Player::notify_destroyed: Destroyed object's player with role \"" + internals_mode_.role + "\" is not this player");
     }
     reset_node();
 }
@@ -456,12 +474,12 @@ bool Player::unstuck() {
     } else if (
         (stuck_start_ != std::chrono::steady_clock::time_point()) &&
         (unstuck_start_ == std::chrono::steady_clock::time_point()) &&
-        std::chrono::duration<float>(std::chrono::steady_clock::now() - stuck_start_).count() * s > stuck_duration_)
+        std::chrono::duration<float>(std::chrono::steady_clock::now() - stuck_start_).count() * seconds > stuck_duration_)
     {
         unstuck_start_ = std::chrono::steady_clock::now();
     }
     if (unstuck_start_ != std::chrono::steady_clock::time_point()) {
-        if (std::chrono::duration<float>(std::chrono::steady_clock::now() - unstuck_start_).count() * s > unstuck_duration_)
+        if (std::chrono::duration<float>(std::chrono::steady_clock::now() - unstuck_start_).count() * seconds > unstuck_duration_)
         {
             unstuck_start_ = std::chrono::steady_clock::time_point();
         } else {
@@ -818,6 +836,10 @@ SceneVehicle* Player::next_scene_vehicle() {
     return next_scene_vehicle_;
 }
 
+const std::string& Player::next_role() const {
+    return next_role_;
+}
+
 SceneVehicle& Player::vehicle() {
     return const_cast<SceneVehicle&>(static_cast<const Player*>(this)->vehicle());
 }
@@ -849,12 +871,14 @@ void Player::select_next_vehicle() {
         if (vehicle_ == &v) {
             continue;
         }
-        if (v.rb().driver_ != nullptr) {
+        const auto* free_role = v.rb().drivers_.first_free_role();
+        if (free_role == nullptr) {
             continue;
         }
         auto set_next_scene_vehicle = [&](){
             clear_next_scene_vehicle();
             next_scene_vehicle_ = &v;
+            next_role_ = *free_role;
             v.destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
         };
         if (s->has_player() && (&s->get_player().get() == this)) {
@@ -869,15 +893,63 @@ void Player::select_next_vehicle() {
     }
 }
 
-void Player::create_externals(ExternalsMode externals_mode) {
+void Player::create_vehicle_externals(ExternalsMode externals_mode) {
     if (externals_mode_ != ExternalsMode::NONE) {
         THROW_OR_ABORT("Externals already created (0)");
     }
     if (!has_scene_vehicle()) {
-        THROW_OR_ABORT("Create_externals without scene vehicle");
+        THROW_OR_ABORT("Create vehicle externals without scene vehicle");
     }
-    vehicle_->create_externals(name(), externals_mode, skills_, behavior_);
+    if (!delete_vehicle_externals.empty()) {
+        delete_vehicle_externals.print_source_locations();
+        THROW_OR_ABORT("Vehicle externals set after deleters were added");
+    }
+    if (!delete_vehicle_internals.empty()) {
+        delete_vehicle_internals.print_source_locations();
+        THROW_OR_ABORT("Role internals not empty while adding externals");
+    }
+    vehicle_->create_vehicle_externals(name(), externals_mode, behavior_);
     externals_mode_ = externals_mode;
+}
+
+void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
+    if (externals_mode_ == ExternalsMode::NONE) {
+        THROW_OR_ABORT("Internals set before vehicle externals");
+    }
+    if (internals_mode.role.empty()) {
+        THROW_OR_ABORT("Attempt to set empty role");
+    }
+    if (!has_scene_vehicle()) {
+        THROW_OR_ABORT("Create internals without scene vehicle");
+    }
+    if (!delete_vehicle_internals.empty()) {
+        delete_vehicle_internals.print_source_locations();
+        THROW_OR_ABORT("Role internals set after deleters were added");
+    }
+    vehicle_->create_vehicle_internals(name(), externals_mode_, skills_, behavior_, internals_mode);
+    internals_mode_ = internals_mode;
+}
+
+void Player::set_role(const std::string& role) {
+    if (externals_mode_ == ExternalsMode::NONE) {
+        THROW_OR_ABORT("Attempt to set role before vehicle externals");
+    }
+    if (!delete_vehicle_internals.empty()) {
+        std::scoped_lock lock{ delete_node_mutex_ };
+        delete_vehicle_internals.clear();
+    }
+    InternalsMode new_mode{
+        .role = role
+    };
+    create_vehicle_internals(new_mode);
+}
+
+void Player::change_role() {
+    auto* new_role = rigid_body().drivers_.next_free_role(internals_mode_.role);
+    if (new_role == nullptr) {
+        return;
+    }
+    set_role(*new_role);
 }
 
 const Skills& Player::skills(ControlSource control_source) const {
@@ -906,6 +978,10 @@ DrivingDirection Player::driving_direction() const {
 
 ExternalsMode Player::externals_mode() const {
     return externals_mode_;
+}
+
+const InternalsMode& Player::internals_mode() const {
+    return internals_mode_;
 }
 
 SingleWaypoint& Player::single_waypoint() {
@@ -966,20 +1042,23 @@ RaceState Player::notify_lap_finished(
 
 void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (rigid_body_vehicle.driver_ == nullptr) {
-        return;
-    }
-    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_.get());
-    if (player == nullptr) {
-        THROW_OR_ABORT("Driver is not a player");
-    }
-    if (player->team_name() != team_name()) {
-        ++stats_.nkills;
+    for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
+        Player* player = dynamic_cast<Player*>(iplayer.get());
+        if (player == nullptr) {
+            THROW_OR_ABORT("Driver is not a player");
+        }
+        if (player->team_name() != team_name()) {
+            ++stats_.nkills;
+        }
     }
 }
 
-DestructionObservers<const IPlayer&>& Player::destruction_observers() {
-    return destruction_observers_;
+DestructionFunctions& Player::on_destroy_player() {
+    return on_destroy;
+}
+
+DestructionFunctions& Player::on_clear_vehicle() {
+    return on_clear_vehicle_;
 }
 
 void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points)

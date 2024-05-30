@@ -42,7 +42,7 @@ public:
 private:
     Players& players_;
     DanglingBaseClassRef<Player> player_;
-    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
     std::unique_ptr<RenderLogic> scene_logic_;
     DanglingPtr<SceneNode> exclusive_node_;

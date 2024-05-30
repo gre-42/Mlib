@@ -21,6 +21,7 @@
 #include <Mlib/Players/Player/Single_Waypoint.hpp>
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
+#include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
@@ -106,7 +107,7 @@ struct PlayerControlled {
     DanglingPtr<SceneNode> gun_node;
 };
 
-class Player:
+class Player final:
     public IPlayer,
     public DestructionObserver<DanglingRef<SceneNode>>,
     public DestructionObserver<const SceneVehicle&>,
@@ -149,13 +150,14 @@ public:
     void set_can_select_opponent(ControlSource control_source, bool value);
     void set_select_opponent_hysteresis_factor(double factor);
     void reset_node();
-    void set_scene_vehicle(SceneVehicle& pv);
+    void set_scene_vehicle(SceneVehicle& pv, const std::string& desired_role);
     RigidBodyVehicle& rigid_body();
     const RigidBodyVehicle& rigid_body() const;
     DanglingRef<SceneNode> scene_node();
     DanglingRef<const SceneNode> scene_node() const;
     bool scene_node_scheduled_for_deletion() const;
     SceneVehicle* next_scene_vehicle();
+    const std::string& next_role() const;
     const std::string& scene_node_name() const;
     SceneVehicle& vehicle();
     const SceneVehicle& vehicle() const;
@@ -208,7 +210,10 @@ public:
     void select_opponent(OpponentSelectionStrategy strategy);
     void select_next_vehicle();
     void append_dependent_node(std::string node_name);
-    void create_externals(ExternalsMode externals_mode);
+    void create_vehicle_externals(ExternalsMode externals_mode);
+    void create_vehicle_internals(const InternalsMode& internals_mode);
+    void set_role(const std::string& ui);
+    void change_role();
     const Skills& skills(ControlSource control_source) const;
     Players& players();
     bool ramming() const;
@@ -221,6 +226,7 @@ public:
         JoinedWayPointSandbox joined_way_point_sandbox);
     DrivingDirection driving_direction() const;
     ExternalsMode externals_mode() const;
+    const InternalsMode& internals_mode() const;
     SingleWaypoint& single_waypoint();
     PathfindingWaypoints& pathfinding_waypoints();
     PlaybackWaypoints& playback_waypoints();
@@ -236,7 +242,8 @@ public:
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) override;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
-    virtual DestructionObservers<const IPlayer&>& destruction_observers() override;
+    virtual DestructionFunctions& on_destroy_player() override;
+    virtual DestructionFunctions& on_clear_vehicle() override;
     // DestructionObserver
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
@@ -249,7 +256,8 @@ public:
         bool burn_in,
         const PhysicsEngineConfig& cfg) override;
     
-    DestructionFunctions delete_externals;
+    DestructionFunctions delete_vehicle_externals;
+    DestructionFunctions delete_vehicle_internals;
     VehicleMovement vehicle_movement;
     CarMovement car_movement;
     AvatarMovement avatar_movement;
@@ -261,6 +269,7 @@ private:
     bool unstuck();
     const Gun& gun() const;
     Gun& gun();
+    DestructionFunctions on_clear_vehicle_;
     Scene& scene_;
     CollisionQuery& collision_query_;
     VehicleSpawners& vehicle_spawners_;
@@ -287,8 +296,10 @@ private:
     SkillMap skills_;
     DeleteNodeMutex& delete_node_mutex_;
     SceneVehicle* next_scene_vehicle_;
+    std::string next_role_;
     std::map<DanglingPtr<const SceneNode>, std::string> dependent_nodes_;
     ExternalsMode externals_mode_;
+    InternalsMode internals_mode_;
     SingleWaypoint single_waypoint_;
     PathfindingWaypoints pathfinding_waypoints_;
     SupplyDepotsWaypoints supply_depots_waypoints_;
@@ -299,4 +310,4 @@ private:
     std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>> way_points_;
 };
 
-};
+}

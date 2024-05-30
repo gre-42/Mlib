@@ -45,7 +45,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
-    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
     DanglingBaseClassRef<Player> player_;

@@ -20,7 +20,7 @@ public:
 
     // ITeam
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;
-    virtual DestructionObservers<const ITeam&>& destruction_observers() override;
+    virtual DestructionFunctions& on_destroy_team() override;
 
     void add_player(const std::string& name);
     const std::set<std::string>& players() const;

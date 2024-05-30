@@ -21,6 +21,8 @@ class VehicleSpawner final : public ISpawner, public DestructionObserver<const R
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
+    using SpawnVehicle = std::function<void(const SpawnPoint& spawn_point, const std::string& role)>;
+
     VehicleSpawner(Scene& scene, const std::string& team_name);
     ~VehicleSpawner();
 
@@ -39,7 +41,9 @@ public:
     std::string get_team_name() const;
     
     bool has_player() const;
-    void set_player(const DanglingBaseClassRef<Player>& player);
+    void set_player(
+        const DanglingBaseClassRef<Player>& player,
+        std::string role);
     DanglingBaseClassRef<Player> get_player();
     
     bool has_scene_vehicle() const;
@@ -47,7 +51,7 @@ public:
     const std::list<std::unique_ptr<SceneVehicle>>& get_scene_vehicles();
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicle);
     
-    void set_spawn_vehicle(std::function<void(const SpawnPoint&)> spawn_vehicle);
+    void set_spawn_vehicle(SpawnVehicle spawn_vehicle);
     void spawn(const SpawnPoint& spawn_point, double spawn_y_offset);
 
     float get_time_since_spawn() const;
@@ -58,9 +62,10 @@ public:
 private:
     void notify_spawn();
     Scene& scene_;
-    std::function<void(const SpawnPoint&)> spawn_vehicle_;
+    SpawnVehicle spawn_vehicle_;
     std::list<std::unique_ptr<SceneVehicle>> scene_vehicles_;
     DanglingBaseClassPtr<Player> player_;
+    std::string role_;
     DestructionFunctionsRemovalTokens on_player_destroy_;
     std::string team_name_;
     float time_since_spawn_;

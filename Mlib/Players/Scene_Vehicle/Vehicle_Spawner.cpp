@@ -55,13 +55,17 @@ bool VehicleSpawner::has_player() const {
     return (player_ != nullptr);
 }
 
-void VehicleSpawner::set_player(const DanglingBaseClassRef<Player>& player) {
+void VehicleSpawner::set_player(
+    const DanglingBaseClassRef<Player>& player,
+    std::string role)
+{
     if (player_ != nullptr) {
         THROW_OR_ABORT("Player already set");
     }
     player_ = player.ptr();
     on_player_destroy_.set(player_->on_destroy, CURRENT_SOURCE_LOCATION);
     on_player_destroy_.add([this]() { player_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+    role_ = std::move(role);
 }
 
 DanglingBaseClassRef<Player> VehicleSpawner::get_player() {
@@ -83,7 +87,7 @@ float VehicleSpawner::get_time_since_deletion() const {
     return time_since_deletion_;
 }
 
-void VehicleSpawner::set_spawn_vehicle(std::function<void(const SpawnPoint&)> spawn_vehicle) {
+void VehicleSpawner::set_spawn_vehicle(SpawnVehicle spawn_vehicle) {
     if (spawn_vehicle_) {
         THROW_OR_ABORT("Spawn vehicle function already set");
     }
@@ -123,17 +127,13 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
         if (scene_.root_node_scheduled_for_deletion(v->scene_node_name())) {
             THROW_OR_ABORT("Player received root node scheduled for deletion");
         }
-        if (v->rb().spawner_ != nullptr) {
-            THROW_OR_ABORT("Spawner already set");
-        }
     }
     scene_vehicles_ = std::move(scene_vehicles);
     for (const auto& v : scene_vehicles_) {
-        v->rb().spawner_ = { *this, CURRENT_SOURCE_LOCATION };
         v->rb().destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     }
     if (has_player()) {
-        player_->set_scene_vehicle(get_primary_scene_vehicle());
+        player_->set_scene_vehicle(get_primary_scene_vehicle(), role_);
     }
 }
 
@@ -146,7 +146,7 @@ void VehicleSpawner::spawn(const SpawnPoint& spawn_point, double spawn_y_offset)
     }
     SpawnPoint sp2 = spawn_point;
     sp2.position(1) += spawn_y_offset;
-    spawn_vehicle_(sp2);
+    spawn_vehicle_(sp2, role_);
     if (scene_vehicles_.empty()) {
         THROW_OR_ABORT("Scene vehicles not set after spawning");
     }

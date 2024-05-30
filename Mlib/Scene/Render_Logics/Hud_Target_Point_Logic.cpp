@@ -40,13 +40,13 @@ HudTargetPointLogic::HudTargetPointLogic(
         size,
         image_resource_name,
         update_cycle }
-    , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_destroy_gun_node_{ gun_node->on_destroy, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , render_logics_{ render_logics }
 {
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    on_player_delete_externals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
+    on_player_delete_vehicle_internals_.add([this]() { object_pool_.remove(this); }, CURRENT_SOURCE_LOCATION);
     if (exclusive_node != nullptr) {
         on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
     }

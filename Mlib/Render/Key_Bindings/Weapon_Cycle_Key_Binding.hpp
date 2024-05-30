@@ -13,7 +13,7 @@ struct WeaponCycleKeyBinding {
     int direction;
     ButtonPress button_press;
     std::shared_ptr<ScrollWheelMovement> scroll_wheel_movement;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

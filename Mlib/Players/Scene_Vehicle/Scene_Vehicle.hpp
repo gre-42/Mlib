@@ -12,24 +12,42 @@ class RigidBodyVehicle;
 class SkillMap;
 enum class ExternalsMode;
 enum class ControlSource;
+struct InternalsMode;
 
 class SceneVehicle {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
-    using CreateExternals = std::function<void(const std::string&, ExternalsMode, const SkillMap&, const std::string&)>;
+    using CreateVehicleExternals = std::function<void(
+        const std::string& player_name,
+        ExternalsMode externals_mode,
+        const std::string& behavior)>;
+    using CreateRoleExternals = std::function<void(
+        const std::string& player_name,
+        ExternalsMode externals_mode,
+        const SkillMap& skills,
+        const std::string& behavior,
+        const InternalsMode& internals_mode)>;
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         std::string scene_node_name,
         DanglingRef<SceneNode> scene_node,
         RigidBodyVehicle& rb);
     ~SceneVehicle();
-    void create_externals(
+    void create_vehicle_externals(
+        const std::string& player_name,
+        ExternalsMode externals_mode,
+        const std::string& behavior) const;
+    void create_vehicle_internals(
         const std::string& player_name,
         ExternalsMode externals_mode,
         const SkillMap& skills,
-        const std::string& behavior) const;
-    void set_create_externals(const CreateExternals& create_externals);
+        const std::string& behavior,
+        const InternalsMode& internals_mode) const;
+    void set_create_vehicle_externals(
+        const CreateVehicleExternals& create_vehicle_externals);
+    void set_create_vehicle_internals(
+        const CreateRoleExternals& create_vehicle_internals);
     std::string& scene_node_name();
     const std::string& scene_node_name() const;
     DanglingRef<SceneNode> scene_node();
@@ -42,7 +60,8 @@ private:
     std::string scene_node_name_;
     DanglingRef<SceneNode> scene_node_;
     RigidBodyVehicle& rb_;
-    CreateExternals create_externals_;
+    CreateVehicleExternals create_vehicle_externals_;
+    CreateRoleExternals create_vehicle_internals_;
 };
 
 }

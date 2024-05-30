@@ -50,8 +50,8 @@ void CreateWeaponCycleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& a
             args.scroll_wheel_states,
             key_configurations,
             args.arguments.at<std::string>(KnownArgs::id)),
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player->delete_externals, CURRENT_SOURCE_LOCATION } }}));
-    kb.on_player_delete_externals.add(
+        .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
+    kb.on_player_delete_vehicle_internals.add(
         [&kbs=key_bindings, &kb](){
             kbs.delete_weapon_cycle_key_binding(kb);
         }, CURRENT_SOURCE_LOCATION

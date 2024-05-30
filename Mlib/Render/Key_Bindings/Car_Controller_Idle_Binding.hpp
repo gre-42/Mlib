@@ -13,7 +13,7 @@ struct CarControllerIdleBinding {
     float drive_relaxation;
     float steer_relaxation;
     DestructionFunctionsRemovalTokens on_node_clear;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

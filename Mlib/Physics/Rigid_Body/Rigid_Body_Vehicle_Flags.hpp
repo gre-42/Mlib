@@ -6,7 +6,9 @@ namespace Mlib {
 enum class RigidBodyVehicleFlags {
     NONE = 0,
     FEELS_NO_GRAVITY = (1 << 0),
-    IS_AVATAR = (1 << 1)
+    IS_ACTIVATED_AVATAR = (1 << 1),
+    IS_DEACTIVATED_AVATAR = (1 << 2),
+    IS_ANY_AVATAR = IS_ACTIVATED_AVATAR | IS_DEACTIVATED_AVATAR
 };
 
 inline RigidBodyVehicleFlags operator & (RigidBodyVehicleFlags a, RigidBodyVehicleFlags b) {

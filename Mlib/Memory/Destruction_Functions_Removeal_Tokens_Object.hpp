@@ -13,9 +13,17 @@ class DestructionFunctionsTokensObject {
 public:
 	template <class TDerived>
 		requires std::is_convertible_v<TDerived&, T&>
-	inline DestructionFunctionsTokensObject(const DanglingBaseClassRef<TDerived>& o, SourceLocation loc)
+	inline DestructionFunctionsTokensObject(
+		const DanglingBaseClassRef<TDerived>& o,
+		DestructionFunctions& on_destroy,
+		SourceLocation loc)
 		: object_{ o.ptr() }
-		, on_object_destroy_{ o->on_destroy, loc }
+		, on_object_destroy_{ on_destroy, loc }
+	{}
+	template <class TDerived>
+		requires std::is_convertible_v<TDerived&, T&>
+	inline DestructionFunctionsTokensObject(const DanglingBaseClassRef<TDerived>& o, SourceLocation loc)
+		: DestructionFunctionsTokensObject{ o, o->on_destroy, loc }
 	{}
 	inline T* operator -> () const {
 		return object_.get();

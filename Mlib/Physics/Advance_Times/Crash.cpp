@@ -53,12 +53,14 @@ void Crash::notify_impact(
             damage1 -= min_damage;
             if (base_log != nullptr) {
                 std::stringstream sstr;
-                if ((rigid_body_.driver_ != nullptr) && (rigid_body.driver_ != nullptr)) {
+                auto driver0 = rigid_body_.drivers_.try_get("driver");
+                auto driver1 = rigid_body.drivers_.try_get("driver");
+                if ((driver0 != nullptr) && (driver1 != nullptr)) {
                     if (damage0 != 0) {
-                        sstr << rigid_body.driver_->name() << " -> " << rigid_body_.driver_->name() << ": " << std::round(damage0) << " HP";
+                        sstr << driver1->name() << " -> " << driver0->name() << ": " << std::round(damage0) << " HP";
                     }
                     if (damage1 != 0) {
-                        sstr << rigid_body_.driver_->name() << " -> " << rigid_body.driver_->name() << ": " << std::round(damage1) << " HP";
+                        sstr << driver0->name() << " -> " << driver1->name() << ": " << std::round(damage1) << " HP";
                     }
                 }
                 if (damage0 < 1 && damage1 < 1) {

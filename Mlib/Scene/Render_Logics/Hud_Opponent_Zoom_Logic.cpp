@@ -29,7 +29,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     float zoom)
     : players_{ players }
     , player_{ player }
-    , on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
     , scene_logic_{ std::move(scene_logic) }
     , exclusive_node_{ exclusive_node }
@@ -41,7 +41,7 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     if (exclusive_node_ != nullptr) {
         on_clear_exclusive_node_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
     }
-    on_player_delete_externals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
+    on_player_delete_vehicle_internals_.add([this, &object_pool]() { object_pool.remove(*this); }, CURRENT_SOURCE_LOCATION);
 }
 
 HudOpponentZoomLogic::~HudOpponentZoomLogic() {

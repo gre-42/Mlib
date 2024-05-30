@@ -94,7 +94,7 @@ void CreateAbsKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             args.arguments.at<std::string>(KnownArgs::id),
             args.arguments.at<std::string>(KnownArgs::role)},
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player->delete_externals, CURRENT_SOURCE_LOCATION } }}));
+        .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_key_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }

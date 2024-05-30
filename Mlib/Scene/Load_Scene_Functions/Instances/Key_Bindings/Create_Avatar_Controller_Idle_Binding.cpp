@@ -36,7 +36,7 @@ void CreateAvatarControllerIdleBinding::execute(const LoadSceneJsonUserFunctionA
     auto& kb = key_bindings.add_avatar_controller_idle_binding(std::unique_ptr<AvatarControllerIdleBinding>(new AvatarControllerIdleBinding{
         .node{ node.ptr() },
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player->delete_externals, CURRENT_SOURCE_LOCATION } }}));
+        .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_avatar_controller_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }

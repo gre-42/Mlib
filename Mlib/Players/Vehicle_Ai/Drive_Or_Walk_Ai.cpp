@@ -33,7 +33,7 @@ DriveOrWalkAi::DriveOrWalkAi(
     float collision_avoidance_intersect_cos,
     float collision_avoidance_step_aside_cos,
     float collision_avoidance_step_aside_distance)
-	: on_player_delete_externals_{ player->delete_externals, CURRENT_SOURCE_LOCATION }
+	: on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , player_{ player }
     , waypoint_reached_radius_{ waypoint_reached_radius }
     , rest_radius_{ rest_radius }
@@ -49,7 +49,7 @@ DriveOrWalkAi::DriveOrWalkAi(
     , collision_avoidance_step_aside_cos_{ collision_avoidance_step_aside_cos }
     , collision_avoidance_step_aside_distance_{ collision_avoidance_step_aside_distance }
 {
-    on_player_delete_externals_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    on_player_delete_vehicle_internals_.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
 }
 
 DriveOrWalkAi::~DriveOrWalkAi() {
@@ -288,7 +288,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                     }
                 } else {
                     // The waypoint is in front of us => partial, inverted steering.
-                    float angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
+                    auto angle = (float)std::atan(std::abs(wpt(0) / wpt(1)));
                     if (wpt(0) < 0) {
                         player_->car_movement.steer_left_partial(angle);
                         player_rb.vehicle_controller().apply();

@@ -33,7 +33,7 @@ public:
 		const SkillMap* skills) override;
 	virtual std::vector<SkillFactor> skills() const override;
 private:
-	DestructionFunctionsRemovalTokens on_player_delete_externals_;
+	DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
 	DanglingBaseClassRef<Player> player_;
 	double waypoint_reached_radius_;
 	float rest_radius_;

@@ -60,7 +60,7 @@ private:
     DanglingRef<SceneNode> gun_node_;
     YawPitchLookAtNodes* ypln_;
     HudTracker hud_tracker_;
-    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_destroy_gun_node_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;
 

@@ -11,8 +11,7 @@ class RigidBodyVehicle;
 enum class RaceState;
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <class T>
-class DestructionObservers;
+class DestructionFunctions;
 
 class IPlayer {
 public:
@@ -26,7 +25,8 @@ public:
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) = 0;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) = 0;
-    virtual DestructionObservers<const IPlayer&>& destruction_observers() = 0;
+    virtual DestructionFunctions& on_destroy_player() = 0;
+    virtual DestructionFunctions& on_clear_vehicle() = 0;
 };
 
 }

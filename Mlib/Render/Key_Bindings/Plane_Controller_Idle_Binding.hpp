@@ -9,7 +9,7 @@ class Player;
 
 struct PlaneControllerIdleBinding {
     DanglingBaseClassRef<Player> player;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

@@ -53,44 +53,24 @@ Bullet::Bullet(
     , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
     , dynamic_lights_{ dynamic_lights }
     , delete_node_mutex_{ delete_node_mutex }
+    , gunner_on_destroy_{ (gunner_ != nullptr) ? &gunner_->on_destroy_player() : nullptr, CURRENT_SOURCE_LOCATION }
+    , team_on_destroy_{ (team_ != nullptr) ? &team_->on_destroy_team() : nullptr, CURRENT_SOURCE_LOCATION }
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
         light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, time);
     }
-    if (gunner_ != nullptr) {
-        gunner_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+    if (!gunner_on_destroy_.is_null()) {
+        gunner_on_destroy_.add([this](){ gunner_ = nullptr; }, CURRENT_SOURCE_LOCATION);
     }
-    if (team_ != nullptr) {
-        team_->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+    if (!team_on_destroy_.is_null()) {
+        team_on_destroy_.add([this](){ team_ = nullptr; }, CURRENT_SOURCE_LOCATION);
     }
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 Bullet::~Bullet() {
     on_destroy.clear();
-    if (gunner_ != nullptr) {
-        gunner_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
-    }
-    if (team_ != nullptr) {
-        team_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
-    }
-}
-
-void Bullet::notify_destroyed(const IPlayer& destroyed_object) {
-    if (&destroyed_object == gunner_) {
-        gunner_ = nullptr;
-    } else {
-        THROW_OR_ABORT("Unexpected destruction notifier");
-    }
-}
-
-void Bullet::notify_destroyed(const ITeam& destroyed_object) {
-    if (&destroyed_object == team_) {
-        team_ = nullptr;
-    } else {
-        THROW_OR_ABORT("Unexpected destruction notifier");
-    }
 }
 
 void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) {

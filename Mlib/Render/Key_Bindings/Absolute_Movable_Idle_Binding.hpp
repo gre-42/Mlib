@@ -12,7 +12,7 @@ struct AbsoluteMovableIdleBinding {
     DanglingPtr<SceneNode> node;
     FixedArray<float, 3> tires_z;
     DestructionFunctionsRemovalTokens on_node_clear;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

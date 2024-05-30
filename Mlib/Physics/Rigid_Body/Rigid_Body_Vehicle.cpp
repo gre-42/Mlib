@@ -64,8 +64,6 @@ RigidBodyVehicle::RigidBodyVehicle(
     , damageable_{ nullptr }
     , door_distance_{ NAN }
     , animation_state_updater_{ nullptr }
-    , spawner_{ nullptr }
-    , driver_{ nullptr }
     , avatar_controller_{ nullptr}
     , vehicle_controller_{ nullptr}
     , jump_state_{
@@ -102,10 +100,7 @@ RigidBodyVehicle::~RigidBodyVehicle()
 {
     on_destroy.clear();
     destruction_observers.clear();
-    if (driver_ != nullptr) {
-        driver_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
-        driver_ = nullptr;
-    }
+    drivers_.clear();
 }
 
 void RigidBodyVehicle::reset_forces(size_t oversampling_iteration) {
@@ -481,13 +476,6 @@ void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object)
         destroyed_object->clear_absolute_movable();
     }
     global_object_pool.remove(this);
-}
-
-void RigidBodyVehicle::notify_destroyed(const IPlayer& destroyed_object) {
-    if (&destroyed_object != driver_.get()) {
-        verbose_abort("Destroyed player is not the driver");
-    }
-    driver_ = nullptr;
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {
@@ -878,8 +866,10 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         }
 #endif
     }
-    if ((log_components & StatusComponents::DRIVER_NAME) && (driver_ != nullptr)) {
-        ostr << "Driver: " << driver_->name() << std::endl;
+    if (log_components & StatusComponents::DRIVER_NAME) {
+        if (auto driver = drivers_.try_get("driver"); driver != nullptr) {
+            ostr << "Driver: " << driver->name() << std::endl;
+        }
     }
     for (const auto& o : collision_observers_) {
         auto c = dynamic_cast<StatusWriter*>(o.get());
@@ -927,21 +917,21 @@ bool RigidBodyVehicle::feels_gravity() const {
 }
 
 bool RigidBodyVehicle::is_avatar() const {
-    return any(flags_ & RigidBodyVehicleFlags::IS_AVATAR);
+    return any(flags_ & RigidBodyVehicleFlags::IS_ANY_AVATAR);
 }
 
 bool RigidBodyVehicle::is_activated_avatar() const {
     if (!is_avatar()) {
         return false;
     }
-    return (spawner_ != nullptr) && (driver_ != nullptr) && (spawner_->player().get() == driver_.get());
+    return any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR);
 }
 
 bool RigidBodyVehicle::is_deactivated_avatar() const {
     if (!is_avatar()) {
         return false;
     }
-    return (spawner_ != nullptr) && (driver_ == nullptr) && (spawner_->player() != nullptr);
+    return any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR);
 }
 
 bool RigidBodyVehicle::has_avatar_controller() const {
@@ -988,17 +978,20 @@ RigidBodyMissileController& RigidBodyVehicle::missile_controller() {
     return *missile_controller_;
 }
 
-void RigidBodyVehicle::clear_driver() {
-    if (driver_ == nullptr) {
-        verbose_abort("Driver not set");
+void RigidBodyVehicle::deactivate_avatar() {
+    if (!any(flags_ & RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR)) {
+        THROW_OR_ABORT("Rigid body vehicle is not an activated avatar");
     }
-    driver_->destruction_observers().remove({ *this, CURRENT_SOURCE_LOCATION });
-    driver_ = nullptr;
+    flags_ &= ~RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR;
+    flags_ |= RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR;
 }
 
-void RigidBodyVehicle::set_driver(DanglingBaseClassRef<IPlayer> driver) {
-    driver_ = driver.ptr();
-    driver->destruction_observers().add({ *this, CURRENT_SOURCE_LOCATION });
+void RigidBodyVehicle::activate_avatar() {
+    if (!any(flags_ & RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR)) {
+        THROW_OR_ABORT("Rigid body vehicle is not a deactivated avatar");
+    }
+    flags_ &= ~RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR;
+    flags_ |= RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR;
 }
 
 void RigidBodyVehicle::add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai)

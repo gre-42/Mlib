@@ -16,8 +16,8 @@ using namespace Mlib;
 VehicleChanger::VehicleChanger(
     VehicleSpawners& vehicle_spawners,
     DeleteNodeMutex& delete_node_mutex)
-: vehicle_spawners_{ vehicle_spawners },
-  delete_node_mutex_{ delete_node_mutex }
+    : vehicle_spawners_{ vehicle_spawners }
+    , delete_node_mutex_{ delete_node_mutex }
 {}
 
 void VehicleChanger::change_vehicles() {
@@ -38,10 +38,11 @@ void VehicleChanger::change_vehicles() {
             THROW_OR_ABORT("Next scene node equals current node");
         }
         auto& next_rb = get_rigid_body_vehicle(next_vehicle->scene_node());
-        if (next_rb.driver_ == nullptr) {
+        auto* other_player = next_rb.drivers_.try_get(p->next_role()).get();
+        if (other_player == nullptr) {
             enter_vehicle(*s, *next_vehicle);
         } else {
-            Player* other_driver = dynamic_cast<Player*>(next_rb.driver_.get());
+            auto* other_driver = dynamic_cast<Player*>(other_player);
             if (other_driver == nullptr) {
                 THROW_OR_ABORT("Next vehicle's driver is not a player");
             }
@@ -53,6 +54,8 @@ void VehicleChanger::change_vehicles() {
 void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     ExternalsMode b_ec_old = b.externals_mode();
     ExternalsMode a_ec_old = a.externals_mode();
+    InternalsMode b_role_old = b.internals_mode();
+    InternalsMode a_role_old = a.internals_mode();
 
     SceneVehicle& b_vehicle = b.vehicle();
     SceneVehicle& a_vehicle = a.vehicle();
@@ -60,15 +63,21 @@ void VehicleChanger::swap_vehicles(Player& a, Player& b) {
     b.reset_node();
     a.reset_node();
 
-    b.set_scene_vehicle(a_vehicle);
-    a.set_scene_vehicle(b_vehicle);
+    b.set_scene_vehicle(a_vehicle, b.next_role());
+    a.set_scene_vehicle(b_vehicle, a.next_role());
 
     if (a_ec_old != ExternalsMode::NONE) {
-        a.create_externals(a_ec_old);
+        a.create_vehicle_externals(a_ec_old);
+    }
+    if (!a_role_old.role.empty()) {
+        a.create_vehicle_internals(a_role_old);
     }
 
     if (b_ec_old != ExternalsMode::NONE) {
-        b.create_externals(b_ec_old);
+        b.create_vehicle_externals(b_ec_old);
+    }
+    if (!b_role_old.role.empty()) {
+        b.create_vehicle_internals(b_role_old);
     }
 }
 
@@ -85,10 +94,10 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         THROW_OR_ABORT("Entering the same vehicle");
     }
     auto& a_rb_old = ap->rigid_body();
-    if (!a_rb_old.is_avatar()) {
-        if (a_rb_old.passengers_.erase(&a.get_primary_scene_vehicle().rb()) != 1) {
-            THROW_OR_ABORT("Could not find passenger to be deleted");
-        }
+    if (a_rb_old.is_avatar()) {
+        a_rb_old.deactivate_avatar();
+    } else if (a_rb_old.passengers_.erase(&a.get_primary_scene_vehicle().rb()) != 1) {
+        THROW_OR_ABORT("Could not find passenger to be deleted");
     }
     if (b_rb.is_activated_avatar()) {
         THROW_OR_ABORT("Destination avatar is not deactivated");
@@ -112,11 +121,16 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         b_rb.rbp_.v_ = 0.f;
         b_rb.rbp_.w_ = 0.f;
         b.scene_node()->invalidate_transformation_history();
+        b_rb.activate_avatar();
     }
     ExternalsMode a_ec_old = ap->externals_mode();
+    auto a_role_old = ap->internals_mode();
     ap->reset_node();
-    ap->set_scene_vehicle(b);
-    ap->create_externals(a_ec_old);
+    ap->set_scene_vehicle(b, ap->next_role());
+    ap->create_vehicle_externals(a_ec_old);
+    if (!a_role_old.role.empty()) {
+        ap->create_vehicle_internals(a_role_old);
+    }
     if (!ap->rigid_body().is_avatar()) {
         if (!ap->rigid_body().passengers_.insert(&a.get_primary_scene_vehicle().rb()).second) {
             THROW_OR_ABORT("Passenger already exists");

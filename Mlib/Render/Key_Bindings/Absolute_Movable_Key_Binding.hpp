@@ -25,7 +25,7 @@ struct AbsoluteMovableKeyBinding {
     std::optional<float> fly_forward_factor;
     ButtonPress button_press;
     DestructionFunctionsRemovalTokens on_node_clear;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

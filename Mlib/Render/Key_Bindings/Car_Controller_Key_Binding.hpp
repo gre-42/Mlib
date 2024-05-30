@@ -18,7 +18,7 @@ struct CarControllerKeyBinding {
     ButtonPress button_press;
     GamepadAnalogAxesPosition gamepad_analog_axes_position;
     DestructionFunctionsRemovalTokens on_node_clear;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

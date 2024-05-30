@@ -23,11 +23,11 @@ VisualMovableLogger::VisualMovableLogger(
     , advance_times_ { advance_times }
     , render_logics_{ render_logics }
     , on_node_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
-    , on_player_delete_externals_{ player != nullptr ? &player->delete_externals : nullptr, CURRENT_SOURCE_LOCATION }
+    , on_player_delete_vehicle_internals_{ player != nullptr ? &player->delete_vehicle_internals : nullptr, CURRENT_SOURCE_LOCATION }
 {
     advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
-    if (!on_player_delete_externals_.is_null()) {
-        on_player_delete_externals_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
+    if (!on_player_delete_vehicle_internals_.is_null()) {
+        on_player_delete_vehicle_internals_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
     }
     on_node_clear_.add([this, &op=object_pool]() { op.remove(this); }, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);

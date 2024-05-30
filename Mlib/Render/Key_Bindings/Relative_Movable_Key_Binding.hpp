@@ -23,7 +23,7 @@ struct RelativeMovableKeyBinding {
     std::shared_ptr<CursorMovement> cursor_movement;
     DestructionFunctionsRemovalTokens on_destroy_key_bindings;
     DestructionFunctionsRemovalTokens on_node_clear;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 
 };
 

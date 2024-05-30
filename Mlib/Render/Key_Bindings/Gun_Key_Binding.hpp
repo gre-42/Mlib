@@ -10,7 +10,7 @@ class SceneNode;
 struct GunKeyBinding {
     DanglingBaseClassRef<Player> player;
     ButtonPress button_press;
-    DestructionFunctionsRemovalTokens on_player_delete_externals;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals;
 };
 
 }

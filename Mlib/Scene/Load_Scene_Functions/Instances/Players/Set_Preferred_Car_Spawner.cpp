@@ -44,7 +44,7 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
          spawner_name,
          macro,
          capture,
-         &scene = scene](const SpawnPoint& p){
+         &scene = scene](const SpawnPoint& p, const std::string& role){
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
             JsonMacroArguments a{capture};
             a.insert_json(nlohmann::json{
@@ -60,7 +60,8 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"SUFFIX", "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
                 {"IF_WITH_PHYSICS", true},
-                {"SPAWNER_NAME", spawner_name}});
+                {"SPAWNER_NAME", spawner_name},
+                {"role", role} });
             macro_line_executor(macro, &a, nullptr);
         }
     );

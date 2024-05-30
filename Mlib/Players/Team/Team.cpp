@@ -24,20 +24,19 @@ const std::string& Team::name() const {
 }
 
 void Team::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
-    if (rigid_body_vehicle.driver_ == nullptr) {
-        return;
-    }
-    Player* player = dynamic_cast<Player*>(rigid_body_vehicle.driver_.get());
-    if (player == nullptr) {
-        THROW_OR_ABORT("Driver is not a player");
-    }
-    if (&player->team().get() != this) {
-        ++nkills_;
+    for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
+        auto* player = dynamic_cast<Player*>(iplayer.get());
+        if (player == nullptr) {
+            THROW_OR_ABORT("Driver is not a player");
+        }
+        if (&player->team().get() != this) {
+            ++nkills_;
+        }
     }
 }
 
-DestructionObservers<const ITeam&>& Team::destruction_observers() {
-    return destruction_observers_;
+DestructionFunctions& Team::on_destroy_team() {
+    return on_destroy;
 }
 
 void Team::add_player(const std::string& player) {

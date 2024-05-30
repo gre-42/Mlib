@@ -13,6 +13,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(role);
 }
 
 const std::string SpawnerSetPlayer::key = "spawner_set_player";
@@ -30,5 +31,7 @@ SpawnerSetPlayer::SpawnerSetPlayer(RenderableScene& renderable_scene)
 void SpawnerSetPlayer::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
-    vehicle_spawners.get(name).set_player(players.get_player(name, CURRENT_SOURCE_LOCATION));
+    vehicle_spawners.get(name).set_player(
+        players.get_player(name, CURRENT_SOURCE_LOCATION),
+        args.arguments.at<std::string>(KnownArgs::role));
 }

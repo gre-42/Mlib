@@ -81,6 +81,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Externals.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Internals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Keep_Offset_From_Movable.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Relative_Transformer.hpp>
@@ -166,6 +167,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Yaw_Pitch_Lookat_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Follow_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Actor_Task.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Available_Roles.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Jump_Dv.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_RigidBody_Grind_Point.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Set_Rigid_Body_Align_To_Surface_Relaxation.hpp>
@@ -299,6 +301,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
     register_json_user_function(CreateHumanAsAvatarController::key, CreateHumanAsAvatarController::json_user_function);
     register_json_user_function(CreateHumanAsCarController::key, CreateHumanAsCarController::json_user_function);
+    register_json_user_function(CreateInternals::key, CreateInternals::json_user_function);
     register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
     register_json_user_function(CreateKeepOffsetFromMovable::key, CreateKeepOffsetFromMovable::json_user_function);
     register_json_user_function(CreateLightOnlyShadow::key, CreateLightOnlyShadow::json_user_function);
@@ -383,6 +386,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetBackgroundColor::key, SetBackgroundColor::json_user_function);
     register_json_user_function(FitCanvasToRenderables::key, FitCanvasToRenderables::json_user_function);
     register_json_user_function(SetActorTask::key, SetActorTask::json_user_function);
+    register_json_user_function(SetAvailableRoles::key, SetAvailableRoles::json_user_function);
     register_json_user_function(SetCameraCycle::key, SetCameraCycle::json_user_function);
     register_json_user_function(SetCamera::key, SetCamera::json_user_function);
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);

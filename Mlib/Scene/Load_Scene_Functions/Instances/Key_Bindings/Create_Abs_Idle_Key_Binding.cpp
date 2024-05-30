@@ -43,7 +43,7 @@ void CreateAbsIdleKeyBinding::execute(const LoadSceneJsonUserFunctionArgs& args)
             KnownArgs::tires_z,
             FixedArray<float, 3>{0.f, 0.f, 1.f}),
         .on_node_clear{ DestructionFunctionsRemovalTokens{ node->on_clear, CURRENT_SOURCE_LOCATION } },
-        .on_player_delete_externals{ DestructionFunctionsRemovalTokens{ player->delete_externals, CURRENT_SOURCE_LOCATION } }}));
+        .on_player_delete_vehicle_internals{ DestructionFunctionsRemovalTokens{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION } }}));
     kb.on_node_clear.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
-    kb.on_player_delete_externals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
+    kb.on_player_delete_vehicle_internals.add([&kbs=key_bindings, &kb](){ kbs.delete_absolute_movable_idle_binding(kb); }, CURRENT_SOURCE_LOCATION);
 }

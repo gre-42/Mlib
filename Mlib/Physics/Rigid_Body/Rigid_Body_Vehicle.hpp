@@ -12,6 +12,7 @@
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Misc/Inventory.hpp>
+#include <Mlib/Physics/Rigid_Body/Drivers.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -33,8 +34,6 @@ struct EnginePowerIntent;
 struct EnginePowerDeltaIntent;
 struct Beacon;
 class IDamageable;
-class ISpawner;
-class IPlayer;
 class IVehicleAi;
 class AnimationStateUpdater;
 class RigidBodyAvatarController;
@@ -107,7 +106,6 @@ struct TrailerHitches {
  */
 class RigidBodyVehicle:
     public DestructionObserver<DanglingRef<SceneNode>>,
-    public DestructionObserver<const IPlayer&>,
     public IAbsoluteMovable,
     public StatusWriter,
     public INodeHider,
@@ -203,8 +201,8 @@ public:
     const std::string& asset_id() const;
     void set_wants_to_jump();
     void set_jump_dv(float value);
-    void clear_driver();
-    void set_driver(DanglingBaseClassRef<IPlayer> driver);
+    void deactivate_avatar();
+    void activate_avatar();
     void add_autopilot(const DanglingBaseClassRef<IVehicleAi>& ai);
     DanglingBaseClassRef<IVehicleAi> get_autopilot(const SkillScenario& scenario);
     bool has_autopilot(const ActorTask& actor_task) const;
@@ -222,7 +220,6 @@ public:
 
     // DestructionObserver
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
-    virtual void notify_destroyed(const IPlayer& destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
@@ -279,8 +276,7 @@ public:
     std::set<RigidBodyVehicle*> passengers_;
     float door_distance_;
     AnimationStateUpdater* animation_state_updater_;
-    DanglingBaseClassPtr<ISpawner> spawner_;
-    DanglingBaseClassPtr<IPlayer> driver_;
+    Drivers drivers_;
     std::unique_ptr<RigidBodyAvatarController> avatar_controller_;
     std::unique_ptr<RigidBodyPlaneController> plane_controller_;
     std::unique_ptr<RigidBodyVehicleController> vehicle_controller_;

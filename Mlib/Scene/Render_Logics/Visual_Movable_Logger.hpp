@@ -51,7 +51,7 @@ private:
     AdvanceTimes& advance_times_;
     RenderLogics& render_logics_;
     DestructionFunctionsRemovalTokens on_node_clear_;
-    DestructionFunctionsRemovalTokens on_player_delete_externals_;
+    DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     std::list<std::unique_ptr<VisualMovableLoggerView>> loggers_;
 };
 

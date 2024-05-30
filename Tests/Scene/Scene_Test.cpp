@@ -105,7 +105,7 @@ void test_physics_engine(unsigned int seed) {
         &render_results };
 
     PhysicsEngineConfig physics_cfg{
-        .dt = getenv_default_float("DT", 0.01667f) * s,
+        .dt = getenv_default_float("DT", 0.01667f) * seconds,
         .stiction_coefficient = getenv_default_float("FRICTION", 1.f),
         .friction_coefficient = getenv_default_float("FRICTION", 1.f),
         .nsubsteps = getenv_default_size_t("NSUBSTEPS", 20)
@@ -169,8 +169,8 @@ void test_physics_engine(unsigned int seed) {
 
     RealtimeSleeper physics_sleeper{
         "Physics FPS: ",
-        physics_cfg.dt / s,
-        physics_cfg.max_residual_time / s,
+        physics_cfg.dt / seconds,
+        physics_cfg.max_residual_time / seconds,
         physics_cfg.print_residual_time};
     SetFps physics_set_fps{
         physics_cfg.control_fps

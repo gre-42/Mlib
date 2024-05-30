@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
-#include <Mlib/Memory/Destruction_Observer.hpp>
+#include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Physics/Containers/Rigid_Bodies.hpp>
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
@@ -31,9 +31,7 @@ enum class RotateBullet {
     NO
 };
 
-class Bullet:
-    public DestructionObserver<const IPlayer&>,
-    public DestructionObserver<const ITeam&>,
+class Bullet final:
     public CollisionObserver,
     public IAdvanceTime,
     public virtual DanglingBaseClass
@@ -55,8 +53,6 @@ public:
         std::chrono::steady_clock::time_point time,
         RotateBullet rotate_bullet);
     ~Bullet();
-    virtual void notify_destroyed(const IPlayer& destroyed_object) override;
-    virtual void notify_destroyed(const ITeam& destroyed_object) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_collided(
         const FixedArray<double, 3>& intersection_point,
@@ -91,6 +87,8 @@ private:
     bool rotate_bullet_;
     DynamicLights& dynamic_lights_;
     DeleteNodeMutex& delete_node_mutex_;
+    DestructionFunctionsRemovalTokens gunner_on_destroy_;
+    DestructionFunctionsRemovalTokens team_on_destroy_;
 };
 
 }

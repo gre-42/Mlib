@@ -6,14 +6,17 @@
 using namespace Mlib;
 
 RigidBodyVehicleFlags single_rigid_body_vehicle_flags_from_string(const std::string& s) {
-    if (s == "none") {
-        return RigidBodyVehicleFlags::NONE;
-    } else if (s == "feels_no_gravity") {
-        return RigidBodyVehicleFlags::FEELS_NO_GRAVITY;
-    } else if (s == "is_avatar") {
-        return RigidBodyVehicleFlags::IS_AVATAR;
+    static const std::map<std::string, RigidBodyVehicleFlags> m{
+        {"none", RigidBodyVehicleFlags::NONE},
+        {"feels_no_gravity", RigidBodyVehicleFlags::FEELS_NO_GRAVITY},
+        {"is_deactivated_avatar", RigidBodyVehicleFlags::IS_DEACTIVATED_AVATAR},
+        {"is_activated_avatar", RigidBodyVehicleFlags::IS_ACTIVATED_AVATAR}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown vehicle flags: \"" + s + '"');
     }
-    THROW_OR_ABORT("Unknown vehicle flags: \"" + s + '"');
+    return it->second;
 }
 
 RigidBodyVehicleFlags Mlib::rigid_body_vehicle_flags_from_string(const std::string& s) {
