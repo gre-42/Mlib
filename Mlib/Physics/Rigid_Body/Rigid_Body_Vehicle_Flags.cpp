@@ -2,6 +2,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 
 using namespace Mlib;
 
