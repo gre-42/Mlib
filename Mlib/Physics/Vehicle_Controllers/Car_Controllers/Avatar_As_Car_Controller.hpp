@@ -7,13 +7,13 @@ namespace Mlib {
 
 class YawPitchLookAtNodes;
 
-class HumanAsCarController: public RigidBodyVehicleController {
+class AvatarAsCarController: public RigidBodyVehicleController {
 public:
-    HumanAsCarController(
+    AvatarAsCarController(
         RigidBodyVehicle& rb,
         YawPitchLookAtNodes& ypln,
         float steering_multiplier);
-    virtual ~HumanAsCarController() override;
+    virtual ~AvatarAsCarController() override;
     virtual void apply() override;
 private:
     float steering_multiplier_;

@@ -7,12 +7,12 @@ namespace Mlib {
 
 class YawPitchLookAtNodes;
 
-class HumanAsAvatarController: public RigidBodyAvatarController {
+class AvatarAsAvatarController: public RigidBodyAvatarController {
 public:
-    explicit HumanAsAvatarController(
+    explicit AvatarAsAvatarController(
         RigidBodyVehicle& rb,
         YawPitchLookAtNodes& ypln);
-    virtual ~HumanAsAvatarController() override;
+    virtual ~AvatarAsAvatarController() override;
     virtual void apply() override;
 private:
     RigidBodyVehicle& rb_;

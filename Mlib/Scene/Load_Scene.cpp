@@ -21,10 +21,10 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Fit_Canvas_To_Renderables.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Cameras/Set_Camera_Cycle.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Avatar_Controller.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Avatar_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Heli_Controller.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Human_As_Avatar_Controller.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Human_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Missile_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_As_Car_Controller.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Controllers/Create_Plane_Controller.hpp>
@@ -299,8 +299,8 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateHudOpponentTracker::key, CreateHudOpponentTracker::json_user_function);
     register_json_user_function(CreateHudOpponentZoom::key, CreateHudOpponentZoom::json_user_function);
     register_json_user_function(CreateHudTargetPointLogic::key, CreateHudTargetPointLogic::json_user_function);
-    register_json_user_function(CreateHumanAsAvatarController::key, CreateHumanAsAvatarController::json_user_function);
-    register_json_user_function(CreateHumanAsCarController::key, CreateHumanAsCarController::json_user_function);
+    register_json_user_function(CreateAvatarAsAvatarController::key, CreateAvatarAsAvatarController::json_user_function);
+    register_json_user_function(CreateAvatarAsCarController::key, CreateAvatarAsCarController::json_user_function);
     register_json_user_function(CreateInternals::key, CreateInternals::json_user_function);
     register_json_user_function(CreateKeepOffsetFromCamera::key, CreateKeepOffsetFromCamera::json_user_function);
     register_json_user_function(CreateKeepOffsetFromMovable::key, CreateKeepOffsetFromMovable::json_user_function);

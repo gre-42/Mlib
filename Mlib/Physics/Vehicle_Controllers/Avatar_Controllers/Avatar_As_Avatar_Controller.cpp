@@ -1,4 +1,4 @@
-#include "Human_As_Avatar_Controller.hpp"
+#include "Avatar_As_Avatar_Controller.hpp"
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -8,17 +8,17 @@
 
 using namespace Mlib;
 
-HumanAsAvatarController::HumanAsAvatarController(
+AvatarAsAvatarController::AvatarAsAvatarController(
     RigidBodyVehicle& rb,
     YawPitchLookAtNodes& ypln)
     : rb_ { rb }
     , ypln_{ ypln }
 {}
 
-HumanAsAvatarController::~HumanAsAvatarController()
+AvatarAsAvatarController::~AvatarAsAvatarController()
 {}
 
-void HumanAsAvatarController::apply() {
+void AvatarAsAvatarController::apply() {
     if ((any(abs(legs_z_) > float(1e-12))) && (drive_relaxation_ > 0.f)) {
         rb_.tires_z_ = legs_z_ / std::sqrt(sum(squared(legs_z_)));
         rb_.set_surface_power("legs", EnginePowerIntent{

@@ -1,4 +1,4 @@
-#include "Human_As_Car_Controller.hpp"
+#include "Avatar_As_Car_Controller.hpp"
 #include <Mlib/Math/Signed_Min.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
@@ -9,7 +9,7 @@
 
 using namespace Mlib;
 
-HumanAsCarController::HumanAsCarController(
+AvatarAsCarController::AvatarAsCarController(
     RigidBodyVehicle& rb,
     YawPitchLookAtNodes& ypln,
     float steering_multiplier)
@@ -18,10 +18,9 @@ HumanAsCarController::HumanAsCarController(
     , ypln_{ ypln }
 {}
 
-HumanAsCarController::~HumanAsCarController()
-{}
+AvatarAsCarController::~AvatarAsCarController() = default;
 
-void HumanAsCarController::apply() {
+void AvatarAsCarController::apply() {
     rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
     if (!std::isnan(steer_angle_)) {
         ypln_.increment_yaw(steer_angle_ * steering_multiplier_, steer_relaxation_);

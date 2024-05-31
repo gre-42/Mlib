@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class CreateHumanAsAvatarController: public LoadSceneInstanceFunction {
+class CreateAvatarAsAvatarController: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit CreateHumanAsAvatarController(RenderableScene& renderable_scene);
+    explicit CreateAvatarAsAvatarController(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 
