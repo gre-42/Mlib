@@ -906,7 +906,7 @@ void Player::create_vehicle_externals(ExternalsMode externals_mode) {
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.print_source_locations();
-        THROW_OR_ABORT("Role internals not empty while adding externals");
+        THROW_OR_ABORT("Vehicle internals not empty while adding externals");
     }
     vehicle_->create_vehicle_externals(name(), externals_mode, behavior_);
     externals_mode_ = externals_mode;
@@ -924,7 +924,7 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
     }
     if (!delete_vehicle_internals.empty()) {
         delete_vehicle_internals.print_source_locations();
-        THROW_OR_ABORT("Role internals set after deleters were added");
+        THROW_OR_ABORT("Create internals set after deleters were added");
     }
     vehicle_->create_vehicle_internals(name(), externals_mode_, skills_, behavior_, internals_mode);
     internals_mode_ = internals_mode;
