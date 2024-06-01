@@ -43,6 +43,7 @@ bool CollisionQuery::can_see(
         FixedArray<FixedArray<double, 3>, 2> l{ ray.start, ray.stop() };
         double t_min = INFINITY;
         std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*> triangle_min;
+        AxisAlignedBoundingBox aabb{ l };
         BoundingSphere<double, 3> bs{ l };
         if (!only_terrain) {
             for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
@@ -108,7 +109,7 @@ bool CollisionQuery::can_see(
             }
         }
         if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
-            AxisAlignedBoundingBox{ bs.center(), bs.radius() },
+            aabb,
             [&](const RigidBodyAndIntersectableMesh& rm0){
                 if (!any(rm0.mesh.physics_material & collidable_mask)) {
                     return true;
@@ -156,7 +157,7 @@ bool CollisionQuery::can_see(
             return false;
         }
         if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
-            AxisAlignedBoundingBox{ bs.center(), bs.radius() },
+            aabb,
             [&](const RigidBodyAndCollisionTriangleSphere& t0){
                 if (!any(t0.ctp.physics_material & collidable_mask)) {
                     return true;
