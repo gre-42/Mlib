@@ -17,7 +17,6 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 Players::Players(
-    const std::string& level_name,
     size_t max_tracks,
     bool save_playback,
     const SceneNodeResources& scene_node_resources,

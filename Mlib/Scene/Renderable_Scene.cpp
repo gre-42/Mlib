@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
+#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -31,7 +32,6 @@ RenderableScene::RenderableScene(
     ParticleResources& particle_resources,
     TrailResources& trail_resources,
     SurfaceContactDb& surface_contact_db,
-    BulletPropertyDb& bullet_property_db,
     DynamicLightDb& dynamic_light_db,
     SceneConfig& scene_config,
     ButtonStates& button_states,
@@ -42,18 +42,16 @@ RenderableScene::RenderableScene(
     GLFWwindow& glfw_window,
 #endif
     const SceneConfigResource& config,
-    std::string level_name,
     size_t max_tracks,
     bool save_playback,
     const RaceIdentifier& race_identfier,
-    std::function<void()> setup_new_round,
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
     , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
     , rendering_resources_{
-        rendering_resources_name,
+        std::move(rendering_resources_name),
         max_anisotropic_filtering_level }
     , particle_renderer_{ std::make_unique<ParticleRenderer>(particle_resources) }
     , trail_renderer_{ std::make_unique<TrailRenderer>(trail_resources) }
@@ -81,9 +79,14 @@ RenderableScene::RenderableScene(
           .physics_set_fps = &physics_set_fps_}
     , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
     , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
-    , paused_{[&ui_focus, focus_filter](){
-        std::shared_lock lock{ui_focus.focuses.mutex};
-        return !ui_focus.has_focus(focus_filter);
+    , paused_{[this, &ui_focus, focus_filter](){
+        {
+            std::shared_lock lock{ui_focus.focuses.mutex};
+            if (!ui_focus.has_focus(focus_filter)) {
+                return true;
+            }
+        }
+        return physics_engine_.empty();
       }}
     , physics_sleeper_{
           "Physics FPS: ",
@@ -146,16 +149,8 @@ RenderableScene::RenderableScene(
     , fxaa_logic_{ std::make_unique<FxaaLogic>(*post_processing_logic_) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
-    , players_{ std::move(level_name), max_tracks, save_playback, scene_node_resources, race_identfier }
+    , players_{ max_tracks, save_playback, scene_node_resources, race_identfier }
     , supply_depots_{ physics_engine_.advance_times_, players_, scene_config.physics_engine_config }
-    , game_logic_{
-          scene_,
-          physics_engine_.advance_times_,
-          vehicle_spawners_,
-          players_,
-          supply_depots_,
-          delete_node_mutex_,
-          std::move(setup_new_round)}
 #ifndef WITHOUT_ALUT
     , primary_audio_resource_context_{AudioResourceContextStack::primary_resource_context()}
 #endif
@@ -213,13 +208,12 @@ void RenderableScene::start_physics_loop(
     if (physics_loop_ != nullptr) {
         THROW_OR_ABORT("physics loop already started");
     }
-    physics_loop_.reset(
-        new PhysicsLoop{
-            thread_name,
-            thread_affinity,
-            physics_iteration_,
-            physics_set_fps_,
-            SIZE_MAX });  // nframes
+    physics_loop_ = std::make_unique<PhysicsLoop>(
+        thread_name,
+        thread_affinity,
+        physics_iteration_,
+        physics_set_fps_,
+        SIZE_MAX);  // nframes
 }
 
 void RenderableScene::print_physics_engine_search_time() const {
@@ -257,4 +251,18 @@ void RenderableScene::instantiate_audio_listener(
         delay,
         velocity_dt);
     physics_engine_.advance_times_.add_advance_time({ *audio_listener_updater_, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+}
+
+void RenderableScene::instantiate_game_logic(std::function<void()> setup_new_round) {
+    if (game_logic_ != nullptr) {
+        THROW_OR_ABORT("Game logic already instantiated");
+    }
+    game_logic_ = std::make_unique<GameLogic>(
+        scene_,
+        physics_engine_.advance_times_,
+        vehicle_spawners_,
+        players_,
+        supply_depots_,
+        delete_node_mutex_,
+        std::move(setup_new_round));
 }

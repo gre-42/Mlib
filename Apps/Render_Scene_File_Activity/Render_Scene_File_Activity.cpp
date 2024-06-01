@@ -117,7 +117,7 @@ public:
             {
                 for (auto& [n, r] : renderable_scenes_->guarded_iterable()) {
                     r.delete_node_mutex_.clear_deleter_thread();
-                    r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
+                    r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                 }
                 last_load_scene_finished_ = true;
             }
@@ -258,7 +258,7 @@ std::future<void> loader_thread(
                     if (args.has_named("--no_render")) {
                         for (auto& [n, r] : renderable_scenes.guarded_iterable()) {
                             r.delete_node_mutex_.clear_deleter_thread();
-                            r.start_physics_loop(("Physics_" + n).substr(0, 15), ThreadAffinity::POOL);
+                            r.start_physics_loop(("Phys_" + n).substr(0, 15), ThreadAffinity::POOL);
                         }
                     } else if (args.has_named("--single_threaded")) {
                         for (auto& [n, r] : renderable_scenes.guarded_iterable()) {

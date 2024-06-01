@@ -19,5 +19,8 @@ RespawnAllPlayers::RespawnAllPlayers(RenderableScene& renderable_scene)
 
 void RespawnAllPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.spawn.respawn_all_players();
+    if (game_logic == nullptr) {
+        THROW_OR_ABORT("Scene has no game logic");
+    }
+    game_logic->spawn.respawn_all_players();
 }

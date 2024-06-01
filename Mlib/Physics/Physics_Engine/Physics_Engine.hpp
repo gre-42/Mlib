@@ -21,9 +21,7 @@ class ITrailRenderer;
 
 class PhysicsEngine {
 public:
-    PhysicsEngine(
-        const PhysicsEngineConfig& cfg,
-        bool check_objects_deleted_on_destruction = true);
+    explicit PhysicsEngine(const PhysicsEngineConfig& cfg);
     ~PhysicsEngine();
     void add_external_force_provider(IExternalForceProvider& efp);
     void add_controllable(IControllable& co);
@@ -42,6 +40,7 @@ public:
     void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
     inline const PhysicsEngineConfig& config() const { return cfg_; }
+    bool empty() const;
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;

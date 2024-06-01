@@ -20,6 +20,7 @@ public:
     void add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& advance_time, SourceLocation loc);
     void delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
     void advance_time(float dt, std::chrono::steady_clock::time_point time);
+    bool empty() const;
 private:
     bool advancing_time_;
     std::list<std::pair<std::unique_ptr<DestructionFunctionsTokensObject<IAdvanceTime>>, SourceLocation>> advance_times_;

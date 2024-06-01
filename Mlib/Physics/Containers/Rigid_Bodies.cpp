@@ -391,3 +391,7 @@ void RigidBodies::bake_collision_ridges() const
         }
     }
 }
+
+bool RigidBodies::empty() const {
+    return objects_.empty();
+}

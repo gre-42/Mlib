@@ -27,6 +27,9 @@ SetObjective::SetObjective(RenderableScene& renderable_scene)
 
 void SetObjective::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.team_deathmatch.set_objective(
+    if (game_logic == nullptr) {
+        THROW_OR_ABORT("Scene has no game logic");
+    }
+    game_logic->team_deathmatch.set_objective(
         objective_from_string(args.arguments.at<std::string>(KnownArgs::objective)));
 }

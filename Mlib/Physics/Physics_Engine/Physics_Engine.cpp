@@ -24,9 +24,7 @@
 
 using namespace Mlib;
 
-PhysicsEngine::PhysicsEngine(
-    const PhysicsEngineConfig& cfg,
-    bool check_objects_deleted_on_destruction)
+PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
     : rigid_bodies_{ cfg }
     , collision_query_{ *this }
     , collision_direction_{ CollisionDirection::FORWARD }
@@ -217,4 +215,8 @@ void PhysicsEngine::remove_controllable(IControllable& co) {
     if (controllables_.erase(&co) != 1) {
         THROW_OR_ABORT("IControllable does not exist");
     }
+}
+
+bool PhysicsEngine::empty() const {
+    return rigid_bodies_.empty() && advance_times_.empty();
 }

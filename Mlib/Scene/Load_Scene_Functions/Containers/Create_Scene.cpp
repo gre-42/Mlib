@@ -1,6 +1,6 @@
 #include "Create_Scene.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
+#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -33,7 +33,6 @@ DECLARE_ARGUMENT(with_flying_logic);
 DECLARE_ARGUMENT(clear_mode);
 DECLARE_ARGUMENT(max_tracks);
 DECLARE_ARGUMENT(save_playback);
-DECLARE_ARGUMENT(setup_new_round);
 }
 
 const std::string CreateScene::key = "create_scene";
@@ -42,7 +41,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
 {
     args.arguments.validate(KnownArgs::options);
 
-    std::string name = args.arguments.at<std::string>(KnownArgs::name);
+    auto name = args.arguments.at<std::string>(KnownArgs::name);
     auto [_, state] = args.renderable_scenes.try_emplace(
         name,
         name + ".rendering_resources",
@@ -51,7 +50,6 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
         RenderingContextStack::primary_particle_resources(),
         RenderingContextStack::primary_trail_resources(),
         args.surface_contact_db,
-        args.bullet_property_db,
         args.dynamic_light_db,
         args.scene_config,
         args.button_states,
@@ -71,7 +69,6 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
             .with_flying_logic = args.arguments.at<bool>(KnownArgs::with_flying_logic),
             .background_color = {1.f, 0.f, 1.f},
             .clear_mode = clear_mode_from_string(args.arguments.at<std::string>(KnownArgs::clear_mode))},
-        args.script_filename,
         args.arguments.at<size_t>(KnownArgs::max_tracks, 0),
         args.arguments.at<bool>(KnownArgs::save_playback, false),
         RaceIdentifier{
@@ -79,13 +76,6 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
             .session = "",
             .laps = 0,
             .milliseconds = 0},
-        [l = args.arguments.try_at(KnownArgs::setup_new_round),
-         mle = args.macro_line_executor]()
-        {
-            if (l.has_value()) {
-                mle(l.value(), nullptr, nullptr);
-            }
-        },
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})},

@@ -88,6 +88,7 @@ public:
     const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
     const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& ridge_map();
     const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
+    bool empty() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
     void bake_collision_ridges() const;

@@ -33,7 +33,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
     , aggregate_render_logic{ *renderable_scene.aggregate_render_logic_ }
     , post_processing_logic{ *renderable_scene.post_processing_logic_ }
     , skybox_logic{ renderable_scene.skybox_logic_ }
-    , game_logic{ renderable_scene.game_logic_ }
+    , game_logic{ renderable_scene.game_logic_.get() }
     , base_log{ renderable_scene.fifo_log_ }
     , delete_node_mutex{ renderable_scene.delete_node_mutex_ }
 #ifndef WITHOUT_ALUT

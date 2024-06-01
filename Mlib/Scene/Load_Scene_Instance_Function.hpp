@@ -75,7 +75,7 @@ protected:
     AggregateRenderLogic& aggregate_render_logic;
     PostProcessingLogic& post_processing_logic;
     SkyboxLogic& skybox_logic;
-    GameLogic& game_logic;
+    GameLogic* game_logic;
     BaseLog& base_log;
     DeleteNodeMutex& delete_node_mutex;
 

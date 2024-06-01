@@ -61,3 +61,7 @@ void AdvanceTimes::advance_time(float dt, std::chrono::steady_clock::time_point 
     });
     advancing_time_ = false;
 }
+
+bool AdvanceTimes::empty() const {
+    return advance_times_.empty();
+}

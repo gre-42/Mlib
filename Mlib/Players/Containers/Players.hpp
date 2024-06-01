@@ -36,7 +36,6 @@ public:
     using WaypointAndFlags = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
 
     explicit Players(
-        const std::string& level_name,
         size_t max_tracks,
         bool save_playback,
         const SceneNodeResources& scene_node_resources,

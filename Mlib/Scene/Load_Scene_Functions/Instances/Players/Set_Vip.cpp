@@ -26,5 +26,8 @@ SetVip::SetVip(RenderableScene& renderable_scene)
 
 void SetVip::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    game_logic.bystanders.set_vip(players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION).ptr());
+    if (game_logic == nullptr) {
+        THROW_OR_ABORT("Scene has no game logic");
+    }
+    game_logic->bystanders.set_vip(players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION).ptr());
 }

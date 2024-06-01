@@ -7,7 +7,6 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
 #include <Mlib/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
-#include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Players/Containers/Vehicle_Spawners.hpp>
 #include <Mlib/Players/Game_Logic/Supply_Depots.hpp>
@@ -47,9 +46,9 @@ class IParticleRenderer;
 class ITrailRenderer;
 class DynamicLights;
 class SurfaceContactDb;
-class BulletPropertyDb;
 class DynamicLightDb;
 
+class GameLogic;
 class DirtmapLogic;
 class PostProcessingLogic;
 class FxaaLogic;
@@ -89,7 +88,6 @@ public:
         ParticleResources& particle_resources,
         TrailResources& trail_resources,
         SurfaceContactDb& surface_contact_db,
-        BulletPropertyDb& bullet_property_db,
         DynamicLightDb& dynamic_light_db,
         SceneConfig& scene_config,
         ButtonStates& button_states,
@@ -100,11 +98,9 @@ public:
         GLFWwindow& glfw_window,
 #endif
         const SceneConfigResource& config,
-        std::string level_name,
         size_t max_tracks,
         bool save_playback,
         const RaceIdentifier& race_identfier,
-        std::function<void()> setup_new_round,
         const FocusFilter& focus_filter,
         DependentSleeper& dependent_sleeper);
     ~RenderableScene();
@@ -132,6 +128,7 @@ public:
     void instantiate_audio_listener(
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
+    void instantiate_game_logic(std::function<void()> setup_new_round);
 
     ObjectPool object_pool_;
     DeleteNodeMutex delete_node_mutex_;
@@ -179,7 +176,7 @@ public:
     Imposters imposters_;
     Players players_;
     SupplyDepots supply_depots_;
-    GameLogic game_logic_;
+    std::unique_ptr<GameLogic> game_logic_;
     std::unique_ptr<AudioListenerUpdater> audio_listener_updater_;
 
 #ifndef WITHOUT_ALUT
