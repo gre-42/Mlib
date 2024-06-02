@@ -13,7 +13,7 @@ class TransformationMatrix;
 template <class TData, size_t tndim>
 class PlaneNd {
 public:
-    PlaneNd() = default;
+    PlaneNd() {}
     PlaneNd(const FixedArray<TData, tndim>& normal, const TData& intercept)
         : normal{ normal }
         , intercept{ intercept }

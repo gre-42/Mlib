@@ -64,8 +64,40 @@ public:
         }
         return polygon.contains(*intersection_point);
     }
+    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+        if (aabb.contains(start) || aabb.contains(stop())) {
+            return true;
+        }
+        auto interscts = [this, &aabb](size_t axis0, size_t axis1, size_t axis2, bool mm) {
+            TData t;
+            FixedArray<TData, 3> intersection_point;
+            PlaneNd<TData, 3> plane;
+            plane.normal(axis0) = 1;
+            plane.normal(axis1) = 0;
+            plane.normal(axis2) = 0;
+            if (mm) {
+                plane.intercept = -aabb.min(axis0);
+            } else {
+                plane.intercept = -aabb.max(axis0);
+            }
+            if (intersects(plane, &t, &intersection_point)) {
+                if ((intersection_point(axis1) >= aabb.min(axis1)) && (intersection_point(axis1) <= aabb.max(axis1)) &&
+                    (intersection_point(axis2) >= aabb.min(axis2)) && (intersection_point(axis2) <= aabb.max(axis2)))
+                {
+                    return true;
+                }
+            }
+            return false;
+            };
+        return
+            interscts(0, 1, 2, false) || interscts(1, 2, 0, false) || interscts(2, 0, 1, false) ||
+            interscts(0, 1, 2, true) || interscts(1, 2, 0, true) || interscts(2, 0, 1, true);
+    }
     FixedArray<TData, 3> stop() const {
         return start + direction * length;
+    }
+    FixedArray<TData, 3> center() const {
+        return start + direction * (length / TData(2));
     }
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;

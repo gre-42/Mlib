@@ -79,17 +79,17 @@ public:
         return data_.empty() && children_.empty();
     }
 
-    template <class TVisitor>
-    bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) const {
+    template <class TAxisAlignedBoundingBox, class TVisitor>
+    bool visit(const TAxisAlignedBoundingBox& aabb, const TVisitor& visitor) const {
         for (const auto& d : data_) {
-            if (d.first.intersects(aabb)) {
+            if (aabb.intersects(d.first)) {
                 if (!visitor(d.second)) {
                     return false;
                 }
             }
         }
         for (const auto& c : children_) {
-            if (c.first.intersects(aabb)) {
+            if (aabb.intersects(c.first)) {
                 if (!c.second.visit(aabb, visitor)) {
                     return false;
                 }
@@ -98,8 +98,8 @@ public:
         return true;
     }
 
-    template <class TVisitor>
-    bool visit(const AxisAlignedBoundingBox<TData, tndim>& aabb, const TVisitor& visitor) {
+    template <class TAxisAlignedBoundingBox, class TVisitor>
+    bool visit(const TAxisAlignedBoundingBox& aabb, const TVisitor& visitor) {
         const Bvh& bvh = *this;
         return bvh.visit(aabb, [&visitor](const TPayload& payload){return visitor(const_cast<TPayload&>(payload));});
     }

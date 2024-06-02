@@ -75,7 +75,7 @@ bool Mlib::compute_edge_overlap(
             }
             StaticTransformedMesh stm(
                 "temp",
-                AxisAlignedBoundingBox<double, 3>{corners0},
+                AxisAlignedBoundingBox<double, 3>::from_points(corners0),
                 BoundingSphere<double, 3>{corners0},
                 (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<4>>{*c.q0} : std::vector<CollisionPolygonSphere<4>>(),
                 (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<3>>{*c.t0} : std::vector<CollisionPolygonSphere<3>>(),

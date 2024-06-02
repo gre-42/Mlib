@@ -11,7 +11,6 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
-#include <Mlib/Geometry/Intersection/Ray_Segment_Intersects_Bvh_Proxies.hpp>
 #include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
@@ -24,6 +23,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_Largest_Cosine.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Mesh/Triangulate_3D.hpp>
+#include <Mlib/Geometry/Ray_Segment_3D.hpp>
 #include <Mlib/Geometry/Roundness_Estimator.hpp>
 #include <Mlib/Geometry/Shortest_Path_Multiple_Targets.hpp>
 #include <Mlib/Geometry/Triangle_Is_Right_Handed.hpp>
@@ -295,27 +295,14 @@ void test_bvh() {
     }
 }
 
-void test_ray_segment_intersects_bvh() {
-    Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
+void test_ray_segment_intersects_aabb() {
     using AABB = AxisAlignedBoundingBox<float, 3>;
-    bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
 
     FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
     FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
 
-    ray_segment_intersects_bvh_proxies(
-        RaySegment3D<float>{ start, end },
-        bvh,
-        20.f,
-        [](const RaySegment3D<float>& ray_segment, int) { return false; });
-    ray_segment_intersects_bvh_pair_proxies(
-        RaySegment3D<float>{ start, end },
-        bvh,
-        bvh,
-        0.1f,
-        [](const RaySegment3D<float>& ray_segment) { return true; },
-        [](const RaySegment3D<float>& ray_segment, int) { return true; },
-        [](const RaySegment3D<float>& ray_segment, int) { return true; });
+    RaySegment3D<float> ray{ start, end };
+    ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
 }
 
 void test_bvh_performance() {
@@ -688,7 +675,7 @@ int main(int argc, const char** argv) {
     test_lines_to_rectangles();
     test_inverse_rodrigues();
     test_bvh();
-    test_ray_segment_intersects_bvh();
+    test_ray_segment_intersects_aabb();
     // test_bvh_performance();
     test_roundness_estimator();
     // test_smoothen_edges();

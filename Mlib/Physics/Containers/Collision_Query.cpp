@@ -1,5 +1,4 @@
 #include "Collision_Query.hpp"
-#include <Mlib/Geometry/Intersection/Ray_Triangle_Intersection.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
@@ -24,106 +23,33 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    FixedArray<double, 3> start = watcher;
-    FixedArray<double, 3> dir = watched - start;
-    double dist = std::sqrt(sum(squared(dir)));
-    if (dist < 1e-12) {
-        THROW_OR_ABORT("CollisionQuery::can_see received (nearly) identical watcher and watched");
-    }
-    dir /= dist;
-    for (double alpha0 = 0; alpha0 < dist; alpha0 += physics_engine_.config().static_radius) {
-        double alpha1 = std::min(alpha0 + physics_engine_.config().static_radius, dist);
-        if (alpha1 - alpha0 < 1e-12) {
-            break;
-        }
-        RaySegment3D<double> ray{
-            start + alpha0 * dir,
-            dir,
-            alpha1 - alpha0 };
-        FixedArray<FixedArray<double, 3>, 2> l{ ray.start, ray.stop() };
-        double t_min = INFINITY;
-        std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*> triangle_min;
-        AxisAlignedBoundingBox aabb{ l };
-        BoundingSphere<double, 3> bs{ l };
-        if (!only_terrain) {
-            for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
-                if (&o0.rigid_body.get() == excluded0 ||
-                    &o0.rigid_body.get() == excluded1)
-                {
+    RaySegment3D<double> ray{ watcher, watched };
+    FixedArray<FixedArray<double, 3>, 2> l{ ray.start, ray.stop() };
+    double t_min = INFINITY;
+    std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*> triangle_min;
+    BoundingSphere<double, 3> bs{ l };
+    if (!only_terrain) {
+        for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
+            if (&o0.rigid_body.get() == excluded0 ||
+                &o0.rigid_body.get() == excluded1)
+            {
+                continue;
+            }
+            for (const auto& msh0 : o0.meshes) {
+                if (!any(msh0.physics_material & collidable_mask)) {
                     continue;
                 }
-                for (const auto& msh0 : o0.meshes) {
-                    if (!any(msh0.physics_material & collidable_mask)) {
-                        continue;
-                    }
-                    if (!msh0.mesh->intersects(bs)) {
-                        continue;
-                    }
-                    auto intersect = [&](const auto& polygon0){
-                        if (!polygon0.bounding_sphere.intersects(bs)) {
-                            return true;
-                        }
-                        double t;
-                        FixedArray<double, 3> intersection_pt;
-                        if (ray.intersects(
-                            polygon0.polygon,
-                            &t,
-                            &intersection_pt))
-                        {
-                            if ((intersection_point == nullptr) &&
-                                (intersection_polygon == nullptr) &&
-                                (seen_object == nullptr) &&
-                                (seen_mesh == nullptr))
-                            {
-                                return false;
-                            }
-                            if (t < t_min) {
-                                t_min = t;
-                                if (intersection_point != nullptr) {
-                                    *intersection_point = intersection_pt;
-                                }
-                                if (intersection_polygon != nullptr) {
-                                    triangle_min = &polygon0;
-                                }
-                                if (seen_object != nullptr) {
-                                    *seen_object = &o0.rigid_body.get();
-                                }
-                                if (seen_mesh != nullptr) {
-                                    *seen_mesh = msh0.mesh.get();
-                                }
-                            }
-                        }
+                if (!msh0.mesh->intersects(bs)) {
+                    continue;
+                }
+                auto intersect = [&](const auto& polygon0){
+                    if (!polygon0.bounding_sphere.intersects(bs)) {
                         return true;
-                    };
-                    for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
-                        if (!intersect(q0)) {
-                            return false;
-                        }
-                    }
-                    for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
-                        if (!intersect(t0)) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
-            aabb,
-            [&](const RigidBodyAndIntersectableMesh& rm0){
-                if (!any(rm0.mesh.physics_material & collidable_mask)) {
-                    return true;
-                }
-                for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
-                    if (!bs.intersects(t0.bounding_sphere) ||
-                        !bs.intersects(t0.polygon.plane()))
-                    {
-                        continue;
                     }
                     double t;
                     FixedArray<double, 3> intersection_pt;
                     if (ray.intersects(
-                        t0.polygon,
+                        polygon0.polygon,
                         &t,
                         &intersection_pt))
                     {
@@ -140,32 +66,47 @@ bool CollisionQuery::can_see(
                                 *intersection_point = intersection_pt;
                             }
                             if (intersection_polygon != nullptr) {
-                                triangle_min = &t0;
+                                triangle_min = &polygon0;
                             }
                             if (seen_object != nullptr) {
-                                *seen_object = &rm0.rb.get();
+                                *seen_object = &o0.rigid_body.get();
                             }
                             if (seen_mesh != nullptr) {
-                                *seen_mesh = rm0.mesh.mesh.get();
+                                *seen_mesh = msh0.mesh.get();
                             }
                         }
                     }
-                }
-                return true;
-            }))
-        {
-            return false;
-        }
-        if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
-            aabb,
-            [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                if (!any(t0.ctp.physics_material & collidable_mask)) {
                     return true;
+                };
+                for (const auto& q0 : msh0.mesh->get_quads_sphere()) {
+                    if (!intersect(q0)) {
+                        return false;
+                    }
+                }
+                for (const auto& t0 : msh0.mesh->get_triangles_sphere()) {
+                    if (!intersect(t0)) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    if (!physics_engine_.rigid_bodies_.convex_mesh_bvh().visit(
+        ray,
+        [&](const RigidBodyAndIntersectableMesh& rm0){
+            if (!any(rm0.mesh.physics_material & collidable_mask)) {
+                return true;
+            }
+            for (const auto& t0 : rm0.mesh.mesh->get_triangles_sphere()) {
+                if (!bs.intersects(t0.bounding_sphere) ||
+                    !bs.intersects(t0.polygon.plane()))
+                {
+                    continue;
                 }
                 double t;
                 FixedArray<double, 3> intersection_pt;
                 if (ray.intersects(
-                    t0.ctp.polygon,
+                    t0.polygon,
                     &t,
                     &intersection_pt))
                 {
@@ -182,29 +123,70 @@ bool CollisionQuery::can_see(
                             *intersection_point = intersection_pt;
                         }
                         if (intersection_polygon != nullptr) {
-                            triangle_min = &t0.ctp;
+                            triangle_min = &t0;
                         }
                         if (seen_object != nullptr) {
-                            *seen_object = &t0.rb;
+                            *seen_object = &rm0.rb.get();
                         }
                         if (seen_mesh != nullptr) {
-                            *seen_mesh = nullptr;
-                            linfo() << "-" << t0.rb.name() << "-";
-                            THROW_OR_ABORT("gggg");
+                            *seen_mesh = rm0.mesh.mesh.get();
                         }
                     }
                 }
-                return true;
-            }))
-        {
-            return false;
-        }
-        if (t_min != INFINITY) {
-            if (intersection_polygon != nullptr) {
-                *intersection_polygon = triangle_min;
             }
-            return false;
+            return true;
+        }))
+    {
+        return false;
+    }
+    if (!physics_engine_.rigid_bodies_.triangle_bvh().visit(
+        ray,
+        [&](const RigidBodyAndCollisionTriangleSphere& t0){
+            if (!any(t0.ctp.physics_material & collidable_mask)) {
+                return true;
+            }
+            double t;
+            FixedArray<double, 3> intersection_pt;
+            if (ray.intersects(
+                t0.ctp.polygon,
+                &t,
+                &intersection_pt))
+            {
+                if ((intersection_point == nullptr) &&
+                    (intersection_polygon == nullptr) &&
+                    (seen_object == nullptr) &&
+                    (seen_mesh == nullptr))
+                {
+                    return false;
+                }
+                if (t < t_min) {
+                    t_min = t;
+                    if (intersection_point != nullptr) {
+                        *intersection_point = intersection_pt;
+                    }
+                    if (intersection_polygon != nullptr) {
+                        triangle_min = &t0.ctp;
+                    }
+                    if (seen_object != nullptr) {
+                        *seen_object = &t0.rb;
+                    }
+                    if (seen_mesh != nullptr) {
+                        *seen_mesh = nullptr;
+                        linfo() << "-" << t0.rb.name() << "-";
+                        THROW_OR_ABORT("gggg");
+                    }
+                }
+            }
+            return true;
+        }))
+    {
+        return false;
+    }
+    if (t_min != INFINITY) {
+        if (intersection_polygon != nullptr) {
+            *intersection_polygon = triangle_min;
         }
+        return false;
     }
     return true;
 }
