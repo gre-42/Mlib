@@ -1526,7 +1526,7 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
                     t(0).position,
                     t(1).position,
                     t(2).position};
-                street_bvh_->insert(tri, tri);
+                street_bvh_->insert(AxisAlignedBoundingBox<double, 3>::from_points(tri), tri);
             }
         }
     }

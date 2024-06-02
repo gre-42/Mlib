@@ -14,7 +14,7 @@ WayBvh::WayBvh(const std::list<Line2d>& way_segments)
 : WayBvh{}
 {
     for (const auto& s : way_segments) {
-        bvh_.insert(s, s);
+        bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(s), s);
     }
 }
 
@@ -31,7 +31,7 @@ void WayBvh::add_path(const std::list<FixedArray<double, 2>>& path) {
             break;
         }
         Line2d s{*left, *right};
-        bvh_.insert(s, s);
+        bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(s), s);
     }
 }
 

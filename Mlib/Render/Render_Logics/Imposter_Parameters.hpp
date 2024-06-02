@@ -8,8 +8,8 @@ struct ImposterParameters {
         const AxisAlignedBoundingBox<float, 2>& sensor_aabb,
         const AxisAlignedBoundingBox<float, 2>& scaled_sensor_aabb,
         float distance_cam_to_obj);
-    AxisAlignedBoundingBox<float, 2> pos;
-    AxisAlignedBoundingBox<float, 2> uv;
+    AxisAlignedBoundingBox<float, 2> pos = uninitialized;
+    AxisAlignedBoundingBox<float, 2> uv = uninitialized;
 };
 
 }

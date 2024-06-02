@@ -57,8 +57,8 @@ void Spawn::set_spawn_points(DanglingRef<const SceneNode> node, const std::list<
             sp2.position = tm.transform(sp.position);
             sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
             spawn_points_.push_back(sp2);
-            spawn_points_bvh_split_[i]->insert(sp2.position, &spawn_points_.back());
-            spawn_points_bvh_singular_->insert(sp2.position, &spawn_points_.back());
+            spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<double, 3>::from_point(sp2.position), &spawn_points_.back());
+            spawn_points_bvh_singular_->insert(AxisAlignedBoundingBox<double, 3>::from_point(sp2.position), &spawn_points_.back());
             i = (i + 1) % nsubs;
         }
     }
@@ -142,7 +142,7 @@ void Spawn::spawn_player_during_match(VehicleSpawner& spawner) {
             for (const auto& v : p->get_scene_vehicles()) {
                 auto pos = v->rb().rbp_.abs_position();
                 spawn_points_bvh_singular_->visit(
-                    AxisAlignedBoundingBox<double, 3>(pos, cfg_.r_occupied_spawn_point),
+                    AxisAlignedBoundingBox<double, 3>::from_center_and_radius(pos, cfg_.r_occupied_spawn_point),
                     [&](const SpawnPoint* sp) {
                         if (sum(squared(pos - sp->position)) < squared(cfg_.r_occupied_spawn_point)) {
                             occupied_spawn_points.insert(sp);

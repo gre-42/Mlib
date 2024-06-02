@@ -88,14 +88,18 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
                 (s == c.end())
                     ? P2{c.front()->x, -c.front()->y}
                     : P2{(*s)->x, -(*s)->y}};
-            bvh.visit(AxisAlignedBoundingBox{ edge }, [&edge, &highlighted_nodes](const Edge& data){
+            auto aabb = AxisAlignedBoundingBox<double, 2>::from_points(edge);
+            bvh.visit(
+                aabb,
+                [&edge, &highlighted_nodes](const Edge& data)
+            {
                 FixedArray<double, 2> intersection;
                 if (intersect_lines(intersection, edge, data, 0., 0., false, true)) {
                     highlighted_nodes.push_back({intersection(0), intersection(1), 0.f});
                 }
                 return true;
             });
-            bvh.insert(edge, edge);
+            bvh.insert(aabb, edge);
         }
     }
     plot_mesh_svg(

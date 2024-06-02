@@ -33,7 +33,7 @@ void Mlib::merge_neighboring_points(
                     v.position = *neighbor;
                 }
             } else {
-                bvh.insert(AxisAlignedBoundingBox{v.position}, v.position);
+                bvh.insert(AxisAlignedBoundingBox<TPos, 3>::from_point(v.position), v.position);
             }
         }
     }

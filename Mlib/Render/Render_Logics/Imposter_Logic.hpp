@@ -93,7 +93,7 @@ private:
     float down_sampling_;
     float max_deviation_;
     float min_distance_;
-    AxisAlignedBoundingBox<double, 3> obj_relative_aabb_;
+    AxisAlignedBoundingBox<double, 3> obj_relative_aabb_ = uninitialized;
 };
 
 }

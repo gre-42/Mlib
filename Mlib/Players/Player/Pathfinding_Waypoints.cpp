@@ -39,7 +39,7 @@ void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypo
         cfg_.bvh_levels);
     waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
     for (const auto& [i, p] : enumerate(waypoints.points)) {
-        waypoints_bvh_->insert(p.position, i);
+        waypoints_bvh_->insert(AxisAlignedBoundingBox<double, 3>::from_point(p.position), i);
     }
     // waypoints_bvh_->optimize_search_time(std::cout);
     player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
@@ -80,7 +80,7 @@ void PathfindingWaypoints::select_next_waypoint() {
         size_t closest_id = SIZE_MAX;
         double closest_distance2 = INFINITY;
         waypoints_bvh_->visit(
-            {pos3, max_distance},
+            AxisAlignedBoundingBox<double, 3>::from_center_and_radius(pos3, max_distance),
             [&](size_t i)
         {
             const auto& rs = waypoints_->points.at(i).position;

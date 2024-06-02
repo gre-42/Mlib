@@ -109,7 +109,7 @@ void RigidBodies::add_rigid_body(
                                 }
                             }
                         }
-                        AxisAlignedBoundingBox<double, 3> aabb(vertex_set.begin(), vertex_set.end());
+                        auto aabb = AxisAlignedBoundingBox<double, 3>::from_iterator(vertex_set.begin(), vertex_set.end());
                         BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
                         std::vector<CollisionPolygonSphere<3>> triangles;
                         std::vector<CollisionRidgeSphere> ridges;
@@ -369,7 +369,7 @@ void RigidBodies::bake_collision_ridges() const
             continue;
         }
         auto* r = ridge_bvh_.insert(
-            AxisAlignedBoundingBox<double, 3>{e.collision_ridge_sphere.edge},
+            AxisAlignedBoundingBox<double, 3>::from_points(e.collision_ridge_sphere.edge),
             RigidBodyAndCollisionRidgeSphere{
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});

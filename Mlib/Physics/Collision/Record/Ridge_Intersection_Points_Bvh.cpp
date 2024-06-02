@@ -9,7 +9,7 @@ RidgeIntersectionPointsBvh::RidgeIntersectionPointsBvh(const PhysicsEngineConfig
 {}
 
 void RidgeIntersectionPointsBvh::insert(const FixedArray<double, 3>& intersection_point) {
-    bvh_.insert(AxisAlignedBoundingBox{intersection_point}, intersection_point);
+    bvh_.insert(AxisAlignedBoundingBox<double, 3>::from_point(intersection_point), intersection_point);
 }
 
 bool RidgeIntersectionPointsBvh::has_neighbor(const FixedArray<double, 3>& intersection_point)

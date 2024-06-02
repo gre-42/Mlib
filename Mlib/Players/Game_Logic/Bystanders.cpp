@@ -50,7 +50,10 @@ bool Bystanders::spawn_for_vip(
         THROW_OR_ABORT("Spawner already has a vehicle");
     }
     bool success = false;
-    spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit({vip_pos, cfg_.r_spawn_far}, [&](const SpawnPoint* sp){
+    spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit(
+        AxisAlignedBoundingBox<double, 3>::from_center_and_radius(vip_pos, cfg_.r_spawn_far),
+        [&](const SpawnPoint* sp)
+    {
         if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->pathfinding_waypoints().has_waypoints())) {
             return true;
         }

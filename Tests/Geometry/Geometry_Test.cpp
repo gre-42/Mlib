@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
 #include <Mlib/Geometry/Intersection/Point_Triangle_Intersection.hpp>
+#include <Mlib/Geometry/Intersection/Ray_Segment_Intersects_Bvh_Proxies.hpp>
 #include <Mlib/Geometry/Intersection/Ray_Sphere_Intersection.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Contour.hpp>
@@ -270,41 +271,63 @@ void test_inverse_rodrigues() {
 }
 
 void test_bvh() {
-    Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
-    bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 42);
-    bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 43);
-    bvh.insert({{1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}}, 44);
-    bvh.insert({{1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}}, 45);
-    bvh.insert({{1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}}, 46);    
+    Bvh<float, int, 3> bvh{ {3.f, 4.f, 5.f}, 2 };
+    using AABB = AxisAlignedBoundingBox<float, 3>;
+    bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
+    bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 43);
+    bvh.insert(AABB::from_min_max({1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}), 44);
+    bvh.insert(AABB::from_min_max({1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}), 45);
+    bvh.insert(AABB::from_min_max({1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}), 46);
     // bvh.visit({{0, 1, 2}, 4}, [](const int& data){
     //     std::cerr << category << " " << data << std::endl;
     // });
     // std::cerr << bvh << std::endl;
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p){return std::abs((float)p - 43.f);});
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p) {return std::abs((float)p - 43.f); });
         assert_isequal(result.size(), (size_t)3);
         assert_isequal(*result[0].second, 43);
     }
     {
-        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p){return std::abs((float)p - 43.f);});
+        std::vector<std::pair<float, const int*>> result = bvh.min_distances(20, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 100.f, [](const auto& p) {return std::abs((float)p - 43.f); });
         assert_isequal(result.size(), (size_t)5);
         assert_isequal(*result[0].second, 43);
         assert_isequal(*result[4].second, 46);
     }
-    // for (const auto& r : result) {
-    //     std::cerr << r.first << " " << *r.second << std::endl;
-    // }
+}
+
+void test_ray_segment_intersects_bvh() {
+    Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
+    using AABB = AxisAlignedBoundingBox<float, 3>;
+    bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
+
+    FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
+    FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
+
+    ray_segment_intersects_bvh_proxies(
+        RaySegment3D<float>{ start, end },
+        bvh,
+        20.f,
+        [](const RaySegment3D<float>& ray_segment, int) { return false; });
+    ray_segment_intersects_bvh_pair_proxies(
+        RaySegment3D<float>{ start, end },
+        bvh,
+        bvh,
+        0.1f,
+        [](const RaySegment3D<float>& ray_segment) { return true; },
+        [](const RaySegment3D<float>& ray_segment, int) { return true; },
+        [](const RaySegment3D<float>& ray_segment, int) { return true; });
 }
 
 void test_bvh_performance() {
+    using AABB = AxisAlignedBoundingBox<float, 3>;
     {
         Bvh<float, int, 3> bvh{{3.f, 4.f, 5.f}, 2};
-        bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 42);
-        bvh.insert({{1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}}, 43);
-        bvh.insert({{1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}}, 44);
-        bvh.insert({{1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}}, 45);
-        bvh.insert({{1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}}, 46);    
-        bvh.visit({{0.f, 1.f, 2.f}, 4}, [](int data){
+        bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
+        bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 43);
+        bvh.insert(AABB::from_min_max({1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}), 44);
+        bvh.insert(AABB::from_min_max({1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}), 45);
+        bvh.insert(AABB::from_min_max({1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}), 46);
+        bvh.visit(AABB::from_center_and_radius({0.f, 1.f, 2.f}, 4), [](int data){
             std::cout << data << std::endl;
             return true;
         });
@@ -329,7 +352,7 @@ void test_bvh_performance() {
                 search_times.push_back(bvh.search_time(BvhDataRadiusType::NONZERO));
             }
             FixedArray<float, 3> bmin{dis(gen), dis(gen), dis(gen)};
-            bvh.insert({bmin, bmin + FixedArray<float, 3>{0.01f, 0.02f, 0.03f}}, 42);
+            bvh.insert(AABB::from_min_max(bmin, bmin + FixedArray<float, 3>{0.01f, 0.02f, 0.03f}), 42);
             // std::cout << "search time " << bvh.search_time() << std::endl;
         }
         if (compute_search_time) {
@@ -345,17 +368,6 @@ void test_bvh_performance() {
         bvh.print(std::cout, BvhPrintingOptions{
             .level = false,
             .aabb = false});
-        if (false) {
-            FixedArray<float, 3> center{0.012f, 0.023f, 0.045f};
-            bvh.insert({{0.01f, 0.02f, 0.03f}, center}, 4321);
-            bvh.print(std::cout, BvhPrintingOptions{
-                .level = false,
-                .aabb = false});
-            bvh.visit({center, 0.01f}, [](int data){
-                std::cout << data << std::endl;
-                return true;
-            });
-        }
     }
     if (false) {
         std::ofstream ostr("img.svg");
@@ -639,12 +651,12 @@ void test_frustum3() {
     assert_isclose(frustum3.near_plane().intercept, -2.f);
     assert_allclose(frustum3.far_plane().normal, FixedArray<float, 3>{0.f, 0.f, 1.f});
     assert_isclose(frustum3.far_plane().intercept, 100.f, (float)1e-3);
-    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox{
-        FixedArray<float, 3>{-1.f, -1.f, 1.f},
-        FixedArray<float, 3>{1.f, 1.f, 2.f}}), false);
-    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox{
-        FixedArray<float, 3>{-1.f, -1.f, -2.1f},
-        FixedArray<float, 3>{1.f, 1.f, -3.1f}}), true);
+    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox<float, 3>::from_min_max(
+        {-1.f, -1.f, 1.f},
+        {1.f, 1.f, 2.f})), false);
+    assert_isequal(frustum3.intersects(AxisAlignedBoundingBox<float, 3>::from_min_max(
+        {-1.f, -1.f, -2.1f},
+        {1.f, 1.f, -3.1f})), true);
 }
 
 void test_ray_sphere_intersection() {
@@ -676,6 +688,7 @@ int main(int argc, const char** argv) {
     test_lines_to_rectangles();
     test_inverse_rodrigues();
     test_bvh();
+    test_ray_segment_intersects_bvh();
     // test_bvh_performance();
     test_roundness_estimator();
     // test_smoothen_edges();

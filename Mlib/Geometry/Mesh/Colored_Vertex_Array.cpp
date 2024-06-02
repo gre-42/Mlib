@@ -508,7 +508,7 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
     }
-    aabb_ = AxisAlignedBoundingBox<TPos, 3>(vs.begin(), vs.end());
+    aabb_ = AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end());
     return aabb_.value();
 }
 

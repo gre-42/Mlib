@@ -32,7 +32,7 @@ BoundingSphere<double, 3> Quad3D::bounding_sphere(std::minstd_rand& rng) const {
 }
 
 AxisAlignedBoundingBox<double, 3> Quad3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{ vertices_ };
+    return AxisAlignedBoundingBox<double, 3>::from_points(vertices_);
 }
 
 

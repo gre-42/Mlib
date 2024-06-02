@@ -390,10 +390,12 @@ void DrawStreets::draw_streets() {
                 if ((angle_way.road_type != RoadType::WALL) && (!street_lights.empty())) {
                     double radius = 10 * scale;
                     auto add_distant_point = [&](const FixedArray<double, 2>& p) {
-                        bool p_found = !street_light_bvh.visit(AxisAlignedBoundingBox{ p, radius }, [](bool){return false;});
+                        bool p_found = !street_light_bvh.visit(
+                            AxisAlignedBoundingBox<double, 2>::from_center_and_radius(p, radius),
+                            [](bool){return false;});
                         if (!p_found) {
                             if (auto prn = street_lights.try_multiple_times(10); prn != nullptr) {
-                                street_light_bvh.insert(p, true);
+                                street_light_bvh.insert(AxisAlignedBoundingBox<double, 2>::from_point(p), true);
                                 bri.add_parsed_resource_name(p, 0.f, *prn, 0.f, 1.f);
                             }
                         }

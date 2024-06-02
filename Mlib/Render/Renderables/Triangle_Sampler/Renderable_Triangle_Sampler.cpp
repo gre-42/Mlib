@@ -124,7 +124,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         } else {
             auto rel_camera_position = m.inverted_scaled().transform(iv.t());
             triangle_bvh.visit(
-                AxisAlignedBoundingBox<double, 3>{rel_camera_position, max_distance_to_camera * scale_},
+                AxisAlignedBoundingBox<double, 3>::from_center_and_radius(rel_camera_position, max_distance_to_camera * scale_),
                 [&traverse_triangle](const TriangleAndSeed& t){
                     traverse_triangle(t);
                     return true;
@@ -147,10 +147,10 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         unsigned int seed = 0;
         for (const auto& t : gtl) {
             ++seed;
-            AxisAlignedBoundingBox<double, 3> aabb{FixedArray<FixedArray<double, 3>, 3>{
+            auto aabb = AxisAlignedBoundingBox<double, 3>::from_points(FixedArray<FixedArray<double, 3>, 3>{
                 t(0).position,
                 t(1).position,
-                t(2).position}};
+                t(2).position});
             it->second.insert(aabb, TriangleAndSeed{.triangle = t, .seed = seed});
         }
     };

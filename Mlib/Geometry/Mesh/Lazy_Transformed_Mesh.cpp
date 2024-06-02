@@ -194,9 +194,9 @@ BoundingSphere<double, 3> LazyTransformedMesh::bounding_sphere() const {
 }
 
 AxisAlignedBoundingBox<double, 3> LazyTransformedMesh::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{
+    return AxisAlignedBoundingBox<double, 3>::from_center_and_radius(
         transformed_bounding_sphere_.center(),
-        transformed_bounding_sphere_.radius()};
+        transformed_bounding_sphere_.radius());
 }
 
 #ifdef __GNUC__

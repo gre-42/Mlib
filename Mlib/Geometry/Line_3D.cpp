@@ -31,7 +31,7 @@ BoundingSphere<double, 3> Line3D::bounding_sphere() const
 }
 
 AxisAlignedBoundingBox<double, 3> Line3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{vertices_};
+    return AxisAlignedBoundingBox<double, 3>::from_points(vertices_);
 }
 
 template Line3D::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices, const TransformationMatrix<float, double, 3>& transformation);

@@ -8,31 +8,31 @@
 using namespace Mlib;
 
 GroundBvh::GroundBvh()
-: bvh_{{0.1, 0.1}, 10}
+    : bvh_{ {0.1, 0.1}, 10 }
 {}
 
 GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList<double>>>& triangles)
-: GroundBvh()
+    : GroundBvh()
 {
     for (const auto& l : triangles) {
         for (const auto& t : l->triangles) {
             Triangle2d tri2{
                 FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
                 FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
-                FixedArray<double, 2>{t(2).position(0), t(2).position(1)}};
+                FixedArray<double, 2>{t(2).position(0), t(2).position(1)} };
             if (triangle_area(tri2(0), tri2(1), tri2(2)) > 0) {
                 Triangle3d tri3{
                     t(0).position,
                     t(1).position,
                     t(2).position};
-                bvh_.insert(tri2, tri3);
+                bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri2), tri3);
             }
         }
     }
 }
 
 GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas)
-: GroundBvh()
+    : GroundBvh()
 {
     for (const auto& l : cvas) {
         for (const auto& t : l->triangles) {
@@ -45,7 +45,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>
                     t(0).position,
                     t(1).position,
                     t(2).position};
-                bvh_.insert(tri2, tri3);
+                bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri2), tri3);
             }
         }
     }
@@ -53,7 +53,10 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>
 
 bool GroundBvh::height(double& height, const FixedArray<double, 2>& pt) const
 {
-    return !bvh_.visit(AxisAlignedBoundingBox{ pt }, [&pt, &height](const Triangle3d& t){
+    return !bvh_.visit(
+        AxisAlignedBoundingBox<double, 2>::from_point(pt),
+        [&pt, &height](const Triangle3d& t)
+    {
         Triangle2d tri2{
             FixedArray<double, 2>{t(0)(0), t(0)(1)},
             FixedArray<double, 2>{t(1)(0), t(1)(1)},
@@ -76,7 +79,10 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
     double best_distance = INFINITY;
     double best_height = NAN;
     FixedArray<double, 2> pt2d{pt(0), pt(1)};
-    bvh_.visit(AxisAlignedBoundingBox{pt2d}, [&](const Triangle3d& t){
+    bvh_.visit(
+        AxisAlignedBoundingBox<double, 2>::from_point(pt2d),
+        [&](const Triangle3d& t)
+    {
         Triangle2d tri2{
             FixedArray<double, 2>{t(0)(0), t(0)(1)},
             FixedArray<double, 2>{t(1)(0), t(1)(1)},

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
+#include <Mlib/Uninitialized.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -19,49 +20,73 @@ class TransformationMatrix;
 
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox {
+    template <class TData2, size_t tndim2>
+    friend class AxisAlignedBoundingBox; 
 public:
-    AxisAlignedBoundingBox()
-    : min_(INFINITY),
-      max_(-INFINITY)
-    {}
-    AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)
-    : min_{min},
-      max_{max}
-    {}
-    AxisAlignedBoundingBox(const FixedArray<TData, tndim>& point)
-    : min_{point},
-      max_{point}
-    {}
-    AxisAlignedBoundingBox(const FixedArray<TData, tndim>& center, const TData& radius)
-    : min_{center - radius},
-      max_{center + radius}
-    {}
-    template <size_t tnpoints>
-    AxisAlignedBoundingBox(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
-    : AxisAlignedBoundingBox{points.flat_begin(), points.flat_end()}
-    {}
-    template <class TIterable>
-    explicit AxisAlignedBoundingBox(
-        const TIterable& iterable_begin,
-        const TIterable& iterable_end)
-    : AxisAlignedBoundingBox()
+    AxisAlignedBoundingBox(Uninitialized) {}
+    static AxisAlignedBoundingBox empty() {
+        return AxisAlignedBoundingBox{
+            fixed_full<TData, tndim>(INFINITY),
+            fixed_full<TData, tndim>(-INFINITY)};
+    }
+    static AxisAlignedBoundingBox from_min_max(
+        const FixedArray<TData, tndim>& min,
+        const FixedArray<TData, tndim>& max) {
+        return AxisAlignedBoundingBox{ min, max };
+    }
+    static AxisAlignedBoundingBox from_point(const FixedArray<TData, tndim>& point) {
+        return AxisAlignedBoundingBox{ point, point };
+    }
+    static AxisAlignedBoundingBox from_center_and_radius(
+        const FixedArray<TData, tndim>& center,
+        const TData& radius)
     {
-        for (auto it = iterable_begin; it != iterable_end; ++it) {
-            extend(*it);
+        return AxisAlignedBoundingBox{
+            center - radius,
+            center + radius };
+    }
+    template <size_t tnpoints>
+    static AxisAlignedBoundingBox from_points(
+        const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
+    {
+        return from_iterator(points.flat_begin(), points.flat_end());
+    }
+    static AxisAlignedBoundingBox from_points(
+        const FixedArray<TData, tndim>& a,
+        const FixedArray<TData, tndim>& b)
+    {
+        return AxisAlignedBoundingBox{ minimum(a, b), maximum(a, b) };
+    }
+    template <class TIterator>
+    static AxisAlignedBoundingBox from_iterator(
+        const TIterator& iterator_begin,
+        const TIterator& iterator_end)
+    {
+        auto result = empty();
+        for (auto it = iterator_begin; it != iterator_end; ++it) {
+            result.extend(*it);
         }
+        return result;
     }
     bool intersects(const AxisAlignedBoundingBox& other) const {
         return all(max_ >= other.min_) && all(min_ <= other.max_);
+    }
+    bool contains(const FixedArray<TData, tndim>& point) const {
+        return all(max_ >= point) && all(min_ <= point);
     }
     void extend(const AxisAlignedBoundingBox& other) {
         min_ = minimum(min_, other.min_);
         max_ = maximum(max_, other.max_);
     }
+    void extend(const FixedArray<TData, tndim>& point) {
+        min_ = minimum(min_, point);
+        max_ = maximum(max_, point);
+    }
     template <class TDir, class TPos>
     AxisAlignedBoundingBox<TPos, tndim> transformed(
         const TransformationMatrix<TDir, TPos, tndim>& transformation_matrix) const
     {
-        AxisAlignedBoundingBox<TPos, tndim> result;
+        auto result = empty();
         for_each_corner([&](const FixedArray<TData, tndim>& corner){
             result.extend(transformation_matrix.transform(corner));
             return true;
@@ -103,6 +128,10 @@ public:
             max_.template casted<TResultData>());
     }
 private:
+    AxisAlignedBoundingBox(const FixedArray<TData, tndim>& min, const FixedArray<TData, tndim>& max)
+        : min_{min}
+        , max_{max}
+    {}
     template <class TOperation>
     bool for_each_corner(
         const TOperation& op,

@@ -43,7 +43,7 @@ bool SupplyDepots::visit_supply_depots(
 {
     BoundingSphere<double, 3> bs(position, cfg_.supply_depot_attraction_radius);
     return bvh_.visit(
-        AxisAlignedBoundingBox{bs.center(), bs.radius()},
+        AxisAlignedBoundingBox<double, 3>::from_center_and_radius(bs.center(), bs.radius()),
         [&](const SupplyDepot& supply_depot)
         {
             if (supply_depot.is_cooling_down()) {
@@ -105,7 +105,7 @@ void SupplyDepots::add_supply_depot(
 {
     auto center = scene_node->absolute_model_matrix().t();
     auto payload = bvh_.insert(
-        AxisAlignedBoundingBox<double, 3>{center},
+        AxisAlignedBoundingBox<double, 3>::from_point(center),
         SupplyDepot{
             .node = scene_node,
             .center = center,

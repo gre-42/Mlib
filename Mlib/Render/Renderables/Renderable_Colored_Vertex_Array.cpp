@@ -100,6 +100,7 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , secondary_rendering_resources_{ rendering_resources }
+    , aabb_{ AxisAlignedBoundingBox<double, 3>::empty() }
     , bounding_sphere_(fixed_zeros<double, 3>(), 0.f)
 {
 #ifdef DEBUG

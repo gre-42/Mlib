@@ -17,7 +17,7 @@ BvhResource::BvhResource(
 {
     for (const auto& cva : cvas) {
         for (const auto& t : cva->triangles) {
-            AxisAlignedBoundingBox<float, 3> aabb;
+            auto aabb = AxisAlignedBoundingBox<float, 3>::empty();
             for (const auto& p : t.flat_iterable()) {
                 aabb.extend(p.position);
             }
@@ -34,7 +34,7 @@ static void instantiate_bvh(
     const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3>& bvh)
 {
     if (!bvh.data().empty()) {
-        AxisAlignedBoundingBox<float, 3> aabb;
+        auto aabb = AxisAlignedBoundingBox<float, 3>::empty();
         std::map<const Material*, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
         for (const auto& b : bvh.data()) {
             cvas[b.second.first].push_back(b.second.second);

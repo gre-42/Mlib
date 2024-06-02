@@ -5,11 +5,13 @@
 using namespace Mlib;
 
 RacingLineBvh::RacingLineBvh()
-: bvh_{{0.1f, 0.1f}, 10}
+    : bvh_{ {0.1f, 0.1f}, 10 }
 {}
 
 void RacingLineBvh::insert(const RacingLineSegment& racing_line_segment) {
-    bvh_.insert(racing_line_segment.racing_line_segment, racing_line_segment);
+    bvh_.insert(
+        AxisAlignedBoundingBox<double, 2>::from_points(racing_line_segment.racing_line_segment),
+        racing_line_segment);
 }
 
 void RacingLineBvh::intersecting_way_beta(
@@ -18,7 +20,10 @@ void RacingLineBvh::intersecting_way_beta(
     const RacingLineSegment** racing_line_segment) const
 {
     beta = NAN;
-    bvh_.visit(way_boundary, [&way_boundary, &beta, &racing_line_segment](const RacingLineSegment& candidate_racing_line_segment) {
+    bvh_.visit(
+        AxisAlignedBoundingBox<double, 2>::from_points(way_boundary),
+        [&way_boundary, &beta, &racing_line_segment](const RacingLineSegment& candidate_racing_line_segment)
+    {
         FixedArray<double, 2> intersection_point;
         if (intersect_lines(
             intersection_point,

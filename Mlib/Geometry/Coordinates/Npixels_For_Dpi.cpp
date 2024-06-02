@@ -19,7 +19,7 @@ std::optional<CameraSensorAndNPixels> Mlib::npixels_for_dpi(
     result.width = (1 << (int)std::ceil(std::log2(sensor_size(0) * dpi)));
     result.height = (1 << (int)std::ceil(std::log2(sensor_size(1) * dpi)));
     auto npixels = FixedArray<float, 2>{(float)result.width, (float)result.height};
-    result.scaled_sensor_aabb = AxisAlignedBoundingBox<float, 2>(
+    result.scaled_sensor_aabb = AxisAlignedBoundingBox<float, 2>::from_min_max(
         sensor_center - npixels / dpi / 2.f,
         sensor_center + npixels / dpi / 2.f);
     return result;

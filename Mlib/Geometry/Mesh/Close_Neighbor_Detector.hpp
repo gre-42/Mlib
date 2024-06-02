@@ -19,7 +19,7 @@ public:
             }
             return std::sqrt(dist2);
         });
-        bvh_.insert(AxisAlignedBoundingBox<TData, tndim>{p}, p);
+        bvh_.insert(AxisAlignedBoundingBox<TData, tndim>::from_point(p), p);
         return res;
     }
 private:

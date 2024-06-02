@@ -491,7 +491,7 @@ void SceneNode::add_instances_position(
         }
         cit->second.max_center_distance = std::max(cit->second.max_center_distance, mcd);
         cit->second.small_instances.insert(
-            position,
+            AxisAlignedBoundingBox<double, 3>::from_point(position),
             PositionAndYAngle{
                 .position = position,
                 .yangle = yangle,
@@ -964,7 +964,7 @@ void SceneNode::append_small_instances_to_queue(
         if (!i.small_instances.empty()) {
             auto camera_position = m.inverted_scaled().transform(iv.t());
             i.small_instances.visit(
-                AxisAlignedBoundingBox<double, 3>{camera_position, i.max_center_distance},
+                AxisAlignedBoundingBox<double, 3>::from_center_and_radius(camera_position, i.max_center_distance),
                 [&, &i = i](const PositionAndYAngle& j) {
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
                     return true;
@@ -1230,7 +1230,7 @@ std::optional<AxisAlignedBoundingBox<double, 3>> SceneNode::relative_aabb() cons
     std::shared_lock lock{ mutex_ };
     std::optional<AxisAlignedBoundingBox<double, 3>> result;
     if (!renderables_.empty()) {
-        result = AxisAlignedBoundingBox<double, 3>();
+        result = AxisAlignedBoundingBox<double, 3>::empty();
     }
     for (const auto& [_, r] : renderables_) {
         result.value().extend(r->aabb());

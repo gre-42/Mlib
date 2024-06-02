@@ -31,7 +31,7 @@ BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) con
 }
 
 AxisAlignedBoundingBox<double, 3> Triangle3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>{ vertices_ };
+    return AxisAlignedBoundingBox<double, 3>::from_points(vertices_);
 }
 
 

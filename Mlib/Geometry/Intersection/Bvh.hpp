@@ -105,7 +105,7 @@ public:
     }
 
     AxisAlignedBoundingBox<TData, tndim> aabb() const {
-        AxisAlignedBoundingBox<TData, tndim> result;
+        auto result = AxisAlignedBoundingBox<TData, tndim>::empty();
         for (const auto& d : data_) {
             result.extend(d.first);
         }
@@ -155,7 +155,7 @@ public:
                 // to traverse the child "c".
                 size_t nintersections = 0;
                 for (const auto& other : children_) {
-                    if (c.first.intersects((other.first.min() + other.first.max()) / (TData)2)) {
+                    if (c.first.contains((other.first.min() + other.first.max()) / (TData)2)) {
                         ++nintersections;
                     }
                 }
@@ -230,7 +230,7 @@ public:
         const TPayload** nearest_payload = nullptr) const
     {
         TData min_distance = INFINITY;
-        visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+        visit(AxisAlignedBoundingBox<TData, tndim>::from_center_and_radius(p, max_distance),
             [&min_distance, &compute_distance, nearest_payload](const TPayload& payload)
         {
             TData dist = compute_distance(payload);
@@ -255,7 +255,7 @@ public:
         std::vector<std::pair<TData, const TPayload*>> result(k);
         std::fill(result.begin(), result.end(), std::make_pair(INFINITY, nullptr));
         auto predicate = [](const auto& a, const auto& b){return a.first < b.first;};
-        visit(AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+        visit(AxisAlignedBoundingBox<TData, tndim>::from_center_and_radius(p, max_distance),
             [&result, &compute_distance, &predicate](const TPayload& payload)
         {
             TData dist = compute_distance(payload);
@@ -284,7 +284,7 @@ public:
         const TComputeDistance& compute_distance) const
     {
         return !visit(
-            AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+            AxisAlignedBoundingBox<TData, tndim>::from_center_and_radius(p, max_distance),
             [&max_distance, &compute_distance](const TPayload& payload) {
                 return compute_distance(payload) > max_distance;
             });
@@ -297,7 +297,7 @@ public:
         const TComputeDistance& compute_distance_squared) const
     {
         return !visit(
-            AxisAlignedBoundingBox<TData, tndim>(p, max_distance),
+            AxisAlignedBoundingBox<TData, tndim>::from_center_and_radius(p, max_distance),
             [max_distance2=squared(max_distance), &compute_distance_squared]
             (const TPayload& payload) {
                 return compute_distance_squared(payload) > max_distance2;
@@ -350,7 +350,7 @@ public:
         };
         auto plot_aabb = [&](const AxisAlignedBoundingBox<TData, tndim>& aabb) {
             if (all(aabb.min() == aabb.max())) {
-                plot_aabb_raw(AxisAlignedBoundingBox<TData, tndim>{aabb.min(), stroke_width});
+                plot_aabb_raw(AxisAlignedBoundingBox<TData, tndim>::from_center_and_radius(aabb.min(), stroke_width));
             } else {
                 plot_aabb_raw(aabb);
             }

@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 StreetBvh::StreetBvh(const std::list<FixedArray<ColoredVertex<double>, 3>>& triangles)
-: bvh_{{0.1f, 0.1f}, 10}
+    : bvh_{ {0.1f, 0.1f}, 10 }
 {
     for (const auto& t : triangles) {
         Triangle2d tri{
@@ -14,7 +14,7 @@ StreetBvh::StreetBvh(const std::list<FixedArray<ColoredVertex<double>, 3>>& tria
             FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
             FixedArray<double, 2>{t(2).position(0), t(2).position(1)}};
         if (triangle_is_right_handed(tri(0), tri(1), tri(2))) {
-            bvh_.insert(tri, tri);
+            bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri), tri);
         }
     }
 }
