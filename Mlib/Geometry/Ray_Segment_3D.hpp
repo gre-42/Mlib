@@ -64,11 +64,11 @@ public:
         }
         return polygon.contains(*intersection_point);
     }
-    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+    bool intersects_slow(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
         if (aabb.contains(start) || aabb.contains(stop())) {
             return true;
         }
-        auto interscts = [this, &aabb](size_t axis0, size_t axis1, size_t axis2, bool mm) {
+        auto interscts = [&](size_t axis0, size_t axis1, size_t axis2, bool mm) {
             TData t;
             FixedArray<TData, 3> intersection_point;
             PlaneNd<TData, 3> plane;
@@ -92,6 +92,32 @@ public:
         return
             interscts(0, 1, 2, false) || interscts(1, 2, 0, false) || interscts(2, 0, 1, false) ||
             interscts(0, 1, 2, true) || interscts(1, 2, 0, true) || interscts(2, 0, 1, true);
+    }
+    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+        if (aabb.contains(start) || aabb.contains(stop())) {
+            return true;
+        }
+        auto contains1d = [&](const TData& t, size_t i) {
+            auto x = start(i) + direction(i) * t;
+            return (x >= aabb.min(i)) && (x <= aabb.max(i));
+            };
+        auto contains2d = [&](const TData& t, size_t i1, size_t i2) {
+            if ((t < 0) || (t > length)) {
+                return false;
+            }
+            return contains1d(t, i1) && contains1d(t, i2);
+            };
+        auto intersects0 = [&](size_t i0, size_t i1, size_t i2) {
+            auto c = direction(i0);
+            if (std::abs(c) < 1e-12) {
+                return false;
+            }
+            auto inv_c = 1 / c;
+            return
+                contains2d((aabb.min(i0) - start(i0)) * inv_c, i1, i2) ||
+                contains2d((aabb.max(i0) - start(i0)) * inv_c, i1, i2);
+            };
+        return intersects0(0, 1, 2) || intersects0(1, 2, 0) || intersects0(2, 0, 1);
     }
     FixedArray<TData, 3> stop() const {
         return start + direction * length;
