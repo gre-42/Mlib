@@ -17,7 +17,9 @@ public:
         TrailsInstance& trails_instance,
         TrailSequence trail_sequence,
         const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
-        double minimum_length);
+        double minimum_length,
+        double maximum_length,
+        float maximum_duration);
     virtual std::unique_ptr<ITrailExtender> add_trail_extender() override;
 
 private:
@@ -25,6 +27,8 @@ private:
     TrailSequence trail_sequence_;
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
     double minimum_length_;
+    double maximum_length_;
+    float maximum_duration_;
 };
 
 }

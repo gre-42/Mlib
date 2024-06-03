@@ -7,11 +7,15 @@ TrailStorage::TrailStorage(
     TrailsInstance& trails_instance,
     TrailSequence trail_sequence,
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
-    double minimum_length)
+    double minimum_length,
+    double maximum_length,
+    float maximum_duration)
     : trails_instance_{ trails_instance }
     , trail_sequence_{ std::move(trail_sequence) }
     , segment_{ segment }
     , minimum_length_{ minimum_length }
+    , maximum_length_{ maximum_length }
+    , maximum_duration_{ maximum_duration }
 {}
 
 std::unique_ptr<ITrailExtender> TrailStorage::add_trail_extender() {
@@ -19,5 +23,7 @@ std::unique_ptr<ITrailExtender> TrailStorage::add_trail_extender() {
         trails_instance_,
         trail_sequence_,
         segment_,
-        minimum_length_));
+        minimum_length_,
+        maximum_length_,
+        maximum_duration_));
 }

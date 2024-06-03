@@ -12,11 +12,15 @@ TrailExtender::TrailExtender(
     TrailsInstance& trails_instance,
     const TrailSequence& trail_sequence,
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
-    double minimum_length)
+    double minimum_length,
+    double maximum_length,
+    float maximum_duration)
     : trails_instance_{ trails_instance }
     , trail_sequence_{ trail_sequence }
     , segment_{ segment }
     , minimum_length_squared_{ squared(minimum_length) }
+    , maximum_length_squared_{ squared(maximum_length) }
+    , maximum_duration_{ maximum_duration }
 {
     if (segment.empty()) {
         THROW_OR_ABORT("Trail segment is empty");
@@ -33,9 +37,14 @@ void TrailExtender::append_location(
         auto& prev = previous_center_.value();
         auto dz = (location.t() - prev.position).casted<float>();
         auto dz_l2 = sum(squared(dz));
+        auto duration = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
         if ((location_type == TrailLocationType::MIDPOINT) &&
-            (dz_l2 < minimum_length_squared_))
+            (dz_l2 < maximum_length_squared_) &&
+            (duration < maximum_duration_))
         {
+            return;
+        }
+        if (dz_l2 < minimum_length_squared_) {
             return;
         }
         auto lookat = gl_lookat_relative(dz / std::sqrt(dz_l2), location.R().column(1));
@@ -63,7 +72,7 @@ void TrailExtender::append_location(
                         previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 0.f) {
-                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
+                        time(i) = duration;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }
@@ -87,7 +96,7 @@ void TrailExtender::append_location(
                         }
                         t(i) = t0(i).casted<double>().transformed_uv(op);
                         t(i).position = it->second;
-                        time(i) = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
+                        time(i) = duration;
                     } else {
                         THROW_OR_ABORT("z-position of trail object is not 0 or -1");
                     }

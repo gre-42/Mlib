@@ -26,6 +26,8 @@ DECLARE_ARGUMENT(u_scale);
 DECLARE_ARGUMENT(times);
 DECLARE_ARGUMENT(w);
 DECLARE_ARGUMENT(minimum_length);
+DECLARE_ARGUMENT(maximum_length);
+DECLARE_ARGUMENT(maximum_duration);
 }
 
 const std::string AnimatedTrails::key = "animated_trails";
@@ -51,7 +53,9 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
          u_scale = args.arguments.at<float>(KnownArgs::u_scale),
          times = args.arguments.at_vector<float>(KnownArgs::times, to_seconds),
          w = args.arguments.at<std::vector<float>>(KnownArgs::w),
-         minimum_length = args.arguments.at<double>(KnownArgs::minimum_length)]
+         minimum_length = args.arguments.at<double>(KnownArgs::minimum_length) * meters,
+         maximum_length = args.arguments.at<double>(KnownArgs::maximum_length) * meters,
+         maximum_duration = args.arguments.at<float>(KnownArgs::maximum_duration) * seconds]
         (TrailsInstance& trails_instance)
         {
             auto m = sr.get_single_precision_array(model);
@@ -63,7 +67,9 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
                     .times_to_w = Interp<float>{ times, w, OutOfRangeBehavior::CLAMP }
                 },
                 m->triangles,
-                minimum_length));
+                minimum_length,
+                maximum_length,
+                maximum_duration));
         });
     pt.insert_storage_to_instance(name, animatable);
 };
