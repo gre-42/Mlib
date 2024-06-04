@@ -12,15 +12,15 @@ using namespace Mlib;
 #endif
 
 StaticTransformedMesh::StaticTransformedMesh(
-    const std::string& name,
+    std::string name,
     const AxisAlignedBoundingBox<double, 3>& aabb,
     const BoundingSphere<double, 3>& bounding_sphere,
-    std::vector<CollisionPolygonSphere<4>>&& quads,
-    std::vector<CollisionPolygonSphere<3>>&& triangles,
-    std::vector<CollisionLineSphere>&& lines,
-    std::vector<CollisionLineSphere>&& edges,
+    std::vector<CollisionPolygonSphere<double, 4>>&& quads,
+    std::vector<CollisionPolygonSphere<double, 3>>&& triangles,
+    std::vector<CollisionLineSphere<double>>&& lines,
+    std::vector<CollisionLineSphere<double>>&& edges,
     std::vector<CollisionRidgeSphere>&& ridges)
-: name_{ name },
+: name_{ std::move(name) },
   aabb_{ aabb },
   bounding_sphere_{ bounding_sphere },
   quads_{ std::move(quads) },
@@ -30,8 +30,7 @@ StaticTransformedMesh::StaticTransformedMesh(
   ridges_{ std::move(ridges) }
 {}
 
-StaticTransformedMesh::~StaticTransformedMesh()
-{}
+StaticTransformedMesh::~StaticTransformedMesh() = default;
 
 bool StaticTransformedMesh::intersects(const BoundingSphere<double, 3>& sphere) const {
     return bounding_sphere_.intersects(sphere);
@@ -41,19 +40,19 @@ bool StaticTransformedMesh::intersects(const PlaneNd<double, 3>& plane) const {
     return bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<4>>& StaticTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<double, 4>>& StaticTransformedMesh::get_quads_sphere() const {
     return quads_;
 }
 
-const std::vector<CollisionPolygonSphere<3>>& StaticTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<double, 3>>& StaticTransformedMesh::get_triangles_sphere() const {
     return triangles_;
 }
 
-const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere<double>>& StaticTransformedMesh::get_lines_sphere() const {
     return lines_;
 }
 
-const std::vector<CollisionLineSphere>& StaticTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere<double>>& StaticTransformedMesh::get_edges_sphere() const {
     return edges_;
 }
 

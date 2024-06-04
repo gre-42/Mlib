@@ -9,31 +9,50 @@
 using namespace Mlib;
 
 template <class TPos>
-Triangle3D::Triangle3D(
-    const FixedArray<ColoredVertex<TPos>, 3>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation)
-: vertices_{
-    transformation.transform(vertices(0).position.template casted<double>()),
-    transformation.transform(vertices(1).position.template casted<double>()),
-    transformation.transform(vertices(2).position.template casted<double>())}
+Triangle3D<TPos>::Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices)
+    : vertices_{
+        vertices(0).position,
+        vertices(1).position,
+        vertices(2).position}
 {}
 
-const FixedArray<FixedArray<double, 3>, 3>& Triangle3D::vertices() const {
+template <class TPos>
+template <class TPos2>
+Triangle3D<TPos>::Triangle3D(
+    const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation)
+    : vertices_{
+        transformation.transform(vertices(0).position.template casted<double>()),
+        transformation.transform(vertices(1).position.template casted<double>()),
+        transformation.transform(vertices(2).position.template casted<double>())}
+{}
+
+template <class TPos>
+const FixedArray<FixedArray<TPos, 3>, 3>& Triangle3D<TPos>::vertices() const {
     return vertices_;
 }
 
-ConvexPolygon3D<double, 3> Triangle3D::polygon() const {
-    return ConvexPolygon3D<double, 3>{ vertices_ };
+template <class TPos>
+ConvexPolygon3D<TPos, 3> Triangle3D<TPos>::polygon() const {
+    return ConvexPolygon3D<TPos, 3>{ vertices_ };
 }
 
-BoundingSphere<double, 3> Triangle3D::bounding_sphere(std::minstd_rand& rng) const {
+template <class TPos>
+BoundingSphere<TPos, 3> Triangle3D<TPos>::bounding_sphere(std::minstd_rand& rng) const {
     return welzl_from_fixed(vertices_, rng);
 }
 
-AxisAlignedBoundingBox<double, 3> Triangle3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>::from_points(vertices_);
+template <class TPos>
+AxisAlignedBoundingBox<TPos, 3> Triangle3D<TPos>::aabb() const {
+    return AxisAlignedBoundingBox<TPos, 3>::from_points(vertices_);
 }
 
+namespace Mlib {
 
-template Triangle3D::Triangle3D(const FixedArray<ColoredVertex<float>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
-template Triangle3D::Triangle3D(const FixedArray<ColoredVertex<double>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
+template class Triangle3D<float>;
+template class Triangle3D<double>;
+
+template Triangle3D<double>::Triangle3D(const FixedArray<ColoredVertex<float>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
+template Triangle3D<double>::Triangle3D(const FixedArray<ColoredVertex<double>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
+
+}

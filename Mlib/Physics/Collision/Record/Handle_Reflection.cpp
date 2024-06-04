@@ -308,8 +308,8 @@ void Mlib::handle_reflection(
     if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
-        std::optional<CollisionPolygonSphere<4>> q0f;
-        std::optional<CollisionPolygonSphere<3>> t0f;
+        std::optional<CollisionPolygonSphere<double, 4>> q0f;
+        std::optional<CollisionPolygonSphere<double, 3>> t0f;
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
                 THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");

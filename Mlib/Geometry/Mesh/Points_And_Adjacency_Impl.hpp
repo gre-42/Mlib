@@ -36,7 +36,7 @@ template <class TPoint>
 void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, TData, tlength>& m) {
     adjacency *= (TData)m.get_scale();
     for (auto& p : points) {
-        p = m.transform(p);
+        p = m.transform(FixedArray<typename TPoint::value_type, TPoint::length()>(p));
     }
 }
 

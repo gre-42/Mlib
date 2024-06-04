@@ -18,11 +18,13 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonAabb;
+template <class TData>
 struct CollisionLineSphere;
+template <class TData>
 struct CollisionLineAabb;
 struct BoneWeight;
 template <class TPos>
@@ -95,18 +97,13 @@ public:
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const TransformationMatrix<float, TPosTransform, 3>& tm,
         const std::string& suffix) const;
-    void transformed_quads_sphere(
-        std::vector<CollisionPolygonSphere<4>>& transformed,
+    void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const;
+    void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const;
+    std::vector<CollisionPolygonAabb<double, 3>> transformed_triangles_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;
-    void transformed_triangles_sphere(
-        std::vector<CollisionPolygonSphere<3>>& transformed,
+    std::vector<CollisionLineAabb<double>> transformed_lines_bbox(
         const TransformationMatrix<float, double, 3>& tm) const;
-    std::vector<CollisionPolygonAabb<3>> transformed_triangles_bbox(
-        const TransformationMatrix<float, double, 3>& tm) const;
-    std::vector<CollisionLineAabb> transformed_lines_bbox(
-        const TransformationMatrix<float, double, 3>& tm) const;
-    std::vector<CollisionLineSphere> transformed_lines_sphere(
-        const TransformationMatrix<float, double, 3>& tm) const;
+    std::vector<CollisionLineSphere<TPos>> lines_sphere() const;
     void downsample_triangles(size_t n);
     ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
     ColoredVertexArray generate_contour_edges() const;

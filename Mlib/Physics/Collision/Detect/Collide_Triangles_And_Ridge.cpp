@@ -27,8 +27,8 @@ void Mlib::collide_triangles_and_ridge(
     }
     auto collide = [&](
         const auto& poly0,
-        const CollisionPolygonSphere<4>* q0,
-        const CollisionPolygonSphere<3>* t0)
+        const CollisionPolygonSphere<double, 4>* q0,
+        const CollisionPolygonSphere<double, 3>* t0)
     {
         if (!any(poly0.physics_material & non_tire_line_mask)) {
             return;

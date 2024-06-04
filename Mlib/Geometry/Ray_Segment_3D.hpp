@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
 namespace Mlib {
 
@@ -9,8 +10,6 @@ template <class TData, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
-template <class TDir, class TPos, size_t n>
-class TransformationMatrix;
 template <class TData, size_t tnvertices>
 class ConvexPolygon3D;
 
@@ -124,6 +123,15 @@ public:
     }
     FixedArray<TData, 3> center() const {
         return start + direction * (length / TData(2));
+    }
+    RaySegment3D<double> transformed(
+        const TransformationMatrix<float, double, 3>& transformation_matrix) const
+    {
+        return {
+            transformation_matrix.transform(start.template casted<double>()),
+            transformation_matrix.casted<double, double>().rotate(direction.template casted<double>()),
+            length
+        };
     }
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;

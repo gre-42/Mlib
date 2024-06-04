@@ -77,10 +77,10 @@ bool Mlib::compute_edge_overlap(
                 "temp",
                 AxisAlignedBoundingBox<double, 3>::from_points(corners0),
                 BoundingSphere<double, 3>{corners0},
-                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<4>>{*c.q0} : std::vector<CollisionPolygonSphere<4>>(),
-                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<3>>{*c.t0} : std::vector<CollisionPolygonSphere<3>>(),
-                std::vector<CollisionLineSphere>(),
-                std::vector<CollisionLineSphere>(),
+                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<double, 4>>{*c.q0} : std::vector<CollisionPolygonSphere<double, 4>>(),
+                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<double, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<double, 3>>(),
+                std::vector<CollisionLineSphere<double>>(),
+                std::vector<CollisionLineSphere<double>>(),
                 std::move(ridges));
 
             assert_true(c.r1 != nullptr);

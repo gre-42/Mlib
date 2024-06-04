@@ -206,17 +206,16 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
 }
 
 template <class TPos>
-void ColoredVertexArray<TPos>::transformed_quads_sphere(
-    std::vector<CollisionPolygonSphere<4>>& transformed,
-    const TransformationMatrix<float, double, 3>& tm) const
+void ColoredVertexArray<TPos>::quads_sphere(
+    std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const
 {
-    if (transformed.size() + quads.size() > transformed.capacity()) {
+    if (collision_polygons.size() + quads.size() > collision_polygons.capacity()) {
         THROW_OR_ABORT("Transformed vector has insufficient capacity");
     }
     auto rng = welzl_rng();
     for (const auto& q : quads) {
-        Quad3D quad{q, tm};
-        transformed.push_back(CollisionPolygonSphere<4>{
+        Quad3D quad{ q };
+        collision_polygons.push_back(CollisionPolygonSphere<TPos, 4>{
             .bounding_sphere = quad.bounding_sphere(rng),
             .polygon = quad.polygon(),
             .physics_material = physics_material,
@@ -225,17 +224,16 @@ void ColoredVertexArray<TPos>::transformed_quads_sphere(
 }
 
 template <class TPos>
-void ColoredVertexArray<TPos>::transformed_triangles_sphere(
-    std::vector<CollisionPolygonSphere<3>>& transformed,
-    const TransformationMatrix<float, double, 3>& tm) const
+void ColoredVertexArray<TPos>::triangles_sphere(
+    std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const
 {
-    if (transformed.size() + triangles.size() > transformed.capacity()) {
+    if (collision_polygons.size() + triangles.size() > collision_polygons.capacity()) {
         THROW_OR_ABORT("Transformed vector has insufficient capacity");
     }
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        Triangle3D tri{t, tm};
-        transformed.push_back(CollisionPolygonSphere<3>{
+        Triangle3D tri{ t };
+        collision_polygons.push_back(CollisionPolygonSphere<TPos, 3>{
             .bounding_sphere = tri.bounding_sphere(rng),
             .polygon = tri.polygon(),
             .physics_material = physics_material,
@@ -244,16 +242,16 @@ void ColoredVertexArray<TPos>::transformed_triangles_sphere(
 }
 
 template <class TPos>
-std::vector<CollisionPolygonAabb<3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
+std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
     const TransformationMatrix<float, double, 3>& tm) const
 {
-    std::vector<CollisionPolygonAabb<3>> res;
+    std::vector<CollisionPolygonAabb<double, 3>> res;
     res.reserve(triangles.size());
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        Triangle3D tri{t, tm};
-        res.push_back(CollisionPolygonAabb<3>{
-            .base = CollisionPolygonSphere<3>{
+        Triangle3D<double> tri{t, tm};
+        res.push_back(CollisionPolygonAabb<double, 3>{
+            .base = CollisionPolygonSphere<double, 3>{
                 .bounding_sphere = tri.bounding_sphere(rng),
                 .polygon = tri.polygon(),
                 .physics_material = physics_material,
@@ -265,15 +263,15 @@ std::vector<CollisionPolygonAabb<3>> ColoredVertexArray<TPos>::transformed_trian
 }
 
 template <class TPos>
-std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
+std::vector<CollisionLineAabb<double>> ColoredVertexArray<TPos>::transformed_lines_bbox(
     const TransformationMatrix<float, double, 3>& tm) const
 {
-    std::vector<CollisionLineAabb> res;
+    std::vector<CollisionLineAabb<double>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D line{l, tm};
-        res.push_back(CollisionLineAabb{
-            .base = CollisionLineSphere{
+        Line3D<double> line{l, tm};
+        res.push_back(CollisionLineAabb<double>{
+            .base = CollisionLineSphere<double>{
                 .bounding_sphere = line.bounding_sphere(),
                 .physics_material = physics_material,
                 .line = line.vertices(),
@@ -285,14 +283,13 @@ std::vector<CollisionLineAabb> ColoredVertexArray<TPos>::transformed_lines_bbox(
 }
 
 template <class TPos>
-std::vector<CollisionLineSphere> ColoredVertexArray<TPos>::transformed_lines_sphere(
-    const TransformationMatrix<float, double, 3>& tm) const
+std::vector<CollisionLineSphere<TPos>> ColoredVertexArray<TPos>::lines_sphere() const
 {
-    std::vector<CollisionLineSphere> res;
+    std::vector<CollisionLineSphere<TPos>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D line{l, tm};
-        res.push_back(CollisionLineSphere{
+        Line3D<TPos> line{ l };
+        res.push_back(CollisionLineSphere<TPos>{
             .bounding_sphere = line.bounding_sphere(),
             .physics_material = physics_material,
             .line = line.vertices(),

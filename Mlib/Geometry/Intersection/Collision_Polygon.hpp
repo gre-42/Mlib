@@ -3,19 +3,20 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <cstdint>
 
 namespace Mlib {
 
 enum class PhysicsMaterial: uint32_t;
 
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere {
-    BoundingSphere<double, 3> bounding_sphere;
-    ConvexPolygon3D<double, tnvertices> polygon;
+    BoundingSphere<TData, 3> bounding_sphere;
+    ConvexPolygon3D<TData, tnvertices> polygon;
     PhysicsMaterial physics_material;
-    FixedArray<FixedArray<double, 3>, tnvertices> corners;
-    inline CollisionPolygonSphere<tnvertices> operator - () const {
+    FixedArray<FixedArray<TData, 3>, tnvertices> corners;
+    inline CollisionPolygonSphere<TData, tnvertices> operator - () const {
         return {
             .bounding_sphere = bounding_sphere,
             .polygon = -polygon,
@@ -23,12 +24,22 @@ struct CollisionPolygonSphere {
             .corners = corners
         };
     }
+    CollisionPolygonSphere<double, tnvertices> transformed(
+        const TransformationMatrix<float, double, 3>& transformation_matrix) const
+    {
+        return {
+            .bounding_sphere = bounding_sphere.transformed(transformation_matrix),
+            .polygon = polygon.template casted<double>().transformed(transformation_matrix),
+            .physics_material = physics_material,
+            .corners = corners.template applied<FixedArray<double, 3>>([&](const auto& c){ return transformation_matrix.transform(c); })
+        };
+    }
 };
 
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonAabb {
-    CollisionPolygonSphere<tnvertices> base;
-    AxisAlignedBoundingBox<double, 3> aabb;
+    CollisionPolygonSphere<TData, tnvertices> base;
+    AxisAlignedBoundingBox<TData, 3> aabb;
 };
 
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Intersection/Welzl.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Edges.hpp>
+#include <Mlib/Geometry/Mesh/Collision_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Ridges.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Lazy_Transformed_Mesh.hpp>
@@ -102,7 +103,7 @@ void RigidBodies::add_rigid_body(
                         std::set<OrderableFixedArray<double, 3>> vertex_set;
                         std::vector<const FixedArray<double, 3>*> vertex_vector;
                         vertex_vector.reserve(3 * transformed.size());
-                        for (const CollisionPolygonAabb<3>& t : transformed) {
+                        for (const CollisionPolygonAabb<double, 3>& t : transformed) {
                             for (const auto& v : t.base.corners.flat_iterable()) {
                                 if (vertex_set.insert(OrderableFixedArray{v}).second) {
                                     vertex_vector.push_back(&v);
@@ -111,11 +112,11 @@ void RigidBodies::add_rigid_body(
                         }
                         auto aabb = AxisAlignedBoundingBox<double, 3>::from_iterator(vertex_set.begin(), vertex_set.end());
                         BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
-                        std::vector<CollisionPolygonSphere<3>> triangles;
+                        std::vector<CollisionPolygonSphere<double, 3>> triangles;
                         std::vector<CollisionRidgeSphere> ridges;
-                        std::vector<CollisionLineSphere> lines;
+                        std::vector<CollisionLineSphere<double>> lines;
                         triangles.reserve(transformed.size());
-                        for (const CollisionPolygonAabb<3>& t : transformed) {
+                        for (const CollisionPolygonAabb<double, 3>& t : transformed) {
                             triangles.push_back(t.base);
                         }
 
@@ -144,10 +145,10 @@ void RigidBodies::add_rigid_body(
                                         m->name,
                                         aabb,
                                         bounding_sphere,
-                                        std::vector<CollisionPolygonSphere<4>>(),
+                                        std::vector<CollisionPolygonSphere<double, 4>>(),
                                         std::move(triangles),
                                         std::move(lines),
-                                        std::vector<CollisionLineSphere>{},
+                                        std::vector<CollisionLineSphere<double>>{},
                                         std::move(ridges))}});
                     } else {
                         if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
@@ -183,7 +184,7 @@ void RigidBodies::add_rigid_body(
         RigidBodyAndMeshes& rbm = objects_.emplace_back(RigidBodyAndMeshes{ .rigid_body = { rb, CURRENT_SOURCE_LOCATION } });
         auto add_hitboxes = [&]<typename TPos>(
             const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes,
-            std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<ColoredVertexArray<TPos>>>>>& meshes)
+            std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<CollisionMesh<TPos>>>>>& meshes)
         {
             for (auto& cva : hitboxes) {
                 if (any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
@@ -222,7 +223,7 @@ void RigidBodies::add_rigid_body(
                     BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end(), rng);
                     meshes.push_back({
                         .physics_material = cva->physics_material,
-                        .mesh = std::make_pair(bs, cva)});
+                        .mesh = std::make_pair(bs, std::make_shared<CollisionMesh<TPos>>(*cva))});
                 }
             }
         };

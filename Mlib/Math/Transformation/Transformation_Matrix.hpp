@@ -44,12 +44,26 @@ public:
       t_{ t_from_NxN1(m) }
     {}
 
-    inline FixedArray<TPos, n> transform(const FixedArray<TPos, n>& rhs) const {
-        return dot1d(R_.template casted<TPos>(), rhs) + t_;
+    template <class TPos2>
+    inline auto transform(const FixedArray<TPos2, n>& rhs) const
+    {
+        using ResultR = decltype(TDir() * TPos2());
+        using ResultT = decltype(ResultR() + TPos());
+        auto R = R_.template casted<ResultR>();
+        auto rhs_c = rhs.template casted<ResultR>();
+        auto t = t_.template casted<ResultT>();
+        return dot1d(R, rhs_c).template casted<ResultT>() + t;
     }
 
-    inline FixedArray<TPos, n> itransform(const FixedArray<TPos, n>& rhs) const {
-        return dot(rhs - t_, R_.template casted<TPos>());
+    template <class TPos2>
+    inline auto itransform(const FixedArray<TPos2, n>& rhs) const
+    {
+        using ResultT = decltype(TPos2() - TPos());
+        using ResultR = decltype(ResultT() * TDir());
+        auto rhs_c = rhs.template casted<ResultT>();
+        auto t = t_.template casted<ResultT>();
+        auto R = R_.template casted<ResultR>();
+        return dot((rhs_c - t).template casted<ResultR>(), R);
     }
 
     inline TransformationMatrix operator * (const TransformationMatrix& rhs) const {
@@ -58,12 +72,20 @@ public:
             transform(rhs.t_)};
     }
 
-    inline FixedArray<TDir, n> rotate(const FixedArray<TDir, n>& rhs) const {
-        return dot1d(R_, rhs);
+    template <class TDir2>
+    inline auto rotate(const FixedArray<TDir2, n>& rhs) const {
+        using Result = decltype(TDir() * TDir2());
+        auto R = R_.template casted<Result>();
+        auto rhs_c = rhs.template casted<Result>();
+        return dot1d(R, rhs_c);
     }
 
-    inline FixedArray<TDir, n> irotate(const FixedArray<TDir, n>& rhs) const {
-        return dot(rhs, R_);
+    template <class TDir2>
+    inline auto irotate(const FixedArray<TDir2, n>& rhs) const {
+        using Result = decltype(TDir() * TDir2());
+        auto rhs_c = rhs.template casted<Result>();
+        auto R = R_.template casted<Result>();
+        return dot(rhs_c, R);
     }
 
     template <size_t m>

@@ -13,9 +13,9 @@ template <size_t tnvertices>
 static void compute_relevant_polygons(
     const IIntersectableMesh& mesh0,
     const CollisionRidgeSphere& e1,
-    std::vector<const CollisionPolygonSphere<tnvertices>*>& relevant_polygons0)
+    std::vector<const CollisionPolygonSphere<double, tnvertices>*>& relevant_polygons0)
 {
-    const std::vector<CollisionPolygonSphere<tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<double, tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
     relevant_polygons0.reserve(triangles0.size());
     for (const auto& t0 : triangles0) {
         if (e1.bounding_sphere.intersects(t0.bounding_sphere) && e1.bounding_sphere.intersects(t0.polygon.plane())) {
@@ -33,8 +33,8 @@ void Mlib::get_overlap2(
 {
     CollisionVertices vertices1;
     std::vector<const CollisionRidgeSphere*> relevant_edges0;
-    std::vector<const CollisionPolygonSphere<4>*> relevant_quads0;
-    std::vector<const CollisionPolygonSphere<3>*> relevant_triangles0;
+    std::vector<const CollisionPolygonSphere<double, 4>*> relevant_quads0;
+    std::vector<const CollisionPolygonSphere<double, 3>*> relevant_triangles0;
     compute_relevant_polygons(mesh0, e1, relevant_quads0);
     compute_relevant_polygons(mesh0, e1, relevant_triangles0);
     {

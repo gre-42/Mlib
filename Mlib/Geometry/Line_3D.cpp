@@ -9,30 +9,50 @@
 using namespace Mlib;
 
 template <class TPos>
-Line3D::Line3D(
-    const FixedArray<ColoredVertex<TPos>, 2>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation)
-: vertices_{
-    transformation.transform(vertices(0).position.template casted<double>()),
-    transformation.transform(vertices(1).position.template casted<double>())}
+Line3D<TPos>::Line3D(
+    const FixedArray<ColoredVertex<TPos>, 2>& vertices)
+    : vertices_{
+        vertices(0).position,
+        vertices(1).position }
 {}
 
-const FixedArray<FixedArray<double, 3>, 2>& Line3D::vertices() const {
+template <class TPos>
+template <class TPos2>
+Line3D<TPos>::Line3D(
+    const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation)
+    : vertices_{
+        transformation.transform(vertices(0).position.template casted<double>()),
+        transformation.transform(vertices(1).position.template casted<double>())}
+{}
+
+template <class TPos>
+const FixedArray<FixedArray<TPos, 3>, 2>& Line3D<TPos>::vertices() const {
     return vertices_;
 }
 
-RaySegment3D<double> Line3D::ray() const {
-    return RaySegment3D<double>{vertices_};
+template <class TPos>
+RaySegment3D<TPos> Line3D<TPos>::ray() const {
+    return RaySegment3D<TPos>{vertices_};
 }
 
-BoundingSphere<double, 3> Line3D::bounding_sphere() const
+template <class TPos>
+BoundingSphere<TPos, 3> Line3D<TPos>::bounding_sphere() const
 {
-    return BoundingSphere<double, 3>{vertices_};
+    return BoundingSphere<TPos, 3>{vertices_};
 }
 
-AxisAlignedBoundingBox<double, 3> Line3D::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>::from_points(vertices_);
+template <class TPos>
+AxisAlignedBoundingBox<TPos, 3> Line3D<TPos>::aabb() const {
+    return AxisAlignedBoundingBox<TPos, 3>::from_points(vertices_);
 }
 
-template Line3D::Line3D(const FixedArray<ColoredVertex<float>, 2>& vertices, const TransformationMatrix<float, double, 3>& transformation);
-template Line3D::Line3D(const FixedArray<ColoredVertex<double>, 2>& vertices, const TransformationMatrix<float, double, 3>& transformation);
+namespace Mlib {
+
+template class Line3D<float>;
+template class Line3D<double>;
+
+template Line3D<double>::Line3D(const FixedArray<ColoredVertex<float>, 2>&vertices, const TransformationMatrix<float, double, 3>&transformation);
+template Line3D<double>::Line3D(const FixedArray<ColoredVertex<double>, 2>&vertices, const TransformationMatrix<float, double, 3>&transformation);
+
+}

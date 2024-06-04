@@ -14,9 +14,10 @@ enum class CollisionType;
 enum class PhysicsMaterial: uint32_t;
 struct IntersectionSceneAndContact;
 struct CollisionHistory;
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 struct CollisionRidgeSphere;
+template <class TData>
 struct CollisionLineSphere;
 
 struct IntersectionScene {
@@ -24,10 +25,10 @@ struct IntersectionScene {
     RigidBodyVehicle& o1;
     const IIntersectableMesh* mesh0;
     const IIntersectableMesh* mesh1;
-    const CollisionLineSphere* l1;
+    const CollisionLineSphere<double>* l1;
     const CollisionRidgeSphere* r1;
-    const CollisionPolygonSphere<4>* q0;
-    const CollisionPolygonSphere<3>* t0;
+    const CollisionPolygonSphere<double, 4>* q0;
+    const CollisionPolygonSphere<double, 3>* t0;
     size_t tire_id1;
     PhysicsMaterial mesh0_material;
     PhysicsMaterial mesh1_material;

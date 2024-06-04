@@ -11,9 +11,10 @@ template <class TData, size_t tndim>
 class BoundingSphere;
 template <class TData, size_t tndim>
 class PlaneNd;
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 struct CollisionRidgeSphere;
+template <class TData>
 struct CollisionLineSphere;
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
@@ -30,7 +31,7 @@ public:
     virtual bool intersects(const BoundingSphere<double, 3>& sphere) const = 0;
     virtual bool intersects(const PlaneNd<double, 3>& plane) const = 0;
     template <size_t tnvertices>
-    inline const std::vector<CollisionPolygonSphere<tnvertices>>& get_polygons_sphere() const {
+    inline const std::vector<CollisionPolygonSphere<double, tnvertices>>& get_polygons_sphere() const {
         if constexpr (tnvertices == 4) {
             return get_quads_sphere();
         } else if constexpr (tnvertices == 3) {
@@ -40,10 +41,10 @@ public:
             static_assert(tnvertices == 4, "Unknown vertex-count");
         }
     }
-    virtual const std::vector<CollisionPolygonSphere<4>>& get_quads_sphere() const = 0;
-    virtual const std::vector<CollisionPolygonSphere<3>>& get_triangles_sphere() const = 0;
-    virtual const std::vector<CollisionLineSphere>& get_lines_sphere() const = 0;
-    virtual const std::vector<CollisionLineSphere>& get_edges_sphere() const = 0;
+    virtual const std::vector<CollisionPolygonSphere<double, 4>>& get_quads_sphere() const = 0;
+    virtual const std::vector<CollisionPolygonSphere<double, 3>>& get_triangles_sphere() const = 0;
+    virtual const std::vector<CollisionLineSphere<double>>& get_lines_sphere() const = 0;
+    virtual const std::vector<CollisionLineSphere<double>>& get_edges_sphere() const = 0;
     virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const = 0;
     const std::set<OrderableFixedArray<double, 3>>& get_vertices() const;
     virtual BoundingSphere<double, 3> bounding_sphere() const = 0;

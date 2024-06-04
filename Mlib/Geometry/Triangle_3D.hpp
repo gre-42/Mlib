@@ -15,18 +15,20 @@ class TransformationMatrix;
 template <class TPos>
 struct ColoredVertex;
 
+template <class TPos>
 class Triangle3D {
 public:
-    template <class TPos>
+    explicit Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices);
+    template <class TPos2>
     Triangle3D(
-        const FixedArray<ColoredVertex<TPos>, 3>& vertices,
+        const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
         const TransformationMatrix<float, double, 3>& transformation);
-    const FixedArray<FixedArray<double, 3>, 3>& vertices() const;
-    ConvexPolygon3D<double, 3> polygon() const;
-    BoundingSphere<double, 3> bounding_sphere(std::minstd_rand& rng) const;
-    AxisAlignedBoundingBox<double, 3> aabb() const;
+    const FixedArray<FixedArray<TPos, 3>, 3>& vertices() const;
+    ConvexPolygon3D<TPos, 3> polygon() const;
+    BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;
+    AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:
-    const FixedArray<FixedArray<double, 3>, 3> vertices_;
+    const FixedArray<FixedArray<TPos, 3>, 3> vertices_;
 };
 
 }

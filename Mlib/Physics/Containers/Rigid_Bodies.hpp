@@ -24,11 +24,13 @@ class IIntersectableMesh;
 struct PhysicsEngineConfig;
 template <class T>
 class DestructionFunctionsTokensObject;
+template <class TData>
+class CollisionMesh;
 
 struct RigidBodyAndMeshes {
     DanglingBaseClassRef<RigidBodyVehicle> rigid_body;
-    std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<ColoredVertexArray<float>>>>> smeshes;
-    std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>> dmeshes;
+    std::list<TypedMesh<std::pair<BoundingSphere<float, 3>, std::shared_ptr<CollisionMesh<float>>>>> smeshes;
+    std::list<TypedMesh<std::pair<BoundingSphere<double, 3>, std::shared_ptr<CollisionMesh<double>>>>> dmeshes;
     inline bool has_meshes() const {
         return !smeshes.empty() || !dmeshes.empty();
     }
@@ -46,12 +48,12 @@ struct RigidBodyAndIntersectableMesh {
 
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
-    CollisionPolygonSphere<3> ctp;
+    CollisionPolygonSphere<double, 3> ctp;
 };
 
 struct RigidBodyAndCollisionLineSphere {
     RigidBodyVehicle& rb;
-    CollisionLineSphere clp;
+    CollisionLineSphere<double> clp;
 };
 
 struct RigidBodyAndCollisionRidgeSphere {

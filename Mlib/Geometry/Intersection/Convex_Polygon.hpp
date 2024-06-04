@@ -66,6 +66,13 @@ public:
     inline ConvexPolygon3D<TData, tnvertices> operator - () const {
         return { edges_, -plane_ };
     }
+    template <class TData2>
+    ConvexPolygon3D<TData2, tnvertices> casted() const {
+        return {
+            edges_.template applied<PlaneNd<TData2, 3>>([](const auto& plane) { return plane.template casted<TData2>(); }),
+            plane_.template casted<TData2>()
+        };
+    }
 private:
     FixedArray<PlaneNd<TData, 3>, tnvertices> edges_;
     PlaneNd<TData, 3> plane_;

@@ -34,12 +34,17 @@ public:
         const auto& i0 = intercept;
         auto& n1 = result.normal;
         auto& i1 = result.intercept;
-        n1 = transformation_matrix.rotate(n0.template casted<TDir>()).template casted<TData>();
+        n1 = transformation_matrix.rotate(n0);
         i1 = i0 - dot0d(n1, transformation_matrix.t());
         // i1 = -dot0d(n1, trafo(n0 * (-i0))) = -dot0d(n1, -i0 * n1 + t) = i0 - dot0d(n1, t)
+        return PlaneNd{ n1, i1 };
     }
     PlaneNd operator - () const {
         return { -normal, -intercept };
+    }
+    template <class TData2>
+    PlaneNd<TData2, tndim> casted() const {
+        return { normal.template casted<TData2>(), TData2(intercept) };
     }
     FixedArray<TData, tndim> normal;
     TData intercept;

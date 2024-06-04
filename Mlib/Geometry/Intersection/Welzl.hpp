@@ -12,6 +12,9 @@
 
 namespace Mlib {
 
+static float WELZL_DUPLICATE_THRESHOLD = WELZL_DUPLICATE_THRESHOLD;
+static float WELZL_INTERIOR_THRESHOLD = 1e-7f;
+
 inline std::minstd_rand welzl_rng() {
     std::minstd_rand e;
     std::ignore = e();
@@ -54,18 +57,18 @@ std::optional<BoundingSphere<TData, tndim>> circumscribed_sphere(
     auto b = B - C;
     auto mac = max(abs(a));
     auto mbc = max(abs(b));
-    if ((mac < 1e-10) || (mbc < 1e-10)) {
+    if ((mac < WELZL_DUPLICATE_THRESHOLD) || (mbc < WELZL_DUPLICATE_THRESHOLD)) {
         return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, B }};
     }
     auto mab = max(abs(A - B));
-    if (mab < 1e-10) {
+    if (mab < WELZL_DUPLICATE_THRESHOLD) {
         return BoundingSphere<TData, tndim>{FixedArray<FixedArray<TData, tndim>, 2>{ A, C }};
     }
     auto scale = std::max({ mac, mbc, mab });
     a /= scale;
     b /= scale;
     auto denom = cc_2(a, b);
-    if (denom < 1e-10) {
+    if (denom < WELZL_DUPLICATE_THRESHOLD) {
         return std::nullopt;
     }
     auto radius = scale * std::sqrt(ssq(a) * ssq(b) * ssq(a - b) / denom) / TData(2);
@@ -87,22 +90,22 @@ std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
     auto m10 = max(abs(A[0]));
     auto m20 = max(abs(A[1]));
     auto m30 = max(abs(A[2]));
-    if ((m10 < 1e-10) || (m20 < 1e-10) || (m30 < 1e-10)) {
+    if ((m10 < WELZL_DUPLICATE_THRESHOLD) || (m20 < WELZL_DUPLICATE_THRESHOLD) || (m30 < WELZL_DUPLICATE_THRESHOLD)) {
         return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(1), x(2), x(3) }, rng);
     }
     auto m21 = max(abs(x(2) - x(1)));
     auto m31 = max(abs(x(3) - x(1)));
-    if ((m21 < 1e-10) || (m31 < 1e-10)) {
+    if ((m21 < WELZL_DUPLICATE_THRESHOLD) || (m31 < WELZL_DUPLICATE_THRESHOLD)) {
         return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(2), x(3) }, rng);
     }
     auto m32 = max(abs(x(3) - x(2)));
-    if (m32 < 1e-10) {
+    if (m32 < WELZL_DUPLICATE_THRESHOLD) {
         return circumscribed_sphere(FixedArray<FixedArray<TData, 3>, 3>{ x(0), x(1), x(3) }, rng);
     }
     auto scale = std::max({ m10, m20, m30, m21, m31, m32 });
     A /= scale;
     auto B = TData(0.5) * FixedArray<TData, 3>{ssq(A[0]), ssq(A[1]), ssq(A[2])};
-    auto optional_center = lstsq_chol_1d<TData, 3, 3>(A, B, 0, 0, nullptr, nullptr, TData(1e-10));
+    auto optional_center = lstsq_chol_1d<TData, 3, 3>(A, B, 0, 0, nullptr, nullptr, TData(WELZL_DUPLICATE_THRESHOLD));
     if (!optional_center.has_value()) {
         return std::nullopt;
     }
@@ -160,7 +163,7 @@ std::optional<BoundingSphere<TData, tndim>> welzl(
         if (!D.has_value()) {
             return std::nullopt;
         }
-        if (D.value().contains(*p_c, TData(1e-10))) {
+        if (D.value().contains(*p_c, TData(WELZL_INTERIOR_THRESHOLD))) {
             P.resize(P.size() + 1);
             P[P.size() - 1] = P[p_i];
             P[p_i] = p_c;

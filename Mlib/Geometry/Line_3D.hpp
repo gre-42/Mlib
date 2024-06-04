@@ -16,18 +16,20 @@ struct ColoredVertex;
 template <class TData>
 class RaySegment3D;
 
+template <class TPos>
 class Line3D {
 public:
-    template <class TPos>
+    explicit Line3D(const FixedArray<ColoredVertex<TPos>, 2>& vertices);
+    template <class TPos2>
     Line3D(
-        const FixedArray<ColoredVertex<TPos>, 2>& vertices,
+        const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
         const TransformationMatrix<float, double, 3>& transformation);
-    const FixedArray<FixedArray<double, 3>, 2>& vertices() const;
-    RaySegment3D<double> ray() const;
-    BoundingSphere<double, 3> bounding_sphere() const;
-    AxisAlignedBoundingBox<double, 3> aabb() const;
+    const FixedArray<FixedArray<TPos, 3>, 2>& vertices() const;
+    RaySegment3D<TPos> ray() const;
+    BoundingSphere<TPos, 3> bounding_sphere() const;
+    AxisAlignedBoundingBox<TPos, 3> aabb() const;
 private:
-    const FixedArray<FixedArray<double, 3>, 2> vertices_;
+    const FixedArray<FixedArray<TPos, 3>, 2> vertices_;
 };
 
 }

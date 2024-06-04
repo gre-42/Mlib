@@ -8,7 +8,7 @@ namespace Mlib {
 class RigidBodyVehicle;
 class PhysicsEngine;
 class IIntersectableMesh;
-template <size_t tnvertices>
+template <class TData, size_t tnvertices>
 struct CollisionPolygonSphere;
 
 class CollisionQuery {
@@ -22,7 +22,7 @@ public:
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
         FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon = nullptr,
+        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
@@ -33,7 +33,7 @@ public:
         double height_offset = 0,
         float time_offset = 0,
         FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon = nullptr,
+        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
@@ -44,7 +44,7 @@ public:
         double height_offset = 0,
         float time_offset = 0,
         FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<3>*, const CollisionPolygonSphere<4>*>* intersection_polygon = nullptr,
+        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
 private:
