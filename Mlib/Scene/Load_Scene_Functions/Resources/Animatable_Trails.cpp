@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Shading.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Batch_Renderers/Trails_Instance.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
@@ -28,6 +29,10 @@ DECLARE_ARGUMENT(max_num_triangles);
 
 const std::string AnimatableTrails::key = "animatable_trails";
 
+float as_seconds(float v) {
+    return v * seconds;
+}
+
 LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
@@ -42,7 +47,7 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
             .diffuse = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse, fixed_zeros<float, 3>()) },
             .specular = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular, fixed_zeros<float, 3>()) }
          },
-         times = args.arguments.at<std::vector<float>>(KnownArgs::times),
+         times = args.arguments.at_vector<float>(KnownArgs::times, as_seconds),
          w = args.arguments.at<std::vector<float>>(KnownArgs::w),
          max_num_triangles = args.arguments.at<size_t>(KnownArgs::max_num_triangles),
          filter = RenderableResourceFilter{}]

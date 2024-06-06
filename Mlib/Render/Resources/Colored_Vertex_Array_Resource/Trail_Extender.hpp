@@ -26,9 +26,9 @@ public:
         TrailsInstance& trails_instance,
         const TrailSequence& trail_sequence,
         const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
-        double minimum_length,
-        double maximum_length,
-        float maximum_duration);
+        double min_spawn_length,
+        double max_spawn_length,
+        float spawn_duration);
     virtual void append_location(
         const TransformationMatrix<float, double, 3>& location,
         TrailLocationType location_type) override;
@@ -37,9 +37,9 @@ private:
     TrailsInstance& trails_instance_;
     const TrailSequence& trail_sequence_;
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
-    double minimum_length_squared_;
-    double maximum_length_squared_;
-    float maximum_duration_;
+    double min_spawn_length_squared_;
+    double max_spawn_length_squared_;
+    float spawn_duration_;
     std::optional<PreviousCenter> previous_center_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<double, 3>> previous_vertices_;
     std::map<OrderableFixedArray<float, 2>, FixedArray<double, 3>> current_vertices_;

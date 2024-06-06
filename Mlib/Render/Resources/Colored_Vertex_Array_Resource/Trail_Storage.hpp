@@ -17,18 +17,18 @@ public:
         TrailsInstance& trails_instance,
         TrailSequence trail_sequence,
         const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
-        double minimum_length,
-        double maximum_length,
-        float maximum_duration);
+        double min_spawn_length,
+        double max_spawn_length,
+        float spawn_duration);
     virtual std::unique_ptr<ITrailExtender> add_trail_extender() override;
 
 private:
     TrailsInstance& trails_instance_;
     TrailSequence trail_sequence_;
     const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
-    double minimum_length_;
-    double maximum_length_;
-    float maximum_duration_;
+    double min_spawn_length_;
+    double max_spawn_length_;
+    float spawn_duration_;
 };
 
 }

@@ -23,18 +23,13 @@ DECLARE_ARGUMENT(animatable);
 DECLARE_ARGUMENT(model);
 DECLARE_ARGUMENT(u_offset);
 DECLARE_ARGUMENT(u_scale);
-DECLARE_ARGUMENT(times);
-DECLARE_ARGUMENT(w);
-DECLARE_ARGUMENT(minimum_length);
-DECLARE_ARGUMENT(maximum_length);
-DECLARE_ARGUMENT(maximum_duration);
+DECLARE_ARGUMENT(duration);
+DECLARE_ARGUMENT(min_spawn_length);
+DECLARE_ARGUMENT(max_spawn_length);
+DECLARE_ARGUMENT(spawn_duration);
 }
 
 const std::string AnimatedTrails::key = "animated_trails";
-
-inline float to_seconds(float value) {
-    return value * seconds;
-}
 
 LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
@@ -51,11 +46,10 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
          model = args.arguments.at<std::string>(KnownArgs::model),
          u_offset = args.arguments.at<float>(KnownArgs::u_offset),
          u_scale = args.arguments.at<float>(KnownArgs::u_scale),
-         times = args.arguments.at_vector<float>(KnownArgs::times, to_seconds),
-         w = args.arguments.at<std::vector<float>>(KnownArgs::w),
-         minimum_length = args.arguments.at<double>(KnownArgs::minimum_length) * meters,
-         maximum_length = args.arguments.at<double>(KnownArgs::maximum_length) * meters,
-         maximum_duration = args.arguments.at<float>(KnownArgs::maximum_duration) * seconds]
+         duration = args.arguments.at<float>(KnownArgs::duration) * seconds,
+         min_spawn_length = args.arguments.at<double>(KnownArgs::min_spawn_length) * meters,
+         max_spawn_length = args.arguments.at<double>(KnownArgs::max_spawn_length) * meters,
+         spawn_duration = args.arguments.at<float>(KnownArgs::spawn_duration) * seconds]
         (TrailsInstance& trails_instance)
         {
             auto m = sr.get_single_precision_array(model);
@@ -64,12 +58,12 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
                 TrailSequence{
                     .u_offset = u_offset,
                     .u_scale = u_scale,
-                    .times_to_w = Interp<float>{ times, w, OutOfRangeBehavior::CLAMP }
+                    .duration = duration
                 },
                 m->triangles,
-                minimum_length,
-                maximum_length,
-                maximum_duration));
+                min_spawn_length,
+                max_spawn_length,
+                spawn_duration));
         });
     pt.insert_storage_to_instance(name, animatable);
 };
