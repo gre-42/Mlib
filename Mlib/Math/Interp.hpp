@@ -12,7 +12,8 @@ namespace Mlib {
 enum class OutOfRangeBehavior {
     THROW,
     EXPLICIT,
-    CLAMP
+    CLAMP,
+    EXTRAPOLATE
 };
 
 template <class TDataX, class TDataY>
@@ -39,6 +40,10 @@ public:
         }
     }
     TDataY operator () (const TDataX& vx) const {
+        auto interpolate = [&](size_t i) {
+            TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
+            return (TDataY)(y_[i - 1] * (1 - alpha) + y_[i] * alpha);
+            };
         if (x_.empty()) {
             THROW_OR_ABORT("size must be >= 1");
         }
@@ -50,9 +55,10 @@ public:
                 return low_;
             case OutOfRangeBehavior::CLAMP:
                 return y_.front();
-            default:
-                THROW_OR_ABORT("Unknown interpolation behavior");
+            case OutOfRangeBehavior::EXTRAPOLATE:
+                return (x_.size() == 1) ? y_[0] : interpolate(1);
             }
+            THROW_OR_ABORT("Unknown interpolation behavior");
         }
         auto it = std::lower_bound(x_.begin(), x_.end(), vx);
         if (it == x_.end()) {
@@ -63,16 +69,15 @@ public:
                 return high_;
             case OutOfRangeBehavior::CLAMP:
                 return y_.back();
-            default:
-                THROW_OR_ABORT("Unknown interpolation behavior");
+            case OutOfRangeBehavior::EXTRAPOLATE:
+                return (x_.size() == 1) ? y_[0] : interpolate(x_.size() - 1);
             }
+            THROW_OR_ABORT("Unknown interpolation behavior");
         }
         if (it == x_.begin()) {
             return y_[0];
         }
-        size_t i = (size_t)(it - x_.begin());
-        TDataX alpha = (vx  - x_[i - 1]) / (x_[i] - x_[i - 1]);
-        return (TDataY)(y_[i - 1] * (1 - alpha) + y_[i] * alpha);
+        return interpolate((size_t)(it - x_.begin()));
     }
     bool is_within_range(const TDataX& vx) const {
         if (x_.empty()) {

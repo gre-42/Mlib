@@ -58,7 +58,7 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
                 TrailSequence{
                     .u_offset = u_offset,
                     .u_scale = u_scale,
-                    .duration = duration
+                    .times_to_w = Interp<float>{ {0.f, duration}, {0.f, duration}, OutOfRangeBehavior::EXTRAPOLATE }
                 },
                 m->triangles,
                 min_spawn_length,

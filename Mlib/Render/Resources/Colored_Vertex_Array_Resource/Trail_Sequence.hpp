@@ -1,11 +1,12 @@
 #pragma once
+#include <Mlib/Math/Interp.hpp>
 
 namespace Mlib {
 
 struct TrailSequence {
     float u_offset;
     float u_scale;
-    float duration;
+    Interp<float> times_to_w;
 };
 
 }

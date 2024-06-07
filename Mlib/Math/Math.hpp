@@ -1153,7 +1153,7 @@ void assert_allclose(const Array<TData>& a, const Array<TData>& b, typename Floa
     a.shape().foreach([&](const ArrayShape& index) {
         if (!isclose(a(index), b(index), atol)) {
             std::stringstream sstr;
-            sstr << "Numbers not close (atol=" << atol << ") at " <<
+            sstr << std::setprecision(18) << "Numbers not close (atol=" << atol << ") at " <<
                 index << ": " << a(index) << ", " << b(index);
             THROW_OR_ABORT(sstr.str());
         }

@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <algorithm>
 #include <iomanip>
 #include <list>
 #include <ostream>

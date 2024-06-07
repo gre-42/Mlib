@@ -413,13 +413,34 @@ void test_fixed_cholesky() {
 }
 
 void test_interp() {
-    Interp<float> interp{{0.f, 0.1f, 2.f, 3.f}, {4.123f, 2.567f, 3.89f, 4.2f}, OutOfRangeBehavior::EXPLICIT, -10, 20};
-    assert_allclose(
-        Array<float>{interp(-1.f), interp(4.3f)},
-        Array<float>{-10, 20});
-    assert_allclose(
-        Array<float>{interp(0.f), interp(0.05f), interp(0.1f), interp(2.f), interp(3.f)},
-        Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
+    {
+        Interp<float> interp{
+            {0.f, 0.1f, 2.f, 3.f},
+            {4.123f, 2.567f, 3.89f, 4.2f},
+            OutOfRangeBehavior::EXPLICIT,
+            -10,
+            20 };
+        assert_allclose(
+            Array<float>{interp(-1.f), interp(4.3f)},
+            Array<float>{-10, 20});
+        assert_allclose(
+            Array<float>{interp(0.f), interp(0.05f), interp(0.1f), interp(2.f), interp(3.f)},
+            Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
+    }
+    {
+        Interp<float> interp{
+            {0.f, 0.1f, 2.f, 3.f},
+            {4.123f, 2.567f, 3.89f, 4.2f},
+            OutOfRangeBehavior::EXTRAPOLATE,
+            -10,
+            20 };
+        assert_allclose(
+            Array<float>{interp(-1.f), interp(4.3f)},
+            Array<float>{19.6830024719238281, 4.60299968719482422});
+        assert_allclose(
+            Array<float>{interp(0.f), interp(0.05f), interp(0.1f), interp(2.f), interp(3.f)},
+            Array<float>{4.123f, 3.345f, 2.567f, 3.89f, 4.2f});
+    }
 }
 
 void test_projection() {

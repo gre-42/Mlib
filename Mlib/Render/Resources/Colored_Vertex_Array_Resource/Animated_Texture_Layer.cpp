@@ -34,7 +34,8 @@ void AnimatedTextureLayer::update(std::chrono::steady_clock::time_point time) {
         auto time_offset = std::chrono::duration<float>(time - time_).count() * seconds;
         for (size_t i = 0; i < tmp_length(); ++i) {
             const auto& ai = animation_times_[i];
-            texture_layer_[i] = ai + time_offset;
+            const auto& bi = *animation_sequences_[i];
+            texture_layer_[i] = ai.applied([&](const auto& v) { return bi.times_to_w(v + time_offset); });
         }
     }
     va_.update();
@@ -114,7 +115,7 @@ void AnimatedTextureLayer::move(float dt, std::chrono::steady_clock::time_point 
         auto& ai = animation_times_[i];
         auto& bi = animation_sequences_[i];
         ai += fixed_full<float, 3>(dt);
-        if (any(ai <= bi->duration)) {
+        if (any(ai <= bi->times_to_w.xmax())) {  // Note that this includes negative times, which is intended.
             ++i;
         } else {
             triangle_.remove(i);
