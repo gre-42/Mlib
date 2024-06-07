@@ -11,9 +11,6 @@
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <filesystem>
 
-namespace fs = std::filesystem;
-using json = nlohmann::json;
-
 using namespace Mlib;
 
 // template <class TValue>
@@ -27,15 +24,15 @@ using namespace Mlib;
 
 std::string gen_filename(const std::string& f, const std::string& texture_name) {
     if (!texture_name.empty()) {
-        fs::path p = fs::path(f).parent_path();
-        return p.empty() ? texture_name : fs::weakly_canonical(p / texture_name).string();
+        std::filesystem::path p = std::filesystem::path(f).parent_path();
+        return p.empty() ? texture_name : std::filesystem::weakly_canonical(p / texture_name).string();
     } else {
         return "";
     }
 }
 
 struct ScaleAndOffset {
-    explicit ScaleAndOffset(const json& j) {
+    explicit ScaleAndOffset(const nlohmann::json& j) {
         scale10 = 10 * j.at("scale").get<float>();
         offset = j.at("offset").get<FixedArray<float, 3>>();
     }
@@ -51,7 +48,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         THROW_OR_ABORT("Static lighting not supported for mhx2 files");
     }
 
-    json j;
+    nlohmann::json j;
     {
         auto f = create_ifstream(filename);
         if (f->fail()) {
@@ -65,8 +62,8 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
 
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     {
-        ScaleAndOffset so_skelleton{j.at("skeleton")};
-        auto bones = j.at("skeleton").at("bones");
+        ScaleAndOffset so_skelleton{ j.at("skeleton") };
+        const auto& bones = j.at("skeleton").at("bones");
         std::map<std::string, Bone*> bone_names;
         for (const auto& bone : bones) {
             FixedArray<float, 4, 4> initial_absolute_transformation;
@@ -337,7 +334,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         result->scvas.push_back(tl.triangle_array());
         tl.triangles.clear();
     }
-    FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
+    FixedArray<float, 3, 3> rotation_matrix_p{ tait_bryan_angles_2_matrix(cfg.rotation) };
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result->scvas) {
         for (auto& t : l->triangles) {

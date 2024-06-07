@@ -91,18 +91,18 @@ template <class TPos>
 std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
     std::vector<FixedArray<TPos, 3>> res;
     res.reserve(quads.size() * 4 + triangles.size() * 3 + lines.size() * 2);
-    for (auto& v : quads) {
+    for (const auto& v : quads) {
         res.push_back(v(0).position);
         res.push_back(v(1).position);
         res.push_back(v(2).position);
         res.push_back(v(3).position);
     }
-    for (auto& v : triangles) {
+    for (const auto& v : triangles) {
         res.push_back(v(0).position);
         res.push_back(v(1).position);
         res.push_back(v(2).position);
     }
-    for (auto& v : lines) {
+    for (const auto& v : lines) {
         res.push_back(v(0).position);
         res.push_back(v(1).position);
     }
