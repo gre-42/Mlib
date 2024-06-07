@@ -45,7 +45,7 @@ public:
     std::chrono::steady_clock::time_point time() const;
 
     size_t tmp_length() const;
-    size_t tmp_empty();
+    size_t tmp_empty() const;
     size_t capacity() const;
 
 private:

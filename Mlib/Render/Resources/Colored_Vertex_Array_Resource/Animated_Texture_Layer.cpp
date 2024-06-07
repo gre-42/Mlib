@@ -150,7 +150,7 @@ size_t AnimatedTextureLayer::tmp_length() const {
     return tmp_num_triangles_;
 }
 
-size_t AnimatedTextureLayer::tmp_empty() {
+size_t AnimatedTextureLayer::tmp_empty() const {
     return tmp_num_triangles_ == 0;
 }
 
