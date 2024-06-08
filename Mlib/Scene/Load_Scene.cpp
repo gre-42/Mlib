@@ -229,6 +229,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Array_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bounds.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Bullet_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
@@ -476,6 +477,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateConstantScreenConstraint::key, CreateConstantScreenConstraint::json_user_function);
     register_json_user_function(CreateFractionalScreenConstraint::key, CreateFractionalScreenConstraint::json_user_function);
     register_json_user_function(SetAnimatedDynamicLightProperties::key, SetAnimatedDynamicLightProperties::json_user_function);
+    register_json_user_function(SetBounds::key, SetBounds::json_user_function);
     register_json_user_function(SetConstantDynamicLightProperties::key, SetConstantDynamicLightProperties::json_user_function);
     register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
     register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);

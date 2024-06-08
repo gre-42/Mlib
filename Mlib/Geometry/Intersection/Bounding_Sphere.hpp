@@ -4,6 +4,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Uninitialized.hpp>
 
 #ifdef __GNUC__
     #pragma GCC push_options
@@ -20,18 +21,19 @@ class TransformationMatrix;
 template <class TData, size_t tndim>
 class BoundingSphere {
 public:
+    BoundingSphere(Uninitialized) {}
     BoundingSphere(
         const FixedArray<TData, tndim>& center,
         const TData& radius)
-    : center_{center},
-      radius_{radius}
+        : center_{ center }
+        , radius_{ radius }
     {}
     explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, 2>& line)
-    : BoundingSphere{from_iterator(line.flat_begin(), line.flat_end())}
+        : BoundingSphere{ from_iterator(line.flat_begin(), line.flat_end()) }
     {}
     template <size_t tnpoints>
     explicit BoundingSphere(const FixedArray<FixedArray<TData, tndim>, tnpoints>& points)
-    : BoundingSphere{from_iterator(points.flat_begin(), points.flat_end())}
+        : BoundingSphere{ from_iterator(points.flat_begin(), points.flat_end()) }
     {}
     template <class TIterable>
     static BoundingSphere from_center_and_iterator(

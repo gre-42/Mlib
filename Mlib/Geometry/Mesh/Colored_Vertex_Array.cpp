@@ -530,6 +530,27 @@ BoundingSphere<TPos, 3> ColoredVertexArray<TPos>::bounding_sphere() const {
 }
 
 template <class TPos>
+void ColoredVertexArray<TPos>::set_bounds(
+    const AxisAlignedBoundingBox<TPos, 3>& aabb,
+    const BoundingSphere<TPos, 3>& bounding_sphere)
+{
+    {
+        std::scoped_lock lock{ aabb_mutex_.value };
+        if (aabb_.has_value()) {
+            THROW_OR_ABORT("AABB already set");
+        }
+        aabb_ = aabb;
+    }
+    {
+        std::scoped_lock lock{ bounding_sphere_mutex_.value };
+        if (bounding_sphere_.has_value()) {
+            THROW_OR_ABORT("Bounding sphere already set");
+        }
+        bounding_sphere_ = bounding_sphere;
+    }
+}
+
+template <class TPos>
 double ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
     return material.max_center_distance(billboard_id);
 }
