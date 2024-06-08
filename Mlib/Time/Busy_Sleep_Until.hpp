@@ -6,7 +6,7 @@ namespace Mlib {
 template <class Clock, class Duration>
 void busy_sleep_until(
 	const std::chrono::time_point<Clock, Duration>& sleep_time,
-	const Duration& busy_duration = std::chrono::milliseconds{ 2 })
+	const Duration& busy_duration = std::chrono::milliseconds{ 5 })
 {
 	auto total_duration = sleep_time - std::chrono::steady_clock::now();
 	auto sleep_duration = total_duration - busy_duration;
