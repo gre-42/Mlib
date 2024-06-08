@@ -15,8 +15,7 @@ using namespace Mlib;
 AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
 {}
 
-AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays()
-{}
+AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays() = default;
 
 std::vector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
     const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const

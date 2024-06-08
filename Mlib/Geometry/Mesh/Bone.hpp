@@ -7,6 +7,8 @@ namespace Mlib {
 
 struct Bone {
     size_t index;
+    // The initial transformation is the transformation in the MHX2-file,
+    // the bone transformation is from the BVH-file.
     OffsetAndQuaternion<float, float> initial_absolute_transformation;
     std::vector<std::unique_ptr<Bone>> children;
     std::vector<OffsetAndQuaternion<float, float>> rebase_to_initial_absolute_transform(

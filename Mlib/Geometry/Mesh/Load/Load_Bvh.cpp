@@ -51,7 +51,7 @@ BvhLoader::BvhLoader(
                 if ((match[1].str() == "ROOT") != joint_stack.empty()) {
                     THROW_OR_ABORT("Inconsistent ROOT hierarchy");
                 }
-                if (!joint_stack.empty() && !parents_.insert({joint_name, joint_stack.back()}).second)
+                if (!joint_stack.empty() && !parents_.try_emplace(joint_name, joint_stack.back()).second)
                 {
                     THROW_OR_ABORT("Parent of \"" + joint_name + "\" already set");
                 }
@@ -255,7 +255,7 @@ void BvhLoader::compute_absolute_transformation(
     } else {
         if (ncalls > 100) {
             for (const auto& [n, p] : parents_) {
-                std::cerr << n << " -> " << p << std::endl;
+                lerr() << n << " -> " << p;
             }
             THROW_OR_ABORT("Recursion depth exceeded, probably loop in parents mapping");
         }
@@ -277,7 +277,7 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute
     return result;
 }
 
-int mod(int x, int n) {
+static int mod(int x, int n) {
     return (x % n + n) % n;
 }
 
