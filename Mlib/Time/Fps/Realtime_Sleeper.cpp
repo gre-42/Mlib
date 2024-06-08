@@ -1,5 +1,6 @@
 #include "Realtime_Sleeper.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Time/Busy_Sleep_Until.hpp>
 #include <cmath>
 #include <thread>
 
@@ -34,11 +35,12 @@ void RealtimeSleeper::tick() {
         if (residual_time.count() > 0) {
             is_up_to_date_ = true;
             // busy wait
-            while(residual_time.count() > 0) {
-                current_time = std::chrono::steady_clock::now();
-                residual_time = sim_time_ - current_time;
-            }
+            // while(residual_time.count() > 0) {
+            //     current_time = std::chrono::steady_clock::now();
+            //     residual_time = sim_time_ - current_time;
+            // }
             // Mlib::sleep_for(residual_time);
+            busy_sleep_until(sim_time_);
         } else {
             is_up_to_date_ = false;
             if (print_residual_time_) {

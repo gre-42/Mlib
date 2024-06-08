@@ -79,15 +79,10 @@ RenderableScene::RenderableScene(
           .physics_set_fps = &physics_set_fps_}
     , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
     , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
-    , paused_{[this, &ui_focus, focus_filter](){
-        {
-            std::shared_lock lock{ui_focus.focuses.mutex};
-            if (!ui_focus.has_focus(focus_filter)) {
-                return true;
-            }
-        }
-        return physics_engine_.empty();
-      }}
+    , paused_{ [this, &ui_focus, focus_filter]() {
+        std::shared_lock lock{ui_focus.focuses.mutex};
+        return !ui_focus.has_focus(focus_filter);
+      } }
     , physics_sleeper_{
           "Physics FPS: ",
           scene_config_.physics_engine_config.dt / seconds,

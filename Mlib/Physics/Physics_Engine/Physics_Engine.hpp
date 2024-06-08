@@ -40,7 +40,6 @@ public:
     void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);
     inline const PhysicsEngineConfig& config() const { return cfg_; }
-    bool empty() const;
 
     RigidBodies rigid_bodies_;
     AdvanceTimes advance_times_;

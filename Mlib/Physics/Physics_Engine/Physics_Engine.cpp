@@ -216,7 +216,3 @@ void PhysicsEngine::remove_controllable(IControllable& co) {
         THROW_OR_ABORT("IControllable does not exist");
     }
 }
-
-bool PhysicsEngine::empty() const {
-    return rigid_bodies_.empty() && advance_times_.empty();
-}
