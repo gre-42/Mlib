@@ -1,5 +1,6 @@
 #include "Load_Bvh.hpp"
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -11,11 +12,7 @@ using namespace Mlib;
 
 FixedArray<float, 4, 4> Mlib::get_parameter_transformation(const std::string& name) {
     if (name == "xz-y") {
-        return FixedArray<float, 4, 4>::init(
-            1.f,  0.f, 0.f, 0.f,
-            0.f,  0.f, 1.f, 0.f,
-            0.f, -1.f, 0.f, 0.f,
-            0.f,  0.f, 0.f, 1.f);
+        return x_z_my;
     } else {
         THROW_OR_ABORT("Unknown parameter transformation: " + name);
     }
@@ -69,10 +66,11 @@ BvhLoader::BvhLoader(
                 joint_stack.push_back(joint_name);
             } else if (Mlib::re::regex_match(line, match, offs_re)) {
                 if (joint_name != "<end site>") {
-                    if (!offsets_.insert({joint_name, FixedArray<float, 3>{
+                    if (!offsets_.try_emplace(
+                        joint_name,
                         safe_stof(match[1].str()),
                         safe_stof(match[2].str()),
-                        safe_stof(match[3].str())}}).second)
+                        safe_stof(match[3].str())).second)
                     {
                         THROW_OR_ABORT("Could not insert offset for joint " + joint_name);
                     }
@@ -144,12 +142,11 @@ BvhLoader::BvhLoader(
                 THROW_OR_ABORT("Too many frames in BVH file");
             }
             auto& frame = raw_frames.emplace_back();
-            for (const auto& o : offsets_) {
-                frame[o.first][0] = o.second;
+            for (const auto& [joint_name, offset] : offsets_) {
+                frame[joint_name][0] = offset;
             }
-            size_t i = 0;
-            for (const auto& c : columns_) {
-                frame[c.joint_name](c.pose_index0, c.pose_index1) = d[i++];
+            for (const auto& [i, c] : enumerate(columns_)) {
+                frame[c.joint_name](c.pose_index0, c.pose_index1) = d[i];
                 //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
@@ -181,18 +178,18 @@ BvhLoader::BvhLoader(
     }
     transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));
     for (size_t i = 0; i < raw_frames.size(); ++i) {
-        for (const auto& p : raw_frames[i]) {
-            const FixedArray<float, 3>& position = p.second[0];
-            const FixedArray<float, 3>& rotation = p.second[1];
-            FixedArray<float, 4, 4> m = assemble_homogeneous_4x4(
+        for (const auto& [joint_name, transformation] : raw_frames[i]) {
+            const auto& position = transformation[0];
+            const auto& rotation = transformation[1];
+            auto m = assemble_homogeneous_4x4(
                 tait_bryan_angles_2_matrix(
                     rotation * degrees,
                     cfg_.rotation_order),
                 position * cfg_.scale);
-            const FixedArray<float, 4, 4>& n = cfg_.parameter_transformation;
-            if (!transformed_frames_[i].insert({
-                p.first,
-                OffsetAndQuaternion<float, float>{dot2d(n, dot2d(m, n.T()))}}).second)
+            const auto& n = cfg_.parameter_transformation;
+            if (!transformed_frames_[i].try_emplace(
+                joint_name,
+                dot2d(n, dot2d(m, n.T()))).second)
             {
                 THROW_OR_ABORT("Could not insert transformed frame");
             }
@@ -294,25 +291,30 @@ void BvhLoader::smoothen() {
     if (!cfg_.periodic) {
         THROW_OR_ABORT("Aperiodic smoothing not implemented");
     }
-    std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>> smoothed_transformed_frames((transformed_frames_.size() - 1));
-    const auto& get_cyclic_frame = [this](int i){
-        return transformed_frames_.at((size_t)mod(i, (int)(transformed_frames_.size() - 1)));
+    std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>>
+        smoothed_transformed_frames(transformed_frames_.size());
+    // The "smoothen" function is a private function and is called before
+    // the periodic extension takes place, so no "size - 1" here.
+    auto N = integral_cast<int>(transformed_frames_.size());
+    auto r = integral_cast<int>(cfg_.smooth_radius);
+    auto get_cyclic_frame = [&](int i) {
+        return transformed_frames_.at((size_t)mod(i, N));
     };
-    for (int t = 0; t < (int)(transformed_frames_.size() - 1); ++t) {
-        std::map<std::string, OffsetAndQuaternion<float, float>> fn = get_cyclic_frame(t - (int)cfg_.smooth_radius);
-        for (int i = t - (int)cfg_.smooth_radius + 1; i < t; ++i) {
-            for (const auto& f : get_cyclic_frame(i)) {
-                fn.at(f.first) = fn.at(f.first).slerp(f.second, cfg_.smooth_alpha);
+    for (int t = 0; t < N; ++t) {
+        auto fn = get_cyclic_frame(t - r);
+        for (int i = t - r + 1; i < t; ++i) {
+            for (const auto& [joint_name, transformation] : get_cyclic_frame(i)) {
+                fn.at(joint_name) = fn.at(joint_name).slerp(transformation, cfg_.smooth_alpha);
             }
         }
-        std::map<std::string, OffsetAndQuaternion<float, float>> fp = get_cyclic_frame(t + (int)cfg_.smooth_radius);
-        for (int i = t + (int)cfg_.smooth_radius - 1; i > t; --i) {
-            for (const auto& f : get_cyclic_frame(i)) {
-                fp.at(f.first) = fp.at(f.first).slerp(f.second, cfg_.smooth_alpha);
+        auto fp = get_cyclic_frame(t + r);
+        for (int i = t + r - 1; i > t; --i) {
+            for (const auto& [joint_name, transformation] : get_cyclic_frame(i)) {
+                fp.at(joint_name) = fp.at(joint_name).slerp(transformation, cfg_.smooth_alpha);
             }
         }
-        for (const auto& en : fn) {
-            smoothed_transformed_frames.at((size_t)t)[en.first] = en.second.slerp(fp.at(en.first), 0.5);
+        for (const auto& [joint_name, transformation] : fn) {
+            smoothed_transformed_frames.at((size_t)t)[joint_name] = transformation.slerp(fp.at(joint_name), 0.5);
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);

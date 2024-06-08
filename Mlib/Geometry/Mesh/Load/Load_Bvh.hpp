@@ -25,6 +25,12 @@ struct BvhConfig {
     FixedArray<float, 4, 4> parameter_transformation = fixed_identity_array<float, 4>();
 };
 
+static const auto x_z_my = FixedArray<float, 4, 4>::init(
+    1.f,  0.f, 0.f, 0.f,
+    0.f,  0.f, 1.f, 0.f,
+    0.f, -1.f, 0.f, 0.f,
+    0.f,  0.f, 0.f, 1.f);
+
 static const BvhConfig blender_bvh_config{
     .smooth_radius = 20,
     .smooth_alpha = 0.9f,
@@ -32,11 +38,7 @@ static const BvhConfig blender_bvh_config{
     .demean = false,
     .scale = 1,
     .rotation_order = {2u, 1u, 0u},
-    .parameter_transformation = FixedArray<float, 4, 4>::init(
-        1.f,  0.f, 0.f, 0.f,
-        0.f,  0.f, 1.f, 0.f,
-        0.f, -1.f, 0.f, 0.f,
-        0.f,  0.f, 0.f, 1.f)};
+    .parameter_transformation = x_z_my};
 
 FixedArray<float, 4, 4> get_parameter_transformation(const std::string& name);
 
