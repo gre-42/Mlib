@@ -54,7 +54,7 @@ DECLARE_ARGUMENT(occluder_pass);
 
 namespace Mlib {
 
-void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
+static void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
     JsonView jv{ j };
     jv.validate(BB::options);
     j.at(BB::uv_scale).get_to(bb.uv_scale);
