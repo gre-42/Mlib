@@ -102,7 +102,7 @@ void DynamicInstanceBuffers::move(float dt) {
             }
             billboard_ids_[i] = bi->billboard_ids[frame_index];
             if (has_per_instance_continuous_texture_layer_) {
-                texture_layers_.value()[i] = ai / bi->duration * bi->final_texture_layer;
+                texture_layers_.value()[i] = ai / bi->duration * bi->final_texture_w;
             }
             ++i;
         } else {

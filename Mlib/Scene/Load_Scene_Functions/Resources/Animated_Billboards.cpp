@@ -19,7 +19,7 @@ DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(animatable);
 DECLARE_ARGUMENT(frames);
 DECLARE_ARGUMENT(duration);
-DECLARE_ARGUMENT(final_texture_layer);
+DECLARE_ARGUMENT(final_texture_w);
 }
 
 const std::string AnimatedBillboards::key = "animated_billboards";
@@ -36,7 +36,7 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
         name,
         [frames = args.arguments.at<std::vector<uint32_t>>(KnownArgs::frames),
          duration = args.arguments.at<float>(KnownArgs::duration),
-         final_texture_layer = args.arguments.at<float>(KnownArgs::final_texture_layer, 0.f)]
+         final_texture_w = args.arguments.at<float>(KnownArgs::final_texture_w, 0.f)]
         (ParticlesInstance& particles_instance)
         {
             return std::unique_ptr<IParticleCreator>(new ParticleCreator(
@@ -44,7 +44,7 @@ LoadSceneJsonUserFunction AnimatedBillboards::json_user_function = [](const Load
                 BillboardSequence{
                     .billboard_ids = frames,
                     .duration = duration * seconds,
-                    .final_texture_layer = final_texture_layer}));
+                    .final_texture_w = final_texture_w}));
         });
     pr.insert_creator_to_instance(name, animatable);
 };

@@ -7,7 +7,7 @@ namespace Mlib {
 struct BillboardSequence {
     std::vector<uint32_t> billboard_ids;
     float duration;
-    float final_texture_layer;
+    float final_texture_w;
 };
 
 }
