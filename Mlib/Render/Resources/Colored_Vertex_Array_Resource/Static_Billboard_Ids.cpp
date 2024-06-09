@@ -9,14 +9,14 @@ using namespace Mlib;
 StaticBillboardIds::StaticBillboardIds(
     const std::vector<TransformationAndBillboardId>& instances,
     uint32_t num_billboard_atlas_components)
-: instances_{instances},
-  num_billboard_atlas_components_{num_billboard_atlas_components}
+    : instances_{ instances }
+    , num_billboard_atlas_components_{ num_billboard_atlas_components }
 {
     if (num_billboard_atlas_components_ == 0) {
         return;
     }
     billboard_ids_.reserve(instances_.size());
-    for (const TransformationAndBillboardId &m : instances_) {
+    for (const TransformationAndBillboardId& m : instances_) {
         if (m.billboard_id >= num_billboard_atlas_components_) {
             THROW_OR_ABORT("Billboard ID too large");
         }

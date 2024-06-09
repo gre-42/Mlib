@@ -1628,7 +1628,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_yangle,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
-        id.has_continuous_vertex_texture_layer,
+        id.has_continuous_texture_layer,
         id.has_discrete_vertex_texture_layer,
         id.has_discrete_atlas_texture_layer,
         id.reorient_normals,
@@ -1662,7 +1662,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.reflection_strength,
         id.reflect_only_y,
         id.ntextures_dirt != 0,
-        id.has_continuous_vertex_texture_layer,
+        id.has_continuous_texture_layer,
         id.has_discrete_atlas_texture_layer || id.has_discrete_vertex_texture_layer,
         id.ntextures_interior != 0,
         id.facade_edge_size,
@@ -1950,7 +1950,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(
             IDX_INSTANCE_ATTRS,
-            IDX_BILLBOARD_IDS);
+            IDX_BILLBOARD_IDS,
+            IDX_TEXTURE_LAYER);
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {

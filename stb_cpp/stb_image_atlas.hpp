@@ -4,11 +4,23 @@
 #include <string>
 #include <vector>
 
-struct AtlasTile {
+struct AtlasTileTarget {
     int left;
     int bottom;
     size_t layer;
-    StbInfo<uint8_t> image;
+};
+
+struct AtlasTileSource {
+    int left;
+    int bottom;
+    int width;
+    int height;
+    const StbInfo<uint8_t>& image;
+};
+
+struct AtlasTile {
+    AtlasTileSource source;
+    AtlasTileTarget target;
 };
 
 void build_image_atlas(

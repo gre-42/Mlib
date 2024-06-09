@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Billboard_Sequence.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Billboard_Ids.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Continuous_Texture_Layer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
@@ -24,6 +25,7 @@ public:
         TransformationMode transformation_mode,
         size_t max_num_instances,
         uint32_t num_billboard_atlas_components,
+        bool has_per_instance_continuous_texture_layer,
         ClearOnUpdate clear_on_update);
     virtual ~DynamicInstanceBuffers() override;
 
@@ -42,15 +44,19 @@ public:
     virtual void update() override;
     virtual void bind(
         GLuint instance_attribute_index,
-        GLuint billboard_ids_attribute_index) const override;
+        GLuint billboard_ids_attribute_index,
+        GLuint texture_layer_attribute_index) const override;
     virtual size_t tmp_num_instances() const override;
     virtual GLsizei num_instances() const override;
+    virtual bool has_continuous_texture_layer() const override;
 private:
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
     DynamicBillboardIds billboard_ids_;
+    std::optional<DynamicInstanceContinuousTextureLayer> texture_layers_;
     size_t max_num_instances_;
     uint32_t num_billboard_atlas_components_;
+    bool has_per_instance_continuous_texture_layer_;
     size_t tmp_num_instances_;
     GLsizei gl_num_instances_;
     TransformationMode transformation_mode_;

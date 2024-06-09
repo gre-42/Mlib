@@ -79,7 +79,7 @@ RenderableScene::RenderableScene(
           .physics_set_fps = &physics_set_fps_}
     , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
     , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
-    , paused_{ [this, &ui_focus, focus_filter]() {
+    , paused_{ [&ui_focus, focus_filter]() {
         std::shared_lock lock{ui_focus.focuses.mutex};
         return !ui_focus.has_focus(focus_filter);
       } }

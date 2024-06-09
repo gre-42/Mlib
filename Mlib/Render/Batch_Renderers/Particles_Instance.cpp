@@ -1,6 +1,7 @@
 #include "Particles_Instance.hpp"
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
 #include <Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
@@ -29,6 +30,7 @@ ParticlesInstance::ParticlesInstance(
         triangles->material.transformation_mode,
         max_num_instances,
         integral_cast<uint32_t>(triangles->material.billboard_atlas_instances.size()),
+        get_has_per_instance_continuous_texture_layer(*triangles),
         get_clear_on_update(substrate)) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(triangles, dynamic_instance_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }

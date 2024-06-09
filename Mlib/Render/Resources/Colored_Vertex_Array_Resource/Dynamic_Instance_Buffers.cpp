@@ -14,12 +14,14 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     TransformationMode transformation_mode,
     size_t max_num_instances,
     uint32_t num_billboard_atlas_components,
+    bool has_per_instance_continuous_texture_layer,
     ClearOnUpdate clear_on_update)
     : position_yangles_{ max_num_instances }
     , position_{ max_num_instances }
     , billboard_ids_{ max_num_instances, num_billboard_atlas_components }
     , max_num_instances_{ max_num_instances }
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
+    , has_per_instance_continuous_texture_layer_{ has_per_instance_continuous_texture_layer }
     , tmp_num_instances_{ 0 }
     , gl_num_instances_{ 0 }
     , transformation_mode_{ transformation_mode }
@@ -31,6 +33,9 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     }
     if (max_num_instances > std::numeric_limits<GLsizei>::max()) {
         THROW_OR_ABORT("Maximum number of instances too large");
+    }
+    if (has_per_instance_continuous_texture_layer) {
+        texture_layers_.emplace(max_num_instances);
     }
 }
 
@@ -65,6 +70,9 @@ void DynamicInstanceBuffers::append(
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
+        if (has_per_instance_continuous_texture_layer_) {
+            texture_layers_.value().append(0.f);
+        }
         animation_times_[tmp_num_instances_] = 0.f;
         billboard_sequences_[tmp_num_instances_] = &sequence;
     }
@@ -93,6 +101,9 @@ void DynamicInstanceBuffers::move(float dt) {
                 THROW_OR_ABORT("Frame index too large");
             }
             billboard_ids_[i] = bi->billboard_ids[frame_index];
+            if (has_per_instance_continuous_texture_layer_) {
+                texture_layers_.value()[i] = ai / bi->duration * bi->final_texture_layer;
+            }
             ++i;
         } else {
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
@@ -105,6 +116,9 @@ void DynamicInstanceBuffers::move(float dt) {
                 THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
             }
             billboard_ids_.remove(i);
+            if (has_per_instance_continuous_texture_layer_) {
+                texture_layers_.value().remove(i);
+            }
             --tmp_num_instances_;
             if (tmp_num_instances_ != 0) {
                 ai = animation_times_[tmp_num_instances_];
@@ -157,8 +171,14 @@ void DynamicInstanceBuffers::update()
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.update();
+        if (has_per_instance_continuous_texture_layer_) {
+            texture_layers_.value().update();
+        }
         if (clear_on_update_ == ClearOnUpdate::YES) {
             billboard_ids_.clear();
+            if (has_per_instance_continuous_texture_layer_) {
+                texture_layers_.value().clear();
+            }
         }
     }
     if (clear_on_update_ == ClearOnUpdate::YES) {
@@ -168,7 +188,8 @@ void DynamicInstanceBuffers::update()
 
 void DynamicInstanceBuffers::bind(
     GLuint instance_attribute_index,
-    GLuint billboard_ids_attribute_index) const
+    GLuint billboard_ids_attribute_index,
+    GLuint texture_layer_attribute_index) const
 {
     std::shared_lock lock{ mutex_ };
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
@@ -183,6 +204,9 @@ void DynamicInstanceBuffers::bind(
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.bind(billboard_ids_attribute_index);
     }
+    if (has_per_instance_continuous_texture_layer_) {
+        texture_layers_.value().bind(texture_layer_attribute_index);
+    }
 }
 
 size_t DynamicInstanceBuffers::tmp_num_instances() const {
@@ -192,4 +216,8 @@ size_t DynamicInstanceBuffers::tmp_num_instances() const {
 
 GLsizei DynamicInstanceBuffers::num_instances() const {
     return gl_num_instances_;
+}
+
+bool DynamicInstanceBuffers::has_continuous_texture_layer() const {
+    return has_per_instance_continuous_texture_layer_;
 }

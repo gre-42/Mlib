@@ -13,6 +13,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
+#include <Mlib/Render/Batch_Renderers/Infer_Shader_Properties.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
@@ -551,13 +552,7 @@ void RenderableColoredVertexArray::render_cva(
     for (const auto& t : cva->material.textures_alpha) {
         texture_modifiers_hash.combine(t.modifiers_hash());
     }
-    bool has_discrete_atlas_texture_layer = false;
-    for (const auto& x : cva->material.billboard_atlas_instances) {
-        if (x.texture_layer > 0) {
-            has_discrete_atlas_texture_layer = true;
-            break;
-        }
-    }
+    bool has_discrete_atlas_texture_layer = get_has_discrete_atlas_texture_layer(*cva);
     if (has_discrete_atlas_texture_layer) {
         if (cva->material.textures_color.size() != 1) {
             THROW_OR_ABORT("Unexpected number of color textures");
@@ -579,9 +574,14 @@ void RenderableColoredVertexArray::render_cva(
     bool has_discrete_texture_layer =
         si.has_discrete_triangle_texture_layers() ||
         has_discrete_atlas_texture_layer;
-    if (si.has_continuous_triangle_texture_layers() &&
-        has_discrete_texture_layer)
-    {
+    bool has_continuous_texture_layer = si.has_continuous_triangle_texture_layers();
+    if ((instances != nullptr) && instances->has_continuous_texture_layer()) {
+        if (has_continuous_texture_layer) {
+            THROW_OR_ABORT("Detected continuous texture layers in both, vertices and instances");
+        }
+        has_continuous_texture_layer = true;
+    }
+    if (has_continuous_texture_layer && has_discrete_texture_layer) {
         THROW_OR_ABORT("Detected discrete and continuous texture layer");
     }
     const ColoredRenderProgram& rp = rcva_->get_render_program(
@@ -619,7 +619,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
-            .has_continuous_vertex_texture_layer = si.has_continuous_triangle_texture_layers(),
+            .has_continuous_texture_layer = has_continuous_texture_layer,
             .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),
             .has_discrete_atlas_texture_layer = has_discrete_atlas_texture_layer,
             .nbillboard_ids = (uint32_t)cva->material.billboard_atlas_instances.size(),  // Texture is required in lightmap also due to alpha channel.
@@ -872,7 +872,7 @@ void RenderableColoredVertexArray::render_cva(
                 : rcva_->rendering_resources_.get_texture(t.texture_descriptor.color, TextureRole::COLOR_FROM_DB);
             LOG_INFO("RenderableColoredVertexArray::render_cva bind texture \"" + t.texture_descriptor.color.filename + '"');
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_color(i))));
-            GLenum target = si.has_continuous_triangle_texture_layers()
+            GLenum target = has_continuous_texture_layer
                 ? GL_TEXTURE_3D
                 : has_discrete_texture_layer
                     ? GL_TEXTURE_2D_ARRAY

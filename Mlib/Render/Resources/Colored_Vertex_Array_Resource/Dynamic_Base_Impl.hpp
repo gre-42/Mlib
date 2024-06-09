@@ -105,4 +105,9 @@ void DynamicBase<tvalue_type>::bind() const {
     CHK(glBindBuffer(GL_ARRAY_BUFFER, buffer_));
 }
 
+template <class tvalue_type>
+size_t DynamicBase<tvalue_type>::capacity() const {
+    return max_num_instances_;
+}
+
 }

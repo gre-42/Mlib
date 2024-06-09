@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
@@ -25,8 +26,10 @@ DECLARE_ARGUMENT(images);
 
 namespace AtlasTileArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(position);
-DECLARE_ARGUMENT(layer);
+DECLARE_ARGUMENT(source_position);
+DECLARE_ARGUMENT(size);
+DECLARE_ARGUMENT(target_position);
+DECLARE_ARGUMENT(target_layer);
 DECLARE_ARGUMENT(texture);
 }
 
@@ -41,13 +44,24 @@ LoadSceneJsonUserFunction AddTextureAtlas::json_user_function = [](const LoadSce
 void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto tiles = args.arguments.children(KnownArgs::images, [](const JsonMacroArguments& a){
+        // This is not in a from_json function because of the usage of "path_or_variable".
         a.validate(AtlasTileArgs::options);
-        auto texture_pos = a.at<FixedArray<int, 2>>(AtlasTileArgs::position);
+        auto source_position = a.at<FixedArray<int, 2>>(AtlasTileArgs::source_position, fixed_zeros<int, 2>());
+        auto target_position = a.at<FixedArray<int, 2>>(AtlasTileArgs::target_position);
+        auto texture_size = a.at<FixedArray<int, 2>>(AtlasTileArgs::size, fixed_full<int, 2>(INT_MAX));
         return ManualAtlasTileDescriptor{
-            .left = texture_pos(0),
-            .bottom = texture_pos(1),
-            .layer = a.at<size_t>(AtlasTileArgs::layer, 0),
-            .filename = a.path_or_variable(AtlasTileArgs::texture).path};
+            .source = {
+                .left = source_position(0),
+                .bottom = source_position(1),
+                .width = texture_size(0),
+                .height = texture_size(1),
+                .filename = a.path_or_variable(AtlasTileArgs::texture).path
+            },
+            .target = {
+                .left = target_position(0),
+                .bottom = target_position(1),
+                .layer = a.at<size_t>(AtlasTileArgs::target_layer, 0)
+            } };
     });
     RenderingContextStack::primary_rendering_resources().add_manual_texture_atlas(
         args.arguments.at(KnownArgs::name),

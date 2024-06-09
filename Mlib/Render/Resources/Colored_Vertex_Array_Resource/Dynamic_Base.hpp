@@ -20,6 +20,7 @@ public:
     tvalue_type& operator [] (size_t index);
     void update();
     void bind() const;
+    size_t capacity() const;
 private:
     void allocate();
     void deallocate();

@@ -49,11 +49,23 @@ struct TextureHandleAndOwner {
     ResourceOwner owner;
 };
 
-struct ManualAtlasTileDescriptor {
+struct ManualAtlasTileSource {
+    int left;
+    int bottom;
+    int width;
+    int height;
+    std::string filename;
+};
+
+struct ManualAtlasTileTarget {
     int left;
     int bottom;
     size_t layer;
-    std::string filename;
+};
+
+struct ManualAtlasTileDescriptor {
+    ManualAtlasTileSource source;
+    ManualAtlasTileTarget target;
 };
 
 struct AutoAtlasTileDescriptor {

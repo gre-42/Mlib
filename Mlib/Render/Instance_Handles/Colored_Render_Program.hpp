@@ -76,7 +76,7 @@ struct RenderProgramIdentifier {
     bool has_lookat;
     bool has_yangle;
     bool has_uv_offset_u;
-    bool has_continuous_vertex_texture_layer;
+    bool has_continuous_texture_layer;
     bool has_discrete_vertex_texture_layer;
     bool has_discrete_atlas_texture_layer;
     uint32_t nbillboard_ids;

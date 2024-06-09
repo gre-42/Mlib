@@ -1060,20 +1060,35 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
         for (size_t i = 0; i < it->nlayers; ++i) {
             sis.push_back(stb_create<uint8_t>(it->width, it->height, (int)it->color_mode));
         }
+        std::map<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
         std::vector<AtlasTile> atlas_tiles;
         atlas_tiles.reserve(it->tiles.size());
-        for (const auto& atd : it->tiles) {
-            auto dit = texture_descriptors_.try_get(atd.filename);
+        for (const auto& [source, target] : it->tiles) {
+            auto dit = texture_descriptors_.try_get(source.filename);
             ColormapWithModifiers desc = dit != nullptr
                 ? dit->color
                 : ColormapWithModifiers{
-                    .filename = atd.filename,
+                    .filename = source.filename,
                     .color_mode = color.color_mode };
+            auto sit = source_images.find(desc);
+            if (sit == source_images.end()) {
+                if (!source_images.try_emplace(desc, get_texture_data(desc, role, flip_mode)).second) {
+                    verbose_abort("Could not cache \"" + desc.filename + '"');
+                }
+            }
             atlas_tiles.push_back(AtlasTile{
-                .left = atd.left,
-                .bottom = atd.bottom,
-                .layer = atd.layer,
-                .image = get_texture_data(desc, role, flip_mode) });
+                .source = {
+                    .left = source.left,
+                    .bottom = source.bottom,
+                    .width = source.width,
+                    .height = source.height,
+                    .image = source_images.at(desc)
+                },
+                .target = {
+                    .left = target.left,
+                    .bottom = target.bottom,
+                    .layer = target.layer
+                } });
         }
         build_image_atlas(sis, atlas_tiles);
         return sis;
@@ -1188,9 +1203,18 @@ std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_
                 THROW_OR_ABORT("Detected duplicate atlas filename: \"" + filename + '"');
             }
             tad.tiles.push_back(ManualAtlasTileDescriptor{
-                .left = sum_width,
-                .bottom = 0,
-                .filename = filename});
+                .source = {
+                    .left = 0,
+                    .bottom = 0,
+                    .width = texture_size(0),
+                    .height = texture_size(1),
+                    .filename = filename
+                },
+                .target = {
+                    .left = sum_width,
+                    .bottom = 0,
+                    .layer = 0
+                } });
             sum_width += texture_size(0);
         }
     }
@@ -1296,6 +1320,14 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &nam
     }
     if (auto tit = texture_descriptors_.try_get(name); tit != nullptr) {
         return BlendMapTexture{.texture_descriptor = *tit};
+    }
+    if (auto mit = manual_atlas_tile_descriptors_.try_get(name); mit != nullptr) {
+        return BlendMapTexture{
+            .texture_descriptor = {.color = {
+                .filename = name,
+                .color_mode = mit->color_mode,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                .depth_interpolation = mit->depth_interpolation}}};
     }
     return BlendMapTexture{
         .texture_descriptor = {.color = {

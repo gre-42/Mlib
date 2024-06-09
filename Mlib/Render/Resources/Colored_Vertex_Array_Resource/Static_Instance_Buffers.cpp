@@ -66,7 +66,8 @@ void StaticInstanceBuffers::update() {
 
 void StaticInstanceBuffers::bind(
     GLuint instance_attribute_index,
-    GLuint billboard_ids_attribute_index) const
+    GLuint billboard_ids_attribute_index,
+    GLuint texture_layer_attribute_index) const
 {
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);
@@ -88,4 +89,8 @@ size_t StaticInstanceBuffers::tmp_num_instances() const {
 
 GLsizei StaticInstanceBuffers::num_instances() const {
     return integral_cast<GLsizei>(instances_.size());
+}
+
+bool StaticInstanceBuffers::has_continuous_texture_layer() const {
+    return false;
 }

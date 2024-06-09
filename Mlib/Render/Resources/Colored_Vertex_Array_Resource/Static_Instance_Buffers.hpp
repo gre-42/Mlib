@@ -26,9 +26,11 @@ public:
     virtual void update() override;
     virtual void bind(
         GLuint instance_attribute_index,
-        GLuint billboard_ids_attribute_index) const override;
+        GLuint billboard_ids_attribute_index,
+        GLuint texture_layer_attribute_index) const override;
     virtual size_t tmp_num_instances() const override;
     virtual GLsizei num_instances() const override;
+    virtual bool has_continuous_texture_layer() const override;
 private:
     std::vector<TransformationAndBillboardId> instances_;
     StaticPositionYAngles position_yangles_;
