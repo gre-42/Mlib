@@ -15,8 +15,9 @@ CrossFade::CrossFade(
     std::function<bool()> paused,
     float dgain,
     float dt)
-: position_requirement_{position_requirement}, paused_{std::move(paused)}
-    , fader_{[this, dgain, dt]() {
+    : position_requirement_{ position_requirement }
+    , paused_{ std::move(paused) }
+    , fader_{ [this, dgain, dt]() {
         try {
             ThreadInitializer ti{"Audio CrossFade", ThreadAffinity::POOL};
             while (!fader_.get_stop_token().stop_requested()) {
