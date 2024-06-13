@@ -31,7 +31,7 @@ BvhLoader::BvhLoader(
     if (file->fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + '"');
     }
-    std::vector<std::map<std::string, FixedArray<float, 2, 3>>> raw_frames;
+    std::vector<Map<std::string, FixedArray<float, 2, 3>>> raw_frames;
     std::string line;
     std::string joint_name;
     std::list<std::string> joint_stack;
@@ -147,7 +147,7 @@ BvhLoader::BvhLoader(
             }
             for (const auto& [i, c] : enumerate(columns_)) {
                 frame[c.joint_name](c.pose_index0, c.pose_index1) = d[i];
-                //  + offsets_.at(c.joint_name)(c.pose_index0, c.pose_index1);
+                //  + offsets_.get(c.joint_name)(c.pose_index0, c.pose_index1);
             }
         }
     }
@@ -166,11 +166,11 @@ BvhLoader::BvhLoader(
         }
         FixedArray<float, 3> center(0.f);
         for (const auto& f : raw_frames) {
-            center += f.at(columns_.begin()->joint_name)[0];
+            center += f.get(columns_.begin()->joint_name)[0];
         }
         center /= (float)raw_frames.size();
         for (auto& f : raw_frames) {
-            f.at(columns_.begin()->joint_name)[0] -= center;
+            f.get(columns_.begin()->joint_name)[0] -= center;
         }
     }
     if (std::isnan(frame_time_)) {
@@ -204,14 +204,14 @@ BvhLoader::BvhLoader(
     }
 }
 
-const std::map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
+const Map<std::string, OffsetAndQuaternion<float, float>>& BvhLoader::get_frame(size_t id) const {
     if (id >= transformed_frames_.size()) {
         THROW_OR_ABORT("Frame index too large");
     }
     return transformed_frames_[id];
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
+Map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative_interpolated_frame(float time) const {
     if (transformed_frames_.empty()) {
         THROW_OR_ABORT("No frames to interpolate from");
     }
@@ -229,10 +229,10 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative
     float a0 = i - float(i0);
     const auto& f0 = get_frame(i0);
     const auto& f1 = get_frame(i1);
-    std::map<std::string, OffsetAndQuaternion<float, float>> result;
+    Map<std::string, OffsetAndQuaternion<float, float>> result;
     for (const auto& j0 : f0) {
         const auto& m0 = j0.second;
-        const auto& m1 = f1.at(j0.first);
+        const auto& m1 = f1.get(j0.first);
         if (!result.insert({j0.first, m0.slerp(m1, a0)}).second) {
             THROW_OR_ABORT("Could not insert interpolated frame");
         }
@@ -242,8 +242,8 @@ std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_relative
 
 void BvhLoader::compute_absolute_transformation(
     const std::string& name,
-    const std::map<std::string, OffsetAndQuaternion<float, float>>& relative_transformations,
-    std::map<std::string, OffsetAndQuaternion<float, float>>& absolute_transformations,
+    const Map<std::string, OffsetAndQuaternion<float, float>>& relative_transformations,
+    Map<std::string, OffsetAndQuaternion<float, float>>& absolute_transformations,
     size_t ncalls) const
 {
     if (absolute_transformations.contains(name)) {
@@ -251,7 +251,7 @@ void BvhLoader::compute_absolute_transformation(
     }
     auto it = parents_.find(name);
     if (it == parents_.end()) {
-        absolute_transformations[name] = relative_transformations.at(name);
+        absolute_transformations[name] = relative_transformations.get(name);
     } else {
         if (ncalls > 100) {
             for (const auto& [n, p] : parents_) {
@@ -264,13 +264,13 @@ void BvhLoader::compute_absolute_transformation(
             relative_transformations,
             absolute_transformations,
             ncalls + 1);
-        absolute_transformations[name] = absolute_transformations.at(it->second) * relative_transformations.at(name);
+        absolute_transformations[name] = absolute_transformations.get(it->second) * relative_transformations.get(name);
     }
 }
 
-std::map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
+Map<std::string, OffsetAndQuaternion<float, float>> BvhLoader::get_absolute_interpolated_frame(float time) const {
     auto rel = get_relative_interpolated_frame(time);
-    std::map<std::string, OffsetAndQuaternion<float, float>> result;
+    Map<std::string, OffsetAndQuaternion<float, float>> result;
     for (const auto& [name, _] : rel) {
         compute_absolute_transformation(name, rel, result, 0);
     }
@@ -291,30 +291,31 @@ void BvhLoader::smoothen() {
     if (!cfg_.periodic) {
         THROW_OR_ABORT("Aperiodic smoothing not implemented");
     }
-    std::vector<std::map<std::string, OffsetAndQuaternion<float, float>>>
+    std::vector<Map<std::string, OffsetAndQuaternion<float, float>>>
         smoothed_transformed_frames(transformed_frames_.size());
-    // The "smoothen" function is a private function and is called before
-    // the periodic extension takes place, so no "size - 1" here.
-    auto N = integral_cast<int>(transformed_frames_.size());
+    // `transformed_frames_.size() - 1` because of the line
+    // `transformed_frames_.resize(raw_frames.size() + (cfg.periodic && !raw_frames.empty()));`
+    // above. Also, there is a check for periodicity above.
+    auto N = integral_cast<int>(transformed_frames_.size() - 1);
     auto r = integral_cast<int>(cfg_.smooth_radius);
-    auto get_cyclic_frame = [&](int i) {
+    const auto& get_cyclic_frame = [&](int i) {
         return transformed_frames_.at((size_t)mod(i, N));
     };
     for (int t = 0; t < N; ++t) {
         auto fn = get_cyclic_frame(t - r);
         for (int i = t - r + 1; i < t; ++i) {
             for (const auto& [joint_name, transformation] : get_cyclic_frame(i)) {
-                fn.at(joint_name) = fn.at(joint_name).slerp(transformation, cfg_.smooth_alpha);
+                fn.get(joint_name) = fn.get(joint_name).slerp(transformation, cfg_.smooth_alpha);
             }
         }
         auto fp = get_cyclic_frame(t + r);
         for (int i = t + r - 1; i > t; --i) {
             for (const auto& [joint_name, transformation] : get_cyclic_frame(i)) {
-                fp.at(joint_name) = fp.at(joint_name).slerp(transformation, cfg_.smooth_alpha);
+                fp.get(joint_name) = fp.get(joint_name).slerp(transformation, cfg_.smooth_alpha);
             }
         }
         for (const auto& [joint_name, transformation] : fn) {
-            smoothed_transformed_frames.at((size_t)t)[joint_name] = transformation.slerp(fp.at(joint_name), 0.5);
+            smoothed_transformed_frames.at((size_t)t)[joint_name] = transformation.slerp(fp.get(joint_name), 0.5);
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);
