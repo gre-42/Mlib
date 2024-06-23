@@ -165,6 +165,7 @@ public:
     void set_gun_node(DanglingRef<SceneNode> gun_node);
     void change_gun_node(DanglingPtr<SceneNode> gun_node);
     void set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points);
+    bool has_way_points() const;
     void set_way_point_location_filter(JoinedWayPointSandbox filter);
     const std::string& team_name() const;
     DanglingBaseClassRef<Team> team();

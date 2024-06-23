@@ -1066,6 +1066,10 @@ void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, Poi
     way_points_ = way_points;
 }
 
+bool Player::has_way_points() const {
+    return !way_points_.empty();
+}
+
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;

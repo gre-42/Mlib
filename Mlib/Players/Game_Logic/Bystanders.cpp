@@ -54,7 +54,7 @@ bool Bystanders::spawn_for_vip(
         AxisAlignedBoundingBox<double, 3>::from_center_and_radius(vip_pos, cfg_.r_spawn_far),
         [&](const SpawnPoint* sp)
     {
-        if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->pathfinding_waypoints().has_waypoints())) {
+        if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->has_way_points())) {
             return true;
         }
         if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player()->is_pedestrian())) {
@@ -200,8 +200,8 @@ void Bystanders::handle_bystanders() {
     const FixedArray<double, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     auto it = vehicle_spawners_.spawners().begin();
-    using players_map_difference_type = decltype(players_.players().begin())::difference_type;
-    std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % players_.players().size()));
+    using players_map_difference_type = decltype(vehicle_spawners_.spawners().begin())::difference_type;
+    std::advance(it, integral_cast<players_map_difference_type>(current_bystander_rng_() % vehicle_spawners_.spawners().size()));
     auto handle_bystander = [&](VehicleSpawner& spawner) {
         if (spawner.has_player()) {
             auto player = spawner.get_player();
