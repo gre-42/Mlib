@@ -24,7 +24,7 @@ void Mlib::draw_building_walls(
     float uv_scale,
     float max_width,
     float socle_ambient_occlusion,
-    const Interp<float, FixedArray<float, 3>>& height_colors)
+    const UUInterp<float, FixedArray<float, 3>>& height_colors)
 {
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     size_t mid = 0;

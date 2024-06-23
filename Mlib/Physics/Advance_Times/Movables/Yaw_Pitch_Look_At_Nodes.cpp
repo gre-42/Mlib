@@ -17,6 +17,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     : aim_at_node_{ aim_at }
     , dyaw_{ 0.f }
     , dyaw_max_{ dyaw_max }
+    , relative_model_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
     , pitch_look_at_node_{ pitch_look_at_node }
     , increment_yaw_error_{ increment_yaw_error }
 {}

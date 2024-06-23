@@ -6,11 +6,12 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Orderable_Fixed_Array.hpp>
 
 using namespace Mlib;
 
 template <class TPos>
-std::vector<FixedArray<FixedArray<TPos, 3>, 3>> Mlib::barrier_triangle_hitbox(
+UUVector<FixedArray<FixedArray<TPos, 3>, 3>> Mlib::barrier_triangle_hitbox(
     const FixedArray<TPos, 3>& am,
     const FixedArray<TPos, 3>& bm,
     const FixedArray<TPos, 3>& cm,
@@ -36,7 +37,7 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 3>> Mlib::barrier_triangle_hitbox(
     {
         throw TriangleException<TPos>{am, bm, cm, "convex_decomposition_terrain: consistency-check failed"};
     }
-    std::vector<FixedArray<FixedArray<TPos, 3>, 3>> result;
+    UUVector<FixedArray<FixedArray<TPos, 3>, 3>> result;
     result.reserve(
         ab_is_contour_edge * 2 +
         bc_is_contour_edge * 2 +
@@ -98,7 +99,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             std::vector{cva.triangle_bone_weights},
             std::vector{cva.continuous_triangle_texture_layers},
             std::vector{cva.discrete_triangle_texture_layers}));
-    std::vector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
+    UUVector<FixedArray<ColoredVertex<TPos>, 3>> decomposition;
     decomposition.reserve(2 * cva.triangles.size() + 2 * contour_edges.size());
     for (const auto& tri : cva.triangles) {
         auto hitbox = barrier_triangle_hitbox(
@@ -114,15 +115,14 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
         for (const auto& s : hitbox) {
             const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
             const auto zeros2 = fixed_zeros<float, 2>();
-            const auto zeros3 = fixed_zeros<float, 3>();
             if (decomposition.capacity() == decomposition.size()) {
                 THROW_OR_ABORT("create_barrier_triangle_hitboxes internal error (0)");
             }
             auto n = triangle_normal(s).template casted<float>();
             decomposition.push_back({
-                ColoredVertex<TPos>{.position = s(0), .color = purple, .uv = zeros2, .normal = n, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(1), .color = purple, .uv = zeros2, .normal = n, .tangent = zeros3},
-                ColoredVertex<TPos>{.position = s(2), .color = purple, .uv = zeros2, .normal = n, .tangent = zeros3}});
+                ColoredVertex<TPos>{s(0), purple, zeros2, n},
+                ColoredVertex<TPos>{s(1), purple, zeros2, n},
+                ColoredVertex<TPos>{s(2), purple, zeros2, n}});
         }
     }
     if (decomposition.capacity() != decomposition.size()) {
@@ -142,12 +142,12 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             },
             destination_physics_material | (cva.physics_material & ~removed_attributes),
             cva.modifier_backlog,
-            std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
+            UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::move(decomposition),
-            std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<float, 3>>{},
-            std::vector<FixedArray<uint8_t, 3>>{}));
+            UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+            UUVector<FixedArray<float, 3>>{},
+            UUVector<FixedArray<uint8_t, 3>>{}));
     return result;
 }
 

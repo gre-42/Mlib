@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized.hpp>
 
 namespace Mlib {
 
@@ -7,20 +8,19 @@ namespace Mlib {
  */
 template <class TData>
 class Vector {
-    TData* data_;
+    Vector(const Vector&) = delete;
+    Vector& operator = (const Vector&) = delete;
+    using UData = default_uninitialized_t<TData>;
+    UData* data_;
     size_t size_;
 public:
-    inline Vector(): data_(nullptr) {}
-    inline explicit Vector(size_t size):
-        data_(new TData[size]),
+    inline explicit Vector(size_t size, Uninitialized):
+        data_(new UData[size]),
         size_(size) {}
     inline ~Vector() {
-        if (data_ != nullptr) {
-            delete [] data_;
-        }
+        delete [] data_;
     }
     inline const TData& operator [] (size_t index) const {
-        assert(data_ != nullptr);
         assert(index < size_);
         return data_[index];
     }

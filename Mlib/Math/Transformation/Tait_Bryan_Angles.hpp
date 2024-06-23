@@ -12,18 +12,21 @@ public:
             fixed_zeros<TRotation>(),
             fixed_zeros<TPos>()};
     };
-    OffsetAndTaitBryanAngles() = default;
+    OffsetAndTaitBryanAngles(Uninitialized)
+        : rotation_{ uninitialized }
+        , position_{ uninitialized }
+    {}
     OffsetAndTaitBryanAngles(
         const FixedArray<TRotation, tsize>& rotation,
         const FixedArray<TPos, tsize>& position)
-    : rotation_{rotation},
-      position_{position}
+        : rotation_{ rotation }
+        , position_{ position }
     {}
     OffsetAndTaitBryanAngles(
         const FixedArray<TRotation, tsize, tsize>& rotation,
         const FixedArray<TPos, tsize>& position)
-    : rotation_{matrix_2_tait_bryan_angles(rotation)},
-      position_{position}
+        : rotation_{ matrix_2_tait_bryan_angles(rotation) }
+        , position_{ position }
     {}
 
     TransformationMatrix<TRotation, TPos, tsize> to_matrix() const {

@@ -83,7 +83,7 @@ std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
     const FixedArray<FixedArray<TData, 3>, 4>& x,
     TRng& rng)
 {
-    FixedArray<TData, 3, 3> A;
+    FixedArray<TData, 3, 3> A = uninitialized;
     A[0] = x(1) - x(0);
     A[1] = x(2) - x(0);
     A[2] = x(3) - x(0);
@@ -227,7 +227,7 @@ BoundingSphere<TData, tndim> welzl_from_iterator(
     std::set<OrderableFixedArray<TData, tndim>> ptset;
     for (auto P_it = P_begin; P_it != P_end; ++P_it) {
         const auto& p = *P_it;
-        if (ptset.insert(OrderableFixedArray{p}).second) {
+        if (ptset.insert(OrderableFixedArray<TData, tndim>{p}).second) {
             Pvec.push_back(&p);
         }
     }

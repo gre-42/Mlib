@@ -26,7 +26,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
     HeterogeneousResource& hri)
 {
-    std::list<std::pair<const TerrainStyle&, const std::list<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
+    std::list<std::pair<const TerrainStyle&, const UUList<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
     if (const auto& style = terrain_styles_.near_wayside1_grass_terrain_style; style.is_visible()) {
         if (auto tris = tl_terrain.wayside1_grass; tris != nullptr) {
             grass_triangles.push_back({ style, tris });
@@ -43,7 +43,7 @@ void CollidableTriangleSampler::add_near_hitboxes(
         }
     }
     auto add_triangles = [this, &street_bvh, &hri](
-        const std::list<FixedArray<ColoredVertex<double>, 3>>& gtl,
+        const UUList<FixedArray<ColoredVertex<double>, 3>>& gtl,
         const TerrainStyle& terrain_style)
     {
         TriangleInteriorInstancesSampler tiis{
@@ -86,7 +86,7 @@ void CollidableTriangleSampler::add_far_hitboxes(
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
     HeterogeneousResource& hri)
 {
-    std::list<std::pair<const TerrainStyle&, const std::list<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
+    std::list<std::pair<const TerrainStyle&, const UUList<FixedArray<ColoredVertex<double>, 3>>*>> grass_triangles;
     if (const auto& style = terrain_styles_.far_grass_terrain_style; style.is_visible()) {
         if (auto tris = tl_terrain.grass; tris != nullptr) {
             grass_triangles.push_back({ style, tris });
@@ -113,7 +113,7 @@ void CollidableTriangleSampler::add_far_hitboxes(
         }
     }
     auto add_triangles = [this, &street_bvh, &hri](
-        const std::list<FixedArray<ColoredVertex<double>, 3>>& gtl,
+        const UUList<FixedArray<ColoredVertex<double>, 3>>& gtl,
         const TerrainStyle& terrain_style)
     {
         TriangleInteriorInstancesSampler tiis{

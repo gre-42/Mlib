@@ -40,8 +40,8 @@ void SceneToPercentageRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& render_scene_to_pixel_region_logic = rs.object_pool_.create<RenderToPercentageRegionLogic>(
         CURRENT_SOURCE_LOCATION,
         renderable_scene,
-        args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
-        args.arguments.at<FixedArray<float, 2>>(KnownArgs::size),
+        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::position),
+        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});

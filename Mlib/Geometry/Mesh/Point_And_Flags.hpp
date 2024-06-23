@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Uninitialized.hpp>
 #include <concepts>
 #include <ostream>
 
@@ -11,11 +12,19 @@ struct PointAndFlags {
 	static consteval size_t length() {
 		return TPosition::length();
 	}
-	PointAndFlags& operator = (const Point& other) {
-		position = other;
-		return *this;
-	}
+	PointAndFlags(Uninitialized)
+		: position{ uninitialized }
+	{}
+	PointAndFlags(
+		const TPosition& position,
+		const TFlags& flags)
+		: position{ position }
+		, flags{ flags }
+	{}
 	operator const Point& () const {
+		return position;
+	}
+	operator Point& () {
 		return position;
 	}
 	PointAndFlags operator + (const PointAndFlags& other) const {
@@ -47,7 +56,7 @@ auto operator * (
 {
 	using V = typename TPosition::value_type;
 	using TResultV = decltype(V() * TRhs());
-	using TResult = decltype(TPosition().template casted<TResultV>());
+	using TResult = decltype(((TPosition*)nullptr)->template casted<TResultV>());
 	return PointAndFlags<TResult, TFlags>{
 		lhs.position.template casted<TResultV>() * (TResultV)f,
 		lhs.flags

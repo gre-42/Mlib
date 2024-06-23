@@ -152,16 +152,16 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
     LoadMeshConfig<TPos> load_mesh_config{
-        .position = args.arguments.at<FixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
-        .rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
-        .scale = args.arguments.at<FixedArray<float, 3>>(KnownArgs::scale),
+        .position = args.arguments.at<UFixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
+        .rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        .scale = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::scale),
         .center_distances = OrderableFixedArray<float, 2>{
-            args.arguments.at<FixedArray<float, 2>>(
+            args.arguments.at<UFixedArray<float, 2>>(
                 KnownArgs::center_distances,
                 FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .max_triangle_distance = args.arguments.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)),
-        .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+        .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
         .cull_faces_default = args.arguments.at<bool>(KnownArgs::cull_faces_default, true),
         .cull_faces_alpha = args.arguments.at<bool>(KnownArgs::cull_faces_alpha, true),
         .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
@@ -171,21 +171,21 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .reflection_map = args.arguments.at<std::string>(KnownArgs::reflection_map, ""),
-        .emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
-        .ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
-        .diffuse_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
-        .specular_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
+        .emissive_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, fixed_ones<float, 3>()),
+        .ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, fixed_ones<float, 3>()),
+        .diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, fixed_ones<float, 3>()),
+        .specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .fresnel{
             .reflectance = {
                 .min = args.arguments.at<float>(KnownArgs::fresnel_min, 0.f),
                 .max = args.arguments.at<float>(KnownArgs::fresnel_max, 0.f),
                 .exponent = args.arguments.at<float>(KnownArgs::fresnel_exponent, 0.f)
             },
-            .ambient = OrderableFixedArray{args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient, fixed_zeros<float, 3>())}
+            .ambient = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient, fixed_zeros<float, 3>()) }
         },
         .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
         .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
-        .lighten = args.arguments.at<FixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
+        .lighten = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::lighten, fixed_zeros<float, 3>()),
         .triangle_tangent_error_behavior = args.arguments.contains(KnownArgs::triangle_tangent_error_behavior)
             ? triangle_tangent_error_behavior_from_string(args.arguments.at<std::string>(KnownArgs::triangle_tangent_error_behavior))
             : TriangleTangentErrorBehavior::RAISE,

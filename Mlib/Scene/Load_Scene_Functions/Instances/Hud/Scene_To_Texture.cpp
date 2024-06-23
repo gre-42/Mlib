@@ -48,7 +48,7 @@ void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
         FrameBufferChannelKind::ATTACHMENT,                        // depth_kind
         args.arguments.at<std::string>(KnownArgs::texture_name),   // color_texture_name
         "",                                                        // depth_texture_name
-        args.arguments.at<FixedArray<int, 2>>(KnownArgs::size),    // texture_size
+        args.arguments.at<UFixedArray<int, 2>>(KnownArgs::size),    // texture_size
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});

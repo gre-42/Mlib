@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <list>
 
 namespace p2t {
 
@@ -118,7 +120,7 @@ private:
     void handle_triangle_exception(const TriangleException<double>& e, const std::string& message) const;
 
     TerrainTriangles terrain_triangles() const;
-    std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass() const;
+    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass() const;
 
     HeterogeneousResource hri_;
     SceneNodeResources& scene_node_resources_;

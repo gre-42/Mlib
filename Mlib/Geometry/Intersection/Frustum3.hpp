@@ -19,7 +19,7 @@ public:
         //       http://web.archive.org/web/20120531231005/http://crazyjoke.free.fr/doc/3D/plane%20extraction.pdf
         //       https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 
-        Frustum3 result;
+        Frustum3 result{ .planes = uninitialized };
         // Near
         result.planes(NEAR).normal = {    mvp(2, 0) + mvp(3, 0),
                                           mvp(2, 1) + mvp(3, 1),

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -78,7 +79,7 @@ public:
     virtual void print(std::ostream& ostr) const override;
 
     // ISceneNodeResource, Animation
-    virtual void set_absolute_joint_poses(const std::vector<OffsetAndQuaternion<float, float>>& poses);
+    virtual void set_absolute_joint_poses(const UUVector<OffsetAndQuaternion<float, float>>& poses);
     virtual void import_bone_weights(
         const AnimatedColoredVertexArrays& other_acvas,
         float max_distance) override;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <cstddef>
 #include <vector>
@@ -29,7 +30,7 @@ private:
     Player& player_;
     SingleWaypoint& single_waypoint_;
     SupplyDepots& supply_depots_;
-    std::vector<WaypointAndFlags> waypoint_positions_;
+    UUVector<WaypointAndFlags> waypoint_positions_;
     std::vector<size_t> predecessors_;
     std::vector<double> total_distances_;
 };

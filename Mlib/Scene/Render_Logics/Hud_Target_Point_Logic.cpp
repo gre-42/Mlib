@@ -71,7 +71,7 @@ void HudTargetPointLogic::advance_time(float dt, std::chrono::steady_clock::time
         return;
     }
     auto gun_pose = gun_node_->absolute_model_matrix();
-    FixedArray<double, 3> intersection_point;
+    FixedArray<double, 3> intersection_point = uninitialized;
     if (collision_query_.can_see(
         gun_pose.t(),
         gun_pose.t() - 1000.0 * gun_pose.R().column(2).casted<double>(),

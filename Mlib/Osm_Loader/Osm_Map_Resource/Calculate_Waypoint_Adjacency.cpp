@@ -74,7 +74,7 @@ void Mlib::calculate_waypoint_adjacency(
         auto p2 = node.position;
         auto hwr = parse_height_with_reference(node.tags, "height", "height_reference", osm_id);
         if (hwr.has_value() && hwr.value().reference == HeightReference::WATER) {
-            way_points.points[adjacency_id.first] = {
+            way_points.points[adjacency_id.first] = WayPoint{
                 FixedArray<double, 3>{p2(0), p2(1), hwr.value().height * scale},
                 adjacency_id.second };
         } else {
@@ -84,12 +84,12 @@ void Mlib::calculate_waypoint_adjacency(
                     if (hwr.value().reference != HeightReference::GROUND) {
                         THROW_OR_ABORT(osm_id + ": Unknown height reference, expected \"ground\"");
                     }
-                    way_points.points[adjacency_id.first] = {
+                    way_points.points[adjacency_id.first] = WayPoint{
                         FixedArray<double, 3>{ p2(0), p2(1), height + hwr.value().height * scale },
                         adjacency_id.second
                     };
                 } else {
-                    way_points.points[adjacency_id.first] = {
+                    way_points.points[adjacency_id.first] = WayPoint{
                         FixedArray<double, 3>{ p2(0), p2(1), height },
                         adjacency_id.second
                     };
@@ -102,7 +102,7 @@ void Mlib::calculate_waypoint_adjacency(
     }
     for (const auto& [position, adjacency_id_offset] : indices_street_wpts) {
         auto point_id = indices_terrain_wpts.size() + adjacency_id_offset.first;
-        way_points.points[point_id] = { position, adjacency_id_offset.second };
+        way_points.points[point_id] = WayPoint{ position, adjacency_id_offset.second };
         grounded_way_points.insert(point_id);
     }
     way_points.adjacency = SparseArrayCcs<double>{ArrayShape{

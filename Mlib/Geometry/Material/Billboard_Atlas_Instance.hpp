@@ -8,10 +8,10 @@ namespace Mlib {
 enum class ExternalRenderPassType;
 
 struct BillboardAtlasInstance {
-    OrderableFixedArray<float, 2> uv_scale;
-    OrderableFixedArray<float, 2> uv_offset;
+    OrderableFixedArray<float, 2> uv_scale = uninitialized;
+    OrderableFixedArray<float, 2> uv_offset = uninitialized;
     uint8_t texture_layer;
-    OrderableFixedArray<float, 3> vertex_scale;
+    OrderableFixedArray<float, 3> vertex_scale = uninitialized;
     double max_center_distance;
     ExternalRenderPassType occluder_pass;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };

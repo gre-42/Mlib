@@ -16,7 +16,7 @@ public:
     ~ThreadsafeStringMap() = default;
 
     template <class... Args>
-    TValue& emplace(std::string key, Args &&...args) {
+    TValue& add(std::string key, Args &&...args) {
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
@@ -25,9 +25,9 @@ public:
         return res.first->second;
     }
 
-    void set(const std::string& key, const TValue& value) {
+    void insert_or_assign(const std::string& key, const TValue& value) {
         std::scoped_lock lock{ mutex_ };
-        elements_[key] = value;
+        elements_.insert_or_assign(key, value);
     }
 
     void clear() {

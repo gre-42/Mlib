@@ -621,10 +621,10 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
             {
                 if (manual_atlas_tile_descriptors_.contains(color.filename)) {
                     auto data = get_texture_array_data(color, role, FlipMode::VERTICAL);
-                    preloaded_processed_texture_array_data_.emplace(color, std::move(data));
+                    preloaded_processed_texture_array_data_.add(color, std::move(data));
                 } else {
                     auto data = get_texture_data(color, role, FlipMode::VERTICAL);
-                    preloaded_processed_texture_data_.emplace(color, std::move(data));
+                    preloaded_processed_texture_data_.add(color, std::move(data));
                 }
                 if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
                     linfo() << this << " Preloaded texture: " << color;
@@ -918,12 +918,12 @@ GLuint RenderingResources::get_texture(
             texture = get_cubemap_unsafe(color.filename);
         } else {
             auto t = initialize_non_dds_texture(color, role, aniso);
-            texture_types_.emplace(color, t.second);
+            texture_types_.add(color, t.second);
             texture = t.first;
         }
     }
 
-    textures_.emplace(color, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
+    textures_.add(color, TextureHandleAndOwner{texture, ResourceOwner::CONTAINER});
     return texture;
 }
 
@@ -980,7 +980,7 @@ void RenderingResources::set_texture(const ColormapWithModifiers& name, GLuint i
         }
         textures_.erase(name);
     }
-    textures_.emplace(
+    textures_.add(
         name,
         TextureHandleAndOwner{
             .handle = id,
@@ -999,7 +999,7 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     if (!descriptor.normal.filename.empty() && (descriptor.normal.color_mode != ColorMode::RGB)) {
         THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + descriptor.normal.filename + '"');
     }
-    texture_descriptors_.emplace(name, descriptor);
+    texture_descriptors_.add(name, descriptor);
 }
 
 TextureDescriptor RenderingResources::get_existing_texture_descriptor(const std::string& name) const {
@@ -1012,7 +1012,7 @@ void RenderingResources::add_manual_texture_atlas(
     const ManualTextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_manual_texture_atlas " + name);
-    manual_atlas_tile_descriptors_.emplace(name, texture_atlas_descriptor);
+    manual_atlas_tile_descriptors_.add(name, texture_atlas_descriptor);
 }
 
 void RenderingResources::add_auto_texture_atlas(
@@ -1032,7 +1032,7 @@ void RenderingResources::add_auto_texture_atlas(
                 },
                 TextureRole::COLOR);
         });
-    auto_atlas_tile_descriptors_.emplace(name, texture_atlas_descriptor);
+    auto_atlas_tile_descriptors_.add(name, texture_atlas_descriptor);
 }
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
@@ -1041,7 +1041,7 @@ void RenderingResources::add_cubemap(const std::string& name, const std::vector<
     if (textures_.contains({.filename = name})) {
         THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
     }
-    cubemap_descriptors_.emplace(name, CubemapDescriptor{.filenames = filenames});
+    cubemap_descriptors_.add(name, CubemapDescriptor{.filenames = filenames});
 }
 
 std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
@@ -1172,7 +1172,9 @@ std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_
         if (stbi_info(filename.c_str(), &x, &y, &comp) == 0) {
             THROW_OR_ABORT("Could not read size information from file \"" + filename + '"');
         }
-        texture_sizes[filename] = {x, y};
+        if (!texture_sizes.try_emplace(filename, x, y).second) {
+            THROW_OR_ABORT("Detected duplicate texture: \"" + filename + '"');
+        }
     }
     ManualTextureAtlasDescriptor tad{
         .width = 0,
@@ -1236,7 +1238,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
 {
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
     for (const auto& filename : filenames) {
-        FixedArray<int, 2> image_size;
+        FixedArray<int, 2> image_size = uninitialized;
         if (preloaded_processed_texture_data_.contains({ .filename = filename })) {
             const auto& img = preloaded_processed_texture_data_.get({ .filename = filename });
             image_size = { img.width, img.height };
@@ -1337,11 +1339,11 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &nam
 
 void RenderingResources::set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt) {
     LOG_FUNCTION("RenderingResources::set_blend_map_texture " + name);
-    blend_map_textures_.emplace(name, bmt);
+    blend_map_textures_.add(name, bmt);
 }
 
 void RenderingResources::set_alias(std::string alias, std::string name) {
-    aliases_.emplace(std::move(alias), std::move(name));
+    aliases_.add(std::move(alias), std::move(name));
 }
 
 std::string RenderingResources::get_alias(const std::string& alias) const {
@@ -1366,7 +1368,7 @@ const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& na
 
 void RenderingResources::set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp) {
     LOG_FUNCTION("RenderingResources::set_vp " + name);
-    vps_.set(name, vp);
+    vps_.insert_or_assign(name, vp);
 }
 
 float RenderingResources::get_offset(const std::string& name) const {
@@ -1376,7 +1378,7 @@ float RenderingResources::get_offset(const std::string& name) const {
 
 void RenderingResources::set_offset(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_offset " + name);
-    offsets_.set(name, value);
+    offsets_.insert_or_assign(name, value);
 }
 
 float RenderingResources::get_discreteness(const std::string& name) const {
@@ -1386,7 +1388,7 @@ float RenderingResources::get_discreteness(const std::string& name) const {
 
 void RenderingResources::set_discreteness(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_discreteness " + name);
-    discreteness_.set(name, value);
+    discreteness_.insert_or_assign(name, value);
 }
 
 float RenderingResources::get_scale(const std::string& name) const {
@@ -1396,7 +1398,7 @@ float RenderingResources::get_scale(const std::string& name) const {
 
 void RenderingResources::set_scale(const std::string& name, float value) {
     LOG_FUNCTION("RenderingResources::set_scale " + name);
-    scales_.set(name, value);
+    scales_.insert_or_assign(name, value);
 }
 
 WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
@@ -1406,7 +1408,7 @@ WrapMode RenderingResources::get_texture_wrap(const std::string& name) const {
 
 void RenderingResources::set_texture_wrap(const std::string& name, WrapMode mode) {
     LOG_FUNCTION("RenderingResources::set_texture_wrap " + name);
-    texture_wrap_.set(name, mode);
+    texture_wrap_.insert_or_assign(name, mode);
 }
 
 void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode) {
@@ -1476,7 +1478,7 @@ const LoadedFont& RenderingResources::get_font_texture(
         // can free temp_bitmap at this point
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    return font_textures_.emplace({ttf_filename, font_height_pixels}, std::move(font));
+    return font_textures_.add({ttf_filename, font_height_pixels}, std::move(font));
 }
 
 void RenderingResources::save_to_file(
@@ -1579,9 +1581,9 @@ void RenderingResources::insert_texture(
         (extension == ".png") ||
         (extension == ".bmp"))
     {
-        preloaded_raw_texture_data_.emplace(name, std::move(data));
+        preloaded_raw_texture_data_.add(name, std::move(data));
     } else if (extension == ".dds") {
-        preloaded_texture_dds_data_.emplace(name, std::move(data));
+        preloaded_texture_dds_data_.add(name, std::move(data));
     } else {
         THROW_OR_ABORT("Unknown file extension: \"" + name + '"');
     }

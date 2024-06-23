@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <list>
 #include <optional>
 #include <string>
@@ -21,7 +22,7 @@ public:
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
         const std::string& asset_id,
-        const std::vector<FixedArray<float, 3>>& vehicle_colors,
+        const UUVector<FixedArray<float, 3>>& vehicle_colors,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) = 0;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) = 0;

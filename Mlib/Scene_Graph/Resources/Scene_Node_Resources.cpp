@@ -154,7 +154,7 @@ void SceneNodeResources::register_geographic_mapping(
     const TransformationMatrix<double, double, 3>& absolute_model_matrix)
 {
     auto resource = get_resource(resource_name);
-    TransformationMatrix<double, double, 3> m;
+    TransformationMatrix<double, double, 3> m = uninitialized;
     try {
         m = resource->get_geographic_mapping(absolute_model_matrix);
     } catch (const std::runtime_error& e) {

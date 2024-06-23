@@ -45,7 +45,7 @@ void from_json(const nlohmann::json& j, BulletProperties& item) {
     item.max_lifetime = jv.at<float>(KnownBulletArgs::lifetime) * seconds;
     item.damage = jv.at<float>(KnownBulletArgs::damage);
     item.damage_radius = jv.at<float>(KnownBulletArgs::damage_radius, 0.f) * meters;
-    item.size = jv.at<FixedArray<float, 3>>(KnownBulletArgs::size) * meters;
+    item.size = jv.at<UFixedArray<float, 3>>(KnownBulletArgs::size) * meters;
     item.trail_resource_name = jv.at<std::string>(KnownBulletArgs::trail_resource, "");
     item.trail_dt = jv.at<float>(KnownBulletArgs::trail_dt, NAN) * seconds;
     item.trail_animation_duration = jv.at<float>(KnownBulletArgs::trail_animation_duration, NAN) * seconds;

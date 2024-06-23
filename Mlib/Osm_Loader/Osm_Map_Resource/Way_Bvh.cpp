@@ -43,7 +43,7 @@ void WayBvh::nearest_way(
 {
     const Line2d* nearest_way;
     distance = bvh_.min_distance(position, max_dist, [&position](const Line2d& way) {
-        FixedArray<double, 2> dir;
+        FixedArray<double, 2> dir = uninitialized;
         double distance;
         distance_point_to_line(position, way(0), way(1), dir, distance);
         return distance;
@@ -62,7 +62,7 @@ FixedArray<double, 2> WayBvh::project_onto_way(
     float distance_to_way_factor = parse_float(node.tags, "distance_to_way_factor", 1.f);
     if (!std::isnan(distance_to_way)) {
         double wanted_distance = scale * distance_to_way * distance_to_way_factor;
-        FixedArray<double, 2> dir;
+        FixedArray<double, 2> dir = uninitialized;
         double distance;
         nearest_way(node.position, 2.f * wanted_distance, dir, distance);
         if (distance == INFINITY) {

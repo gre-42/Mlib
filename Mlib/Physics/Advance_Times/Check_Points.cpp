@@ -204,7 +204,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
         {
             linfo() << "Elapsed time: " << format_minutes_seconds(total_elapsed_seconds_);
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
-            std::vector<FixedArray<float, 3>> vehicle_colors;
+            UUVector<FixedArray<float, 3>> vehicle_colors;
             {
                 const std::string chassis = "chassis";
                 for (const auto& n : moving_nodes_) {

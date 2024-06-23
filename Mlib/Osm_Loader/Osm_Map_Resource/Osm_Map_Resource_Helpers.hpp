@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Interp_Fwd.hpp>
 #include <Mlib/Scene_Graph/Aggregate_Mode.hpp>
@@ -13,7 +14,7 @@ namespace Mlib {
 
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
 template <class TPos>
@@ -59,12 +60,12 @@ struct Way {
 };
 
 void draw_node(
-    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const FixedArray<double, 2>& pos2d,
     float size = 0.01f);
 
 void draw_nodes(
-    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways);
 
@@ -182,7 +183,7 @@ private:
 
 void colorize_height_map(std::list<FixedArray<ColoredVertex<double>, 3>>& triangles);
 
-std::vector<FixedArray<double, 2>> removed_duplicates(const std::vector<FixedArray<double, 2>>& nodes, bool verbose = true);
+UUVector<FixedArray<double, 2>> removed_duplicates(const UUVector<FixedArray<double, 2>>& nodes, bool verbose = true);
 std::list<FixedArray<double, 2>> removed_duplicates(const std::list<FixedArray<double, 2>>& nodes, bool verbose = true);
 std::list<SteinerPointInfo> removed_duplicates(const std::list<SteinerPointInfo>& nodes, bool verbose = true);
 

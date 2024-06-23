@@ -73,7 +73,9 @@ RigidBodyVehicle::RigidBodyVehicle(
     , grind_state_{
         .wants_to_grind_ = false,
         .wants_to_grind_counter_ = 0,
-        .grinding_ = false}
+        .grind_direction_ = fixed_nans<float, 3>(),
+        .grinding_ = false,
+        .grind_pv_ = fixed_nans<float, 3>()}
     , align_to_surface_state_{
         .align_to_surface_relaxation_ = 0.f,
         .touches_alignment_plane_ = false,

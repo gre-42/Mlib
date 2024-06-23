@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <list>
 #include <map>
 
 using namespace Mlib;
@@ -124,7 +125,7 @@ void Mlib::merge_textures(
                             }
                         }
                         {
-                            auto& mlay = merged_discrete_triangle_texture_layers.emplace_back();
+                            auto& mlay = merged_discrete_triangle_texture_layers.emplace_back(uninitialized);
                             for (auto& v : mlay.flat_iterable()) {
                                 v = tile.layer;
                             }
@@ -162,12 +163,12 @@ void Mlib::merge_textures(
                             .specular = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}},
                     PhysicsMaterial::ATTR_VISIBLE,
                     ModifierBacklog{},
-                    std::vector<FixedArray<ColoredVertex<double>, 4>>{},
-                    std::vector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
-                    std::vector<FixedArray<ColoredVertex<double>, 2>>{},
-                    std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                    std::vector<FixedArray<float, 3>>{},
-                    std::vector<FixedArray<uint8_t, 3>>(merged_discrete_triangle_texture_layers.begin(), merged_discrete_triangle_texture_layers.end()))));
+                    UUVector<FixedArray<ColoredVertex<double>, 4>>{},
+                    UUVector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),
+                    UUVector<FixedArray<ColoredVertex<double>, 2>>{},
+                    UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+                    UUVector<FixedArray<float, 3>>{},
+                    UUVector<FixedArray<uint8_t, 3>>(merged_discrete_triangle_texture_layers.begin(), merged_discrete_triangle_texture_layers.end()))));
             scene_node_resources.add_companion(
                 mesh_resource_name,
                 merged_materials_config.resource_name,

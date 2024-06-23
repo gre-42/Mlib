@@ -68,18 +68,19 @@ enum SamplePolyFlags
 
 Sample_SoloMesh::Sample_SoloMesh(
     rcContext& ctx,
-    const InputGeom& geom) :
-    m_keepInterResults(true),
-    m_totalBuildTimeMs(0),
-    m_triareas(0),
-    m_solid(0),
-    m_chf(0),
-    m_cset(0),
-    m_pmesh(0),
-    m_dmesh(0),
-    m_geom{ &geom },
-    m_navMesh{ nullptr },
-    m_ctx{ &ctx }
+    const InputGeom& geom)
+    : m_keepInterResults(true)
+    , m_totalBuildTimeMs(0)
+    , m_triareas(0)
+    , m_solid(0)
+    , m_chf(0)
+    , m_cset(0)
+    , m_pmesh(0)
+    , m_dmesh(0)
+    , m_geom{ &geom }
+    , m_navMesh{ nullptr }
+    , m_ctx{ &ctx }
+    , m_polyPickExtent{ uninitialized }
 {
     resetCommonSettings();
     m_navQuery = dtAllocNavMeshQuery();
@@ -816,7 +817,7 @@ std::list<FixedArray<float, 3>> Sample_SoloMesh::shortest_path(
 
 std::optional<LocalizedNavmeshNode> Sample_SoloMesh::closest_point_on_navmesh(const FixedArray<float, 3>& point) const
 {
-    LocalizedNavmeshNode result;
+    LocalizedNavmeshNode result{ .position = uninitialized };
     if (!dtStatusSucceed(m_navQuery->findNearestPoly(
         point.flat_begin(),
         m_polyPickExtent.flat_begin(),

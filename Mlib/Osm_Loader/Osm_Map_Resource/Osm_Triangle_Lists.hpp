@@ -11,7 +11,7 @@ template <class TPos>
 class TriangleList;
 struct OsmResourceConfig;
 struct Material;
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 enum class EntranceType;
 struct RoadProperties;

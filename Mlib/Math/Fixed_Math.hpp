@@ -12,7 +12,7 @@ constexpr FixedArray<TData, nrows, ncolumns> outer2d(
     const FixedArray<TData, nrows, nsum>& a,
     const FixedArray<TData, ncolumns, nsum>& b)
 {
-    FixedArray<TData, nrows, ncolumns> result;
+    FixedArray<TData, nrows, ncolumns> result = uninitialized;
     for (size_t r = 0; r < nrows; ++r) {
         for (size_t c = 0; c < ncolumns; ++c) {
             TData v = 0;
@@ -62,7 +62,7 @@ constexpr FixedArray<TData, nrows, ncolumns> dot2d(
     const BaseDenseFixedArray<TDerived, TData, nrows, nsum>& a,
     const FixedArray<TData, nsum, ncolumns>& b)
 {
-    FixedArray<TData, nrows, ncolumns> result;
+    FixedArray<TData, nrows, ncolumns> result = uninitialized;
     for (size_t r = 0; r < nrows; ++r) {
         for (size_t c = 0; c < ncolumns; ++c) {
             TData v = 0;
@@ -142,7 +142,7 @@ constexpr TData dot0d(
 
 template <class TData, size_t n>
 constexpr FixedArray<TData, n, n> fixed_identity_array() {
-    FixedArray<TData, n, n> result;
+    FixedArray<TData, n, n> result = uninitialized;
     for (size_t r = 0; r < n; ++r){
         for (size_t c = 0; c < n; ++c) {
             result(r, c) = (r == c);
@@ -153,7 +153,7 @@ constexpr FixedArray<TData, n, n> fixed_identity_array() {
 
 template <class TData, size_t... tsize>
 constexpr FixedArray<TData, tsize...> fixed_full(const TData& value) {
-    FixedArray<TData, tsize...> a;
+    FixedArray<TData, tsize...> a = uninitialized;
     a = value;
     return a;
 }

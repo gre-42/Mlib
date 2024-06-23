@@ -52,7 +52,7 @@ private:
     size_t max_num_triangles_;
     size_t tmp_num_triangles_;
     GLsizei gl_num_triangles_;
-    std::vector<FixedArray<float, 3>> animation_times_;
+    UUVector<FixedArray<float, 3>> animation_times_;
     std::vector<const TrailSequence*> animation_sequences_;
     DynamicTriangle triangle_;
     DynamicContinuousTextureLayer texture_layer_;

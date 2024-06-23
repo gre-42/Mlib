@@ -83,7 +83,7 @@ FixedArray<TData, 2> distance_point_to_triangle_3d(
     const FixedArray<TData, 3>& v3,
     const FixedArray<TData, 3>& normal)
 {
-    FixedArray<TData, 2, 3> m;
+    FixedArray<TData, 2, 3> m = uninitialized;
     m[0] = v2 - v1;
     m[0] /= std::sqrt(sum(squared(m[0])));
     m[1] = cross(normal, m[0]);

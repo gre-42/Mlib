@@ -1,6 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Map/Map.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <list>
 #include <map>
@@ -12,7 +14,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <typename TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 class SceneNodeResources;
 template <class TPos>
@@ -52,8 +54,8 @@ struct DrawStreetsInput {
     std::list<StreetRectangle>& street_rectangles;
     std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>>& way_point_edge_descriptors;
-    std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
-    std::vector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
+    UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_pipe_triangles;
+    UUVector<FixedArray<ColoredVertex<float>, 3>>& tunnel_bdry_triangles;
     std::list<FixedArray<FixedArray<double, 2>, 2>>& way_segments;
     const RacingLineBvh& racing_line_bvh;
     const Map<RoadType, std::string>& street_surface_central_resource_names;
@@ -78,9 +80,9 @@ struct DrawStreetsInput {
     const std::set<std::string>& included_aeroways;
     float curb_alpha_;
     float curb2_alpha_;
-    FixedArray<float, 2> curb_uv;
-    FixedArray<float, 2> curb2_uv;
-    FixedArray<float, 3> curb_color_;
+    FixedArray<float, 2> curb_uv = fixed_nans<float, 2>();
+    FixedArray<float, 2> curb2_uv = fixed_nans<float, 2>();
+    FixedArray<float, 3> curb_color_ = fixed_nans<float, 3>();
     float racing_line_width_x;
     float racing_line_scale_y;
     ResourceNameCycle& street_lights;

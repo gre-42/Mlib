@@ -6,7 +6,7 @@ using namespace Mlib;
 TrailStorage::TrailStorage(
     TrailsInstance& trails_instance,
     TrailSequence trail_sequence,
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
     double min_spawn_length,
     double max_spawn_length,
     float spawn_duration)

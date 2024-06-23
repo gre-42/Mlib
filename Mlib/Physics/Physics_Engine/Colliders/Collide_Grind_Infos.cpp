@@ -15,7 +15,7 @@ void Mlib::collide_grind_infos(
     const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
 {
     for (const auto& [rb, p] : grind_infos) {
-        rb->grind_state_.grind_pv_ = dot1d(rb->rbp_.rotation_.T(), p.rail_direction.casted<float>());
+        rb->grind_state_.grind_pv_ = dot(p.rail_direction.casted<float>(), rb->rbp_.rotation_);
         if (std::abs(rb->grind_state_.grind_pv_(0)) > std::abs(rb->grind_state_.grind_pv_(2))) {
             rb->grind_state_.grind_axis_ = 0;
         } else {

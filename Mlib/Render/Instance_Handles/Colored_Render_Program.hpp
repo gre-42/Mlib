@@ -34,7 +34,7 @@ struct ColoredRenderProgram: public RenderProgram {
     std::map<size_t, GLint> texture_skidmark_locations;
     GLint texture_reflection_location;
     GLint texture_dirtmap_location;
-    FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location;
+    FixedArray<GLint, INTERIOR_COUNT> texture_interiormap_location = uninitialized;
     GLint texture_specularmap_location;
     GLint texture_dirt_location;
     GLint uv_offset_u_location;

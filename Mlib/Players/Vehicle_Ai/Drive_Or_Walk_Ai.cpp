@@ -159,7 +159,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             if (dl2 < squared(collision_avoidance_radius_wait_)) {
                 auto p_z3 = p_rb.rbp_.abs_z();
                 if (std::abs(dot0d(z3, p_z3)) < collision_avoidance_intersect_cos_) {
-                    FixedArray<double, 2> intersection;
+                    FixedArray<double, 2> intersection = uninitialized;
                     if (!intersect_rays(
                         intersection,
                         FixedArray<double, 2>{ p3(0), p3(2) },

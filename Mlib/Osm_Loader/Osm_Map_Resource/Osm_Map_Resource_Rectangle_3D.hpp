@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <map>
 #include <set>
 
 namespace Mlib {
 
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 template <class TPos>
 class TriangleList;
@@ -25,7 +26,7 @@ struct OsmRectangle3D {
     
     void draw(
         TriangleList<double>& tl,
-        const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         float scale,
         float width,
         float height,

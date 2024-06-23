@@ -13,7 +13,9 @@ std::optional<GlLookatBoundingSphere> Mlib::gl_lookat_bounding_sphere(
     if (observed_bounding_sphere.radius() < 1e-6) {
         return std::nullopt;
     }
-    GlLookatBoundingSphere result;
+    GlLookatBoundingSphere result{
+        .camera_model_matrix = uninitialized
+    };
     auto dir = observed_bounding_sphere.center() - observer_model_matrix.t();
     auto l2 = sum(squared(dir));
     if (l2 < 1e-12) {

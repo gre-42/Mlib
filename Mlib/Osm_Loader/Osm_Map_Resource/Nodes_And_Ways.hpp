@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map/Map.hpp>
 #include <map>
 #include <set>
 #include <string>
@@ -9,7 +10,7 @@ struct Node;
 struct Way;
 
 struct NodesAndWays {
-    std::map<std::string, Node> nodes;
+    Map<std::string, Node> nodes;
     std::map<std::string, Way> ways;
 };
 

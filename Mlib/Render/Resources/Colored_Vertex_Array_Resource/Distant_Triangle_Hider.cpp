@@ -168,7 +168,7 @@ void DistantTriangleHider::delete_triangles_far_away(
         float add2 = squared(draw_distance_add);
         float remove2 = squared(draw_distance_add + draw_distance_slop);
         for (size_t i = 0; i < noperations2_; ++i) {
-            FixedArray<float, 3> center;
+            FixedArray<float, 3> center = uninitialized;
             if (is_static) {
                 center = mean(transformed_triangles_[current_triangle_id_]);
             } else {

@@ -47,7 +47,7 @@ static void instantiate_bvh(
             1.f);
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
         for (const auto& [material, cva] : cvas) {
-            std::vector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
+            UUVector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
             for (const auto& tri : cva) {
                 auto t = *tri;
                 for (auto& p : t->flat_iterable()) {
@@ -60,12 +60,12 @@ static void instantiate_bvh(
                 *material,                                                   // material
                 PhysicsMaterial::ATTR_VISIBLE,                               // physics_material
                 ModifierBacklog{},                                           // modifier_backlog
-                std::vector<FixedArray<ColoredVertex<float>, 4>>{},          // quads
+                UUVector<FixedArray<ColoredVertex<float>, 4>>{},          // quads
                 std::move(vcva),                                             // triangles
-                std::vector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
-                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights
-                std::vector<FixedArray<float, 3>>{},                         // continuous_triangle_texture_layers
-                std::vector<FixedArray<uint8_t, 3>>{}));                     // discrete_triangle_texture_layers
+                UUVector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
+                UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights
+                UUVector<FixedArray<float, 3>>{},                         // continuous_triangle_texture_layers
+                UUVector<FixedArray<uint8_t, 3>>{}));                     // discrete_triangle_texture_layers
             // lcvas.back()->material.is_small = true;
             // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }

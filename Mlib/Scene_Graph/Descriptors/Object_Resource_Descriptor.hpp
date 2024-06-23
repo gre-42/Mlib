@@ -10,7 +10,7 @@ namespace Mlib {
 enum class AggregateMode;
 
 struct ObjectResourceDescriptor {
-    FixedArray<double, 3> position;
+    FixedArray<double, 3> position = uninitialized;
     float yangle;
     std::string name;
     float scale;

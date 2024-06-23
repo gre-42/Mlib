@@ -12,7 +12,7 @@ namespace Mlib {
 class DynamicLights;
 
 struct ConstantDynamicLightConfiguration {
-    FixedArray<float, 3> color;
+    FixedArray<float, 3> color = uninitialized;
     Interp<double, float> squared_distance_to_intensity = { {}, {} };
 };
 

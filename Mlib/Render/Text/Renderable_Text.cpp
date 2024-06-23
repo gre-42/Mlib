@@ -55,6 +55,7 @@ TextResource::TextResource(
     size_t max_nchars)
     : va_{ vertices_, empty_, empty_, empty_ }
     , loaded_font_{ nullptr }
+    , canvas_size_{ uninitialized }
     , ttf_filename_{ std::move(ttf_filename) }
     , color_{ color }
     , max_nchars_{ max_nchars }

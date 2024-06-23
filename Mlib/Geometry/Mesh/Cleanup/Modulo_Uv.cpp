@@ -21,7 +21,7 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
         textures.push_back(&t);
     }
     std::vector<float> lcm_world_args;
-    FixedArray<std::vector<float>, 2> lcm_local_args;
+    FixedArray<std::vector<float>, 2> lcm_local_args(std::vector<float>{});
     FixedArray<bool, 2> detected_non_repeat{false};
     lcm_world_args.reserve(textures.size());
     lcm_local_args(0).reserve(textures.size());

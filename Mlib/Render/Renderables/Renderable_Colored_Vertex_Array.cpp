@@ -200,7 +200,7 @@ GLint get_wrap_param(WrapMode mode) {
     }
 }
 
-std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
+UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calculate_absolute_bone_transformations(const AnimationState* animation_state) const
 {
     TIME_GUARD_DECLARE(time_guard, "calculate_absolute_bone_transformations", "calculate_absolute_bone_transformations");
     if (!rcva_->triangles_res_->bone_indices.empty()) {
@@ -217,8 +217,8 @@ std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::cal
             auto poses = rcva_->scene_node_resources_.get_relative_poses(
                 animation_name,
                 animation_frame.time);
-            std::vector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
-            std::vector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
+            UUVector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
+            UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
             if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
                 THROW_OR_ABORT("Number of bone indices differs from number of quaternions");
             }
@@ -236,7 +236,7 @@ std::vector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::cal
 
 void RenderableColoredVertexArray::render_cva(
     const std::shared_ptr<ColoredVertexArray<float>>& cva,
-    const std::vector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
+    const UUVector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
     const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,
     const TransformationMatrix<float, double, 3>& iv,
@@ -406,12 +406,12 @@ void RenderableColoredVertexArray::render_cva(
             sum_light_fresnel_ambient += light->fresnel_ambient;
         }
     }
-    FixedArray<float, 3> emissive;
-    FixedArray<float, 3> ambient;
-    FixedArray<float, 3> diffuse;
-    FixedArray<float, 3> specular;
+    FixedArray<float, 3> emissive = uninitialized;
+    FixedArray<float, 3> ambient = uninitialized;
+    FixedArray<float, 3> diffuse = uninitialized;
+    FixedArray<float, 3> specular = uninitialized;
     float specular_exponent;
-    FixedArray<float, 3> fresnel_emissive;
+    FixedArray<float, 3> fresnel_emissive = uninitialized;
     FresnelReflectance fresnel;
     if (!is_lightmap) {
         emissive = color_style && !all(color_style->emissive == -1.f) ? color_style->emissive : cva->material.shading.emissive;
@@ -520,7 +520,7 @@ void RenderableColoredVertexArray::render_cva(
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
-    OrderableFixedArray<float, 4> alpha_distances;
+    OrderableFixedArray<float, 4> alpha_distances = uninitialized;
     bool fragments_depend_on_distance;
     if (is_lightmap) {
         fragments_depend_on_distance = false;
@@ -677,11 +677,11 @@ void RenderableColoredVertexArray::render_cva(
     if (!cva->material.billboard_atlas_instances.empty()) {
         size_t n = cva->material.billboard_atlas_instances.size();
         auto ni = integral_cast<GLsizei>(n);
-        std::vector<FixedArray<float, 3>> vertex_scale(n);
-        std::vector<FixedArray<float, 2>> uv_scale(n);
-        std::vector<FixedArray<float, 2>> uv_offset(n);
+        UUVector<FixedArray<float, 3>> vertex_scale(n);
+        UUVector<FixedArray<float, 2>> uv_scale(n);
+        UUVector<FixedArray<float, 2>> uv_offset(n);
         std::vector<GLuint> texture_layers;
-        std::vector<FixedArray<float, 4>> alpha_distances;
+        UUVector<FixedArray<float, 4>> alpha_distances;
         if (has_discrete_atlas_texture_layer) {
             texture_layers.resize(n);
         }
@@ -1140,7 +1140,7 @@ void RenderableColoredVertexArray::render(
     #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
     #endif
-    std::vector<OffsetAndQuaternion<float, float>> absolute_bone_transformations =
+    UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations =
         calculate_absolute_bone_transformations(animation_state);
     for (auto& cva : aggregate_off_) {
         // if (cva->name.find("street") != std::string::npos) {

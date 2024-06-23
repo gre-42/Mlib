@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Math/Interp_Fwd.hpp>
 #include <list>
 
 namespace Mlib {
@@ -6,10 +7,7 @@ namespace Mlib {
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-template <class TDataX, class TDataY>
-class Interp;
-
-Interp<double, FixedArray<double, 3>> interpolated_contour(
+UUInterp<double, FixedArray<double, 3>> interpolated_contour(
     const std::list<FixedArray<double, 3>>& contour);
 
 std::list<FixedArray<double, 3>> subdivided_contour(

@@ -53,23 +53,23 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
 
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
 
-    auto emissive = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
-    auto ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient);
-    auto diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse);
-    auto specular = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular);
+    auto emissive = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissivity, FixedArray<float, 3>(0.f));
+    auto ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient);
+    auto diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse);
+    auto specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular);
 
-    auto emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
-    auto ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
-    auto diffuse_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
-    auto specular_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
+    auto emissive_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor, FixedArray<float, 3>(1.f));
+    auto ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor, FixedArray<float, 3>(1.f));
+    auto diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor, FixedArray<float, 3>(1.f));
+    auto specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, FixedArray<float, 3>(1.f));
     
     RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
-        args.arguments.at<FixedArray<size_t, 2>>(KnownArgs::size),
+        args.arguments.at<UFixedArray<size_t, 2>>(KnownArgs::size),
         TransformationMatrix<float, double, 3>(
-            tait_bryan_angles_2_matrix(args.arguments.at<FixedArray<float, 3>>(
+            tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<float, 3>>(
                 KnownArgs::rotation,
                 fixed_zeros<float, 3>()) * degrees),
-            args.arguments.at<FixedArray<double, 3>>(
+            args.arguments.at<UFixedArray<double, 3>>(
                 KnownArgs::translation,
                 fixed_zeros<double, 3>()) * (double)meters),
         args.arguments.at<double>(KnownArgs::tile_length),
@@ -84,13 +84,13 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             .textures_color = {primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename).path)},
             .occluded_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluded_pass)),
             .occluder_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::occluder_pass)),
-            .alpha_distances = args.arguments.at<OrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+            .alpha_distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
             // .wrap_mode_s = WrapMode::REPEAT,
             // .wrap_mode_t = WrapMode::REPEAT,
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
             .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
             .center_distances = OrderableFixedArray<float, 2>{
-                args.arguments.at<FixedArray<float, 2>>(
+                args.arguments.at<UFixedArray<float, 2>>(
                     KnownArgs::center_distances,
                     FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),

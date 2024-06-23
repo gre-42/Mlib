@@ -165,7 +165,7 @@ void test_take() {
 }
 
 void test_fixed_array() {
-    FixedArray<bool, 1, 2> f;
+    FixedArray<bool, 1, 2> f = uninitialized;
     f(0, 0) = true;
     f(0, 1) = true;
     assert_isequal(all(f), true);
@@ -196,7 +196,7 @@ void test_fixed_array_initialization() {
 void test_fixed_array_slicing() {
     FixedArray<int, 2> f{4, 5};
     assert_isequal(f.template row_range<1, 2>()(0), 5);
-    FixedArray<int, 3, 3> kif;
+    FixedArray<int, 3, 3> kif = uninitialized;
     kif.template row_range<0, 2>();
     kif.reshaped<2, 2>();
 }
@@ -244,7 +244,7 @@ void test_semi_fix() {
 }
 
 void test_fixed_array_of_string() {
-    FixedArray<std::string, 3, 4> a;
+    FixedArray<std::string, 3, 4> a = uninitialized;
     auto b = FixedArray<std::string, 3>{ std::string{"1"}, std::string{"2"}, std::string{"3"} };
     std::cerr << a(1, 2) << " " << b(2) << std::endl;
 }

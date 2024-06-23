@@ -22,6 +22,7 @@ class RigidBodyPlayback;
 class RigidBodySinglePlayback: public IAbsoluteMovable, public virtual DanglingBaseClass {
     friend RigidBodyPlayback;
 public:
+    RigidBodySinglePlayback();
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
 private:

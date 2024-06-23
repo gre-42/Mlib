@@ -329,7 +329,7 @@ void DrawStreets::draw_streets() {
                         nodes.at(angle_way.neighbor_id).position << ") <-> (" << nodes.at(node_id).position << ")";
                     continue;
                 }
-                OsmRectangle2D rect;
+                OsmRectangle2D rect = uninitialized;
                 if (!OsmRectangle2D::from_line(
                     rect,
                     nodes.at(*aR).position,

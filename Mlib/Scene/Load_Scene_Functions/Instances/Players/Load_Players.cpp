@@ -156,7 +156,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                     : default_skills.at(source).at(name);
             };
             auto team = player.at<std::string>(PlayerKeys::team);
-            auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<FixedArray<float, 3>>();
+            auto color = jv.at(ToplevelKeys::teams).at(team).at(TeamKeys::style).at(StyleKeys::color).get<UFixedArray<float, 3>>();
             auto vehicle_name = player.at(PlayerKeys::spawned_vehicle).at(SpawnedVehicleKeys::type).get<std::string>();
             const auto& vars = args.asset_references["vehicles"].at(vehicle_name).rp;
             if (auto controller = player.try_at<std::string>(PlayerKeys::controller); controller.has_value()) {

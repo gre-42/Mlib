@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <chrono>
 #include <map>
@@ -8,7 +9,7 @@
 
 namespace Mlib {
 
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 template <class TPos>
 struct ColoredVertex;
@@ -25,7 +26,7 @@ public:
     TrailExtender(
         TrailsInstance& trails_instance,
         const TrailSequence& trail_sequence,
-        const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
+        const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
         double min_spawn_length,
         double max_spawn_length,
         float spawn_duration);
@@ -36,7 +37,7 @@ public:
 private:
     TrailsInstance& trails_instance_;
     const TrailSequence& trail_sequence_;
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment_;
     double min_spawn_length_squared_;
     double max_spawn_length_squared_;
     float spawn_duration_;

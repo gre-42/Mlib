@@ -29,7 +29,7 @@ public:
         const SceneNodeResources& scene_node_resources,
         const TerrainStyles& terrain_styles,
         const TerrainTriangles& terrain_triangles,
-        const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
+        const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
         const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
         double scale,
         UpAxis up_axis);
@@ -52,7 +52,7 @@ private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;
     const TerrainTriangles terrain_triangles_;
-    const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass_;
+    const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass_;
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh_;
     double scale_;
     UpAxis up_axis_;

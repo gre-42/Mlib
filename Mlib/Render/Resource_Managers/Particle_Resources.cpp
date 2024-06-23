@@ -18,7 +18,7 @@ void ParticleResources::insert_creator_to_instance(
     std::string creator,
     std::string instance)
 {
-    instantiator_to_instance_.emplace(std::move(creator), std::move(instance));
+    instantiator_to_instance_.add(std::move(creator), std::move(instance));
 }
 
 std::string ParticleResources::get_instance_for_creator(const std::string& creator) const {
@@ -29,7 +29,7 @@ void ParticleResources::insert_instance_instantiator(
     std::string name,
     std::function<std::shared_ptr<ParticlesInstance>()> instance_instantiator)
 {
-    instance_creators_.emplace(std::move(name), std::move(instance_instantiator));
+    instance_creators_.add(std::move(name), std::move(instance_instantiator));
 }
 
 std::shared_ptr<ParticlesInstance> ParticleResources::instantiate_particles_instance(
@@ -42,7 +42,7 @@ void ParticleResources::insert_creator_instantiator(
     std::string name,
     std::function<std::unique_ptr<IParticleCreator>(ParticlesInstance&)> creator_instantiator)
 {
-    instantiators_.emplace(std::move(name), std::move(creator_instantiator));
+    instantiators_.add(std::move(name), std::move(creator_instantiator));
 }
 
 std::unique_ptr<IParticleCreator> ParticleResources::instantiate_particle_creator(

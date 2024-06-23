@@ -19,12 +19,12 @@ static FixedArray<FixedArray<TPos, 3>, 2> gen_ray(
 }
 
 template <class TPos>
-std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_face_rays(
-    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+UUVector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_face_rays(
+    const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints,
     const FixedArray<TPos, 3>& lengths)
 {
-    std::vector<FixedArray<FixedArray<TPos, 3>, 2>> res;
+    UUVector<FixedArray<FixedArray<TPos, 3>, 2>> res;
     res.reserve((npoints * (npoints + 1)) / 2 * triangles.size());
     size_t npoints2 = npoints + 2;
     for (const auto& t : triangles) {
@@ -52,15 +52,15 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_face_ray
 }
 
 template <class TPos>
-std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_vertex_rays(
-    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+UUVector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_vertex_rays(
+    const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     const FixedArray<TPos, 3>& lengths)
 {
     VertexNormals<TPos, float> vertex_normals;
     vertex_normals.add_triangles(triangles.begin(), triangles.end());
     vertex_normals.compute_vertex_normals();
 
-    std::vector<FixedArray<FixedArray<TPos, 3>, 2>> res;
+    UUVector<FixedArray<FixedArray<TPos, 3>, 2>> res;
     res.reserve(vertex_normals.vertices().size());
     for (const auto& [v, n] : vertex_normals.vertices()) {
         res.push_back(gen_ray(v, n.template casted<TPos>(), lengths));
@@ -69,8 +69,8 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_vertex_r
 }
 
 template <class TPos>
-std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_rays(
-    const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+UUVector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_rays(
+    const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
     size_t npoints_face,
     const FixedArray<TPos, 3>& lengths)
 {
@@ -80,30 +80,30 @@ std::vector<FixedArray<FixedArray<TPos, 3>, 2>> Mlib::generate_triangle_rays(
     return res0;
 }
 
-template std::vector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_face_rays(
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_face_rays(
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     size_t npoints,
     const FixedArray<float, 3>& lengths);
 
-template std::vector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_vertex_rays(
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_vertex_rays(
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     const FixedArray<float, 3>& lengths);
 
-template std::vector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_rays(
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<float, 3>, 2>> Mlib::generate_triangle_rays(
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     size_t npoints_face,
     const FixedArray<float, 3>& lengths);
 
-template std::vector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_face_rays(
-    const std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_face_rays(
+    const UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     size_t npoints,
     const FixedArray<double, 3>& lengths);
 
-template std::vector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_vertex_rays(
-    const std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_vertex_rays(
+    const UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const FixedArray<double, 3>& lengths);
 
-template std::vector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_rays(
-    const std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+template UUVector<FixedArray<FixedArray<double, 3>, 2>> Mlib::generate_triangle_rays(
+    const UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     size_t npoints_face,
     const FixedArray<double, 3>& lengths);

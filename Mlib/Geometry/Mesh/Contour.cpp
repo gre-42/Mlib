@@ -376,7 +376,8 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
 {
     std::list<const FixedArray<ColoredVertex<TPos>, 3>*> tris;
     for (auto& t : triangles) {
-        tris.push_back(const_cast<FixedArray<ColoredVertex<TPos>, 3>*>(&t));
+        const FixedArray<ColoredVertex<TPos>, 3>& tt = t;
+        tris.push_back(const_cast<FixedArray<ColoredVertex<TPos>, 3>*>(&tt));
     }
     return find_contours(tris, strategy);
 }

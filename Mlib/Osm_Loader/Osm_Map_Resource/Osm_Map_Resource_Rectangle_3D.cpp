@@ -11,7 +11,7 @@ using namespace Mlib;
 
 void OsmRectangle3D::draw(
     TriangleList<double>& tl,
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     float scale,
     float width,
     float height,
@@ -21,7 +21,7 @@ void OsmRectangle3D::draw(
     WarpedSegment3D ws{*this};
 
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<double, 3>, 3> p;
+        FixedArray<FixedArray<double, 3>, 3> p = uninitialized;
         for (size_t i = 0; i < 3; ++i) {
             p(i) = ws.warp_01(t(i).position.casted<double>(), scale, width, height);
         }
@@ -29,7 +29,7 @@ void OsmRectangle3D::draw(
             THROW_OR_ABORT("Inconsistent UV NaN-ness");
         }
         {
-            FixedArray<FixedArray<float, 2>, 3> uv;
+            FixedArray<FixedArray<float, 2>, 3> uv = uninitialized;
             if (std::isnan(uv0_y)) {
                 for (size_t i = 0; i < 3; ++i) {
                     uv(i) = t(i).uv;

@@ -1,5 +1,6 @@
 #include "Set_Animated_Dynamic_Light_Properties.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Animated_Dynamic_Light.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Constant_Dynamic_Light.hpp>
@@ -23,7 +24,7 @@ void from_json(const nlohmann::json& j, AnimatedDynamicLightConfiguration& item)
 
     item.time_to_color = {
         jv.at<std::vector<float>>(KnownConfigArgs::time),
-        jv.at<std::vector<FixedArray<float, 3>>>(KnownConfigArgs::intensities) };
+        jv.at<UUVector<FixedArray<float, 3>>>(KnownConfigArgs::intensities) };
     item.squared_distance_to_intensity = {
         jv.at_vector<double>(KnownConfigArgs::distances, [](double v) { return squared(v); }),
         jv.at<std::vector<float>>(KnownConfigArgs::intensities),
@@ -45,7 +46,7 @@ const std::string SetAnimatedDynamicLightProperties::key = "set_animated_dynamic
 LoadSceneJsonUserFunction SetAnimatedDynamicLightProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    args.dynamic_light_db.insert(
+    args.dynamic_light_db.add(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<AnimatedDynamicLightConfiguration>(KnownArgs::properties));
 };

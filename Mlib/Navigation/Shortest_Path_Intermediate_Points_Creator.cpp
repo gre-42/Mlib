@@ -18,7 +18,7 @@ ShortestPathIntermediatePointsCreator::ShortestPathIntermediatePointsCreator(
     , step_size_{ step_size }
 {}
 
-std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operator () (
+UUVector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operator () (
     const FixedArray<float, 3>& p0,
     const FixedArray<float, 3>& p1,
     const float& distance) const
@@ -48,18 +48,18 @@ std::vector<FixedArray<float, 3>> ShortestPathIntermediatePointsCreator::operato
     } else if (res.size() == 2) {
         return {};
     } else {
-        return { ++res.begin(), --res.end() };
+        return UUVector<FixedArray<float, 3>>(++res.begin(), --res.end());
     }
 }
 
-std::vector<FixedArray<double, 3>> ShortestPathIntermediatePointsCreator::operator () (
+UUVector<FixedArray<double, 3>> ShortestPathIntermediatePointsCreator::operator () (
     const FixedArray<double, 3>& p0,
     const FixedArray<double, 3>& p1,
     const double& distance) const
 {
     try {
         auto sresult = (*this)(p0.casted<float>(), p1.casted<float>(), (float)distance);
-        std::vector<FixedArray<double, 3>> result;
+        UUVector<FixedArray<double, 3>> result;
         result.reserve(sresult.size());
         for (const auto& v : sresult) {
             result.push_back(v.casted<double>());

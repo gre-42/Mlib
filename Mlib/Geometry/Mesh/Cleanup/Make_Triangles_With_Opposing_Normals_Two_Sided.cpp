@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <list>
 #include <map>
 
 using namespace Mlib;
@@ -35,18 +36,18 @@ void Mlib::make_triangles_with_opposing_normals_two_sided(
         skip:;
     }
     if (!two_sided_triangles.empty()) {
-        cva.triangles = std::vector(trimmed.begin(), trimmed.end());
+        cva.triangles = uuvector(trimmed.begin(), trimmed.end());
         auto two_sided_array = std::make_shared<ColoredVertexArray<TPos>>(
                 cva.name + "_two_sided",
                 cva.material,
                 cva.physics_material | PhysicsMaterial::ATTR_TWO_SIDED,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<TPos>, 4>>(),                      // quads
-            std::vector(two_sided_triangles.begin(), two_sided_triangles.end()),    // triangles
-            std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),                      // lines
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),                  // triangle_bone_weights
-            std::vector<FixedArray<float, 3>>(),                                    // continous_triangle_texture_layers
-            std::vector<FixedArray<uint8_t, 3>>());                                 // discrete_triangle_texture_layers
+            UUVector<FixedArray<ColoredVertex<TPos>, 4>>(),                      // quads
+            uuvector(two_sided_triangles.begin(), two_sided_triangles.end()), // triangles
+            UUVector<FixedArray<ColoredVertex<TPos>, 2>>(),                      // lines
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),                  // triangle_bone_weights
+            UUVector<FixedArray<float, 3>>(),                                    // continous_triangle_texture_layers
+            UUVector<FixedArray<uint8_t, 3>>());                                 // discrete_triangle_texture_layers
         two_sided_array->material.cull_faces = false;
         result.push_back(two_sided_array);
     }

@@ -23,10 +23,8 @@ public:
         const FixedArray<TPos, 3>& position,
         const FixedArray<TNormal, 3>& normal)
     {
-        if (!vertices_.contains(OrderableFixedArray{position})) {
-            vertices_[OrderableFixedArray{position}] = TNormal(0);
-        }
-        vertices_[OrderableFixedArray{position}] += normal;
+        auto it = vertices_.try_emplace(OrderableFixedArray{position}, TNormal(0)).first;
+        it->second += normal;
     }
     inline void compute_vertex_normals() {
         for (auto& [_, n] : vertices_) {

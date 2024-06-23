@@ -39,8 +39,8 @@ static void from_json(const nlohmann::json& j, LoadableAabb3f& aabb) {
     JsonView jv{ j };
     jv.validate(KnownAabbArgs::options);
     aabb = AxisAlignedBoundingBox<double, 3>::from_min_max(
-        jv.at<FixedArray<double, 3>>(KnownAabbArgs::min),
-        jv.at<FixedArray<double, 3>>(KnownAabbArgs::max));
+        jv.at<UFixedArray<double, 3>>(KnownAabbArgs::min),
+        jv.at<UFixedArray<double, 3>>(KnownAabbArgs::max));
 }
 
 namespace KnownSphereArgs {
@@ -53,7 +53,7 @@ static void from_json(const nlohmann::json& j, LoadableBoundingSphere3f& sphere)
     JsonView jv{ j };
     jv.validate(KnownSphereArgs::options);
     sphere = BoundingSphere<double, 3>{
-        jv.at<FixedArray<double, 3>>(KnownSphereArgs::center),
+        jv.at<UFixedArray<double, 3>>(KnownSphereArgs::center),
         jv.at<double>(KnownSphereArgs::radius) };
 }
 

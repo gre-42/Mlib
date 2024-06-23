@@ -37,15 +37,16 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
 {
     args.arguments.validate(KnownArgs::options);
 
+    auto zeros3 = fixed_zeros<float, 3>();
     RenderingContextStack::primary_trail_resources().insert_instance_instantiator(
         args.arguments.at<std::string>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
          texture = args.arguments.at<std::string>(KnownArgs::texture),
          shading = Shading{
-            .emissive = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive, fixed_zeros<float, 3>()) },
-            .ambient = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient, fixed_zeros<float, 3>()) },
-            .diffuse = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse, fixed_zeros<float, 3>()) },
-            .specular = OrderableFixedArray{ args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular, fixed_zeros<float, 3>()) }
+            .emissive = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive, zeros3) },
+            .ambient = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient, zeros3) },
+            .diffuse = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse, zeros3) },
+            .specular = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular, zeros3) }
          },
          times = args.arguments.at_vector<float>(KnownArgs::times, as_seconds),
          w = args.arguments.at<std::vector<float>>(KnownArgs::w),

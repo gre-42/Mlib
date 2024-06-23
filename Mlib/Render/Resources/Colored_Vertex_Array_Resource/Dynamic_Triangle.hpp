@@ -1,14 +1,10 @@
 #pragma once
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Base.hpp>
 #include <cstddef>
 
 namespace Mlib {
-
-template <typename TData, size_t... tshape>
-class FixedArray;
-template <class TPos>
-struct ColoredVertex;
 
 class DynamicTriangle: public IArrayBuffer {
     DynamicTriangle(const DynamicTriangle&) = delete;

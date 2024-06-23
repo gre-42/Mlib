@@ -23,12 +23,12 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     const Material& material,
     PhysicsMaterial physics_material,
     ModifierBacklog modifier_backlog,
-    std::vector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
-    std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-    std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
-    std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-    std::vector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
-    std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+    UUVector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
+    UUVector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
+    UUVector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
+    UUVector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+    UUVector<FixedArray<float, 3>>&& continuous_triangle_texture_layers,
+    UUVector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
     const AxisAlignedBoundingBox<TPos, 3>* aabb,
     const BoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
@@ -88,8 +88,8 @@ bool ColoredVertexArray<TPos>::empty_from() const {
 }
 
 template <class TPos>
-std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
-    std::vector<FixedArray<TPos, 3>> res;
+UUVector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
+    UUVector<FixedArray<TPos, 3>> res;
     res.reserve(quads.size() * 4 + triangles.size() * 3 + lines.size() * 2);
     for (const auto& v : quads) {
         res.push_back(v(0).position);
@@ -111,7 +111,7 @@ std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
 
 // FixedArray<float, 4, 4> weighted_bones_transformation_matrix(
 //     const std::vector<BoneWeight>& weights,
-//     const std::vector<FixedArray<float, 4, 4>>& m)
+//     const UUVector<FixedArray<float, 4, 4>>& m)
 // {
 //     FixedArray<float, 3, 3> R(0);
 //     FixedArray<float, 3> t(0);
@@ -136,13 +136,13 @@ std::vector<FixedArray<TPos, 3>> ColoredVertexArray<TPos>::vertices() const {
 template <class TPos>
 template <class TPosResult, class TPosTransform>
 std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transformed(
-    const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,
+    const UUVector<OffsetAndQuaternion<float, TPosTransform>>& qs,
     const std::string& suffix) const
 {
     if (!lines.empty()) {
         THROW_OR_ABORT("Cannot apply bone transformations on lines");
     }
-    std::vector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
     {
         if (triangle_bone_weights.size() != triangles.size()) {
             THROW_OR_ABORT("Size mismatch in triangle bone weights");
@@ -150,10 +150,10 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         auto wit = triangle_bone_weights.begin();
         transformed_triangles.reserve(triangles.size());
         for (const auto& tri : triangles) {
-            transformed_triangles.push_back({
+            transformed_triangles.emplace_back(
                 tri(0).transformed((*wit)(0), qs),
                 tri(1).transformed((*wit)(1), qs),
-                tri(2).transformed((*wit)(2), qs)});
+                tri(2).transformed((*wit)(2), qs));
             ++wit;
         }
     }
@@ -162,12 +162,12 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         material,
         physics_material,
         modifier_backlog,
-        std::vector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
+        UUVector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
-        std::vector<FixedArray<ColoredVertex<TPosResult>, 2>>{},
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-        std::vector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
-        std::vector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
+        UUVector<FixedArray<ColoredVertex<TPosResult>, 2>>{},
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
 }
 
 template <class TPos>
@@ -177,8 +177,8 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     const std::string& suffix) const
 {
     auto r = tm.R() / tm.get_scale();
-    std::vector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
-    std::vector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 3>> transformed_triangles;
+    UUVector<FixedArray<ColoredVertex<TPosResult>, 2>> transformed_lines;
     transformed_triangles.reserve(triangles.size());
     for (const auto& tri : triangles) {
         transformed_triangles.push_back({
@@ -197,12 +197,12 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
         material,
         physics_material,
         modifier_backlog,
-        std::vector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
+        UUVector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
         std::move(transformed_lines),
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-        std::vector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
-        std::vector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>(continuous_triangle_texture_layers.begin(), continuous_triangle_texture_layers.end()),
+        UUVector<FixedArray<uint8_t, 3>>(discrete_triangle_texture_layers.begin(), discrete_triangle_texture_layers.end()));
 }
 
 template <class TPos>
@@ -329,7 +329,7 @@ template <class TPos>
 ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const {
     TPos cos_edge_angle = std::cos(edge_angle);
     TPos cos_averaged_normal_angle = std::cos(averaged_normal_angle);
-    std::vector<FixedArray<ColoredVertex<TPos>, 2>> grind_lines;
+    UUVector<FixedArray<ColoredVertex<TPos>, 2>> grind_lines;
     grind_lines.reserve(3 * triangles.size());
     using O = OrderableFixedArray<TPos, 3>;
     std::map<std::pair<O, O>, FixedArray<TPos, 3>> edge_normals;
@@ -386,12 +386,12 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
             edges.erase(edge1);
         }
     }
-    std::vector<FixedArray<ColoredVertex<TPos>, 2>> contour_edges;
+    UUVector<FixedArray<ColoredVertex<TPos>, 2>> contour_edges;
     contour_edges.reserve(edges.size());
     for (const auto& e : edges) {
         contour_edges.push_back({
-            ColoredVertex<TPos>{.position = e.first},
-            ColoredVertex<TPos>{.position = e.second}});
+            ColoredVertex<TPos>{e.first},
+            ColoredVertex<TPos>{e.second}});
     }
     return ColoredVertexArray(
         name + "_contour_edges",
@@ -429,22 +429,20 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
             material,
             physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
             modifier_backlog,
-            std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
+            UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::vector{triangles},
-            std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<float, 3>>{},
-            std::vector<FixedArray<uint8_t, 3>>{}));
+            UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+            UUVector<FixedArray<float, 3>>{},
+            UUVector<FixedArray<uint8_t, 3>>{}));
     for (const auto& tri : triangles) {
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangle_as_list;
     
         const auto purple = FixedArray<float, 3>{1.f, 0.f, 1.f};
-        const auto zeros2 = fixed_zeros<float, 2>();
-        const auto zeros3 = fixed_zeros<float, 3>();
         triangle_as_list.push_back({
-            ColoredVertex<TPos>{.position = tri(0).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-            ColoredVertex<TPos>{.position = tri(1).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3},
-            ColoredVertex<TPos>{.position = tri(2).position, .color = purple, .uv = zeros2, .normal = zeros3, .tangent = zeros3}});
+            ColoredVertex<TPos>{tri(0).position, purple},
+            ColoredVertex<TPos>{tri(1).position, purple},
+            ColoredVertex<TPos>{tri(2).position, purple}});
         auto removed_attributes =
             PhysicsMaterial::ATTR_VISIBLE |
             PhysicsMaterial::ATTR_COLLIDE |
@@ -459,12 +457,12 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 },
                 destination_physics_material | (physics_material & ~removed_attributes),
                 modifier_backlog,
-                std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
+                UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
                 std::move(triangle_as_list),
-                std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
-                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                std::vector<FixedArray<float, 3>>{},
-                std::vector<FixedArray<uint8_t, 3>>{}));
+                UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
+                UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+                UUVector<FixedArray<float, 3>>{},
+                UUVector<FixedArray<uint8_t, 3>>{}));
     }
     return result;
 }
@@ -575,5 +573,5 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<double>::
     const TransformationMatrix<float, double, 3>& tm,
     const std::string& suffix) const;
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::transformed(
-    const std::vector<OffsetAndQuaternion<float, float>>& qs,
+    const UUVector<OffsetAndQuaternion<float, float>>& qs,
     const std::string& suffix) const;

@@ -18,7 +18,7 @@ void TrailResources::insert_storage_to_instance(
     std::string storage,
     std::string instance)
 {
-    storage_to_instance_.emplace(std::move(storage), std::move(instance));
+    storage_to_instance_.add(std::move(storage), std::move(instance));
 }
 
 std::string TrailResources::get_instance_for_storage(const std::string& storage) const {
@@ -29,7 +29,7 @@ void TrailResources::insert_instance_instantiator(
     std::string name,
     std::function<std::shared_ptr<TrailsInstance>()> instance_instantiator)
 {
-    trails_instances_.emplace(std::move(name), std::move(instance_instantiator));
+    trails_instances_.add(std::move(name), std::move(instance_instantiator));
 }
 
 std::shared_ptr<TrailsInstance> TrailResources::instantiate_trails_instance(
@@ -42,7 +42,7 @@ void TrailResources::insert_storage_instantiator(
     std::string name,
     std::function<std::unique_ptr<ITrailStorage>(TrailsInstance&)> creator_instantiator)
 {
-    storages_.emplace(std::move(name), std::move(creator_instantiator));
+    storages_.add(std::move(name), std::move(creator_instantiator));
 }
 
 std::unique_ptr<ITrailStorage> TrailResources::instantiate_storage(

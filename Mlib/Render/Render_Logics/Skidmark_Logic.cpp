@@ -33,6 +33,7 @@ SkidmarkLogic::SkidmarkLogic(
     int texture_height)
     : on_skidmark_node_clear{ skidmark_node->on_clear, CURRENT_SOURCE_LOCATION }
     , rendering_resources_{ rendering_resources }
+    , fbs_{ uninitialized }
     , skidmark_node_{ skidmark_node }
     , resource_suffix_{ std::move(resource_suffix) }
     , particle_renderer_{ particle_renderer }

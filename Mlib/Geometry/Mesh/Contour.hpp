@@ -5,12 +5,13 @@
 #include <Mlib/Geometry/Mesh/Plot.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <list>
 #include <map>
 #include <set>
 
 namespace Mlib {
 
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 
 enum class ContourDetectionStrategy {

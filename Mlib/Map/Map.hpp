@@ -54,6 +54,13 @@ public:
         }
         return &it->second;
     }
+
+    template< class... Args >
+    void add(const TKey& key, Args&&... args) {
+        if (!this->try_emplace(key, std::forward<Args>(args)...).second) {
+            THROW_OR_ABORT("Could not insert into map");
+        }
+    }
 };
 
 }

@@ -22,8 +22,8 @@ AimAt::AimAt(
     float gravity,
     float locked_on_cosine,
     std::function<float()> velocity_estimation_error)
-    : absolute_point_to_aim_at_{ NAN }
-    , relative_point_to_aim_at_{ NAN }
+    : absolute_point_to_aim_at_((double)NAN)
+    , relative_point_to_aim_at_((double)NAN)
     , followed_node_{ nullptr }
     , gun_node_{ gun_node.ptr() }
     , follower_{ get_rigid_body_vehicle(follower_node) }

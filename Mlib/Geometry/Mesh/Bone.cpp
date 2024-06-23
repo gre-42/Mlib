@@ -3,10 +3,10 @@
 
 using namespace Mlib;
 
-std::vector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_transform(
-    const std::vector<OffsetAndQuaternion<float, float>>& transformations)
+UUVector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_transform(
+    const UUVector<OffsetAndQuaternion<float, float>>& transformations)
 {
-    std::vector<OffsetAndQuaternion<float, float>> result;
+    UUVector<OffsetAndQuaternion<float, float>> result;
     result.resize(transformations.size());
 #ifndef NDEBUG
     for (OffsetAndQuaternion<float, float>& r : result) {
@@ -28,9 +28,9 @@ std::vector<OffsetAndQuaternion<float, float>> Bone::rebase_to_initial_absolute_
 }
 
 void Bone::rebase_to_initial_absolute_transform(
-    const std::vector<OffsetAndQuaternion<float, float>>& transformations,
+    const UUVector<OffsetAndQuaternion<float, float>>& transformations,
     const OffsetAndQuaternion<float, float>& parent_transformation,
-    std::vector<OffsetAndQuaternion<float, float>>& result)
+    UUVector<OffsetAndQuaternion<float, float>>& result)
 {
 #ifndef NDEBUG
     if (index >= result.size()) {

@@ -58,6 +58,7 @@ MinimapLogic::MinimapLogic(
     , scale_{ scale }
     , size_{ size }
     , offset_{ offset }
+    , position_{ fixed_nans<double, 2>() }
     , angle_{ NAN }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
 {
@@ -86,7 +87,7 @@ void MinimapLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("MinimapLogic::render");
-    FixedArray<double, 2> pos;
+    FixedArray<double, 2> pos = uninitialized;
     float angle;
     {
         std::scoped_lock lock{pose_mutex_};

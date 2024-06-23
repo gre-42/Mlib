@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
@@ -74,10 +75,10 @@ public:
     virtual double max_center_distance(uint32_t billboard_id) const override;
     void print_stats(std::ostream& ostr) const;
 private:
-    std::vector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
+    UUVector<OffsetAndQuaternion<float, float>> calculate_absolute_bone_transformations(const AnimationState* animation_state) const;
     void render_cva(
         const std::shared_ptr<ColoredVertexArray<float>>& cva,
-        const std::vector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
+        const UUVector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
         const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,
         const TransformationMatrix<float, double, 3>& iv,

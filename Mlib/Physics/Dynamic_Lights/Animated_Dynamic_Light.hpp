@@ -12,7 +12,7 @@ namespace Mlib {
 class DynamicLights;
 
 struct AnimatedDynamicLightConfiguration {
-    Interp<float, FixedArray<float, 3>> time_to_color = { {}, {} };
+    UUInterp<float, FixedArray<float, 3>> time_to_color = { {}, {} };
     Interp<double, float> squared_distance_to_intensity = { {}, {} };
 };
 

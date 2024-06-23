@@ -116,10 +116,10 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
 {
     float v = dot0d(v3, n3);
 
-    FixedArray<float, 3> f3T;
+    FixedArray<float, 3> f3T = uninitialized;
     float fT;
     {
-        FixedArray<float, 3> sn3T;
+        FixedArray<float, 3> sn3T = uninitialized;
         FixedArray<float, 3> v3T = v3 - n3 * v;
         float vT_sq = sum(squared(v3T));
         if (vT_sq < 1e-12) {
@@ -135,7 +135,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     if (!std::isnan(P) && (std::abs(v) > std::abs(max_velocity)) && (sign(P) * v > 0)) {
         P = 0;
     }
-    Mlib::FixedArray<float, 3> normal_force;
+    Mlib::FixedArray<float, 3> normal_force = uninitialized;
     // if (!std::isnan(P) && !(sign(P) * v < 0 && std::abs(v) > hand_brake_velocity) && !(P == 0 && std::abs(v) < roll_velocity)) {
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_brake_velocity)))) {
         // Handle acceleration and rolling.
@@ -180,7 +180,7 @@ Mlib::FixedArray<float, 3> Mlib::friction_force_infinite_mass(
     const FixedArray<float, 3>& v3,
     float alpha0)
 {
-    FixedArray<float, 3> sn3;
+    FixedArray<float, 3> sn3 = uninitialized;
     {
         if (float v_sq = sum(squared(v3)); v_sq < 1e-12) {
             sn3 = 0;

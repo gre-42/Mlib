@@ -162,8 +162,8 @@ inline FixedArray<TData, 4, 4> assemble_inverse_homogeneous_4x4(
     const FixedArray<TData, 3, 3>& R,
     const FixedArray<TData, 3>& t)
 {
-    FixedArray<TData, 3, 3> Ri;
-    FixedArray<TData, 3> ti;
+    FixedArray<TData, 3, 3> Ri = uninitialized;
+    FixedArray<TData, 3> ti = uninitialized;
     invert_t_R(t, R, ti, Ri);
     return assemble_homogeneous_4x4(Ri, ti);
 }

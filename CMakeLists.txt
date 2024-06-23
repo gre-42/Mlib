@@ -18,7 +18,7 @@ endif()
 set_ehsc()
 avoid_floating_point_exceptions()
 enable_absolute_diagnostic_pathes()
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 ###############
@@ -53,6 +53,10 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 else()
     find_package(glfw3)
 endif()
+
+set(MlibCereal_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cereal/include)
+set(MlibCereal_FOUND true)
+
 find_package(SDL2)
 # MlibRender contains glad_gl.cpp and glad_vulkan.cpp
 find_package(Vulkan)

@@ -1,5 +1,6 @@
 #include "Wing.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Physics/Actuators/Trail_Source.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 

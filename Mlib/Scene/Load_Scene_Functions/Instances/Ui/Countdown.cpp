@@ -49,7 +49,7 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         node.ref(CURRENT_SOURCE_LOCATION),
         args.arguments.path(KnownArgs::ttf_file),
         FixedArray<float, 3>{1.f, 1.f, 1.f},
-        args.arguments.at<FixedArray<float, 2>>(KnownArgs::position),
+        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::position),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)),
         args.arguments.at<float>(KnownArgs::nseconds) * seconds,

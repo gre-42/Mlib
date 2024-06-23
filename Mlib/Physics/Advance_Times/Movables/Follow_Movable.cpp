@@ -25,20 +25,22 @@ FollowMovable::FollowMovable(
     float y_snappiness,
     float dt,
     float dt_ref)
-: advance_times_{advance_times},
-  followed_node_{followed_node.ptr()},
-  followed_{&followed},
-  attachment_distance_{attachment_distance},
-  attachment_position_{fixed_nans<double, 2>()},
-  node_displacement_{node_displacement},
-  look_at_displacement_{look_at_displacement},
-  snappiness_{snappiness},
-  y_adaptivity_{y_adaptivity},
-  y_adapt_{0},
-  dt_dt_ref_{dt / dt_ref},
-  kalman_filter_{(float)1e-5, (float)1e-2,  1.f, 0.f},
-  exponential_smoother_{1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0},
-  initialized_{false}
+    : advance_times_{ advance_times }
+    , followed_node_{ followed_node.ptr() }
+    , followed_{ &followed }
+    , attachment_distance_{ attachment_distance }
+    , attachment_position_{ fixed_nans<double, 2>() }
+    , node_displacement_{ node_displacement }
+    , look_at_displacement_{ look_at_displacement }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    , dpos_old_{ fixed_nans<double, 3>() }
+    , snappiness_{ snappiness }
+    , y_adaptivity_{ y_adaptivity }
+    , y_adapt_{ 0 }
+    , dt_dt_ref_{ dt / dt_ref }
+    , kalman_filter_{ (float)1e-5, (float)1e-2,  1.f, 0.f }
+    , exponential_smoother_{ 1 - std::pow(1 - y_snappiness, dt_dt_ref_), 0 }
+    , initialized_{ false }
 {
     dpos_old_ = followed_->get_new_absolute_model_matrix().t();
 }

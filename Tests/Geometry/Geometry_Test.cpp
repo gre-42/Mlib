@@ -161,19 +161,17 @@ void test_contour2() {
         {v00, v01, v11},
         {v00, v11, v10}};
     std::vector<FixedArray<ColoredVertex<double>, 3>> otriangles;
-    const auto z2 = fixed_zeros<float, 2>();
-    const auto z3 = fixed_zeros<float, 3>();
     for (const auto& t : triangles) {
         otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{.position = {t(0)(0), t(0)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
-            ColoredVertex<double>{.position = {t(1)(0), t(1)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
-            ColoredVertex<double>{.position = {t(2)(0), t(2)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3}});
+            ColoredVertex<double>{{t(0)(0), t(0)(1), 0.f}},
+            ColoredVertex<double>{{t(1)(0), t(1)(1), 0.f}},
+            ColoredVertex<double>{{t(2)(0), t(2)(1), 0.f}}});
     }
     for (const auto& t : triangles) {
         otriangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{.position = {t(0)(0) + 1.f, t(0)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
-            ColoredVertex<double>{.position = {t(1)(0) + 1.f, t(1)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3},
-            ColoredVertex<double>{.position = {t(2)(0) + 1.f, t(2)(1), 0.f}, .color = z3, .uv = z2, .normal = z3, .tangent = z3}});
+            ColoredVertex<double>{{t(0)(0) + 1.f, t(0)(1), 0.f}},
+            ColoredVertex<double>{{t(1)(0) + 1.f, t(1)(1), 0.f}},
+            ColoredVertex<double>{{t(2)(0) + 1.f, t(2)(1), 0.f}}});
     }
     std::swap(otriangles[1], otriangles[2]);
     find_contours(std::list(otriangles.begin(), otriangles.end()), ContourDetectionStrategy::EDGE_NEIGHBOR);
@@ -202,10 +200,10 @@ void test_intersect_lines() {
 }
 
 void test_lines_to_rectangles() {
-    FixedArray<double, 2> p00;
-    FixedArray<double, 2> p01;
-    FixedArray<double, 2> p10;
-    FixedArray<double, 2> p11;
+    FixedArray<double, 2> p00 = uninitialized;
+    FixedArray<double, 2> p01 = uninitialized;
+    FixedArray<double, 2> p10 = uninitialized;
+    FixedArray<double, 2> p11 = uninitialized;
     FixedArray<double, 2> aL{-1., 1.};
     FixedArray<double, 2> aR{-2., -2.};
     FixedArray<double, 2> b{0., 0.};
@@ -597,7 +595,7 @@ void test_welzl_tetrahedron() {
 void test_shortest_path() {
     PointsAndAdjacency<FixedArray<double, 2>> points_and_adjacency;
     points_and_adjacency.adjacency = SparseArrayCcs<double>{ArrayShape{4, 4}};
-    points_and_adjacency.points = std::vector<FixedArray<double, 2>>{
+    points_and_adjacency.points = UUVector<FixedArray<double, 2>>{
         FixedArray<double, 2>{0., 0.},
         FixedArray<double, 2>{1., 0.},
         FixedArray<double, 2>{1., 1.},

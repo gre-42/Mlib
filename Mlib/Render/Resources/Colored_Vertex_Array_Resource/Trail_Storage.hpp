@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <vector>
@@ -16,7 +17,7 @@ public:
     TrailStorage(
         TrailsInstance& trails_instance,
         TrailSequence trail_sequence,
-        const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
+        const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
         double min_spawn_length,
         double max_spawn_length,
         float spawn_duration);
@@ -25,7 +26,7 @@ public:
 private:
     TrailsInstance& trails_instance_;
     TrailSequence trail_sequence_;
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment_;
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment_;
     double min_spawn_length_;
     double max_spawn_length_;
     float spawn_duration_;

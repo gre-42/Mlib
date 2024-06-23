@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <list>
 
 using namespace Mlib;
 
@@ -25,12 +26,12 @@ void Mlib::merge_meshes(
             material,
             physics_material,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<TPos>, 4>>{},
-            std::vector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
-            std::vector<FixedArray<ColoredVertex<TPos>, 2>>{},
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-            std::vector<FixedArray<float, 3>>{},
-            std::vector<FixedArray<uint8_t, 3>>{}));
+            UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
+            UUVector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
+            UUVector<FixedArray<ColoredVertex<TPos>, 2>>{},
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+            UUVector<FixedArray<float, 3>>{},
+            UUVector<FixedArray<uint8_t, 3>>{}));
     }
     cvas = std::move(result);
 }

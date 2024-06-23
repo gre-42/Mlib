@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Vertex_Normals.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
@@ -26,8 +27,8 @@ template <class TIndex>
 struct NamedObjPolygons {
     std::string name;
     std::string material_name;
-    std::vector<FixedArray<IndexVertex<TIndex>, 3>> triangles;
-    std::vector<FixedArray<IndexVertex<TIndex>, 4>> quads;
+    UUVector<FixedArray<IndexVertex<TIndex>, 3>> triangles;
+    UUVector<FixedArray<IndexVertex<TIndex>, 4>> quads;
 };
 
 template <class TDir, class TPos, class TIndex>
@@ -36,8 +37,8 @@ class IndexedFaceSet {
         std::list<FixedArray<ColoredVertex<TPos>, 3>>,
         std::list<FixedArray<ColoredVertex<TPos>, 4>>>;
     using NamedVectorInputPolygons = NamedInputPolygons<
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>>,
-        std::vector<FixedArray<ColoredVertex<TPos>, 4>>>;
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>>,
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>>;
 public:
     IndexedFaceSet(
         const std::list<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
@@ -45,8 +46,8 @@ public:
     : IndexedFaceSet{std::vector<NamedListInputPolygons>{NamedListInputPolygons{"", "", triangles, quads}}}
     {}
     IndexedFaceSet(
-        const std::vector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
-        const std::vector<FixedArray<ColoredVertex<TPos>, 4>>& quads = {})
+        const UUVector<FixedArray<ColoredVertex<TPos>, 3>>& triangles,
+        const UUVector<FixedArray<ColoredVertex<TPos>, 4>>& quads = {})
     : IndexedFaceSet{std::vector<NamedVectorInputPolygons>{NamedVectorInputPolygons{"", "", triangles, quads}}}
     {}
     template <class TInputTriangles, class TInputQuads>
@@ -68,7 +69,7 @@ public:
                         uv_indices.insert({ OrderableFixedArray{v.uv}, uv_indices.size() });
                         normal_indices.insert({ OrderableFixedArray{v.normal}, normal_indices.size() });
                     }
-                    FixedArray<IndexVertex<TIndex>, std::remove_reference_t<decltype(ipoly)>::length()> opolygon;
+                    FixedArray<IndexVertex<TIndex>, std::remove_reference_t<decltype(ipoly)>::length()> opolygon{ uninitialized };
                     for (size_t i = 0; i < CW::length(ipoly); ++i) {
                         opolygon(i).position = vertex_indices.at(OrderableFixedArray{ ipoly(i).position });
                         opolygon(i).uv = uv_indices.at(OrderableFixedArray{ ipoly(i).uv });
@@ -93,10 +94,10 @@ public:
             normals[v.second] = v.first;
         }
     }
-    std::vector<FixedArray<TPos, 3>> vertices;
-    std::vector<FixedArray<TDir, 2>> uvs;
-    std::vector<FixedArray<TDir, 3>> normals;
-    std::vector<NamedObjPolygons<TIndex>> named_obj_polygons;
+    UUVector<FixedArray<TPos, 3>> vertices;
+    UUVector<FixedArray<TDir, 2>> uvs;
+    UUVector<FixedArray<TDir, 3>> normals;
+    UVector<NamedObjPolygons<TIndex>> named_obj_polygons;
 };
 
 }

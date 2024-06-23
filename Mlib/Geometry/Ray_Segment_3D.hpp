@@ -27,6 +27,8 @@ public:
     RaySegment3D(
         const FixedArray<TData, 3>& start,
         const FixedArray<TData, 3>& end)
+        : start{ start }
+        , direction{ uninitialized }
     {
         direction = end - start;
         auto l2 = sum(squared(direction));
@@ -35,7 +37,6 @@ public:
         }
         length = std::sqrt(l2);
         direction /= length;
-        this->start = start;
     }
     explicit RaySegment3D(const FixedArray<FixedArray<TData, 3>, 2>& vertices)
     : RaySegment3D{ vertices(0), vertices(1) }

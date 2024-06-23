@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <list>
@@ -18,7 +19,7 @@ class FoliageResource: public ISceneNodeResource {
 public:
     FoliageResource(
         SceneNodeResources& scene_node_resources,
-        const std::list<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
+        const UUList<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
         const std::vector<ParsedResourceName>& near_grass_resources,
         const std::vector<ParsedResourceName>& dirty_near_grass_resources,
         double near_grass_distance,
@@ -56,7 +57,7 @@ public:
 
 private:
     SceneNodeResources& scene_node_resources_;
-    std::list<FixedArray<ColoredVertex<double>, 3>> grass_triangles_;
+    UUList<FixedArray<ColoredVertex<double>, 3>> grass_triangles_;
     TerrainStyles terrain_styles_;
     float scale_;
     UpAxis up_axis_;

@@ -42,7 +42,7 @@ void Mlib::add_street_steiner_points(
             // Check terrain region BVH
             {
                 double min_distance_allowed = min_dist_to_terrain_region * scale;
-                FixedArray<double, 2> dir;
+                FixedArray<double, 2> dir = uninitialized;
                 double min_distance;
                 terrain_region_contours_bvh.nearest_way(pt, min_distance_allowed, dir, min_distance);
                 if (min_distance < min_distance_allowed) {

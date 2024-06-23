@@ -14,8 +14,8 @@ void Mlib::save_obj(
     std::map<Material, size_t> material_indices;
     std::map<std::string, ObjMaterial> obj_materials;
     std::vector<NamedInputPolygons<
-        std::vector<FixedArray<ColoredVertex<double>, 3>>,
-        std::vector<FixedArray<ColoredVertex<double>, 4>>>> ipolys;
+        UUVector<FixedArray<ColoredVertex<double>, 3>>,
+        UUVector<FixedArray<ColoredVertex<double>, 4>>>> ipolys;
     ipolys.reserve(cvas.size());
     for (const std::shared_ptr<ColoredVertexArray<double>>& cva : cvas) {
         if (cva->name.empty()) {

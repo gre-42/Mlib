@@ -16,7 +16,8 @@ template <size_t length>
 class TimePointSeries {
 public:
     TimePointSeries()
-        : last_{ SIZE_MAX }
+        : times_(uninitialized)
+        , last_{ SIZE_MAX }
     {}
     explicit TimePointSeries(
         std::chrono::steady_clock::time_point time)

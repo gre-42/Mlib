@@ -339,21 +339,21 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
                 barrier_style.validate(BS::options, "barrier style: ");
                 BarrierStyle as{
                     .texture = barrier_style.path_or_variable(BS::texture).path,
-                    .uv = barrier_style.at(BS::uv).get<FixedArray<float, 2>>(),
+                    .uv = barrier_style.at<UFixedArray<float, 2>>(BS::uv),
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
                     // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
                     .reorient_uv0 = barrier_style.at<bool>(BS::reorient_uv0),
                     .shading = {
-                        .ambient = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::ambient) },
-                        .diffuse = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::diffuse) },
-                        .specular = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::specular) },
+                        .ambient = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::ambient),
+                        .diffuse = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::diffuse),
+                        .specular = barrier_style.at<UOrderableFixedArray<float, 3>>(BS::specular),
                         .fresnel = {
                             .reflectance = {
                                 .min = barrier_style.at<float>(BS::fresnel_min, 0.f),
                                 .max = barrier_style.at<float>(BS::fresnel_max, 0.f),
                                 .exponent = barrier_style.at<float>(BS::fresnel_exponent, 0.f)
                             },
-                            .ambient = OrderableFixedArray{ barrier_style.at<FixedArray<float, 3>>(BS::fresnel_ambient, fixed_zeros<float, 3>()) }
+                            .ambient = OrderableFixedArray{ barrier_style.at<UFixedArray<float, 3>>(BS::fresnel_ambient, fixed_zeros<float, 3>()) }
                         }} };
                 if (!styles.insert({barrier_style.at<std::string>(BS::name), as}).second) {
                     THROW_OR_ABORT("Duplicate barrier style");
@@ -941,7 +941,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.curb2_uv(1) = args.arguments.at<float>(KnownArgs::curb2_uv_y);
         }
         if (args.arguments.contains(KnownArgs::curb_color)) {
-            config.curb_color = args.arguments.at<FixedArray<float, 3>>(KnownArgs::curb_color);
+            config.curb_color = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::curb_color);
         }
         if (args.arguments.contains(KnownArgs::racing_line_width_x)) {
             config.racing_line_width_x = args.arguments.at<float>(KnownArgs::racing_line_width_x);
@@ -1020,19 +1020,19 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.blend_street[RoadType::RUNWAY_DISPLACEMENT_THRESHOLD] = args.arguments.at<bool>(KnownArgs::blend_runway_displacement_threshold);
         }
         if (args.arguments.contains(KnownArgs::emissive_factor)) {
-            config.emissive_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::emissive_factor);
+            config.emissive_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive_factor);
         }
         if (args.arguments.contains(KnownArgs::ambient_factor)) {
-            config.ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient_factor);
+            config.ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::diffuse_factor)) {
-            config.diffuse_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse_factor);
+            config.diffuse_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse_factor);
         }
         if (args.arguments.contains(KnownArgs::specular_factor)) {
-            config.specular_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular_factor);
+            config.specular_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular_factor);
         }
         if (args.arguments.contains(KnownArgs::fresnel_ambient_factor)) {
-            config.fresnel_ambient_factor = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
+            config.fresnel_ambient_factor = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient_factor);
         }
         if (args.arguments.contains(KnownArgs::displacementmap)) {
             config.displacementmap = args.arguments.path(KnownArgs::displacementmap);

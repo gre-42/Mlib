@@ -8,7 +8,7 @@ namespace Mlib {
 
 struct MissileWingController {
     size_t i;
-    FixedArray<float, 2> gain;
+    FixedArray<float, 2> gain = uninitialized;
     float antiroll_angle;
 };
 

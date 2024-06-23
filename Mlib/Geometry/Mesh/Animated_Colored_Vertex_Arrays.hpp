@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
@@ -6,7 +7,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
@@ -30,7 +30,7 @@ struct AnimatedColoredVertexArrays {
     std::list<std::shared_ptr<ColoredVertexArray<double>>> dcvas;
     template <class TPos>
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas();
-    std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(
+    UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(
         const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
     std::shared_ptr<AnimatedColoredVertexArrays> generate_grind_lines(
         float edge_angle,

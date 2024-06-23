@@ -11,7 +11,7 @@ class TransformationMatrix;
 
 struct GlLookatAabb {
     FixedArray<float, 3, 3> extrinsic_R;
-    AxisAlignedBoundingBox<float, 2> sensor_aabb = AxisAlignedBoundingBox<float, 2>::empty();
+    AxisAlignedBoundingBox<float, 2> sensor_aabb;
     float near_plane;
     float far_plane;
 };

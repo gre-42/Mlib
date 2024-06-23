@@ -8,6 +8,7 @@ WingAngle::WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray
     : node_{ node }
     , angle_{ angle }
     , rotation_axis_{ rotation_axis }
+    , position_{ fixed_nans<double, 3>() }
 {
     if (node != nullptr) {
         node->set_relative_movable({ *this, CURRENT_SOURCE_LOCATION });

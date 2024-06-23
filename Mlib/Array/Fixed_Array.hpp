@@ -2,11 +2,14 @@
 #include <Mlib/Array/Base_Dense_Fixed_Array.hpp>
 #include <Mlib/Array/Consteval_Workaround.hpp>
 #include <Mlib/Array/Fixed_Array_Shape.hpp>
+#include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Io/Write_Number.hpp>
 #include <Mlib/Iterator/Pointer_Iterable.hpp>
 #include <Mlib/Math/Conju.hpp>
+#include <Mlib/Uninitialized.hpp>
 #include <array>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <ostream>
 #include <type_traits>
@@ -41,7 +44,7 @@ public:
         return shape().ndim();
     }
 
-    FixedArray() {}
+    FixedArray(Uninitialized) {}
     explicit FixedArray(const TData& rhs) {
         for (TData& v : flat_iterable()) {
             v = rhs;
@@ -61,23 +64,22 @@ public:
     }
     static FixedArray<TData, tshape0, tshape...> from_buffer(const TData* data, size_t nelements)
     {
-        FixedArray<TData, tshape0, tshape...> result;
+        FixedArray<TData, tshape0, tshape...> result = uninitialized;
         assert(nelements == result.nelements());
         std::copy(data, data + nelements, result.flat_begin());
         return result;
     }
-    template<typename... Values>
-    FixedArray(const FixedArray<TData, tshape...>& v0, const Values&... values)
-    : data_{v0, values...}
-    {
-        static_assert(1 + sizeof...(values) == tshape0);
-    }
-    template<typename... Values>
-    static FixedArray<TData, tshape0, tshape...> init(const TData& v0, const Values&... values) {
+    template<std::convertible_to<FixedArray<TData, tshape...>>... Values>
+        requires (sizeof...(Values) == tshape0)
+    FixedArray(const Values&... values)
+        : data_{ values... }
+    {}
+    template<std::convertible_to<TData>... Values>
+    static FixedArray<TData, tshape0, tshape...> init(const Values&... values) {
         static_assert(std::is_trivially_constructible_v<TData>);
-        static_assert(1 + sizeof...(values) == nelements());
-        FixedArray<TData, tshape0, tshape...> result;
-        result.set_values<0>(v0, values...);
+        static_assert(sizeof...(values) == nelements());
+        FixedArray<TData, tshape0, tshape...> result = uninitialized;
+        result.set_values<0>(values...);
         return result;
     }
     FixedArray& operator = (const TData& rhs) {
@@ -158,7 +160,7 @@ public:
     }
     template <class TResultData=TData, class TOperation>
     FixedArray<TResultData, tshape0, tshape...> applied(const TOperation &operation) const {
-        FixedArray<TResultData, tshape0, tshape...> r;
+        FixedArray<TResultData, tshape0, tshape...> r = uninitialized;
         const TData* s = flat_begin();
         TResultData* d = r.flat_begin();
         for (size_t i = 0; i < nelements(); ++i) {
@@ -168,7 +170,7 @@ public:
     }
     template <class TDataResult=TData, class TDataB, class TBinop>
     FixedArray<TDataResult, tshape0, tshape...> array_array_binop(const FixedArray<TDataB, tshape0, tshape...>& b, const TBinop &binop) const {
-        FixedArray<TDataResult, tshape0, tshape...> r;
+        FixedArray<TDataResult, tshape0, tshape...> r = uninitialized;
         const TData* sa = flat_begin();
         const TData* sb = b.flat_begin();
         TDataResult* d = r.flat_begin();
@@ -245,7 +247,7 @@ public:
     }
     FixedArray<TData, tshape0> column(size_t c) const {
         static_assert(ndim() == 2);
-        FixedArray<TData, tshape0> result;
+        FixedArray<TData, tshape0> result = uninitialized;
         for (size_t r = 0; r < tshape0; ++r) {
             result(r) = (*this)(r, c);
         }
@@ -324,7 +326,7 @@ public:
     ArrayShape array_shape() const;
     auto T() const {
         static_assert(ndim() == 2);
-        FixedArray<TData, shape().last(), tshape0> result;
+        FixedArray<TData, shape().last(), tshape0> result = uninitialized;
         for (size_t r = 0; r < tshape0; ++r) {
             for (size_t c = 0; c < shape().last(); ++c) {
                 result(c, r) = (*this)(r, c);
@@ -334,7 +336,7 @@ public:
     }
     auto H() const {
         static_assert(ndim() == 2);
-        FixedArray<TData, shape().last(), tshape0> result;
+        FixedArray<TData, shape().last(), tshape0> result = uninitialized;
         for (size_t r = 0; r < tshape0; ++r) {
             for (size_t c = 0; c < shape().last(); ++c) {
                 result(c, r) = conju((*this)(r, c));
@@ -371,7 +373,9 @@ public:
     }
 private:
     template <size_t i>
-    void set_values() {}
+    void set_values() {
+        static_assert(i == nelements());
+    }
     template<size_t i, typename... Values>
     void set_values(const TData& v, const Values&... values) {
         static_assert(i < nelements());
@@ -380,7 +384,7 @@ private:
         // (*this)(i) = v;
         set_values<i + 1>(values...);
     }
-    FixedArray<TData, tshape...> data_[tshape0];
+    DefaultUnitialized<FixedArray<TData, tshape...>> data_[tshape0];
 };
 
 template <typename TData>
@@ -389,7 +393,7 @@ class FixedArray<TData>: public BaseDenseFixedArray<FixedArray<TData>, TData>
 public:
     typedef TData value_type;
 
-    FixedArray() {}
+    FixedArray(Uninitialized) {}
     FixedArray(const TData& v)
     : value_(v)
     {}
@@ -427,7 +431,7 @@ public:
         archive(value_);
     }
 private:
-    TData value_;
+    default_uninitialized_t<TData> value_;
 };
 
 /*
@@ -471,5 +475,8 @@ template <typename TData, size_t tshape0, size_t... tshape>
 ArrayShape FixedArray<TData, tshape0, tshape...>::array_shape() const {
     return ArrayShape{ tshape0, tshape... };
 }
+
+template <typename TData, size_t... tshape>
+using UFixedArray = DefaultUnitialized<FixedArray<TData, tshape...>>;
 
 }

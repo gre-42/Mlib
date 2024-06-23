@@ -49,7 +49,7 @@ void save_obj(
             ostr << "usemtl " << named_polygons.material_name << '\n';
         }
         auto add_polygons = [&ostr]<size_t tnvertices>(
-            const std::vector<FixedArray<IndexVertex<TIndex>, tnvertices>>& polygons)
+            const UUVector<FixedArray<IndexVertex<TIndex>, tnvertices>>& polygons)
         {
             for (const auto& t : polygons) {
                 ostr << "f ";

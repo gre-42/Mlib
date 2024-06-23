@@ -24,7 +24,7 @@ void RacingLineBvh::intersecting_way_beta(
         AxisAlignedBoundingBox<double, 2>::from_points(way_boundary),
         [&way_boundary, &beta, &racing_line_segment](const RacingLineSegment& candidate_racing_line_segment)
     {
-        FixedArray<double, 2> intersection_point;
+        FixedArray<double, 2> intersection_point = uninitialized;
         if (intersect_lines(
             intersection_point,
             candidate_racing_line_segment.racing_line_segment,

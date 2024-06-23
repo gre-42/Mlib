@@ -34,7 +34,7 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
     const auto& X1 = (c.l1 != nullptr) ? c.l1->ray : c.r1->ray;
 #define l1 DO_NOT_USE_ME
 #define r1 DO_NOT_USE_ME
-    FixedArray<double, 3> intersection_point;
+    FixedArray<double, 3> intersection_point = uninitialized;
     double t;
     // if (!line_intersects_triangle(
     //     L1(0),

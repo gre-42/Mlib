@@ -81,13 +81,13 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto blades_node_name = c.at<std::string>(BladesArgs::node);
         DanglingRef<SceneNode> blades_node = scene.get_node(blades_node_name, DP_LOC);
         blades_rb = &get_rigid_body_vehicle(blades_node);
-        vehicle_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
-        vehicle_mount_1 = c.at<FixedArray<float, 3>>(BladesArgs::vehicle_mount_1);
-        blades_mount_0 = c.at<FixedArray<float, 3>>(BladesArgs::blades_mount_0);
-        blades_mount_1 = c.at<FixedArray<float, 3>>(BladesArgs::blades_mount_1);
+        vehicle_mount_0 = c.at<UFixedArray<float, 3>>(BladesArgs::vehicle_mount_0);
+        vehicle_mount_1 = c.at<UFixedArray<float, 3>>(BladesArgs::vehicle_mount_1);
+        blades_mount_0 = c.at<UFixedArray<float, 3>>(BladesArgs::blades_mount_0);
+        blades_mount_1 = c.at<UFixedArray<float, 3>>(BladesArgs::blades_mount_1);
     }
-    FixedArray<double, 3> position = args.arguments.at<FixedArray<double, 3>>(KnownArgs::position) * (double)meters;
-    FixedArray<float, 3> rotation = args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees;
+    FixedArray<double, 3> position = args.arguments.at<UFixedArray<double, 3>>(KnownArgs::position) * (double)meters;
+    FixedArray<float, 3> rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     auto engine = args.arguments.at<std::string>(KnownArgs::engine);
     auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
     float power2lift = args.arguments.at<float>(KnownArgs::power2lift) * N / W;
@@ -105,7 +105,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
     auto pid_child = args.arguments.try_get_child(KnownArgs::align_to_gravity_pid);
     FixedArray<float, 3> pid_params = pid_child.has_value()
-        ? pid_child->at<FixedArray<float, 3>>(PidArgs::pid)
+        ? pid_child->at<UFixedArray<float, 3>>(PidArgs::pid)
         : fixed_nans<float, 3>();
     PidController<float, float> pid{
         pid_params(0),

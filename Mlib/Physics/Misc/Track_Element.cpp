@@ -50,7 +50,7 @@ TrackElement TrackElement::from_stream(
     istr >> ReadNum{result.elapsed_seconds};
     result.transformations.resize(ntransformations);
     for (auto& t : result.transformations) {
-        FixedArray<double, 3> pos;
+        FixedArray<double, 3> pos = uninitialized;
         istr >>
             pos(0) >>
             pos(1) >>

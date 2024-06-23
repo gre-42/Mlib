@@ -19,7 +19,7 @@ void Mlib::remove_degenerate_triangles(ColoredVertexArray<TPos>& cva) {
         }
         trimmed.push_back(tri);
     }
-    cva.triangles = std::vector(trimmed.begin(), trimmed.end());
+    cva.triangles = uuvector(trimmed.begin(), trimmed.end());
 }
 
 namespace Mlib {

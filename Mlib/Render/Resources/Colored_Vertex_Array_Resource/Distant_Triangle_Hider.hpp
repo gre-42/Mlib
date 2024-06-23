@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
@@ -56,7 +57,7 @@ private:
     void delete_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr);
     void insert_triangle(size_t id, FixedArray<ColoredVertex<float>, 3>* ptr);
 
-    std::vector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles_;
+    UUVector<FixedArray<FixedArray<float, 3>, 3>> transformed_triangles_;
     std::vector<size_t> triangles_local_ids_;
     std::vector<size_t> triangles_global_ids_;
     size_t current_triangle_id_ = SIZE_MAX;

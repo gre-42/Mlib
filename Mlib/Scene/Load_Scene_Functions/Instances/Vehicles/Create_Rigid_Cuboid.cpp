@@ -59,11 +59,11 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::size) * meters,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::size) * meters,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::com, fixed_zeros<float, 3>()) * meters,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::v, fixed_zeros<float, 3>()) * kph,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::w, fixed_zeros<float, 3>()) * rpm,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::I_rotation, fixed_zeros<float, 3>()) * degrees,
         scene_node_resources.get_geographic_mapping("world"));
     if (args.arguments.contains(KnownArgs::flags)) {
         rb->flags_ = rigid_body_vehicle_flags_from_string(args.arguments.at<std::string>(KnownArgs::flags));

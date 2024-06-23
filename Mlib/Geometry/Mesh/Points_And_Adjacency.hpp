@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Array/Sparse_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 
 namespace Mlib {
 
@@ -19,7 +20,7 @@ template <class TPoint>
 struct PointsAndAdjacency {
     using TData = typename TPoint::value_type;
     static const size_t tlength = TPoint::length();
-    std::vector<TPoint> points;
+    UVector<TPoint> points;
     SparseArrayCcs<TData> adjacency;
 
     PointsAndAdjacency() = default;

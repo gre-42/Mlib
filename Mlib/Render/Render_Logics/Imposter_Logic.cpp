@@ -80,6 +80,7 @@ ImposterLogic::ImposterLogic(
     , scene_{ scene }
     , orig_node_{ orig_node }
     , cameras_{ cameras }
+    , old_projected_bbox_{ uninitialized }
     , orig_hider{ *this }
     , imposter_node_{ nullptr }
     , debug_prefix_{ debug_prefix }

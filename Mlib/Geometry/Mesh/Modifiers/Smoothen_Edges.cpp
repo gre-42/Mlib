@@ -40,16 +40,12 @@ void Mlib::smoothen_edges(
                         if (n0n1 >=0 && n0n1 < 1) {
                             TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                             if (auto e = ei; !excluded_vertices.contains(e)) {
-                                if (!vertex_movement.contains(e)) {
-                                    vertex_movement[e] = 0.f;
-                                }
-                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
+                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
+                                it->second += TPos(smoothness) * n01 * shift;
                             }
                             if (auto e = ej; !excluded_vertices.contains(e)) {
-                                if (!vertex_movement.contains(e)) {
-                                    vertex_movement[e] = 0.f;
-                                }
-                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
+                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
+                                it->second += TPos(smoothness) * n01 * shift;
                             }
                         }
                     }

@@ -117,7 +117,7 @@ void Players::start_race(const RaceConfiguration& race_configuration) {
 RaceState Players::notify_lap_finished(
     const Player* player,
     const std::string& asset_id,
-    const std::vector<FixedArray<float, 3>>& vehicle_colors,
+    const UUVector<FixedArray<float, 3>>& vehicle_colors,
     float race_time_seconds,
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)

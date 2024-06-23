@@ -20,7 +20,7 @@ TData triangle_area(
     const FixedArray<TData, 2>& t1,
     const FixedArray<TData, 2>& t2)
 {
-    FixedArray<TData, 2, 2> m;
+    FixedArray<TData, 2, 2> m = uninitialized;
     m[0] = t1 - t0;
     m[1] = t2 - t0;
     return det2x2(m) / 2;

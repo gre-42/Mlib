@@ -10,8 +10,8 @@ DynamicLightDb::DynamicLightDb()
 
 DynamicLightDb::~DynamicLightDb() = default;
 
-void DynamicLightDb::insert(const std::string& name, const TLightConfiguration& config) {
-	configurations_.set(name, config);
+void DynamicLightDb::add(const std::string& name, const TLightConfiguration& config) {
+	configurations_.add(name, config);
 }
 
 const DynamicLightDb::TLightConfiguration& DynamicLightDb::get(const std::string& name) const {

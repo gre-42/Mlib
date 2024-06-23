@@ -16,7 +16,7 @@ using namespace Mlib;
 
 FoliageResource::FoliageResource(
     SceneNodeResources& scene_node_resources,
-    const std::list<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
+    const UUList<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
     const std::vector<ParsedResourceName>& near_grass_resources,
     const std::vector<ParsedResourceName>& dirty_near_grass_resources,
     double near_grass_distance,
@@ -47,7 +47,7 @@ void FoliageResource::preload(const RenderableResourceFilter& filter) const
 
 void FoliageResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> no_grass;
+    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass;
     auto res = std::make_shared<RenderableTriangleSampler>(
         scene_node_resources_,
         terrain_styles_,

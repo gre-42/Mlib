@@ -3,6 +3,7 @@
 #include <Mlib/Math/Float_Type.hpp>
 #include <Mlib/Rvalue_Address.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Type_Traits/Get_Scalar.hpp>
 #include <Mlib/Type_Traits/Scalar.hpp>
 #include <climits>
 #include <optional>
@@ -1071,7 +1072,8 @@ inline size_t count_nonzero(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class TDerived, class TData>
 TData sum(const BaseDenseArray<TDerived, TData>& a) {
-    TData result(0);
+    using ScalarType = scalar_type_t<TData>;
+    TData result((ScalarType)0);
     for (const TData& v : a->flat_iterable()) {
         result += v;
     }

@@ -19,6 +19,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
     , offset_{ offset }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
 {
     followed_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }

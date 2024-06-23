@@ -27,6 +27,9 @@ UvShifter3<TPos>::UvShifter3(
     const FixedArray<TPos, 2>& u1,
     const FixedArray<TPos, 2>& u2,
     const FixedArray<WrapMode, 2>& wrap_mode)
+    : u0{ uninitialized }
+    , u1{ uninitialized }
+    , u2{ uninitialized }
 {
     for (size_t i = 0; i < 2; ++i) {
         auto offset = (wrap_mode(i) == WrapMode::REPEAT)
@@ -46,6 +49,10 @@ UvShifter4<TPos>::UvShifter4(
     const FixedArray<TPos, 2>& u2,
     const FixedArray<TPos, 2>& u3,
     const FixedArray<WrapMode, 2>& wrap_mode)
+    : u0{ uninitialized }
+    , u1{ uninitialized }
+    , u2{ uninitialized }
+    , u3{ uninitialized }
 {
     for (size_t i = 0; i < 2; ++i) {
         auto offset = (wrap_mode(i) == WrapMode::REPEAT)

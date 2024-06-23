@@ -1,21 +1,22 @@
 #include "Subdivided_Contour.hpp"
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Iterator/Iterable.hpp>
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Math/Math.hpp>
 
 using namespace Mlib;
 
-Interp<double, FixedArray<double, 3>> Mlib::interpolated_contour(
+UUInterp<double, FixedArray<double, 3>> Mlib::interpolated_contour(
     const std::list<FixedArray<double, 3>>& contour)
 {
     if (contour.empty()) {
-        return Interp<double, FixedArray<double, 3>>({}, {});
+        return UUInterp<double, FixedArray<double, 3>>({}, {});
     }
     std::vector<double> distance_to_origin;
     distance_to_origin.reserve(contour.size());
     distance_to_origin.push_back(0.);
 
-    std::vector<FixedArray<double, 3>> positions;
+    UUVector<FixedArray<double, 3>> positions;
     positions.reserve(contour.size());
     positions.push_back(contour.front());
     {
@@ -26,7 +27,7 @@ Interp<double, FixedArray<double, 3>> Mlib::interpolated_contour(
             positions.push_back(current_position);
         }
     }
-    return Interp<double, FixedArray<double, 3>>{ distance_to_origin, positions };
+    return Interp<double, DefaultUnitialized<FixedArray<double, 3>>>{ distance_to_origin, positions };
 }
 
 std::list<FixedArray<double, 3>> Mlib::subdivided_contour(

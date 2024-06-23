@@ -8,7 +8,9 @@ std::optional<CameraSensorAndNPixels> Mlib::npixels_for_dpi(
     uint32_t min_texture_size,
     uint32_t max_texture_size)
 {
-    CameraSensorAndNPixels result;
+    CameraSensorAndNPixels result{
+        .scaled_sensor_aabb = uninitialized
+    };
     auto sensor_size = sensor_aabb.max() - sensor_aabb.min();
     auto sensor_center = (sensor_aabb.max() + sensor_aabb.min()) / 2.f;
     if (any(sensor_size * dpi > float(max_texture_size)) ||

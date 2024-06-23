@@ -17,7 +17,7 @@ struct BulletProperties {
     float max_lifetime;
     float damage;
     float damage_radius;
-    FixedArray<float, 3> size;
+    FixedArray<float, 3> size = uninitialized;
     std::string trail_resource_name;
     float trail_dt;
     float trail_animation_duration;

@@ -36,7 +36,9 @@ template <class TPoint>
 void PointsAndAdjacency<TPoint>::transform(const TransformationMatrix<float, TData, tlength>& m) {
     adjacency *= (TData)m.get_scale();
     for (auto& p : points) {
-        p = m.transform(FixedArray<typename TPoint::value_type, TPoint::length()>(p));
+        using PP = FixedArray<typename TPoint::value_type, TPoint::length()>;
+        PP& pp = p;
+        pp = m.transform(pp);
     }
 }
 
@@ -100,7 +102,7 @@ template <class TPoint>
 PointsAndAdjacency<TPoint> PointsAndAdjacency<TPoint>::concatenated(
     const PointsAndAdjacency& other) const
 {
-    PointsAndAdjacency<TPoint> result{points.size() + other.points.size()};
+    PointsAndAdjacency<TPoint> result(points.size() + other.points.size());
     std::copy(
         points.begin(),
         points.end(),
@@ -138,7 +140,7 @@ PointsAndAdjacency<TPoint> PointsAndAdjacency<TPoint>::merged_neighbors(
     const TCombinePoints& combine_points) const
 {
     std::vector<size_t> new_ids(points.size());
-    std::vector<TPoint> result_points;
+    UVector<TPoint> result_points;
     result_points.reserve(points.size());
     {
         FuzzySetOfPoints<TData, tlength> point_bvh{ merge_radius, error_radius };

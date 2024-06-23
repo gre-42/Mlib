@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Material.hpp>
@@ -48,12 +49,12 @@ public:
         const Material& material,
         PhysicsMaterial physics_material,
         ModifierBacklog modifier_backlog,
-        std::vector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-        std::vector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
-        std::vector<FixedArray<float, 3>>&& continous_triangle_texture_layers,
-        std::vector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
+        UUVector<FixedArray<ColoredVertex<TPos>, 2>>&& lines,
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights,
+        UUVector<FixedArray<float, 3>>&& continous_triangle_texture_layers,
+        UUVector<FixedArray<uint8_t, 3>>&& discrete_triangle_texture_layers,
         const AxisAlignedBoundingBox<TPos, 3>* aabb = nullptr,
         const BoundingSphere<TPos, 3>* bounding_sphere = nullptr);
     ~ColoredVertexArray();
@@ -61,15 +62,15 @@ public:
     Material material;
     PhysicsMaterial physics_material;
     ModifierBacklog modifier_backlog;
-    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
-    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
-    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::LINE)>> lines;
-    std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-    std::vector<FixedArray<float, 3>> continuous_triangle_texture_layers;
-    std::vector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
+    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
+    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
+    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::LINE)>> lines;
+    UUVector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    UUVector<FixedArray<float, 3>> continuous_triangle_texture_layers;
+    UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
     
     template <PrimitiveDimensions tdims>
-    std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
+    UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() {
         if constexpr (tdims == PrimitiveDimensions::QUAD) {
             return quads;
         } else if constexpr (tdims == PrimitiveDimensions::TRIANGLE) {
@@ -81,11 +82,11 @@ public:
         }
     }
     template <PrimitiveDimensions tdims>
-    const std::vector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() const {
+    const UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(tdims)>>& primitives() const {
         return const_cast<ColoredVertexArray*>(this)->primitives<tdims>();
     }
     bool empty() const;
-    std::vector<FixedArray<TPos, 3>> vertices() const;
+    UUVector<FixedArray<TPos, 3>> vertices() const;
     AxisAlignedBoundingBox<TPos, 3> aabb() const;
     BoundingSphere<TPos, 3> bounding_sphere() const;
     void set_bounds(
@@ -94,7 +95,7 @@ public:
     double max_center_distance(uint32_t billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
-        const std::vector<OffsetAndQuaternion<float, TPosTransform>>& qs,
+        const UUVector<OffsetAndQuaternion<float, TPosTransform>>& qs,
         const std::string& suffix) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
@@ -138,12 +139,12 @@ public:
         Material material;
         PhysicsMaterial physics_material;
         ModifierBacklog modifier_backlog;
-        std::vector<FixedArray<ColoredVertex<TPos>, 4>> quads;
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
-        std::vector<FixedArray<ColoredVertex<TPos>, 2>> lines;
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
-        std::vector<FixedArray<float, 3>> continuous_triangle_texture_layers;
-        std::vector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>> quads;
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+        UUVector<FixedArray<ColoredVertex<TPos>, 2>> lines;
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+        UUVector<FixedArray<float, 3>> continuous_triangle_texture_layers;
+        UUVector<FixedArray<uint8_t, 3>> discrete_triangle_texture_layers;
 
         archive(name);
         archive(material);

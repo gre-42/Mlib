@@ -8,7 +8,7 @@ namespace Mlib {
 
 template <class TPos>
 class ColoredVertexArray;
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 
 template <class TPos>

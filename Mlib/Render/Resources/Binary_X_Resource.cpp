@@ -21,33 +21,29 @@ BinaryXResource::BinaryXResource(
     const Material& material_0,
     const Material& material_90)
 {
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
+    UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2);
 
     ColoredVertex<float> v00{ // min(x), min(y)
-        .position = {square(0, 0), square(0, 1), 0.f},
-        .color = fixed_ones<float, 3>(),
-        .uv = {0.f, 0.f},
-        .normal = {0.f, 0.f, 1.f},
-        .tangent = {0.f, 0.f, 0.f}};
+        {square(0, 0), square(0, 1), 0.f},
+        fixed_ones<float, 3>(),
+        {0.f, 0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex<float> v01{ // min(x), max(y)
-        .position = {square(0, 0), square(1, 1), 0.f},
-        .color = fixed_ones<float, 3>(),
-        .uv = {0.f, 1.f},
-        .normal = {0.f, 0.f, 1.f},
-        .tangent = {0.f, 0.f, 0.f}};
+        {square(0, 0), square(1, 1), 0.f},
+        fixed_ones<float, 3>(),
+        {0.f, 1.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex<float> v10{ // max(x), min(y)
-        .position = {square(1, 0), square(0, 1), 0.f},
-        .color = fixed_ones<float, 3>(),
-        .uv = {1.f, 0.f},
-        .normal = {0.f, 0.f, 1.f},
-        .tangent = {0.f, 0.f, 0.f}};
+        {square(1, 0), square(0, 1), 0.f},
+        fixed_ones<float, 3>(),
+        {1.f, 0.f},
+        {0.f, 0.f, 1.f}};
     ColoredVertex<float> v11{ // max(x), max(y)
-        .position = {square(1, 0), square(1, 1), 0.f},
-        .color = fixed_ones<float, 3>(),
-        .uv = {1.f, 1.f},
-        .normal = {0.f, 0.f, 1.f},
-        .tangent = {0.f, 0.f, 0.f}};
+        {square(1, 0), square(1, 1), 0.f},
+        fixed_ones<float, 3>(),
+        {1.f, 1.f},
+        {0.f, 0.f, 1.f}};
 
     triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex<float>, 3>{v11, v00, v10});
@@ -60,12 +56,12 @@ BinaryXResource::BinaryXResource(
             material_0,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles_0),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>()));
 
     rva_90_ = std::make_shared<ColoredVertexArrayResource>(
         std::make_shared<ColoredVertexArray<float>>(
@@ -73,12 +69,12 @@ BinaryXResource::BinaryXResource(
             material_90,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles_90),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>()));
 }
 
 BinaryXResource::~BinaryXResource()

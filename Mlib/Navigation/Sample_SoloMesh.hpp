@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <list>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #include <DetourNavMesh.h>

@@ -42,7 +42,7 @@ void Mlib::import_bone_weights(
         }
         cva->triangle_bone_weights.reserve(cva->triangles.size());
         for (const auto& t : cva->triangles) {
-            FixedArray<std::vector<BoneWeight>, 3> wn;
+            FixedArray<std::vector<BoneWeight>, std::remove_reference_t<decltype(t)>::length()> wn = uninitialized;
             std::vector<BoneWeight>* wn_it = wn.flat_begin();
             for (const auto& v : t.flat_iterable()) {
                 float best_distance2 = INFINITY;

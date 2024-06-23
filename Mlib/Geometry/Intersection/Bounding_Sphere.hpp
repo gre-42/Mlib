@@ -21,7 +21,9 @@ class TransformationMatrix;
 template <class TData, size_t tndim>
 class BoundingSphere {
 public:
-    BoundingSphere(Uninitialized) {}
+    BoundingSphere(Uninitialized)
+        : center_{ uninitialized }
+    {}
     BoundingSphere(
         const FixedArray<TData, tndim>& center,
         const TData& radius)
@@ -53,7 +55,7 @@ public:
         const TIterable& iterator_end)
     {
         size_t nelements = 0;
-        FixedArray<TData, tndim> center(0);
+        FixedArray<TData, tndim> center((TData)0);
         for (auto it = iterator_begin; it != iterator_end; ++it) {
             center += *it;
             ++nelements;

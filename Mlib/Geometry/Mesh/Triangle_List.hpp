@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
@@ -35,9 +36,9 @@ public:
         std::string name,
         Material material,
         PhysicsMaterial physics_material,
-        std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
-        std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
-        std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
+        UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
+        UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
+        UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
     void draw_triangle_with_normals(
         const FixedArray<TPos, 3>& p00,
         const FixedArray<TPos, 3>& p10,
@@ -183,9 +184,9 @@ public:
         std::string name;
         Material material;
         PhysicsMaterial physics_material;
-        std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
-        std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
-        std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+        UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
+        UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+        UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
 
         archive(name);
         archive(material);
@@ -206,9 +207,9 @@ public:
     Material material;
     PhysicsMaterial physics_material;
     ModifierBacklog modifier_backlog;
-    std::list<FixedArray<ColoredVertex<TPos>, 4>> quads;
-    std::list<FixedArray<ColoredVertex<TPos>, 3>> triangles;
-    std::list<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
+    UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
+    UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
+    UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
 };
 
 }

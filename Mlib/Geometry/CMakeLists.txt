@@ -8,7 +8,11 @@ if (NOT ANDROID)
     target_precompile_headers(MlibGeometry PRIVATE ../Precompiled_Header.hpp)
 endif()
 
-include_directories(${Mlib_INCLUDE_DIR})
+target_include_directories(
+    MlibGeometry
+    PUBLIC
+    ${Mlib_INCLUDE_DIR}
+    ${MlibCereal_INCLUDE_DIR})
 
 set_source_files_properties(Mesh/Contour.cpp PROPERTIES COMPILE_FLAGS -ffloat-store)
 set_source_files_properties(Mesh/Triangle_List.cpp PROPERTIES COMPILE_FLAGS -ffloat-store)

@@ -23,10 +23,10 @@ FixedArray<TData, 3> triangle_normal(
     TData ma = max(abs(res));
     if (ma < 1e-12) {
         if (error_behavior == TriangleNormalErrorBehavior::ZERO) {
-            return FixedArray<TData, 3>{0.f, 0.f, 0.f};
+            return fixed_zeros<TData, 3>();
         } else if (error_behavior == TriangleNormalErrorBehavior::WARN) {
             lwarn() << "Cannot calculate triangle normal";
-            return FixedArray<TData, 3>{0.f, 0.f, 0.f};
+            return fixed_zeros<TData, 3>();
         } else {
             throw TriangleException(t(0), t(1), t(2), "Cannot calculate triangle normal");
         }

@@ -9,14 +9,14 @@ template <class TDerived, class TData>
 TData mean(const BaseDenseArray<TDerived, TData>& a) {
     const auto& av = *a;  // Workaround for MSVC
     assert(av.nelements() > 0);
-    typedef typename ScalarType<TData>::value_type ScalarType;
+    using ScalarType = scalar_type_t<TData>;
     return sum(a) / (ScalarType)CW::nelements(av);
 }
 
 template <class TData>
 Array<TData> mean(const Array<TData>& a, size_t axis) {
     assert(a.shape(axis) > 0);
-    typedef typename ScalarType<TData>::value_type ScalarType;
+    using ScalarType = scalar_type_t<TData>;
     return sum(a, axis) / (ScalarType)a.shape(axis);
 }
 

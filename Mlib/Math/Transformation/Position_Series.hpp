@@ -11,10 +11,13 @@ namespace Mlib {
 template <class TPos, size_t tndim, size_t length>
 class PositionSeries {
 public:
-    PositionSeries() = default;
+    PositionSeries()
+        : data_{ uninitialized }
+    {}
     PositionSeries(
         const FixedArray<TPos, tndim>& position,
         std::chrono::steady_clock::time_point time)
+        : PositionSeries()
     {
         append(position, time);
     }

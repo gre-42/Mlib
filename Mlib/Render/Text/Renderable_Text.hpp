@@ -19,10 +19,13 @@ struct TextRenderProgram: public RenderProgram {
 };
 
 struct VData {
-    VData() {}
+    VData(Uninitialized)
+        : pos{ uninitialized }
+        , uv{ uninitialized }
+    {}
     VData(float x, float y, float s, float t)
-    : pos{ x, y },
-      uv{ s, t }
+        : pos{ x, y }
+        , uv{ s, t }
     {}
     FixedArray<float, 2> pos;
     FixedArray<float, 2> uv;

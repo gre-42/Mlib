@@ -95,7 +95,7 @@ FixedArray<TData, 2> intersect_lines(
     const TData& width1,
     bool compute_center = false)
 {
-    FixedArray<TData, 2> intersection;
+    FixedArray<TData, 2> intersection = uninitialized;
     if (!intersect_lines(intersection, l0, l1, width0, width1, compute_center)) {
         THROW_OR_ABORT("Lines do not intersect");
     }

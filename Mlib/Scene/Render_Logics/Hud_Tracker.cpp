@@ -21,6 +21,7 @@ HudErrorBehavior Mlib::hud_error_behavior_from_string(const std::string& s) {
 
 HudTrackerTimeAdvancer::HudTrackerTimeAdvancer(HudTracker& tracker)
     : tracker_{ tracker }
+    , vp_{ uninitialized }
 {
     std::scoped_lock lock{ tracker.render_mutex_ };
     is_visible_ = tracker.is_visible_;
@@ -81,7 +82,7 @@ HudTracker::HudTracker(
     , center_{ center }
     , size_{ size }
     , hud_error_behavior_{ hud_error_behavior }
-    , offset_(NAN)
+    , offset_((double)NAN)
     , smooth_offset_{ 0.2f }
     , is_visible_{ false }
     , scene_logic_{ scene_logic }
@@ -122,7 +123,7 @@ void HudTracker::render(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
-    FixedArray<float, 2> offset;
+    FixedArray<float, 2> offset = uninitialized;
     {
         std::scoped_lock lock{ offset_mutex_ };
         if (any(Mlib::isnan(offset_))) {

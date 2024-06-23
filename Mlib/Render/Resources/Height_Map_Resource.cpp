@@ -18,7 +18,7 @@ HeightMapResource::HeightMapResource(
     const TransformationMatrix<float, float, 2>& normalization_matrix,
     NormalType normal_type)
 {
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
+    UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2 * height_picture.nelements());
     assert(rgb_picture.ndim() == 3);
     assert(rgb_picture.shape(0) == 3);
@@ -82,23 +82,20 @@ HeightMapResource::HeightMapResource(
                 FixedArray<float, 3> normal = triangle_normal<float>({p0, p1, p2});
                 triangles.push_back(FixedArray<ColoredVertex<float>, 3>{
                     ColoredVertex<float>{
-                        .position = p0,
-                        .color = c0,
-                        .uv = fixed_zeros<float, 2>(),
-                        .normal = normal,
-                        .tangent = fixed_zeros<float, 3>()},
+                        p0,
+                        c0,
+                        fixed_zeros<float, 2>(),
+                        normal},
                     ColoredVertex<float>{
-                        .position = p1,
-                        .color = c1,
-                        .uv = fixed_zeros<float, 2>(),
-                        .normal = normal,
-                        .tangent = fixed_zeros<float, 3>()},
+                        p1,
+                        c1,
+                        fixed_zeros<float, 2>(),
+                        normal},
                     ColoredVertex<float>{
-                        .position = p2,
-                        .color = c2,
-                        .uv = fixed_zeros<float, 2>(),
-                        .normal = normal,
-                        .tangent = fixed_zeros<float, 3>()}});
+                        p2,
+                        c2,
+                        fixed_zeros<float, 2>(),
+                        normal}});
             };
             add_triangle(p00, c00, p11, c11, p01, c01);
             add_triangle(p11, c11, p00, c00, p10, c10);
@@ -122,12 +119,12 @@ HeightMapResource::HeightMapResource(
             Material{},
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>()));
 }
 
 HeightMapResource::~HeightMapResource()

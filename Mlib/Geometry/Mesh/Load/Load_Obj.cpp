@@ -44,8 +44,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
 {
     std::map<std::string, ObjMaterial> mtllib;
     std::vector<ColoredVertexX<TPos>> obj_vertices;
-    std::vector<FixedArray<float, 2>> obj_uvs;
-    std::vector<FixedArray<float, 3>> obj_normals;
+    UUVector<FixedArray<float, 2>> obj_uvs;
+    UUVector<FixedArray<float, 3>> obj_normals;
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     TriangleList<TPos> tl{
         filename,
@@ -199,15 +199,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     safe_stoz(match[1].str()),
                     safe_stoz(match[4].str()),
                     safe_stoz(match[7].str())};
-                FixedArray<size_t, 3> uv_ids;
-                uv_ids(0) = (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX;
-                uv_ids(1) = (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX;
-                uv_ids(2) = (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX;
+                FixedArray<size_t, 3> uv_ids{
+                    (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX,
+                    (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX,
+                    (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX };
                 assert_true(all(vertex_ids > size_t(0)));
                 assert_true(all(uv_ids > size_t(0)));
-                FixedArray<float, 3> n0;
-                FixedArray<float, 3> n1;
-                FixedArray<float, 3> n2;
+                FixedArray<float, 3> n0 = uninitialized;
+                FixedArray<float, 3> n1 = uninitialized;
+                FixedArray<float, 3> n2 = uninitialized;
                 if (match[3].str().empty() && match[6].str().empty() && match[9].str().empty()) {
                     auto n = triangle_normal<TPos>({
                         obj_vertices.at(vertex_ids(0) - 1).position,
@@ -253,17 +253,17 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                     safe_stoz(match[4].str()),
                     safe_stoz(match[7].str()),
                     safe_stoz(match[10].str())};
-                FixedArray<size_t, 4> uv_ids;
-                uv_ids(0) = (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX;
-                uv_ids(1) = (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX;
-                uv_ids(2) = (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX;
-                uv_ids(3) = (match[11].str() != "") ? safe_stoz(match[11].str()) : SIZE_MAX;
+                FixedArray<size_t, 4> uv_ids{
+                    (match[2].str() != "") ? safe_stoz(match[2].str()) : SIZE_MAX,
+                    (match[5].str() != "") ? safe_stoz(match[5].str()) : SIZE_MAX,
+                    (match[8].str() != "") ? safe_stoz(match[8].str()) : SIZE_MAX,
+                    (match[11].str() != "") ? safe_stoz(match[11].str()) : SIZE_MAX };
                 assert_true(all(vertex_ids > size_t(0)));
                 assert_true(all(uv_ids > size_t(0)));
-                FixedArray<float, 3> n0;
-                FixedArray<float, 3> n1;
-                FixedArray<float, 3> n2;
-                FixedArray<float, 3> n3;
+                FixedArray<float, 3> n0 = uninitialized;
+                FixedArray<float, 3> n1 = uninitialized;
+                FixedArray<float, 3> n2 = uninitialized;
+                FixedArray<float, 3> n3 = uninitialized;
                 if (match[3].str().empty() && match[6].str().empty() && match[9].str().empty()) {
                     auto n = triangle_normal<TPos>({
                         obj_vertices.at(vertex_ids(0) - 1).position,

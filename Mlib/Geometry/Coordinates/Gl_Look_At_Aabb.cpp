@@ -9,7 +9,10 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
     const TransformationMatrix<float, double, 3>& object_model_matrix,
     const AxisAlignedBoundingBox<double, 3>& object_aabb)
 {
-    GlLookatAabb result;
+    GlLookatAabb result{
+        .extrinsic_R = uninitialized,
+        .sensor_aabb = AxisAlignedBoundingBox<float, 2>::empty()
+    };
     auto d = FixedArray<float, 2>{
         float(object_model_matrix.t(0) - camera_position(0)),
         float(object_model_matrix.t(2) - camera_position(2))};

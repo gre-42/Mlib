@@ -36,9 +36,9 @@ FacadeTexture Mlib::parse_facade_texture(const JsonMacroArguments& args) {
     if (interior.has_value()) {
         const auto& i = interior.value();
         i.validate(InteriorArgs::options);
-        itx.facade_edge_size = i.at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size);
-        itx.facade_inner_size = i.at<OrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
-        itx.interior_size = i.at<OrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
+        itx.facade_edge_size = i.at<UOrderableFixedArray<float, 2>>(InteriorArgs::facade_edge_size);
+        itx.facade_inner_size = i.at<UOrderableFixedArray<float, 2>>(InteriorArgs::facade_inner_size);
+        itx.interior_size = i.at<UOrderableFixedArray<float, 3>>(InteriorArgs::interior_size);
         itx.left = i.at<std::string>(InteriorArgs::left);
         itx.right = i.at<std::string>(InteriorArgs::right);
         itx.floor = i.at<std::string>(InteriorArgs::floor);

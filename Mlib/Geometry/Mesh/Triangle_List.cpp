@@ -21,9 +21,9 @@ TriangleList<TPos>::TriangleList(
     std::string name,
     Material material,
     PhysicsMaterial physics_material,
-    std::list<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
-    std::list<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
-    std::list<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
+    UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
+    UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
+    UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
     : name{ std::move(name) }
     , material{ std::move(material) }
     , physics_material{ physics_material }
@@ -165,29 +165,25 @@ void TriangleList<TPos>::draw_rectangle_with_normals(
         }
         quads.push_back({
             ColoredVertex<TPos>{
-                .position = p00,
-                .color = c00,
-                .uv = u00,
-                .normal = n00,
-                .tangent = fixed_zeros<float, 3>()},
+                p00,
+                c00,
+                u00,
+                n00},
             ColoredVertex<TPos>{
-                .position = p10,
-                .color = c10,
-                .uv = u10,
-                .normal = n10,
-                .tangent = fixed_zeros<float, 3>()},
+                p10,
+                c10,
+                u10,
+                n10},
             ColoredVertex<TPos>{
-                .position = p11,
-                .color = c11,
-                .uv = u11,
-                .normal = n11,
-                .tangent = fixed_zeros<float, 3>()},
+                p11,
+                c11,
+                u11,
+                n11},
             ColoredVertex<TPos>{
-                .position = p01,
-                .color = c01,
-                .uv = u01,
-                .normal = n01,
-                .tangent = fixed_zeros<float, 3>()}
+                p01,
+                c01,
+                u01,
+                n01}
         });
     } else {
         THROW_OR_ABORT("Unsupported triangulation mode (0)");
@@ -539,16 +535,12 @@ void TriangleList<TPos>::smoothen_edges(
                         if (n0n1 >=0 && n0n1 < 1) {
                             TPos shift = std::sqrt(1 - squared(n0n1)) * sign(dot0d(v, n01));
                             if (auto e = Vertex2{ei(0), ei(1)}; !excluded_vertices.contains(e)) {
-                                if (!vertex_movement.contains(e)) {
-                                    vertex_movement[e] = 0.f;
-                                }
-                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
+                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
+                                it->second += TPos(smoothness) * n01 * shift;
                             }
                             if (auto e = Vertex2{ej(0), ej(1)}; !excluded_vertices.contains(e)) {
-                                if (!vertex_movement.contains(e)) {
-                                    vertex_movement[e] = 0.f;
-                                }
-                                vertex_movement[e] += TPos(smoothness) * n01 * shift;
+                                auto it = vertex_movement.try_emplace(e, fixed_zeros<TPos, 3>()).first;
+                                it->second += TPos(smoothness) * n01 * shift;
                             }
                         }
                     }
@@ -559,7 +551,7 @@ void TriangleList<TPos>::smoothen_edges(
             }
         }
         for (const auto& s : smoothed_vertices) {
-            Vertex2 vc;
+            Vertex2 vc{ uninitialized };
             auto hit = vertex_height_bindings.find(s);
             if (hit != vertex_height_bindings.end()) {
                 vc = hit->second.value();
@@ -589,12 +581,12 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
         material,
         physics_material,
         modifier_backlog,
-        std::vector<FixedArray<ColoredVertex<TPos>, 4>>(quads.begin(), quads.end()),
-        std::vector<FixedArray<ColoredVertex<TPos>, 3>>{triangles.begin(), triangles.end()},
-        std::vector<FixedArray<ColoredVertex<TPos>, 2>>(),
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{triangle_bone_weights.begin(), triangle_bone_weights.end()},
-        std::vector<FixedArray<float, 3>>{},
-        std::vector<FixedArray<uint8_t, 3>>{});
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>(quads.begin(), quads.end()),
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
+        UUVector<FixedArray<ColoredVertex<TPos>, 2>>(),
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>(triangle_bone_weights.begin(), triangle_bone_weights.end()),
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>{});
 }
 
 namespace Mlib {

@@ -46,8 +46,8 @@ TransformationMatrix<TData, TData, 2> NormalizedPointsFixed<TData>::normalizatio
     // (p - sy) / dy = p/dy - sy/dy
     return TransformationMatrix<TData, TData, 2>{
         FixedArray<TData, 2, 2>::init(
-            1 / d(0), 0.f,
-            0.f, 1 / d(1)),
+            1 / d(0), (TData)0,
+            TData(0), 1 / d(1)),
         FixedArray<TData, 2>::init(
             -s(0) / d(0),
             -s(1) / d(1))};

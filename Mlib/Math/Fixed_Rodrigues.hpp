@@ -34,7 +34,7 @@ FixedArray<TData, 3, 3> rodrigues2(
 template <class TData>
 FixedArray<TData, 3, 3> tait_bryan_angles_2_matrix(
     const FixedArray<TData, 3>& angles,
-    const FixedArray<size_t, 3>& indices = {0u, 1u, 2u})
+    const FixedArray<size_t, 3>& indices = {(size_t)0, (size_t)1, (size_t)2})
 {
     assert(all(indices < size_t(3)));
     FixedArray<TData, 3, 3> I = fixed_identity_array<TData, 3>();

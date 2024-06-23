@@ -179,7 +179,7 @@ static void handle_extended_reflection(
     // ####################
     // # Tangential force #
     // ####################
-    FixedArray<float, 3> tangential_force;
+    FixedArray<float, 3> tangential_force = uninitialized;
     bool align = any(c.mesh0_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE);
     if (c.o0.mass() == INFINITY && c.o1.mass() != INFINITY) {
         if (c.tire_id1 != SIZE_MAX) {
@@ -303,7 +303,7 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    FixedArray<double, 3> normal;
+    FixedArray<double, 3> normal = uninitialized;
     double overlap = INFINITY;
     if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
@@ -367,7 +367,7 @@ void Mlib::handle_reflection(
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) ||
             any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
         {
-            FixedArray<double, 3> round_normal;
+            FixedArray<double, 3> round_normal = uninitialized;
             assert_true(c.r1 != nullptr);
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))

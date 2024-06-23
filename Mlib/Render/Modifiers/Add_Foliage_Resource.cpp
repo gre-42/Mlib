@@ -1,4 +1,5 @@
 #include "Add_Foliage_Resource.hpp"
+#include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -21,7 +22,7 @@ void Mlib::add_foliage_resource(
     float scale,
     UpAxis up_axis)
 {
-    std::list<FixedArray<ColoredVertex<double>, 3>> grass_triangles;
+    UUList<FixedArray<ColoredVertex<double>, 3>> grass_triangles;
     auto meshes = scene_node_resources.get_rendering_arrays(mesh_resource_name);
     for (const auto& mesh : meshes) {
         for (const auto& cva : mesh->dcvas) {

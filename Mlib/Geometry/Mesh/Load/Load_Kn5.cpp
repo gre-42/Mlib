@@ -72,7 +72,7 @@ static void readNodes(
     const kn5Model& model,
     bool verbose)
 {
-    kn5Node newNode;
+    kn5Node newNode{ .tmatrix = uninitialized, .hmatrix = uninitialized };
     newNode.parentID = parentID;
 
     newNode.type = ReadInt32(modelStream);
@@ -85,7 +85,7 @@ static void readNodes(
         // dummy node
         case 1: //dummy
             {
-                FixedArray<float, 4, 4> tmatrix;
+                FixedArray<float, 4, 4> tmatrix = uninitialized;
                 tmatrix(0, 0) = ReadSingle(modelStream);
                 tmatrix(1, 0) = ReadSingle(modelStream);
                 tmatrix(2, 0) = ReadSingle(modelStream);
@@ -252,7 +252,9 @@ static void readNodes(
     }
 
     size_t currentID = nodeList.size();
-    nodeList[currentID] = std::move(newNode);
+    if (!nodeList.try_emplace(currentID, std::move(newNode)).second) {
+        verbose_abort("load kn5 internal error");
+    }
 
     for (size_t c = 0; c < childrenCount; c++)
     {

@@ -4,7 +4,7 @@
 namespace Mlib::ocv {
 
 struct KeyPoint {
-    OrderableFixedArray<float, 2> pt;
+    OrderableFixedArray<float, 2> pt = uninitialized;
     int octave;
     float size;
     float response;

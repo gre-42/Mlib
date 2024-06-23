@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
@@ -55,7 +56,7 @@ public:
     RaceState notify_lap_finished(
         const Player* player,
         const std::string& asset_id,
-        const std::vector<FixedArray<float, 3>>& vehicle_colors,
+        const UUVector<FixedArray<float, 3>>& vehicle_colors,
         float race_time_seconds,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track);

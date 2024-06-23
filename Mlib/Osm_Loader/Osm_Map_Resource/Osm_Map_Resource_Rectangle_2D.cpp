@@ -9,6 +9,13 @@
 
 using namespace Mlib;
 
+OsmRectangle2D::OsmRectangle2D(Uninitialized)
+    : p00_{ uninitialized }
+    , p01_{ uninitialized }
+    , p10_{ uninitialized }
+    , p11_{ uninitialized }
+{}
+
 /**
  * Create rectangle for line segment (b .. c), with given widths,
  * contained in crossings [aL; ...; aR] >-- (b -- c) --< [dL; ...; dR].
@@ -274,7 +281,7 @@ void OsmRectangle2D::draw(
     std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
     const std::string& b,
     const std::string& c,
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
     float scale,
     float width,
     float height,
@@ -285,7 +292,7 @@ void OsmRectangle2D::draw(
     WarpedSegment2D ws{*this};
 
     for (const auto& t : triangles) {
-        FixedArray<FixedArray<double, 3>, 3> p;
+        FixedArray<FixedArray<double, 3>, 3> p = uninitialized;
         for (size_t i = 0; i < 3; ++i) {
             double x = t(i).position(1);
             if (std::abs(x) > 1) {
@@ -317,7 +324,7 @@ void OsmRectangle2D::draw(
             THROW_OR_ABORT("Inconsistent UV NaN-ness");
         }
         {
-            FixedArray<FixedArray<float, 2>, 3> uv;
+            FixedArray<FixedArray<float, 2>, 3> uv = uninitialized;
             if (std::isnan(uv0_y)) {
                 for (size_t i = 0; i < 3; ++i) {
                     uv(i) = t(i).uv;
@@ -367,8 +374,8 @@ void OsmRectangle2D::draw(
             {
                 THROW_OR_ABORT("UV NaN despite racing line");
             }
-            FixedArray<FixedArray<float, 2>, 3> uv;
-            FixedArray<FixedArray<float, 3>, 3> color;
+            FixedArray<FixedArray<float, 2>, 3> uv = uninitialized;
+            FixedArray<FixedArray<float, 3>, 3> color = uninitialized;
             for (size_t i = 0; i < 3; ++i) {
                 double x = t(i).position(1);
                 if (std::abs(x) > 1) {
@@ -467,7 +474,9 @@ FixedArray<double, 3> WarpedSegment2D::warp_1(const FixedArray<double, 3>& p, do
     return FixedArray<double, 3>(w(0), w(1), height * scale * p(2));
 }
 
-CurbedStreet::CurbedStreet(const OsmRectangle2D& r, double start, double stop) {
+CurbedStreet::CurbedStreet(const OsmRectangle2D& r, double start, double stop)
+    : s{ uninitialized }
+{
     WarpedSegment2D ws{r};
     s(0, 0) = ws.warp_0(start);
     s(1, 0) = ws.warp_1(start);

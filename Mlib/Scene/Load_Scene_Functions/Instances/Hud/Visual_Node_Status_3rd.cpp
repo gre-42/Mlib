@@ -53,7 +53,7 @@ void VisualNodeStatus3rd::execute(const LoadSceneJsonUserFunctionArgs& args)
         lo,
         log_components,
         args.arguments.path(KnownArgs::ttf_file),
-        args.arguments.at<FixedArray<float, 2>>(KnownArgs::offset),
+        args.arguments.at<UFixedArray<float, 2>>(KnownArgs::offset),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
         args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::line_distance)));
     logger.on_node_clear.add([&logger]() { global_object_pool.remove(logger); }, CURRENT_SOURCE_LOCATION);

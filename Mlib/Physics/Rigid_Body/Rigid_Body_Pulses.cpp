@@ -27,6 +27,8 @@ RigidBodyPulses::RigidBodyPulses(
     , rotation_{tait_bryan_angles_2_matrix(rotation)}
     , abs_com_{dot1d(rotation_, com_).casted<double>() + position}
     , I_is_diagonal_{I_is_diagonal}
+    , abs_I_{ fixed_nans<float, 3, 3>() }
+    , abs_I_inv_{ fixed_nans<float, 3, 3>() }
 {}
 
 void RigidBodyPulses::advance_time(float dt)

@@ -21,6 +21,7 @@ LookAtMovable::LookAtMovable(
     , follower_node_{ follower_node.ptr() }
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
 {}
 
 LookAtMovable::~LookAtMovable() {

@@ -44,16 +44,15 @@ void Mlib::create_scene_flat(
     auto rb1_2 = rigid_cuboid("rb1_2", "rb1_2_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
     const auto z2 = fixed_zeros<float, 2>();
-    const auto z3 = fixed_zeros<float, 3>();
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
+    UUVector<FixedArray<ColoredVertex<float>, 3>> triangles0_raw{
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 0.f, 1.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 1.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
-            ColoredVertex<float>{.position = {-10.f, -5.f, -10.f}, .color = {1.f, 0.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3}},
+            ColoredVertex<float>{{-10.f, -2.f, +10.f}, {0.f, 0.f, 1.f}, z2, {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{{+10.f, -2.f, -10.f}, {0.f, 1.f, 0.f}, z2, {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{{-10.f, -5.f, -10.f}, {1.f, 0.f, 0.f}, z2, {0.f, 1.f, 0.f}}},
         FixedArray<ColoredVertex<float>, 3>{
-            ColoredVertex<float>{.position = {+10.f, -2.f, -10.f}, .color = {0.f, 0.f, 1.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
-            ColoredVertex<float>{.position = {-10.f, -2.f, +10.f}, .color = {0.f, 1.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3},
-            ColoredVertex<float>{.position = {+10.f, -5.f, +10.f}, .color = {1.f, 0.f, 0.f}, .uv = z2, .normal = {0.f, 1.f, 0.f}, .tangent = z3}}
+            ColoredVertex<float>{{+10.f, -2.f, -10.f}, {0.f, 0.f, 1.f}, z2, {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{{-10.f, -2.f, +10.f}, {0.f, 1.f, 0.f}, z2, {0.f, 1.f, 0.f}},
+            ColoredVertex<float>{{+10.f, -5.f, +10.f}, {1.f, 0.f, 0.f}, z2, {0.f, 1.f, 0.f}}}
     };
     auto triangles0 = std::make_shared<ColoredVertexArray<float>>(
         "triangles0",
@@ -62,14 +61,14 @@ void Mlib::create_scene_flat(
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
         PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONCAVE,
         ModifierBacklog{},
-        std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+        UUVector<FixedArray<ColoredVertex<float>, 4>>(),
         std::move(triangles0_raw),
-        std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-        std::vector<FixedArray<float, 3>>(),
-        std::vector<FixedArray<uint8_t, 3>>());
+        UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+        UUVector<FixedArray<float, 3>>(),
+        UUVector<FixedArray<uint8_t, 3>>());
 
-    /*std::vector<FixedArray<ColoredVertex, 3>> triangles1{
+    /*UUVector<FixedArray<ColoredVertex, 3>> triangles1{
         FixedArray<ColoredVertex, 3>{
             ColoredVertex{position: FixedArray<float, 3>{4, 0, 10}, color: FixedArray<float, 3>{0, 1, 1}},
             ColoredVertex{position: FixedArray<float, 3>{0, 4, 10}, color: FixedArray<float, 3>{0, 1, 1}},

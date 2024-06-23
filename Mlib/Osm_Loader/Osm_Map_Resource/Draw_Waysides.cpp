@@ -55,7 +55,7 @@ void Mlib::draw_waysides(
                 if (std::isnan(distances.gradient_dx)) {
                     add_prn();
                 } else {
-                    FixedArray<double, 2> grad;
+                    FixedArray<double, 2> grad = uninitialized;
                     if (ground_bvh.gradient(grad, p2_shifted, distances.gradient_dx * scale)) {
                         if (dot0d(grad, n2) <= distances.max_gradient) {
                             add_prn();

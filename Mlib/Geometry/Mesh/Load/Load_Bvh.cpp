@@ -143,11 +143,17 @@ BvhLoader::BvhLoader(
             }
             auto& frame = raw_frames.emplace_back();
             for (const auto& [joint_name, offset] : offsets_) {
-                frame[joint_name][0] = offset;
+                frame.add(joint_name, fixed_nans<float, 2, 3>());
+                frame.at(joint_name)[0] = offset;
             }
             for (const auto& [i, c] : enumerate(columns_)) {
-                frame[c.joint_name](c.pose_index0, c.pose_index1) = d[i];
+                frame.get(c.joint_name)(c.pose_index0, c.pose_index1) = d[i];
                 //  + offsets_.get(c.joint_name)(c.pose_index0, c.pose_index1);
+            }
+            for (const auto& [n, v] : frame) {
+                if (any(isnan(v))) {
+                    THROW_OR_ABORT("Detected NAN value in joint \"" + n + '"');
+                }
             }
         }
     }
@@ -187,7 +193,7 @@ BvhLoader::BvhLoader(
                     cfg_.rotation_order),
                 position * cfg_.scale);
             const auto& n = cfg_.parameter_transformation;
-            if (!transformed_frames_[i].try_emplace(
+            if (!transformed_frames_.at(i).try_emplace(
                 joint_name,
                 dot2d(n, dot2d(m, n.T()))).second)
             {
@@ -251,7 +257,9 @@ void BvhLoader::compute_absolute_transformation(
     }
     auto it = parents_.find(name);
     if (it == parents_.end()) {
-        absolute_transformations[name] = relative_transformations.get(name);
+        if (!absolute_transformations.try_emplace(name, relative_transformations.get(name)).second) {
+            verbose_abort("compute_absolute_transformation internal error");
+        }
     } else {
         if (ncalls > 100) {
             for (const auto& [n, p] : parents_) {
@@ -264,7 +272,7 @@ void BvhLoader::compute_absolute_transformation(
             relative_transformations,
             absolute_transformations,
             ncalls + 1);
-        absolute_transformations[name] = absolute_transformations.get(it->second) * relative_transformations.get(name);
+        absolute_transformations.add(name, absolute_transformations.get(it->second) * relative_transformations.get(name));
     }
 }
 
@@ -315,7 +323,7 @@ void BvhLoader::smoothen() {
             }
         }
         for (const auto& [joint_name, transformation] : fn) {
-            smoothed_transformed_frames.at((size_t)t)[joint_name] = transformation.slerp(fp.get(joint_name), 0.5);
+            smoothed_transformed_frames.at((size_t)t).add(joint_name, transformation.slerp(fp.get(joint_name), 0.5));
         }
     }
     transformed_frames_ = std::move(smoothed_transformed_frames);

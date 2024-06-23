@@ -11,7 +11,7 @@ using namespace Mlib;
 TrailExtender::TrailExtender(
     TrailsInstance& trails_instance,
     const TrailSequence& trail_sequence,
-    const std::vector<FixedArray<ColoredVertex<float>, 3>>& segment,
+    const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
     double min_spawn_length,
     double max_spawn_length,
     float spawn_duration)
@@ -66,10 +66,10 @@ void TrailExtender::append_location(
             for (const auto& t0 : segment_) {
                 auto t = t0.applied<ColoredVertex<double>>([&loc, &R, &op](const auto& v){
                     return v.template casted<double>().transformed(loc, R).transformed_uv(op); });
-                FixedArray<float, 3> time;
+                FixedArray<float, 3> time = uninitialized;
                 for (size_t i = 0; i < 3; ++i) {
                     if (t0(i).position(2) == -1.f) {
-                        previous_vertices_[OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }] = t(i).position;
+                        previous_vertices_.try_emplace(OrderableFixedArray<float, 2>{ t0(i).position(0), t0(i).position(1) }, t(i).position);
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 0.f) {
                         time(i) = duration;
@@ -81,13 +81,13 @@ void TrailExtender::append_location(
             }
         } else {
             for (const auto& t0 : segment_) {
-                FixedArray<ColoredVertex<double>, 3> t;
-                FixedArray<float, 3> time;
+                FixedArray<ColoredVertex<double>, 3> t = uninitialized;
+                FixedArray<float, 3> time = uninitialized;
                 for (size_t i = 0; i < 3; ++i) {
                     OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
                     if (t0(i).position(2) == -1.f) {
                         t(i) = t0(i).casted<double>().transformed(loc, R).transformed_uv(op);
-                        current_vertices_[k] = t(i).position;
+                        current_vertices_.insert_or_assign(k, t(i).position);
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 0.f) {
                         auto it = previous_vertices_.find(k);

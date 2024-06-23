@@ -61,7 +61,7 @@ bool GroundBvh::height(double& height, const FixedArray<double, 2>& pt) const
             FixedArray<double, 2>{t(0)(0), t(0)(1)},
             FixedArray<double, 2>{t(1)(0), t(1)(1)},
             FixedArray<double, 2>{t(2)(0), t(2)(1)}};
-        FixedArray<double, 3> coords;
+        FixedArray<double, 3> coords = uninitialized;
         barycentric(pt, tri2(0), tri2(1), tri2(2), coords(0), coords(1), coords(2));
         if (all(coords >= double{ -1e-3 }) && all(coords <= 1.f + double{ 1e-3 })) {
             height =
@@ -87,7 +87,7 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
             FixedArray<double, 2>{t(0)(0), t(0)(1)},
             FixedArray<double, 2>{t(1)(0), t(1)(1)},
             FixedArray<double, 2>{t(2)(0), t(2)(1)}};
-        FixedArray<double, 3> coords;
+        FixedArray<double, 3> coords = uninitialized;
         barycentric(pt2d, tri2(0), tri2(1), tri2(2), coords(0), coords(1), coords(2));
         if (all(coords >= double{ -1e-3 }) && all(coords <= 1.f + double{ 1e-3 })) {
             double candidate_height =
@@ -112,7 +112,7 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
 
 bool GroundBvh::gradient(FixedArray<double, 2>& grad, const FixedArray<double, 2>& pt, double dx) const
 {
-    FixedArray<double, 2, 2> positions;
+    FixedArray<double, 2, 2> positions = uninitialized;
     if (!height(positions(0, 0), pt + FixedArray<double, 2>{ -dx, 0. })) {
         return false;
     }

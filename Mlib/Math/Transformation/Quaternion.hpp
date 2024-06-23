@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -80,10 +81,10 @@ public:
     explicit Quaternion(const FixedArray<TData, 3, 3>& m)
         : Quaternion{ from_tait_bryan_angles(matrix_2_tait_bryan_angles(m)) }
     {}
-    Quaternion(const FixedArray<TData, 3>& axis, const TData& angle) {
-        s_ = std::cos(angle / TData{2});
-        v_ = axis * std::sin(angle / TData{2});
-    }
+    Quaternion(const FixedArray<TData, 3>& axis, const TData& angle)
+        : v_{ axis * std::sin(angle / TData{2}) }
+        , s_{ std::cos(angle / TData{2}) }
+    {}
     static Quaternion<TData> from_tait_bryan_angles(const FixedArray<TData, 3>& angles) {
         return Quaternion{FixedArray<TData, 3>{(TData)0, (TData)0, (TData)1}, angles(2)} *
                Quaternion{FixedArray<TData, 3>{(TData)0, (TData)1, (TData)0}, angles(1)} *
@@ -284,21 +285,23 @@ public:
             a.position(),
             Quaternion<TDir>::from_tait_bryan_angles(a.rotation())};
     }
-    OffsetAndQuaternion()
+    OffsetAndQuaternion(Uninitialized)
+        : o_{ uninitialized }
+        , q_{ uninitialized }
     {}
     OffsetAndQuaternion(const FixedArray<TPos, 3>& o, const Quaternion<TDir>& q)
-    : o_{o},
-      q_{q}
+        : o_{ o }
+        , q_{ q }
     {}
     explicit OffsetAndQuaternion(const FixedArray<TDir, 4, 4>& m)
-    : o_{t3_from_4x4(m)},
-      q_{R3_from_4x4(m)}
+        : o_{ t3_from_4x4(m) }
+        , q_{ R3_from_4x4(m) }
     {}
     FixedArray<TPos, 3> transform(const FixedArray<TPos, 3>& p) const {
         return o_ + q_.rotate(p);
     }
     OffsetAndQuaternion inverse() const {
-        OffsetAndQuaternion result;
+        OffsetAndQuaternion result = uninitialized;
         result.q_ = q_.inverse();
         result.o_ = -result.q_.rotate(o_);
         return result;

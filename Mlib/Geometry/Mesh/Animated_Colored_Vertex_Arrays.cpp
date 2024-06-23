@@ -17,10 +17,10 @@ AnimatedColoredVertexArrays::AnimatedColoredVertexArrays()
 
 AnimatedColoredVertexArrays::~AnimatedColoredVertexArrays() = default;
 
-std::vector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
+UUVector<OffsetAndQuaternion<float, float>> AnimatedColoredVertexArrays::vectorize_joint_poses(
     const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const
 {
-    std::vector<OffsetAndQuaternion<float, float>> ms(bone_indices.size());
+    UUVector<OffsetAndQuaternion<float, float>> ms(bone_indices.size());
 #ifndef NDEBUG
     for (auto& m : ms) {
         m.offset() = fixed_nans<float, 3>();
@@ -108,12 +108,12 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 l->material,
                 l->physics_material & ~PhysicsMaterial::ATTR_VISIBLE,
                 l->modifier_backlog,
-                std::vector<FixedArray<ColoredVertex<double>, 4>>{},
-                std::vector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
-                std::vector<FixedArray<ColoredVertex<double>, 2>>{},
-                std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},
-                std::vector<FixedArray<float, 3>>{},
-                std::vector<FixedArray<uint8_t, 3>>{}));
+                UUVector<FixedArray<ColoredVertex<double>, 4>>{},
+                UUVector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
+                UUVector<FixedArray<ColoredVertex<double>, 2>>{},
+                UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+                UUVector<FixedArray<float, 3>>{},
+                UUVector<FixedArray<uint8_t, 3>>{}));
             l->physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);

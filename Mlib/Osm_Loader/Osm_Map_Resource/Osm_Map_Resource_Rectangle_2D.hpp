@@ -1,11 +1,12 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <map>
 #include <set>
 
 namespace Mlib {
 
-template <class TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 template <class TPos>
 class TriangleList;
@@ -22,6 +23,7 @@ enum class RectangleOrientation {
 };
 
 struct OsmRectangle2D {
+    OsmRectangle2D(Uninitialized);
     /**
      * Create rectangle for line segment (b .. c), with given widths,
      * contained in crossings [aL; aR] >-- (b -- c) --< [dL; dR].
@@ -88,7 +90,7 @@ struct OsmRectangle2D {
         std::map<OrderableFixedArray<double, 2>, NodeHeightBinding>& node_height_bindings,
         const std::string& b,
         const std::string& c,
-        const std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        const UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
         float scale,
         float width,
         float height,

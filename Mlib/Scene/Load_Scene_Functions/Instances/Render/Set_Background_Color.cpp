@@ -26,7 +26,7 @@ SetBackgroundColor::SetBackgroundColor(RenderableScene& renderable_scene)
 
 void SetBackgroundColor::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto background_color = args.arguments.at<FixedArray<float, 3>>(KnownArgs::color);
+    auto background_color = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::color);
     standard_render_logic.set_background_color(background_color);
     post_processing_logic.set_background_color(background_color);
 }

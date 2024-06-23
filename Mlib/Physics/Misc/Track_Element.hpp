@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <iosfwd>
 #include <vector>
@@ -28,7 +29,7 @@ struct TrackElement {
     const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;
 
     float elapsed_seconds;
-    std::vector<OffsetAndTaitBryanAngles<float, double, 3>> transformations;
+    UVector<OffsetAndTaitBryanAngles<float, double, 3>> transformations;
 };
 
 TrackElement interpolated(const TrackElement& a, const TrackElement& b, float alpha);

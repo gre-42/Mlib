@@ -48,7 +48,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         if (sw.outline.empty()) {
             THROW_OR_ABORT("Smoothed outline is empty");
         }
-        std::vector<FixedArray<double, 2>> outline{sw.outline.begin(), sw.outline.end()};
+        UUVector<FixedArray<double, 2>> outline(sw.outline.begin(), sw.outline.end());
         outline = removed_duplicates(outline);
         tls.push_back(std::make_shared<TriangleList<double>>(
             "ceilings_" + std::to_string(mid++),

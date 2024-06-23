@@ -1,4 +1,5 @@
 #include "Load_Mhx2.hpp"
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Coordinates/Normalized_Points_Fixed.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Bone.hpp>
@@ -34,10 +35,10 @@ std::string gen_filename(const std::string& f, const std::string& texture_name) 
 struct ScaleAndOffset {
     explicit ScaleAndOffset(const nlohmann::json& j) {
         scale10 = 10 * j.at("scale").get<float>();
-        offset = j.at("offset").get<FixedArray<float, 3>>();
+        offset = j.at("offset").get<UFixedArray<float, 3>>();
     }
     float scale10;
-    FixedArray<float, 3> offset;
+    FixedArray<float, 3> offset = uninitialized;
 };
 
 std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
@@ -66,7 +67,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
         const auto& bones = j.at("skeleton").at("bones");
         std::map<std::string, Bone*> bone_names;
         for (const auto& bone : bones) {
-            FixedArray<float, 4, 4> initial_absolute_transformation;
+            FixedArray<float, 4, 4> initial_absolute_transformation = uninitialized;
             {
                 auto initial_absolute_transformation_v = bone.at("matrix").get<std::vector<std::vector<float>>>();
                 if (initial_absolute_transformation_v.size() != 4) {
@@ -201,10 +202,10 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}
             },
             .shading {
-                .emissive = OrderableFixedArray{cfg.emissive_factor * material.at("emissive_color").get<FixedArray<float, 3>>()},
-                .ambient = OrderableFixedArray{cfg.ambient_factor * material.at("ambient_color").get<FixedArray<float, 3>>()},
-                .diffuse = OrderableFixedArray{cfg.diffuse_factor * material.at("diffuse_color").get<FixedArray<float, 3>>()},
-                .specular = OrderableFixedArray{cfg.specular_factor * material.at("specular_color").get<FixedArray<float, 3>>()}
+                .emissive = OrderableFixedArray{cfg.emissive_factor * material.at("emissive_color").get<UFixedArray<float, 3>>()},
+                .ambient = OrderableFixedArray{cfg.ambient_factor * material.at("ambient_color").get<UFixedArray<float, 3>>()},
+                .diffuse = OrderableFixedArray{cfg.diffuse_factor * material.at("diffuse_color").get<UFixedArray<float, 3>>()},
+                .specular = OrderableFixedArray{cfg.specular_factor * material.at("specular_color").get<UFixedArray<float, 3>>()}
             },
             .dynamically_lighted = cfg.dynamically_lighted
         }}).second) {
@@ -233,9 +234,9 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .max_triangle_distance = cfg.max_triangle_distance,
                 .shading = m.shading}.compute_color_mode(),
             PhysicsMaterial::ATTR_VISIBLE};
-        auto mesh = geometry.at("mesh");
-        std::vector<FixedArray<float, 3>> vertices = mesh.at("vertices").get<std::vector<FixedArray<float, 3>>>();
-        std::vector<FixedArray<float, 2>> uv_coordinates = mesh.at("uv_coordinates").get<std::vector<FixedArray<float, 2>>>();
+        const auto& mesh = geometry.at("mesh");
+        UUVector<FixedArray<float, 3>> vertices = mesh.at("vertices").get<UUVector<FixedArray<float, 3>>>();
+        UUVector<FixedArray<float, 2>> uv_coordinates = mesh.at("uv_coordinates").get<UUVector<FixedArray<float, 2>>>();
         std::vector<std::list<BoneWeight>> vertex_bone_weights;
         vertex_bone_weights.resize(vertices.size());
         for (const auto& bw : mesh.at("weights").items()) {
@@ -265,7 +266,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 THROW_OR_ABORT("Weights do not sum up to 1: " + std::to_string(s));
             }
         }
-        auto uv_faces = mesh.at("uv_faces");
+        const auto& uv_faces = mesh.at("uv_faces");
         auto uv_it = uv_faces.begin();
         for (const auto& face : mesh.at("faces")) {
             if (uv_it == uv_faces.end()) {

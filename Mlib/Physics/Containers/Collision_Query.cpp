@@ -47,7 +47,7 @@ bool CollisionQuery::can_see(
                         return true;
                     }
                     double t;
-                    FixedArray<double, 3> intersection_pt;
+                    FixedArray<double, 3> intersection_pt = uninitialized;
                     if (ray.intersects(
                         polygon0.polygon,
                         &t,
@@ -104,7 +104,7 @@ bool CollisionQuery::can_see(
                     continue;
                 }
                 double t;
-                FixedArray<double, 3> intersection_pt;
+                FixedArray<double, 3> intersection_pt = uninitialized;
                 if (ray.intersects(
                     t0.polygon,
                     &t,
@@ -146,7 +146,7 @@ bool CollisionQuery::can_see(
                 return true;
             }
             double t;
-            FixedArray<double, 3> intersection_pt;
+            FixedArray<double, 3> intersection_pt = uninitialized;
             if (ray.intersects(
                 t0.ctp.polygon,
                 &t,

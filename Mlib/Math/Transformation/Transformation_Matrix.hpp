@@ -21,27 +21,29 @@ public:
     }
 
     static inline TransformationMatrix inverse(const FixedArray<TDir, n, n>& R, const FixedArray<TPos, n>& t) {
-        TransformationMatrix result;
+        TransformationMatrix result = uninitialized;
         invert_t_R(t, R, result.t_, result.R_);
         return result;
     }
 
-    inline TransformationMatrix()
+    inline TransformationMatrix(Uninitialized)
+        : R_{ uninitialized }
+        , t_{ uninitialized }
     {}
 
     inline TransformationMatrix(const FixedArray<TDir, n, n>& R, const FixedArray<TPos, n>& t)
-    : R_{R},
-      t_{t}
+        : R_{ R }
+        , t_{ t }
     {}
 
-    inline explicit TransformationMatrix(const FixedArray<TPos, n+1, n+1>& m)
-    : R_{R_from_NxN(m).template casted<TDir>()},
-      t_{t_from_NxN(m)}
+    inline explicit TransformationMatrix(const FixedArray<TPos, n + 1, n + 1>& m)
+        : R_{ R_from_NxN(m).template casted<TDir>() }
+        , t_{ t_from_NxN(m) }
     {}
 
     inline explicit TransformationMatrix(const FixedArray<TPos, n, n + 1>& m)
-    : R_{ R_from_NxN1(m).template casted<TDir>() },
-      t_{ t_from_NxN1(m) }
+        : R_{ R_from_NxN1(m).template casted<TDir>() }
+        , t_{ t_from_NxN1(m) }
     {}
 
     template <class TPos2>
@@ -90,7 +92,7 @@ public:
 
     template <size_t m>
     inline FixedArray<TPos, n + 1, m> project(const FixedArray<TPos, n + 1, m>& rhs) const {
-        FixedArray<TPos, n + 1, m> res;
+        FixedArray<TPos, n + 1, m> res = uninitialized;
         res.template row_range<0, n>() = dot2d(semi_affine(), rhs);
         res[n] = rhs[n];
         return res;

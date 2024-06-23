@@ -8,7 +8,9 @@ using namespace Mlib;
 
 ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t>* data)
 {
-    ImageInfo result;
+    ImageInfo result{
+        .size = uninitialized
+    };
     auto extension = std::filesystem::path{filename}.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });

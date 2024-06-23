@@ -47,7 +47,7 @@ SquareResource::SquareResource(
         {1.f, 0.f, 0.f}};
 
     auto r = transformation.R() / transformation.get_scale();
-    std::vector<FixedArray<ColoredVertex<float>, 3>> triangles{
+    UUVector<FixedArray<ColoredVertex<float>, 3>> triangles{
         FixedArray<ColoredVertex<float>, 3>{v00.transformed(transformation, r), v11.transformed(transformation, r), v01.transformed(transformation, r)},
         FixedArray<ColoredVertex<float>, 3>{v11.transformed(transformation, r), v00.transformed(transformation, r), v10.transformed(transformation, r)}
     };
@@ -58,12 +58,12 @@ SquareResource::SquareResource(
             material,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
-            std::vector<FixedArray<float, 3>>(),
-            std::vector<FixedArray<uint8_t, 3>>()));
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<float, 3>>(),
+            UUVector<FixedArray<uint8_t, 3>>()));
 }
 
 void SquareResource::preload(const RenderableResourceFilter& filter) const {

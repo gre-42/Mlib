@@ -65,9 +65,9 @@ static FixedArray<double, 3> parse_position(
 
 void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    FixedArray<double, 3> pos;
+    FixedArray<double, 3> pos = uninitialized;
     // root nodes do not have a default pose
-    auto jpos = args.arguments.at<FixedArray<nlohmann::json, 3>>(KnownArgs::position);
+    auto jpos = args.arguments.at<UFixedArray<nlohmann::json, 3>>(KnownArgs::position);
     if ((jpos(0).type() == nlohmann::detail::value_t::string) &&
         (jpos(1).type() == nlohmann::detail::value_t::string) &&
         (jpos(2).type() == nlohmann::detail::value_t::string))
@@ -82,7 +82,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     auto node = make_dunique<SceneNode>(
         pos * (double)meters,
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation) * degrees,
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));
     auto type = args.arguments.at<std::string>(KnownArgs::type);

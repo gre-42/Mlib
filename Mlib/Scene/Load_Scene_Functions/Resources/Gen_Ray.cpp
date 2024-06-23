@@ -27,6 +27,6 @@ void GenRay::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_scene_node_resources().generate_ray(
         args.arguments.at<std::string>(KnownArgs::name),
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::from),
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::to));
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::from),
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::to));
 }

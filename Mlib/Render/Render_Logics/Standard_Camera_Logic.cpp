@@ -18,9 +18,11 @@ using namespace Mlib;
 StandardCameraLogic::StandardCameraLogic(
     const Scene& scene,
     const SelectedCameras& cameras)
-: scene_{ scene },
-  cameras_{ cameras },
-  camera_node_{ nullptr }
+    : scene_{ scene }
+    , cameras_{ cameras }
+    , vp_{ fixed_nans<double, 4, 4>() }
+    , iv_{ fixed_nans<double, 4, 4>() }
+    , camera_node_{ nullptr }
 {}
 
 StandardCameraLogic::~StandardCameraLogic() {

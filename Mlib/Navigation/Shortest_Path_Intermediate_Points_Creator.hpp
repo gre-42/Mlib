@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <DetourNavMesh.h>
 #include <cstddef>
 #include <map>
@@ -8,7 +9,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
-template <typename TData, size_t... tshape>
+template <class TData, size_t tshape0, size_t... tshape>
 class OrderableFixedArray;
 
 class Sample_SoloMesh;
@@ -20,12 +21,12 @@ public:
         const std::map<OrderableFixedArray<float, 3>, dtPolyRef>& poly_refs,
         float step_size);
 
-    std::vector<FixedArray<float, 3>> operator () (
+    UUVector<FixedArray<float, 3>> operator () (
         const FixedArray<float, 3>& p0,
         const FixedArray<float, 3>& p1,
         const float& distance) const;
     
-    std::vector<FixedArray<double, 3>> operator () (
+    UUVector<FixedArray<double, 3>> operator () (
         const FixedArray<double, 3>& p0,
         const FixedArray<double, 3>& p1,
         const double& distance) const;

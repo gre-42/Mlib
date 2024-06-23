@@ -80,9 +80,9 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
                     new_animation = resource_name + ".idle";
                 }
             } else {
-                if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ -1, 0.f, 0.f })) < 1e-12) {
+                if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ -1.f, 0.f, 0.f })) < 1e-12) {
                     new_animation = resource_name + ".strafe_left";
-                } else if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ 1, 0.f, 0.f })) < 1e-12) {
+                } else if (sum(abs(rb_.tires_z_ - FixedArray<float, 3>{ 1.f, 0.f, 0.f })) < 1e-12) {
                     new_animation = resource_name + ".strafe_right";
                 } else if (rb_.tires_z_(2) < 0) {
                     new_animation = resource_name + ".run_forward";

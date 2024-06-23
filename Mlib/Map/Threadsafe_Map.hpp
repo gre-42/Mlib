@@ -19,7 +19,7 @@ public:
     ~ThreadsafeMap() = default;
 
     template <class... Args>
-    TValue& emplace(TKey key, Args &&...args) {
+    TValue& add(TKey key, Args &&...args) {
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
@@ -29,9 +29,9 @@ public:
         return res.first->second;
     }
 
-    void set(const TKey& key, const TValue& value) {
+    void insert_or_assign(const TKey& key, const TValue& value) {
         std::scoped_lock lock{ mutex_ };
-        elements_[key] = value;
+        elements_.insert_or_assign(key, value);
     }
 
     void clear() {

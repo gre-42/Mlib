@@ -36,41 +36,41 @@ using namespace Mlib;
 // }
 
 void Mlib::draw_node(
-    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const FixedArray<double, 2>& pos2d,
     float size)
 {
     ColoredVertex<double> v00{
-        .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 1.f, 0.f},
-        .uv = fixed_zeros<float, 2>(),
-        .normal = fixed_zeros<float, 3>(),
-        .tangent = fixed_zeros<float, 3>()};
+        FixedArray<double, 3>{pos2d(0) - size, pos2d(1) - size, 0.f},
+        FixedArray<float, 3>{1.f, 1.f, 0.f},
+        fixed_zeros<float, 2>(),
+        fixed_zeros<float, 3>(),
+        fixed_zeros<float, 3>()};
     ColoredVertex<double> v01{
-        .position = FixedArray<double, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 0.f, 1.f},
-        .uv = fixed_zeros<float, 2>(),
-        .normal = fixed_zeros<float, 3>(),
-        .tangent = fixed_zeros<float, 3>()};
+        FixedArray<double, 3>{pos2d(0) - size, pos2d(1) + size, 0.f},
+        FixedArray<float, 3>{1.f, 0.f, 1.f},
+        fixed_zeros<float, 2>(),
+        fixed_zeros<float, 3>(),
+        fixed_zeros<float, 3>()};
     ColoredVertex<double> v10{
-        .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
-        .color = FixedArray<float, 3>{0.f, 1.f, 1.f},
-        .uv = fixed_zeros<float, 2>(),
-        .normal = fixed_zeros<float, 3>(),
-        .tangent = fixed_zeros<float, 3>()};
+        FixedArray<double, 3>{pos2d(0) + size, pos2d(1) - size, 0.f},
+        FixedArray<float, 3>{0.f, 1.f, 1.f},
+        fixed_zeros<float, 2>(),
+        fixed_zeros<float, 3>(),
+        fixed_zeros<float, 3>()};
     ColoredVertex<double> v11{
-        .position = FixedArray<double, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
-        .color = FixedArray<float, 3>{1.f, 1.f, 1.f},
-        .uv = fixed_zeros<float, 2>(),
-        .normal = fixed_zeros<float, 3>(),
-        .tangent = fixed_zeros<float, 3>()};
+        FixedArray<double, 3>{pos2d(0) + size, pos2d(1) + size, 0.f},
+        FixedArray<float, 3>{1.f, 1.f, 1.f},
+        fixed_zeros<float, 2>(),
+        fixed_zeros<float, 3>(),
+        fixed_zeros<float, 3>()};
 
     triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v00, v11, v01});
     triangles.push_back(FixedArray<ColoredVertex<double>, 3>{v11, v00, v10});
 }
 
 void Mlib::draw_nodes(
-    std::vector<FixedArray<ColoredVertex<double>, 3>>& triangles,
+    UUVector<FixedArray<ColoredVertex<double>, 3>>& triangles,
     const std::map<std::string, Node>& nodes,
     const std::map<std::string, std::list<std::string>>& ways)
 {
@@ -450,11 +450,11 @@ void to_orderable_fixed_array(
     }
 }
 
-std::vector<FixedArray<double, 2>> Mlib::removed_duplicates(
-    const std::vector<FixedArray<double, 2>>& nodes,
+UUVector<FixedArray<double, 2>> Mlib::removed_duplicates(
+    const UUVector<FixedArray<double, 2>>& nodes,
     bool verbose)
 {
-    std::vector<FixedArray<double, 2>> result;
+    UUVector<FixedArray<double, 2>> result;
     result.reserve(nodes.size());
     to_orderable_fixed_array(
         result,

@@ -175,7 +175,7 @@ NodesAndWays Mlib::smoothen_ways(
             auto n_line = nd1.position - nd0.position;
             double line_len = std::sqrt(sum(squared(n_line)));
             n_line /= line_len;
-            FixedArray<double, 2> n0;
+            FixedArray<double, 2> n0 = uninitialized;
             if (neighbors0.size() == 1) {
                 n0 = n_line;
             } else {
@@ -186,7 +186,7 @@ NodesAndWays Mlib::smoothen_ways(
                 n0 = n_line + n0_1;
                 n0 /= std::sqrt(sum(squared(n0)));
             }
-            FixedArray<double, 2> n1;
+            FixedArray<double, 2> n1 = uninitialized;
             if (neighbors1.size() == 1) {
                 n1 = n_line;
             } else {
@@ -215,7 +215,7 @@ NodesAndWays Mlib::smoothen_ways(
                 new_nd.push_back(snode_id);
                 auto tags = nd0.tags;
                 tags.insert(nd1.tags.begin(), nd1.tags.end());
-                result.nodes[snode_id] = Node{.position = snode_p, .tags = tags};
+                result.nodes.add(snode_id, Node{.position = snode_p, .tags = tags});
             }
         }
         result.ways[way_id] = Way{

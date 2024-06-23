@@ -23,7 +23,10 @@ class AxisAlignedBoundingBox {
     template <class TData2, size_t tndim2>
     friend class AxisAlignedBoundingBox; 
 public:
-    AxisAlignedBoundingBox(Uninitialized) {}
+    AxisAlignedBoundingBox(Uninitialized)
+        : min_{ uninitialized }
+        , max_{ uninitialized }
+    {}
     static AxisAlignedBoundingBox empty() {
         return AxisAlignedBoundingBox{
             fixed_full<TData, tndim>(INFINITY),
@@ -118,7 +121,7 @@ public:
     }
     template <class TOperation>
     bool for_each_corner(const TOperation& op) const {
-        FixedArray<TData, tndim> corner;
+        FixedArray<TData, tndim> corner = uninitialized;
         return for_each_corner(op, 0, corner);
     }
     template <class TResultData>

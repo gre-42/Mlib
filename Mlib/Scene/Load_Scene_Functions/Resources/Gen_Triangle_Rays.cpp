@@ -30,6 +30,6 @@ void GenTriangleRays::execute(const LoadSceneJsonUserFunctionArgs& args)
     RenderingContextStack::primary_scene_node_resources().generate_triangle_rays(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<size_t>(KnownArgs::npoints),
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::lengths),
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::lengths),
         args.arguments.at<bool>(KnownArgs::delete_triangles));
 }

@@ -20,7 +20,7 @@ void from_json(const nlohmann::json& j, ConstantDynamicLightConfiguration& item)
     JsonView jv{ j };
     jv.validate(KnownConfigArgs::options);
 
-    item.color = jv.at<FixedArray<float, 3>>(KnownConfigArgs::color);
+    item.color = jv.at<UFixedArray<float, 3>>(KnownConfigArgs::color);
     item.squared_distance_to_intensity = {
         jv.at_vector<double>(KnownConfigArgs::distances, [](double v) { return squared(v); }),
         jv.at<std::vector<float>>(KnownConfigArgs::intensities),
@@ -42,7 +42,7 @@ const std::string SetConstantDynamicLightProperties::key = "set_constant_dynamic
 LoadSceneJsonUserFunction SetConstantDynamicLightProperties::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
-    args.dynamic_light_db.insert(
+    args.dynamic_light_db.add(
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<ConstantDynamicLightConfiguration>(KnownArgs::properties));
 };

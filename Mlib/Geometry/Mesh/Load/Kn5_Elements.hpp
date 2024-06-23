@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Default_Optional.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <cstdint>
@@ -59,7 +60,7 @@ struct kn5Material
     std::string txDiffuse;
     std::string txNormal;
     std::string txMask;
-    FixedArray<std::string, 4> txDetail4;
+    FixedArray<std::string, 4> txDetail4 = uninitialized;
     std::string txDetail1;
     std::string txDetailNM;
     std::string txVariation;
@@ -68,18 +69,18 @@ struct kn5Material
 };
 
 struct kn5Vertex {
-    FixedArray<float, 3> position;
-    FixedArray<float, 3> normal;
-    FixedArray<float, 2> uv;
-    FixedArray<float, 3> tangent;
+    FixedArray<float, 3> position = uninitialized;
+    FixedArray<float, 3> normal = uninitialized;
+    FixedArray<float, 2> uv = uninitialized;
+    FixedArray<float, 3> tangent = uninitialized;
 };
 static_assert(sizeof(kn5Vertex) == 4 * (3 + 3 + 2 + 3));
 
 struct kn5AnimatedVertex {
-    FixedArray<float, 3> position;
-    FixedArray<float, 3> normal;
-    FixedArray<float, 2> uv;
-    FixedArray<float, 3> tangent;
+    FixedArray<float, 3> position = uninitialized;
+    FixedArray<float, 3> normal = uninitialized;
+    FixedArray<float, 2> uv = uninitialized;
+    FixedArray<float, 3> tangent = uninitialized;
     char weights[32];
 };
 static_assert(sizeof(kn5AnimatedVertex) == 4 * (3 + 3 + 2 + 3) + 32);
@@ -99,7 +100,7 @@ struct kn5Node
     std::vector<kn5Vertex> vertices;
     std::vector<kn5AnimatedVertex> animatedVertices;
 
-    std::vector<FixedArray<uint16_t, 3>> triangles;
+    UUVector<FixedArray<uint16_t, 3>> triangles;
 
     std::optional<size_t> materialID;
 

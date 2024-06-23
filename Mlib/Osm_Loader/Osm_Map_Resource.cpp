@@ -106,7 +106,10 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <cereal/types/memory.hpp>
+#pragma GCC diagnostic pop
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <fstream>
@@ -129,6 +132,7 @@ OsmMapResource::OsmMapResource(
     : hri_{ scene_node_resources, { 90.f * degrees, 0.f, 0.f }, config.scale }
     , scene_node_resources_{ scene_node_resources }
     , scale_{ config.scale }
+    , normalization_matrix_{ uninitialized }
     , terrain_styles_{ config.triangle_sampler_resource_config }
 {
     LOG_FUNCTION("OsmMapResource::OsmMapResource");
@@ -166,7 +170,7 @@ OsmMapResource::OsmMapResource(
     std::list<StreetRectangle> street_rectangles;
     std::map<WayPointSandbox, std::list<std::pair<StreetWayPoint, StreetWayPoint>>> way_point_edge_descriptors;
     {
-        auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> std::vector<FixedArray<ColoredVertex<float>, 3>>& {
+        auto model_triangles = [&scene_node_resources](const std::string& resource_name) -> UUVector<FixedArray<ColoredVertex<float>, 3>>& {
             auto& scvas = scene_node_resources.get_physics_arrays(resource_name)->scvas;
             auto& dcvas = scene_node_resources.get_physics_arrays(resource_name)->dcvas;
             if (scvas.size() != 1) {
@@ -400,7 +404,7 @@ OsmMapResource::OsmMapResource(
         }
     }
 
-    std::vector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
+    UUVector<FixedArray<double, 2>> map_outer_contour = get_map_outer_contour(
         nodes,
         ways);
     BoundingInfo bounding_info{ map_outer_contour, nodes, 0.1f };
@@ -807,7 +811,7 @@ OsmMapResource::OsmMapResource(
         {
             std::set<OrderableFixedArray<double, 3>> vertices_not_to_connect;
             for (const auto& p : map_outer_contour3) {
-                vertices_not_to_connect.insert(OrderableFixedArray{ p });
+                vertices_not_to_connect.insert(OrderableFixedArray<double, 3>{ p });
             }
             TriangleList<double>::extrude(
                 *osm_triangle_lists.tl_terrain_extrusion[TerrainType::WATER_FLOOR_BASE],
@@ -1491,9 +1495,10 @@ OsmMapResource::OsmMapResource(
     SceneNodeResources& scene_node_resources,
     const std::string& level_filename,
     const std::string& debug_prefix)
-: hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN },
-  scene_node_resources_{ scene_node_resources },
-  terrain_styles_{}
+    : hri_{ scene_node_resources, { NAN, NAN, NAN }, NAN }
+    , scene_node_resources_{ scene_node_resources }
+    , normalization_matrix_{ uninitialized }
+    , terrain_styles_{}
 {
     auto ifstr_p = create_ifstream(level_filename, std::ios::binary);
     auto& ifstr = *ifstr_p;
@@ -1643,8 +1648,8 @@ TerrainTriangles OsmMapResource::terrain_triangles() const {
     };
 }
 
-std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::no_grass() const {
-    std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*> result;
+std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::no_grass() const {
+    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> result;
     for (const auto& lst : tls_no_grass_) {
         result.push_back(&lst->triangles);
     }

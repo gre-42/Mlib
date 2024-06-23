@@ -80,11 +80,11 @@ Bush generate_bush(unsigned int nplanes, unsigned int seed) {
                 .normal = dot1d(r, FixedArray<float, 3>{0.f, 0.f, 1.f}),
                 .uv = {(face(0, v) + 1.f) * 0.5f, (face(1, v) + 1.f) * 0.5f}});
         }
-        result.faces.push_back({
-            i * 4 + 0,
-            i * 4 + 1,
-            i * 4 + 2,
-            i * 4 + 3});
+        result.faces.emplace_back(
+            integral_cast<size_t>(i * 4 + 0),
+            integral_cast<size_t>(i * 4 + 1),
+            integral_cast<size_t>(i * 4 + 2),
+            integral_cast<size_t>(i * 4 + 3));
     }
     return result;
 }

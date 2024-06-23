@@ -66,7 +66,7 @@ void Mlib::draw_roofs(
             if (d == sw.end()) {
                 d = sw.begin();
             }
-            OsmRectangle2D rect;
+            OsmRectangle2D rect = uninitialized;
             if (!OsmRectangle2D::from_line(
                     rect,
                     *a,

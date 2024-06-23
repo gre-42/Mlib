@@ -31,5 +31,5 @@ void TeamSetWaypoint::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     players.set_team_waypoint(
         args.arguments.at<std::string>(KnownArgs::team),
-        { args.arguments.at<FixedArray<double, 3>>(KnownArgs::position), WayPointLocation::UNKNOWN });
+        { args.arguments.at<UFixedArray<double, 3>>(KnownArgs::position), WayPointLocation::UNKNOWN });
 }

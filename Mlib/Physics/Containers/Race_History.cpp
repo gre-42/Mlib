@@ -1,4 +1,5 @@
 #include "Race_History.hpp"
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Json/Misc.hpp>
@@ -42,7 +43,7 @@ void from_json(const nlohmann::json& j, LapTimeEventAndId& l) {
     l.event.race_time_seconds = j.at("race_time_seconds").get<float>();
     l.event.player_name = j.at("player_name").get<std::string>();
     l.event.vehicle = j.at("vehicle").get<std::string>();
-    l.event.vehicle_colors = j.at("vehicle_colors").get<std::vector<FixedArray<float, 3>>>();
+    l.event.vehicle_colors = j.at("vehicle_colors").get<UUVector<FixedArray<float, 3>>>();
 }
 
 void to_json(nlohmann::json& j, const RaceConfiguration& c) {

@@ -235,10 +235,10 @@ bool localizeExtremumViaQuadraticFit(
     bool extremum_is_outside_image = false;
     FixedArray<size_t, 2> image_shape = dog_images_in_octave[0].fixed_shape<2>();
     size_t attempt_index;
-    FixedArray<float, 3, 3, 3> pixel_cube;
-    FixedArray<float, 3> gradient;
-    FixedArray<float, 3, 3> hessian;
-    FixedArray<float, 3> extremum_update;
+    FixedArray<float, 3, 3, 3> pixel_cube = uninitialized;
+    FixedArray<float, 3> gradient = uninitialized;
+    FixedArray<float, 3, 3> hessian = uninitialized;
+    FixedArray<float, 3> extremum_update = uninitialized;
     for (attempt_index = 0; attempt_index < num_attempts_until_convergence; ++attempt_index) {
         // need to convert from uint8 to float32 to compute derivatives and need to rescale pixel values to [0, 1] to apply Lowe's thresholds
         for (size_t h = 0; h < 3; ++h) {

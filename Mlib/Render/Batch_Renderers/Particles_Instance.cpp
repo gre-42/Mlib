@@ -25,7 +25,7 @@ ParticlesInstance::ParticlesInstance(
     size_t max_num_instances,
     const RenderableResourceFilter& filter,
     ParticleSubstrate substrate)
-    : offset_(NAN)
+    : offset_((double)NAN)
     , dynamic_instance_buffers_{ std::make_shared<DynamicInstanceBuffers>(
         triangles->material.transformation_mode,
         max_num_instances,

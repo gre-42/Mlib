@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <memory>
 #include <vector>
@@ -9,10 +10,10 @@ struct Bone {
     size_t index;
     // The initial transformation is the transformation in the MHX2-file,
     // the bone transformation is from the BVH-file.
-    OffsetAndQuaternion<float, float> initial_absolute_transformation;
+    OffsetAndQuaternion<float, float> initial_absolute_transformation = uninitialized;
     std::vector<std::unique_ptr<Bone>> children;
-    std::vector<OffsetAndQuaternion<float, float>> rebase_to_initial_absolute_transform(
-        const std::vector<OffsetAndQuaternion<float, float>>& transformations);
+    UUVector<OffsetAndQuaternion<float, float>> rebase_to_initial_absolute_transform(
+        const UUVector<OffsetAndQuaternion<float, float>>& transformations);
 
     template <class Archive>
     void serialize(Archive& archive) {
@@ -22,9 +23,9 @@ struct Bone {
     }
 private:
     void rebase_to_initial_absolute_transform(
-        const std::vector<OffsetAndQuaternion<float, float>>& transformations,
+        const UUVector<OffsetAndQuaternion<float, float>>& transformations,
         const OffsetAndQuaternion<float, float>& parent_transformation,
-        std::vector<OffsetAndQuaternion<float, float>>& result);
+        UUVector<OffsetAndQuaternion<float, float>>& result);
 };
 
 }

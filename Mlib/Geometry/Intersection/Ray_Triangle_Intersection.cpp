@@ -1,4 +1,7 @@
 #include "Ray_Triangle_Intersection.hpp"
+#include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Fixed_Cross.hpp>
+#include <Mlib/Math/Fixed_Math.hpp>
 
 using namespace Mlib;
 
@@ -21,7 +24,11 @@ bool Mlib::ray_intersects_triangle(const FixedArray<double, 3>& ray_origin,
     const FixedArray<double, 3>& vertex0 = triangle(0);
     const FixedArray<double, 3>& vertex1 = triangle(1);
     const FixedArray<double, 3>& vertex2 = triangle(2);
-    FixedArray<double, 3> edge1, edge2, h, s, q;
+    FixedArray<double, 3> edge1 = uninitialized;
+    FixedArray<double, 3> edge2 = uninitialized;
+    FixedArray<double, 3> h = uninitialized;
+    FixedArray<double, 3> s = uninitialized;
+    FixedArray<double, 3> q = uninitialized;
     double a, f, u, v;
     edge1 = vertex1 - vertex0;
     edge2 = vertex2 - vertex0;

@@ -208,7 +208,7 @@ FrictionContactInfo1::FrictionContactInfo1(
     float extra_stiction,
     float extra_friction,
     float extra_w)
-    : lambda_total_{ 0 }
+    : lambda_total_(0.f)
     , b_{ b }
     , rbp_{ rbp }
     , normal_impulse_{ normal_impulse }
@@ -319,7 +319,7 @@ FrictionContactInfo2::FrictionContactInfo2(
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
-    : lambda_total_{ 0 }
+    : lambda_total_(0.f)
     , b_{ b }
     , rbp0_{ rbp0 }
     , rbp1_{ rbp1 }

@@ -5,7 +5,7 @@
 namespace Mlib {
 
 struct CameraSensorAndNPixels {
-    AxisAlignedBoundingBox<float, 2> scaled_sensor_aabb = uninitialized;
+    AxisAlignedBoundingBox<float, 2> scaled_sensor_aabb;
     int width;
     int height;
 };

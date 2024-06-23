@@ -27,6 +27,7 @@ Tire::Tire(
     , stiction_coefficient{ stiction_coefficient }
     , vehicle_mount_0{ vehicle_mount_0 }
     , vehicle_mount_1{ vehicle_mount_1 }
+    , vertical_line{ uninitialized }
     , radius{ radius }
     , normal_impulse{ nullptr }
 {

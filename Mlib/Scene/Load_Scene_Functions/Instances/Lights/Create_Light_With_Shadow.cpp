@@ -71,10 +71,10 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_light(std::make_unique<Light>(Light{
-        .ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::ambient),
-        .diffuse = args.arguments.at<FixedArray<float, 3>>(KnownArgs::diffuse),
-        .specular = args.arguments.at<FixedArray<float, 3>>(KnownArgs::specular),
-        .fresnel_ambient = args.arguments.at<FixedArray<float, 3>>(KnownArgs::fresnel_ambient),
+        .ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient),
+        .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
+        .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
+        .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
         .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

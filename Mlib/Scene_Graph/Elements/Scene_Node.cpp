@@ -679,7 +679,7 @@ void SceneNode::move(
             animation_state_updater_->update_animation_state(animation_state_.get());
         }
     }
-    TransformationMatrix<float, double, 3> v2;
+    TransformationMatrix<float, double, 3> v2 = uninitialized;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
         auto ma = absolute_movable_->get_new_absolute_model_matrix();
         auto mr = v * ma;

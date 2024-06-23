@@ -39,7 +39,7 @@ FixedArray<TData, 3, 3> fixed_symmetric_inverse_3x3(const FixedArray<TData, 3, 3
 
     TData di = 1 / det;
 
-    FixedArray<TData, 3, 3> a;
+    FixedArray<TData, 3, 3> a = uninitialized;
     a(0, 0) = (m(0, 0) * m(1, 1) - squared(m(1, 2))) * di;
     a(0, 1) = (m(0, 2) * m(1, 2) - m(0, 0) * m(0, 1)) * di;
     a(1, 0) = a(0, 1);

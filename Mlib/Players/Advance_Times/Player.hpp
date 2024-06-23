@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
@@ -238,7 +239,7 @@ public:
     virtual RaceState notify_lap_finished(
         float race_time_seconds,
         const std::string& asset_id,
-        const std::vector<FixedArray<float, 3>>& vehicle_colors,
+        const UUVector<FixedArray<float, 3>>& vehicle_colors,
         const std::list<float>& lap_times_seconds,
         const std::list<TrackElement>& track) override;
     virtual void notify_kill(RigidBodyVehicle& rigid_body_vehicle) override;

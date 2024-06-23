@@ -30,6 +30,6 @@ void draw_building_walls(
     float uv_scale,
     float max_width,
     float socle_ambient_occlusion,
-    const Interp<float, FixedArray<float, 3>>& height_colors);
+    const UUInterp<float, FixedArray<float, 3>>& height_colors);
 
 }

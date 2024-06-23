@@ -26,6 +26,7 @@ PitchLookAtNode::PitchLookAtNode(
     , pitch_min_{ pitch_min }
     , pitch_max_{ pitch_max }
     , dpitch_max_{ dpitch_max }
+    , relative_position_{ fixed_nans<double, 3>() }
     , dpitch_head_{ NAN }
     , head_node_{ nullptr }
     , increment_pitch_error_{ increment_pitch_error }

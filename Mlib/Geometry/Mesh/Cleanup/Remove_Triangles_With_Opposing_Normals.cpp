@@ -25,7 +25,7 @@ void Mlib::remove_triangles_with_opposing_normals(ColoredVertexArray<TPos>& cva)
         trimmed.push_back(tri);
         skip:;
     }
-    cva.triangles = std::vector(trimmed.begin(), trimmed.end());
+    cva.triangles = uuvector(trimmed.begin(), trimmed.end());
 }
 
 namespace Mlib {

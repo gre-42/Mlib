@@ -70,7 +70,7 @@ FixedArray<float, 2> Window::dpi() const {
     if (window_ == nullptr) {
         THROW_OR_ABORT("GLFW window not set");
     }
-    FixedArray<float, 2> result;
+    FixedArray<float, 2> result = uninitialized;
     GLFW_CHK(glfwGetWindowContentScale(window_, &result(0), &result(1)));
     return result * 200.f;
 }

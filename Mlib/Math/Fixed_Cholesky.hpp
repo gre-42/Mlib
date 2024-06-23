@@ -12,7 +12,7 @@ std::optional<FixedArray<TData, tsize, tsize>> cholesky(
     const FixedArray<TData, tsize, tsize>& A,
     const TData& diag2_min = TData(0))
 {
-    FixedArray<TData, tsize, tsize> L;
+    FixedArray<TData, tsize, tsize> L = uninitialized;
     for (size_t i = 0; i < tsize; ++i) {
         for (size_t j = 0; j <= i; ++j) {
             TData s = 0;
@@ -44,8 +44,8 @@ FixedArray<TData, tsize, tsize_b> solve_LU(
     const FixedArray<TData, tsize, tsize_b>& B)
 {
     // Ax = b -> LUx = b. Then y is defined to be Ux
-    FixedArray<TData, tsize, tsize_b> x;
-    FixedArray<TData, tsize, tsize_b> y;
+    FixedArray<TData, tsize, tsize_b> x = uninitialized;
+    FixedArray<TData, tsize, tsize_b> y = uninitialized;
     for (size_t v = 0; v < tsize_b; ++v) {
         // Forward solve Ly = b
         for (size_t i = 0; i < tsize; ++i) {

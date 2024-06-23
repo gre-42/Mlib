@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
@@ -22,14 +23,33 @@ struct ColoredVertex {
     FixedArray<float, 3> normal;
     FixedArray<float, 3> tangent;
 
+    ColoredVertex(Uninitialized)
+        : position{ uninitialized }
+        , color{ uninitialized }
+        , uv{ uninitialized }
+        , normal{ uninitialized }
+        , tangent{ uninitialized }
+    {}
+    ColoredVertex(
+        const FixedArray<TPos, 3>& position,
+        const FixedArray<float, 3>& color = fixed_ones<float, 3>(),
+        const FixedArray<float, 2>& uv = fixed_zeros<float, 2>(),
+        const FixedArray<float, 3>& normal = fixed_zeros<float, 3>(),
+        const FixedArray<float, 3>& tangent = fixed_zeros<float, 3>())
+        : position{ position }
+        , color{ color }
+        , uv{ uv }
+        , normal{ normal }
+        , tangent{ tangent }
+    {}
     template <class TResultPos>
     ColoredVertex<TResultPos> casted() const {
         return ColoredVertex<TResultPos>{
-            .position = position.template casted<TResultPos>(),
-            .color = color,
-            .uv = uv,
-            .normal = normal,
-            .tangent = tangent}; 
+            position.template casted<TResultPos>(),
+            color,
+            uv,
+            normal,
+            tangent}; 
     }
     template <class TResultPos>
     explicit operator ColoredVertex<TResultPos>() const {
@@ -37,49 +57,49 @@ struct ColoredVertex {
     }
     ColoredVertex translated(const FixedArray<TPos, 3>& shift) const {
         return ColoredVertex{
-            .position = position + shift,
-            .color = color,
-            .uv = uv,
-            .normal = normal,
-            .tangent = normal};
+            position + shift,
+            color,
+            uv,
+            normal,
+            normal};
     }
     ColoredVertex rotated(const FixedArray<float, 3, 3>& m) const {
         return ColoredVertex{
-            .position = dot1d(m.casted<TPos>(), position),
-            .color = color,
-            .uv = uv,
-            .normal = dot1d(m, normal),
-            .tangent = dot1d(m, tangent)};
+            dot1d(m.casted<TPos>(), position),
+            color,
+            uv,
+            dot1d(m, normal),
+            dot1d(m, tangent)};
     }
     ColoredVertex scaled(float scale) const {
         return ColoredVertex{
-            .position = (TPos)scale * position,
-            .color = color,
-            .uv = uv,
-            .normal = normal,
-            .tangent = tangent};
+            (TPos)scale * position,
+            color,
+            uv,
+            normal,
+            tangent};
     }
     ColoredVertex transformed(
         const TransformationMatrix<float, TPos, 3>& m,
         const FixedArray<float, 3, 3>& r) const
     {
         return ColoredVertex{
-            .position = m.transform(position),
-            .color = color,
-            .uv = uv,
-            .normal = dot1d(r, normal),
-            .tangent = dot1d(r, tangent)};
+            m.transform(position),
+            color,
+            uv,
+            dot1d(r, normal),
+            dot1d(r, tangent)};
     }
     ColoredVertex transformed(
         const std::vector<BoneWeight>& weights,
-        const std::vector<OffsetAndQuaternion<float, TPos>>& oqs) const
+        const UUVector<OffsetAndQuaternion<float, TPos>>& oqs) const
     {
         ColoredVertex result{
-            .position = fixed_zeros<TPos, 3>(),
-            .color = color,
-            .uv = uv,
-            .normal = fixed_zeros<float, 3>(),
-            .tangent = fixed_zeros<float, 3>()};
+            fixed_zeros<TPos, 3>(),
+            color,
+            uv,
+            fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>()};
         for (const BoneWeight& w : weights) {
             assert(w.bone_index < oqs.size());
             const OffsetAndQuaternion<float, TPos>& oq = oqs[w.bone_index];
@@ -94,11 +114,11 @@ struct ColoredVertex {
     template <class TOperation>
     ColoredVertex transformed_uv(const TOperation& m) const {
         return ColoredVertex{
-            .position = position,
-            .color = color,
-            .uv = m(uv),
-            .normal = normal,
-            .tangent = tangent};
+            position,
+            color,
+            m(uv),
+            normal,
+            tangent};
     }
     template <class Archive>
     void serialize(Archive& archive) {

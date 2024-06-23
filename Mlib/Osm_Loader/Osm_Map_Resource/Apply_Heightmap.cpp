@@ -212,7 +212,7 @@ void Mlib::apply_heightmap(
     // Also, duplicate nodes were already removed while parsing the OSM XML-file.
     std::map<OrderableFixedArray<double, 2>, std::list<FixedArray<double, 3>*>> vertex_instances_map;
     for (FixedArray<double, 3>* iv : in_vertices) {
-        OrderableFixedArray<double, 2> vc;
+        OrderableFixedArray<double, 2> vc = uninitialized;
         auto hit = vertex_height_bindings.find(iv);
         if (hit != vertex_height_bindings.end()) {
             vc = hit->second.value();
@@ -222,7 +222,7 @@ void Mlib::apply_heightmap(
         vertex_instances_map[vc].push_back(iv);
     }
     for (auto& position : vertex_instances_map) {
-        FixedArray<double, 2> vc;
+        FixedArray<double, 2> vc = uninitialized;
         // Try to apply height bindings.
         auto it = node_height_bindings.find(OrderableFixedArray<double, 2>{position.first(0), position.first(1)});
         if (it != node_height_bindings.end()) {

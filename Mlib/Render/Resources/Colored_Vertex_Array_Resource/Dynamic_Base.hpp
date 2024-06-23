@@ -1,7 +1,8 @@
 #pragma once
-#include <Mlib/Render/Any_Gl.hpp>
-#include <vector>
+#include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
+#include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 
 namespace Mlib {
 
@@ -24,7 +25,7 @@ public:
 private:
     void allocate();
     void deallocate();
-    std::vector<value_type> instances_;
+    UVector<value_type> instances_;
     size_t max_num_instances_;
     size_t num_instances_;
     mutable GLuint buffer_;

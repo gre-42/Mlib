@@ -1117,7 +1117,7 @@ public:
     }
     void do_resize(const ArrayShape& shape) {
         assert(offset_ == 0);
-        data_ = std::make_shared<Vector<TData>>(shape.nelements());
+        data_ = std::make_shared<Vector<TData>>(shape.nelements(), uninitialized);
         shape_ = std::make_shared<ArrayShape>();
         *shape_ = shape;
         // offset_ = 0;

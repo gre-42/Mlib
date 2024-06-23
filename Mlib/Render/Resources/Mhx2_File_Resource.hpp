@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <vector>
 
 namespace Mlib {
 
@@ -25,7 +25,7 @@ public:
 
     // Misc
     const Bone& skeleton() const;
-    std::vector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
+    UUVector<OffsetAndQuaternion<float, float>> vectorize_joint_poses(const std::map<std::string, OffsetAndQuaternion<float, float>>& poses) const;
 
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;

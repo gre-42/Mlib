@@ -16,7 +16,7 @@ public:
 
 	DynamicLightDb();
 	~DynamicLightDb();
-	void insert(const std::string& name, const TLightConfiguration& config);
+	void add(const std::string& name, const TLightConfiguration& config);
 	const TLightConfiguration& get(const std::string& name) const;
 private:
 	ThreadsafeStringMap<TLightConfiguration> configurations_;

@@ -36,8 +36,8 @@ CreateChildNode::CreateChildNode(RenderableScene& renderable_scene)
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto node = make_dunique<SceneNode>(
-        args.arguments.at<FixedArray<double, 3>>(KnownArgs::position, fixed_zeros<double, 3>()),
-        args.arguments.at<FixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees,
+        args.arguments.at<UFixedArray<double, 3>>(KnownArgs::position, fixed_zeros<double, 3>()),
+        args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));
     std::string type = args.arguments.at<std::string>(KnownArgs::type);

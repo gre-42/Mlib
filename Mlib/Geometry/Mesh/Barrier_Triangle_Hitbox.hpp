@@ -1,9 +1,9 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <list>
 #include <memory>
-#include <vector>
 
 namespace Mlib {
 
@@ -14,7 +14,7 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 template <class TPos>
-std::vector<FixedArray<FixedArray<TPos, 3>, 3>> barrier_triangle_hitbox(
+UUVector<FixedArray<FixedArray<TPos, 3>, 3>> barrier_triangle_hitbox(
     const FixedArray<TPos, 3>& am,
     const FixedArray<TPos, 3>& bm,
     const FixedArray<TPos, 3>& cm,

@@ -1,6 +1,8 @@
 #include "Colored_Vertex_Array_Resource.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Env.hpp>
+#include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
@@ -1427,14 +1429,14 @@ void ColoredVertexArrayResource::generate_triangle_rays(size_t npoints, const Fi
             for (const auto& l : r) {
                 t->lines.push_back({
                     ColoredVertex<TPos>{
-                        .position = l(0),
-                        .color = {1.f, 1.f, 1.f},
-                        .uv = {0.f, 0.f}
+                        l(0),
+                        {1.f, 1.f, 1.f},
+                        {0.f, 0.f}
                     },
                     ColoredVertex<TPos>{
-                        .position = l(1),
-                        .color = {1.f, 1.f, 1.f},
-                        .uv = {0.f, 1.f}
+                        l(1),
+                        {1.f, 1.f, 1.f},
+                        {0.f, 1.f}
                     }
                 });
             }
@@ -1455,14 +1457,18 @@ void ColoredVertexArrayResource::generate_ray(const FixedArray<float, 3>& from, 
     {
         cvas.front()->lines.push_back({
             ColoredVertex<TPos>{
-                .position = from,
-                .color = {1.f, 1.f, 1.f},
-                .uv = {0.f, 0.f}
+                from,
+                {1.f, 1.f, 1.f},
+                {0.f, 0.f},
+                fixed_zeros<float, 3>(),
+                fixed_zeros<float, 3>(),
             },
             ColoredVertex<TPos>{
-                .position = to,
-                .color = {1.f, 1.f, 1.f},
-                .uv = {0.f, 1.f}
+                to,
+                {1.f, 1.f, 1.f},
+                {0.f, 1.f},
+                fixed_zeros<float, 3>(),
+                fixed_zeros<float, 3>(),
             }
         });
     };
@@ -1876,7 +1882,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         }
 
         auto& result = *rp;
-        rps.emplace(id, std::move(rp));
+        rps.add(id, std::move(rp));
         return result;
     } catch (const std::runtime_error& e) {
         std::string identifier;
@@ -1955,7 +1961,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {
-        std::vector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
+        UUVector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
         for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
             const auto& td = cva->triangle_bone_weights[tid];  // std::vector of bone weights.
             auto& ts = triangle_bone_weights[tid];             // FixedArray of sorted bone weights.
@@ -2061,7 +2067,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
 }
 
 void ColoredVertexArrayResource::set_absolute_joint_poses(
-    const std::vector<OffsetAndQuaternion<float, float>>& poses)
+    const UUVector<OffsetAndQuaternion<float, float>>& poses)
 {
     for (auto& t : triangles_res_->scvas) {
         t = t->transformed<float>(poses, "_transformed_oq");

@@ -1,9 +1,12 @@
 #pragma once
-#include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Fixed_Cross.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
+#include <cstddef>
 
 namespace Mlib {
+
+template <typename TData, size_t... tshape>
+class FixedArray;
+template <class TPos>
+struct ColoredVertex;
 
 /**
  * Source: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm

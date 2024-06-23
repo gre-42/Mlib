@@ -49,7 +49,7 @@ std::list<FixedArray<FixedArray<double, 2>, 2>> Mlib::smooth_building_level(
         if (d == sw.end()) {
             d = sw.begin();
         }
-        OsmRectangle2D rect;
+        OsmRectangle2D rect = uninitialized;
         if (!OsmRectangle2D::from_line(
                 rect,
                 *a,

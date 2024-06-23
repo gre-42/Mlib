@@ -35,7 +35,7 @@ void Mlib::hessian_determinant_trace(
             //off_derivatives(1, 1) = (image(r + 1, c + 1) - image(r + 1, c - 1)) / 2.0;
             // d00 d01
             // d10 d11
-            FixedArray<float, 2, 2> hessian;
+            FixedArray<float, 2, 2> hessian = uninitialized;
             hessian(0, 0) = (image(r - 1, c) - 2.f * image(r, c) + image(r + 1, c)) / 4.f;
             hessian(1, 1) = (image(r, c - 1) - 2.f * image(r, c) + image(r, c + 1)) / 4.f;
             hessian(0, 1) = (

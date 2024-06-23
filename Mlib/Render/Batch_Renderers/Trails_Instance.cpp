@@ -38,12 +38,12 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
             .shading = shading },
         PhysicsMaterial::ATTR_VISIBLE,
         ModifierBacklog{},
-        std::vector<FixedArray<ColoredVertex<float>, 4>>{},             // quads
-        std::vector<FixedArray<ColoredVertex<float>, 3>>{},             // triangles
-        std::vector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
-        std::vector<FixedArray<std::vector<BoneWeight>, 3>>{},          // triangle_bone_weights
-        std::vector<FixedArray<float, 3>>{},                            // continous_triangle_texture_layers
-        std::vector<FixedArray<uint8_t, 3>>{},                          // discrete_triangle_texture_layers
+        UUVector<FixedArray<ColoredVertex<float>, 4>>{},             // quads
+        UUVector<FixedArray<ColoredVertex<float>, 3>>{},             // triangles
+        UUVector<FixedArray<ColoredVertex<float>, 2>>{},             // lines
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},          // triangle_bone_weights
+        UUVector<FixedArray<float, 3>>{},                            // continous_triangle_texture_layers
+        UUVector<FixedArray<uint8_t, 3>>{},                          // discrete_triangle_texture_layers
         &aabb,
         &bounding_sphere);
 }
@@ -55,7 +55,7 @@ TrailsInstance::TrailsInstance(
     const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
-    : offset_(NAN)
+    : offset_((double)NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayer>(max_num_segments) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, shading, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }

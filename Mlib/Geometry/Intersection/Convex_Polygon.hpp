@@ -17,7 +17,10 @@ class TransformationMatrix;
 template <class TData, size_t tnvertices>
 class ConvexPolygon3D {
 public:
-    ConvexPolygon3D() {}
+    ConvexPolygon3D(Uninitialized)
+        : edges_{ uninitialized }
+        , plane_{ uninitialized }
+    {}
     ConvexPolygon3D(
         const FixedArray<PlaneNd<TData, 3>, tnvertices>& edges,
         const PlaneNd<TData, 3>& plane)
@@ -25,6 +28,8 @@ public:
         , plane_{ plane }
     {}
     ConvexPolygon3D(const FixedArray<FixedArray<TData, 3>, tnvertices>& corners)
+        : edges_{ uninitialized }
+        , plane_{ uninitialized }
     {
         static_assert(tnvertices >= 3);
         plane_ = PlaneNd<TData, 3>{ FixedArray<FixedArray<TData, 3>, 3>{
@@ -53,7 +58,7 @@ public:
     ConvexPolygon3D<TPos, tnvertices> transformed(
         const TransformationMatrix<TDir, TPos, 3>& transformation_matrix) const
     {
-        ConvexPolygon3D<TData, tnvertices> result;
+        ConvexPolygon3D<TData, tnvertices> result = uninitialized;
         for (size_t i = 0; i < tnvertices; ++i) {
             result.edges_(i) = edges_(i).transformed(transformation_matrix);
         }

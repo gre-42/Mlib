@@ -1,10 +1,10 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
@@ -27,7 +27,7 @@ void triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const UUVector<FixedArray<double, 2>>& bounding_contour,
     const std::map<TerrainType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
     const std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
@@ -46,7 +46,7 @@ void triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const UUVector<FixedArray<double, 2>>& bounding_contour,
     const std::map<WaterType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
     const std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,

@@ -46,7 +46,7 @@ TransformationMatrix<TData, TData, 2> latitude_longitude_2_meters_mapping(
     TData latitude0,
     TData longitude0)
 {
-    TransformationMatrix<TData, TData, 2> result;
+    TransformationMatrix<TData, TData, 2> result = uninitialized;
     TData x;
     TData y;
     latitude_longitude_2_meters<TData, TData>(0, 0, latitude0, longitude0, x, y);
@@ -94,7 +94,7 @@ TransformationMatrix<TData, TData, 3> get_geographic_mapping_3d(
     const TransformationMatrix<TData, TData, 3>& absolute_model_matrix,
     const TData& scale)
 {
-    TransformationMatrix<TData, TData, 3> m3;
+    TransformationMatrix<TData, TData, 3> m3 = uninitialized;
     const auto& R2 = geographic_mapping_2d.R();
     const auto& t2 = geographic_mapping_2d.t();
     m3.R() = FixedArray<TData, 3, 3>::init(

@@ -58,9 +58,9 @@ public:
         std::minstd_rand& rng,
         const ExternalRenderPass& external_render_pass) = 0;
     virtual void build(
-        std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
-        std::vector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
-        std::vector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) = 0;
+        UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        UUVector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
+        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) = 0;
     virtual void sort() = 0;
     virtual bool empty() const = 0;
 };
@@ -127,9 +127,9 @@ public:
         }
     }
     virtual void build(
-        std::vector<FixedArray<ColoredVertex<float>, 3>>& triangles,
-        std::vector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
-        std::vector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) override
+        UUVector<FixedArray<ColoredVertex<float>, 3>>& triangles,
+        UUVector<FixedArray<float, 3>>& continuous_triangle_texture_layers,
+        UUVector<FixedArray<uint8_t, 3>>& discrete_triangle_texture_layers) override
     {
         assert_true(triangles.empty());
         assert_true(continuous_triangle_texture_layers.empty());
@@ -190,7 +190,8 @@ static std::unique_ptr<IAggregateTriangles> construct_aggregate_triangles(
 
 AggregateArrayRenderer::AggregateArrayRenderer(RenderingResources& rendering_resources)
     : rendering_resources_{ rendering_resources }
-    , offset_(NAN)
+    , offset_((double)NAN)
+    , next_offset_{ uninitialized }
     , is_initialized_{ false }
 {}
 
@@ -261,19 +262,19 @@ void AggregateArrayRenderer::update_aggregates(
         if (any(mat.blend_mode & BlendMode::ANY_CONTINUOUS)) {
             list->sort();
         }
-        std::vector<FixedArray<ColoredVertex<float>, 3>> triangles;
-        std::vector<FixedArray<float, 3>> continuous_texture_layers;
-        std::vector<FixedArray<uint8_t, 3>> discrete_texture_layers;
+        UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
+        UUVector<FixedArray<float, 3>> continuous_texture_layers;
+        UUVector<FixedArray<uint8_t, 3>> discrete_texture_layers;
         list->build(triangles, continuous_texture_layers, discrete_texture_layers);
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
             mat,
             PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
-            std::vector<FixedArray<ColoredVertex<float>, 4>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),
-            std::vector<FixedArray<ColoredVertex<float>, 2>>(),
-            std::vector<FixedArray<std::vector<BoneWeight>, 3>>(),
+            UUVector<FixedArray<ColoredVertex<float>, 2>>(),
+            UUVector<FixedArray<std::vector<BoneWeight>, 3>>(),
             std::move(continuous_texture_layers),
             std::move(discrete_texture_layers)));
     }

@@ -16,9 +16,10 @@ using namespace Mlib;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_resources)
     : rendering_resources_{ rendering_resources }
-    , offset_(NAN)
-    , is_initialized_{ false } {
-}
+    , offset_((double)NAN)
+    , next_offset_{ uninitialized }
+    , is_initialized_{ false }
+{}
 
 ArrayInstancesRenderer::~ArrayInstancesRenderer()
 {}

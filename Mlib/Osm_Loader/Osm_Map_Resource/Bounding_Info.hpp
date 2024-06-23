@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <map>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
@@ -12,7 +12,7 @@ struct Node;
 
 struct BoundingInfo {
     BoundingInfo(
-        const std::vector<FixedArray<double, 2>>& bounding_contour,
+        const UUVector<FixedArray<double, 2>>& bounding_contour,
         const std::map<std::string, Node>& nodes,
         double border_width);
     FixedArray<double, 2> boundary_min;

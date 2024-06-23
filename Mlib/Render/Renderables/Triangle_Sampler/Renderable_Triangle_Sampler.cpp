@@ -26,7 +26,7 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const SceneNodeResources& scene_node_resources,
     const TerrainStyles& terrain_styles,
     const TerrainTriangles& terrain_triangles,
-    const std::list<const std::list<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
+    const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
     const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
     double scale,
     UpAxis up_axis)
@@ -134,7 +134,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     auto add_triangles = [this](
         std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>& bvhs,
         const TerrainStyle& terrain_style,
-        const std::list<FixedArray<ColoredVertex<double>, 3>>& gtl)
+        const UUList<FixedArray<ColoredVertex<double>, 3>>& gtl)
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {

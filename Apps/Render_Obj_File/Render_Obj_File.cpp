@@ -114,7 +114,7 @@ void add_reference_bone(
  */
 void add_bone_frame(
     const Bone& b,
-    const std::vector<OffsetAndQuaternion<float, float>>& frame,
+    const UUVector<OffsetAndQuaternion<float, float>>& frame,
     DanglingRef<SceneNode> parent_node,
     SceneNodeResources& scene_node_resources)
 {
@@ -881,7 +881,7 @@ int main(int argc, char** argv) {
             size_t n = 10;
             float r = 50;
             bool with_diffusivity = true;
-            FixedArray<float, 3> center;
+            FixedArray<float, 3> center = uninitialized;
             if (light_configuration == "circle") {
                 center = {0.f, 10.f, 0.f};
             } else if (light_configuration == "shifted_circle") {

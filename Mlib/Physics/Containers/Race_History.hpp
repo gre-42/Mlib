@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Containers/Race_Identifier.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -6,7 +7,6 @@
 #include <list>
 #include <optional>
 #include <string>
-#include <vector>
 
 namespace Mlib {
 
@@ -18,7 +18,7 @@ struct LapTimeEvent {
     float race_time_seconds;
     std::string player_name;
     std::string vehicle;
-    std::vector<FixedArray<float, 3>> vehicle_colors;
+    UUVector<FixedArray<float, 3>> vehicle_colors;
 };
 
 struct LapTimeEventAndId {

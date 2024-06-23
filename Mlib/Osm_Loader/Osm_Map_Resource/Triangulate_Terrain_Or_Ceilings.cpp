@@ -1,4 +1,5 @@
 #include "Triangulate_Terrain_Or_Ceilings.hpp"
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Mesh/Close_Neighbor_Detector.hpp>
@@ -24,9 +25,9 @@ void plot_tris(const std::string& filename, const std::list<p2t::Triangle*>& tri
     std::list<FixedArray<ColoredVertex<double>, 3>> triangles;
     for (const auto& t : tris) {
         triangles.push_back(FixedArray<ColoredVertex<double>, 3>{
-            ColoredVertex<double>{.position = {t->GetPoint(0)->x, t->GetPoint(0)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-            ColoredVertex<double>{.position = {t->GetPoint(1)->x, t->GetPoint(1)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}},
-            ColoredVertex<double>{.position = {t->GetPoint(2)->x, t->GetPoint(2)->y, 0.}, .color = {1.f, 1.f, 1.f}, .uv = {0.f, 0.f}, .normal = {0.f, 0.f, 1.f}, .tangent = {0.f, 1.f, 0.f}}
+            ColoredVertex<double>{{t->GetPoint(0)->x, t->GetPoint(0)->y, 0.}, {1.f, 1.f, 1.f}, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{{t->GetPoint(1)->x, t->GetPoint(1)->y, 0.}, {1.f, 1.f, 1.f}, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}},
+            ColoredVertex<double>{{t->GetPoint(2)->x, t->GetPoint(2)->y, 0.}, {1.f, 1.f, 1.f}, {0.f, 0.f}, {0.f, 0.f, 1.f}, {0.f, 1.f, 0.f}}
         });
     }
     save_obj(
@@ -93,7 +94,7 @@ void plot_contours(const std::string& filename, const std::vector<std::vector<p2
                 aabb,
                 [&edge, &highlighted_nodes](const Edge& data)
             {
-                FixedArray<double, 2> intersection;
+                FixedArray<double, 2> intersection = uninitialized;
                 if (intersect_lines(intersection, edge, data, 0., 0., false, true)) {
                     highlighted_nodes.push_back({intersection(0), intersection(1), 0.f});
                 }
@@ -178,7 +179,7 @@ void triangulate_entity_list(
     EntityTypeTriangleList<EntityType>& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const UUVector<FixedArray<double, 2>>& bounding_contour,
     const std::map<EntityType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
     const std::list<std::pair<EntityType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
@@ -381,7 +382,7 @@ void Mlib::triangulate_terrain_or_ceilings(
     TerrainTypeTriangleList& tl_terrain,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const UUVector<FixedArray<double, 2>>& bounding_contour,
     const std::map<TerrainType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
     const std::list<std::pair<TerrainType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,
@@ -420,7 +421,7 @@ void Mlib::triangulate_water(
     WaterTypeTriangleList& tl_water,
     const BoundingInfo& bounding_info,
     const std::list<SteinerPointInfo>& steiner_points,
-    const std::vector<FixedArray<double, 2>>& bounding_contour,
+    const UUVector<FixedArray<double, 2>>& bounding_contour,
     const std::map<WaterType, std::list<FixedArray<ColoredVertex<double>, 3>>>& hole_triangles,
     const std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>>& region_contours,
     float scale,

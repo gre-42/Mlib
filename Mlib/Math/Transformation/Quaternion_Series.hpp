@@ -11,10 +11,13 @@ namespace Mlib {
 template <class TDir, class TPos, size_t length>
 class QuaternionSeries {
 public:
-    QuaternionSeries() = default;
+    QuaternionSeries()
+        : data_{ uninitialized }
+    {}
     QuaternionSeries(
         const OffsetAndQuaternion<TDir, TPos>& qo,
         std::chrono::steady_clock::time_point time)
+        : QuaternionSeries()
     {
         append(qo, time);
     }

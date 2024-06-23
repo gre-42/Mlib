@@ -24,4 +24,7 @@ struct ScalarType {
     typedef typename ScalarTypeRecursion<T, std::is_scalar<T>::value>::value_type value_type;
 };
 
+template <class T>
+using scalar_type_t = typename ScalarType<T>::value_type;
+
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Map/Map.hpp>
@@ -84,9 +85,9 @@ struct OsmResourceConfig {
     std::vector<FacadeTexture> entrance_textures;
     float extrusion_ambient_occlusion = 0.5f;
     float laplace_ambient_occlusion = 1.f;
-    Interp<float, FixedArray<float, 3>> height_colors{
+    UUInterp<float, FixedArray<float, 3>> height_colors{
         std::vector<float>{0.f, 15.f},
-        std::vector<FixedArray<float, 3>>{
+        UUVector<FixedArray<float, 3>>{
             FixedArray<float, 3>{ 1.f, 1.f, 1.f },
             FixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
         OutOfRangeBehavior::CLAMP };
