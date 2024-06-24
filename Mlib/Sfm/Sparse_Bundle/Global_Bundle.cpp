@@ -223,7 +223,7 @@ void GlobalBundle::copy_in(
                         c_raw->second.projection_matrix_3x4()) TEMPLATEV row_range<0, 2>();
 
                 {
-                    // std::cerr << "Computing JP" << std::endl;
+                    // lerr() << "Computing JP";
                     FixedArray<float, 2, 3> JP = cfg_.numerical_jacobian_x
                         ? numerical_differentiation<2>([&](const FixedArray<float, 3>& pp){
                             return projected_points_1p_1ke(pp, intrinsic_matrix, cf.projection_matrix_3x4());
@@ -234,8 +234,8 @@ void GlobalBundle::copy_in(
                             intrinsic_matrix,
                             cf.projection_matrix_3x4());
 
-                    // std::cerr << "JP " << JP.shape() << std::endl;
-                    // std::cerr << JP << std::endl;
+                    // lerr() << "JP " << JP.shape();
+                    // lerr() << JP;
                     for (size_t r = 0; r < JP.static_shape<0>(); ++r) {
                         for (size_t c = 0; c < JP.static_shape<1>(); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XP{y.first, c}) = JP(r, c);
@@ -251,19 +251,19 @@ void GlobalBundle::copy_in(
                     }
                 }
                 {
-                    // std::cerr << "Computing JK" << std::endl;
-                    // std::cerr << c->second.kep << std::endl;
+                    // lerr() << "Computing JK";
+                    // lerr() << c->second.kep;
                     FixedArray<float, 2, 6> JKe = cfg_.numerical_jacobian_k
                         ? numerical_differentiation<2>([&](const FixedArray<float, 6>& kep){
-                            // std::cerr << "kep " << kep << std::endl;
-                            // std::cerr << k_external(kep) << std::endl;
-                            // std::cerr << c->second.projection_matrix_3x4() << std::endl;
+                            // lerr() << "kep " << kep;
+                            // lerr() << k_external(kep);
+                            // lerr() << c->second.projection_matrix_3x4();
                             return projected_points_1p_1ke(rf.position, intrinsic_matrix, k_external(kep));
                         },
                         cf.kep)
                         : projected_points_jacobian_dke_1p_1ke(rf.position, intrinsic_matrix, cf.kep);
-                    // std::cerr << "JK " << JK.shape() << std::endl;
-                    // std::cerr << JK << std::endl;
+                    // lerr() << "JK " << JK.shape();
+                    // lerr() << JK;
                     for (size_t r = 0; r < JKe.static_shape<0>(); ++r) {
                         for (size_t c = 0; c < JKe.static_shape<1>(); ++c) {
                             Jg_at(Y{p.first, y.first, r}, XKe{p.first, c}) = JKe(r, c);
@@ -277,13 +277,13 @@ void GlobalBundle::copy_in(
         for (const auto& xkke : xkes) {
             size_t col = column_id(xkke.first);
             if (Jg.column(col).size() == 0) {
-                std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
+                lerr() << xkke.first.time.count() << " ms " << xkke.first.dimension;
                 throw std::runtime_error("Camera column is empty");
             }
             if (false) {
                 auto mit = std::max_element(Jg.column(col).begin(), Jg.column(col).end(), [](const auto& a, const auto& b) {return a.second < b.second; });
                 if (mit->second < 1e-13) {
-                    std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
+                    lerr() << xkke.first.time.count() << " ms " << xkke.first.dimension;
                     throw std::runtime_error("Camera column is (nearly) zero");
                 }
             }
@@ -298,20 +298,20 @@ void GlobalBundle::copy_in(
                 continue;
             }
             if (all(Jg.columns(Array<size_t>{col}).to_dense_array() == 0.f)) {
-                std::cerr << xkke.first.time.count() << " ms " << xkke.first.dimension << std::endl;
+                lerr() << xkke.first.time.count() << " ms " << xkke.first.dimension;
                 throw std::runtime_error("Camera column is zero");
             }
         }
         for (const auto& xxp : xps) {
             size_t col = column_id(xxp.first);
             if (Jg.column(col).size() == 0) {
-                std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
+                lerr() << xxp.first.index << " " << xxp.first.dimension << " " << col;
                 throw std::runtime_error("Point column is empty");
             }
             if (false) {
                 auto mit = std::max_element(Jg.column(col).begin(), Jg.column(col).end(), [](const auto& a, const auto& b) {return a.second < b.second; });
                 if (mit->second < 1e-13) {
-                    std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
+                    lerr() << xxp.first.index << " " << xxp.first.dimension << " " << col;
                     throw std::runtime_error("Point column is (nearly) zero");
                 }
             }
@@ -321,7 +321,7 @@ void GlobalBundle::copy_in(
                 continue;
             }
             if (all(Jg.columns(Array<size_t>{col}).to_dense_array() == 0.f)) {
-                std::cerr << xxp.first.index << " " << xxp.first.dimension << " " << col << std::endl;
+                lerr() << xxp.first.index << " " << xxp.first.dimension << " " << col;
                 throw std::runtime_error("Point column is zero");
             }
         }

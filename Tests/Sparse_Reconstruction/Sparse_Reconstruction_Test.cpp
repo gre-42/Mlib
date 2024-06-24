@@ -62,7 +62,7 @@ void test_reconstruction() {
     auto insert_particles = [&](size_t itime, size_t keep) {
         milliseconds time{itime + 1};
         FeaturePointFrame fr;
-        //std::cerr << sc.y.shape() << std::endl;
+        //lerr() << sc.y.shape();
         assert(keep < sc.y.shape(1));
         for (size_t pt_id = 0; pt_id < sc.y.shape(1) - keep; ++pt_id) {
             std::shared_ptr<FeaturePointSequence> seq;
@@ -70,32 +70,32 @@ void test_reconstruction() {
             if ((particles.size() > 0) &&
                 (particles.rbegin()->second.tracked_points.find(pt_id) != particles.rbegin()->second.tracked_points.end())) {
                 seq = particles.rbegin()->second.tracked_points.find(pt_id)->second;
-                // std::cerr << "exist" << std::endl;
+                // lerr() << "exist";
             } else {
                 seq = std::make_shared<FeaturePointSequence>();
-                // std::cerr << "new" << std::endl;
+                // lerr() << "new";
             }
             seq->sequence[time] = point;
             fr.tracked_points[pt_id] = seq;
         }
         particles.insert(std::make_pair(time, fr));
     };
-    std::cerr << "1. Insertion" << std::endl;
+    lerr() << "1. Insertion";
     // (cfg.nframes == 2) => nothing happens yet.
     insert_particles(0, 5);
     recon.reconstruct();
     assert_isequal(camera_frames.size(), (size_t)0);
-    std::cerr << "2. Insertion" << std::endl;
+    lerr() << "2. Insertion";
     insert_particles(1, 4);
     insert_camera(0);
     insert_camera(1);
     recon.reconstruct();
     assert_isequal(camera_frames.size(), (size_t)2);
-    // std::cerr << "sc.R\n" << sc.R(0, 1) << std::endl;
-    // std::cerr << "recon\n" << recon.reconstructed_points() << std::endl;
-    // std::cerr << "sc.x\n" << sc.x << std::endl;
-    // std::cerr << recon.camera_frames().rbegin()->second.rotation << std::endl;
-    // std::cerr << recon.camera_frames().rbegin()->second.position << std::endl;
+    // lerr() << "sc.R\n" << sc.R(0, 1);
+    // lerr() << "recon\n" << recon.reconstructed_points();
+    // lerr() << "sc.x\n" << sc.x;
+    // lerr() << recon.camera_frames().rbegin()->second.rotation;
+    // lerr() << recon.camera_frames().rbegin()->second.position;
     assert_allclose(
         camera_frames.begin()->second.pose.R().to_array(),
         identity_array<float>(3));
@@ -118,8 +118,8 @@ void test_reconstruction() {
             Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             calculate_camera ? float{ 1e-1 } : float{ 1e-1 });
     }
-    // std::cerr << "initial x\n" << recon.reconstructed_points() << std::endl;
-    std::cerr << "3. Insertion" << std::endl;
+    // lerr() << "initial x\n" << recon.reconstructed_points();
+    lerr() << "3. Insertion";
     insert_particles(2, 4);
     insert_camera(2);
     recon.reconstruct();
@@ -140,7 +140,7 @@ void test_reconstruction() {
             Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             float{ 1e-2 });
     }
-    std::cerr << "4. Insertion" << std::endl;
+    lerr() << "4. Insertion";
     insert_particles(3, 5);
     insert_camera(3);
     recon.reconstruct();
@@ -161,10 +161,10 @@ void test_reconstruction() {
             Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             float{ 5e-2 });
     }
-    // std::cerr << "Marginalizing some points" << std::endl;
+    // lerr() << "Marginalizing some points";
     // camera_frames.at(std::chrono::milliseconds())
     // recon.debug_marginalize_points({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
-    std::cerr << "5. Insertion" << std::endl;
+    lerr() << "5. Insertion";
     insert_particles(4, 5);
     insert_camera(4);
     recon.reconstruct();
@@ -185,7 +185,7 @@ void test_reconstruction() {
             Array<float>{ sc.x[recon_ids] } / sc.x(recon_ids(0))(0),
             calculate_camera ? float{ 9e-2 } : float{ 1e-3 });
     }
-    // std::cerr << "sc.x\n" << sc.x << std::endl;
+    // lerr() << "sc.x\n" << sc.x;
     recon.reconstruct_pass2();
 }
 
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     try {
         test_reconstruction();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what();
+        lerr() << e.what();
         return 1;
     }
     return 0;

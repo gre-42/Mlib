@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         }
         im_out.save_to_file(args.unnamed_value(1));
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

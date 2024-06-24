@@ -213,7 +213,7 @@ void triangulate_entity_list(
         : p2t_bounding_contour;
     std::reverse(final_bounding_contour.begin(), final_bounding_contour.end());
     // for (const auto& p : final_bounding_contour) {
-    //     std::cerr << "c " << p->x << " " << p->y << std::endl;
+    //     lerr() << "c " << p->x << " " << p->y;
     // }
     try {
         check_contour(final_bounding_contour);
@@ -331,9 +331,9 @@ void triangulate_entity_list(
         extract_triangles_inside_contours(all_contours, *wrapped_tris, *wrapped_itris);
         // plot_tris("/tmp/wrapped_tris1.obj", tris);
         // save_obj("/tmp/holes.obj", IndexedFaceSet<float, size_t>{hole_triangles});
-        // std::cerr << "nresidual " << wrapped_tris.size() << std::endl;
+        // lerr() << "nresidual " << wrapped_tris.size();
         // for (const auto& l : wrapped_itris) {
-        //     std::cerr << "ninner " << l.size() << std::endl;
+        //     lerr() << "ninner " << l.size();
         // }
     }
     auto draw_tris = [z, scale, color, uv_scale, uv_period](auto& tl, const auto& tris){
@@ -373,7 +373,7 @@ void triangulate_entity_list(
     // for (const auto& l : tl_terrain.map()) {
     //     save_obj("/tmp/" + to_string(l.first) + ".obj", IndexedFaceSet<float, size_t>{l.second->triangles_});
     //     for (const auto& t : l.second->triangles_) {
-    //         std::cerr << t << std::endl;
+    //         lerr() << t;
     //     }
     // }
 }

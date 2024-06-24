@@ -50,17 +50,17 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
 {
     assert(x.ndim() == 1);
     assert(ke.ndim() == 1);
-    // std::cerr << x.shape() << " | " << ki.shape() << " | " << ke.shape() << std::endl;
+    // lerr() << x.shape() << " | " << ki.shape() << " | " << ke.shape();
     Array<FixedArray<float, 2>> y{ ArrayShape{ke.length(), x.length()} };
     for (size_t i = 0; i < ke.shape(0); ++i) {
-        // std::cerr << ki.shape() << " | " << ke[i].shape() << std::endl;
+        // lerr() << ki.shape() << " | " << ke[i].shape();
         auto m = TransformationMatrix<float, float, 3>{ ki.project(ke(i).semi_affine()) };
         // auto kk = R3_from_Nx4(ke[i], 3);
-        // std::cerr << (kk.T(), kk.T()) << std::endl;
-        // std::cerr << (kk, kk) << std::endl;
-        // std::cerr << ki << std::endl;
-        // std::cerr << m.shape() << " - " << p.shape() << std::endl;
-        // std::cerr << p[i].shape() << " . " << (m, P).T().shape() << std::endl;
+        // lerr() << (kk.T(), kk.T());
+        // lerr() << (kk, kk);
+        // lerr() << ki;
+        // lerr() << m.shape() << " - " << p.shape();
+        // lerr() << p[i].shape() << " . " << (m, P).T().shape();
         for (size_t j = 0; j < x.length(); ++j) {
             FixedArray<float, 3> yy = m.transform(x(j));
 
@@ -79,7 +79,7 @@ Array<FixedArray<float, 2>> Mlib::Cv::projected_points(
             }
         }
     }
-    // std::cerr << "y\n" << y << std::endl;
+    // lerr() << "y\n" << y;
     return y;
 }
 
@@ -223,17 +223,17 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
             v = lstsq_chol_1d(K3x3.casted<double>(), lstsq_chol_1d(ki.casted<double, double>().affine(), yl2).value()).value().casted<float>();
         }
         v /= std::sqrt(sum(squared(v)));
-        //std::cerr << "||v|| " << sum(squared(v)) << std::endl;
-        //std::cerr << "yt " << y_tracked[r] << std::endl;
-        //std::cerr << "Kv " << (K3x3, v) << std::endl;
+        //lerr() << "||v|| " << sum(squared(v));
+        //lerr() << "yt " << y_tracked[r];
+        //lerr() << "Kv " << (K3x3, v);
 
         //proj * f = [0; 0; 0; 1] => f = proj \ [0; 0; 0; 1]
         FixedArray<float, 3> f = ke(r).inverted().t();
-        //std::cerr << "hke\n" << homogenized_4x4(ke[r]) << std::endl;
-        //std::cerr << "Ki " << Ki << std::endl;
-        //std::cerr << "K " << K << std::endl;
-        //std::cerr << "f " << f << std::endl;
-        //std::cerr << "ke f " << (ke[r], Array<float>{f(0), f(1), f(2), 1}) << std::endl;
+        //lerr() << "hke\n" << homogenized_4x4(ke[r]);
+        //lerr() << "Ki " << Ki;
+        //lerr() << "K " << K;
+        //lerr() << "f " << f;
+        //lerr() << "ke f " << (ke[r], Array<float>{f(0), f(1), f(2), 1});
 
         if (method2) {
             for (size_t rr = 0; rr < 3; ++rr) {
@@ -255,8 +255,8 @@ FixedArray<float, 3> Mlib::Cv::reconstructed_point_(
             B.row_range(3 * r, 3 * (r + 1)) = b;
         }
     }
-    //std::cerr << "M " << M << std::endl;
-    //std::cerr << "B " << B << std::endl;
+    //lerr() << "M " << M;
+    //lerr() << "B " << B;
     if (condition_number != nullptr) {
         *condition_number = (float)cond4_x(M.casted<double>());
     }

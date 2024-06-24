@@ -89,9 +89,9 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 auto dpi = window_.dpi();
                 // TimeGuard time_guard("logic.render", "logic.render");
                 RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, frame_time_()}, .time_id = time_id };
-                // std::cerr << "-------------------------------" << std::endl;
-                // logic.print(std::cerr, 0);
-                // std::cerr << "+++++++++++++++++++++++++++++++" << std::endl;
+                // lerr() << "-------------------------------";
+                // logic.print(lraw(), 0);
+                // lerr() << "+++++++++++++++++++++++++++++++";
                 logic.render(
                     LayoutConstraintParameters{
                         .dpi = dpi(0),
@@ -135,7 +135,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             #ifdef BENCHMARK_RENDERING_ENABLED
             static size_t ii = 0;
             if (ii++ % 600 == 0) {
-                TimeGuard::print_groups(std::cerr);
+                TimeGuard::print_groups(lraw());
             }
             #endif
             // lag_finder.stop();

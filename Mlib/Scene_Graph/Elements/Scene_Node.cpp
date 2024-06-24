@@ -503,7 +503,7 @@ void SceneNode::optimize_instances_search_time(std::ostream& ostr) const {
     std::shared_lock lock{ mutex_ };
     for (const auto& [name, i] : instances_children_) {
         ostr << name << std::endl;
-        i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, std::cerr);
+        i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, ostr);
         // i.small_instances.plot_svg<double>("/tmp/" + name + ".svg", 0, 1);
     }
 }

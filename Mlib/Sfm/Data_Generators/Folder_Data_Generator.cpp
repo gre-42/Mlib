@@ -119,7 +119,7 @@ void Mlib::Sfm::process_files_with_pipeline(
         //    try {
         //        pipeline.print_statistics(ostream);
         //    } catch (const std::exception& e1) {
-        //        std::cerr << "Error in print_statistics during exception-handling: " << e1.what() << std::endl;
+        //        lerr() << "Error in print_statistics during exception-handling: " << e1.what();
         //    }
         //    throw;
         //}

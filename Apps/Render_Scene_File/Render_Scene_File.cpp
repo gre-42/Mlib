@@ -129,11 +129,11 @@ void print_debug_info(
     {
         for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
-                std::cerr << n << " search time" << std::endl;
+                lerr() << n << " search time";
             }
             r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
-                r.physics_engine_.rigid_bodies_.optimize_search_time(std::cerr);
+                r.physics_engine_.rigid_bodies_.optimize_search_time(lraw().ref());
             }
             if (args.has_named("--plot_triangle_bvh")) {
                 r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
@@ -654,7 +654,7 @@ int main(int argc, char** argv) {
         }
 
         // if (!TimeGuard::is_empty(std::this_thread::get_id())) {
-        //     std::cerr << "write svg" << std::endl;
+        //     lerr() << "write svg";
         //     TimeGuard::write_svg(std::this_thread::get_id(), "/tmp/events.svg");
         // }
     } catch (const CommandLineArgumentError& e) {

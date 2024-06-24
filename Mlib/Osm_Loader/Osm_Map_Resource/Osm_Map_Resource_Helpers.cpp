@@ -441,7 +441,7 @@ void to_orderable_fixed_array(
         auto o = get_orderable_fixed_array(p);
         if (pts.find(o) != pts.end()) {
             if (verbose) {
-                std::cerr << "Removing duplicate point " << o << std::endl;
+                lerr() << "Removing duplicate point " << o;
             }
         } else {
             pts.insert(o);

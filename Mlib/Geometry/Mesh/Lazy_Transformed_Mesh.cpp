@@ -101,7 +101,7 @@ const std::vector<CollisionPolygonSphere<double, 3>>& LazyTransformedMesh::get_t
 
 const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_edges_sphere() const {
     //if (msh.vertices->size() == 0) {
-    //    std::cerr << "Skipping mesh without triangles" << std::endl;
+    //    lerr() << "Skipping mesh without triangles";
     //}
     if (std::isnan(max_min_cos_ridge_) && !edges_calculated_) {
         get_quads_sphere();
@@ -127,7 +127,7 @@ const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_edges_s
 
 const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere() const {
     //if (msh.vertices->size() == 0) {
-    //    std::cerr << "Skipping mesh without triangles" << std::endl;
+    //    lerr() << "Skipping mesh without triangles";
     //}
     if (!std::isnan(max_min_cos_ridge_) && !ridges_calculated_) {
         get_quads_sphere();
@@ -155,7 +155,7 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
 
 const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_lines_sphere() const {
     //if (msh.vertices->size() == 0) {
-    //    std::cerr << "Skipping mesh without triangles" << std::endl;
+    //    lerr() << "Skipping mesh without triangles";
     //}
     if (!lines_calculated_) {
         std::scoped_lock lock{mutex_};
@@ -194,9 +194,9 @@ AxisAlignedBoundingBox<double, 3> LazyTransformedMesh::aabb() const {
 #endif
 
 void LazyTransformedMesh::print_info() const {
-    std::cerr << "LazyTransformedMesh" << std::endl;
-    std::cerr << transformed_bounding_sphere_.center() << std::endl;
-    std::cerr << transformed_bounding_sphere_.radius() << std::endl;
+    lerr() << "LazyTransformedMesh";
+    lerr() << transformed_bounding_sphere_.center();
+    lerr() << transformed_bounding_sphere_.radius();
 }
 
 std::string LazyTransformedMesh::name() const {

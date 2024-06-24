@@ -155,7 +155,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
     //     if (bone_id == result->bone_indices.end()) {
     //         THROW_OR_ABORT("Could not find bone with name " + bone_name);
     //     }
-    //     //std::cerr << bone_id->second << std::endl;
+    //     //lerr() << bone_id->second;
     //     //assert_true(false);
     //     auto it = std::find_if(
     //         weights.begin(),

@@ -90,7 +90,7 @@ void FlowingParticles::generate_sift_correspondences(FeaturePointFrame& new_fram
     std::list<std::pair<size_t, size_t>> matches;
     if (particles_.size() >= 1) {
         auto pit = particles_.begin();
-        std::cerr << "SIFT: " << pit->first.count() << " <-> " << image_frames_.rbegin()->first.count() << " ms" << std::endl;
+        lerr() << "SIFT: " << pit->first.count() << " <-> " << image_frames_.rbegin()->first.count() << " ms";
         for (auto& s : pit->second.tracked_points) {
             size_t best_id1 = s.second->sequence.begin()->second->tracebale_descriptor.descriptor_id_in_parameter_list(descriptors1);
             if ((best_id1 != SIZE_MAX) && !inserted_keypoints1.contains(best_id1)) {
@@ -188,10 +188,10 @@ void FlowingParticles::generate_new_particles(FeaturePointFrame& new_frame) {
             harris_response(image_frames_.rbegin()->second.grayscale),
             existing_points_mask && mask,
             n_new_particles));
-        //std::cerr << points.shape() << std::endl;
-        //std::cerr << count_nonzero(mask) << std::endl;
+        //lerr() << points.shape();
+        //lerr() << count_nonzero(mask);
     }
-    std::cerr << "Trying to generate " << points.shape(0) << " new particles" << std::endl;
+    lerr() << "Trying to generate " << points.shape(0) << " new particles";
     for (const FixedArray<float, 2>& p : points.flat_iterable()) {
         try_generate_feature_point_sequence(new_frame, p, Array<float>());
     }
@@ -277,7 +277,7 @@ void FlowingParticles::advance_existing_particles(
     size_t nsuccess = 0;
     for (const auto& s : particles_.rbegin()->second.tracked_points) {
         //if (bad_points_.find(s.first) != bad_points_.end()) {
-        //    std::cerr << "Discontinuing bad point [" << s.first << "]" << std::endl;
+        //    lerr() << "Discontinuing bad point [" << s.first << "]";
         //    continue;
         //}
         const FeaturePoint& p = *s.second->sequence.rbegin()->second;
@@ -312,7 +312,7 @@ void FlowingParticles::advance_existing_particles(
                     cfg_.worst_patch_error);
                 new_pos = FixedArray<float, 2>{ i2a(new_index) };
                 if (any(new_pos > float(1e6))) {
-                    // std::cerr << "dropping y [" << s.first << "]" << std::endl;
+                    // lerr() << "dropping y [" << s.first << "]";
                     continue;
                 }
             }
@@ -321,7 +321,7 @@ void FlowingParticles::advance_existing_particles(
             }
         }
     }
-    std::cerr << "Traced " << nsuccess << " / " << particles_.rbegin()->second.tracked_points.size() << " particles" << std::endl;
+    lerr() << "Traced " << nsuccess << " / " << particles_.rbegin()->second.tracked_points.size() << " particles";
 }
 
 void FlowingParticles::advance_flowing_particles() {

@@ -32,7 +32,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
     size_t mid = 0;
     for (const auto& bu : buildings) {
         if (bu.way.nd.empty()) {
-            std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
+            lerr() << "Building " + bu.id + ": outline is empty";
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {

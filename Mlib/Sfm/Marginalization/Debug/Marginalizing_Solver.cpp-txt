@@ -29,7 +29,7 @@ static Array<size_t> strip_indices(
         if (it != uuids_new.end()) {
             ids_new.push_back(it->second);
         } else {
-            std::cerr << "stripping index " << uuids_old.at(i) << " " << j << " " << i << std::endl;
+            lerr() << "stripping index " << uuids_old.at(i) << " " << j << " " << i;
             assert(false);
         }
         ++j;

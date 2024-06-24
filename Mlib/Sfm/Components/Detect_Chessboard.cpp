@@ -76,7 +76,7 @@ public:
     template <class TOperation>
     void foreach(const FixedArray<float, 3, 3>& homography, const TOperation& op) const {
         FixedArray<float, 3, 3> inverse_homography{ inv(homography.casted<double>()).value().casted<float>() };
-        // std::cerr << homography << std::endl;
+        // lerr() << homography;
 
         for (const FixedArray<float, 2>& p : feature_points_) {
             FixedArray<float, 2> pos = apply_homography(inverse_homography, p);
@@ -85,7 +85,7 @@ public:
             float dist =
                 squared(ipos(0) + 0.5f - pos(id1)) +
                 squared(ipos(1) + 0.5f - pos(id0));
-            // std::cerr << ipos << std::endl;
+            // lerr() << ipos;
             if (all(ipos < shape_) && (dist < max_dist_)) {
                 op(
                     ip0,
@@ -160,13 +160,13 @@ void Mlib::Sfm::detect_chessboard(
                 {
                     hist(ipos(0), ipos(1)) = 1;
                 });
-                // std::cerr << homography << std::endl;
+                // lerr() << homography;
 
                 unsigned int ngood = sum(hist);
                 if (ngood > best_good) {
                     best_good = ngood;
                     best_homography = homography;
-                    std::cerr << ngood << " w " << w << " x " << fx << " y " << fy << std::endl;
+                    lerr() << ngood << " w " << w << " x " << fx << " y " << fy;
                     // homography_list.foreach(best_homography, [&](
                     //     const FixedArray<size_t, 2>& ip0,
                     //     const FixedArray<size_t, 2>& ipos,
@@ -216,7 +216,7 @@ void Mlib::Sfm::detect_chessboard(
     });
 
     /*std::list<Array<float>> feature_points = find_saddle_points(image);
-    std::cerr << feature_points.size() << std::endl;
+    lerr() << feature_points.size();
     size_t i = 0;
     for (const Array<float>&p0 : feature_points) {
         ++i;
@@ -234,23 +234,23 @@ void Mlib::Sfm::detect_chessboard(
             }
             const Array<float> line{line_raw(1), -line_raw(0)};
             float c = (line, p0)();
-            //std::cerr << (line, p0)() << " .... " << (line, p0)() << std::endl;
+            //lerr() << (line, p0)() << " .... " << (line, p0)();
             size_t matches = 0;
             for (const Array<float>&p2 : feature_points) {
                 if (std::abs((line, p2)() - c) < 3) {
                     ++matches;
                     matched.push_back(p2);
-                    //std::cerr << (line, p2)() << " asd" << std::endl;
+                    //lerr() << (line, p2)() << " asd";
                 }
             }
             if (matches > 10) {
-                std::cerr << "match " << matches << " " << c << " " << line << " " << i << " " << j << " " << p0 << " " << p1 << std::endl;
+                lerr() << "match " << matches << " " << c << " " << line << " " << i << " " << j << " " << p0 << " " << p1;
                 highlight_features(matched, result);
                 //return result;
             }
         }
     }
-    std::cerr << "done" << std::endl;
+    lerr() << "done";
     */
     // highlight_features(feature_points, result);
 }

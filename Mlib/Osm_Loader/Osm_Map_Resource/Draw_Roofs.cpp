@@ -27,7 +27,7 @@ void Mlib::draw_roofs(
             continue;
         }
         if (bu.way.nd.empty()) {
-            std::cerr << "Building " + bu.id + ": outline is empty" << std::endl;
+            lerr() << "Building " + bu.id + ": outline is empty";
             continue;
         }
         if (bu.way.nd.front() != bu.way.nd.back()) {
@@ -82,7 +82,7 @@ void Mlib::draw_roofs(
                     scale * width,
                     scale * width))
             {
-                std::cerr << "Error triangulating roof " + bu.id << std::endl;
+                lerr() << "Error triangulating roof " + bu.id;
             } else {
                 if (bu.area < 0) {
                     rect.p01_ = *b;

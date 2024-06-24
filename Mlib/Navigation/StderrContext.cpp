@@ -1,5 +1,5 @@
 #include "StderrContext.hpp"
-#include <iostream>
+#include <Mlib/Os/Os.hpp>
 
 using namespace Mlib;
 
@@ -8,7 +8,7 @@ StderrContext::StderrContext() = default;
 StderrContext::~StderrContext() = default;
 
 void StderrContext::doLog(const rcLogCategory category, const char* msg, const int len) {
-    std::cerr << std::string(msg, (size_t)len) << std::endl;
+    lerr() << std::string(msg, (size_t)len);
 }
 
 void StderrContext::doResetTimers() {

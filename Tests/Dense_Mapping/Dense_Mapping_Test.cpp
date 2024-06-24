@@ -94,8 +94,8 @@ void test_numerical_differentiation() {
                 q,
                 true)}; // true = zero_sum
         };
-        // std::cerr << numerical_differentiation(f, d.flattened()).reshaped(g.shape()) << std::endl;
-        // std::cerr << Dm::prox_tau_gs_dd(tau, g, theta, d, a, q) << std::endl;
+        // lerr() << numerical_differentiation(f, d.flattened()).reshaped(g.shape());
+        // lerr() << Dm::prox_tau_gs_dd(tau, g, theta, d, a, q);
         // ignores boundary effects from transposition of the gradient
         assert_isclose(
             numerical_differentiation(f, d.flattened()).reshaped(g.shape())(3, 4),
@@ -129,7 +129,7 @@ void test_boundary_and_nan() {
     Dm::DenseMapping dm{ g, c, p };
     dm.notify_cost_volume_changed(InverseDepthCostVolume{ dsi });
     dm.iterate_atmost(SIZE_MAX);
-    //std::cerr << a << std::endl;
+    //lerr() << a;
 
     for (size_t dc = 0; dc < 2; ++dc) {
         Array<float> dsiN = full(ArrayShape{nH, nR, nC + 1}, NAN);
@@ -146,14 +146,14 @@ void test_boundary_and_nan() {
                 gN(r, c + dc) = g(r, c);
             }
         }
-        //std::cerr << dsi << std::endl;
-        //std::cerr << g << std::endl;
-        //std::cerr << dsiN << std::endl;
-        //std::cerr << gN << std::endl;
+        //lerr() << dsi;
+        //lerr() << g;
+        //lerr() << dsiN;
+        //lerr() << gN;
         Dm::DenseMapping dmN{ gN, c, p };
         dmN.notify_cost_volume_changed(InverseDepthCostVolume{ dsiN });
         dmN.iterate_atmost(SIZE_MAX);
-        //std::cerr << dmN.a_ << std::endl;
+        //lerr() << dmN.a_;
         for (size_t r = 0; r < dm.huber_rof_solver_.a_.shape(0); ++r) {
             for (size_t c = 0; c < dm.huber_rof_solver_.a_.shape(1); ++c) {
                 assert_isclose(dmN.huber_rof_solver_.a_(r, c + dc), dm.huber_rof_solver_.a_(r, c));

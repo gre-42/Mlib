@@ -50,7 +50,7 @@ void test_ransac() {
         ro,
         [&](const Array<size_t>& indices)
         {
-            // std::cerr << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]) << std::endl;
+            // lerr() << data[indices] << " | " << abs(data - mean(data[indices])) << " | " << sum(abs(data - mean(data[indices]))) << " | " << mean(data[indices]);
             return abs(data - mean(data[indices]));
         });
     assert_allequal(best_ids, Array<size_t>{ 0, 1, 3, 5, 6, 7 });
@@ -260,23 +260,23 @@ void test_halton_sequence() {
     // {
     //     HybridHaltonSequence<double> rng{ 12, -1.5, 3.5 };
     //     for (size_t i = 0; i < 10; ++i) {
-    //         std::cerr << rng() << ", ";
+    //         lraw() << rng() << ", ";
     //     }
     //     linfo() << "---";
     //     rng.seed(12);
     //     for (size_t i = 0; i < 10; ++i) {
-    //         std::cerr << rng() << ", ";
+    //         lraw() << rng() << ", ";
     //     }
     // }
     // {
     //     SeedHaltonSequence<double> rng{ 12 , -1.5, 3.5 };
     //     for (size_t i = 0; i < 100; ++i) {
-    //         std::cerr << rng() << ", ";
+    //         lraw() << rng() << ", ";
     //     }
     //     linfo() << "---";
     //     rng.seed(12);
     //     for (size_t i = 0; i < 100; ++i) {
-    //         std::cerr << rng() << ", ";
+    //         lraw() << rng() << ", ";
     //     }
     // }
 }
@@ -305,7 +305,7 @@ int main(int argc, char** argv) {
         test_random_number_generators();
         test_halton_sequence();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

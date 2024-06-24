@@ -35,15 +35,15 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
     //Array<double> u;
     //Array<double> s;
     //Array<double> vT;
-    //std::cerr << std::endl << "Y\n" << Y << std::endl;
+    //lerr() << std::endl << "Y\n" << Y;
     //svdcmp(Y, u, s, vT);
-    //std::cerr << std::endl << vT.shape() << std::endl;
-    //std::cerr << "s " << s << std::endl;
-    //std::cerr << vT << std::endl;
-    //std::cerr << (vT, vT[vT.shape(0) - 1]) << std::endl;
+    //lerr() << std::endl << vT.shape();
+    //lerr() << "s " << s;
+    //lerr() << vT;
+    //lerr() << (vT, vT[vT.shape(0) - 1]);
     //Array<float> F = vT[vT.shape(0) - 1].reshaped(ArrayShape{3, 3}).casted<float>();
-    //std::cerr << "res\n" << (Y, vT[vT.shape(0) - 1]) << std::endl;
-    //std::cerr << "v\n" << vT[vT.shape(0) - 1] << std::endl;
+    //lerr() << "res\n" << (Y, vT[vT.shape(0) - 1]);
+    //lerr() << "v\n" << vT[vT.shape(0) - 1];
     if (method_inverse_iteration) {
         Array<double> u;
         double s;
@@ -55,9 +55,9 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
     } else {
         Array<double> ev = find_smallest_eigenvector_j(dot(Y.T(), Y));
         return FixedArray<double, 3, 3>{ev.reshaped(ArrayShape{ 3, 3 })}.casted<float>();
-        //std::cerr << vT << std::endl;
+        //lerr() << vT;
     }
-    //std::cerr << "zzzz\n";
+    //lerr() << "zzzz";
     //for (size_t i = 0; i < vT.shape(0); ++i) {
     //    F = vT[i].reshaped(ArrayShape{3, 3}).casted<float>();
     //    float z = 0;
@@ -65,9 +65,9 @@ FixedArray<float, 3, 3> Mlib::Sfm::find_fundamental_matrix(
     //        // assert_isclose<float>((y1[r], (F, y0))(), 0, 5);
     //        z += squared((y1[r], (F, y0[r]))());
     //    }
-    //    std::cerr << " " << z;
+    //    lerr(Decoration::PREFIX) << " " << z;
     //}
-    //std::cerr << std::endl;
+    //lerr();
     //return F;
 }
 

@@ -25,8 +25,8 @@ public:
         r_ = (dot0d(pm, rm)) / std_r / std_p_;
         r_ = std::max<TData>(std::min<TData>(r_, 1), -1);
         coeff_ = std_r * r_ / std_p_;
-        // std::cerr << pm << " - " << rm << " " << alpha << std::endl;
-        // std::cerr << alpha << " " << mean_r_ << " " << std_r << " " << r_ << " " << std_p_ << " " << mean_p_ << std::endl;
+        // lerr() << pm << " - " << rm << " " << alpha;
+        // lerr() << alpha << " " << mean_r_ << " " << std_r << " " << r_ << " " << std_p_ << " " << mean_p_;
     }
     TData predicted(const TData& predictor) const {
         return mean_r_ + coeff_ * (predictor - mean_p_);

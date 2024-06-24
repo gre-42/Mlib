@@ -36,9 +36,9 @@ void DenseFiltering::iterate_once() {
     // d_ = guided_filter(a_, a_, ArrayShape{ 5, 5 }, float{ 1e1 });
     // d_ = median_filter_2d(a_, 3);
     Array<float> d = smoother_(a_);
-    // std::cerr << "done" << std::endl;
+    // lerr() << "done";
     a_.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda, d);
-    // std::cerr << "done3" << std::endl;
+    // lerr() << "done3";
     // throw std::runtime_error("asd");
     theta_ *= std::max(1 - parameters_.beta * n_, 0.f);
     ++n_;

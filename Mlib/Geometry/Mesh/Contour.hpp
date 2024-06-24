@@ -123,7 +123,7 @@ void extract_triangles_inside_contours(
                                     throw edge_exception(a, b, "Could not determine contour ID (" + std::to_string(contour_id) + " vs. " + std::to_string(it->second) + "), consider setting the CONTOUR_DEBUG_FILENAME environment variable");
                                 }
                             } else {
-                                std::cerr << "Could not determine contour ID" << std::endl;
+                                lerr() << "Could not determine contour ID";
                                 return false;
                             }
                         }

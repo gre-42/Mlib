@@ -617,7 +617,7 @@ void Scene::render(
                                         sorted_instances.at(rp),
                                         task_location);
                                 }
-                                // std::cerr << this << " " << external_render_pass.pass << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s" << std::endl;
+                                // lerr() << this << " " << external_render_pass.pass << ", elapsed time: " << std::chrono::duration<float>(std::chrono::steady_clock::now() - start_time).count() << " s";
                             });
                         };
                         if (is_foreground_task || (is_background_task && !small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->is_initialized())) {

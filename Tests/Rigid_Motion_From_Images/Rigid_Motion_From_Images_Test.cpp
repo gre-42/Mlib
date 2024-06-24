@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
         // test_intensity_jacobian();
         test_rigid_motion_from_images();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << "ERROR: " << e.what();
         return 1;
     }
     return 0;

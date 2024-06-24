@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
                 .epipole_radius = safe_stof(args.named_value("--epipole_radius", "0")) });
         return 0;
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
 }

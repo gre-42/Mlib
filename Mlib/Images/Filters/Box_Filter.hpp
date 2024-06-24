@@ -20,7 +20,7 @@ Array<TData> box_filter_append_zeros_1d_rows(
         integral(0) = image(0, c);
         // prepend virtual 0
         for (size_t r = 1; r < image.shape(0); ++r) {
-            // std::cerr << "x " << i << std::endl;
+            // lerr() << "x " << i;
             integral(r) = integral(r - 1) + image(r, c);
         }
         for (size_t r = 0; r < image.shape(0); ++r) {
@@ -54,7 +54,7 @@ Array<TData> box_filter_append_zeros_1d_cols(
         integral(0) = image(r, 0);
         // prepend virtual 0
         for (size_t c = 1; c < image.shape(1); ++c) {
-            // std::cerr << "x " << i << std::endl;
+            // lerr() << "x " << i;
             integral(c) = integral(c - 1) + image(r, c);
         }
         for (size_t c = 0; c < image.shape(1); ++c) {
@@ -94,14 +94,14 @@ Array<TData> box_filter_append_zeros_1d(
         return result;
     }
     image.shape().apply_over_axis(axis, [&](const ArrayShape& index0) {
-        // std::cerr << "i " << index0 << std::endl;
+        // lerr() << "i " << index0;
         ArrayAxisView<TData> image_axis(image, index0, axis);
         ArrayAxisView<TData> integral_axis(integral, index0, axis);
         ArrayAxisView<TData> result_axis(result, index0, axis);
         // prepend virtual 0
         integral_axis(0) = image_axis(0);
         for (size_t i = 1; i < result_axis.length(); ++i) {
-            // std::cerr << "x " << i << std::endl;
+            // lerr() << "x " << i;
             integral_axis(i) = integral_axis(i - 1) + image_axis(i);
         }
         for (size_t i = 0; i < result_axis.length(); ++i) {
@@ -202,9 +202,9 @@ Array<TData> box_filter_nans_as_zeros_NWE(const Array<TData>& image, const Array
     Array<TData> image0;
     Array<TData> mask;
     nans_to_mask(image, image0, mask);
-    // std::cerr << image0.shape() << " - " << mask.shape() << std::endl;
-    // std::cerr << "mask\n" << mask << std::endl;
-    // std::cerr << "image0\n" << image0 << std::endl;
+    // lerr() << image0.shape() << " - " << mask.shape();
+    // lerr() << "mask\n" << mask;
+    // lerr() << "image0\n" << image0;
     Array<TData> a(box_filter_append_zeros(image0, box_size));
     Array<TData> b(box_filter_append_zeros(mask, box_size));
     return a.array_array_binop(b, [](const TData& x, const TData& y) { return y > 0 ? x / y : NAN; });

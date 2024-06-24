@@ -149,7 +149,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                     if (p.create_imposter) {
                         THROW_OR_ABORT("Cannot create imposter for aggregate node");
                     }
-                    std::cerr << "Adding aggregate " << p.name << std::endl;
+                    lerr() << "Adding aggregate " << p.name;
                     options.scene_node->add_aggregate_child(child_name, std::move(node));
                 }
             }
@@ -177,7 +177,7 @@ void BatchResourceInstantiator::instantiate_renderables(
         }
     }
     // if (!resource_instance_positions_.empty()) {
-    //     options.scene_node.optimize_instances_search_time(std::cerr);
+    //     options.scene_node.optimize_instances_search_time(lraw());
     // }
 }
 

@@ -213,7 +213,7 @@ static void handle_extended_reflection(
                     //     c.beacons->push_back(Beacon::create(contact_position, "beacon"));
                     // }
                 }
-                // std::cerr << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal) << std::endl;
+                // lerr() << "P " << P << " Pi " << power_internal << " Pe " << power_external << " " << (P > power_internal);
             } else {
                 tangential_force = 0;
             }
@@ -237,7 +237,7 @@ static void handle_extended_reflection(
             fixed_zeros<float, 3>()}));
     }
     // if (float lr = c.cfg.stiction_coefficient * force_n1; lr > 1e-12) {
-    //     std::cerr << "f " << c.tire_id1 << " " << std::sqrt(sum(squared(tangential_force))) / lr << std::endl;
+    //     lerr() << "f " << c.tire_id1 << " " << std::sqrt(sum(squared(tangential_force))) / lr;
     // }
 }
 

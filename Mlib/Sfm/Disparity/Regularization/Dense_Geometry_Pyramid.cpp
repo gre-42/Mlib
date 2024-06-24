@@ -100,7 +100,7 @@ void Mlib::Sfm::Dp::auxiliary_parameter_optimization(
             draw_nan_masked_grayscale(dp.high_res_.h_, 0.f, (float)(vol.nlayers() - 1)).save_to_file("h0-lambda-" + std::to_string(LAMBDA) + ".png");
             draw_nan_masked_grayscale(dp.high_res_.p_[0], -1.f, 1.f).save_to_file("p0-0-lambda-" + std::to_string(LAMBDA) + ".png");
             draw_nan_masked_grayscale(dp.high_res_.p_[1], -1.f, 1.f).save_to_file("p0-1-lambda-" + std::to_string(LAMBDA) + ".png");
-            std::cerr << "lambda " << LAMBDA << " energy " << nanmean(Dg::energy(parameters[0].lambda__, dp.high_res_.dsi_, dp.high_res_.h_)) << std::endl;
+            lerr() << "lambda " << LAMBDA << " energy " << nanmean(Dg::energy(parameters[0].lambda__, dp.high_res_.dsi_, dp.high_res_.h_));
         }
     }
     for (float THETA_0 : (parameters.front().theta_0__ * logspace(-4.f, 0.f, 7)).element_iterable()) {

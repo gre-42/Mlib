@@ -1,6 +1,7 @@
 #pragma once
-#include "Array_Forward.hpp"
-#include "Array_Shape.hpp"
+#include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Array/Array_Shape.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <functional>
 #include <iostream>
 
@@ -17,7 +18,7 @@ public:
         done_(true) {}
     ~ArrayResizer() {
         if (!done_) {
-            std::cerr << "Missing () in array.{resize|reshape}" << std::endl;
+            verbose_abort("Missing () in array.{resize|reshape}");
         }
     }
     ArrayResizer& operator [] (size_t size) {

@@ -23,5 +23,6 @@ LoadSceneJsonUserFunction PrintResource::json_user_function = [](const LoadScene
 
 void PrintResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    RenderingContextStack::primary_scene_node_resources().print(args.arguments.at<std::string>(KnownArgs::name), std::cerr);
+    RenderingContextStack::primary_scene_node_resources().print(
+        args.arguments.at<std::string>(KnownArgs::name), lraw().ref());
 }

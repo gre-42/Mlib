@@ -146,7 +146,7 @@ int main(int argc, char** argv)
             GLFW_CHK(glfwPollEvents());
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
 }

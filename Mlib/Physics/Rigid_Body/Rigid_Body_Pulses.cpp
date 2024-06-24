@@ -39,10 +39,10 @@ void RigidBodyPulses::advance_time(float dt)
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
-    // std::cerr << std::endl;
-    // std::cerr << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity)) << std::endl;
-    // std::cerr << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity)) << std::endl;
-    // std::cerr << std::sqrt(sum(squared(a_))) << " "  << (sum(squared(a_)) < squared(min_acceleration)) << std::endl;
+    // lerr();
+    // lerr() << std::sqrt(sum(squared(v_))) << " "  << (sum(squared(v_)) < squared(min_velocity));
+    // lerr() << std::sqrt(sum(squared(w_))) << " "  << (sum(squared(w_)) < squared(min_angular_velocity));
+    // lerr() << std::sqrt(sum(squared(a_))) << " "  << (sum(squared(a_)) < squared(min_acceleration));
     // if ((sum(squared(v_)) < squared(min_velocity)) &&
     //     (sum(squared(w_)) < squared(min_angular_velocity)))
     // {

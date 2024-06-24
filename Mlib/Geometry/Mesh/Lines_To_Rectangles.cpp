@@ -87,13 +87,13 @@ bool Mlib::lines_to_rectangles(
 
     // return true;
 
-    // std::cerr << std::endl;
-    // std::cerr << aL << std::endl;
-    // std::cerr << aR << std::endl;
-    // std::cerr << b << std::endl;
-    // std::cerr << c << std::endl;
-    // std::cerr << dL << std::endl;
-    // std::cerr << dR << std::endl;
+    // lerr();
+    // lerr() << aL;
+    // lerr() << aR;
+    // lerr() << b;
+    // lerr() << c;
+    // lerr() << dL;
+    // lerr() << dR;
     if (width_aLb == 0 && width_bcL == 0) {
         p00 = b;
     } else if (std::abs(dot0d(n_aLb, n_bc)) < std::cos(M_PI / 8)) {

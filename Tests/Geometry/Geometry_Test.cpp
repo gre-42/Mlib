@@ -277,9 +277,9 @@ void test_bvh() {
     bvh.insert(AABB::from_min_max({1.f, 6.f, 3.f}, {2.f, 7.f, 4.f}), 45);
     bvh.insert(AABB::from_min_max({1.f, 3.f, 3.f}, {2.f, 4.f, 4.f}), 46);
     // bvh.visit({{0, 1, 2}, 4}, [](const int& data){
-    //     std::cerr << category << " " << data << std::endl;
+    //     lerr() << category << " " << data;
     // });
-    // std::cerr << bvh << std::endl;
+    // lerr() << bvh;
     {
         std::vector<std::pair<float, const int*>> result = bvh.min_distances(3, FixedArray<float, 3>{1.5f, 2.5f, 3.5f}, 10.f, [](const auto& p) {return std::abs((float)p - 43.f); });
         assert_isequal(result.size(), (size_t)3);
@@ -397,9 +397,9 @@ void test_roundness_estimator() {
 //     triangle_lists.back()->draw_triangle_wo_normals({0.f, 0.f, 0.f}, {0.5f, -1.f, 0.4f}, {1.f, 0.f, 0.f});
 //     TriangleList::smoothen_edges(triangle_lists, triangle_lists);
 //     for (const auto& t : triangle_lists.back()->triangles_) {
-//         std::cerr << std::endl;
+//         lerr();
 //         for (const auto& v : t.flat_iterable()) {
-//             std::cerr << v.position << std::endl;
+//             lerr() << v.position;
 //         }
 //     }
 // }

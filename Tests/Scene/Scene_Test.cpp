@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
             test_physics_engine(seed);
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

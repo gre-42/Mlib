@@ -25,7 +25,7 @@ void draw_circle_points(Array<TColor>& image, float angle0, size_t na, int nz) {
             point2d = point3d;
             size_t r = static_cast<size_t>(std::round((0.4f * point2d(id1) + 0.5f) * image.shape(0)));
             size_t c = static_cast<size_t>(std::round((0.4f * point2d(id0) + 0.5f) * image.shape(1)));
-            // std::cerr << r << " " << c << std::endl;
+            // lerr() << r << " " << c;
             if (point3d(2) < 0 &&
                 r < image.shape(0) &&
                 c < image.shape(1))

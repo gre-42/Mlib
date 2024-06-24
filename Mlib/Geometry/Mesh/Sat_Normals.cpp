@@ -104,7 +104,7 @@ void SatTracker::get_collision_plane(
         if (sac.best_min_overlap() == INFINITY) {
             THROW_OR_ABORT("Could not compute overlap, #triangles might be zero");
         }
-        // std::cerr << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle) << std::endl;
+        // lerr() << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle);
         collision_planes_m0.insert(std::make_pair(&mesh1, std::make_pair(sac.best_min_overlap(), sac.best_normal())));
     }
     const auto& res = collision_planes_m0.at(&mesh1);

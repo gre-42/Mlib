@@ -53,7 +53,7 @@ Array<size_t> ransac(
             Array<TData> better_positive_residual = substitute_nans(callable(better_indices)[also_inliers], TData(INFINITY));
             size_t better_nonzero = count_nonzero(better_positive_residual <= ro.inlier_distance_thresh);
 
-            // std::cerr << "---- " << better_mean_residual << " " << best_mean_residual << std::endl;
+            // lerr() << "---- " << better_mean_residual << " " << best_mean_residual;
             if (better_nonzero > best_nonzero) {
                 best_indices.destroy();
                 best_indices = better_indices;

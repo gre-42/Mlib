@@ -82,7 +82,7 @@ HudTracker::HudTracker(
     , center_{ center }
     , size_{ size }
     , hud_error_behavior_{ hud_error_behavior }
-    , offset_((double)NAN)
+    , offset_(NAN)
     , smooth_offset_{ 0.2f }
     , is_visible_{ false }
     , scene_logic_{ scene_logic }

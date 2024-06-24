@@ -68,18 +68,18 @@ DtamKeyframe::~DtamKeyframe()
 
 void DtamKeyframe::reconstruct() {
     if ((dm_ != nullptr) && dm_->is_converged()) {
-        std::cerr << "Keyframe " << key_frame_time_.count() << " ms is converged" << std::endl;
+        lerr() << "Keyframe " << key_frame_time_.count() << " ms is converged";
     } else {
         bool cost_volume_changed = false;
         if (is_full()) {
-            std::cerr << "Keyframe " << key_frame_time_.count() << " ms is full" << std::endl;
+            lerr() << "Keyframe " << key_frame_time_.count() << " ms is full";
         } else {
-            std::cerr << "Updating cost volume of keyframe " << key_frame_time_.count() << " ms" << std::endl;
+            lerr() << "Updating cost volume of keyframe " << key_frame_time_.count() << " ms";
             update_cost_volume(cost_volume_changed);
         }
         if ((cfg_.incremental_update_ && ((dm_ == nullptr) || can_track())) ||
             (!cfg_.incremental_update_ && is_full())) {
-            std::cerr << "Optimizing keyframe " << key_frame_time_.count() << " ms" << std::endl;
+            lerr() << "Optimizing keyframe " << key_frame_time_.count() << " ms";
             optimize0(cost_volume_changed);
             optimize1();
         }
@@ -104,7 +104,7 @@ void DtamKeyframe::append_camera_frame() {
         throw std::runtime_error("last image frame already has a camera");
     }
     std::string suffix = std::to_string(key_frame_time_.count()) + "-" + std::to_string(image_frame_l->first.count());
-    std::cerr << "Keyframe " << key_frame_time_.count() << " ms appending new camera frame at " << image_frame_l->first.count() << " ms" << std::endl;
+    lerr() << "Keyframe " << key_frame_time_.count() << " ms appending new camera frame at " << image_frame_l->first.count() << " ms";
     const CameraFrame& camera_r0 = camera_frames_.at(key_frame_time_);
     const ImageFrame& image_r0 = down_sampler_.ds_image_frames_.at(key_frame_time_);
     std::chrono::milliseconds time_r1 = camera_frames_.rbegin()->first;
@@ -139,7 +139,7 @@ void DtamKeyframe::append_camera_frame() {
         // l * ke = r
         // l = r * inv(ke)
         TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_r0.reconstruction_matrix_3x4(), ke);
-        std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
+        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t();
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
         {
@@ -153,7 +153,7 @@ void DtamKeyframe::append_camera_frame() {
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-" + suffix + ".png");
             float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
             can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
-            std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
+            lerr() << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_;
         }
 
         // {
@@ -235,7 +235,7 @@ void DtamKeyframe::append_camera_frame() {
             cfg_.print_residual_);                                           // print_residual
         
         TransformationMatrix<float, float, 3> gike = reconstruction_times_inverse(camera_frames_.rbegin()->second.reconstruction_matrix_3x4(), ke_lv);
-        std::cerr << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t() << std::endl;
+        lerr() << "Keyframe " << key_frame_time_.count() << " ms calculated new camera frame at " << image_frame_l->first.count() << " ms:\nR\n" << gike.R() << "\nt\n" << gike.t();
         camera_frames_.insert(std::make_pair(image_frame_l->first, CameraFrame{ gike }));
 
         {
@@ -262,7 +262,7 @@ void DtamKeyframe::append_camera_frame() {
             draw_nan_masked_rgb(im1t, -1, 1).save_to_file(cache_dir_ + "/diff-r-" + suffix + ".png");
             float pixel_fraction = 1 - (float(count_nonzero(Mlib::isnan(im1t))) / im1t.nelements());
             can_track_ = (pixel_fraction > cfg_.min_pixel_fraction_for_tracking_);
-            std::cerr << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_ << std::endl;
+            lerr() << "Keyframe " << key_frame_time_.count() << " ms: pixel_fraction " << pixel_fraction << " can_track " << can_track_;
         }
     }
     if (cfg_.incremental_update_ && !can_track_) {
@@ -304,10 +304,10 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
     size_t navail_past = size_t(std::distance(
         cams_sorted.begin(),
         cams_sorted.find(key_frame_time_)) + 1);
-    std::cerr << "Keyframe " << key_frame_time_.count() <<
+    lerr() << "Keyframe " << key_frame_time_.count() <<
         " ms: navail_future = " << navail_future <<
         ", navail_past = " << navail_past <<
-        ", ncams = " << cams_sorted.size() << std::endl;
+        ", ncams = " << cams_sorted.size();
     if ((vol_acc_ == nullptr) &&
         (cfg_.incremental_update_ || (
             navail_future >= nfuture_frames_per_keyframe() &&
@@ -317,7 +317,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         first_integrated_time_ = key_frame_time_;
         last_integrated_time_ = key_frame_time_;
         times_integrated_.insert(key_frame_time_);
-        std::cerr << "Creating cost volume at time " << key_frame_time_.count() << " ms" << std::endl;
+        lerr() << "Creating cost volume at time " << key_frame_time_.count() << " ms";
         vol_acc_ = std::make_unique<InverseDepthCostVolumeAccumulator>(
             down_sampler_.ds_image_frames_.at(key_frame_time_).grayscale.shape(),
             cfg_.cost_volume_parameters_.inverse_depths());
@@ -326,7 +326,7 @@ void DtamKeyframe::update_cost_volume(bool& cost_volume_changed) {
         auto increment_volume = [&](auto it){
             cost_volume_changed = true;
             times_integrated_.insert(it->first);
-            std::cerr << "Integrating time " << it->first.count() << " ms into keyframe " << key_frame_time_.count() << " ms" << std::endl;
+            lerr() << "Integrating time " << it->first.count() << " ms into keyframe " << key_frame_time_.count() << " ms";
             const ImageFrame& kif = down_sampler_.ds_image_frames_.at(key_frame_time_);
             const ImageFrame& iif = down_sampler_.ds_image_frames_.at(it->first);
             vol_acc_->increment(
@@ -435,7 +435,7 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         dm_->notify_cost_volume_changed(*vol_);
     }
     if (cfg_.optimize_parameters_ && !camera_computed_with_sift_) {
-        std::cerr << "Parameter-search for keyframe " << key_frame_time_.count() << " ms" << std::endl;
+        lerr() << "Parameter-search for keyframe " << key_frame_time_.count() << " ms";
         if (cfg_.regularization_ == Regularization::DTAM) {
             Dm::DenseMapping* dm = dynamic_cast<Dm::DenseMapping*>(dm_.get());
             Dm::qualitative_primary_parameter_optimization(
@@ -480,9 +480,9 @@ void DtamKeyframe::optimize0(bool cost_volume_changed) {
         throw std::runtime_error("Parameter-search complete");
     }
     if (cfg_.incremental_update_) {
-        std::cerr <<
+        lerr() <<
             "Keyframe " << key_frame_time_.count() <<
-            " updated incrementally. n = " << dm_->current_number_of_iterations() << std::endl;
+            " updated incrementally. n = " << dm_->current_number_of_iterations();
         dm_->iterate_atmost(cfg_.ninterleaved_iterations_);
     } else {
         dm_->iterate_atmost(SIZE_MAX);

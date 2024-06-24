@@ -1,4 +1,5 @@
 #include "Halton_Sequence.hpp"
+#include <Mlib/Os/Os.hpp>
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -21,10 +22,11 @@ void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
 	}
 	{
 		size_t i = 0;
+		auto log = lraw();
 		for (const auto& n : random_numbers) {
-			std::cerr << n << ", ";
+			log << n << ", ";
 			if ((++i % 10) == 0) {
-				std::cerr << '\n';
+				log << '\n';
 			}
 		}
 	}
@@ -34,11 +36,11 @@ void Mlib::generate_rational_halton_lut(unsigned int b, unsigned int seed, size_
 	PermutedRationalHaltonSequence<double> s{ RationalHaltonSequence{ DEFAULT_RATIONAL_HALTON_SEED, b }, seed, block_size };
 	for (size_t i = 0; i < nnumbers; ++i) {
 		auto r = s();
-		std::cerr << "{" << r.n << ", " << r.d << "},";
+		lraw() << "{" << r.n << ", " << r.d << "},";
 		if (((i + 1) % 10) == 0) {
-			std::cerr << '\n';
+			lraw() << '\n';
 		} else {
-			std::cerr << ' ';
+			lraw() << ' ';
 		}
 	}
 }

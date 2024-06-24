@@ -49,11 +49,11 @@ Array<float> Mlib::Sfm::Dm::energy(
     // gradient = dimension * i * j
     // => gradient.flattened() = [di; dj]
     if (verbose) {
-        std::cerr << "f: " << xsum(AGd(g, d) * q) <<
+        lerr() << "f: " << xsum(AGd(g, d) * q) <<
             " | " << 1 / (2 * theta) * xsum(squared(d - a)) <<
             " | " << lambda * xsum(C(dsi, a)) <<
             " | " << xsum(delta(q)) <<
-            " | " << epsilon / 2 * xsum(squared(q)) << std::endl;
+            " | " << epsilon / 2 * xsum(squared(q));
     }
     return
         sum_q(AGd(g, d) * q)
@@ -92,24 +92,24 @@ void DenseMapping::iterate_once() {
         throw std::runtime_error("Call to iterate_once despite convergence");
     }
     if (print_debug_) {
-        std::cerr << "theta: " << theta_ << std::endl;
+        lerr() << "theta: " << theta_;
     }
     huber_rof_solver_.iterate(HuberRofConfig{
         .theta = theta_,
         .epsilon = parameters_.epsilon_,
         .d_min = 0.f,
         .d_max = (float)(dsi_.shape(0) - 1)});
-    // std::cerr << "done" << std::endl;
+    // lerr() << "done";
     Array<float>& a = huber_rof_solver_.a_;
     a.move() = exhaustive_search(dsi_, sqrt_dsi_max_dmin_, theta_, parameters_.lambda_, huber_rof_solver_.d_);
     if (print_debug_) {
-        // std::cerr << "done2" << std::endl;
-        std::cerr << "a: " << nanmin(a) << " - " << nanmedian(a) << " - " << nanmax(a) << std::endl;
+        // lerr() << "done2";
+        lerr() << "a: " << nanmin(a) << " - " << nanmedian(a) << " - " << nanmax(a);
         if (print_bmps_ && n_ % 30 == 0) {
             draw_nan_masked_grayscale(a, 0.f, (float)(dsi_.shape(0) - 1)).save_to_file("a-" + std::to_string(n_) + ".png");
         }
     }
-    // std::cerr << "done3" << std::endl;
+    // lerr() << "done3";
     // throw std::runtime_error("asd");
     theta_ *= std::max(1 - parameters_.beta_ * n_, 0.f);
     ++n_;
@@ -187,7 +187,7 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
         dm.iterate_atmost(SIZE_MAX);
         Array<float>& a = dm.huber_rof_solver_.a_;
         draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-lambda-" + std::to_string(LAMBDA) + ".png");
-        std::cerr << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a)) << std::endl;
+        lerr() << "lambda " << LAMBDA << " energy " << xsum(energy_orig(g, LAMBDA, parameters.epsilon_, dsi, a));
     }
     for (float EPSILON : (parameters.epsilon_ * logspace(-2.f, 2.f, 5, 2.f)).element_iterable()) {
         DenseMapping dm{
@@ -207,7 +207,7 @@ void Mlib::Sfm::Dm::qualitative_primary_parameter_optimization(
         dm.iterate_atmost(SIZE_MAX);
         Array<float>& a = dm.huber_rof_solver_.a_;
         draw_nan_masked_grayscale(a, 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-epsilon-" + to_string_with_precision(EPSILON, 10) + ".png");
-        std::cerr << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, a)) << std::endl;
+        lerr() << "eps " << EPSILON << " energy " << xsum(energy_orig(g, parameters.lambda_, EPSILON, dsi, a));
     }
 }
 
@@ -259,9 +259,9 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
     };
     Array<bool> mask = !Mlib::isnan(true_inverse_depth);
     auto f = [&mask, &copy_out, &grayscale, &cost_volume_parameters, &dsi, &call_counter, draw_bmps](const Array<float>& x){
-        std::cerr << "x: " << x << std::endl;
+        lerr() << "x: " << x;
         DtamParameters params = copy_out(x);
-        std::cerr << "p: " << params << std::endl;
+        lerr() << "p: " << params;
         Array<float> g = g_from_grayscale(grayscale, params.edge_image_config_);
         Dm::DenseMapping dm{
             g,
@@ -294,7 +294,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_lm(
         0.01f, // alpha2
         0.01f, // beta2
         float{ 1e-6 }); // min_redux
-    std::cerr << "Optimal parameters: " << copy_out(x) << std::endl;
+    lerr() << "Optimal parameters: " << copy_out(x);
 }
 
 
@@ -334,7 +334,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_grid(
                     Array<float> ai = dm.interpolated_inverse_depth_image();
                     float error = nanmean(squared(ai - true_inverse_depth));
                     errors.push_back(std::make_tuple(modified_parameters, error, ai));
-                    std::cerr << modified_parameters << " error " << error << std::endl;
+                    lerr() << modified_parameters << " error " << error;
                 }
             }
         }
@@ -342,7 +342,7 @@ void Mlib::Sfm::Dm::quantitative_primary_parameter_optimization_grid(
     errors.sort([](const auto& a, const auto& b) -> bool { return std::get<1>(a) < std::get<1>(b); });
     size_t rank = 0;
     for (const auto& p : errors) {
-        std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " error " << std::get<1>(p) << std::endl;
+        lerr() << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " error " << std::get<1>(p);
         draw_nan_masked_grayscale(std::get<2>(p), 1.f / cost_volume_parameters.max_depth, 1.f / cost_volume_parameters.min_depth).save_to_file("ai-" + std::to_string(rank) + ".png");
         // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aiq-" + std::to_string(rank) + ".png");
         ++rank;
@@ -377,13 +377,13 @@ void Mlib::Sfm::Dm::auxiliary_parameter_optimization(
             Array<float>& a = dm.huber_rof_solver_.a_;
             float energy = xsum(energy_orig(g, parameters.lambda_, parameters.epsilon_, dsi, a));
             energies.push_back(std::make_tuple(modified_parameters, energy, a));
-            std::cerr << modified_parameters << " energy " << energy << std::endl;
+            lerr() << modified_parameters << " energy " << energy;
         }
     }
     energies.sort([](const auto& a, const auto& b) -> bool { return std::get<1>(a) < std::get<1>(b); });
     size_t rank = 0;
     for (const auto& p : energies) {
-        std::cerr << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p) << std::endl;
+        lerr() << "rank " << std::setw(5) << rank << " " << std::get<0>(p) << " energy " << std::get<1>(p);
         draw_nan_masked_grayscale(std::get<2>(p), 0.f, (float)(dsi.shape(0) - 1)).save_to_file("a-" + std::to_string(rank) + ".png");
         // draw_quantiled_grayscale(std::get<2>(p), 0.05, 0.5).save_to_file("aq-" + std::to_string(rank) + ".png");
         ++rank;

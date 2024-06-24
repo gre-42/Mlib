@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
         DepthMapBundle bundle;
         size_t r = safe_stoz(args.named_value("--median_filter_radius", "0"));
         for (const std::string& filename : args.named_list("--packages")) {
-            std::cerr << "Loading \"" << filename << '"' << std::endl;
+            lerr() << "Loading \"" << filename << '"';
             DepthMapPackage package = load_depth_map_package(filename);
             if (r != 0) {
                 package.depth.move() = median_filter_2d(package.depth, r);
@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
             StbImage3::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

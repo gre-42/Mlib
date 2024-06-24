@@ -28,7 +28,7 @@ TrackWriterGpx::~TrackWriterGpx() {
 </gpx>)";
     ofstr_->flush();
     if (ofstr_->fail()) {
-        std::cerr << "Could not write to file "  << filename_ << std::endl;
+        lerr() << "Could not write to file "  << filename_;
     }
 }
 

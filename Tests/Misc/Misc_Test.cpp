@@ -6,6 +6,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Memory/Resource_Ptr.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
@@ -205,6 +206,10 @@ void test_try_find() {
     }
 }
 
+void test_log() {
+    linfo() << "a\nbc\nd";
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -219,5 +224,6 @@ int main(int argc, const char** argv) {
     test_object_pool_unique();
     test_dangling_unique2();
     test_try_find();
+    test_log();
     return 0;
 }

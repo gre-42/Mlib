@@ -2,6 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <sstream>
 
 #ifdef __ANDROID__
@@ -19,32 +20,36 @@ using namespace Mlib;
 static LogLevel g_log_level = LogLevel::INFO;
 
 LogLevel Mlib::log_level_from_string(const std::string& s) {
-    if (s == "info") {
-        return LogLevel::INFO;
+    static const std::map<std::string, LogLevel> m{
+        {"info", LogLevel::INFO},
+        {"warn", LogLevel::WARNING},
+        {"error", LogLevel::ERROR}
+    };
+    auto it = m.find(s);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown log level: \"" + s + '"');
     }
-    if (s == "warn") {
-        return LogLevel::WARNING;
-    }
-    if (s == "error") {
-        return LogLevel::ERROR;
-    }
-    THROW_OR_ABORT("Unknown log level: \"" + s + '"');
+    return it->second;
 }
 
 void Mlib::set_log_level(LogLevel log_level) {
     g_log_level = log_level;
 }
 
-LInfo Mlib::linfo() {
-    return {};
+LLog Mlib::linfo() {
+    return { LogLevel::INFO, "Info: " };
 }
 
-LWarn Mlib::lwarn() {
-    return {};
+LLog Mlib::lwarn() {
+    return { LogLevel::WARNING, "Warning: " };
 }
 
-LErr Mlib::lerr() {
-    return {};
+LLog Mlib::lerr() {
+    return { LogLevel::ERROR, "Error: " };
+}
+
+LLog Mlib::lraw() {
+    return { LogLevel::ALWAYS, "" };
 }
 
 #ifdef __ANDROID__
@@ -134,23 +139,53 @@ bool Mlib::is_listable(const ndk_helper::DirectoryEntry& entry) {
 
 #else
 
-LInfo::~LInfo() {
-    if (g_log_level >= LogLevel::INFO) {
-        std::cerr << "Info: " << str() << std::endl;
-    }
-};
+LogBuf::LogBuf(std::function<void(const std::string&)> write)
+    : write_{ std::move(write) }
+{}
 
-LWarn::~LWarn() {
-    if (g_log_level >= LogLevel::WARNING) {
-        std::cerr << "Warning: " << str() << std::endl;
+int LogBuf::sync() {
+    // From: https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
+    size_t pos = 0;
+    std::string token;
+    std::string delimiter = "\n";
+    std::string s = str();
+    size_t last = 0;
+    size_t next = 0;
+    while ((next = s.find(delimiter, last)) != std::string::npos) {
+        write_(s.substr(last, next-last));
+        last = next + 1;
     }
-};
+    str(s.substr(last));
+    return 0;
+}
 
-LErr::~LErr() {
-    if (g_log_level >= LogLevel::ERROR) {
-        std::cerr << "Error: " << str() << std::endl;
+LLog::LLog(LogLevel log_level, const char* prefix)
+    : std::ostream{ &buf_ }
+    , write_{ [log_level, prefix](const std::string& s) {
+        if (g_log_level >= log_level) {
+            std::cerr << prefix << s << std::endl;
+        }
+    } }
+    , buf_{ write_ }
+    , destroyed_{ false }
+{}
+
+LLog::~LLog() {
+    if (destroyed_ && !buf_.str().empty()) {
+        verbose_abort("Destroyed log is not empty");
     }
-};
+    destroy();
+}
+
+void LLog::destroy() {
+    flush();
+    write_(buf_.str());
+    destroyed_ = true;
+}
+
+std::ostream& LLog::ref() const {
+    return *const_cast<LLog*>(this);
+}
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
     const std::filesystem::path& filename,

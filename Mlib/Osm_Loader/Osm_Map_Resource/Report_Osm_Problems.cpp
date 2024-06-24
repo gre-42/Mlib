@@ -51,7 +51,7 @@ void Mlib::report_osm_problems(
     }
     for (const auto& c : node_ctr) {
         if (c.second > 2) {
-            std::cerr << "To modify: " << c.first << " " << c.second << std::endl;
+            lerr() << "To modify: " << c.first << " " << c.second;
         }
     }
 }

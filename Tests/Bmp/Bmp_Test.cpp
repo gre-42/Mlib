@@ -11,7 +11,7 @@ using namespace Mlib;
 
 void bmp_test() {
     auto bitmap = Bgr565Bitmap::load_from_file("Data/test565.bmp");
-    // std::cerr << "shape " << bitmap.shape() << std::endl;
+    // lerr() << "shape " << bitmap.shape();
     assert_true(bitmap.shape(0) == 48);
     assert_true(bitmap.shape(1) == 100);
     assert_true(&bitmap(2, 0) - &bitmap(1, 0) == 100);

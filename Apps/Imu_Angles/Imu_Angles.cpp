@@ -17,22 +17,22 @@ int main(int argc, char** argv) {
         FixedArray<float, 3> a = dot1d(m.T(), g);
 
         if (seed == 1) {
-            std::cerr << angles << std::endl;
-            std::cerr << a << std::endl;
+            lerr() << angles;
+            lerr() << a;
 
-            std::cerr << std::endl;
-            std::cerr << -std::atan(a(1) / std::sqrt(squared(a(0)) + squared(a(2)))) << std::endl; // x
-            std::cerr << std::atan(a(0) / std::sqrt(squared(a(1)) + squared(a(2)))) << std::endl; // y
+            lerr();
+            lerr() << -std::atan(a(1) / std::sqrt(squared(a(0)) + squared(a(2)))); // x
+            lerr() << std::atan(a(0) / std::sqrt(squared(a(1)) + squared(a(2)))); // y
 
-            std::cerr << std::endl;
-            std::cerr << -std::atan(a(1) / std::sqrt(squared(a(1)) + squared(a(2)))) << std::endl; // x
-            std::cerr << std::atan(a(0) / std::sqrt(squared(a(0)) + squared(a(2)))) << std::endl; // y
+            lerr();
+            lerr() << -std::atan(a(1) / std::sqrt(squared(a(1)) + squared(a(2)))); // x
+            lerr() << std::atan(a(0) / std::sqrt(squared(a(0)) + squared(a(2)))); // y
 
-            std::cerr << std::endl;
+            lerr();
             for (size_t i = 0; i < 3; ++i) {
                 for (size_t j = 0; j < 3; ++j) {
                     for (size_t k = 0; k < 3; ++k) {
-                        std::cerr << i << " " << j << " " << k << "    " << std::atan(a(i) / std::sqrt(squared(a(j)) + squared(a(k)))) << std::endl;
+                        lerr() << i << " " << j << " " << k << "    " << std::atan(a(i) / std::sqrt(squared(a(j)) + squared(a(k))));
                     }
                 }
             }
@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
         ex1 = std::max(ex1, std::abs(angles(0) + std::atan(a(1) / std::sqrt(squared(a(1)) + squared(a(2))))));
         ey1 = std::max(ey1, std::abs(angles(1) - std::atan(a(0) / std::sqrt(squared(a(0)) + squared(a(2))))));
     }
-    std::cerr << "ex0 " << ex0 / degrees << "°" << std::endl;
-    std::cerr << "ey0 " << ey0 / degrees << "°" << std::endl;
-    std::cerr << "ex1 " << ex1 / degrees << "°" << std::endl;
-    std::cerr << "ey1 " << ey1 / degrees << "°" << std::endl;
+    lerr() << "ex0 " << ex0 / degrees << "°";
+    lerr() << "ey0 " << ey0 / degrees << "°";
+    lerr() << "ex1 " << ex1 / degrees << "°";
+    lerr() << "ey1 " << ey1 / degrees << "°";
     return 0;
 }

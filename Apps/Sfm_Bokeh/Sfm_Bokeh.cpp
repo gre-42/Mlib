@@ -191,15 +191,15 @@ void compute_z(const ParsedArgs& args) {
     }
 
     FixedArray<float, 3, 3> F = find_fundamental_matrix(cf.y0, cf.y1);
-    std::cerr << "fundamental error " << sum(squared(fundamental_error(F, cf.y0, cf.y1))) << std::endl;
-    std::cerr << "fundamental.T error " << sum(squared(fundamental_error(F.T(), cf.y0, cf.y1))) << std::endl;
+    lerr() << "fundamental error " << sum(squared(fundamental_error(F, cf.y0, cf.y1)));
+    lerr() << "fundamental.T error " << sum(squared(fundamental_error(F.T(), cf.y0, cf.y1)));
 
     //Array<float> err = fundamental_error(F, y0, y1);
-    //std::cerr << "err " << err << std::endl;
+    //lerr() << "err " << err;
     //std::list<Array<float>> bad_points;
     //for (size_t r = 0; r < y0.shape(1); ++r) {
     //    if (std::abs(err(r)) > 1 * mean(abs(err))) {
-    //        std::cerr << r << " " << y0[r] << std::endl;
+    //        lerr() << r << " " << y0[r];
     //        bad_points.push_back(y0_2[r]);
     //    }
     //}
@@ -256,7 +256,7 @@ void compute_z(const ParsedArgs& args) {
     if (ptr.ptr == nullptr) {
         throw std::runtime_error("RANSAC found no candidate");
     } else {
-        std::cerr << "ngood " << ptr.ptr->ngood << std::endl;
+        lerr() << "ngood " << ptr.ptr->ngood;
     }
 
     if (!ptr.ptr->good()) {

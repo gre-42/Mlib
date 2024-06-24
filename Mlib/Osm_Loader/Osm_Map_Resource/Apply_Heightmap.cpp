@@ -87,7 +87,7 @@ void Mlib::apply_heightmap(
                         if (extended_heightmap((1 - p(1)) * double(heightmap.shape(0) - 1), p(0) * double(heightmap.shape(1) - 1), z)) {
                             bridge_height_ref += z;
                         } else {
-                            std::cerr << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first << std::endl;
+                            lerr() << "Bridge with ref=ground is not inside heightmap. Way ID: " << w.first;
                         }
                     }
                     if (all(nodes.at(*it).position == nodes.at(*s).position)) {
@@ -252,7 +252,7 @@ void Mlib::apply_heightmap(
         FixedArray<double, 2> p = normalization_matrix.transform(vc);
         double z;
         if (!extended_heightmap((1 - p(1)) * double(heightmap.shape(0) - 1), p(0) * double(heightmap.shape(1) - 1), z)) {
-            // std::cerr << "Height out of bounds." << std::endl;
+            // lerr() << "Height out of bounds.";
             for (auto& pc : position.second) {
                 if (!vertices_to_delete.insert(pc).second) {
                     THROW_OR_ABORT("Could not insert vertex to delete");

@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
             safe_stoz(args.named_value("--size")),
             safe_stou(args.named_value("--seed")));
         grf *= (float)std::sqrt(grf.nelements());
-        // std::cerr << min(grf) << " " << max(grf) << std::endl;
+        // lerr() << min(grf) << " " << max(grf);
         grf = normalized_and_clipped(grf, safe_stof(args.named_value("--min")), safe_stof(args.named_value("--max")));
         if (float scale = safe_stof(args.named_value("--scale", "1")); scale != 1)
         {
@@ -120,17 +120,17 @@ int main(int argc, char** argv) {
             StbImage3::from_float_rgb(res).save_to_file(args.named_value("--blended"));
         }
         // Array<std::complex<float>> d = normal_random_complex_array<float>(ArrayShape{10, 3}, 1);
-        // std::cerr << d << std::endl;
-        // std::cerr << ifft(fft(d)) << std::endl;
+        // lerr() << d;
+        // lerr() << ifft(fft(d));
         // fft_inplace(d);
         // ifft_inplace(d);
-        // std::cerr << d << std::endl;
+        // lerr() << d;
 
         // auto dd = Array<std::complex<float>>{{1, 2, 3, 4}, {6, 2, 8, 9}}; //real(d).casted<std::complex<float>>();
-        // std::cerr << real(dd) << std::endl;
-        // std::cerr << fft(dd) << std::endl;
+        // lerr() << real(dd);
+        // lerr() << fft(dd);
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
             std::to_string(size_t(d_multiplier)) +
             ".array";
         if (!cache_dsi || !fs::exists(dsi_filename)) {
-            std::cerr << dsi_filename + " does not exist, recomputing..." << std::endl;
+            lerr() << dsi_filename + " does not exist, recomputing...";
             Array<float> disparity0;
             if (use_inverse_depth) {
                 InverseDepthCostVolumeAccumulator vol{im0_gray.shape(), inverse_depths};
@@ -139,8 +139,8 @@ int main(int argc, char **argv) {
                     -float(search_length) * d_multiplier,
                     float(search_length) * d_multiplier).save_to_file("disparity0.bmp");
             }
-            std::cerr << "nanmin(dsi) " << nanmin(dsi) << std::endl;
-            std::cerr << "nanmax(dsi) " << nanmax(dsi) << std::endl;
+            lerr() << "nanmin(dsi) " << nanmin(dsi);
+            lerr() << "nanmax(dsi) " << nanmax(dsi);
             for (size_t i = 0; i < dsi.shape(0); i += dsi.shape(0) / 5) {
                 draw_nan_masked_grayscale(dsi[i], 0, 0).save_to_file("dsi-" + std::to_string(i) + ".png");
             }
@@ -148,21 +148,21 @@ int main(int argc, char **argv) {
                 dsi.save_binary(dsi_filename);
             }
         } else {
-            std::cerr << dsi_filename + " exists, loading..." << std::endl;
+            lerr() << dsi_filename + " exists, loading...";
             dsi = Array<float>::load_binary(dsi_filename);
             if (!all(dsi.shape() == ArrayShape{2 * search_length + 1}.concatenated(im0_gray.shape()))) {
                 throw std::runtime_error(dsi_filename + " has incorrect size");
             }
-            std::cerr << "finished loading " + dsi_filename << std::endl;
+            lerr() << "finished loading " + dsi_filename;
         }
 
-        // std::cerr << dsi.T()[188][303] << std::endl;
+        // lerr() << dsi.T()[188][303];
         // throw std::runtime_error("asd");
 
         Array<float> ai;
         const std::string ai_filename = dsi_filename + ".ai.array";
         if (!fs::exists(ai_filename)) {
-            std::cerr << ai_filename << " does not exist, computing..." << std::endl;
+            lerr() << ai_filename << " does not exist, computing...";
             Dm::DtamParameters params;
             Dm::DenseMapping dm{
                 g_from_grayscale(im0_gray, params.edge_image_config_),
@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
             ai = dm.interpolated_inverse_depth_image();
             ai.save_binary(ai_filename);
         } else {
-            std::cerr << ai_filename << " exists, loading..." << std::endl;
+            lerr() << ai_filename << " exists, loading...";
             ai = Array<float>::load_binary(ai_filename);
         }
         draw_nan_masked_grayscale(ai, 0, 0).save_to_file("ai.png");
@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
 
         return 0;
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
 }

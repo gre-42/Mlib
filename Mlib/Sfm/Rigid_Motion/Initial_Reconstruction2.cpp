@@ -167,18 +167,18 @@ Array<float> Mlib::Sfm::initial_reconstruction_x3(
     assert(all(y0.shape() == y1.shape()));
     assert(y0.ndim() == 1);
 
-    //std::cerr << "t " << t << std::endl;
-    //std::cerr << "R\n" << R << std::endl;
-    //std::cerr << y1 << std::endl;
-    //std::cerr << y1.shape() << std::endl;
+    //lerr() << "t " << t;
+    //lerr() << "R\n" << R;
+    //lerr() << y1;
+    //lerr() << y1.shape();
 
     //x3: the third component of x, a.k.a. z
     Array<float> x3{ ArrayShape{ y0.length(), 2 } };
     if (verbose) {
-        std::cerr << "R\n" << tm.R() << std::endl;
-        std::cerr << "t " << tm.t() << std::endl;
-        std::cerr << "y0 " << lstsq_chol_1d(ki.affine(), homogenized_3(y0(0))).value() << std::endl;
-        std::cerr << "y1 " << lstsq_chol_1d(ki.affine(), homogenized_3(y1(0))).value() << std::endl;
+        lerr() << "R\n" << tm.R();
+        lerr() << "t " << tm.t();
+        lerr() << "y0 " << lstsq_chol_1d(ki.affine(), homogenized_3(y0(0))).value();
+        lerr() << "y1 " << lstsq_chol_1d(ki.affine(), homogenized_3(y1(0))).value();
     }
     for (size_t i = 0; i < y0.length(); ++i) {
         const FixedArray<float, 3> yy0 = lstsq_chol_1d(ki.affine(), homogenized_3(y0(i))).value();
@@ -186,27 +186,27 @@ Array<float> Mlib::Sfm::initial_reconstruction_x3(
         FixedArray<float, 3> c0 = tm.R()[0] - yy1(0) * tm.R()[2];
         FixedArray<float, 3> c1 = tm.R()[1] - yy1(1) * tm.R()[2];
         if (verbose) {
-            std::cerr << "yy0 " << yy0 << std::endl;
-            std::cerr << "yy1 " << yy1 << std::endl;
-            std::cerr << "c0 " << c0 << std::endl;
-            std::cerr << "c1 " << c1 << std::endl;
-            std::cerr << "(c0, t) " << dot0d(c0, tm.t()) << std::endl;
-            std::cerr << "(c0, yy0) " << dot0d(c0, yy0) << std::endl;
+            lerr() << "yy0 " << yy0;
+            lerr() << "yy1 " << yy1;
+            lerr() << "c0 " << c0;
+            lerr() << "c1 " << c1;
+            lerr() << "(c0, t) " << dot0d(c0, tm.t());
+            lerr() << "(c0, yy0) " << dot0d(c0, yy0);
         }
         x3(i, 0) = dot0d(c0, tm.t()) / dot0d(c0, yy0);
         x3(i, 1) = dot0d(c1, tm.t()) / dot0d(c1, yy0);
     };
     if (verbose) {
-        std::cerr << std::endl;
-        std::cerr << "----------------" << std::endl;
-        //std::cerr << "x3\n" << x3 << std::endl;
-        //std::cerr << x3.shape() << std::endl;
-        std::cerr << "R\n" << tm.R() << std::endl;
-        std::cerr << "t " << tm.t() << std::endl;
-        std::cerr << "ok (>0): " << all(x3 > 0.f) << std::endl;
-        //std::cerr << "ok: " << min(x3) << std::endl;
+        lerr();
+        lerr() << "----------------";
+        //lerr() << "x3\n" << x3;
+        //lerr() << x3.shape();
+        lerr() << "R\n" << tm.R();
+        lerr() << "t " << tm.t();
+        lerr() << "ok (>0): " << all(x3 > 0.f);
+        //lerr() << "ok: " << min(x3);
         //The check should be about "> 0", but this was not enough.
-        std::cerr << "min(x3) " << min(x3) << std::endl;
+        lerr() << "min(x3) " << min(x3);
     }
     return x3;
 }

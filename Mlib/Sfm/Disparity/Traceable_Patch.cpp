@@ -57,7 +57,7 @@ TraceablePatch::TraceablePatch(
     if (good_) {
         brightness_ /= (npixels * image.shape(0));
     }
-    // std::cerr << image_patch_ << std::endl;
+    // lerr() << image_patch_;
 }
 
 float TraceablePatch::error_at_position(
@@ -77,7 +77,7 @@ float TraceablePatch::error_at_position(
             size_t fixed_index_1 = patch_center(1) + c - image_patch_shape2(1) / 2;
             size_t moving_index_0 = r;
             size_t moving_index_1 = c;
-            // std::cerr << fixed_index << " - " << moving_index << " - " << image_shape2 << std::endl;
+            // lerr() << fixed_index << " - " << moving_index << " - " << image_shape2;
             if (fixed_index_0 < image_shape2(0) &&
                 fixed_index_1 < image_shape2(1) &&
                 !any_channel_nan(image_patch_, moving_index_0, moving_index_1) &&
@@ -115,7 +115,7 @@ FixedArray<size_t, 2> TraceablePatch::new_position_in_box(
             // The image is in RGB, so remove the first dimension.
             if (all(id < image_shape2)) {
                 float error = error_at_position(image, id);
-                // std::cerr  << dr << " - " << dc << " | " << error << " - " << best_error << std::endl;
+                // lerr()  << dr << " - " << dc << " | " << error << " - " << best_error;
                 if ((error < best_error) && (error <= worst_error)) {
                     best_error = error;
                     best_id = id;
@@ -129,8 +129,8 @@ FixedArray<size_t, 2> TraceablePatch::new_position_in_box(
     if ((min_npixels_ == 0) && (ncandidates != prod(search_window))) {
         return FixedArray<size_t, 2>{SIZE_MAX, SIZE_MAX};
     }
-    // std::cerr << "best " << best_id << std::endl;
-    // std::cerr << "best error " << best_error << std::endl;
+    // lerr() << "best " << best_id;
+    // lerr() << "best error " << best_error;
     return best_id;
 }
 
@@ -154,10 +154,10 @@ float TraceablePatch::new_position_on_line(
         if (all(id < image_shape2)) {
             float error = error_at_position(image, id);
             if (prior_disparity != nullptr && prior_strength != nullptr) {
-                // std::cerr << "err " << error << " + " << squared(s - *prior_disparity) * (*prior_strength) << std::endl;
+                // lerr() << "err " << error << " + " << squared(s - *prior_disparity) * (*prior_strength);
                 error += squared(s - *prior_disparity) * (*prior_strength);
             }
-            // std::cerr  << id << " | " << error << " - " << best_error << std::endl;
+            // lerr()  << id << " | " << error << " - " << best_error;
             if ((error < best_error) && (error <= worst_error)) {
                 best_error = error;
                 best_disparity = s;
@@ -167,8 +167,8 @@ float TraceablePatch::new_position_on_line(
     if (out_error != nullptr) {
         *out_error = best_error;
     }
-    // std::cerr << "best " << best_id << std::endl;
-    // std::cerr << "best error " << best_error << std::endl;
+    // lerr() << "best " << best_id;
+    // lerr() << "best error " << best_error;
     return best_disparity;
 }
 
@@ -190,7 +190,7 @@ FixedArray<float, 2> TraceablePatch::new_position_in_candidate_list(
         // The image is in RGB, so remove the first dimension.
         if (all(id < image_shape2)) {
             float error = error_at_position(image, id);
-            // std::cerr  << dr << " - " << dc << " | " << error << " - " << best_error << std::endl;
+            // lerr()  << dr << " - " << dc << " | " << error << " - " << best_error;
             if ((error < best_error) && (error <= worst_error)) {
                 second_best_error = best_error;
                 best_error = error;
@@ -201,7 +201,7 @@ FixedArray<float, 2> TraceablePatch::new_position_in_candidate_list(
     if (best_error > lowe_ratio * second_best_error) {
         best_id = SIZE_MAX;
     }
-    // std::cerr << "best " << best_id << std::endl;
-    // std::cerr << "best error " << best_error << std::endl;
+    // lerr() << "best " << best_id;
+    // lerr() << "best error " << best_error;
     return i2a(best_id);
 }

@@ -13,7 +13,7 @@ void Mlib::compute_building_area(
     for (auto& b : buildings) {
         b.area = (float)compute_area_clockwise(b.way.nd, nodes, scale);
         // if (b.area < 0.f) {
-        //     std::cerr << "Negative building area: ID " << b.id << " area " << b.area << std::endl;
+        //     lerr() << "Negative building area: ID " << b.id << " area " << b.area;
         // }
     }
 }

@@ -20,8 +20,8 @@ Array<TData> rigid_motion_roundtrip(
         for (size_t c = 0; c < result.shape(1); ++c) {
             FixedArray<TData, 2> pos_r_round;
             if (!std::isnan(im_r_depth(r, c))) {
-                // std::cerr << "from " << FixedArray<TData, 2>{i2a(r), i2a(c)} << std::endl;
-                // std::cerr << "to " << pos_r_round << std::endl;
+                // lerr() << "from " << FixedArray<TData, 2>{i2a(r), i2a(c)};
+                // lerr() << "to " << pos_r_round;
                 if (rs.roundtrip_position(r, c, pos_r_round) && !any(Mlib::isnan(pos_r_round))) {
                     result(r, c) = sum(squared(pos_r_round - FixedArray<TData, 2>{i2fi(r), i2fi(c)}));
                 } else {

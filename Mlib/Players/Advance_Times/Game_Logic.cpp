@@ -44,7 +44,7 @@ void GameLogic::advance_time(float dt, std::chrono::steady_clock::time_point tim
     vehicle_changer_.change_vehicles();
     supply_depots_.handle_supply_depots(dt);
     if (getenv_default_bool("PRINT_PLAYERS_ACTIVE", false)) {
-        std::cerr << "nactive " << players_.nactive() << std::endl;
-        std::cerr << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_ << std::endl;
+        lerr() << "nactive " << players_.nactive();
+        lerr() << "nspawns " << spawn.nspawns_ << " , ndelete " << spawn.ndelete_;
     }
 }

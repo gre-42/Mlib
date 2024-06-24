@@ -14,7 +14,7 @@ void test_optical_flow() {
     Array<float> flow;
     Array<bool> mask;
     optical_flow(image0, image1, &image2, ArrayShape{window, window}, 100.f, flow, mask);
-    // std::cerr << flow << std::endl;
+    // lerr() << flow;
     assert_isclose(flow[1][4](5), -1.f);
 }
 

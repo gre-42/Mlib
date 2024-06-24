@@ -84,7 +84,7 @@ void InverseDepthCostVolumeAccumulator::increment(
                     FixedArray<float, 2> ai0 = i2a(i0);
                     FixedArray<float, 2> ai1 = apply_homography(homog_i, ai0);
                     FixedArray<size_t, 2> i1 = a2i(ai1);
-                    // std::cerr << "i0 " << i0 << " i1 " << i1 << std::endl;
+                    // lerr() << "i0 " << i0 << " i1 " << i1;
                     if (all(i1 < space_shape_f)) {
                         for (size_t h = 0; h < im0_rgb.shape(0); ++h) {
                             idsi_sum_(di, r, c) += std::abs(

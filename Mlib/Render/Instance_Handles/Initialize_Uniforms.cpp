@@ -80,7 +80,7 @@ void Mlib::initialize_uniform(GLuint shader_program, GLuint uniform_id) {
         &uniform_size,
         &uniform_type,
         uniform_name));
-    // std::cerr << "Initializing uniform id " << uniform_id << " with name " << uniform_name << std::endl;
+    // lerr() << "Initializing uniform id " << uniform_id << " with name " << uniform_name;
 
     std::string uniform_name_str{uniform_name};
     static const DECLARE_REGEX(regex, "^(\\w+)\\[0\\]$");

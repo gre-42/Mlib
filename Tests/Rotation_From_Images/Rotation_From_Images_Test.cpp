@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
         test_intensity_jacobian();
         test_homography_from_images();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what();
+        lerr() << e.what();
         return 1;
     }
     return 0;

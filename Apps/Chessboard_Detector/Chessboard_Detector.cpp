@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
         p_y,
         bmp);
     bmp.save_to_file(args.unnamed_value(1));
-    std::cerr << "Extrinsic grid points:\n" << Array<float>{p_x};
-    std::cerr << "Intrinsic grid points:\n" << Array<float>{p_y};
+    lerr() << "Extrinsic grid points:\n" << Array<float>{p_x};
+    lerr() << "Intrinsic grid points:\n" << Array<float>{p_y};
     return 0;
 }

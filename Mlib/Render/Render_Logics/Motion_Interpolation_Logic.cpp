@@ -251,7 +251,7 @@ void MotionInterpolationLogic::render(
     LOG_FUNCTION("MotionInterpolationLogic::render");
     // TimeGuard time_guard{"MotionInterpolationLogic::render", "MotionInterpolationLogic::render"};
     if (!render_config.motion_interpolation || !child_logic_.requires_postprocessing()) {
-        // std::cerr << "n " << (int)frame_id.external_render_pass << " " << frame_id.time_id << std::endl;
+        // lerr() << "n " << (int)frame_id.external_render_pass << " " << frame_id.time_id;
         child_logic_.render(
             lx,
             ly,

@@ -28,7 +28,7 @@ FixedArray<TData, 3> triangle_tangent(
         if (error_behavior == TriangleTangentErrorBehavior::ZERO) {
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else if (error_behavior == TriangleTangentErrorBehavior::WARN) {
-            std::cerr << "Cannot calculate triangle tangent (0)" << std::endl;
+            lerr() << "Cannot calculate triangle tangent (0)";
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else {
             throw TriangleException(pos0, pos1, pos2, "Cannot calculate triangle tangent (0)");
@@ -41,7 +41,7 @@ FixedArray<TData, 3> triangle_tangent(
         if (error_behavior == TriangleTangentErrorBehavior::ZERO) {
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else if (error_behavior == TriangleTangentErrorBehavior::WARN) {
-            std::cerr << "Cannot calculate triangle tangent (1)" << std::endl;
+            lerr() << "Cannot calculate triangle tangent (1)";
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else {
             throw TriangleException(pos0, pos1, pos2, "Cannot calculate triangle tangent (1)");
@@ -55,7 +55,7 @@ FixedArray<TData, 3> triangle_tangent(
         if (error_behavior == TriangleTangentErrorBehavior::ZERO) {
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else if (error_behavior == TriangleTangentErrorBehavior::WARN) {
-            std::cerr << "Cannot calculate triangle tangent (2)" << std::endl;
+            lerr() << "Cannot calculate triangle tangent (2)";
             return FixedArray<TData, 3>{TData{0}, TData{0}, TData{0}};
         } else {
             throw TriangleException(pos0, pos1, pos2, "Cannot calculate triangle tangent (2)");

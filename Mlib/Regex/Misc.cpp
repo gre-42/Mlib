@@ -41,9 +41,9 @@ std::string Mlib::substitute_dollar(const std::string& str, const std::function<
 }
 
 std::string Mlib::substitute(const std::string& str, const std::map<std::string, std::string>& replacements) {
-    // std::cerr << "in: " << str << std::endl;
+    // lerr() << "in: " << str;
     // for (const auto& e : replacements) {
-    //     std::cerr << e.first << " -> " << e.second << '\n';
+    //     lerr() << e.first << " -> " << e.second;
     // }
     std::string new_line;
     // 1. Substitute expressions with and without default value, assigning default values.
@@ -52,7 +52,7 @@ std::string Mlib::substitute(const std::string& str, const std::map<std::string,
     static const DECLARE_REGEX(s0, "(?:(\\w+):(!)?(?:(\\w+)-)?(\\w*)(?:=(\\S*))?|(?:([-!]?)(\\w+))|([^-!\\w]+)|(.))");
     find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
         // if (v[1].str() == "-DECIMATE") {
-        //     std::cerr << "x" << std::endl;
+        //     lerr() << "x";
         // }
         if (v[1].matched) {
             auto it = replacements.find(v[4].str());

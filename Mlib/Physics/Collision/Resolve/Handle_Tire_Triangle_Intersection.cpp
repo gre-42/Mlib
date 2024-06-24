@@ -242,7 +242,7 @@ void Mlib::handle_tire_triangle_intersection(
     }
     // F = W / s = W / v / t = P / v
     if (!std::isnan(P.power)) {
-        // std::cerr << "dx " << dx << std::endl;
+        // lerr() << "dx " << dx;
         if (P.power != 0) {
             if (P.type == TirePowerIntentType::BRAKE_OR_IDLE) {
                 if ((v0 > 0) && (P.power > 0)) {

@@ -16,7 +16,7 @@ LoadSceneJsonUserFunction Repeat::json_user_function = [](const LoadSceneJsonUse
 void Repeat::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     while (true) {
-        std::cerr << "-";
+        lerr() << "-";
         args.macro_line_executor(args.arguments.json(), nullptr, args.local_json_macro_arguments);
     }
 }

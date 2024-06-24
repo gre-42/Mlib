@@ -37,7 +37,7 @@ void test_blocking_transposed() {
             assert_isequal(a(60, 70), a.T(block_size).T(block_size)(60, 70));
         }
     }
-    TimeGuard::print_groups(std::cerr);
+    TimeGuard::print_groups(lraw().ref());
 }
 
 void test_svd() {
@@ -46,15 +46,15 @@ void test_svd() {
     Array<float> s;
     Array<float> vT;
     svd(a, uT, s, vT, 0);  // 0 = seed
-    /*std::cerr.setf(std::ios_base::scientific);
-    std::cerr << "a" << std::endl;
-    std::cerr << a << std::endl;
-    std::cerr << "u" << std::endl;
-    std::cerr << uT.T() << std::endl;
-    std::cerr << "s" << std::endl;
-    std::cerr << s << std::endl;
-    std::cerr << "v" << std::endl;
-    std::cerr << v << std::endl;*/
+    /*lraw() << std::setf(std::ios_base::scientific);
+    lerr() << "a";
+    lerr() << a;
+    lerr() << "u";
+    lerr() << uT.T();
+    lerr() << "s";
+    lerr() << s;
+    lerr() << "v";
+    lerr() << v;*/
     assert_isclose<float>(a(2, 1), 407);
     assert_allclose<float>(uT.T(), Array<float>{{(float)3.225679e-02, (float)1.277676e-01},
                                                 {(float)6.286538e-01, (float)7.684482e-01},
@@ -78,18 +78,18 @@ void test_svd_j() {
         Array<double> vT;
         svd4(a, u, s, vT);
         assert_allclose(reconstruct_svd(u, s, vT), a);
-        std::cerr << u << std::endl;
-        std::cerr << s << std::endl;
-        std::cerr << vT << std::endl;
+        lerr() << u;
+        lerr() << s;
+        lerr() << vT;
     }
     {
         Array<double> uT;
         Array<double> s;
         Array<double> vT;
         svd_j(a, uT, s, vT);
-        std::cerr << uT << std::endl;
-        std::cerr << s << std::endl;
-        std::cerr << vT << std::endl;
+        lerr() << uT;
+        lerr() << s;
+        lerr() << vT;
         assert_allclose(reconstruct_svd(uT.T(), s, vT), a);
     }
 }
@@ -100,13 +100,13 @@ void test_qdq() {
     Array<float> s;
     a = -outer(a, a);
     qdq(a, q, s, 0);  // 0 = seed
-    /*std::cerr.setf(std::ios_base::scientific);
-    std::cerr << "a" << std::endl;
-    std::cerr << a << std::endl;
-    std::cerr << "q" << std::endl;
-    std::cerr << q << std::endl;
-    std::cerr << "s" << std::endl;
-    std::cerr << s << std::endl;*/
+    /*lraw() << std::setf(std::ios_base::scientific);
+    lerr() << "a";
+    lerr() << a;
+    lerr() << "q";
+    lerr() << q;
+    lerr() << "s";
+    lerr() << s;*/
     assert_isclose<float>(q(1, 0) / sign(q(0, 0)), (float)-0.149676);
     assert_isclose<float>(s(0), 447580.468750f);
     assert_isclose<float>(s(1), 64099.5f);

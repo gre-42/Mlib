@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
             return 1;
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

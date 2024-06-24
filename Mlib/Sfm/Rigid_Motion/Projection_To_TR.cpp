@@ -18,14 +18,14 @@ static bool reconstruction_ok(
     const FixedArray<float, 2>& fov_distances)
 {
     assert(all(y0.shape() == y1.shape()));
-    // std::cerr << "RRRR\n" << R << std::endl;
-    // std::cerr << "ttttt\n" << t << std::endl;
-    // std::cerr << "xxxxxx\n" << initial_reconstruction(R, t, ki, y0, y1) << std::endl;
+    // lerr() << "RRRR\n" << R;
+    // lerr() << "ttttt\n" << t;
+    // lerr() << "xxxxxx\n" << initial_reconstruction(R, t, ki, y0, y1);
     // return all(initial_reconstruction(R, t, ki, y0, y1).col_range(2, 3) > threshold);
     // auto x3 = initial_reconstruction_x3(R, t, ki, y0, y1);
     // auto ir = initial_reconstruction(R, t, ki, y0, y1);
-    // std::cerr << "recon\n" << ir/(ir(0, 2)) << all(initial_reconstruction(R, t, ki, y0, y1) > threshold) << std::endl;
-    // std::cerr << "x3\n" << x3/x3(0, 1) << std::endl;
+    // lerr() << "recon\n" << ir/(ir(0, 2)) << all(initial_reconstruction(R, t, ki, y0, y1) > threshold);
+    // lerr() << "x3\n" << x3/x3(0, 1);
     // size_t nz = count_nonzero(initial_reconstruction(R, t, ki, y0, y1).col_range(2, 3) > threshold);
     // return (float(nz) / y0.shape(0)) > 0.9;
 
@@ -49,8 +49,8 @@ ProjectionToTR::ProjectionToTR(
   e2tr(En)
 {
     const auto& v = e2tr;
-    //std::cerr << v.R0 << std::endl;
-    //std::cerr << v.R1 << std::endl;
+    //lerr() << v.R0;
+    //lerr() << v.R1;
     if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke0.t(); }
     if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke1.R(), v.ke0.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke1.R(); ke.t() = v.ke0.t(); }
     if (reconstruction_ok(TransformationMatrix<float, float, 3>{v.ke0.R(), v.ke1.t()}, kin, np.yn[0], np.yn[1], fov_distances)) { ++ngood; ke.R() = v.ke0.R(); ke.t() = v.ke1.t(); }

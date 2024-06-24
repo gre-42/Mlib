@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
             Mlib::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

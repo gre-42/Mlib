@@ -67,13 +67,13 @@ void test_power_to_force_negative() {
     for (float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass((float)1e4, (float)1e-1, (float)5e4, (float)5e4, INFINITY, n3, P, v3, dt, alpha0, false);
         v3 += F / m * dt;
-        // std::cerr << v3 << std::endl;
+        // lerr() << v3;
     }
     assert_isclose<float>(v3(0), 32.4703f, (float)1e-4);
     for (float t = 0; t < 10; t += dt) {
         auto F = power_to_force_infinite_mass((float)1e4, (float)1e-1, (float)5e4, (float)5e4, INFINITY, n3, -P, v3, dt, alpha0, false);
         v3 += F / m * dt;
-        // std::cerr << v3 << std::endl;
+        // lerr() << v3;
     }
     assert_isclose<float>(v3(0), -26.8054f, (float)1e-4);
 }
@@ -156,8 +156,8 @@ void test_com() {
         r1->rbp_.advance_time(dt);
     }
     
-    // std::cerr << r0->rbp_.v_ << std::endl;
-    // std::cerr << r1->rbp_.v_ << std::endl;
+    // lerr() << r0->rbp_.v_;
+    // lerr() << r1->rbp_.v_;
     assert_allclose(r0->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     assert_allclose(r1->rbp_.v_, FixedArray<float, 3>{0.f, -0.163366f * meters / seconds, 0.f}, (float)1e-12);
     r0->integrate_force({{1.2f * meters, 3.4f * meters, 5.6f * meters}, com0.casted<double>() + FixedArray<double, 3>{7.8 * meters, 6.5 * meters, 4.3 * meters}}, cfg);
@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
         test_track_element();
         test_pid();
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

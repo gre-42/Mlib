@@ -240,13 +240,13 @@ void test_semi_fix() {
         FixedArray<float, 2>{1.f, 5.f},
         FixedArray<float, 2>{1.f, 2.f} };
     Array<FixedArray<float, 2>> ar{ lst };
-    std::cerr << ar << std::endl;
+    lerr() << ar;
 }
 
 void test_fixed_array_of_string() {
     FixedArray<std::string, 3, 4> a = uninitialized;
     auto b = FixedArray<std::string, 3>{ std::string{"1"}, std::string{"2"}, std::string{"3"} };
-    std::cerr << a(1, 2) << " " << b(2) << std::endl;
+    lerr() << a(1, 2) << " " << b(2);
 }
 
 int main(int argc, char **argv) {

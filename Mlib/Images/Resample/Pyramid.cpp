@@ -72,8 +72,8 @@ Array<bool> Mlib::multi_scale_harris(
         float sigma = std::pow(2.f, (float)l);
         harris[l] = harris_response(gaussian_filter_NWE(image, sigma, NAN)) * float(std::pow(sigma, 2 * std::sqrt(2)));
         laplaces[l] = gaussian_filter_NWE(laplace, sigma, NAN) * float(std::pow(sigma, std::sqrt(2)));
-        // std::cerr << sum(abs(laplaces[l])) << std::endl;
-        // std::cerr << sum(abs(harris[l])) << std::endl;
+        // lerr() << sum(abs(laplaces[l]));
+        // lerr() << sum(abs(harris[l]));
         harris_mask[l] = find_local_maxima(harris[l], false);
     }
     Array<bool> laplace_mask =

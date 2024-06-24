@@ -732,7 +732,7 @@ public:
             }
             return result;
         } else {
-            std::cerr << "Warning: using slow transposition algorithm" << std::endl;
+            lerr() << "Warning: using slow transposition algorithm";
             Array result;
             result.do_resize(shape().reverted());
             shape().foreach([&](const ArrayShape& i) {

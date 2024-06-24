@@ -34,7 +34,7 @@ void download_tile(
         << y
         << ".png?api_key="
         << api_key;
-    std::cerr << "Get: " << sstr.str() << std::endl;
+    lerr() << "Get: " << sstr.str();
     auto res = cli.Get(sstr.str().c_str());
     if (res->status != 200) {
         throw std::runtime_error("Error status: " + std::to_string(res->status) + "\n" + res->body);
@@ -145,13 +145,13 @@ int main(int argc, char** argv) {
         size_t tiles_max_x = (size_t)std::ceil ((max_lon + 180) / tile_len_x);
         size_t ntiles_y = (tiles_max_y - tiles_min_y) + 1;
         size_t ntiles_x = (tiles_max_x - tiles_min_x) + 1;
-        std::cerr << "ntiles_y " << ntiles_y << std::endl;
-        std::cerr << "ntiles_x " << ntiles_x << std::endl;
-        std::cerr <<
+        lerr() << "ntiles_y " << ntiles_y;
+        lerr() << "ntiles_x " << ntiles_x;
+        lerr() <<
             tiles_min_x << '/' <<
             tiles_min_y << " - " <<
             tiles_max_x << '/' <<
-            tiles_max_y << std::endl;
+            tiles_max_y;
         if (tiles_min_y >= ntiles_global_y) {
             throw std::runtime_error("min_y out of range");
         }
@@ -254,6 +254,6 @@ int main(int argc, char** argv) {
         
         return 0;
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
     }
 }

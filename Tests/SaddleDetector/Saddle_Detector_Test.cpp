@@ -6,7 +6,7 @@ using namespace Mlib;
 
 void test_saddle_detector(const std::string& basename) {
     auto bitmap = StbImage3::load_from_file("Data/" + basename + ".png");
-    // std::cerr << "shape " << bitmap.shape() << std::endl;
+    // lerr() << "shape " << bitmap.shape();
     assert(bitmap.shape(0) == 32);
     assert(bitmap.shape(1) == 32);
 

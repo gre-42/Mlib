@@ -53,7 +53,7 @@ std::map<std::string, ObjMaterial> Mlib::load_mtllib(const std::string& filename
                 if (werror) {
                     THROW_OR_ABORT("Redefinition of material \"" + mtl + '"');
                 } else {
-                    std::cerr << "WARNING: Redefinition of material \"" + mtl + '"' << std::endl;
+                    lerr() << "WARNING: Redefinition of material \"" + mtl + '"';
                 }
             }
         } else if (Mlib::re::regex_match(line, match, comment_reg)) {

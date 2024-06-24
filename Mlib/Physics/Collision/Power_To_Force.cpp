@@ -140,7 +140,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
     if (!std::isnan(P) && (sign(P) * v > 0 || ((P != 0) == (std::abs(v) < hand_brake_velocity)))) {
         // Handle acceleration and rolling.
         float x = P / (std::abs(v) + float(1e-6));
-        // std::cerr << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force) << std::endl;
+        // lerr() << "y / a = " << (y * std::sqrt(sum(squared(sn3T))) / max_stiction_force);
         if (avoid_burnout) {
             x = correct_x_ortho(x, fT, max_stiction_force);
         }
@@ -153,7 +153,7 @@ Mlib::FixedArray<float, 3> Mlib::power_to_force_infinite_mass(
             x = correct_x_non_ortho(x, v3n, f3T, max_stiction_force);
         }
         normal_force = x * (-v3n);
-        // std::cerr << std::sqrt(sum(squared(normal_force + f3T))) << " " << max_stiction_force << " " << std::sqrt(sum(squared(f3T))) << std::endl;
+        // lerr() << std::sqrt(sum(squared(normal_force + f3T))) << " " << max_stiction_force << " " << std::sqrt(sum(squared(f3T)));
     } else {
         // Handle breaking at low velocities.
         float x = -brake_force * v / (std::abs(v) + alpha0);

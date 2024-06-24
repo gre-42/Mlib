@@ -55,27 +55,27 @@ static void key_callback(
             user_object.beacon_index = std::clamp<size_t>(user_object.beacon_index, 0, user_object.beacon_locations->size() - 1);
             if (button_states.key_down({.key = "UP"})) {
                 user_object.beacon_index += std::min<size_t>(1, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
             if (button_states.key_down({.key = "DOWN"})) {
                 user_object.beacon_index -= std::min<size_t>(1, user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
             if (button_states.key_down({.key = "PAGE_UP"})) {
                 user_object.beacon_index += std::min<size_t>(10, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
             if (button_states.key_down({.key = "PAGE_DOWN"})) {
                 user_object.beacon_index -= std::min<size_t>(10, user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
             if (button_states.key_down({.key = "HOME"})) {
                 user_object.beacon_index += std::min<size_t>(100, user_object.beacon_locations->size() - 1 - user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
             if (button_states.key_down({.key = "END"})) {
                 user_object.beacon_index -= std::min<size_t>(100, user_object.beacon_index);
-                std::cerr << "Beacon index: " << user_object.beacon_index << std::endl;
+                lerr() << "Beacon index: " << user_object.beacon_index;
             }
         }
     } else {

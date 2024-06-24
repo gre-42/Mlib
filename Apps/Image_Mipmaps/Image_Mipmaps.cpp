@@ -1,5 +1,5 @@
 #include <Mlib/Arg_Parser.hpp>
-#include <iostream>
+#include <Mlib/Os/Os.hpp>
 #include <stb/stb_image.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_mipmaps.hpp>
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
         downsample_file(args.unnamed_value(0).c_str(), args.unnamed_value(1).c_str());
         return 0;
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
 }

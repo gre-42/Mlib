@@ -23,7 +23,7 @@ void test_box_filter_1d() {
     image(2) = 1;
     image(3) = 1;
     Array<float> filtered1 = box_filter_append_zeros_1d(image, 3, 0);
-    // std::cerr << filtered1 << std::endl;
+    // lerr() << filtered1;
     assert(all(filtered1.shape() == image.shape()));
     const float f13 = 1.f / 3;
     assert_allclose(filtered1, Array<float>{0, f13, 2 * f13, 2 * f13, f13, 0});
@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
         test_box_filter_nan();
         test_box_filter_rand();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

@@ -73,7 +73,7 @@ void Spawn::spawn_at_spawn_point(
     // TimeGuard time_guard2{"spawn2", "spawn2"};
     // auto start = std::chrono::steady_clock::now();
     spawner.spawn(sp, cfg_.spawn_y_offset);
-    // std::cerr << "Spawn time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(std::chrono::steady_clock::now() - start)).count() << std::endl;
+    // lerr() << "Spawn time " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(std::chrono::steady_clock::now() - start)).count();
     ++nspawns_;
     // while (true) {
     //     std::scoped_lock lock{ delete_node_mutex_ };
@@ -126,7 +126,7 @@ void Spawn::respawn_all_players() {
                 ++sit;
                 continue;
             }
-            // std::cerr << "Spawning " << pit->second->name() << " with team " << pit->second->team_name() << std::endl;
+            // lerr() << "Spawning " << pit->second->name() << " with team " << pit->second->team_name();
             spawn_at_spawn_point(*pit->second, sp);
             occupied_spawn_points.insert(&sp);
             ++sit;

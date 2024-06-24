@@ -45,12 +45,12 @@ void schur_complement_test0() {
     Array<float> x0 = uniform_random_array<float>(ArrayShape{J.shape(1)}, 1);
     Array<float> residual = rhs_orig - dot1d(J.to_dense_array(), x0);
     if (true) {
-        std::cerr << "\n\nSolve only" << std::endl;
+        lerr() << "\n\nSolve only";
         Array<float> x = lstsq_chol_1d(J, rhs_orig, 1e-6);
         m.print_x(x);
     }
     {
-        std::cerr << "\n\nMarginalize once" << std::endl;
+        lerr() << "\n\nMarginalize once";
         Array<float> lhs_ka;
         Array<float> rhs_ka;
         marginalize_least_squares(J, residual, x0, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, alpha, beta);
@@ -61,7 +61,7 @@ void schur_complement_test0() {
     {
         {
             MarginalizingBias ms{alpha, beta};
-            std::cerr << "\n\nNo marginalize" << std::endl;
+            lerr() << "\n\nNo marginalize";
             ms.update_indices(m.predictor_uuids());
             ms.recompute_hessian(J, residual);
 
@@ -72,7 +72,7 @@ void schur_complement_test0() {
 
         MarginalizingBias ms{alpha, beta};
         {
-            std::cerr << "\n\nMarginalize" << std::endl;
+            lerr() << "\n\nMarginalize";
             ms.update_indices(m.predictor_uuids());
             ms.recompute_hessian(J, residual);
 
@@ -86,17 +86,17 @@ void schur_complement_test0() {
         }
 
         {
-            std::cerr << "\n\nMarginalize & recompute" << std::endl;
+            lerr() << "\n\nMarginalize & recompute";
             SparseArrayCcs<float> J1 = m1.jacobian();
             Array<float> rhs_orig1{m1.rhs()};
             Array<float> x01 = uniform_random_array<float>(ArrayShape{J1.shape(1)}, 2);
             Array<float> residual1 = rhs_orig1 - dot1d(J1.to_dense_array(), x01);
             //Array<float> residual1 = residual;
             //Array<float> x01 = lstsq_chol_1d(J1, residual1, alpha, beta);
-            // std::cerr << "x01 " << x01 << std::endl;
+            // lerr() << "x01 " << x01;
 
             {
-                std::cerr << "\n\nSolve new system" << std::endl;
+                lerr() << "\n\nSolve new system";
                 Array<float> x = lstsq_chol_1d(J1, rhs_orig1, 1e-6);
                 m1.print_x(x);
                 assert_allclose(
@@ -104,13 +104,13 @@ void schur_complement_test0() {
                     Array<float>{0.00000, 2.04591, 4.13904},
                     1e-5);
             }
-            std::cerr << std::endl;
-            std::cerr << "x " << ms.x_ - mean(ms.x_) << std::endl;
-            std::cerr << "rhs_ka_ " << ms.rhs_ka_ << std::endl;
+            lerr();
+            lerr() << "x " << ms.x_ - mean(ms.x_);
+            lerr() << "rhs_ka_ " << ms.rhs_ka_;
             ms.update_indices(m1.predictor_uuids());
             ms.solve();
-            std::cerr << std::endl;
-            std::cerr << "x " << ms.x_ - mean(ms.x_)  << std::endl;
+            lerr();
+            lerr() << "x " << ms.x_ - mean(ms.x_) ;
             {
                 Array<float> x_new = ms.x_.unblocked(ms.ids_ka_, x01.length());
                 m1.print_x(x_new);
@@ -120,12 +120,12 @@ void schur_complement_test0() {
                     1e-5);
             }
 
-            std::cerr << "\n\nHessian" << std::endl;
-            std::cerr << ms.lhs_ka_ << std::endl;
-            std::cerr << ms.rhs_ka_ << std::endl;
+            lerr() << "\n\nHessian";
+            lerr() << ms.lhs_ka_;
+            lerr() << ms.rhs_ka_;
             ms.recompute_hessian(J1);
-            std::cerr << ms.lhs_ka_ << std::endl;
-            std::cerr << ms.rhs_ka_ << std::endl;
+            lerr() << ms.lhs_ka_;
+            lerr() << ms.rhs_ka_;
             ms.solve();
             m1.print_x(ms.x_);
             assert_allclose(
@@ -133,7 +133,7 @@ void schur_complement_test0() {
                 Array<float>{0.00000, 2.0459, 4.13904},
                 1e-5);
 
-            std::cerr << "\n\nMarginalize x2" << std::endl;
+            lerr() << "\n\nMarginalize x2";
 
             m1.print_uuids();
             Array<size_t> i1_ids_k{i1_c2i(0)};
@@ -182,10 +182,10 @@ void schur_complement_test1() {
     Array<float> rhs_orig{m.rhs()};
     if (true) {
         // x0 = 0 => residual = rhs
-        // std::cerr << rhs_orig << std::endl;
-        // std::cerr << J.to_dense_array() << std::endl;
-        // std::cerr << dot2d(J.vH(), J) << std::endl;
-        std::cerr << "\n\nSolve only" << std::endl;
+        // lerr() << rhs_orig;
+        // lerr() << J.to_dense_array();
+        // lerr() << dot2d(J.vH(), J);
+        lerr() << "\n\nSolve only";
         Array<float> x = lstsq_chol_1d(J, rhs_orig, 1e-6);
         m.print_x(x);
     }
@@ -211,12 +211,12 @@ void schur_complement_test1() {
             // Debug2::schur_complement_jacobian_system(J, residual, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, ids_ka, alpha, beta);
             marginalize_least_squares(J, residual, x0, i01_ids_k, i01_ids_a, i01_ids_b, i01_ids_ka, lhs_ka, rhs_ka, alpha, beta);
             Array<float> x_new = solve_symm_1d(lhs_ka, rhs_ka, alpha, beta);
-            // std::cerr << x_new << std::endl;
+            // lerr() << x_new;
             Array<float> x_new_unblocked = x_new.unblocked(i01_ids_ka, x0.length(), NAN);
-            // std::cerr << x_new_unblocked << std::endl;
+            // lerr() << x_new_unblocked;
             // tc.print_x(x_new_unblocked);
             m.print_x(x0 + x_new_unblocked);
-            std::cerr << std::endl;
+            lerr();
         }
         {
             MarginalizingSolver ms{alpha, beta};
@@ -226,10 +226,10 @@ void schur_complement_test1() {
             // tc.print_x(x0 + ms.x_);
             ms.marginalize(J, residual, x0, i01_ids_k, i01_ids_a, i01_ids_b, i01_ids_ka);
             ms.solve();
-            // std::cerr << ms.x_ << std::endl;
+            // lerr() << ms.x_;
             Array<float> x_new_unblocked = ms.x_.unblocked(i01_ids_ka, x0.length(), NAN);
             m.print_x(x0 + x_new_unblocked);
-            std::cerr << std::endl;
+            lerr();
         }
     }
     {
@@ -240,25 +240,25 @@ void schur_complement_test1() {
         Array<size_t> i1_ids_ka = i1_ids_k.appended(i1_ids_a);
         {
             m.print_uuids();
-            std::cerr << std::endl;
+            lerr();
             ms.update_indices(m.predictor_uuids());
             ms.recompute_hessian(J);
 
-            // std::cerr << "i1_ids_b " << i1_ids_b << std::endl;
-            // std::cerr << "i1_ids_ka " << i1_ids_ka << std::endl;
+            // lerr() << "i1_ids_b " << i1_ids_b;
+            // lerr() << "i1_ids_ka " << i1_ids_ka;
 
             ms.marginalize(J, residual, x0, i1_ids_k, i1_ids_a, i1_ids_b, i1_ids_ka);
             ms.solve();
-            // std::cerr << ms.x_ << std::endl;
-            std::cerr << "\n\nMarginalize" << std::endl;
+            // lerr() << ms.x_;
+            lerr() << "\n\nMarginalize";
             Array<float> x_new_unblocked = ms.x_.unblocked(i1_ids_ka, x0.length(), NAN);
             m.print_x(x0 + x_new_unblocked);
         }
 
         {
-            std::cerr << "\n\nm1 print_uuids" << std::endl;
+            lerr() << "\n\nm1 print_uuids";
             m1.print_uuids();
-            std::cerr << std::endl;
+            lerr();
             SparseArrayCcs<float> J1 = m1.jacobian();
             Array<float> rhs_orig1{m1.rhs()};
             Array<float> x01 = uniform_random_array<float>(ArrayShape{J1.shape(1)}, 1);
@@ -268,15 +268,15 @@ void schur_complement_test1() {
                 Array<float> x = lstsq_chol_1d(J1, rhs_orig1, 1e-6);
                 m1.print_x(x);
             }
-            std::cerr << "x " << ms.x_ - mean(ms.x_) << std::endl;
-            // std::cerr << "lhs_ka_\n" << ms.lhs_ka_ << std::endl;
-            std::cerr << "rhs_ka_ " << ms.rhs_ka_ << std::endl;
+            lerr() << "x " << ms.x_ - mean(ms.x_);
+            // lerr() << "lhs_ka_\n" << ms.lhs_ka_;
+            lerr() << "rhs_ka_ " << ms.rhs_ka_;
             ms.update_indices(m1.predictor_uuids());
             // ms.recompute_hessian(J1, residual1, true);
             ms.solve();
-            std::cerr << "x " << ms.x_ - mean(ms.x_)  << std::endl;
-            // std::cerr << "lhs_ka_\n" << ms.lhs_ka_ << std::endl;
-            std::cerr << "rhs_ka_ " << ms.rhs_ka_ << std::endl;
+            lerr() << "x " << ms.x_ - mean(ms.x_) ;
+            // lerr() << "lhs_ka_\n" << ms.lhs_ka_;
+            lerr() << "rhs_ka_ " << ms.rhs_ka_;
             m1.print_x(x01 + ms.x_.unblocked(ms.ids_ka_, x01.length()));
             assert(false);
             Array<size_t> i2_ids_k{c2i1(3), p2i1(2), p2i1(3)};

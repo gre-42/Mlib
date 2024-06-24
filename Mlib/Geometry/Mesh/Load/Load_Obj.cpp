@@ -391,7 +391,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 if (cfg.werror) {
                     THROW_OR_ABORT("Could not parse line");
                 } else {
-                    std::cerr << "WARNING: Could not parse line: " + line << std::endl;
+                    lerr() << "WARNING: Could not parse line: " + line;
                 }
             }
         } catch (const std::runtime_error& e) {

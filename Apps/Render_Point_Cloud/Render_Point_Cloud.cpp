@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
             args.has_named("--rotate"),
             safe_stof(args.named_value("--scale", "1")));
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

@@ -23,19 +23,19 @@ Array<float> Mlib::patch_registration(
             if (sign == 1 && all(window_shapeU == 0)) {
                 continue;
             }
-            //std::cerr << sign << "*" << window_shapeU << std::endl;
+            //lerr() << sign << "*" << window_shapeU;
             ArrayShape window_shape = (size_t)sign * window_shapeU;
             differences.shape().foreach([&](const ArrayShape& index) {
-                //std::cerr << "w " << window_shape << std::endl;
+                //lerr() << "w " << window_shape;
                 differences(index) = squared(
                     image0(index + max_window_shape) -
                     image1(index + max_window_shape + window_shape));
             });
-            //std::cerr << "diff " << std::endl << differences << std::endl;
+            //lerr() << "diff " << std::endl << differences;
             Array<float> ssd = box_filter_NWE(differences, max_window_shape);
-            //std::cerr << "ssd " << std::endl << ssd << std::endl;
+            //lerr() << "ssd " << std::endl << ssd;
             differences.shape().foreach([&](const ArrayShape& index) {
-                //std::cerr << "c " << ssd(index) << " " << best_ssd(index) << std::endl;
+                //lerr() << "c " << ssd(index) << " " << best_ssd(index);
                 if (ssd(index) < best_ssd(index)) {
                     best_ssd(index) = ssd(index);
                     for (size_t j = 0; j < differences.ndim(); j++) {
@@ -44,7 +44,7 @@ Array<float> Mlib::patch_registration(
                 }
             });
         }
-        //std::cerr << "flow " << flow << std::endl;
+        //lerr() << "flow " << flow;
     });
     if (preserve_shape) {
         Array<float> res = nans<float>(ArrayShape{differences.ndim()}.concatenated(image0.shape()));
@@ -77,13 +77,13 @@ void Mlib::flow_registration(
     Array<bool> mask = ones<bool>(fixed.shape());
     for (size_t i = 0; i < niterations; ++i) {
         Array<float> registered_moving = apply_displacement(moving, displacement);
-        // std::cerr << "r\n" << registered_moving << std::endl;
+        // lerr() << "r\n" << registered_moving;
         Array<float> flow;
         optical_flow(registered_moving, fixed, nullptr, window_shape, (float)max_displacement, flow, mask);
         for (size_t d = 0; d < flow.shape(0); d++) {
             flow[d] = box_filter_nans_as_zeros_NWE(flow[d], box_shape);
         }
-        // std::cerr << "flow\n" << flow << std::endl;
+        // lerr() << "flow\n" << flow;
         displacement += flow;
     }
 }
@@ -100,7 +100,7 @@ Array<float> Mlib::apply_displacement(
         ArrayShape moving_index{
             index(0) + size_t(displacement[id1](index) + 0.5f),
             index(1) + size_t(displacement[id0](index) + 0.5f)};
-        // std::cerr << "id " << index << " new " << moving_index << " dis " << displacement[id0](index) << std::endl;
+        // lerr() << "id " << index << " new " << moving_index << " dis " << displacement[id0](index);
         if (all(moving_index < moving.shape())) {
             result(index) = moving(index);
         } else {

@@ -50,7 +50,7 @@ public:
         point_index = indexed_points_(p2(0), p2(1));
         auto res = to3d_.insert({ point_index, &p3 });
         if (!res.second && !all(*res.first->second == p3)) {
-            std::cerr << "Detected duplicate Steiner point after projection" << std::endl;
+            lerr() << "Detected duplicate Steiner point after projection";
             return false;
         }
         return true;
@@ -196,7 +196,7 @@ bool triangulate_point(
                             return true;
                         }
                         if (point_is_in_triangle(p2, pr_tri2(0), pr_tri2(1), pr_tri2(2))) {
-                            std::cerr << "Detected point inside existing triangle" << std::endl;
+                            lerr() << "Detected point inside existing triangle";
                             return false;
                         }
                         return true;
@@ -221,7 +221,7 @@ bool triangulate_point(
                                 false,  // compute_center
                                 true))  // check_bounds (returns false if any corners are identical)
                             {
-                                std::cerr << "Detected segment intersection" << std::endl;
+                                lerr() << "Detected segment intersection";
                                 return false;
                             }
                             return true;
@@ -248,7 +248,7 @@ bool triangulate_point(
     }
 
     if (indexed_points.positions().size() / 2 < 3) {
-        std::cerr << "Less than 3 vertices for triangulation" << std::endl;
+        lerr() << "Less than 3 vertices for triangulation";
         return false;
     }
 
@@ -317,7 +317,7 @@ bool triangulate_point(
         .numberofedges = 0,
     };
 
-    // std::cerr << k << std::endl;
+    // lerr() << k;
     // if (k == 9513) {
     //     plot(in, "/tmp/plot_" + std::to_string(k) + "_in.svg", 100, 100);
     // }
@@ -348,16 +348,16 @@ bool triangulate_point(
     std::unique_ptr<int, decltype(&triangle::trifree)> unique_edgemarkerlist{ out.edgemarkerlist, triangle::trifree };
 
     if (out.numberofpoints != in.numberofpoints) {
-        std::cerr << "Out number of points differs from in number of points" << std::endl;
+        lerr() << "Out number of points differs from in number of points";
         return false;
     }
     if (out.numberoftriangles < in.numberoftriangles) {
-        std::cerr << "Triangles got removed" << std::endl;
+        lerr() << "Triangles got removed";
         return false;
     }
     // for (int i = 0; i < 3 * in.numberoftriangles; ++i) {
     //     if (in.trianglelist[i] != out.trianglelist[i]) {
-    //         std::cerr << "Triangles got rearranged" << std::endl;
+    //         lerr() << "Triangles got rearranged";
     //         return false;
     //     }
     // }

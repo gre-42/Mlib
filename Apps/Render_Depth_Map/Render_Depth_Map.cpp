@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
             safe_stof(args.named_value("--far_plane", "100")),
             args.has_named("--rotate"));
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

@@ -212,9 +212,9 @@ int main(int argc, char** argv) {
                         .inlier_count_thresh = 20,
                         .seed = 1}};
                 if (ptr.ptr == nullptr) {
-                    std::cerr << "RANSAC found no candidate" << std::endl;
+                    lerr() << "RANSAC found no candidate";
                 } else {
-                    std::cerr << ptr.ptr->ke.semi_affine() << std::endl;
+                    lerr() << ptr.ptr->ke.semi_affine();
 
                     auto sparse_reconstruction = ptr.ptr->initial_reconstruction().reconstructed();
                     MarginalizedMap<std::map<size_t, std::shared_ptr<ReconstructedPoint>>> reconstructed_points;
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
             }
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << "ERROR: " << e.what();
         return 1;
     }
     return 0;

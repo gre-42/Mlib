@@ -1,18 +1,18 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
-#include <iostream>
+#include <Mlib/Os/Os.hpp>
 
 using namespace Mlib;
 
 void test_fail(double zero = 0) {
-    std::cerr << 0. / zero << std::endl;
+    lerr() << 0. / zero;
 }
 
 void test_pass_inf(double zero = 0) {
-    std::cerr << 1. / zero << std::endl;
+    lerr() << 1. / zero;
 }
 
 void test_pass_std() {
-    std::cerr << 1. / 1. << std::endl;
+    lerr() << 1. / 1.;
 }
 
 int main(int argc, char** argv) {

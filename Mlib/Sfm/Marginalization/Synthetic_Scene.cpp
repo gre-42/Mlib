@@ -117,21 +117,21 @@ std::map<UUID, size_t> Scene1dMatrix::predictor_uuids() const {
 void Scene1dMatrix::print_x(const Array<float>& x, bool correct) const {
     Array<float> xc = correct ? x - x(0) : x;
     for (const auto& c : cameras_) {
-        std::cerr << "c: " << c.first.time_.count() << " ms, translation: " << xc(column_id_camera(c.first)) << std::endl;
+        lerr() << "c: " << c.first.time_.count() << " ms, translation: " << xc(column_id_camera(c.first));
     }
     for (const auto& p : feature_points_) {
-        std::cerr << "p: " << p.first.feature_point_id_ << ", " << xc(column_id_feature_point(p.first)) << std::endl;
+        lerr() << "p: " << p.first.feature_point_id_ << ", " << xc(column_id_feature_point(p.first));
     }
 }
 void Scene1dMatrix::print_uuids() const {
     //for (const auto& v : predictor_uuids()) {
-    //    std::cerr << v.first << ": " << v.second << std::endl;
+    //    lerr() << v.first << ": " << v.second;
     //}
     for (const auto& c : cameras_) {
-        std::cerr << "c: " << c.first.time_.count() << " ms, uuid: " << uuid_gen_.get(c.first) << ", column " << column_id_camera(c.first) << std::endl;
+        lerr() << "c: " << c.first.time_.count() << " ms, uuid: " << uuid_gen_.get(c.first) << ", column " << column_id_camera(c.first);
     }
     for (const auto& p : feature_points_) {
-        std::cerr << "p: " << p.first.feature_point_id_ << ",    uuid: " << uuid_gen_.get(p.first) << ", column " << column_id_feature_point(p.first) << std::endl;
+        lerr() << "p: " << p.first.feature_point_id_ << ",    uuid: " << uuid_gen_.get(p.first) << ", column " << column_id_feature_point(p.first);
     }
 }
 

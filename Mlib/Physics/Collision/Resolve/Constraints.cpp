@@ -73,7 +73,7 @@ void NormalContactInfo2::solve(float dt, float relaxation, size_t iteration, siz
     rbp1_.integrate_impulse({
         .vector = snormal * lambda,
         .position = p_});
-    // std::cerr << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x) << std::endl;
+    // lerr() << rbp.abs_position() << " | " << rbp.v_ << " | " << pc.active(x) << " | " << pc.overlap(x) << " | " << pc.bias(x);
 }
 
 void NormalContactInfo2::finalize() {
@@ -421,7 +421,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
     // {
     //     FixedArray<float, 3> v3 = rb_.rbp_.velocity_at_position(rb_.get_abs_tire_contact_position(tire_id_)) - v;
     //     v3 -= fci_.normal_impulse().normal * dot0d(v3, fci_.normal_impulse().normal);
-    //     std::cerr << tire_id_ << " v " << std::sqrt(sum(squared(v))) << " " << dot0d(n3_, v3) << std::endl;
+    //     lerr() << tire_id_ << " v " << std::sqrt(sum(squared(v))) << " " << dot0d(n3_, v3);
     // }
     // FixedArray<float, 3> x3{
     //     rb_.rbp_.rotation_(0, 0),
@@ -470,7 +470,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
             slip,
             std::asin(sin_lateral_slip_angle)},
         cfg_.no_slip ? MagicFormulaMode::NO_SLIP : MagicFormulaMode::STANDARD) * lambda_max;
-    // std::cerr << tire_id_ << " | " << r << std::endl;
+    // lerr() << tire_id_ << " | " << r;
     fci_.set_clamping(
         n3_,
         signed_min(force_min * cfg_.dt_substeps(), std::abs(r(0))),
@@ -480,7 +480,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
 }
 
 // void TireContactInfo1::finalize() {
-//     std::cerr << "tire id " << tire_id_ << " | " << fci_ << " normal " << fci_.normal_impulse().normal << std::endl;
+//     lerr() << "tire id " << tire_id_ << " | " << fci_ << " normal " << fci_.normal_impulse().normal;
 // }
 
 ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(

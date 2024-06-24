@@ -4,8 +4,8 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Source.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <iostream>
 
 using namespace Mlib;
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         source.play();
         source.join();
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

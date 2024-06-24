@@ -89,10 +89,10 @@ void reproject(
                 intrinsic_matrix,
                 TransformationMatrix<float, float, 3>::identity());
             FixedArray<size_t, 2> id{a2i(proj)};
-            // std::cerr << proj << std::endl;
+            // lerr() << proj;
             // reprojected(r, c) = sum(squared(proj, i2a(proj;
-            // std::cerr << id << " | " << ArrayShape{r, c} << std::endl;
-            // std::cerr << im0_rgb(0, r, c) << " " << im0_rgb(1, r, c) << " " << im0_rgb(2, r, c) << std::endl;
+            // lerr() << id << " | " << ArrayShape{r, c};
+            // lerr() << im0_rgb(0, r, c) << " " << im0_rgb(1, r, c) << " " << im0_rgb(2, r, c);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
             if (all(id < FixedArray<size_t, 2>{reprojected.shape().erased_first()})) {
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
                 Array<float> stddev1 = standard_deviation(im1_gray, ArrayShape{5, 5}, NAN);
                 for (size_t r = 0; r < stddev0.shape(0); ++r) {
                     for (size_t c = 0; c < stddev0.shape(1); ++c) {
-                        // std::cerr << stddev(r, c) << std::endl;
+                        // lerr() << stddev(r, c);
                         if (!(stddev0(r, c) > 0.001)) {
                             for (size_t d = 0; d < 3; ++d) {
                                 im0_rgb(d, r, c) = NAN;
@@ -381,8 +381,8 @@ int main(int argc, char **argv) {
             Array<size_t> hist;
             Array<float> bins;
             histogram(disparity_0[Mlib::isfinite(disparity_0)], hist, bins);
-            std::cerr << bins << std::endl;
-            std::cerr << hist << std::endl;
+            lerr() << bins;
+            lerr() << hist;
         }
 
         // check constraints: dx/dx > 0, z > 0
@@ -516,7 +516,7 @@ int main(int argc, char **argv) {
             draw_nan_masked_grayscale(adiff2, 0, 0).save_to_file("mdm2.png");
             for (size_t r = 0; r < md.shape(0); ++r) {
                 for (size_t c = 0; c < md.shape(1); ++c) {
-                    // std::cerr << std::abs(md(r, c) - disparity_0(r, c)) << std::endl;
+                    // lerr() << std::abs(md(r, c) - disparity_0(r, c));
                     //if (std::abs(md(r, c) - disparity_0(r, c)) >= 1 || x(2, r, c) < 0) {
                     if (adiff2(r, c) >= 2) {
                         x(0, r, c) = NAN;
@@ -536,7 +536,7 @@ int main(int argc, char **argv) {
 
             std::list<Array<float>> dbd;
             for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
-                // std::cerr << r << std::endl;
+                // lerr() << r;
                 for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                     if (r % 10 != 0 || c % 10 != 0) {
                         continue;
@@ -550,7 +550,7 @@ int main(int argc, char **argv) {
             }
             NeighborDb<float> db(dbd, true); // true = standardize
             for (size_t r = 0; r < im0_rgb.shape(1); ++r) {
-                // std::cerr << r << std::endl;
+                // lerr() << r;
                 for (size_t c = 0; c < im0_rgb.shape(2); ++c) {
                     if (!desc.can_compute(r, c) ||
                         db.count(desc(r, c), 0.1f) > 0) {
@@ -661,7 +661,7 @@ int main(int argc, char **argv) {
 
         return 0;
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
 }

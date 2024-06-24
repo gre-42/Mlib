@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
         }
         PpmImage::from_float_rgb(clipped(Array<float>({filt, filt, filt}), 0.f, 1.f)).save_to_file(args.named_value("--output"));
     } catch (const CommandLineArgumentError& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

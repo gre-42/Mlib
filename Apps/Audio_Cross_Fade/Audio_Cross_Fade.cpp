@@ -4,10 +4,10 @@
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Cross_Fade.hpp>
 #include <Mlib/Audio/List_Audio_Devices.hpp>
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Time/Sleep.hpp>
 #include <chrono>
-#include <iostream>
 #include <thread>
 
 using namespace Mlib;
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
             Mlib::sleep_for(std::chrono::duration<float>(dt_append));
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

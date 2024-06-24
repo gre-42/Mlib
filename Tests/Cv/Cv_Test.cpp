@@ -170,7 +170,7 @@ void test_project_depth_map() {
         ke.t() = FixedArray<float, 3>{ 0.1f, 0.2f, 0.15f };
         // ke.t(2) = 0.1f;
         ke.R() = rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 0.2f);
-        std::cerr << "ke\n" << ke.semi_affine() << std::endl;
+        lerr() << "ke\n" << ke.semi_affine();
 
         {
             Array<float> depth_picture1;
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
         test_projection_jacobian_ki();
         test_project_depth_map();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << "ERROR: " << e.what();
         return 1;
     }
     return 0;

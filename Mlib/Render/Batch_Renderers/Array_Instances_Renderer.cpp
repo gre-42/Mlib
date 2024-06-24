@@ -33,7 +33,7 @@ void ArrayInstancesRenderer::update_instances(
     // for (const auto& a : instances_queue) {
     //     ntris += a.cva->triangles.size();
     // }
-    // std::cerr << "Update instances: " << ntris << std::endl;
+    // lerr() << "Update instances: " << ntris;
 
     std::unordered_map<std::shared_ptr<ColoredVertexArray<float>>, std::list<TransformationAndBillboardId>> cva_lists;
     for (const auto& a : instances_queue) {

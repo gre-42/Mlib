@@ -66,7 +66,7 @@ void Mlib::get_overlap2(
     // if (best_min_overlap == INFINITY) {
     //     THROW_OR_ABORT("Could not compute overlap, #triangles might be zero, or edge angles are not correct");
     // }
-    // std::cerr << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle) << std::endl;
+    // lerr() << "min_overlap " << min_overlap << " best_triangle " << best_triangle << " best normal " << triangle_normal(best_triangle);
     min_overlap = sac.best_min_overlap();
     normal = sac.best_normal();
 }

@@ -53,7 +53,7 @@ def patch_file(filename):
             f.write(new)
 
 for path, dirs, files in os.walk('.'):
-    dirs[:] = [d for d in dirs if d not in [
+    dirs[:] = [d for d in dirs if d not in {
         'MRelease',
         'MDebug',
         'LUDebug',
@@ -84,15 +84,16 @@ for path, dirs, files in os.walk('.'):
         'openal-soft',
         'freealut',
         'bullet3',
-        '.cxx']]
-    files[:] = [f for f in files if f not in [
+        'cereal',
+        '.cxx'}]
+    files[:] = [f for f in files if f not in {
         'Array.hpp',
         'Dynamic_Base.hpp',
         'linmath.hpp',
         'glad_gl.cpp',
         'glad_vulkan.cpp',
         'Incomplete_Beta_Distribution.hpp',
-        'Svd4.cpp']]
+        'Svd4.cpp'}]
     for file in files:
         filename = os.path.join(path, file)
         if filename.endswith('.cpp') or filename.endswith('.hpp'):

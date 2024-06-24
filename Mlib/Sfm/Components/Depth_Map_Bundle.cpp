@@ -83,8 +83,8 @@ void DepthMapBundle::compute_roundtrip_error(const std::chrono::milliseconds& ti
         if (neighbor.first == time) {
             continue;
         }
-        std::cerr << "Keyframe " << time.count() <<
-            " ms selected neighbor " << neighbor.first.count() << " ms" << std::endl;
+        lerr() << "Keyframe " << time.count() <<
+            " ms selected neighbor " << neighbor.first.count() << " ms";
         // ke is expected to be l's relative projection-matrix.
         TransformationMatrix<float, float, 3> ke = projection_in_reference(
             c.ke,
@@ -109,7 +109,7 @@ DepthMapBundle DepthMapBundle::filtered(
         if ((references != nullptr) && !references->contains(reference.first)) {
             continue;
         }
-        std::cerr << "Filtering time " << reference.second.time.count() << " ms" << std::endl;
+        lerr() << "Filtering time " << reference.second.time.count() << " ms";
 
         // 1. Who occludes the reference?
         Array<float> occluder_depths{ ArrayShape{ packages_.size() }.concatenated(reference.second.depth.shape()) };
@@ -222,7 +222,7 @@ DepthMapBundle DepthMapBundle::reregistered(
             if (eit == end) {
                 break;
             }
-            std::cerr << "Reregistering times " << bit->second.time.count() << " ms and " << eit->second.time.count() << " ms" << std::endl;
+            lerr() << "Reregistering times " << bit->second.time.count() << " ms and " << eit->second.time.count() << " ms";
             TransformationMatrix<float, float, 3> x0_r1_r0 = projection_in_reference(
                 bit->second.ke,
                 eit->second.ke);

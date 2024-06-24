@@ -94,8 +94,8 @@ RigidBodyVehicle::RigidBodyVehicle(
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
     }
-    // std::cerr << "Rigid body vehicle \"" << name_ << '"' << std::endl;
-    // std::cerr << "I [kg*m²]\n" << rbi.rbp_.I_ / (kg * squared(meters)) << std::endl;
+    // lerr() << "Rigid body vehicle \"" << name_ << '"';
+    // lerr() << "I [kg*m²]\n" << rbi.rbp_.I_ / (kg * squared(meters));
 }
 
 RigidBodyVehicle::~RigidBodyVehicle()

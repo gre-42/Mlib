@@ -7,7 +7,7 @@ RegridArray::RegridArray(
     const std::map<size_t, UUID>& uuids_old)
 : length_(uuids_new.size())
 {
-    // std::cerr << "i " << ids_old << std::endl;
+    // lerr() << "i " << ids_old;
     std::vector<size_t> ids_src_v;
     std::vector<size_t> ids_dst_v;
     ids_src_v.reserve(uuids_old.size());
@@ -18,13 +18,13 @@ RegridArray::RegridArray(
             ids_src_v.push_back(o.first);
             ids_dst_v.push_back(it->second);
         } else {
-            // std::cerr << "stripping index " << o.second << " " << o.first << std::endl;
+            // lerr() << "stripping index " << o.second << " " << o.first;
         }
     }
     ids_src_ = Array<size_t>(ids_src_v.data(), ids_src_v.data() + ids_src_v.size());
     ids_dst_ = Array<size_t>(ids_dst_v.data(), ids_dst_v.data() + ids_dst_v.size());
-    // std::cerr << "d " << ids_src_ << std::endl;
-    // std::cerr << "c " << ids_col_ << std::endl;
+    // lerr() << "d " << ids_src_;
+    // lerr() << "c " << ids_col_;
 }
 
 Array<float> RegridArray::regrid_1d(const Array<float>& a) {

@@ -119,10 +119,10 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
         std::map<std::pair<O, O>, std::pair<O, O>> parent_edges;
         // auto print_debug_info = [&](){
         //     for (const auto& e : edge_neighbors) {
-        //         std::cerr << "e " << e.first.first << " | " << e.first.second << " -> " << e.second << std::endl;
+        //         lerr() << "e " << e.first.first << " | " << e.first.second << " -> " << e.second;
         //     }
         //     for (const auto& p : parent_edges) {
-        //         std::cerr << "p " << p.first.first << " | " << p.first.second << " -> " << p.second.first << " | " << p.second.second << std::endl;
+        //         lerr() << "p " << p.first.first << " | " << p.first.second << " -> " << p.second.first << " | " << p.second.second;
         //     }
         // };
         // auto check_consistency = [&](){
@@ -143,14 +143,14 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     (unsigned int)(it0 != edge_neighbors.end()) +
                     (unsigned int)(it1 != edge_neighbors.end()) +
                     (unsigned int)(it2 != edge_neighbors.end());
-                C_DEBUG(std::cerr << "start" << std::endl);
+                C_DEBUG(lerr() << "start");
                 C_DEBUG(check_consistency());
                 if (nedges == 0) {
                     auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t](size_t a, size_t b, size_t c) {
                         auto ep = std::make_pair(O((*t)(c).position), O((*t)(a).position));
                         auto en = std::make_pair(O((*t)(a).position), O((*t)(b).position));
-                        C_DEBUG(std::cerr << std::endl);
-                        C_DEBUG(std::cerr << "insert (0) " << en.first << " | " << en.second << std::endl);
+                        C_DEBUG(lerr());
+                        C_DEBUG(lerr() << "insert (0) " << en.first << " | " << en.second);
                         if (!edge_neighbors.insert({en, O((*t)(c).position)}).second) {
                             THROW_OR_ABORT("Detected duplicate edge (0)");
                         }
@@ -162,15 +162,15 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     safe_insert_neighbor(0, 1, 2);
                     safe_insert_neighbor(1, 2, 0);
                     safe_insert_neighbor(2, 0, 1);
-                    C_DEBUG(std::cerr << "nedges=0" << std::endl);
+                    C_DEBUG(lerr() << "nedges=0");
                     C_DEBUG(check_consistency());
                 } else if (nedges == 1) {
                     auto safe_insert_neighbor = [&edge_neighbors, &parent_edges, &t](size_t a, size_t b, size_t c) {
                         auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
                         auto e_bc = std::make_pair(O((*t)(b).position), O((*t)(c).position));
                         auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                        C_DEBUG(std::cerr << std::endl);
-                        C_DEBUG(std::cerr << "insert (1) " << ei_ab.second << " | " << ei_ab.first << " | " << e_ca.first << std::endl);
+                        C_DEBUG(lerr());
+                        C_DEBUG(lerr() << "insert (1) " << ei_ab.second << " | " << ei_ab.first << " | " << e_ca.first);
                         auto it_ab = edge_neighbors.find(ei_ab);
                         auto z = it_ab->second;
                         edge_neighbors.erase(it_ab);
@@ -197,7 +197,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         parent_edges.insert({e_ca, e_bc});
                         parent_edges.erase(p_ab);
                         C_DEBUG(print_debug_info());
-                        C_DEBUG(std::cerr << "nedges=1" << std::endl);
+                        C_DEBUG(lerr() << "nedges=1");
                         C_DEBUG(check_consistency());
                     };
                     if (it0 != edge_neighbors.end()) {
@@ -212,9 +212,9 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         auto ei_ab = std::make_pair(O((*t)(b).position), O((*t)(a).position));
                         auto ei_bc = std::make_pair(O((*t)(c).position), O((*t)(b).position));
                         auto e_ca = std::make_pair(O((*t)(c).position), O((*t)(a).position));
-                        C_DEBUG(std::cerr << std::endl);
-                        C_DEBUG(std::cerr << "insert (2) " << ei_ab.second << " | " << ei_ab.first << " | " << ei_bc.first << std::endl);
-                        C_DEBUG(std::cerr << "nedges=2" << std::endl);
+                        C_DEBUG(lerr());
+                        C_DEBUG(lerr() << "insert (2) " << ei_ab.second << " | " << ei_ab.first << " | " << ei_bc.first);
+                        C_DEBUG(lerr() << "nedges=2");
                         C_DEBUG(check_consistency());
                         // bx
                         {
@@ -235,7 +235,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                             if (edge_neighbors.insert_or_assign(p_ab->second, it_bc->second).second) {
                                 THROW_OR_ABORT("Expected edge (0)");
                             }
-                            C_DEBUG(std::cerr << "a " << std::endl);
+                            C_DEBUG(lerr() << "a ");
                             C_DEBUG(check_consistency());
                         }
                         // ca
@@ -254,7 +254,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         if (edge_neighbors.insert_or_assign(p_bc->second, O((*t)(a).position)).second) {
                             THROW_OR_ABORT("Expected edge (1)");
                         }
-                        C_DEBUG(std::cerr << "b " << std::endl);
+                        C_DEBUG(lerr() << "b ");
                         C_DEBUG(check_consistency());
                         // ab
                         if (edge_neighbors.erase(ei_ab) == 0) {
@@ -270,7 +270,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                                 THROW_OR_ABORT("Expected edge (2)");
                             }
                         }
-                        C_DEBUG(std::cerr << "4" << std::endl);
+                        C_DEBUG(lerr() << "4");
                         C_DEBUG(check_consistency());
                         // bc
                         if (edge_neighbors.erase(ei_bc) == 0) {
@@ -279,7 +279,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                         if (parent_edges.erase(ei_bc) == 0) {
                             THROW_OR_ABORT("Could not delete parent bc");
                         }
-                        C_DEBUG(std::cerr << "c" << std::endl);
+                        C_DEBUG(lerr() << "c");
                         C_DEBUG(check_consistency());
                         C_DEBUG(print_debug_info());
                     };

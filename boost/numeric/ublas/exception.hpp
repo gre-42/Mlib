@@ -214,18 +214,18 @@ namespace boost { namespace numeric { namespace ublas {
 //    }
 #ifndef BOOST_UBLAS_NO_STD_CERR
 #define BOOST_UBLAS_CHECK_FALSE(e) \
-    std::cerr << "Check failed in file " << __FILE__ << " at line " << __LINE__ << ":" << std::endl; \
+    lerr() << "Check failed in file " << __FILE__ << " at line " << __LINE__ << ":"; \
     e.raise ();
 #define BOOST_UBLAS_CHECK(expression, e) \
     if (! (expression)) { \
-        std::cerr << "Check failed in file " << __FILE__ << " at line " << __LINE__ << ":" << std::endl; \
-        std::cerr << #expression << std::endl; \
+        lerr() << "Check failed in file " << __FILE__ << " at line " << __LINE__ << ":"; \
+        lerr() << #expression; \
         e.raise (); \
     }
 #define BOOST_UBLAS_CHECK_EX(expression, file, line, e) \
     if (! (expression)) { \
-        std::cerr << "Check failed in file " << (file) << " at line " << (line) << ":" << std::endl; \
-        std::cerr << #expression << std::endl; \
+        lerr() << "Check failed in file " << (file) << " at line " << (line) << ":"; \
+        lerr() << #expression; \
         e.raise (); \
     }
 #else

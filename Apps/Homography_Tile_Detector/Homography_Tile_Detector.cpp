@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Internal error, NAN");
             }
             // H: x -> p, p = x-prime = x'
-            std::cerr << "H" << std::endl;
+            lerr() << "H";
             FixedArray<float, 3, 3> H = homography_from_points(Array<float>::from_dynamic<2>(x), Array<float>::from_dynamic<2>(p));
             H /= H(2, 2);
             std::list<FixedArray<float, 2>> feature_list;
@@ -84,8 +84,8 @@ int main(int argc, char** argv) {
             Array<FixedArray<float, 2>> Hp{ Hp_list };
             StbImage3 bmpf0{ StbImage3::from_float_grayscale(image0) };
             StbImage3 bmpf1{ StbImage3::from_float_grayscale(image1) };
-            std::cerr << H << std::endl;
-            // std::cerr << Hp << std::endl;
+            lerr() << H;
+            // lerr() << Hp;
             highlight_features(features, bmpf0, 1, Rgb24::red());
             highlight_features(Hp, bmpf1, 1, Rgb24::red());
             const std::string suffix = std::to_string(tile_id) + "-" + std::to_string(it) + ".png";

@@ -107,7 +107,7 @@ void test_pyramid() {
     std::list<Array<float>> res;
     resampling_pyramid(images, nlevels, reduction, [&](const Array<float>& img) -> void {
         res.push_back(img);
-        // std::cerr << img << std::endl;
+        // lerr() << img;
     });
     assert_isequal(res.size(), nlevels);
     assert_allclose(res.front(), Array<float>{
@@ -275,7 +275,7 @@ void test_meshgrid() {
 void test_local_polynomial_regression() {
     Array<float> image(random_array3<float>(ArrayShape{5, 6}, 1));
     meshgrid(image, 0);
-    // std::cerr << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2) << std::endl;
+    // lerr() << local_polynomial_regression(image, [](const Array<float>& im){return gaussian_filter_NWE(im, 1.f, NAN, 4.f, false);}, 2);
 }
 
 void test_waveform() {
@@ -297,7 +297,7 @@ void test_polynomial_contrast() {
     //     Array<Array<float>> A{ ArrayShape{ 1 }};
     //     A[0] = linspace<float>(-1, 1, weights.length());
     //     weights = polynomial_contrast(A, weights, contrast, poly_degree);
-    //     std::cerr << weights << std::endl;
+    //     lerr() << weights;
     // }
     auto w = [](const Array<double>& d){return gaussian_filter_NWE(d, 1.23, double{NAN}, 4., FilterExtension::NONE);};
     auto l = [&w](const Array<double>& d){return local_polynomial_regression(d, w, 2);};
@@ -333,7 +333,7 @@ int main(int argc, char **argv) {
         test_local_polynomial_regression();
         test_polynomial_contrast();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

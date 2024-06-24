@@ -224,8 +224,8 @@ Array<float> Mlib::Sfm::iterate_disparity_rgb_patch(
             &mask,
             &prior_disparity,
             &prior_strength);
-        // std::cerr << nanmax(abs(disparity_0 - *initial_disparity)) << std::endl;
-        // std::cerr << nanmax(abs(disparity_0 - prior_disparity)) << std::endl;
+        // lerr() << nanmax(abs(disparity_0 - *initial_disparity));
+        // lerr() << nanmax(abs(disparity_0 - prior_disparity));
         // draw_nan_masked_grayscale(mask.casted<float>(), 0, 0).save_to_file("mask__--" + std::to_string(i) + ".ppm");
         if (draw_debug_images) {
             draw_nan_masked_grayscale(disparity_0, -50.f, 50.f).save_to_file("disparity_0_i-" + std::to_string(i) + ".ppm");
@@ -234,8 +234,8 @@ Array<float> Mlib::Sfm::iterate_disparity_rgb_patch(
         // prior_disparity = box_filter_nans_as_zeros_NWE(disparity_0, ArrayShape{15, 15});
         prior_disparity = median_filter_2d(disparity_0, 15);
 
-        // std::cerr << nanmax(abs(disparity_0 - prior_disparity)) << std::endl;
-        // std::cerr << "------------" << std::endl;
+        // lerr() << nanmax(abs(disparity_0 - prior_disparity));
+        // lerr() << "------------";
         // for (size_t r = 0; r < disparity_0.shape(0); ++r) {
         //     for (size_t c = 0; c < disparity_0.shape(1); ++c) {
         //         if (mask(r, c)) {

@@ -35,11 +35,11 @@ PhysicsLoop::PhysicsLoop(
                     }
                 }
                 physics_iteration(set_fps.simulated_time());
-                // std::cerr << rb0->get_new_absolute_model_matrix() << std::endl;
+                // lerr() << rb0->get_new_absolute_model_matrix();
                 // TimeGuard tg2{"physics tick"};
             }
             set_fps.tick();
-            // TimeGuard::print_groups(std::cerr);
+            // TimeGuard::print_groups(lraw());
             // lag_finder.stop();
         }
     } catch (...) {

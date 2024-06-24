@@ -253,18 +253,18 @@ void RenderableColoredVertexArray::render_cva(
     LOG_FUNCTION("render_cva");
     LOG_INFO("RenderableColoredVertexArray::render_cva " + cva->identifier());
     TIME_GUARD_DECLARE(time_guard, "render_cva", cva->identifier());
-    // std::cerr << external_render_pass_type_to_string(render_pass.external.pass) << " " << cva->identifier();
+    // lerr() << external_render_pass_type_to_string(render_pass.external.pass) << " " << cva->identifier();
     // if (rcva_->instances_ != nullptr) {
-    //     std::cerr << ", #inst: " << rcva_->instances_->at(cva.get())->num_instances();
+    //     lerr() << ", #inst: " << rcva_->instances_->at(cva.get())->num_instances();
     // }
     // This check passes because the arrays are filtered in the constructor.
     assert_true((cva->material.aggregate_mode == AggregateMode::NONE) || (rcva_->instances_ != nullptr));
     if (render_pass.internal == InternalRenderPass::INITIAL && any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-        // std::cerr << ", skipped (0)" << std::endl;
+        // lerr() << ", skipped (0)";
         return;
     }
     if (render_pass.internal == InternalRenderPass::BLENDED && !any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
-        // std::cerr << ", skipped (1)" << std::endl;
+        // lerr() << ", skipped (1)";
         return;
     }
     // This is now done in the VisibilityCheck class.
@@ -278,7 +278,7 @@ void RenderableColoredVertexArray::render_cva(
         FrustumVisibilityCheck fvc{vc};
         if (!fvc.is_visible(cva->name, cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))
         {
-            // std::cerr << ", skipped (2)" << std::endl;
+            // lerr() << ", skipped (2)";
             return;
         }
     } else {
@@ -290,7 +290,7 @@ void RenderableColoredVertexArray::render_cva(
             return;
         }
     }
-    // std::cerr << std::endl;
+    // lerr();
 
     std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>> filtered_lights;
     std::vector<size_t> lightmap_indices;

@@ -16,7 +16,7 @@ public:
     {}
     ~resource_ptr_target() {
         if (ref_count_ != 0) {
-            std::cerr << "WARNING: resource_ptr_target destructor with nonzero refcount" << std::endl;
+            lerr() << "WARNING: resource_ptr_target destructor with nonzero refcount";
         } else {
             delete data_;
         }

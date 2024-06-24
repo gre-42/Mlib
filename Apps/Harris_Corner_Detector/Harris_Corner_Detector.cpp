@@ -65,10 +65,10 @@ int main(int argc, char** argv) {
                 safe_stoi(args.named_value("--size", "1")));
             bmp.save_to_file(args.unnamed_value(1));
         }
-        std::cerr << "V[response]=" << nanvar(response0) << std::endl;
-        std::cerr << "E[response]=" << nanmean(response0) << std::endl;
-        std::cerr << "min[response]=" << nanmin(response0) << std::endl;
-        std::cerr << "max[response]=" << nanmax(response0) << std::endl;
+        lerr() << "V[response]=" << nanvar(response0);
+        lerr() << "E[response]=" << nanmean(response0);
+        lerr() << "min[response]=" << nanmin(response0);
+        lerr() << "max[response]=" << nanmax(response0);
         if (args.has_named_value("--response")) {
             //PpmImage::from_float_grayscale(normalized_and_clipped(response, -float(5e-5), float(5e-5)))
             StbImage3::from_float_grayscale(
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
             }
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << "ERROR: " << e.what();
         return 1;
     }
     return 0;

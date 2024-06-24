@@ -18,7 +18,7 @@ ProjectionToTrRansac::ProjectionToTrRansac(
         y0.length(),    // nelems_large
         ro,
         [&](const Array<size_t>& indices){
-            std::cerr << "RANSAC ..." << std::endl;
+            lerr() << "RANSAC ...";
             ProjectionToTR ptr{
                 y0[indices],
                 y1[indices],

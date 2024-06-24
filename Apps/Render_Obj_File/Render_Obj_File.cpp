@@ -1116,7 +1116,7 @@ int main(int argc, char** argv) {
             StbImage3::from_float_rgb(array).save_to_file(args.named_value("--output"));
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     if (unhandled_exceptions_occured()) {

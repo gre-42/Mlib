@@ -263,16 +263,19 @@ void KeyBindings::increment_external_forces(
     // if (glfwGetKey(window_, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     //     glfwSetWindowShouldClose(window_, GLFW_TRUE);
     // }
-    // std::cerr << std::endl;
-    // std::cerr << std::endl;
-    // for (size_t i = 0; i < 15; ++i) {
-    //     std::cerr << i << "=" << (uint)gamepad_state.buttons[i] << " ";
+    // {
+    //     err = lerr();
+    //     err << std::endl;
+    //     err << std::endl;
+    //     for (size_t i = 0; i < 15; ++i) {
+    //         err << i << "=" << (uint)gamepad_state.buttons[i] << " ";
+    //     }
+    //     err << std::endl;
+    //     for (size_t i = 0; i < 6; ++i) {
+    //         err << i << "=" << gamepad_state.axes[i] << " ";
+    //     }
+    //     err << std::endl;
     // }
-    // std::cerr << std::endl;
-    // for (size_t i = 0; i < 6; ++i) {
-    //     std::cerr << i << "=" << gamepad_state.axes[i] << " ";
-    // }
-    // std::cerr << std::endl;
 
     // Absolute movable
     if (enable_controls) {

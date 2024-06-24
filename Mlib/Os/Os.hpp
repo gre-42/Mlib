@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <istream>
 #include <memory>
 #include <sstream>
@@ -13,7 +14,7 @@
 namespace Mlib {
 
 enum class LogLevel {
-    DISABLED,
+    ALWAYS,
     ERROR,
     WARNING,
     INFO
@@ -23,26 +24,32 @@ LogLevel log_level_from_string(const std::string& s);
 
 void set_log_level(LogLevel log_level);
 
-class LInfo: public std::ostringstream {
+class LogBuf: public std::stringbuf {
 public:
-    ~LInfo() override;
+    explicit LogBuf(std::function<void(const std::string&)> write);
+    virtual int sync() override;
+private:
+    std::function<void(const std::string&)> write_;
 };
 
-class LWarn: public std::ostringstream {
+class LLog: public std::ostream {
+    LLog(const LLog&) = delete;
+    LLog& operator = (const LLog&) = delete;
 public:
-    ~LWarn() override;
+    LLog(LogLevel log_level, const char* prefix);
+    ~LLog() override;
+    void destroy();
+    std::ostream& ref() const;
+private:
+    std::function<void(const std::string&)> write_;
+    LogBuf buf_;
+    bool destroyed_;
 };
 
-class LErr: public std::ostringstream {
-public:
-    ~LErr() override;
-};
-
-LInfo linfo();
-
-LWarn lwarn();
-
-LErr lerr();
+LLog linfo();
+LLog lwarn();
+LLog lerr();
+LLog lraw();
 
 std::unique_ptr<std::istream> create_ifstream(
     const std::filesystem::path& filename,

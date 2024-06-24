@@ -24,5 +24,5 @@ void MovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
 }
 
 void MovableLogger::advance_time(float dt, std::chrono::steady_clock::time_point time) {
-    status_writer_.write_status(std::cerr, log_components_);
+    status_writer_.write_status(lraw().ref(), log_components_);
 }

@@ -20,19 +20,19 @@ Array<TData> gradient_descent(
         dx = gradient(x);
         // TData len = std::sqrt(sum(squared(dx)));
         // if (len < 1e-12) {
-        //     std::cerr << "Gradient is zero, stopping after " << i << " steps (f=" << f0 << ")" << sum(squared(x)) << std::endl;
+        //     lerr() << "Gradient is zero, stopping after " << i << " steps (f=" << f0 << ")" << sum(squared(x));
         //     return x;
         // }
         // dx /= len;
         step_size *= 2;
         if (line_search_v1) {
             while(!(func(x - step_size * dx) < f0)) {
-                // std::cerr << "!(" << func(x - step_size * dx) << " < " << f0 << ")" << std::endl;
+                // lerr() << "!(" << func(x - step_size * dx) << " < " << f0 << ")";
                 step_size /= 2;
                 if (step_size < 1e-12) {
-                    std::cerr <<
+                    lerr() <<
                         "Negative gradient does not descent, stopping after " <<
-                        i << " steps" << std::endl;
+                        i << " steps";
                     return x;
                 }
             }
@@ -50,15 +50,15 @@ Array<TData> gradient_descent(
                 step_size /= 2;
             }
             if (!(best_step_value < f0)) {
-                // std::cerr << "!(" << func(x - step_size * dx) << " < " << f0 << ")" << std::endl;
-                std::cerr <<
+                // lerr() << "!(" << func(x - step_size * dx) << " < " << f0 << ")";
+                lerr() <<
                     "Negative gradient does not descent, stopping after " <<
-                    i << " steps" << std::endl;
+                    i << " steps";
                 return x;
             }
             step_size = best_step_size;
         }
-        // std::cerr << "step[" << i << "]: " << step_size << std::endl;
+        // lerr() << "step[" << i << "]: " << step_size;
         x -= step_size * dx;
     }
     return x;

@@ -136,7 +136,7 @@ void Mlib::smoothen_and_apply_heightmap(
         if (!vertices_to_delete.empty()) {
             if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::THROW) {
                 const FixedArray<double, 3>& v0 = **vertices_to_delete.begin();
-                std::cerr << v0 << std::endl;
+                lerr() << v0;
                 throw PointException<double, 2>(FixedArray<double, 2>{ v0(0), v0(1) }, "One or more vertices out of heightmap range");
             } else if (vertex_out_of_height_map_behavior == VertexOutOfHeightMapBehavior::DELETE) {
                 for (auto& l : tls_smoothed) {

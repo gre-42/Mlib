@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
             StbImage3::from_float_rgb(dest).save_to_file(args.named_value("--dest"));
         }
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return 1;
     }
     return 0;

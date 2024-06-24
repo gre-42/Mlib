@@ -25,7 +25,7 @@ void Mlib::add_street_steiner_points(
         return;
     }
     Interp<double> interp{steiner_point_distances_road, steiner_point_distances_steiner, OutOfRangeBehavior::CLAMP};
-    // std::cerr << "search_time " << bvh.search_time() << std::endl;
+    // lerr() << "search_time " << bvh.search_time();
     double dist0 = (*std::min_element(steiner_point_distances_steiner.begin(), steiner_point_distances_steiner.end())) * scale;
     double dist1 = 0;
     for (double v : steiner_point_distances_steiner) {

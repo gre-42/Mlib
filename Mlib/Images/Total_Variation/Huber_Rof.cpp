@@ -199,10 +199,10 @@ Array<float> Mlib::HuberRof::energy_dual(
     // gradient = dimension * i * j
     // => gradient.flattened() = [di; dj]
     if (verbose) {
-        std::cerr << "f: " << xsum(AGd(g, d) * q) <<
+        lerr() << "f: " << xsum(AGd(g, d) * q) <<
             " | " << 1 / (2 * theta) * xsum(squared(d - a)) <<
             " | " << xsum(delta(q)) <<
-            " | " << epsilon / 2 * xsum(squared(q)) << std::endl;
+            " | " << epsilon / 2 * xsum(squared(q));
     }
     return
         sum_q(AGd(g, d) * q)
@@ -217,7 +217,7 @@ Array<float> Mlib::HuberRof::energy_dq(
     const Array<float>& d,
     const Array<float>& q)
 {
-    // std::cerr << "dq q " << xsum(squared(q)) << std::endl;
+    // lerr() << "dq q " << xsum(squared(q));
     return AGd(g, d) - q * epsilon;
 }
 
@@ -228,7 +228,7 @@ Array<float> Mlib::HuberRof::energy_dd(
     const Array<float>& a,
     const Array<float>& q)
 {
-    // std::cerr << "dd q " << xsum(squared(q)) << std::endl;
+    // lerr() << "dd q " << xsum(squared(q));
 
     // A = [Ax; Ay]
     // A' = [-Ax -Ay]
@@ -236,10 +236,10 @@ Array<float> Mlib::HuberRof::energy_dd(
     // Also change "forward differences" to "backward differences"
     Array<float> AGaq_ = AGaq(g, q);
     Array<float> res = AGaq_ + (d - a) / theta;
-    // std::cerr << "----- dd res -----" << std::endl;
-    // std::cerr << "nanmin " << nanmin(res) << std::endl;
-    // std::cerr << "nanmax " << nanmax(res) << std::endl;
-    // std::cerr << xsum(squared(d - a)) << std::endl;
+    // lerr() << "----- dd res -----";
+    // lerr() << "nanmin " << nanmin(res);
+    // lerr() << "nanmax " << nanmax(res);
+    // lerr() << xsum(squared(d - a));
     return res;
 }
 
@@ -251,9 +251,9 @@ float Mlib::HuberRof::prox_sigma_fs(
     const Array<float>& q)
 {
     if (verbose) {
-        std::cerr << "prox_sigma_fs: " << + xsum(delta(q)) <<
+        lerr() << "prox_sigma_fs: " << + xsum(delta(q)) <<
             " | " << + epsilon / 2 * xsum(squared(q)) <<
-            " | " << + 1.f / 2 * sum(squared(q + sigma * AGd(g, dm))) << std::endl;
+            " | " << + 1.f / 2 * sum(squared(q + sigma * AGd(g, dm)));
     }
     return
         + xsum(delta(q))
@@ -269,8 +269,8 @@ Array<float> Mlib::HuberRof::prox_sigma_fs_dq(
     const Array<float>& q)
 {
     if (verbose) {
-        std::cerr << "max(abs(dm)) " << nanmax(abs(dm)) << std::endl;
-        std::cerr << "max(abs(dq)) " << nanmax(abs(q * (1 + epsilon) + sigma * AGd(g, dm))) << std::endl;
+        lerr() << "max(abs(dm)) " << nanmax(abs(dm));
+        lerr() << "max(abs(dq)) " << nanmax(abs(q * (1 + epsilon) + sigma * AGd(g, dm)));
     }
     return q * (1 + epsilon) + sigma * AGd(g, dm);
 }
@@ -288,9 +288,9 @@ float Mlib::HuberRof::prox_tau_gs(
         return zero_sum ? sum(v[!Mlib::isnan(v)]) : xsum(v);
     };
     if (verbose) {
-        std::cerr << "prox_tau_gs " <<
+        lerr() << "prox_tau_gs " <<
             1 / (2 * theta) * zum(squared(d - a)) <<
-            " | " << 1.f / 2 * zum(squared(d - tau * AGaq(g, q))) << std::endl;
+            " | " << 1.f / 2 * zum(squared(d - tau * AGaq(g, q)));
     }
     return
         1 / (2 * theta) * zum(squared(d - a))
@@ -492,13 +492,13 @@ void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
             [&](const Array<float>& dd) { return prox_tau_gs_dd(tau, g_, config.theta, dd, a_, q_); },
             10);
     } else if (false) {
-        std::cerr << "Computing q" << std::endl;
+        lerr() << "Computing q";
         q_.move() = gradient_descent(
             q_,
             [&](const Array<float>& qq) { return -xsum(energy_dual(g_, config.theta, config.epsilon, d_, a_, qq)); },
             [&](const Array<float>& qq) { return -energy_dq(g_, config.epsilon, d_, qq); },
             10);
-        std::cerr << "Computing d" << std::endl;
+        lerr() << "Computing d";
         d_.move() = gradient_descent(
             d_,
             [&](const Array<float>& dd) { return xsum(energy_dual(g_, config.theta, config.epsilon, dd, a_, q_)); },
@@ -513,7 +513,7 @@ void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
             compute_sigmas_ravich2(sigma_d, sigma_q, config.theta, config.epsilon);
         }
         if (print_debug_) {
-            std::cerr << "sigma_q " << sigma_q << " sigma_d " << sigma_d << std::endl;
+            lerr() << "sigma_q " << sigma_q << " sigma_d " << sigma_d;
         }
         q_.move() = update_q(g_, q_, d_, config.epsilon, sigma_q);
         d_.move() = update_d(g_, q_, d_, a_, config.theta, sigma_d, config.d_min, config.d_max);
@@ -521,10 +521,10 @@ void HuberRofSolver::iterate(const HuberRof::HuberRofConfig& config) {
     if (print_debug_) {
         Array<float> eo = energy_primal(g_, config.theta, config.epsilon, d_, a_);
         Array<float> en = energy_dual(g_, config.theta, config.epsilon, d_, a_, q_);
-        std::cerr << "q: " << xsum(squared(q_)) << std::endl;
-        std::cerr << "q: " << nanquantiles(q_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
-        std::cerr << "d: " << nanquantiles(d_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f}) << std::endl;
-        std::cerr << "eo: " << xsum(eo) << " en " << xsum(en) << std::endl;
+        lerr() << "q: " << xsum(squared(q_));
+        lerr() << "q: " << nanquantiles(q_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f});
+        lerr() << "d: " << nanquantiles(d_, Array<float>{0.f, 0.05f, 0.5f, 0.95f, 1.f});
+        lerr() << "eo: " << xsum(eo) << " en " << xsum(en);
         if (print_bmps_ && n_ % 30 == 0) {
             if (regularizer == Regularizer::FORWARD_BACKWARD_DIFFERENCES ||
                 regularizer == Regularizer::FORWARD_BACKWARD_WEIGHTING ||

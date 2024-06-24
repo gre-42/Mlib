@@ -106,10 +106,7 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/list.hpp>
 #include <cereal/types/map.hpp>
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <cereal/types/memory.hpp>
-#pragma GCC diagnostic pop
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
 #include <fstream>
@@ -117,6 +114,9 @@
 #include <poly2tri/point_exception.hpp>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic pop
 
 // #undef LOG_FUNCTION
 // #undef LOG_INFO
@@ -298,9 +298,9 @@ OsmMapResource::OsmMapResource(
     if (config.with_buildings) {
         for (const auto& bu : buildings) {
             if (bu.way.nd.empty()) {
-                std::cerr << "Building " << bu.id << " is empty" << std::endl;
+                lerr() << "Building " << bu.id << " is empty";
             } else if (bu.way.nd.front() != bu.way.nd.back()) {
-                std::cerr << "Building " << bu.id << " has no closed outline" << std::endl;
+                lerr() << "Building " << bu.id << " has no closed outline";
             }
         }
         LOG_INFO("draw_building_walls (facade)");
@@ -441,7 +441,7 @@ OsmMapResource::OsmMapResource(
         //         for (const auto& t : e.styled_road.triangle_list->triangles_) {
         //             for (const auto& v : t.flat_iterable()) {
         //                 if (max(abs(v.position - FixedArray<float, 3>{-0.627685, 1.276513, 0.000000})) < 1e-6) {
-        //                     std::cerr << std::setprecision(15) << v << std::endl;
+        //                     lerr() << std::setprecision(15) << v;
         //                 }
         //             }
         //         }
@@ -463,8 +463,7 @@ OsmMapResource::OsmMapResource(
             {
                 FixedArray<double, 3> pos{coords[0], coords[1], 0.f};
                 auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-                std::cerr.precision(15);
-                std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
+                lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(pos);
             }
             for (float r : string_to_vector(str_getenv("MESH_AROUND_RADIUSES"), safe_stof)) {
                 plot_mesh(                         
@@ -955,8 +954,7 @@ OsmMapResource::OsmMapResource(
                 {
                     FixedArray<double, 3> pos{ coords(0), coords(1), 0.f };
                     auto m = get_geographic_mapping(TransformationMatrix<double, double, 3>::identity());
-                    std::cerr.precision(15);
-                    std::cerr << "Saving mesh around " << pos << " | " << m.transform(pos) << std::endl;
+                    lerr() << std::setprecision(15) << "Saving mesh around " << pos << " | " << m.transform(pos);
                 }
                 for (float r : string_to_vector(getenv_default("EXCEPT_MESH_AROUND_RADIUSES", "0.05 0.2 0.5"), safe_stof)) {
                     plot_mesh(

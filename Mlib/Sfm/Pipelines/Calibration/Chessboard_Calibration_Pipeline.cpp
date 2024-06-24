@@ -24,10 +24,10 @@ ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
     if (fs::exists(camera_intrinsics_filename_) &&
         fs::exists(camera_sensor_size_filename_))
     {
-        std::cerr <<
+        lerr() <<
             "Camera calibration file " << camera_intrinsics_filename_ <<
             " and sensor size file " << camera_sensor_size_filename_ <<
-            " exist, loading..." << std::endl;
+            " exist, loading...";
         Array<float> ki = Array<float>::load_txt_2d(camera_intrinsics_filename_);
         if (!all(ki.shape() == ArrayShape{ 3, 3 })) {
             throw std::runtime_error("Intrinsic matrix has incorrect shape");
@@ -43,10 +43,10 @@ ChessboardCalibrationPipeline::ChessboardCalibrationPipeline(
         }
         is_cached_ = true;
     } else {
-        std::cerr <<
+        lerr() <<
             "Camera calibration file " << camera_intrinsics_filename_ <<
             " or sensor size file " << camera_sensor_size_filename_ <<
-            " does not exist, computing..." << std::endl;
+            " does not exist, computing...";
         sensor_size_ = SIZE_MAX;
         is_cached_ = false;
     }

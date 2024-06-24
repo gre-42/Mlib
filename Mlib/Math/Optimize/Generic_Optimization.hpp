@@ -31,9 +31,9 @@ TX generic_optimization(
     Array<TData> residual;
     size_t i;
     for (i = 0; i < niterations; ++i) {
-        // std::cerr << "i " << i << std::endl;
-        // std::cerr << "J " << J(x).shape() << std::endl;
-        // std::cerr << "f " << f(x).shape() << std::endl;
+        // lerr() << "i " << i;
+        // lerr() << "J " << J(x).shape();
+        // lerr() << "f " << f(x).shape();
         residual = get_residual(x, i);
         if (max_residual != nullptr) {
             if (final_residual != nullptr) {
@@ -56,7 +56,7 @@ TX generic_optimization(
             ? NAN
             : (old_ssq_residual - ssq_residual) / old_ssq_residual);
         if (print_residual) {
-            std::cerr << "residual " << ssq_residual << " redux " << redux << std::endl;
+            lerr() << "residual " << ssq_residual << " redux " << redux;
         }
         if (ssq_residual >= old_ssq_residual) {
             if (--nmisses == 0) {

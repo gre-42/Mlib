@@ -1283,7 +1283,7 @@ private:
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        lerr() << "validation layer: " << pCallbackData->pMessage;
 
         return VK_FALSE;
     }
@@ -1295,7 +1295,7 @@ int main(int argc, char** argv) {
     try {
         app.run(argc == 2 ? argv[1] : "");
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        lerr() << e.what();
         return EXIT_FAILURE;
     }
 

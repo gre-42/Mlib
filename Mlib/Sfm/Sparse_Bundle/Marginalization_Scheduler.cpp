@@ -38,7 +38,7 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool margi
 {
     /*while(reconstructed_points.active_.size() > cfg_.nbundle_points) {
         size_t index = reconstructed_points.active_.begin()->first;
-        std::cerr << "Marginalizing point [" << index << "]" << std::endl;
+        lerr() << "Marginalizing point [" << index << "]";
         reconstructed_points.move_to_to_be_marginalized(index);
     }
     for (auto ip = particles.begin(); ip != particles.end(); ) {
@@ -48,7 +48,7 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool margi
             if (r != reconstructed_points.to_be_marginalized_.end()) {
                 auto c_it = camera_frames.active_.find(p->first);
                 if (c_it != camera_frames.active_.end()) {
-                    std::cerr << "Linearizing camera " << p->first.count() << " ms" << std::endl;
+                    lerr() << "Linearizing camera " << p->first.count() << " ms";
                     frozen_camera_frames.insert(std::make_pair(
                         p->first,
                         CameraFrame{
@@ -57,7 +57,7 @@ std::unique_ptr<GlobalBundle> MarginalizationScheduler::global_bundle(bool margi
                             c_it->second.kep.copy()}));
                     camera_frames.move_to_to_be_linearized(p->first);
                 }
-                // std::cerr << "Linearizing particles " << p->first.count() << " ms" << std::endl;
+                // lerr() << "Linearizing particles " << p->first.count() << " ms";
                 // particles.move_to_to_be_linearized(p->first);
                 break;
             }
@@ -180,7 +180,7 @@ std::chrono::milliseconds MarginalizationScheduler::find_time_to_be_marginalized
                 }
             }
             if ((float(npoints_existing) / npoints_stored < 0.05) || (npoints_stored < 10)) {
-                std::cerr << "Marginalizing camera " << c.first.count() << " ms due to npoints-constraint" << std::endl;
+                lerr() << "Marginalizing camera " << c.first.count() << " ms due to npoints-constraint";
                 return c.first;
             }
         }
@@ -236,15 +236,15 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
     std::chrono::milliseconds time_newest = camera_frames_.rbegin()->first;
     std::chrono::milliseconds time_second = (++camera_frames_.rbegin())->first;
     assert_true(time_tbm != time_newest && time_tbm != time_second);
-    std::cerr << "Marginalizing camera's points at time " << time_tbm.count() << " ms" << std::endl;
-    std::cerr << "Newest time " << time_newest.count() << " ms" << std::endl;
-    std::cerr << "Second time " << time_second.count() << " ms" << std::endl;
+    lerr() << "Marginalizing camera's points at time " << time_tbm.count() << " ms";
+    lerr() << "Newest time " << time_newest.count() << " ms";
+    lerr() << "Second time " << time_second.count() << " ms";
     size_t nmeasurements_dropped = 0;
     size_t npoints_marginalized = 0;
     for (const auto& s : particles_.at(time_tbm).tracked_points) {
         const auto& r = reconstructed_points_.find(s.first);
         if (r == reconstructed_points_.end()) {
-            // std::cerr << "Linearizing: Reconstructed point [" << s.first << "] never existed" << std::endl;
+            // lerr() << "Linearizing: Reconstructed point [" << s.first << "] never existed";
         } else if (r->state_ != MmState::MARGINALIZED) {
             const auto& pp_newest = particles_.at(time_newest);
             const auto& pp_second = particles_.at(time_second);
@@ -254,13 +254,13 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
             {
                 ++nmeasurements_dropped;
                 if (cfg_.verbose) {
-                    std::cerr << "Dropping measurement of [" << s.first << "] at time " << time_tbm.count() << " ms" << std::endl;
+                    lerr() << "Dropping measurement of [" << s.first << "] at time " << time_tbm.count() << " ms";
                 }
                 dropped_observations_.insert(PointObservation{ time_tbm, s.first });
             } else {
                 ++npoints_marginalized;
                 if (cfg_.verbose) {
-                    std::cerr << "Marginalization of point [" << s.first << "], state " << r->state_ << std::endl;
+                    lerr() << "Marginalization of point [" << s.first << "], state " << r->state_;
                 }
                 mids.marginalize_point(s.first);
                 point_ids.push_back(s.first);
@@ -270,14 +270,14 @@ std::vector<size_t> MarginalizationScheduler::find_points_to_be_marginalized(
                 reconstructed_points_.move_to_marginalized(s.first);
             }
         } else {
-            // std::cerr << "Point already being linearized [" << s.first << "]" << std::endl;
+            // lerr() << "Point already being linearized [" << s.first << "]";
         }
     }
     if (nmeasurements_dropped != 0) {
-        std::cerr << "Dropping " << nmeasurements_dropped << " measurements at time " << time_tbm.count() << " ms" << std::endl;
+        lerr() << "Dropping " << nmeasurements_dropped << " measurements at time " << time_tbm.count() << " ms";
     }
     if (npoints_marginalized != 0) {
-        std::cerr << "Marginalization of " << npoints_marginalized << " points" << std::endl;
+        lerr() << "Marginalization of " << npoints_marginalized << " points";
     }
     //particles.move_to_to_be_marginalized(time);
     return point_ids;
@@ -290,7 +290,7 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
     std::set<std::chrono::milliseconds> linearized_cams;
     for (const size_t i : point_ids) {
         const auto& r = reconstructed_points_.find(i);
-        std::cerr << "Marginalizing reconstructed [" << i << "]" << std::endl;
+        lerr() << "Marginalizing reconstructed [" << i << "]";
         assert_true(r->state_ == MmState::MARGINALIZED);
         for (auto cit = camera_frames_.begin(); cit != camera_frames_.end(); ) {
             const auto c = *cit;
@@ -305,9 +305,9 @@ void MarginalizationScheduler::find_cameras_to_be_linearized(
                 const auto& p = particles_.at(c.first);
                 if (p.tracked_points.find(i) != p.tracked_points.end()) {
                     mids.linearize_camera(c.first);
-                    std::cerr << "Linearizing camera at " << c.first.count() << " ms" << std::endl;
+                    lerr() << "Linearizing camera at " << c.first.count() << " ms";
                     if (c.state_ == MmState::ACTIVE) {
-                        std::cerr << "Freezing camera at " << c.first.count() << " ms" << std::endl;
+                        lerr() << "Freezing camera at " << c.first.count() << " ms";
                         camera_frames_.move_to_linearized(c.first);
                         frozen_camera_frames_.insert(std::make_pair(
                             c.first,
@@ -332,7 +332,7 @@ void MarginalizationScheduler::find_points_to_be_linearized(
         }
         state = it->state_;
     }
-    std::cerr << "Marginalizing camera " << time.count() << " ms, state " << state << std::endl;
+    lerr() << "Marginalizing camera " << time.count() << " ms, state " << state;
     if (state == MmState::ACTIVE) {
         camera_frames_.move_to_linearized(time);
     }
@@ -358,7 +358,7 @@ void MarginalizationScheduler::find_points_to_be_linearized(
                         r->first,
                         std::make_shared<ReconstructedPoint>(*r->second)));
                 }
-                std::cerr << "Linearizing reconstructed [" << s.first << "]" << std::endl;
+                lerr() << "Linearizing reconstructed [" << s.first << "]";
                 mids.linearize_point(s.first);
             }
         }
@@ -384,10 +384,10 @@ void MarginalizationScheduler::abandon_points() {
             }
             if (!point_found) {
                 if (c->state_ == MmState::ACTIVE) {
-                    std::cerr << "Active -> linearized " << c->first.count() << " ms" << std::endl;
+                    lerr() << "Active -> linearized " << c->first.count() << " ms";
                     camera_frames_.move_to_linearized(c->first);
                 }
-                std::cerr << "Abandoning camera " << c->first.count() << " ms" << std::endl;
+                lerr() << "Abandoning camera " << c->first.count() << " ms";
                 camera_frames_.move_to_marginalized(c->first);
             }
         }
@@ -408,10 +408,10 @@ void MarginalizationScheduler::abandon_points() {
                 }
                 if (!found_camera) {
                     if (r->state_ == MmState::ACTIVE) {
-                        std::cerr << "Active -> linearized [" << r->first << "]" << std::endl;
+                        lerr() << "Active -> linearized [" << r->first << "]";
                         reconstructed_points_.move_to_linearized(r->first);
                     }
-                    std::cerr << "Abandoning point [" << r->first << "]" << std::endl;
+                    lerr() << "Abandoning point [" << r->first << "]";
                     reconstructed_points_.move_to_marginalized(r->first);
                 }
             }

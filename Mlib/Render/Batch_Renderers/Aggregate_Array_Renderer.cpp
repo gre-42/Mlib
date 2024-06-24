@@ -219,7 +219,7 @@ void AggregateArrayRenderer::update_aggregates(
     // for (const auto& a : aggregate_queue) {
     //     ntris += a->triangles.size();
     // }
-    // std::cerr << "Update aggregates: " << ntris << std::endl;
+    // lerr() << "Update aggregates: " << ntris;
 
     //std::map<Material, size_t> material_ids;
     //size_t ntriangles = 0;

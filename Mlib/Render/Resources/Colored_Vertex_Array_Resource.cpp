@@ -1585,7 +1585,7 @@ AggregateMode ColoredVertexArrayResource::aggregate_mode() const {
 }
 
 void ColoredVertexArrayResource::print(std::ostream& ostr) const {
-    std::cerr << "ColoredVertexArrayResource\n";
+    ostr << "ColoredVertexArrayResource\n";
     triangles_res_->print(ostr);
 }
 

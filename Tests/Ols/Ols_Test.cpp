@@ -12,8 +12,8 @@ void test_ols() {
         assert_isclose<float>(r.predicted(5), 105.f);
         assert_isclose(std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
         assert_isclose<float>(r.confidence(5), std::numeric_limits<float>::infinity());
-        //std::cerr << "p " << r.predicted(5) << std::endl;
-        //std::cerr << "c " << r.confidence_probability(5) << std::endl;
+        //lerr() << "p " << r.predicted(5);
+        //lerr() << "c " << r.confidence_probability(5);
     }
     {
         Ols<float> r;
@@ -30,8 +30,8 @@ void test_ols() {
         r.train(predictors, responses);
         assert_isclose<float>(r.predicted(5), 98.134155f);
         assert_isclose<float>(r.confidence(5), 11.770093f);
-        //std::cerr << "p " << r.predicted(5) << std::endl;
-        //std::cerr << "c " << r.confidence_probability(5) << std::endl;
+        //lerr() << "p " << r.predicted(5);
+        //lerr() << "c " << r.confidence_probability(5);
     }
     {
         Ols<float> r;

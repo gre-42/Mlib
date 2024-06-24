@@ -416,7 +416,7 @@ void TriangleList<TPos>::delete_backfacing_triangles(
             if (deleted_triangles != nullptr) {
                 deleted_triangles->push_back(t);
             }
-            // std::cerr << "Triangle at has negative normal direction" << std::endl;
+            // lerr() << "Triangle at has negative normal direction";
             // draw_node(*triangles, {t(0).position(0), t(0).position(1)}, scale * 5);
             // draw_node(*triangles, {t(1).position(0), t(1).position(1)}, scale * 5);
             // draw_node(*triangles, {t(2).position(0), t(2).position(1)}, scale * 5);

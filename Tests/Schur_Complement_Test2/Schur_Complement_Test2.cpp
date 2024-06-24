@@ -53,16 +53,16 @@ void test_schur_complement2() {
         //Array<float> dx = solve_symm_1d(lhs_ka.unblocked(ids_ka, ids_ka, ArrayShape{J.shape(1), J.shape(1)}, 0.f), rhs_ka.unblocked(ids_ka, J.shape(1), 0.f), alpha, beta);
         Array<float> dx = solve_symm_1d(lhs_ka, rhs_ka, alpha, beta).value();
         assert_isclose(sum(abs(lhs_ka - lhs_ka.T())), 0.f);
-        //std::cerr << dx + dx.unblocked(ids_ka, x0.length()) << std::endl;
+        //lerr() << dx + dx.unblocked(ids_ka, x0.length());
     }
     {
         Array<float> lhs_ka;
         Array<float> rhs_ka;
         marginalize_least_squares(J, residual, x0, ids_k, ids_a, ids_b, lhs_ka, rhs_ka, alpha*0, beta*0);
-        // std::cerr << dot2d(J.vH(), J) << std::endl;
-        // std::cerr << lhs_ka.blocked(ids_ka, ids_ka) << std::endl;
+        // lerr() << dot2d(J.vH(), J);
+        // lerr() << lhs_ka.blocked(ids_ka, ids_ka);
         Array<float> dx = solve_symm_1d(lhs_ka.blocked(ids_ka, ids_ka), rhs_ka.blocked(ids_ka), alpha, beta).value();
-        //std::cerr << x0 + dx.unblocked(ids_ka, x0.length()) << std::endl;
+        //lerr() << x0 + dx.unblocked(ids_ka, x0.length());
     }
     {
         Array<float> A = dot2d(J.vH(), J);
@@ -103,15 +103,15 @@ void test_schur_complement2() {
         }
         // dsolver.marginalize(J, x0, ids_a, ids_b);
         // if (false) {
-        //     std::cerr << "rhs_ka_ " << dsolver.rhs_ka_ << std::endl;
+        //     lerr() << "rhs_ka_ " << dsolver.rhs_ka_;
         //     dsolver.update_indices({{UUID{1}, 0}, {UUID{2}, 1}, {UUID{3}, 2}});
-        //     std::cerr << "rhs_ka_ " << dsolver.rhs_ka_ << std::endl;
+        //     lerr() << "rhs_ka_ " << dsolver.rhs_ka_;
         //     Array<float> dx = dsolver.solve(J.columns(ids_ka), x0, residual);
-        //     std::cerr << "lhs_ka_" << std::endl;
-        //     std::cerr << dsolver.lhs_ka_ << std::endl;
-        //     std::cerr << "rhs_ka_" << std::endl;
-        //     std::cerr << dsolver.rhs_ka_ << std::endl;
-        //     std::cerr << x0 + dx.unblocked(ids_ka, x0.length()) << std::endl;
+        //     lerr() << "lhs_ka_";
+        //     lerr() << dsolver.lhs_ka_;
+        //     lerr() << "rhs_ka_";
+        //     lerr() << dsolver.rhs_ka_;
+        //     lerr() << x0 + dx.unblocked(ids_ka, x0.length());
         // }
     }
 }
@@ -281,7 +281,7 @@ void test_fill_in() {
     TestScene1d tc(uuid_gen);
     gen_scene1(tc);
     Scene1dMatrix m{tc};
-    // std::cerr << (m.jacobian().to_dense_array() != 0.f) << std::endl;
+    // lerr() << (m.jacobian().to_dense_array() != 0.f);
     {
         MarginalizingBias bsolver{0, 0};
         bsolver.update_indices(m.predictor_uuids());
@@ -308,9 +308,9 @@ void test_fill_in() {
             {UUID{ids_ka(4)}, 4},
             {UUID{ids_ka(5)}, 5},
             {UUID{ids_ka(6)}, 6}});
-        // std::cerr << bsolver.lhs_ka_ << std::endl;
+        // lerr() << bsolver.lhs_ka_;
         Array<float> dx = bsolver.solve(m.jacobian().columns(ids_ka), x0.blocked(ids_ka), residual);
-        // std::cerr << dx << std::endl;
+        // lerr() << dx;
     }
     {
         MarginalizingBias bsolver{0, 0};
@@ -339,9 +339,9 @@ void test_fill_in() {
             {UUID{ids_ka(4)}, 4},
             {UUID{ids_ka(5)}, 5},
             {UUID{ids_ka(6)}, 6}});
-        // std::cerr << bsolver.lhs_ka_ << std::endl;
+        // lerr() << bsolver.lhs_ka_;
         Array<float> dx = bsolver.solve(m.jacobian().columns(ids_ka), x0.blocked(ids_ka), residual);
-        // std::cerr << dx << std::endl;
+        // lerr() << dx;
     }
 }
 
@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
         test_schur_solver();
         test_fill_in();
     } catch (const std::runtime_error& e) {
-        std::cerr << "ERROR: " << e.what() << std::endl;
+        lerr() << "ERROR: " << e.what();
         return 1;
     }
     return 0;

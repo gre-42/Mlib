@@ -169,8 +169,8 @@ Bgr565Bitmap Bgr565Bitmap::load_from_stream(std::istream& istream) {
     static_assert(sizeof(Bgr565) == 2);
     Bgr565Bitmap aligned{aligned_bitmap(ArrayShape{header.height, header.width})};
     if (aligned.nbytes() != header.sizeImage) {
-        // std::cerr << aligned.nbytes() << std::endl;
-        // std::cerr << header.sizeImage << std::endl;
+        // lerr() << aligned.nbytes();
+        // lerr() << header.sizeImage;
         THROW_OR_ABORT("Image size does not match padding");
     }
     istream.read(reinterpret_cast<char*>(&aligned(0, 0)), integral_cast<std::streamsize>(aligned.nbytes()));
