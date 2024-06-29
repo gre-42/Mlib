@@ -87,7 +87,7 @@ using namespace Mlib;
  * The refernce bones have the coordinates of the T-pose, typically.
  * It is accessed by Bone::initial_absolute_transformation.
  */
-void add_reference_bone(
+static void add_reference_bone(
     const Bone& b,
     DanglingRef<SceneNode> parent_node,
     SceneNodeResources& scene_node_resources)
@@ -112,7 +112,7 @@ void add_reference_bone(
  *
  * The bone frames' coordinates are relative to their parent bones.
  */
-void add_bone_frame(
+static void add_bone_frame(
     const Bone& b,
     const UUVector<OffsetAndQuaternion<float, float>>& frame,
     DanglingRef<SceneNode> parent_node,
@@ -144,7 +144,7 @@ struct LightAndNode {
 };
 
 template <class TPos>
-LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
+static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light_configuration) {
     std::vector<BlendMapTexture> textures;
     float period_world = 0.f;
     if (args.has_named_value("--multilayer_diffuse")) {

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
@@ -101,6 +102,9 @@ private:
     FixedArray<TData, tndim> center_;
     TData radius_;
 };
+
+template <class TData, size_t tndim>
+using UBoundingSphere = DefaultUnitialized<BoundingSphere<TData, tndim>>;
 
 }
 

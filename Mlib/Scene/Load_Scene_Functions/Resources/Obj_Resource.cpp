@@ -217,7 +217,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
              &asset_references=args.asset_references,
              name]()
             {
-                RaceLogic race_logic{asset_references, name};
+                RaceLogic race_logic{ asset_references, name };
                 return load_renderable_kn5(
                     filename,
                     load_mesh_config,
