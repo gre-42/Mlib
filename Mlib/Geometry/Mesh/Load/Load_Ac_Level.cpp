@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 using namespace Mlib;
 
 LoadAcLevel::LoadAcLevel(std::string script_filename)
-: script_filename_{std::move(script_filename)}
+    : script_filename_{ std::move(script_filename) }
 {}
 
 LoadAcLevel::~LoadAcLevel() = default;
