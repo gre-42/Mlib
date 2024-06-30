@@ -50,6 +50,7 @@
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Resources/Bvh_File_Resource.hpp>
+#include <Mlib/Render/Resources/Dff_File_Resource.hpp>
 #include <Mlib/Render/Resources/Kn5_File_Resource.hpp>
 #include <Mlib/Render/Resources/Mhx2_File_Resource.hpp>
 #include <Mlib/Render/Resources/Obj_File_Resource.hpp>
@@ -611,6 +612,11 @@ int main(int argc, char** argv) {
                             &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
                     }
+                } else if (filename.ends_with(".dff")) {
+                    scene_node_resources.add_resource(name, load_renderable_dff(
+                        filename,
+                        cfg<float>(args, light_configuration),
+                        scene_node_resources));
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,
@@ -1022,7 +1028,7 @@ int main(int argc, char** argv) {
             ClearMode::COLOR_AND_DEPTH };
         AggregateRenderLogic aggregate_render_logic{
             rendering_resources,
-            standard_camera_logic };
+            standard_render_logic };
         WindowUserClass window_user_object{
             .window_position{
                 .fullscreen_width = render_config.fullscreen_width,

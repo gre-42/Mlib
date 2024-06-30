@@ -1,0 +1,38 @@
+#include "Binary.hpp"
+#include <Mlib/Os/Os.hpp>
+
+using namespace Mlib;
+
+static void print_char(char c) {
+    char v = (c >= ' ') && (c <= '~') ? c : '.';
+    linfo() << "Read: " << std::hex << "0x" << std::setfill('0') << std::setw(2) << (uint32_t)(uint8_t)c << " - " << v;
+}
+
+void Mlib::print_chars(std::span<char> span) {
+    for (char c : span) {
+        print_char(c);
+    }
+}
+
+std::string Mlib::read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity) {
+    if (length > 1'000) {
+        THROW_OR_ABORT("String too large");
+    }
+    std::string s(length, '?');
+    read_vector(istr, s, msg, verbosity);
+    return s;
+}
+
+void Mlib::seek_relative_positive(std::istream& istr, size_t amount, IoVerbosity verbosity) {
+    if (verbosity == IoVerbosity::VERBOSE) {
+        for (size_t i = 0; i < amount; ++i) {
+            auto c = istr.get();
+            if (c == EOF) {
+                THROW_OR_ABORT("Could not read char");
+            }
+            print_char((char)c);
+        }
+    } else {
+        istr.seekg(amount, std::ios::cur);
+    }
+}

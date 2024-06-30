@@ -1043,8 +1043,7 @@ public:
         if (element_size != sizeof(TData)) {
             THROW_OR_ABORT("Wrong element size in file \"" + filename + '"');
         }
-        char c;
-        read_binary(ifs, c);
+        auto c = read_binary<char>(ifs, "newline character", IoVerbosity::SILENT);
         if (ifs.fail()) {
             THROW_OR_ABORT("Could not read newline-character of file \"" + filename + '"');
         }

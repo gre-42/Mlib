@@ -1,6 +1,6 @@
 #pragma once
 #include <iosfwd>
-#include <map>
+#include <list>
 #include <memory>
 #include <string>
 
@@ -11,12 +11,13 @@ class ColoredVertexArray;
 template <class TPos>
 struct LoadMeshConfig;
 
-std::map<std::string, std::shared_ptr<ColoredVertexArray<float>>> load_dff(
+std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff(
     const std::string& filename,
     const LoadMeshConfig<float>& cfg);
 
-std::map<std::string, std::shared_ptr<ColoredVertexArray<float>>> load_dff(
+std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff(
     std::istream& istr,
+    const std::string& name,
     const LoadMeshConfig<float>& cfg);
 
 }

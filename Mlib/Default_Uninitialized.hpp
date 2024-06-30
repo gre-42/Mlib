@@ -29,6 +29,12 @@ public:
         v = std::move(other);
         return *this;
     }
+    T& base() {
+        return *this;
+    }
+    const T& base() const {
+        return *this;
+    }
 };
 
 template <class T>

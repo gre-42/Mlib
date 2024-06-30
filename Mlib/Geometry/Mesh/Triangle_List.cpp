@@ -54,9 +54,9 @@ void TriangleList<TPos>::draw_triangle_with_normals(
     ColoredVertex<TPos>** pp10,
     ColoredVertex<TPos>** pp01)
 {
-    ColoredVertex<TPos> v00{p00, c00, u00, n00};
-    ColoredVertex<TPos> v10{p10, c10, u10, n10};
-    ColoredVertex<TPos> v01{p01, c01, u01, n01};
+    ColoredVertex<TPos> v00{ p00, c00, u00, n00 };
+    ColoredVertex<TPos> v10{ p10, c10, u10, n10 };
+    ColoredVertex<TPos> v01{ p01, c01, u01, n01 };
 
     FixedArray<TPos, 3> tangent = triangle_tangent(
         v00.position,

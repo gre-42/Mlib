@@ -2,13 +2,13 @@
 #include "Array_Forward.hpp"
 #include <cassert>
 #include <cstdint>
-#include <ostream>
-#include <sstream>
+#include <iosfwd>
 #include <vector>
+#include <string>
 
 namespace Mlib {
 
-inline std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
+std::ostream &operator << (std::ostream &ostream, const ArrayShape &v);
 
 class ArrayShape {
     std::vector<size_t> shape_;
@@ -19,100 +19,31 @@ public:
         archive(shape_);
     }
 
-    ArrayShape() = default;
-    ArrayShape(const ArrayShape& shape) = default;
-    ArrayShape(ArrayShape&& shape) = default;
-    ArrayShape& operator = (const ArrayShape& shape) = default;
-    ArrayShape& operator = (ArrayShape&& shape) = default;
-    explicit ArrayShape(std::initializer_list<size_t> shape) {
-        for (size_t s : shape) {
-            append(s);
-        }
-    }
-    explicit ArrayShape(size_t ndim):
-        shape_(ndim)
-    {}
-    ArrayShape& operator = (size_t value) {
-        for (size_t d = 0; d < ndim(); ++d) {
-            shape_[d] = value;
-        }
-        return *this;
-    }
-    void append(size_t size) {
-        shape_.push_back(size);
-    }
-    ArrayShape appended(size_t size) const {
-        ArrayShape result = *this;
-        result.append(size);
-        return result;
-    }
-    inline ArrayShape erased_first(size_t n = 1) const {
-        assert(ndim() > 0);
-        assert(n <= ndim());
-        ArrayShape result = *this;
-#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif
-        result.shape_.erase(result.shape_.begin(), result.shape_.begin() + (iter_diff_type)n);
-#if defined(__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
-#pragma GCC diagnostic pop
-#endif
-        return result;
-    }
-    ArrayShape erased_last(size_t n = 1) const {
-        assert(ndim() > 0);
-        assert(n <= ndim());
-        ArrayShape result = *this;
-        result.shape_.erase(result.shape_.end() - (iter_diff_type)n, result.shape_.end());
-        return result;
-    }
-    void clear() {
-        shape_.clear();
-    }
-    ArrayShape reverted() const {
-        ArrayShape result;
-        for (size_t i = 0; i < ndim(); i++) {
-            result.append((*this)(ndim() - i - 1));
-        }
-        return result;
-    }
-    void concatenate(const ArrayShape& other) {
-        for (size_t i = 0; i < other.ndim(); i++) {
-            append(other(i));
-        }
-    }
-    ArrayShape concatenated(const ArrayShape& other) const {
-        ArrayShape result = *this;
-        result.concatenate(other);
-        return result;
-    }
-    const size_t& operator () (size_t i) const {
-        assert(i < ndim());
-        return shape_[i];
-    }
-    size_t& operator () (size_t i) {
-        const ArrayShape& a = *this;
-        return const_cast<size_t&>(a(i));
-    }
+    ArrayShape();
+    ArrayShape(const ArrayShape& shape);
+    ArrayShape(ArrayShape&& shape);
+    ArrayShape& operator = (const ArrayShape& shape);
+    ArrayShape& operator = (ArrayShape&& shape);
+    explicit ArrayShape(std::initializer_list<size_t> shape);
+    explicit ArrayShape(size_t ndim);
+    ArrayShape& operator = (size_t value);
+    void append(size_t size);
+    ArrayShape appended(size_t size) const;
+    ArrayShape erased_first(size_t n = 1) const;
+    ArrayShape erased_last(size_t n = 1) const;
+    void clear();
+    ArrayShape reverted() const;
+    void concatenate(const ArrayShape& other);
+    ArrayShape concatenated(const ArrayShape& other) const;
+    const size_t& operator () (size_t i) const;
+    size_t& operator () (size_t i);
     template <size_t N>
     const size_t& get() const {
         return (*this)(N);
     }
-    size_t ndim() const {
-        return shape_.size();
-    }
-    size_t nelements() const {
-        size_t result = 1;
-        for (size_t i=0; i<ndim(); i++) {
-            result *= (*this)(i);
-        }
-        return result;
-    }
-    size_t length() const {
-        assert(ndim() == 1);
-        return (*this)(0);
-    }
+    size_t ndim() const;
+    size_t nelements() const;
+    size_t length() const;
     template <class TCallable>
     void foreach(
         const TCallable& f,
@@ -148,17 +79,9 @@ public:
             f(index0);
         });
     }
-    std::string str() const {
-        std::stringstream sstr;
-        sstr << *this;
-        return sstr.str();
-    }
-    size_t* begin() {
-        return shape_.data();
-    }
-    const size_t* begin() const {
-        return shape_.data();
-    }
+    std::string str() const;
+    size_t* begin();
+    const size_t* begin() const;
 };
 
 template <class TBinop>
@@ -226,16 +149,6 @@ inline ArrayShape operator & (const ArrayShape& a, size_t b) {
 
 inline ArrayShape operator | (const ArrayShape& a, size_t b) {
     return arrayshape_apply(a, [&](size_t x){ return x | b; });
-}
-
-inline std::ostream &operator << (std::ostream &ostream, const ArrayShape &v) {
-    for (size_t i=0; i<v.ndim(); i++) {
-        ostream << v(i);
-        if (i != v.ndim() - 1) {
-            ostream << " ";
-        }
-    }
-    return ostream;
 }
 
 }

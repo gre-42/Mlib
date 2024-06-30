@@ -53,8 +53,7 @@ Renderer::Renderer(
     }
 }
 
-Renderer::~Renderer()
-{}
+Renderer::~Renderer() = default;
 
 void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_config) const
 {

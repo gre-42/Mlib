@@ -1,7 +1,10 @@
 #include "Load_Dff.hpp"
+#include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <optional>
+
+// This file is based on the "librw" project (https://github.com/aap/librw)
 
 using namespace Mlib::Dff;
 
@@ -9,70 +12,10 @@ using Mlib::integral_cast;
 using Mlib::linfo;
 using Mlib::lwarn;
 using Mlib::verbose_abort;
+using Mlib::IoVerbosity;
+using Mlib::seek_relative_positive;
 
-static bool VERBOSE = true;
-
-static void print_char(char c) {
-    char v = (c >= ' ') && (c <= '~') ? c : '.';
-    linfo() << "Read: " << std::hex << "0x" << std::setfill('0') << std::setw(2) << (uint32_t)(uint8_t)c << " - " << v;
-}
-
-static void print_chars(std::span<char> span) {
-    for (char c : span) {
-        print_char(c);
-    }
-}
-
-template <class T>
-T read_binary(std::istream& istr, const char* msg) {
-    T result;
-    istr.read(reinterpret_cast<char*>(&result), sizeof(result));
-    if (istr.fail()) {
-        THROW_OR_ABORT("Could not read " + std::string(msg) + " from stream");
-    }
-    if (VERBOSE) {
-        char* begin = reinterpret_cast<char*>(&result);
-        char* end = begin + sizeof(result);
-        print_chars({ begin, end });
-    }
-    return result;
-}
-
-template <class TVec>
-static void read_vector(std::istream& istr, TVec& vec, const char* msg) {
-    istr.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(typename TVec::value_type) * vec.size()));
-    if (istr.fail()) {
-        THROW_OR_ABORT("Could not read vector from stream: " + std::string(msg));
-    }
-    if (VERBOSE) {
-        char* begin = reinterpret_cast<char*>(vec.data());
-        char* end = begin + sizeof(vec[0]) * vec.size();
-        print_chars({ begin, end });
-    }
-}
-
-static std::string read_string(std::istream& istr, size_t max_length, const char* msg) {
-    if (max_length > 1'000) {
-        THROW_OR_ABORT("String too large");
-    }
-    std::string s(max_length, '?');
-    read_vector(istr, s, msg);
-    return std::string(s.c_str());
-}
-
-static void seek_relative_positive(std::istream& str, size_t amount) {
-    if (VERBOSE) {
-        for (size_t i = 0; i < amount; ++i) {
-            auto c = str.get();
-            if (c == EOF) {
-                THROW_OR_ABORT("Could not read char");
-            }
-            print_char((char)c);
-        }
-    } else {
-        str.seekg(amount, std::ios::cur);
-    }
-}
+static IoVerbosity VERBOSITY = IoVerbosity::SILENT;
 
 static int32_t library_id_unpack_version(uint32_t libid)
 {
@@ -102,7 +45,7 @@ struct ChunkHeaderBuf {
 static_assert(sizeof(ChunkHeaderBuf) == 12);
 
 static ChunkHeaderInfo read_chunk_header_info(std::istream& str) {
-    auto buf = read_binary<ChunkHeaderBuf>(str, "chunk header");
+    auto buf = read_binary<ChunkHeaderBuf>(str, "chunk header", VERBOSITY);
     ChunkHeaderInfo header;
     header.type = buf.type;
     header.length = buf.size;
@@ -374,7 +317,7 @@ static void read_extension(
             }
             verbose_abort("Unknown plugin_not_found_behavior");
             }();
-        seek_relative_positive(istr, header.length);
+        seek_relative_positive(istr, header.length, VERBOSITY);
     cont:
         if (length < header.length) {
             THROW_OR_ABORT("Unexpected header length");
@@ -395,13 +338,13 @@ static std::vector<Frame> read_frame_list(
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
         THROW_OR_ABORT("Could not find struct");
     }
-    auto num_frames = read_binary<uint32_t>(istr, "frame list");
+    auto num_frames = read_binary<uint32_t>(istr, "frame list", VERBOSITY);
     if (num_frames > 100) {
         THROW_OR_ABORT("Unexpected number of frames");
     }
     std::vector<Frame> frames(num_frames);
     for (auto& frame : frames) {
-        auto buf = read_binary<FrameStreamData>(istr, "frame stream data");
+        auto buf = read_binary<FrameStreamData>(istr, "frame stream data", VERBOSITY);
         frame.matrix = {
             FixedArray<float, 3, 3>::init(
                 buf.right(0), buf.up(0), buf.at(0),
@@ -441,7 +384,7 @@ static_assert(sizeof(GeoStreamData) == 16);
 struct MatStreamData
 {
     int32_t flags;    // unused according to RW
-    RGBA  color;
+    RGBA color = uninitialized;
     int32_t unused;
     int32_t textured;
 };
@@ -477,7 +420,7 @@ static Texture read_texture(
 
     Texture texture;
 
-    texture.filterAddressing = read_binary<uint32_t>(istr, "filter addressing");
+    texture.filterAddressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
     // if V addressing is 0, copy U
     if((texture.filterAddressing & 0xF000) == 0)
         texture.filterAddressing |= (texture.filterAddressing & 0xF00) << 4;
@@ -488,12 +431,12 @@ static Texture read_texture(
     if (!find_chunk(istr, ID_STRING, &length, nullptr)) {
         THROW_OR_ABORT("Could not find string");
     }
-    texture.name = read_string(istr, length, "name");
+    texture.name = read_string(istr, length, "name", VERBOSITY);
 
     if (!find_chunk(istr, ID_STRING, &length, nullptr)){
         THROW_OR_ABORT("Could not find string");
     }
-    texture.mask = read_string(istr, length, "mask");
+    texture.mask = read_string(istr, length, "mask", VERBOSITY);
 
     // uint32_t mipState = cfg.mipmapping;
     // uint32_t autoMipState = cfg.auto_mipmapping;
@@ -532,7 +475,7 @@ static Material read_material(
     if (!find_chunk(istr, ID_STRUCT, nullptr, &version)){
         THROW_OR_ABORT("Could not find struct");
     }
-    auto buf = read_binary<MatStreamData>(istr, "material stream data");
+    auto buf = read_binary<MatStreamData>(istr, "material stream data", VERBOSITY);
     RGBA col = buf.color;
     buf.color = col;
     Material material;
@@ -543,7 +486,7 @@ static Material read_material(
         }
         material.surfaceProps = default_surface_properties.value();
     } else {
-        material.surfaceProps = read_binary<SurfaceProperties>(istr, "surface properties");
+        material.surfaceProps = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
     }
     if (buf.textured) {
         uint32_t length;
@@ -572,7 +515,7 @@ static MaterialList read_material_list(
     if( !find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
         THROW_OR_ABORT("Could not find struct");
     }
-    int32_t num_mat = read_binary<int32_t>(istr, "num mat");
+    int32_t num_mat = read_binary<int32_t>(istr, "num mat", VERBOSITY);
     if(num_mat == 0)
         return matlist;
     if (num_mat > 100) {
@@ -582,7 +525,7 @@ static MaterialList read_material_list(
     matlist.space = num_mat;
 
     std::vector<int32_t> indices(num_mat);
-    read_vector(istr, indices, "indices");
+    read_vector(istr, indices, "indices", VERBOSITY);
 
     for (int32_t i = 0; i < num_mat; i++){
         if (indices[i] >= 0) {
@@ -613,6 +556,9 @@ Geometry::Geometry(
     this->numTriangles = numTris;
     this->numVertices = numVerts;
 
+    if (this->numTexCoordSets > 10) {
+        THROW_OR_ABORT("Number of texture coordinates too large");
+    }
     if (this->numTriangles > 10'000) {
         THROW_OR_ABORT("Number of triangles too large");
     }
@@ -625,13 +571,14 @@ Geometry::Geometry(
         if (this->flags & PRELIT && this->numVertices) {
             this->colors.resize(numVertices);
         }
-        for (int32_t i = 0; i < this->numTexCoordSets; i++) {
-            this->texCoords[i].resize(this->numVertices);
+        this->texCoords.resize(this->numTexCoordSets);
+        for (auto& tcs : this->texCoords) {
+            tcs.resize(this->numVertices);
         }
 
         // init triangles
-        for (int32_t i = 0; i < this->numTriangles; i++) {
-            this->triangles[i].matId = 0xFFFF;
+        for (auto& triangle : this->triangles) {
+            triangle.matId = 0xFFFF;
         }
     }
 }
@@ -644,7 +591,7 @@ static std::shared_ptr<Geometry> read_geometry(
     if(!find_chunk(istr, ID_STRUCT, nullptr, &version)){
         THROW_OR_ABORT("Could nto find struct");
     }
-    auto buf = read_binary<GeoStreamData>(istr, "geometry stream data");
+    auto buf = read_binary<GeoStreamData>(istr, "geometry stream data", VERBOSITY);
     auto geo = std::make_shared<Geometry>(buf.numVertices, buf.numTriangles, buf.flags);
     if (buf.numMorphTargets > 100) {
         THROW_OR_ABORT("Number of morph targets too large");
@@ -652,18 +599,18 @@ static std::shared_ptr<Geometry> read_geometry(
     geo->morphTargets.resize(buf.numMorphTargets);
     SurfaceProperties surfProps;
     if (version < 0x34000) {
-        surfProps = read_binary<SurfaceProperties>(istr, "surface properties");
+        surfProps = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
     }
 
     if (!(geo->flags & Geometry::NATIVE)){
         if (geo->flags & Geometry::PRELIT) {
-            read_vector(istr, geo->colors, "vertices");
+            read_vector(istr, geo->colors, "vertices", VERBOSITY);
         }
         for (int32_t i = 0; i < geo->numTexCoordSets; i++) {
-            read_vector(istr, geo->texCoords[i], "texture coordinates");
+            read_vector(istr, geo->texCoords[i], "texture coordinates", VERBOSITY);
         }
         for(int32_t i = 0; i < geo->numTriangles; i++){
-            auto tribuf = read_binary<UFixedArray<uint32_t, 2>>(istr, "triangle buffer");
+            auto tribuf = read_binary<UFixedArray<uint32_t, 2>>(istr, "triangle buffer", VERBOSITY);
             geo->triangles[i].v[0]  = tribuf(0) >> 16;
             geo->triangles[i].v[1]  = tribuf(0);
             geo->triangles[i].v[2]  = tribuf(1) >> 16;
@@ -672,16 +619,16 @@ static std::shared_ptr<Geometry> read_geometry(
     }
 
     for (auto& m : geo->morphTargets) {
-        m.bounding_sphere = read_binary<UBoundingSphere<float, 3>>(istr, "bounding sphere");
-        int32_t has_vertices = read_binary<int32_t>(istr, "has vertices");
-        int32_t has_normals = read_binary<int32_t>(istr, "has normals");
+        m.bounding_sphere = read_binary<UBoundingSphere<float, 3>>(istr, "bounding sphere", VERBOSITY);
+        int32_t has_vertices = read_binary<int32_t>(istr, "has vertices", VERBOSITY);
+        int32_t has_normals = read_binary<int32_t>(istr, "has normals", VERBOSITY);
         if (has_vertices) {
             m.vertices.resize(geo->numVertices);
-            read_vector(istr, m.vertices, "vertices");
+            read_vector(istr, m.vertices, "vertices", VERBOSITY);
         }
         if (has_normals) {
             m.normals.resize(geo->numVertices);
-            read_vector(istr, m.normals, "normals");
+            read_vector(istr, m.normals, "normals", VERBOSITY);
         }
     }
 
@@ -713,11 +660,11 @@ static Atomic read_atomic(
     if (!find_chunk(istr, ID_STRUCT, nullptr, &version)){
         THROW_OR_ABORT("Could not find struct");
     }
-    auto frame_id = read_binary<uint32_t>(istr, "frame ID");
-    auto geometry_id = read_binary<uint32_t>(istr, "geometry ID");
-    auto object_flags = read_binary<int32_t>(istr, "object flags");
+    auto frame_id = read_binary<uint32_t>(istr, "frame ID", VERBOSITY);
+    auto geometry_id = read_binary<uint32_t>(istr, "geometry ID", VERBOSITY);
+    auto object_flags = read_binary<int32_t>(istr, "object flags", VERBOSITY);
     if (version >= 0x30400) {
-        read_binary<int32_t>(istr, "unknown value in DFF");
+        read_binary<int32_t>(istr, "unknown value in DFF", VERBOSITY);
     }
     if (frame_id >= frames.size()) {
         THROW_OR_ABORT("Frame ID too large");
@@ -761,7 +708,7 @@ static Light read_light(
     if(!find_chunk(istr, ID_STRUCT, nullptr, &version)){
         THROW_OR_ABORT("Could not find struct");
     }
-    auto buf = read_binary<LightChunkData>(istr, "light chunk data");
+    auto buf = read_binary<LightChunkData>(istr, "light chunk data", VERBOSITY);
     Light light;
 
     light.object.object.type = buf.type_flags >> 16;
@@ -792,7 +739,7 @@ static Camera read_camera(
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
         THROW_OR_ABORT("Could not find struct");
     }
-    auto buf = read_binary<CameraChunkData>(istr, "camera chunk data");
+    auto buf = read_binary<CameraChunkData>(istr, "camera chunk data", VERBOSITY);
     Camera camera;
     camera.object.inFrame = &frame;
     camera.viewWindow = buf.viewWindow;
@@ -817,7 +764,7 @@ public:
         id = 0x253f2fe;
     }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Frame& frame) override {
-        frame.name = read_string(istr, header.length, "frame name");
+        frame.name = read_string(istr, header.length, "frame name", VERBOSITY);
         return true;
     }
 };
@@ -833,15 +780,15 @@ static Clump read_clump(std::istream& istr)
     if (length < 4) {
         THROW_OR_ABORT("Struct size too small");
     }
-    int32_t numAtomics = read_binary<int32_t>(istr, "number of atomics");
+    int32_t numAtomics = read_binary<int32_t>(istr, "number of atomics", VERBOSITY);
     int32_t numLights = 0;
     int32_t numCameras = 0;
     if (version > 0x33000) {
         if (length != 12) {
             THROW_OR_ABORT("Struct size is not 12");
         }
-        numLights = read_binary<int32_t>(istr, "number of lights");
-        numCameras = read_binary<int32_t>(istr, "number of cameras");
+        numLights = read_binary<int32_t>(istr, "number of lights", VERBOSITY);
+        numCameras = read_binary<int32_t>(istr, "number of cameras", VERBOSITY);
     }
 
     // Frame list
@@ -861,7 +808,7 @@ static Clump read_clump(std::istream& istr)
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find struct");
         }
-        uint32_t num_geometries = read_binary<uint32_t>(istr, "number of geometries");
+        uint32_t num_geometries = read_binary<uint32_t>(istr, "number of geometries", VERBOSITY);
         if (num_geometries > 1000) {
             THROW_OR_ABORT("Large number of geometries");
         }
@@ -892,7 +839,7 @@ static Clump read_clump(std::istream& istr)
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find struct");
         }
-        auto frame_id = read_binary<uint32_t>(istr, "frame ID");
+        auto frame_id = read_binary<uint32_t>(istr, "frame ID", VERBOSITY);
         if(!find_chunk(istr, ID_LIGHT, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find light");
         }
@@ -911,7 +858,7 @@ static Clump read_clump(std::istream& istr)
         if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
             THROW_OR_ABORT("Could not read struct");
         }
-        auto frame_id = read_binary<uint32_t>(istr, "frame ID");
+        auto frame_id = read_binary<uint32_t>(istr, "frame ID", VERBOSITY);
         if (!find_chunk(istr, ID_CAMERA, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find camera");
         }

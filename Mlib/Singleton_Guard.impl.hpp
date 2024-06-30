@@ -4,7 +4,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
-using namespace Mlib;
+namespace Mlib {
 
 template <class TSingleton>
 TSingleton* Singleton<TSingleton>::instance_ = nullptr;
@@ -37,4 +37,6 @@ TSingleton& Singleton<TSingleton>::instance() {
         THROW_OR_ABORT("Singleton not set");
     }
     return *instance_;
+}
+
 }

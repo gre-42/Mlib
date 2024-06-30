@@ -2,8 +2,6 @@
 #include <cstddef>
 #include <poly2tri/poly2tri.h>
 
-using namespace Mlib;
-
 namespace Mlib {
 
 class PTri {

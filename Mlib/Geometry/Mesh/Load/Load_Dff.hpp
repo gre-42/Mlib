@@ -1,10 +1,13 @@
 #pragma once
+#include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <iosfwd>
 #include <map>
 #include <memory>
 #include <string>
+
+// This file is based on the "librw" project (https://github.com/aap/librw)
 
 namespace Mlib {
 
@@ -17,37 +20,23 @@ using Mlib::BoundingSphere;
 template <class TData, size_t tndim>
 using UBoundingSphere = Mlib::UBoundingSphere<TData, tndim>;
 using Mlib::TransformationMatrix;
+using Mlib::UUVector;
 
 class Geometry;
 struct Clump;
 
 struct Triangle
 {
-    uint16_t v[3];
+    FixedArray<uint16_t, 3> v;
     uint16_t matId;
 };
 static_assert(sizeof(Triangle) == 8);
 
-struct TexCoords
-{
-    float u, v;
-};
+using TexCoords = FixedArray<float, 2>;
 static_assert(sizeof(TexCoords) == 8);
 
-struct RGBA
-{
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
-};
-
-struct RGBAf {
-    float red;
-    float green;
-    float blue;
-    float alpha;
-};
+using RGBA = FixedArray<uint8_t, 4>;
+using RGBAf = FixedArray<float, 4>;
 
 struct MorphTarget
 {
@@ -166,7 +155,7 @@ struct Texture
 
 struct Material {
     std::optional<Texture> texture;
-    RGBA color;
+    RGBA color = uninitialized;
     SurfaceProperties surfaceProps;
 };
 
@@ -190,9 +179,9 @@ public:
     int32_t numMorphTargets;
     int32_t numTexCoordSets;
 
-    std::vector<Triangle> triangles;
-    std::vector<RGBA> colors;
-    std::vector<TexCoords> texCoords[8];
+    UUVector<Triangle> triangles;
+    UUVector<RGBA> colors;
+    std::vector<UUVector<TexCoords>> texCoords;
 
     std::vector<MorphTarget> morphTargets;
     MaterialList matList;
@@ -263,7 +252,7 @@ class Light {
 public:
     ObjectWithFrame object;
     float radius;
-    RGBAf color;
+    RGBAf color = uninitialized;
     float minusCosAngle;
 
     // clump extension
@@ -286,7 +275,7 @@ public:
 };
 
 struct Atomic {
-    const Frame* frame;
+    const Frame* frame = nullptr;
     std::shared_ptr<Geometry> geometry;
     Object object;
 };

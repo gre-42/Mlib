@@ -1,7 +1,7 @@
 #include "Fuzzy_Set_Of_Points.hpp"
 #include <Mlib/Geometry/Exceptions/Point_Exception.hpp>
 
-using namespace Mlib;
+namespace Mlib {
 
 template <class TData, size_t tndim>
 FuzzySetOfPoints<TData, tndim>::FuzzySetOfPoints(
@@ -36,4 +36,6 @@ bool FuzzySetOfPoints<TData, tndim>::insert(const FixedArray<TData, tndim>& p, s
 template <class TData, size_t tndim>
 void FuzzySetOfPoints<TData, tndim>::optimize_search_time(std::ostream& ostr) const {
     bvh_.optimize_search_time(BvhDataRadiusType::ZERO, ostr);
+}
+
 }

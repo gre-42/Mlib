@@ -7,12 +7,13 @@ namespace Mlib {
 class Scene;
 class DeleteNodeMutex;
 
-class MoveSceneLogic: public RenderLogic {
+class MoveSceneLogic final: public RenderLogic {
 public:
     explicit MoveSceneLogic(
         Scene& scene,
         DeleteNodeMutex& delete_node_mutex,
         float speed = 1);
+    ~MoveSceneLogic();
 
     virtual void render(
         const LayoutConstraintParameters& lx,

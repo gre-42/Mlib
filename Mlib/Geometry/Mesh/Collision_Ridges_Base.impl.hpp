@@ -1,7 +1,7 @@
 #include "Collision_Ridges_Base.hpp"
 #include <Mlib/Geometry/Exceptions/Edge_Exception.hpp>
 
-using namespace Mlib;
+namespace Mlib {
 
 template <class TOrderableRidgeSphere>
 CollisionRidgesBase<TOrderableRidgeSphere>::CollisionRidgesBase() = default;
@@ -51,4 +51,6 @@ size_t CollisionRidgesBase<TOrderableRidgeSphere>::size() const {
 template <class TOrderableRidgeSphere>
 void CollisionRidgesBase<TOrderableRidgeSphere>::clear() {
     return ridges_.clear();
+}
+
 }

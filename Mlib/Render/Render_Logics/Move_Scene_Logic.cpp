@@ -18,6 +18,10 @@ MoveSceneLogic::MoveSceneLogic(
   speed_{ speed }
 {}
 
+MoveSceneLogic::~MoveSceneLogic() {
+    on_destroy.clear();
+}
+
 void MoveSceneLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,

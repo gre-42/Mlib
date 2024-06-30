@@ -3,7 +3,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
-using namespace Mlib;
+namespace Mlib {
 
 template <class TResourceContext>
 ResourceContextGuard<TResourceContext>::ResourceContextGuard(TResourceContext& resource_context)
@@ -59,3 +59,5 @@ THREAD_LOCAL(TResourceContext*) ResourceContextStack<TResourceContext>::primary_
 
 template <class TResourceContext>
 THREAD_LOCAL(TResourceContext*) ResourceContextStack<TResourceContext>::secondary_resource_context_ = nullptr;
+
+}
