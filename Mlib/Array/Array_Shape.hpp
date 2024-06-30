@@ -3,8 +3,8 @@
 #include <cassert>
 #include <cstdint>
 #include <iosfwd>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace Mlib {
 

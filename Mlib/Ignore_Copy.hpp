@@ -7,7 +7,7 @@ struct IgnoreCopy {
     IgnoreCopy() {}
     IgnoreCopy(const IgnoreCopy&) {}
     IgnoreCopy(IgnoreCopy&&) {}
-    IgnoreCopy& operator = (const IgnoreCopy&) {}
+    IgnoreCopy& operator = (const IgnoreCopy&) { return *this; }
     T value;
 };
 
