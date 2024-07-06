@@ -3,9 +3,9 @@
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interior_Textures.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <map>
 
 namespace Mlib {

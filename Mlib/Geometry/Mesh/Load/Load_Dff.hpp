@@ -1,7 +1,9 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <filesystem>
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -24,6 +26,7 @@ using Mlib::UUVector;
 
 class Geometry;
 struct Clump;
+class IRasterFactory;
 
 struct Triangle
 {
@@ -54,6 +57,19 @@ struct SurfaceProperties
 };
 static_assert(sizeof(SurfaceProperties) == 12);
 
+struct Image
+{
+    uint32_t flags;
+    uint32_t width, height;
+    uint32_t depth;
+    uint32_t bpp;	// bytes per pixel
+    uint32_t stride;
+    std::vector<uint8_t> pixels;
+    uint8_t* palette;
+    bool has_alpha() const;
+    void unpalletize(bool force_alpha = false);
+};
+
 struct Raster
 {
     enum { FLIPWAITVSYNCH = 1 };
@@ -67,7 +83,7 @@ struct Raster
     int32_t format;
     int32_t width, height, depth;
     int32_t stride;
-    uint8_t *pixels;
+    std::vector<uint8_t> pixels;
     uint8_t *palette;
     // remember for locked rasters
     uint8_t *originalPixels;
@@ -105,10 +121,10 @@ struct Raster
         DONTALLOCATE  = 0x80
     };
     enum LockMode {
-        LOCKWRITE    = 1,
-        LOCKREAD    = 2,
-        LOCKNOFETCH    = 4,    // don't fetch pixel data
-        LOCKRAW        = 8,
+        LOCKWRITE       = 1,
+        LOCKREAD        = 2,
+        LOCKNOFETCH     = 4,    // don't fetch pixel data
+        LOCKRAW         = 8,
     };
 
     enum
@@ -126,7 +142,7 @@ struct Texture;
 struct TexDictionary
 {
     enum { ID = 6 };
-    std::list<Texture*> textures;
+    std::vector<std::shared_ptr<Texture>> textures;
 };
 
 struct Texture
@@ -134,9 +150,9 @@ struct Texture
     enum FilterMode {
         NEAREST = 1,
         LINEAR,
-        MIPNEAREST,    // one mipmap
+        MIPNEAREST,         // one mipmap
         MIPLINEAR,
-        LINEARMIPNEAREST,    // mipmap interpolated
+        LINEARMIPNEAREST,   // mipmap interpolated
         LINEARMIPLINEAR
     };
     enum Addressing {
@@ -146,15 +162,16 @@ struct Texture
         BORDER
     };
 
-    Raster raster;
-    TexDictionary dict;
+    std::unique_ptr<IRaster> raster;
+    std::vector<uint8_t> data;
+    // TexDictionary dict;
     std::string name;
     std::string mask;
-    uint32_t filterAddressing; // VVVVUUUU FFFFFFFF
+    uint32_t filter_addressing; // VVVVUUUU FFFFFFFF
 };
 
 struct Material {
-    std::optional<Texture> texture;
+    std::shared_ptr<Texture> texture;
     RGBA color = uninitialized;
     SurfaceProperties surfaceProps;
 };
@@ -329,7 +346,7 @@ class IPlugin {
 public:
     uint32_t id;
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Material& material) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Texture& texture) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, const std::shared_ptr<Texture>& texture) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Frame& frame) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Atomic& atomic) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Clump& clump) { return false; }
@@ -337,7 +354,7 @@ public:
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Camera& camera) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Geometry& geometry) { return false; }
     virtual void always_callback(Material& material) {};
-    virtual void always_callback(Texture& texture) {};
+    virtual void always_callback(const std::shared_ptr<Texture>& texture) {};
     virtual void always_callback(Frame& frame) {};
     virtual void always_callback(Atomic& atomic) {};
     virtual void always_callback(Clump& clump) {};
@@ -347,6 +364,8 @@ public:
 };
 
 Clump read_dff(std::istream& istr);
+TexDictionary read_txd(const std::filesystem::path& path, const IRasterFactory& raster_factory);
+TexDictionary read_txd(std::istream& istr, const IRasterFactory& raster_factory);
 
 }
 

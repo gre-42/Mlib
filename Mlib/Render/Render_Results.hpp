@@ -1,8 +1,8 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <map>
 
 namespace Mlib {

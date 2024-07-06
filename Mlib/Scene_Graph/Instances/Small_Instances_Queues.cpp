@@ -1,10 +1,10 @@
 #include "Small_Instances_Queues.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 

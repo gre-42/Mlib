@@ -17,7 +17,7 @@ target_include_directories(
 set_source_files_properties(Mesh/Contour.cpp PROPERTIES COMPILE_FLAGS -ffloat-store)
 set_source_files_properties(Mesh/Triangle_List.cpp PROPERTIES COMPILE_FLAGS -ffloat-store)
 
-target_link_libraries(MlibGeometry Mlib MlibStats MlibIo MlibImages MlibMath MlibNvDds MlibJson MlibMacroExecutor)
+target_link_libraries(MlibGeometry Mlib MlibStats MlibIo MlibImages MlibMath MlibNvDds MlibJson MlibMacroExecutor MlibMemory)
 
 if (BUILD_TRIANGLE)
     target_link_libraries(MlibGeometry MlibTriangle)

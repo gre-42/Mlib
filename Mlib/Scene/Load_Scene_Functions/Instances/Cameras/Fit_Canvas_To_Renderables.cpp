@@ -1,12 +1,12 @@
 #include "Fit_Canvas_To_Renderables.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Modifiers/Fit_Canvas_To_Renderables.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 

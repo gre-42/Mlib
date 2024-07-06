@@ -25,6 +25,7 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Deallocate/Render_Try_Delete.hpp>
 #include <Mlib/Render/Gl_Extensions.hpp>
+#include <Mlib/Render/Instance_Handles/Bind_Texture_Guard.hpp>
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
@@ -874,8 +875,7 @@ GLuint RenderingResources::get_texture(
             CHK(glGenTextures(1, &original_texture));
             DestructionGuard dg0{ [original_texture]() { ABORT(glDeleteTextures(1, &original_texture)); } };
             auto sinfo = [&](){
-                CHK(glBindTexture(GL_TEXTURE_2D, original_texture));
-                DestructionGuard dg1{ []() { ABORT(glBindTexture(GL_TEXTURE_2D, 0)); } };
+                BindTextureGuard btg{ GL_TEXTURE_2D, original_texture };
                 return initialize_dds_texture(color);
             }();
             auto original_key = ColormapWithModifiers{
@@ -1239,16 +1239,15 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     std::map<std::string, FixedArray<int, 2>> packed_sizes;
     for (const auto& filename : filenames) {
         FixedArray<int, 2> image_size = uninitialized;
-        if (preloaded_processed_texture_data_.contains({ .filename = filename })) {
-            const auto& img = preloaded_processed_texture_data_.get({ .filename = filename });
-            image_size = { img.width, img.height };
+        if (auto* img = preloaded_processed_texture_data_.try_get({ .filename = filename }); img != nullptr) {
+            image_size = { img->width, img->height };
         }
-        else if (preloaded_raw_texture_data_.contains(filename)) {
-            auto info = ImageInfo::load(filename, &preloaded_raw_texture_data_.get(filename));
+        else if (auto* img = preloaded_raw_texture_data_.try_get(filename); img != nullptr) {
+            auto info = ImageInfo::load(filename, img);
             image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
         }
-        else if (preloaded_texture_dds_data_.contains(filename)) {
-            auto info = ImageInfo::load(filename, &preloaded_texture_dds_data_.get(filename));
+        else if (auto* img = preloaded_texture_dds_data_.try_get(filename); img != nullptr) {
+            auto info = ImageInfo::load(filename, img);
             image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
         }
         else {
@@ -1531,7 +1530,7 @@ void RenderingResources::insert_texture(
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     std::scoped_lock lock{mutex_};
 
-    auto cm = colormap({ .filename = name });
+    const auto& cm = colormap({ .filename = name });
     if (preloaded_texture_dds_data_.contains(name)) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
             lwarn() << "DDS-texture with name \"" + name + "\" already exists";

@@ -2,6 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <stdexcept>
+#include <vector>
 
 namespace Mlib {
 
@@ -60,6 +61,15 @@ public:
         if (!this->try_emplace(key, std::forward<Args>(args)...).second) {
             THROW_OR_ABORT("Could not insert into map");
         }
+    }
+
+    std::vector<TKey> keys() const {
+        std::vector<TKey> result;
+        result.reserve(this->size());
+        for (const auto& [k, _] : *this) {
+            result.push_back(k);
+        }
+        return result;
     }
 };
 

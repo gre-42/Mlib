@@ -36,7 +36,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
         const auto& materials = a.geometry->matList.materials;
         NonCopyingVector<TriangleList<float>> tls(materials.size());
         for (const auto& m : materials) {
-            tls.emplace_back(
+            auto& tl = tls.emplace_back(
                 name + a.frame->name,
                 Material{
                     .textures_color = cfg.textures,
@@ -60,6 +60,10 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                     .dynamically_lighted = cfg.dynamically_lighted
                 },
                 cfg.physics_material);
+            if (m.texture != nullptr) {
+                tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{.color = m.texture->name}} };
+                // linfo() << "Texture: " << tex->name;
+            }
         }
         if (a.geometry->morphTargets.empty()) {
             THROW_OR_ABORT("Morph targets empty");

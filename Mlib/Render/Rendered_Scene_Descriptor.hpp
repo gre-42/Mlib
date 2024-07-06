@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 
 namespace Mlib {

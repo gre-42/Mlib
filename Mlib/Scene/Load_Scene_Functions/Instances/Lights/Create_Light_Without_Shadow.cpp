@@ -1,5 +1,6 @@
 #include "Create_Light_Without_Shadow.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Render_Logics/Lightmap_Logic.hpp>
@@ -9,7 +10,6 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 
 using namespace Mlib;
 

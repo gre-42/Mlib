@@ -30,6 +30,11 @@ T read_binary(std::istream& istr, const char* msg, IoVerbosity verbosity) {
     return result;
 }
 
+template <class TData>
+void read_vector(std::istream& istr, const std::span<TData>& vec, const char* msg, IoVerbosity verbosity) {
+    read_vector(istr, const_cast<std::span<TData>&>(vec), msg, verbosity);
+}
+
 template <class TVec>
 void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity verbosity) {
     istr.read(reinterpret_cast<char*>(vec.data()), integral_cast<std::streamsize>(sizeof(typename TVec::value_type) * vec.size()));

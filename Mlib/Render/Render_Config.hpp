@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Scene_Graph/Render_Pass.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <string>
 

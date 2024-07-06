@@ -5,6 +5,9 @@
 
 namespace Mlib {
 
+// This class is a simpler version of "FrameBufferStorage",
+// but it has a mandatory "level" attribute and does not
+// allocate the color texture itself.
 class FrameBufferStorage2D: public IFrameBuffer {
     FrameBufferStorage2D(const FrameBufferStorage2D&) = delete;
     FrameBufferStorage2D& operator = (const FrameBufferStorage2D&) = delete;

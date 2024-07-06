@@ -1,7 +1,11 @@
 #include "Load_Dff.hpp"
+#include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
+#include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
+#include <Mlib/Geometry/Mesh/Load/Mip_Level_Meta_Data.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Try_Get_Value.hpp>
 #include <optional>
 
 // This file is based on the "librw" project (https://github.com/aap/librw)
@@ -15,7 +19,7 @@ using Mlib::verbose_abort;
 using Mlib::IoVerbosity;
 using Mlib::seek_relative_positive;
 
-static IoVerbosity VERBOSITY = IoVerbosity::SILENT;
+static const IoVerbosity VERBOSITY = IoVerbosity::SILENT;
 
 static int32_t library_id_unpack_version(uint32_t libid)
 {
@@ -35,6 +39,81 @@ static int library_id_unpack_build(uint32_t libid)
     } else {
         return 0;
     }
+}
+
+bool Image::has_alpha() const {
+    uint8_t ret = 0xFF;
+    const uint8_t *pixels = this->pixels.data();
+    if(this->depth == 32){
+        for(uint32_t y = 0; y < this->height; y++){
+            const uint8_t *line = pixels;
+            for(uint32_t x = 0; x < this->width; x++){
+                ret &= line[3];
+                line += this->bpp;
+            }
+            pixels += this->stride;
+        }
+    }else if(this->depth == 24){
+        return 0;
+    }else if(this->depth == 16){
+        for(uint32_t y = 0; y < this->height; y++){
+            const uint8_t *line = pixels;
+            for(uint32_t x = 0; x < this->width; x++){
+                ret &= line[1] & 0x80;
+                line += this->bpp;
+            }
+            pixels += this->stride;
+        }
+        return ret != 0x80;
+    }else if(this->depth <= 8){
+        for(uint32_t y = 0; y < this->height; y++){
+            const uint8_t *line = pixels;
+            for(uint32_t x = 0; x < this->width; x++){
+                ret &= this->palette[*line*4+3];
+                line += this->bpp;
+            }
+            pixels += this->stride;
+        }
+    }
+    return ret != 0xFF;
+}
+
+void Image::unpalletize(bool force_alpha) {
+    if(this->depth > 8)
+        return;
+    if (this->pixels.empty()) {
+        THROW_OR_ABORT("Unpalletize called on empty image");
+    }
+    if (this->palette == nullptr) {
+        THROW_OR_ABORT("Unpalletize called on image without a palette");
+    }
+
+    uint32_t ndepth = (force_alpha || this->has_alpha()) ? 32 : 24;
+    uint32_t nstride = this->width*ndepth/8;
+    std::vector<uint8_t> npixels(nstride * this->height);
+
+    uint8_t *line = this->pixels.data();
+    uint8_t *nline = npixels.data();
+    uint8_t *p, *np;
+    for(uint32_t y = 0; y < this->height; y++){
+        p = line;
+        np = nline;
+        for(uint32_t x = 0; x < this->width; x++){
+            np[0] = this->palette[*p*4+0];
+            np[1] = this->palette[*p*4+1];
+            np[2] = this->palette[*p*4+2];
+            np += 3;
+            if(ndepth == 32)
+                *np++ = this->palette[*p*4+3];
+            p++;
+        }
+        line += this->stride;
+        nline += nstride;
+    }
+    this->depth = ndepth;
+    this->bpp = ndepth < 8 ? 1 : ndepth/8;
+    this->stride = nstride;
+    this->pixels = std::move(npixels);
 }
 
 struct ChunkHeaderBuf {
@@ -173,79 +252,6 @@ struct MorphTarget
     std::vector<UFixedArray<float, 3>> vertices;
     std::vector<UFixedArray<float, 3>> normals;
     BoundingSphere<float, 3> bounding_sphere = uninitialized;
-};
-
-struct Raster
-{
-    enum { FLIPWAITVSYNCH = 1 };
-
-    int32_t platform;
-
-    // TODO: use bytes
-    int32_t type;
-    int32_t flags;
-    int32_t privateFlags;
-    int32_t format;
-    int32_t width, height, depth;
-    int32_t stride;
-    uint8_t *pixels;
-    uint8_t *palette;
-    // remember for locked rasters
-    uint8_t *originalPixels;
-    int32_t originalWidth;
-    int32_t originalHeight;
-    int32_t originalStride;
-    // subraster
-    Raster *parent;
-    int32_t offsetX;
-    int32_t offsetY;
-
-    enum Format {
-        DEFAULT    = 0,
-        C1555      = 0x0100,
-        C565       = 0x0200,
-        C4444      = 0x0300,
-        LUM8       = 0x0400,
-        C8888      = 0x0500,
-        C888       = 0x0600,
-        D16        = 0x0700,
-        D24        = 0x0800,
-        D32        = 0x0900,
-        C555       = 0x0A00,
-        AUTOMIPMAP = 0x1000,
-        PAL8       = 0x2000,
-        PAL4       = 0x4000,
-        MIPMAP     = 0x8000
-    };
-    enum Type {
-        NORMAL        = 0x00,
-        ZBUFFER       = 0x01,
-        CAMERA        = 0x02,
-        TEXTURE       = 0x04,
-        CAMERATEXTURE = 0x05,
-        DONTALLOCATE  = 0x80
-    };
-    enum LockMode {
-        LOCKWRITE    = 1,
-        LOCKREAD    = 2,
-        LOCKNOFETCH    = 4,    // don't fetch pixel data
-        LOCKRAW        = 8,
-    };
-
-    enum
-    {
-        // from RW
-        PRIVATELOCK_READ        = 0x02,
-        PRIVATELOCK_WRITE        = 0x04,
-        PRIVATELOCK_READ_PALETTE    = 0x08,
-        PRIVATELOCK_WRITE_PALETTE    = 0x10,
-    };
-};
-
-struct TexDictionary
-{
-    enum { ID = 6 };
-    std::list<Texture*> textures;
 };
 
 struct CameraChunkData
@@ -410,7 +416,7 @@ struct DffConfig {
 //     }
 // }
 
-static Texture read_texture(
+static std::shared_ptr<Texture> read_texture(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins)
 {
@@ -418,12 +424,12 @@ static Texture read_texture(
         THROW_OR_ABORT("Could not find struct");
     }
 
-    Texture texture;
+    auto texture = std::make_shared<Texture>();
 
-    texture.filterAddressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
+    texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
     // if V addressing is 0, copy U
-    if((texture.filterAddressing & 0xF000) == 0)
-        texture.filterAddressing |= (texture.filterAddressing & 0xF00) << 4;
+    if((texture->filter_addressing & 0xF000) == 0)
+        texture->filter_addressing |= (texture->filter_addressing & 0xF00) << 4;
 
     // if using mipmap filter mode, set automipmapping,
     // if 0x10000 is set, set mipmapping
@@ -431,12 +437,12 @@ static Texture read_texture(
     if (!find_chunk(istr, ID_STRING, &length, nullptr)) {
         THROW_OR_ABORT("Could not find string");
     }
-    texture.name = read_string(istr, length, "name", VERBOSITY);
+    texture->name = read_string(istr, length, "name", VERBOSITY);
 
     if (!find_chunk(istr, ID_STRING, &length, nullptr)){
         THROW_OR_ABORT("Could not find string");
     }
-    texture.mask = read_string(istr, length, "mask", VERBOSITY);
+    texture->mask = read_string(istr, length, "mask", VERBOSITY);
 
     // uint32_t mipState = cfg.mipmapping;
     // uint32_t autoMipState = cfg.auto_mipmapping;
@@ -489,8 +495,7 @@ static Material read_material(
         material.surfaceProps = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
     }
     if (buf.textured) {
-        uint32_t length;
-        if (!find_chunk(istr, ID_TEXTURE, &length, nullptr)){
+        if (!find_chunk(istr, ID_TEXTURE, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find texture");
         }
         material.texture = read_texture(istr, plugins);
@@ -883,10 +888,254 @@ static Clump read_clump(std::istream& istr)
     return clump;
 }
 
+static bool format_has_alpha(uint32_t format)
+{
+    return (format & 0xF00) == Raster::C8888 ||
+        (format & 0xF00) == Raster::C1555 ||
+        (format & 0xF00) == Raster::C4444;
+}
+
+class Palette {
+public:
+    explicit Palette(std::istream& istr, uint32_t format) {
+        if (format & Raster::PAL4) {
+            size_ = 16;
+            read_vector(istr, std::span{ palette_, 4 * 32 }, "palette", VERBOSITY);
+        } else if (format & Raster::PAL8) {
+            size_ = 256;
+            read_vector(istr, std::span{ palette_, 4 * 256 }, "palette", VERBOSITY);
+        } else {
+            size_ = 0;
+        }
+    }
+    uint8_t& operator [](uint32_t i) {
+        return palette_[i];
+    }
+    uint32_t size() const {
+        return size_;
+    }
+    const uint8_t* data() const {
+        return palette_;
+    }
+private:
+    uint8_t palette_[4 * 256];
+    uint32_t size_;
+};
+
+// only handles 4 and 8 bit textures right now
+static std::unique_ptr<IRaster> read_as_image(
+    std::istream& istr,
+    uint32_t width,
+    uint32_t height,
+    uint32_t depth,
+    uint32_t format,
+    uint32_t num_levels,
+    const IRasterFactory& raster_factory)
+{
+    Image image;
+    image.width = width;
+    image.height = height;
+    image.depth = depth;
+    image.bpp = depth < 8 ? 1 : depth / 8;
+
+    Palette palette{ istr, format };
+
+    if (!format_has_alpha(format)) {
+        for (uint32_t i = 0; i < palette.size(); i++)
+            palette[i * 4 + 3] = 0xFF;
+    }
+
+    std::unique_ptr<IRaster> raster = nullptr;
+    std::vector<uint8_t> data;
+    for (uint32_t i = 0; i < num_levels; i++) {
+        auto size = read_binary<uint32_t>(istr, "size", VERBOSITY);
+
+        // // don't read levels that don't exist
+        // if (ras && i >= ras->get_NumLevels()){
+        //     stream->seek(size);
+        //     continue;
+        // }
+
+        // resizing is OK, first level is largest
+        data.resize(size);
+        read_vector(istr, data, "data", VERBOSITY);
+
+        if (raster != nullptr) {
+            image.width = raster->mip_level_meta_data(i).width;
+            image.height = raster->mip_level_meta_data(i).height;
+            image.stride = image.width * image.bpp;
+        }
+
+        if (format & (Raster::PAL4 | Raster::PAL8)){
+            uint8_t *idx = data.data();
+            uint8_t *pixels = image.pixels.data();
+            for(uint32_t y = 0; y < image.height; y++){
+                uint8_t *line = pixels;
+                for(uint32_t x = 0; x < image.width; x++){
+                    line[0] = palette[*idx*4+0];
+                    line[1] = palette[*idx*4+1];
+                    line[2] = palette[*idx*4+2];
+                    if (image.bpp > 3) {
+                        line[3] = palette[*idx * 4 + 3];
+                    }
+                    line += image.bpp;
+                    idx++;
+                }
+                pixels += image.stride;
+            }
+        }
+
+        if (raster == nullptr) {
+            // Important to have filled the image with data
+            raster = raster_factory.create_raster(image, (format & 7) | (format & (Raster::MIPMAP | Raster::AUTOMIPMAP)));
+        }
+
+        raster->from_image(image);
+    }
+
+    return raster;
+}
+
+static std::shared_ptr<Texture> read_texture_native_d3d8(
+    std::istream& istr,
+    const std::list<std::unique_ptr<IPlugin>>& plugins,
+    const IRasterFactory& raster_factory)
+{
+    auto texture = std::make_shared<Texture>();
+    // Texture
+    texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
+    texture->name = read_string(istr, 32, "texture name", VERBOSITY);
+    texture->mask = read_string(istr, 32, "texture mask", VERBOSITY);
+
+    // Raster
+    auto format = read_binary<uint32_t>(istr, "format", VERBOSITY);
+    auto has_alpha = (bool)read_binary<uint32_t>(istr, "has alpha", VERBOSITY);
+    auto width = read_binary<uint16_t>(istr, "width", VERBOSITY);
+    auto height = read_binary<uint16_t>(istr, "height", VERBOSITY);
+    auto depth = read_binary<uint8_t>(istr, "depth", VERBOSITY);
+    auto num_levels = read_binary<uint8_t>(istr, "num levels", VERBOSITY);
+    auto type = read_binary<uint8_t>(istr, "type", VERBOSITY);
+    auto compression = read_binary<uint8_t>(istr, "compression", VERBOSITY);
+
+    if (format & Raster::PAL4 || format & Raster::PAL8){
+        if (!raster_factory.is_p8_supported()) {
+            texture->raster = read_as_image(istr, width, height, depth, format | type, num_levels, raster_factory);
+            return texture;
+        }
+    }
+
+    Palette palette{ istr, format };
+
+    texture->raster = raster_factory.create_raster(
+        width,
+        height,
+        depth,
+        format | type | Raster::DONTALLOCATE,
+        PLATFORM_D3D8,
+        compression,
+        num_levels,
+        has_alpha,
+        palette.data());
+
+    // TODO: check if format supported and convert if necessary
+
+    for(uint32_t i = 0; i < num_levels; i++){
+        auto size = read_binary<uint32_t>(istr, "size", VERBOSITY);
+        if (i < texture->raster->num_levels()) {
+            uint8_t* data = texture->raster->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
+            read_vector(istr, std::span{ data, size }, "data", VERBOSITY);
+            texture->raster->unlock();
+        } else {
+            seek_relative_positive(istr, size, VERBOSITY);
+        }
+    }
+    return texture;
+}
+
+static std::shared_ptr<Texture> read_texture_native_d3d9(
+    std::istream& istr,
+    const std::list<std::unique_ptr<IPlugin>>& plugins)
+{
+    THROW_OR_ABORT("read_texture_native_d3d9 not yet implemented");
+}
+
+static std::shared_ptr<Texture> read_texture_native(
+    std::istream& istr,
+    const std::list<std::unique_ptr<IPlugin>>& plugins,
+    const IRasterFactory& raster_factory)
+{
+    uint32_t length;
+    if (!find_chunk(istr, ID_STRUCT, &length, nullptr)) {
+        THROW_OR_ABORT("Could not find struct");
+    }
+    if (length > 10'000'000) {
+        THROW_OR_ABORT("Texture too large");
+    }
+    Texture texture;
+    texture.data.resize(length);
+    auto platform = read_binary<uint32_t>(istr, "platform", VERBOSITY);
+    switch (platform) {
+    case FOURCC_PS2:
+        THROW_OR_ABORT("FOURCC_PS2 texture not yet implemented");
+    case PLATFORM_D3D8:
+        return read_texture_native_d3d8(istr, plugins, raster_factory);
+    case PLATFORM_D3D9:
+        return read_texture_native_d3d9(istr, plugins);
+    case PLATFORM_XBOX:
+        THROW_OR_ABORT("PLATFORM_XBOX texture not yet implemented");
+    case PLATFORM_GL3:
+        THROW_OR_ABORT("PLATFORM_GL3 texture not yet implemented");
+    };
+    THROW_OR_ABORT("Unsupported platform");
+}
+
+static TexDictionary read_texdictionary(std::istream& istr, const IRasterFactory& raster_factory)
+{
+    if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)) {
+        THROW_OR_ABORT("Could not find struct");
+    }
+
+    auto num_textures = read_binary<uint32_t>(istr, "num textures", VERBOSITY);
+    if (num_textures > 1'000) {
+        THROW_OR_ABORT("Number of textures too large");
+    }
+    std::list<std::unique_ptr<IPlugin>> plugins;
+    TexDictionary tex_dict;
+    tex_dict.textures.reserve(num_textures);
+    while (num_textures-- != 0) {
+        if (!find_chunk(istr, ID_TEXTURENATIVE, nullptr, nullptr)){
+            THROW_OR_ABORT("Could not find texture");
+        }
+        tex_dict.textures.push_back(read_texture_native(istr, plugins, raster_factory));
+    }
+    return tex_dict;
+}
+
 Clump Mlib::Dff::read_dff(std::istream& istr)
 {
     if (!find_chunk(istr, ID_CLUMP, nullptr, nullptr)) {
         THROW_OR_ABORT("Could not find clump");
     }
     return read_clump(istr);
+}
+
+TexDictionary Mlib::Dff::read_txd(
+    std::istream& istr,
+    const IRasterFactory& raster_factory)
+{
+    if (!find_chunk(istr, ID_TEXDICTIONARY, nullptr, nullptr)) {
+        THROW_OR_ABORT("Could not find texture dictionary");
+    }
+    return read_texdictionary(istr, raster_factory);
+}
+
+TexDictionary Mlib::Dff::read_txd(
+    const std::filesystem::path& path,
+    const IRasterFactory& raster_factory)
+{
+    auto istr = create_ifstream(path, std::ios::binary);
+    if (istr->fail()) {
+        THROW_OR_ABORT("Could not open \"" + path.string() + '"');
+    }
+    return read_txd(*istr, raster_factory);
 }
