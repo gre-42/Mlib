@@ -53,6 +53,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Invalidate_Aggregate_Renderers.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Desired_Weapon.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Inventory/Set_Inventory_Capacity.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Ipl_Instances.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Idle_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Abs_Key_Binding.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Key_Bindings/Create_Avatar_Controller_Idle_Binding.hpp>
@@ -226,6 +227,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Print_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Repeat.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Replace_Terrain_Material.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Resource_Locations.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Array_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Save_Texture_Png.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Animated_Dynamic_Light_Properties.hpp>
@@ -395,6 +397,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetDesiredWeapon::key, SetDesiredWeapon::json_user_function);
     register_json_user_function(SetDirtmap::key, SetDirtmap::json_user_function);
     register_json_user_function(SetExternalsCreator::key, SetExternalsCreator::json_user_function);
+    register_json_user_function(IplInstances::key, IplInstances::json_user_function);
     register_json_user_function(SetInventoryCapacity::key, SetInventoryCapacity::json_user_function);
     register_json_user_function(SetJumpDv::key, SetJumpDv::json_user_function);
     register_json_user_function(SetNodeBone::key, SetNodeBone::json_user_function);
@@ -460,6 +463,7 @@ LoadScene::LoadScene() {
     register_json_user_function(ObjResource::key, ObjResource::json_user_function);
     register_json_user_function(Repeat::key, Repeat::json_user_function);
     register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);
+    register_json_user_function(ResourceLocations::key, ResourceLocations::json_user_function);
     register_json_user_function(SaveTextureArrayPng::key, SaveTextureArrayPng::json_user_function);
     register_json_user_function(SaveTexturePng::key, SaveTexturePng::json_user_function);
     register_json_user_function(SetFocuses::key, SetFocuses::json_user_function);

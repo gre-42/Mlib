@@ -61,7 +61,12 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                 },
                 cfg.physics_material);
             if (m.texture != nullptr) {
-                tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{.color = m.texture->name}} };
+                tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
+                    .color = {
+                        .filename = m.texture->name,
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    }}} };
                 // linfo() << "Texture: " << tex->name;
             }
         }
@@ -86,7 +91,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
             if (any(v.v >= integral_cast<uint16_t>(vertices.size()))) {
                 THROW_OR_ABORT("Vertex ID too large");
             }
-            if (any(v.v >= integral_cast<uint16_t>(normals.size()))) {
+            if (!normals.empty() && any(v.v >= integral_cast<uint16_t>(normals.size()))) {
                 THROW_OR_ABORT("Vertex ID too large");
             }
             if (!colors.empty() && any(v.v >= integral_cast<uint16_t>(colors.size()))) {
@@ -96,23 +101,41 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                 THROW_OR_ABORT("Vertex ID too large");
             }
             auto material_color = materials[v.matId].color.row_range<0, 3>().casted<float>() / 255.f;
-            tls[v.matId].draw_triangle_with_normals(
-                vertices[v.v(0)],
-                vertices[v.v(1)],
-                vertices[v.v(2)],
-                normals[v.v(0)],
-                normals[v.v(1)],
-                normals[v.v(2)],
-                colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
-                colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
-                colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
-                uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(0)].base(),
-                uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(1)].base(),
-                uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(2)].base(),
-                {},
-                {},
-                {},
-                TriangleTangentErrorBehavior::ZERO);
+            if (normals.empty()) {
+                tls[v.matId].draw_triangle_wo_normals(
+                    vertices[v.v(0)],
+                    vertices[v.v(1)],
+                    vertices[v.v(2)],
+                    colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
+                    colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
+                    colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(0)].base(),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(1)].base(),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(2)].base(),
+                    {},
+                    {},
+                    {},
+                    TriangleNormalErrorBehavior::ZERO,
+                    TriangleTangentErrorBehavior::ZERO);
+            } else {
+                tls[v.matId].draw_triangle_with_normals(
+                    vertices[v.v(0)],
+                    vertices[v.v(1)],
+                    vertices[v.v(2)],
+                    normals[v.v(0)],
+                    normals[v.v(1)],
+                    normals[v.v(2)],
+                    colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
+                    colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
+                    colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(0)].base(),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(1)].base(),
+                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(2)].base(),
+                    {},
+                    {},
+                    {},
+                    TriangleTangentErrorBehavior::ZERO);
+            }
         }
         for (const auto& tl : tls) {
             result.push_back(tl.triangle_array());

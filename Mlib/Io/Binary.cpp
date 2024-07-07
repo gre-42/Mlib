@@ -23,9 +23,12 @@ std::string Mlib::read_string(std::istream& istr, size_t length, const char* msg
     return s;
 }
 
-void Mlib::seek_relative_positive(std::istream& istr, size_t amount, IoVerbosity verbosity) {
+void Mlib::seek_relative_positive(std::istream& istr, std::streamoff amount, IoVerbosity verbosity) {
+    if (amount < 0) {
+        THROW_OR_ABORT("Seek in negative direction");
+    }
     if (verbosity == IoVerbosity::VERBOSE) {
-        for (size_t i = 0; i < amount; ++i) {
+        for (std::streamoff i = 0; i < amount; ++i) {
             auto c = istr.get();
             if (c == EOF) {
                 THROW_OR_ABORT("Could not read char");

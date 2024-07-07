@@ -22,7 +22,7 @@ using Mlib::seek_relative_positive;
 
 static const IoVerbosity VERBOSITY = IoVerbosity::SILENT;
 
-static int32_t library_id_unpack_version(uint32_t libid)
+static uint32_t library_id_unpack_version(uint32_t libid)
 {
     if (libid & 0xFFFF0000) {
         return
@@ -514,14 +514,6 @@ static bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint3
     return false;
 }
 
-struct MorphTarget
-{
-    Geometry *parent;
-    std::vector<UFixedArray<float, 3>> vertices;
-    std::vector<UFixedArray<float, 3>> normals;
-    BoundingSphere<float, 3> bounding_sphere = uninitialized;
-};
-
 struct CameraChunkData
 {
     FixedArray<float, 2> viewWindow = uninitialized;
@@ -626,7 +618,7 @@ static std::vector<Frame> read_frame_list(
                 buf.right(2), buf.up(2), buf.at(2)),
             buf.pos };
         if (buf.parent >= 0) {
-            if (buf.parent >= frames.size()) {
+            if (integral_cast<size_t>(buf.parent) >= frames.size()) {
                 THROW_OR_ABORT("Parent frame ID too large");
             }
         } else if (buf.parent != -1) {

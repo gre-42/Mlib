@@ -50,6 +50,6 @@ void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity ver
 
 std::string read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity);
 
-void seek_relative_positive(std::istream& str, size_t amount, IoVerbosity verbosity);
+void seek_relative_positive(std::istream& str, std::streamoff amount, IoVerbosity verbosity);
 
 }

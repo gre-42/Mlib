@@ -28,7 +28,9 @@ void PlaybackWaypoints::select_next_waypoint() {
     if (!player_.single_waypoint().has_waypoint()) {
         current_track_element_ = track_.begin();
     } else if (player_.single_waypoint().waypoint_reached()) {
-        assert_true(current_track_element_ != track_.end());
+        if (current_track_element_ == track_.end()) {
+            verbose_abort("Invalid track element");
+        }
         auto old_element = current_track_element_;
         ++current_track_element_;
         if (current_track_element_ == track_.end()) {

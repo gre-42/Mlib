@@ -9,6 +9,7 @@ namespace Mlib {
 
 class IIStreamDictionary {
 public:
+	virtual ~IIStreamDictionary() = default;
 	virtual std::vector<std::string> names() const = 0;
 	virtual std::unique_ptr<std::istream> read(
 		const std::string& name,

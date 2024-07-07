@@ -6,8 +6,8 @@ namespace Mlib {
 class FolderIStreamDictionary: public IIStreamDictionary {
 public:
 	explicit FolderIStreamDictionary(std::string folder);
-	~FolderIStreamDictionary();
-	virtual std::vector<std::string> names() const;
+	virtual ~FolderIStreamDictionary() override;
+	virtual std::vector<std::string> names() const override;
 	virtual std::unique_ptr<std::istream> read(
 		const std::string& name,
 		std::ios::openmode openmode,

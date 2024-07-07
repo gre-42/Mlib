@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Activator_Function.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
@@ -161,6 +162,7 @@ public:
         GLuint id,
         ResourceOwner resource_owner,
         const TextureSize* texture_size = nullptr);
+    void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
@@ -236,6 +238,7 @@ private:
     TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
+    mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
     mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
     mutable ThreadsafeMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
     mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
@@ -260,6 +263,7 @@ private:
     unsigned int max_anisotropic_filtering_level_;
     BackgroundLoop preloader_background_loop_;
     DeallocationToken deallocation_token_;
+    std::shared_ptr<int> lifetime_indicator_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RenderingResources& r);

@@ -12,7 +12,8 @@ using namespace Mlib;
 void Mlib::instantiate(
 	Scene& scene,
 	const std::list<InstanceInformation>& infos,
-	SceneNodeResources& scene_node_resources)
+	SceneNodeResources& scene_node_resources,
+	RenderingResources& rendering_resources)
 {
 	for (const auto& info : infos) {
 		auto name = info.resource_name + "_inst_" + std::to_string(scene.get_uuid());
@@ -21,14 +22,15 @@ void Mlib::instantiate(
 			matrix_2_tait_bryan_angles(info.trafo.R()),
 			1.f);
 		scene_node_resources.instantiate_renderable(
-			info.resource_name,
+			info.resource_name + ".dff",
 			InstantiationOptions{
-				.rendering_resources = nullptr,
+				.rendering_resources = &rendering_resources,
 				.imposters = nullptr,
 				.supply_depots = nullptr,
 				.instance_name = name,
 				.scene_node = node.ref(DP_LOC),
-				.renderable_resource_filter = RenderableResourceFilter{}});
+				.renderable_resource_filter = RenderableResourceFilter{}},
+			PreloadBehavior::NO_PRELOAD);
 		scene.add_static_root_node(name, std::move(node));
 	}
 }

@@ -1,5 +1,6 @@
 #include "Folder_IStream_Dictionary.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <list>
 
 using namespace Mlib;
 

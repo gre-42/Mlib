@@ -1,5 +1,6 @@
 #include "Pretty_Terminate.hpp"
 #include <Mlib/Os/Os.hpp>
+#include <cstring>
 #include <exception>
 
 using namespace Mlib;

@@ -649,7 +649,7 @@ void test_ray_sphere_intersection() {
     FixedArray<double, 3> v{ 1., 0., 0. };
     FixedArray<double, 3> C{ 10., 0., 0. };
     double r = 7;
-    double lambda;
+    double lambda = NAN;
     assert_isequal(ray_intersects_sphere(R, v, C, squared(r), &lambda, (double*)nullptr), true);
     assert_isclose(lambda, 2.);
 }

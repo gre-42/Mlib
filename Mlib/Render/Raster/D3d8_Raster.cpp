@@ -136,50 +136,6 @@ static RasterFormatInfo formatInfoRW[16] = {
 	{ D3DFMT_X1R5G5B5, 16, 0, Raster::C555 },
 };
 
-static void expandPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
-{
-	int32_t x, y;
-	for(y = 0; y < h; y++)
-		for(x = 0; x < w/2; x++){
-			dst[y*dststride + x*2 + 0] = src[y*srcstride + x] & 0xF;
-			dst[y*dststride + x*2 + 1] = src[y*srcstride + x] >> 4;
-		}
-}
-
-static void compressPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
-{
-	int32_t x, y;
-	for(y = 0; y < h; y++)
-		for(x = 0; x < w/2; x++)
-			dst[y*dststride + x] = src[y*srcstride + x*2 + 0] | src[y*srcstride + x*2 + 1] << 4;
-}
-
-static void expandPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
-{
-	int32_t x, y;
-	for(y = 0; y < h; y++)
-		for(x = 0; x < w/2; x++){
-			dst[y*dststride + x*2 + 1] = src[y*srcstride + x] & 0xF;
-			dst[y*dststride + x*2 + 0] = src[y*srcstride + x] >> 4;
-		}
-}
-
-static void compressPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
-{
-	int32_t x, y;
-	for(y = 0; y < h; y++)
-		for(x = 0; x < w/2; x++)
-			dst[y*dststride + x] = src[y*srcstride + x*2 + 1] | src[y*srcstride + x*2 + 0] << 4;
-}
-
-static void copyPal8(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
-{
-	int32_t x, y;
-	for(y = 0; y < h; y++)
-		for(x = 0; x < w; x++)
-			dst[y*dststride + x] = src[y*srcstride + x];
-}
-
 void D3d8Raster::allocate_dxt(uint32_t dxt) {
 	static uint32_t dxtMap[] = {
 		0x31545844,	// DXT1
@@ -287,13 +243,13 @@ D3d8Raster::D3d8Raster(
 	const uint8_t* palette,
 	bool has_alpha,
 	const RasterConfig& cfg)
-	: width_{ width }
-	, height_{ height }
-	, depth_{ depth }
-	, format_{ format }
+	: format_{ format }
 	, compression_{ compression }
 	, num_levels_{ num_levels }
 	, has_alpha_{ has_alpha }
+	, width_{ width }
+	, height_{ height }
+	, depth_{ depth }
 	, private_flags_{ 0 }
 	, palette_{ palette }
 {

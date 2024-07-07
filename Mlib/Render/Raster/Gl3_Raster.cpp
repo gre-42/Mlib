@@ -16,31 +16,31 @@
 
 using namespace Mlib::Dff;
 
-void Gl3Raster::from_image(const Image& image) {
+void Gl3Raster::from_image(const Image& iimage) {
     void (*conv)(uint8_t *out, const uint8_t *in) = nullptr;
 
     // Unpalettize image if necessary but don't change original
     Image truecolimg;
     const Image* pimage;
-    if (image.depth <= 8) {
-        truecolimg.width = image.width;
-        truecolimg.height = image.height;
-        truecolimg.depth = image.depth;
-        truecolimg.pixels = image.pixels;
-        truecolimg.stride = image.stride;
-        truecolimg.palette = image.palette;
-        truecolimg.bpp = image.bpp;
+    if (iimage.depth <= 8) {
+        truecolimg.width = iimage.width;
+        truecolimg.height = iimage.height;
+        truecolimg.depth = iimage.depth;
+        truecolimg.pixels = iimage.pixels;
+        truecolimg.stride = iimage.stride;
+        truecolimg.palette = iimage.palette;
+        truecolimg.bpp = iimage.bpp;
         truecolimg.unpalletize();
         pimage = &truecolimg;
     } else {
-        pimage = &image;
+        pimage = &iimage;
     }
 
     uint32_t fmt = format_ & 0xF00;
     if (compression_ != 0) {
         THROW_OR_ABORT("Texture is compressed");
     }
-    switch (image.depth) {
+    switch (pimage->depth) {
     case 32:
         if (gl3Caps.gles)
             conv = conv_RGBA8888_from_RGBA8888;
@@ -77,7 +77,7 @@ void Gl3Raster::from_image(const Image& image) {
         THROW_OR_ABORT("Unsupported image depth");
     }
 
-    if (has_alpha_ != image.has_alpha()) {
+    if (has_alpha_ != pimage->has_alpha()) {
         THROW_OR_ABORT("Conflicting alpha attribute");
     }
 
@@ -93,24 +93,24 @@ void Gl3Raster::from_image(const Image& image) {
     if (pixels_.size() != stride_ * height_) {
         THROW_OR_ABORT("Unexpected number of allocated pixels");
     }
-    const uint8_t *imgpixels = image.pixels.data() + (image.height - 1) * image.stride;
+    const uint8_t *imgpixels = pimage->pixels.data() + (pimage->height - 1) * pimage->stride;
 
-    if (image.width != width_) {
+    if (pimage->width != width_) {
         THROW_OR_ABORT("Unexpected image width");
     }
-    if (image.height != height_) {
+    if (pimage->height != height_) {
         THROW_OR_ABORT("Unexpected image height");
     }
     uint8_t* ppixels = pixels_.data();
-    for (uint32_t y = 0; y < image.height; y++) {
+    for (uint32_t y = 0; y < pimage->height; y++) {
         const uint8_t *imgrow = imgpixels;
         uint8_t *rasrow = ppixels;
-        for(uint32_t x = 0; x < image.width; x++){
+        for(uint32_t x = 0; x < pimage->width; x++){
             conv(rasrow, imgrow);
-            imgrow += image.bpp;
+            imgrow += pimage->bpp;
             rasrow += native_bpp_;
         }
-        imgpixels -= image.stride;
+        imgpixels -= pimage->stride;
         ppixels += stride_;
     }
     if (unlock_required)
@@ -408,13 +408,13 @@ Gl3Raster::Gl3Raster(
     uint32_t num_levels,
     bool has_alpha,
     const RasterConfig& cfg)
-    : width_{ width }
-    , height_{ height }
-    , depth_{ depth }
+    : num_levels_{ num_levels }
     , format_{ format }
     , compression_{ compression }
-    , num_levels_{ num_levels }
     , has_alpha_{ has_alpha }
+    , width_{ width }
+    , height_{ height }
+    , depth_{ depth }
     , private_flags_{ 0 }
 {
     if ((format & 0xF) != Raster::TEXTURE) {

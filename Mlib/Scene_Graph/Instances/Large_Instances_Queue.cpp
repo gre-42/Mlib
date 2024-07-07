@@ -10,12 +10,15 @@
 using namespace Mlib;
 
 LargeInstancesQueue::LargeInstancesQueue(ExternalRenderPassType render_pass)
-: render_pass_{render_pass}
+    : render_pass_{ render_pass }
 {
-    assert_true((render_pass_ == ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) ||
-                (render_pass_ == ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) ||
-                (render_pass_ == ExternalRenderPassType::DIRTMAP) ||
-                (render_pass_ == ExternalRenderPassType::STANDARD));
+    if ((render_pass_ != ExternalRenderPassType::LIGHTMAP_GLOBAL_STATIC) &&
+        (render_pass_ != ExternalRenderPassType::LIGHTMAP_BLACK_GLOBAL_STATIC) &&
+        (render_pass_ != ExternalRenderPassType::DIRTMAP) &&
+        (render_pass_ != ExternalRenderPassType::STANDARD))
+    {
+        THROW_OR_ABORT("Unknown render pass");
+    }
 }
 
 LargeInstancesQueue::~LargeInstancesQueue()

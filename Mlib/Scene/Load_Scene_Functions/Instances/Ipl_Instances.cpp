@@ -28,6 +28,10 @@ IplInstances::IplInstances(RenderableScene& renderable_scene)
 
 void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
     for (const auto& file : args.arguments.pathes_or_variables(KnownArgs::files)) {
-        instantiate(scene, read_ipl(file.path), scene_node_resources);
+        instantiate(
+            scene,
+            read_ipl(file.path),
+            scene_node_resources,
+            RenderingContextStack::primary_rendering_resources());
     }
 }

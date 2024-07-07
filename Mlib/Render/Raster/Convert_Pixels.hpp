@@ -4,7 +4,7 @@
 namespace Mlib {
 namespace Dff {
 
-static void conv_RGBA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
+inline void conv_RGBA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
 {
     out[0] = in[0];
     out[1] = in[1];
@@ -12,7 +12,7 @@ static void conv_RGBA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
     out[3] = in[3];
 }
 
-static void conv_BGRA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
+inline void conv_BGRA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
 {
     out[2] = in[0];
     out[1] = in[1];
@@ -20,7 +20,7 @@ static void conv_BGRA8888_from_RGBA8888(uint8_t *out, const uint8_t *in)
     out[3] = in[3];
 }
 
-static void conv_RGBA8888_from_RGB888(uint8_t *out, const uint8_t *in)
+inline void conv_RGBA8888_from_RGB888(uint8_t *out, const uint8_t *in)
 {
     out[0] = in[0];
     out[1] = in[1];
@@ -28,7 +28,7 @@ static void conv_RGBA8888_from_RGB888(uint8_t *out, const uint8_t *in)
     out[3] = 0xFF;
 }
 
-static void conv_BGRA8888_from_RGB888(uint8_t *out, const uint8_t *in)
+inline void conv_BGRA8888_from_RGB888(uint8_t *out, const uint8_t *in)
 {
     out[2] = in[0];
     out[1] = in[1];
@@ -36,33 +36,33 @@ static void conv_BGRA8888_from_RGB888(uint8_t *out, const uint8_t *in)
     out[3] = 0xFF;
 }
 
-static void conv_RGB888_from_RGB888(uint8_t *out, const uint8_t *in)
+inline void conv_RGB888_from_RGB888(uint8_t *out, const uint8_t *in)
 {
     out[0] = in[0];
     out[1] = in[1];
     out[2] = in[2];
 }
 
-static void conv_BGR888_from_RGB888(uint8_t *out, const uint8_t *in)
+inline void conv_BGR888_from_RGB888(uint8_t *out, const uint8_t *in)
 {
     out[2] = in[0];
     out[1] = in[1];
     out[0] = in[2];
 }
 
-static void conv_ARGB1555_from_ARGB1555(uint8_t *out, const uint8_t *in)
+inline void conv_ARGB1555_from_ARGB1555(uint8_t *out, const uint8_t *in)
 {
     out[0] = in[0];
     out[1] = in[1];
 }
 
-static void conv_ARGB1555_from_RGB555(uint8_t *out, const uint8_t *in)
+inline void conv_ARGB1555_from_RGB555(uint8_t *out, const uint8_t *in)
 {
     out[0] = in[0];
     out[1] = in[1] | 0x80;
 }
 
-static void conv_RGBA5551_from_ARGB1555(uint8_t *out, const uint8_t *in)
+inline void conv_RGBA5551_from_ARGB1555(uint8_t *out, const uint8_t *in)
 {
     uint32_t r, g, b, a;
     a = (in[1]>>7) & 1;
@@ -73,7 +73,7 @@ static void conv_RGBA5551_from_ARGB1555(uint8_t *out, const uint8_t *in)
     out[1] = g>>2 | r<<3;
 }
 
-static void conv_ARGB1555_from_RGBA5551(uint8_t *out, const uint8_t *in)
+inline void conv_ARGB1555_from_RGBA5551(uint8_t *out, const uint8_t *in)
 {
     uint32_t r, g, b, a;
     a = in[0] & 1;
@@ -84,7 +84,7 @@ static void conv_ARGB1555_from_RGBA5551(uint8_t *out, const uint8_t *in)
     out[1] = g>>3 | r<<2 | a<<7;
 }
 
-static void conv_RGBA8888_from_ARGB1555(uint8_t *out, const uint8_t *in)
+inline void conv_RGBA8888_from_ARGB1555(uint8_t *out, const uint8_t *in)
 {
     uint32_t r, g, b, a;
     a = (in[1]>>7) & 1;
@@ -97,7 +97,7 @@ static void conv_RGBA8888_from_ARGB1555(uint8_t *out, const uint8_t *in)
     out[3] = a*0xFF;
 }
 
-static void conv_ABGR1555_from_ARGB1555(uint8_t *out, const uint8_t *in)
+inline void conv_ABGR1555_from_ARGB1555(uint8_t *out, const uint8_t *in)
 {
     uint32_t r, b;
     r = (in[1]>>2) & 0x1F;
@@ -110,6 +110,50 @@ static void conv_ABGR1555_from_ARGB1555(uint8_t *out, const uint8_t *in)
 inline void conv_RGBA8888_from_BGRA8888(uint8_t *out, const uint8_t *in) { conv_BGRA8888_from_RGBA8888(out, in); }
 inline void conv_RGB888_from_BGR888(uint8_t *out, const uint8_t *in) { conv_BGR888_from_RGB888(out, in); }
 inline void conv_ARGB1555_from_ABGR1555(uint8_t *out, const uint8_t *in) { conv_ABGR1555_from_ARGB1555(out, in); }
+
+inline void expandPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+{
+    int32_t x, y;
+    for(y = 0; y < h; y++)
+        for(x = 0; x < w/2; x++){
+            dst[y*dststride + x*2 + 0] = src[y*srcstride + x] & 0xF;
+            dst[y*dststride + x*2 + 1] = src[y*srcstride + x] >> 4;
+        }
+}
+
+inline void compressPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+{
+    int32_t x, y;
+    for(y = 0; y < h; y++)
+        for(x = 0; x < w/2; x++)
+            dst[y*dststride + x] = src[y*srcstride + x*2 + 0] | src[y*srcstride + x*2 + 1] << 4;
+}
+
+inline void expandPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+{
+    int32_t x, y;
+    for(y = 0; y < h; y++)
+        for(x = 0; x < w/2; x++){
+            dst[y*dststride + x*2 + 1] = src[y*srcstride + x] & 0xF;
+            dst[y*dststride + x*2 + 0] = src[y*srcstride + x] >> 4;
+        }
+}
+
+inline void compressPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+{
+    int32_t x, y;
+    for(y = 0; y < h; y++)
+        for(x = 0; x < w/2; x++)
+            dst[y*dststride + x] = src[y*srcstride + x*2 + 1] | src[y*srcstride + x*2 + 0] << 4;
+}
+
+inline void copyPal8(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+{
+    int32_t x, y;
+    for(y = 0; y < h; y++)
+        for(x = 0; x < w; x++)
+            dst[y*dststride + x] = src[y*srcstride + x];
+}
 
 }
 }

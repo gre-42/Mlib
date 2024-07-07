@@ -2,6 +2,7 @@
 #include <Mlib/Uninitialized.hpp>
 #include <concepts>
 #include <ostream>
+#include <utility>
 
 namespace Mlib {
 
@@ -49,6 +50,11 @@ struct PointAndFlags {
 	TFlags flags;
 };
 
+template <class T>
+inline T gen_obj() {
+	std::unreachable();
+}
+
 template <class TPosition, class TFlags, std::floating_point TRhs>
 auto operator * (
 	const PointAndFlags<TPosition, TFlags>& lhs,
@@ -56,7 +62,7 @@ auto operator * (
 {
 	using V = typename TPosition::value_type;
 	using TResultV = decltype(V() * TRhs());
-	using TResult = decltype(((TPosition*)nullptr)->template casted<TResultV>());
+	using TResult = decltype(gen_obj<TPosition>().template casted<TResultV>());
 	return PointAndFlags<TResult, TFlags>{
 		lhs.position.template casted<TResultV>() * (TResultV)f,
 		lhs.flags

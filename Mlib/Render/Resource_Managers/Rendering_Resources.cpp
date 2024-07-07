@@ -524,7 +524,8 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     }
 }
 
-RenderingResources::RenderingResources(std::string name,
+RenderingResources::RenderingResources(
+    std::string name,
     unsigned int max_anisotropic_filtering_level)
     : preloaded_processed_texture_data_{
         "Preloaded processed texture data",
@@ -557,10 +558,19 @@ RenderingResources::RenderingResources(std::string name,
     , preloader_background_loop_{ "Preload_BG" }
     , deallocation_token_{ render_deallocator.insert([this]() {
         for (const auto& [d, _] : textures_) {
-            append_render_allocator([this, d = d]() { preload(d, TextureRole::TRUSTED); });
+            append_render_allocator([this, w = std::weak_ptr{ lifetime_indicator_ }, d = d]() {
+                if (auto s = w.lock()) {
+                    preload(d, TextureRole::TRUSTED);
+                }
+            });
+        }
+        for (const auto& state : set_textures_lazy_) {
+            state->notify_deactivated();
+            append_render_allocator(state->generate_activator());
         }
         deallocate();
     }) }
+    , lifetime_indicator_{ std::make_shared<int>(42) }
 {}
 
 RenderingResources::~RenderingResources() {
@@ -995,6 +1005,16 @@ void RenderingResources::set_texture(
     if (texture_size != nullptr) {
         texture_sizes_.insert_or_assign(name.filename, *texture_size);
     }
+}
+
+void RenderingResources::set_textures_lazy(std::function<void()> func)
+{
+    auto state = std::make_shared<ActivationState>(func);
+    {
+        std::scoped_lock lock{ mutex_ };
+        set_textures_lazy_.push_back(state);
+    }
+    append_render_allocator(state->generate_activator());
 }
 
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
@@ -1543,7 +1563,8 @@ void RenderingResources::add_texture(
     LOG_FUNCTION("RenderingResources::set_texture " + name);
     std::scoped_lock lock{mutex_};
 
-    const auto& cm = colormap({ .filename = name });
+    ColormapWithModifiers cm0{ .filename = name };
+    const auto& cm = colormap(cm0);
     if (preloaded_texture_dds_data_.contains(name)) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {
             lwarn() << "DDS-texture with name \"" + name + "\" already exists";

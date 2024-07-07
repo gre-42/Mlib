@@ -22,14 +22,14 @@ CircularDataDisplay::CircularDataDisplay(
     float maximum_value,
     float blank_angle,
     std::vector<DisplayTick> ticks)
-: tick_text_{tick_text},
-  pointer_image_logic_{pointer_image_logic},
-  minimum_value_{minimum_value},
-  maximum_value_{maximum_value},
-  blank_angle_{blank_angle},
-  ticks_{std::move(ticks)},
-  is_initialized_{false},
-  deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : tick_text_{ tick_text }
+    , pointer_image_logic_{ pointer_image_logic }
+    , minimum_value_{ minimum_value }
+    , maximum_value_{ maximum_value }
+    , blank_angle_{ blank_angle }
+    , ticks_{ std::move(ticks) }
+    , is_initialized_{ false }
+    , deallocation_token_{ render_deallocator.insert([this](){deallocate();}) }
 {}
 
 void CircularDataDisplay::render(

@@ -113,7 +113,7 @@ void ObjResource::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     auto name = args.arguments.at<std::string>(KnownArgs::name);
     LoadMeshConfig<TPos> load_mesh_config = load_mesh_config_from_json<TPos>(
-        args.arguments.at<std::string>(KnownArgs::config));
+        args.arguments.child(KnownArgs::config));
     std::string filename = args.arguments.try_path_or_variable(KnownArgs::filename).path;
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     auto& rendering_resources = RenderingContextStack::primary_rendering_resources();

@@ -17,9 +17,12 @@ ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& da
 {
     while (directory.peek() != EOF) {
         auto h = read_binary<DirectoryInfo>(directory, "directory entry", IoVerbosity::SILENT);
-        auto entry_name = std::string(h.name, sizeof(h.name));
+        auto entry_name = std::string{ std::string(h.name, sizeof(h.name)).c_str() };
         // linfo() << "Entry name: " << entry_name;
-        directory_.add(entry_name, h.offset, h.size);
+        directory_.add(
+            entry_name,
+            std::streamoff{ h.offset } << 11,
+            std::streamsize{ h.size } << 11);
     }
     data_ = std::move(data);
 }

@@ -102,6 +102,15 @@
 #include <Mlib/Scene_Graph/Way_Point_Sandbox.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
+#include <fstream>
+#include <mutex>
+#include <poly2tri/point_exception.hpp>
+#include <stb_cpp/stb_array.hpp>
+#include <stb_cpp/stb_image_load.hpp>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <cereal/access.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/list.hpp>
@@ -109,13 +118,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/vector.hpp>
-#include <fstream>
-#include <mutex>
-#include <poly2tri/point_exception.hpp>
-#include <stb_cpp/stb_array.hpp>
-#include <stb_cpp/stb_image_load.hpp>
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma GCC diagnostic pop
 
 // #undef LOG_FUNCTION
