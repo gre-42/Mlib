@@ -6,15 +6,17 @@
 
 using namespace Mlib::Dff;
 
-RasterFactory::RasterFactory(const RasterConfig& raster_config)
-	: raster_config_{ raster_config }
+RasterFactory::RasterFactory()
 {}
 
 bool RasterFactory::is_p8_supported() const {
 	return false;
 }
 
-std::unique_ptr<IRaster> RasterFactory::create_raster(const Image& img, uint32_t type) const
+std::unique_ptr<IRaster> RasterFactory::create_raster(
+	const Image& img,
+	uint32_t type,
+	const RasterConfig& raster_config) const
 {
 	// Almost the same as d3d9 and ps2 function
 	int32_t width, height, depth, format;
@@ -66,7 +68,7 @@ std::unique_ptr<IRaster> RasterFactory::create_raster(const Image& img, uint32_t
 		0, // compression
 		1, // num_levels
 		img.has_alpha(),
-		raster_config_);
+		raster_config);
 }
 
 std::unique_ptr<IRaster> RasterFactory::create_raster(
@@ -78,33 +80,34 @@ std::unique_ptr<IRaster> RasterFactory::create_raster(
 	uint32_t compression,
 	uint32_t num_levels,
 	bool has_alpha,
-	const uint8_t* palette) const
+	const uint8_t* palette,
+	const RasterConfig& raster_config) const
 {
 	auto raster = [&]() -> std::unique_ptr<IRaster> {
 		switch (platform) {
 		case FOURCC_PS2:
 			THROW_OR_ABORT("FOURCC_PS2 texture not yet implemented");
 		case PLATFORM_D3D8:
-			return std::make_unique<D3d8Raster>(width, height, depth, format, compression, num_levels, palette, has_alpha, raster_config_);
+			return std::make_unique<D3d8Raster>(width, height, depth, format, compression, num_levels, palette, has_alpha, raster_config);
 		case PLATFORM_D3D9:
 			THROW_OR_ABORT("PLATFORM_D3D9 texture not yet implemented");
 		case PLATFORM_XBOX:
 			THROW_OR_ABORT("PLATFORM_XBOX texture not yet implemented");
 		case PLATFORM_GL3:
-			return std::make_unique<Gl3Raster>(width, height, depth, format, compression, num_levels, has_alpha, raster_config_);
+			return std::make_unique<Gl3Raster>(width, height, depth, format, compression, num_levels, has_alpha, raster_config);
 		};
 		THROW_OR_ABORT("Unknown platform");
 		}();
-	if (raster_config_.make_native) {
-		return make_raster_native(std::move(raster));
-	}
 	return raster;
 }
 
-std::unique_ptr<IRaster> RasterFactory::make_raster_native(std::unique_ptr<IRaster>&& raster) const {
+std::unique_ptr<IRaster> RasterFactory::make_raster_native(
+	std::unique_ptr<IRaster>&& raster,
+	const RasterConfig& raster_config) const
+{
 	if (dynamic_cast<Gl3Raster*>(raster.get()) != nullptr) {
 		return raster;
 	}
 	auto img = raster->to_image();
-	return create_raster(img, raster->type());
+	return create_raster(img, raster->type(), raster_config);
 }

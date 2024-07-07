@@ -8,11 +8,15 @@ namespace Dff {
 
 struct Image;
 class IRaster;
+struct RasterConfig;
 
 class IRasterFactory {
 public:
     virtual bool is_p8_supported() const = 0;
-    virtual std::unique_ptr<IRaster> create_raster(const Image& img, uint32_t type) const = 0;
+    virtual std::unique_ptr<IRaster> create_raster(
+        const Image& img,
+        uint32_t type,
+        const RasterConfig& raster_config) const = 0;
     virtual std::unique_ptr<IRaster> create_raster(
         uint32_t width,
         uint32_t height,
@@ -22,8 +26,11 @@ public:
         uint32_t compression,
         uint32_t num_levels,
         bool has_alpha,
-        const uint8_t* palette) const = 0;
-    virtual std::unique_ptr<IRaster> make_raster_native(std::unique_ptr<IRaster>&& raster) const = 0;
+        const uint8_t* palette,
+        const RasterConfig& raster_config) const = 0;
+    virtual std::unique_ptr<IRaster> make_raster_native(
+        std::unique_ptr<IRaster>&& raster,
+        const RasterConfig& raster_config) const = 0;
 };
 
 }

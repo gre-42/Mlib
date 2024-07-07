@@ -197,11 +197,13 @@ uint8_t* D3d8Raster::lock(uint32_t level, uint32_t lock_mode)
 	if (level >= levels_.size()) {
 		THROW_OR_ABORT("Mipmap level too large");
 	}
-	return levels_[level].data.data();
+	pixels_ = levels_[level].data.data();
+	return pixels_;
 }
 
 void D3d8Raster::unlock()
 {
+	pixels_ = nullptr;
 	private_flags_ &= ~(Raster::PRIVATELOCK_READ | Raster::PRIVATELOCK_WRITE);
 }
 
@@ -222,7 +224,7 @@ void D3d8Raster::set_format() {
 		// TODO: do we even allow PAL4?
 		native_format_ = D3DFMT_P8;
 		depth_ = 8;
-	}else{
+	} else {
 		native_format_ = formatInfoRW[(format_ >> 8) & 0xF].d3dformat;
 		depth_ = formatInfoRW[(format_ >> 8) & 0xF].depth;
 	}
@@ -251,6 +253,8 @@ D3d8Raster::D3d8Raster(
 	, height_{ height }
 	, depth_{ depth }
 	, private_flags_{ 0 }
+	, custom_format_{ 0 }
+	, pixels_{ nullptr }
 	, palette_{ palette }
 {
 	if ((format & 0xF) != Raster::TEXTURE) {
@@ -274,7 +278,7 @@ void D3d8Raster::from_image(const Image& image)
 Image D3d8Raster::to_image()
 {
 	bool unlock_required = false;
-	if (pixels_.empty()){
+	if (pixels_ == nullptr) {
 		lock(0, Raster::LOCKREAD);
 		unlock_required = true;
 	}
@@ -291,18 +295,17 @@ Image D3d8Raster::to_image()
 		image.depth = 32;
 		image.bpp = image.depth < 8 ? 1 : image.depth / 8;
 		image.allocate();
-		uint8_t *pix = pixels_.data();
 		switch (native_format_) {
 		case D3DFMT_DXT1:
-			image.set_pixels_dxt(1, pix);
+			image.set_pixels_dxt(1, pixels_);
 			if((format_ & 0xF00) == Raster::C565)
 				image.remove_mask();
 			break;
 		case D3DFMT_DXT3:
-			image.set_pixels_dxt(3, pix);
+			image.set_pixels_dxt(3, pixels_);
 			break;
 		case D3DFMT_DXT5:
-			image.set_pixels_dxt(5, pix);
+			image.set_pixels_dxt(5, pixels_);
 			break;
 		default:
 			if (unlock_required)
@@ -358,15 +361,13 @@ Image D3d8Raster::to_image()
 	image.height = height_;
 	image.depth = depth;
 	image.bpp = image.depth < 8 ? 1 : image.depth / 8;
+	image.palette.resize(pallength);
 	image.allocate();
 
-	if (pallength != image.palette.size()) {
-		THROW_OR_ABORT("Inconsistent palette size");
-	}
 	if (pallength != 0) {
 		auto out = image.palette.data();
-		auto in = (uint8_t*)palette_;
-		for(uint32_t i = 0; i < pallength; i++){
+		auto in = palette_;
+		for (uint32_t i = 0; i < pallength; i++){
 			conv_RGBA8888_from_RGBA8888(out, in);
 			in += 4;
 			out += 4;
@@ -374,7 +375,7 @@ Image D3d8Raster::to_image()
 	}
 
 	uint8_t *imgpixels = image.pixels.data();
-	uint8_t *pixels = pixels_.data();
+	uint8_t *pixels = pixels_;
 
 	if (image.width != width_) {
 		THROW_OR_ABORT("Inconsistent image width");

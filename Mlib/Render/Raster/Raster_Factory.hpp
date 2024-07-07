@@ -5,13 +5,14 @@ namespace Mlib {
 
 namespace Dff {
 
-struct RasterConfig;
-
 class RasterFactory: public IRasterFactory {
 public:
-    explicit RasterFactory(const RasterConfig& raster_config);
+    explicit RasterFactory();
     virtual bool is_p8_supported() const override;
-    virtual std::unique_ptr<IRaster> create_raster(const Image& img, uint32_t format) const override;
+    virtual std::unique_ptr<IRaster> create_raster(
+        const Image& img,
+        uint32_t format,
+        const RasterConfig& raster_config) const override;
     virtual std::unique_ptr<IRaster> create_raster(
         uint32_t width,
         uint32_t height,
@@ -21,10 +22,11 @@ public:
         uint32_t compression,
         uint32_t num_levels,
         bool has_alpha,
-        const uint8_t* palette) const override;
-    virtual std::unique_ptr<IRaster> make_raster_native(std::unique_ptr<IRaster>&& raster) const override;
-private:
-    const RasterConfig& raster_config_;
+        const uint8_t* palette,
+        const RasterConfig& raster_config) const override;
+    virtual std::unique_ptr<IRaster> make_raster_native(
+        std::unique_ptr<IRaster>&& raster,
+        const RasterConfig& raster_config) const override;
 };
 
 }

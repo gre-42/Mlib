@@ -28,6 +28,7 @@ using Mlib::UUVector;
 class Geometry;
 struct Clump;
 class IRasterFactory;
+struct RasterConfig;
 
 enum Platform
 {
@@ -393,8 +394,8 @@ public:
 };
 
 Clump read_dff(std::istream& istr);
-TexDictionary read_txd(const std::filesystem::path& path, const IRasterFactory& raster_factory);
-TexDictionary read_txd(std::istream& istr, const IRasterFactory& raster_factory);
+TexDictionary read_txd(const std::filesystem::path& path, const IRasterFactory& raster_factory, const RasterConfig& raster_config);
+TexDictionary read_txd(std::istream& istr, const IRasterFactory& raster_factory, const RasterConfig& raster_config);
 
 }
 

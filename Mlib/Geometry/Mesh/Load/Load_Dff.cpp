@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Geometry/Mesh/Load/Palette.hpp>
+#include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -1157,7 +1158,7 @@ static bool format_has_alpha(uint32_t format)
 
 void read_palette(Palette& palette, std::istream& istr, uint32_t format) {
     if (format & Raster::PAL4) {
-        palette.resize(16);
+        palette.resize(32);
         read_vector(istr, std::span{ palette.data(), 4 * 32 }, "palette", VERBOSITY);
     } else if (format & Raster::PAL8) {
         palette.resize(256);
@@ -1214,7 +1215,8 @@ static std::unique_ptr<IRaster> read_as_image(
     uint32_t depth,
     uint32_t format,
     uint32_t num_levels,
-    const IRasterFactory& raster_factory)
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     Image image;
     image.width = width;
@@ -1277,7 +1279,7 @@ static std::unique_ptr<IRaster> read_as_image(
             uint32_t newformat;
             find_raster_format(image, format & 7, &depth, &newformat);
             newformat |= format & (Raster::MIPMAP | Raster::AUTOMIPMAP);
-            raster = raster_factory.create_raster(image, newformat);
+            raster = raster_factory.create_raster(image, newformat, raster_config);
             raster->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
         }
 
@@ -1291,7 +1293,8 @@ static std::unique_ptr<IRaster> read_as_image(
 static std::shared_ptr<Texture> read_texture_native_d3d8(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory)
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     auto texture = std::make_shared<Texture>();
     // Texture
@@ -1311,7 +1314,7 @@ static std::shared_ptr<Texture> read_texture_native_d3d8(
 
     if ((format & Raster::PAL4) || (format & Raster::PAL8)) {
         if (!raster_factory.is_p8_supported()) {
-            texture->raster = read_as_image(istr, width, height, depth, format | type, num_levels, raster_factory);
+            texture->raster = read_as_image(istr, width, height, depth, format | type, num_levels, raster_factory, raster_config);
             return texture;
         }
     }
@@ -1328,7 +1331,8 @@ static std::shared_ptr<Texture> read_texture_native_d3d8(
         compression,
         num_levels,
         has_alpha,
-        palette.data());
+        palette.data(),
+        raster_config);
 
     // TODO: check if format supported and convert if necessary
 
@@ -1346,6 +1350,9 @@ static std::shared_ptr<Texture> read_texture_native_d3d8(
             seek_relative_positive(istr, size, VERBOSITY);
         }
     }
+    if (raster_config.make_native) {
+        texture->raster = raster_factory.make_raster_native(std::move(texture->raster), raster_config);
+    }
     return texture;
 }
 
@@ -1359,7 +1366,8 @@ static std::shared_ptr<Texture> read_texture_native_d3d9(
 static std::shared_ptr<Texture> read_texture_native(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory)
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     uint32_t length;
     if (!find_chunk(istr, ID_STRUCT, &length, nullptr)) {
@@ -1375,7 +1383,7 @@ static std::shared_ptr<Texture> read_texture_native(
     case FOURCC_PS2:
         THROW_OR_ABORT("FOURCC_PS2 texture not yet implemented");
     case PLATFORM_D3D8:
-        return read_texture_native_d3d8(istr, plugins, raster_factory);
+        return read_texture_native_d3d8(istr, plugins, raster_factory, raster_config);
     case PLATFORM_D3D9:
         return read_texture_native_d3d9(istr, plugins);
     case PLATFORM_XBOX:
@@ -1386,7 +1394,10 @@ static std::shared_ptr<Texture> read_texture_native(
     THROW_OR_ABORT("Unsupported platform");
 }
 
-static TexDictionary read_texdictionary(std::istream& istr, const IRasterFactory& raster_factory)
+static TexDictionary read_texdictionary(
+    std::istream& istr,
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)) {
         THROW_OR_ABORT("Could not find struct");
@@ -1403,7 +1414,7 @@ static TexDictionary read_texdictionary(std::istream& istr, const IRasterFactory
         if (!find_chunk(istr, ID_TEXTURENATIVE, nullptr, nullptr)){
             THROW_OR_ABORT("Could not find texture");
         }
-        tex_dict.textures.push_back(read_texture_native(istr, plugins, raster_factory));
+        tex_dict.textures.push_back(read_texture_native(istr, plugins, raster_factory, raster_config));
     }
     return tex_dict;
 }
@@ -1418,21 +1429,23 @@ Clump Mlib::Dff::read_dff(std::istream& istr)
 
 TexDictionary Mlib::Dff::read_txd(
     std::istream& istr,
-    const IRasterFactory& raster_factory)
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     if (!find_chunk(istr, ID_TEXDICTIONARY, nullptr, nullptr)) {
         THROW_OR_ABORT("Could not find texture dictionary");
     }
-    return read_texdictionary(istr, raster_factory);
+    return read_texdictionary(istr, raster_factory, raster_config);
 }
 
 TexDictionary Mlib::Dff::read_txd(
     const std::filesystem::path& path,
-    const IRasterFactory& raster_factory)
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config)
 {
     auto istr = create_ifstream(path, std::ios::binary);
     if (istr->fail()) {
         THROW_OR_ABORT("Could not open \"" + path.string() + '"');
     }
-    return read_txd(*istr, raster_factory);
+    return read_txd(*istr, raster_factory, raster_config);
 }

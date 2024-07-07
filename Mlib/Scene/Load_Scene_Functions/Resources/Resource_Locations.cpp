@@ -52,23 +52,29 @@ static void add_resource(
         append_render_allocator([img, name, &res](){
             auto txd = Dff::read_txd(
                 *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION),
-                Dff::RasterFactory(Dff::RasterConfig{
+                Dff::RasterFactory{},
+                Dff::RasterConfig{
                     .need_to_read_back_textures = true,
-                    .make_native = true}));
+                    .make_native = true});
             for (const auto& tx : txd.textures) {
                 TextureSize size{
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
-                res.set_texture(
-                    {
-                        .filename = tx->name,
-                        .color_mode = ColorMode::RGBA,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                    },
-                    integral_cast<GLuint>(tx->raster->move_texture_handle()),
-                    ResourceOwner::CONTAINER,
-                    &size);
+                ColormapWithModifiers cm = {
+                    .filename = tx->name,
+                    .color_mode = ColorMode::RGBA,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                };
+                if (res.contains_texture(cm)) {
+                    lwarn() << "Ignoring duplicate texture \"" << tx->name << '"';
+                } else {
+                    res.set_texture(
+                        cm,
+                        integral_cast<GLuint>(tx->raster->move_texture_handle()),
+                        ResourceOwner::CONTAINER,
+                        &size);
+                }
             }
             });
     } else {

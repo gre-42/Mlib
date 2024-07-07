@@ -58,7 +58,7 @@ private:
 	GLenum native_format_;
 	uint32_t private_flags_;
 	uint32_t custom_format_;
-	std::vector<uint8_t> pixels_;
+	uint8_t* pixels_;
 	std::vector<MipmapLevel> levels_;
 	const uint8_t* palette_;
 };
