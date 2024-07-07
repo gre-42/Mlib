@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
         std::map<std::string, kn5Texture> destination_textures;
         for (auto& [dds_name, t] : kn5.textures) {
             auto png_name = gen_png_name(dds_name);
-            rendering_resources.insert_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
+            rendering_resources.add_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
             auto tex = rendering_resources.get_texture_data(
                 {
                     .filename = dds_name,

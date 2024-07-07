@@ -23,6 +23,7 @@ public:
         uint32_t num_levels,
         bool has_alpha,
         const uint8_t* palette) const = 0;
+    virtual std::unique_ptr<IRaster> make_raster_native(std::unique_ptr<IRaster>&& raster) const = 0;
 };
 
 }

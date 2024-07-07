@@ -10,18 +10,21 @@ namespace Dff {
 
 struct RasterConfig;
 
-class Gl3Raster : public IRaster {
+struct Image;
+
+class D3d8Raster : public IRaster {
 public:
-	Gl3Raster(
+	D3d8Raster(
 		uint32_t width,
 		uint32_t height,
 		uint32_t depth,
 		uint32_t format,
 		uint32_t compression,
 		uint32_t num_levels,
+		const uint8_t* palette,
 		bool has_alpha,
 		const RasterConfig& cfg);
-	virtual ~Gl3Raster() override;
+	virtual ~D3d8Raster() override;
 	virtual void from_image(const Image& image) override;
 	virtual Image to_image() override;
 	virtual uint32_t width() const override;
@@ -33,15 +36,15 @@ public:
 	virtual void unlock() override;
 	virtual uint64_t move_texture_handle() override;
 private:
-	void allocate_dxt(const RasterConfig& cfg);
-	void create_texture();
+	void allocate_dxt(uint32_t dxt);
+	void compute_mip_level_metadata();
+	void set_format();
 	uint32_t flags() const;
 	uint32_t format() const;
-	uint32_t num_levels_;
 	uint32_t format_;
 	uint32_t compression_;
+	uint32_t num_levels_;
 	bool has_alpha_;
-	uint32_t native_internal_format_;
 	uint32_t width_;
 	uint32_t height_;
 	uint32_t depth_;
@@ -50,14 +53,14 @@ private:
 	bool native_has_alpha_;
 	uint32_t native_bpp_;
 	bool native_is_compressed_;
-	uint32_t native_num_levels_;
 	bool native_autogen_mipmap_;
-	std::optional<GLuint> native_texture_id_;
+	uint32_t native_internal_format_;
 	GLenum native_format_;
-	std::vector<MipmapLevel> levels_;
 	uint32_t private_flags_;
+	uint32_t custom_format_;
 	std::vector<uint8_t> pixels_;
-	std::optional<uint32_t> locked_level_;
+	std::vector<MipmapLevel> levels_;
+	const uint8_t* palette_;
 };
 
 }

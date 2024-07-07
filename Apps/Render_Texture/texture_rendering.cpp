@@ -2,7 +2,9 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5.hpp>
+#include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -10,6 +12,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Raster/Raster_Factory.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
@@ -21,21 +24,18 @@
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
-#include <iostream>
 
 using namespace Mlib;
 
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 <texture_regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas] [--texname]}",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 --filter <regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas] [--texname]}",
         {"--rerender_atlas"},
-        {"--kn5", "--size", "--mip_level_count", "--mip_level", "--atlas_layer", "--texname"});
+        {"--kn5", "--txd", "--filter", "--size", "--mip_level_count", "--mip_level", "--atlas_layer", "--texname"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
-
-        parsed.assert_num_unnamed(1);
 
         reserve_realtime_threads(0);
 
@@ -88,23 +88,54 @@ int main(int argc, char** argv)
         // ------------
         AutoTextureAtlasDescriptor atlas;
         std::optional<FillWithTextureLogic> ftl;
-        if (parsed.has_named_value("--kn5")) {
-            auto kn5 = load_kn5(parsed.named_value("--kn5"));
+        auto unnamed = parsed.unnamed_values();
+        if (unnamed.empty()) {
+            static const DECLARE_REGEX(re, parsed.named_value("--filter"));
             std::list<std::string> names;
-            static const DECLARE_REGEX(re, parsed.unnamed_value(0));
-            for (auto& [name, data] : kn5.textures) {
-                if (!Mlib::re::regex_search(name, re)) {
-                    continue;
+            if (auto filename = parsed.try_named_value("--kn5"); filename != nullptr) {
+                auto kn5 = load_kn5(*filename);
+                for (auto& [name, data] : kn5.textures) {
+                    if (!Mlib::re::regex_search(name, re)) {
+                        continue;
+                    }
+                    linfo() << "Matched: " << name;
+                    names.push_back(name);
+                    rendering_resources.add_texture(
+                        name,
+                        std::move(data.data),
+                        TextureAlreadyExistsBehavior::RAISE);
                 }
-                linfo() << "Matched: " << name;
-                names.push_back(name);
-                rendering_resources.insert_texture(
-                    name,
-                    std::move(data.data),
-                    TextureAlreadyExistsBehavior::RAISE);
+            }
+            if (auto filename = parsed.try_named_value("--txd"); filename != nullptr) {
+                auto txd = Dff::read_txd(
+                    *filename,
+                    Dff::RasterFactory(Dff::RasterConfig{
+                        .need_to_read_back_textures = true,
+                        .make_native = true}));
+                for (auto& tx : txd.textures) {
+                    if (!Mlib::re::regex_search(tx->name, re)) {
+                        linfo() << "Skipping: " << tx->name;
+                        continue;
+                    }
+                    linfo() << "Matched: " << tx->name;
+                    names.push_back(tx->name);
+                    TextureSize size{
+                        .width = integral_cast<int>(tx->raster->width()),
+                        .height = integral_cast<int>(tx->raster->height())
+                    };
+                    rendering_resources.set_texture(
+                        {
+                            .filename = tx->name,
+                            .color_mode = ColorMode::RGBA,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                        },
+                        integral_cast<GLuint>(tx->raster->move_texture_handle()),
+                        ResourceOwner::CONTAINER,
+                        &size);
+                }
             }
             if (names.empty()) {
-                THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.unnamed_value(0) + '"');
+                THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
             }
             rendering_resources.generate_auto_texture_atlas(
                 "__texture__",
@@ -118,11 +149,11 @@ int main(int argc, char** argv)
                     linfo() << "  Filename: " << d.filename << ' ' << d.width << 'x' << d.height;
                 }
             }
-            if (parsed.has_named_value("--texname")) {
+            if (auto filename = parsed.try_named_value("--texname"); filename != nullptr) {
                 ftl.emplace(
                     rendering_resources,
                     ColormapWithModifiers{
-                        .filename = parsed.named_value("--texname"),
+                        .filename = *filename,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     },
@@ -150,7 +181,7 @@ int main(int argc, char** argv)
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }});
             }
-        } else {
+        } else if (unnamed.size() == 1) {
             rendering_resources.add_texture_descriptor(
                 "__texture__",
                 TextureDescriptor{
@@ -165,6 +196,8 @@ int main(int argc, char** argv)
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                 ResourceUpdateCycle::ONCE);
+        } else {
+            THROW_OR_ABORT("Expected 0 or 1 unnamed arguments");
         }
 
         // render loop

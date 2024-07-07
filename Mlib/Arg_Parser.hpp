@@ -44,6 +44,12 @@ public:
         }
         return named_values_.at(name);
     }
+    const std::string* try_named_value(const std::string& name) const {
+        if (!has_named_value(name)) {
+            return nullptr;
+        }
+        return &named_values_.at(name);
+    }
     const std::list<std::string>& named_list(const std::string& name) const {
         if (!has_named_list(name)) {
             throw CommandLineArgumentError(help + "\n\nOption \"" + name + "\" is missing");

@@ -241,7 +241,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
         if (dds_resources != nullptr) {
             for (auto& [name, content] : kn5.textures) {
-                dds_resources->insert_texture(name, std::move(content.data), TextureAlreadyExistsBehavior::WARN);
+                dds_resources->add_texture(name, std::move(content.data), TextureAlreadyExistsBehavior::WARN);
             }
         }
         if (race_logic != nullptr) {

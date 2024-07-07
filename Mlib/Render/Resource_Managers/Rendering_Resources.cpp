@@ -539,6 +539,7 @@ RenderingResources::RenderingResources(std::string name,
         [](const ColormapWithModifiers& e) { return e.filename; } }
     , texture_descriptors_{ "Texture descriptor" }
     , textures_{ "Texture", [](const ColormapWithModifiers& e) { return e.filename; } }
+    , texture_sizes_{ "Texture size" }
     , manual_atlas_tile_descriptors_{ "Manual atlas tile descriptor" }
     , auto_atlas_tile_descriptors_{ "Auto atlas tile descriptor" }
     , cubemap_descriptors_{ "Cubemap descriptor" }
@@ -579,6 +580,7 @@ void RenderingResources::deallocate() {
     });
     texture_types_.clear();
     font_textures_.clear();
+    texture_sizes_.clear();
 }
 
 void RenderingResources::preload(const TextureDescriptor& descriptor) const {
@@ -967,7 +969,12 @@ GLuint RenderingResources::get_cubemap_unsafe(const std::string& name) const {
     return textureID;
 }
 
-void RenderingResources::set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner) {
+void RenderingResources::set_texture(
+    const ColormapWithModifiers& name,
+    GLuint id,
+    ResourceOwner resource_owner,
+    const TextureSize* texture_size)
+{
     LOG_FUNCTION("RenderingResources::set_texture " + name.filename);
     // Old texture is deleted by frame buffer
     if (id == (GLuint)-1) {
@@ -985,6 +992,9 @@ void RenderingResources::set_texture(const ColormapWithModifiers& name, GLuint i
         TextureHandleAndOwner{
             .handle = id,
             .owner = resource_owner});
+    if (texture_size != nullptr) {
+        texture_sizes_.insert_or_assign(name.filename, *texture_size);
+    }
 }
 
 void RenderingResources::add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor)
@@ -1249,6 +1259,9 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
         else if (auto* img = preloaded_texture_dds_data_.try_get(filename); img != nullptr) {
             auto info = ImageInfo::load(filename, img);
             image_size = { integral_cast<int>(info.size(0)), integral_cast<int>(info.size(1)) };
+        }
+        else if (auto* img = texture_sizes_.try_get(filename); img != nullptr) {
+            image_size = { img->width, img->height };
         }
         else {
             auto info = ImageInfo::load(filename, nullptr);
@@ -1522,7 +1535,7 @@ void RenderingResources::save_array_to_file(
     }
 }
 
-void RenderingResources::insert_texture(
+void RenderingResources::add_texture(
     const std::string& name,
     std::vector<uint8_t>&& data,
     TextureAlreadyExistsBehavior already_exists_behavior)

@@ -130,6 +130,11 @@ enum class TextureType {
     TEXTURE_3D
 };
 
+struct TextureSize {
+    int width;
+    int height;
+};
+
 std::ostream& operator << (std::ostream& ostr, TextureType texture_type);
 
 class RenderingResources final: public IDdsResources {
@@ -151,7 +156,11 @@ public:
         CallerType caller_type = CallerType::RENDER) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
     TextureType texture_type(const ColormapWithModifiers& name, TextureRole role) const;
-    void set_texture(const ColormapWithModifiers& name, GLuint id, ResourceOwner resource_owner);
+    void set_texture(
+        const ColormapWithModifiers& name,
+        GLuint id,
+        ResourceOwner resource_owner,
+        const TextureSize* texture_size = nullptr);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
@@ -213,7 +222,7 @@ public:
     void save_to_file(const std::string& filename, const ColormapWithModifiers& color, TextureRole role) const;
     void save_array_to_file(const std::string& filename_prefix, const ColormapWithModifiers& color, TextureRole role) const;
 
-    virtual void insert_texture(
+    virtual void add_texture(
         const std::string& name,
         std::vector<uint8_t>&& data,
         TextureAlreadyExistsBehavior already_exists_behavior) override;
@@ -234,6 +243,7 @@ private:
     mutable ThreadsafeMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
     mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
+    mutable ThreadsafeStringMap<TextureSize> texture_sizes_;
     mutable ThreadsafeStringMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeStringMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringMap<CubemapDescriptor> cubemap_descriptors_;

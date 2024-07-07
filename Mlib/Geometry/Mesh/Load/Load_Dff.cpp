@@ -1,7 +1,8 @@
 #include "Load_Dff.hpp"
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster_Factory.hpp>
-#include <Mlib/Geometry/Mesh/Load/Mip_Level_Meta_Data.hpp>
+#include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
+#include <Mlib/Geometry/Mesh/Load/Palette.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -41,35 +42,48 @@ static int library_id_unpack_build(uint32_t libid)
     }
 }
 
+void Image::allocate() {
+    if (pixels.empty()) {
+        stride = width * bpp;
+        pixels.resize(stride * height);
+        flags |= 1;
+    }
+    if (palette.empty()) {
+        if (depth == 4 || depth == 8)
+            palette.resize((1 << depth) * 4);
+        flags |= 2;
+    }
+}
+
 bool Image::has_alpha() const {
     uint8_t ret = 0xFF;
-    const uint8_t *pixels = this->pixels.data();
-    if(this->depth == 32){
-        for(uint32_t y = 0; y < this->height; y++){
-            const uint8_t *line = pixels;
-            for(uint32_t x = 0; x < this->width; x++){
+    const uint8_t* pixels = this->pixels.data();
+    if (this->depth == 32) {
+        for (uint32_t y = 0; y < this->height; y++) {
+            const uint8_t* line = pixels;
+            for (uint32_t x = 0; x < this->width; x++) {
                 ret &= line[3];
                 line += this->bpp;
             }
             pixels += this->stride;
         }
-    }else if(this->depth == 24){
-        return 0;
-    }else if(this->depth == 16){
-        for(uint32_t y = 0; y < this->height; y++){
-            const uint8_t *line = pixels;
-            for(uint32_t x = 0; x < this->width; x++){
+    } else if (this->depth == 24) {
+        return false;
+    } else if (this->depth == 16) {
+        for (uint32_t y = 0; y < this->height; y++) {
+            const uint8_t* line = pixels;
+            for (uint32_t x = 0; x < this->width; x++) {
                 ret &= line[1] & 0x80;
                 line += this->bpp;
             }
             pixels += this->stride;
         }
         return ret != 0x80;
-    }else if(this->depth <= 8){
-        for(uint32_t y = 0; y < this->height; y++){
-            const uint8_t *line = pixels;
-            for(uint32_t x = 0; x < this->width; x++){
-                ret &= this->palette[*line*4+3];
+    } else if (this->depth <= 8) {
+        for (uint32_t y = 0; y < this->height; y++) {
+            const uint8_t* line = pixels;
+            for (uint32_t x = 0; x < this->width; x++) {
+                ret &= this->palette[*line * 4 + 3];
                 line += this->bpp;
             }
             pixels += this->stride;
@@ -81,10 +95,10 @@ bool Image::has_alpha() const {
 void Image::unpalletize(bool force_alpha) {
     if(this->depth > 8)
         return;
-    if (this->pixels.empty()) {
+    if (pixels.empty()) {
         THROW_OR_ABORT("Unpalletize called on empty image");
     }
-    if (this->palette == nullptr) {
+    if (palette.empty()) {
         THROW_OR_ABORT("Unpalletize called on image without a palette");
     }
 
@@ -114,6 +128,284 @@ void Image::unpalletize(bool force_alpha) {
     this->bpp = ndepth < 8 ? 1 : ndepth/8;
     this->stride = nstride;
     this->pixels = std::move(npixels);
+}
+
+void Image::compress_palette()
+{
+    if (this->depth != 8)
+        return;
+    if (pixels.size() != stride * height) {
+        THROW_OR_ABORT("Unexpected number of pixels");
+    }
+    uint8_t *pixels = this->pixels.data();
+    for (uint32_t y = 0; y < this->height; y++) {
+        uint8_t *line = pixels;
+        for (uint32_t x = 0; x < this->width; x++) {
+            if (*line > 0xF) return;
+            line += this->bpp;
+        }
+        pixels += this->stride;
+    }
+    this->depth = 4;
+}
+
+static void decompress_dxt1(uint8_t* adst, uint32_t w, uint32_t h, const uint8_t *src)
+{
+    /* j loops through old texels
+    * x and y loop through new texels */
+    uint32_t x = 0, y = 0;
+    uint32_t c[4][4];
+    uint8_t idx[16];
+    uint8_t (*dst)[4] = (uint8_t(*)[4])adst;
+    for(uint32_t j = 0; j < w*h/2; j += 8){
+        /* calculate colors */
+        uint32_t col0 = *((uint16_t*)&src[j+0]);
+        uint32_t col1 = *((uint16_t*)&src[j+2]);
+        c[0][0] = ((col0>>11) & 0x1F)*0xFF/0x1F;
+        c[0][1] = ((col0>> 5) & 0x3F)*0xFF/0x3F;
+        c[0][2] = ( col0      & 0x1F)*0xFF/0x1F;
+        c[0][3] = 0xFF;
+
+        c[1][0] = ((col1>>11) & 0x1F)*0xFF/0x1F;
+        c[1][1] = ((col1>> 5) & 0x3F)*0xFF/0x3F;
+        c[1][2] = ( col1      & 0x1F)*0xFF/0x1F;
+        c[1][3] = 0xFF;
+        if(col0 > col1){
+            c[2][0] = (2*c[0][0] + 1*c[1][0])/3;
+            c[2][1] = (2*c[0][1] + 1*c[1][1])/3;
+            c[2][2] = (2*c[0][2] + 1*c[1][2])/3;
+            c[2][3] = 0xFF;
+
+            c[3][0] = (1*c[0][0] + 2*c[1][0])/3;
+            c[3][1] = (1*c[0][1] + 2*c[1][1])/3;
+            c[3][2] = (1*c[0][2] + 2*c[1][2])/3;
+            c[3][3] = 0xFF;
+        }else{
+            c[2][0] = (c[0][0] + c[1][0])/2;
+            c[2][1] = (c[0][1] + c[1][1])/2;
+            c[2][2] = (c[0][2] + c[1][2])/2;
+            c[2][3] = 0xFF;
+
+            c[3][0] = 0x00;
+            c[3][1] = 0x00;
+            c[3][2] = 0x00;
+            c[3][3] = 0x00;
+        }
+
+        /* make index list */
+        uint32_t indices = *((uint32_t*)&src[j+4]);
+        for(int32_t k = 0; k < 16; k++){
+            idx[k] = indices & 0x3;
+            indices >>= 2;
+        }
+
+        /* write bytes */
+        for(uint32_t l = 0; l < 4; l++)
+            for(uint32_t k = 0; k < 4; k++){
+                dst[(y+l)*w + x+k][0] = c[idx[l*4+k]][0];
+                dst[(y+l)*w + x+k][1] = c[idx[l*4+k]][1];
+                dst[(y+l)*w + x+k][2] = c[idx[l*4+k]][2];
+                dst[(y+l)*w + x+k][3] = c[idx[l*4+k]][3];
+            }
+        x += 4;
+        if(x >= w){
+            y += 4;
+            x = 0;
+        }
+    }
+}
+
+void decompress_dxt3(uint8_t *adst, uint32_t w, uint32_t h, const uint8_t *src)
+{
+    /* j loops through old texels
+    * x and y loop through new texels */
+    uint32_t x = 0, y = 0;
+    uint32_t c[4][4];
+    uint8_t idx[16];
+    uint8_t a[16];
+    uint8_t (*dst)[4] = (uint8_t(*)[4])adst;
+    for(uint32_t j = 0; j < w*h; j += 16){
+        /* calculate colors */
+        uint32_t col0 = *((uint16_t*)&src[j+8]);
+        uint32_t col1 = *((uint16_t*)&src[j+10]);
+        c[0][0] = ((col0>>11) & 0x1F)*0xFF/0x1F;
+        c[0][1] = ((col0>> 5) & 0x3F)*0xFF/0x3F;
+        c[0][2] = ( col0      & 0x1F)*0xFF/0x1F;
+
+        c[1][0] = ((col1>>11) & 0x1F)*0xFF/0x1F;
+        c[1][1] = ((col1>> 5) & 0x3F)*0xFF/0x3F;
+        c[1][2] = ( col1      & 0x1F)*0xFF/0x1F;
+
+        c[2][0] = (2*c[0][0] + 1*c[1][0])/3;
+        c[2][1] = (2*c[0][1] + 1*c[1][1])/3;
+        c[2][2] = (2*c[0][2] + 1*c[1][2])/3;
+
+        c[3][0] = (1*c[0][0] + 2*c[1][0])/3;
+        c[3][1] = (1*c[0][1] + 2*c[1][1])/3;
+        c[3][2] = (1*c[0][2] + 2*c[1][2])/3;
+
+        /* make index list */
+        uint32_t indices = *((uint32_t*)&src[j+12]);
+        for(uint32_t k = 0; k < 16; k++){
+            idx[k] = indices & 0x3;
+            indices >>= 2;
+        }
+        uint64_t alphas = *((uint64_t*)&src[j+0]);
+        for (uint32_t k = 0; k < 16; k++){
+            a[k] = (alphas & 0xF)*17;
+            alphas >>= 4;
+        }
+
+        /* write bytes */
+        for (uint32_t l = 0; l < 4; l++)
+            for(uint32_t k = 0; k < 4; k++){
+                dst[(y+l)*w + x+k][0] = c[idx[l*4+k]][0];
+                dst[(y+l)*w + x+k][1] = c[idx[l*4+k]][1];
+                dst[(y+l)*w + x+k][2] = c[idx[l*4+k]][2];
+                dst[(y+l)*w + x+k][3] = a[l*4+k];
+            }
+        x += 4;
+        if(x >= w){
+            y += 4;
+            x = 0;
+        }
+    }
+}
+
+static void decompress_dxt5(uint8_t *adst, uint32_t w, uint32_t h, const uint8_t *src)
+{
+    /* j loops through old texels
+    * x and y loop through new texels */
+    uint32_t x = 0, y = 0;
+    uint32_t c[4][4];
+    uint32_t a[8];
+    uint8_t idx[16];
+    uint8_t aidx[16];
+    uint8_t (*dst)[4] = (uint8_t(*)[4])adst;
+    for(uint32_t j = 0; j < w*h; j += 16){
+        /* calculate colors */
+        uint32_t col0 = *((uint16_t*)&src[j+8]);
+        uint32_t col1 = *((uint16_t*)&src[j+10]);
+        c[0][0] = ((col0>>11) & 0x1F)*0xFF/0x1F;
+        c[0][1] = ((col0>> 5) & 0x3F)*0xFF/0x3F;
+        c[0][2] = ( col0      & 0x1F)*0xFF/0x1F;
+
+        c[1][0] = ((col1>>11) & 0x1F)*0xFF/0x1F;
+        c[1][1] = ((col1>> 5) & 0x3F)*0xFF/0x3F;
+        c[1][2] = ( col1      & 0x1F)*0xFF/0x1F;
+        if(col0 > col1){
+            c[2][0] = (2*c[0][0] + 1*c[1][0])/3;
+            c[2][1] = (2*c[0][1] + 1*c[1][1])/3;
+            c[2][2] = (2*c[0][2] + 1*c[1][2])/3;
+
+            c[3][0] = (1*c[0][0] + 2*c[1][0])/3;
+            c[3][1] = (1*c[0][1] + 2*c[1][1])/3;
+            c[3][2] = (1*c[0][2] + 2*c[1][2])/3;
+        }else{
+            c[2][0] = (c[0][0] + c[1][0])/2;
+            c[2][1] = (c[0][1] + c[1][1])/2;
+            c[2][2] = (c[0][2] + c[1][2])/2;
+
+            c[3][0] = 0x00;
+            c[3][1] = 0x00;
+            c[3][2] = 0x00;
+        }
+
+        a[0] = src[j+0];
+        a[1] = src[j+1];
+        if(a[0] > a[1]){
+            a[2] = (6*a[0] + 1*a[1])/7;
+            a[3] = (5*a[0] + 2*a[1])/7;
+            a[4] = (4*a[0] + 3*a[1])/7;
+            a[5] = (3*a[0] + 4*a[1])/7;
+            a[6] = (2*a[0] + 5*a[1])/7;
+            a[7] = (1*a[0] + 6*a[1])/7;
+        }else{
+            a[2] = (4*a[0] + 1*a[1])/5;
+            a[3] = (3*a[0] + 2*a[1])/5;
+            a[4] = (2*a[0] + 3*a[1])/5;
+            a[5] = (1*a[0] + 4*a[1])/5;
+            a[6] = 0;
+            a[7] = 0xFF;
+        }
+
+        /* make index list */
+        uint32_t indices = *((uint32_t*)&src[j+12]);
+        for(uint32_t k = 0; k < 16; k++){
+            idx[k] = indices & 0x3;
+            indices >>= 2;
+        }
+        // only 6 indices
+        uint64_t alphas = *((uint64_t*)&src[j+2]);
+        for (uint32_t k = 0; k < 16; k++){
+            aidx[k] = alphas & 0x7;
+            alphas >>= 3;
+        }
+
+        /* write bytes */
+        for (uint32_t l = 0; l < 4; l++)
+            for (uint32_t k = 0; k < 4; k++){
+                dst[(y+l)*w + x+k][0] = c[idx[l*4+k]][0];
+                dst[(y+l)*w + x+k][1] = c[idx[l*4+k]][1];
+                dst[(y+l)*w + x+k][2] = c[idx[l*4+k]][2];
+                dst[(y+l)*w + x+k][3] = a[aidx[l*4+k]];
+            }
+        x += 4;
+        if(x >= w){
+            y += 4;
+            x = 0;
+        }
+    }
+}
+
+void Image::set_pixels_dxt(uint32_t type, uint8_t *pixels)
+{
+    switch (type) {
+    case 1:
+        decompress_dxt1(this->pixels.data(), this->width, this->height, pixels);
+        break;
+    case 3:
+        decompress_dxt3(this->pixels.data(), this->width, this->height, pixels);
+        break;
+    case 5:
+        decompress_dxt5(this->pixels.data(), this->width, this->height, pixels);
+        break;
+    }
+    THROW_OR_ABORT("Unknown dxt type");
+}
+
+void Image::remove_mask()
+{
+    if(this->depth <= 8){
+        assert(this->palette);
+        uint32_t pallen = 4 * (1 << this->depth);
+        for(uint32_t i = 0; i < pallen; i += 4)
+            this->palette[i+3] = 0xFF;
+        return;
+    }
+    if(this->depth == 24)
+        return;
+    if (this->pixels.size() != stride * height) {
+        THROW_OR_ABORT("Unexpected number of pixels");
+    }
+    uint8_t *line = this->pixels.data();
+    uint8_t *p;
+    for (uint32_t y = 0; y < this->height; y++){
+        p = line;
+        for (uint32_t x = 0; x < this->width; x++){
+            switch (this->depth) {
+            case 16:
+                p[1] |= 0x80;
+                p += 2;
+                break;
+            case 32:
+                p[3] = 0xFF;
+                p += 4;
+                break;
+            }
+        }
+        line += this->stride;
+    }
 }
 
 struct ChunkHeaderBuf {
@@ -146,30 +438,6 @@ enum VendorID
     VEND_RASTER         = 10,
     // Used for driver/device allocation tags
     VEND_DRIVER         = 11
-};
-
-enum Platform
-{
-    PLATFORM_NULL = 0,
-    // D3D7
-    PLATFORM_GL   = 2,
-    // MAC
-    PLATFORM_PS2  = 4,
-    PLATFORM_XBOX = 5,
-    // GAMECUBE
-    // SOFTRAS
-    PLATFORM_D3D8 = 8,
-    PLATFORM_D3D9 = 9,
-    // PSP
-
-    // non-stock-RW platforms
-
-    PLATFORM_WDGL = 11,    // WarDrum OpenGL
-    PLATFORM_GL3  = 12,    // my GL3 implementation
-
-    NUM_PLATFORMS,
-
-    FOURCC_PS2 = 0x00325350        // 'PS2\0'
 };
 
 enum PluginID
@@ -895,32 +1163,56 @@ static bool format_has_alpha(uint32_t format)
         (format & 0xF00) == Raster::C4444;
 }
 
-class Palette {
-public:
-    explicit Palette(std::istream& istr, uint32_t format) {
-        if (format & Raster::PAL4) {
-            size_ = 16;
-            read_vector(istr, std::span{ palette_, 4 * 32 }, "palette", VERBOSITY);
-        } else if (format & Raster::PAL8) {
-            size_ = 256;
-            read_vector(istr, std::span{ palette_, 4 * 256 }, "palette", VERBOSITY);
-        } else {
-            size_ = 0;
+void read_palette(Palette& palette, std::istream& istr, uint32_t format) {
+    if (format & Raster::PAL4) {
+        palette.resize(16);
+        read_vector(istr, std::span{ palette.data(), 4 * 32 }, "palette", VERBOSITY);
+    } else if (format & Raster::PAL8) {
+        palette.resize(256);
+        read_vector(istr, std::span{ palette.data(), 4 * 256 }, "palette", VERBOSITY);
+    } else {
+        palette.resize(0);
+    }
+}
+
+static void find_raster_format(const Image& img, uint32_t type, uint32_t *depth, uint32_t* format)
+{
+    if ((type&0xF) != Raster::TEXTURE) {
+        THROW_OR_ABORT("Raster is not a texture");
+    }
+
+    //	for(width = 1; width < img->width; width <<= 1);
+    //	for(height = 1; height < img->height; height <<= 1);
+    // Perhaps non-power-of-2 textures are acceptable?
+    *depth = img.depth;
+
+    if (*depth <= 8)
+        *depth = 32;
+
+    switch (*depth) {
+    case 32:
+        if(img.has_alpha())
+            *format = Raster::C8888;
+        else{
+            *format = Raster::C888;
+            *depth = 24;
         }
+        break;
+    case 24:
+        *format = Raster::C888;
+        break;
+    case 16:
+        *format = Raster::C1555;
+        break;
+
+    case 8:
+    case 4:
+    default:
+        THROW_OR_ABORT("Invalid raster");
     }
-    uint8_t& operator [](uint32_t i) {
-        return palette_[i];
-    }
-    uint32_t size() const {
-        return size_;
-    }
-    const uint8_t* data() const {
-        return palette_;
-    }
-private:
-    uint8_t palette_[4 * 256];
-    uint32_t size_;
-};
+
+    *format |= type;
+}
 
 // only handles 4 and 8 bit textures right now
 static std::unique_ptr<IRaster> read_as_image(
@@ -935,10 +1227,13 @@ static std::unique_ptr<IRaster> read_as_image(
     Image image;
     image.width = width;
     image.height = height;
-    image.depth = depth;
-    image.bpp = depth < 8 ? 1 : depth / 8;
+    image.depth = 32;
+    image.bpp = image.depth < 8 ? 1 : image.depth / 8;
+    image.stride = image.width * image.bpp;
+    image.allocate();
 
-    Palette palette{ istr, format };
+    Palette palette = uninitialized;
+    read_palette(palette, istr, format);
 
     if (!format_has_alpha(format)) {
         for (uint32_t i = 0; i < palette.size(); i++)
@@ -950,19 +1245,19 @@ static std::unique_ptr<IRaster> read_as_image(
     for (uint32_t i = 0; i < num_levels; i++) {
         auto size = read_binary<uint32_t>(istr, "size", VERBOSITY);
 
-        // // don't read levels that don't exist
-        // if (ras && i >= ras->get_NumLevels()){
-        //     stream->seek(size);
-        //     continue;
-        // }
+        // don't read levels that don't exist
+        if ((raster != nullptr) && i >= raster->num_levels()) {
+            seek_relative_positive(istr, size, VERBOSITY);
+            continue;
+        }
 
         // resizing is OK, first level is largest
         data.resize(size);
         read_vector(istr, data, "data", VERBOSITY);
 
         if (raster != nullptr) {
-            image.width = raster->mip_level_meta_data(i).width;
-            image.height = raster->mip_level_meta_data(i).height;
+            image.width = raster->mipmap_level(i).width;
+            image.height = raster->mipmap_level(i).height;
             image.stride = image.width * image.bpp;
         }
 
@@ -987,10 +1282,15 @@ static std::unique_ptr<IRaster> read_as_image(
 
         if (raster == nullptr) {
             // Important to have filled the image with data
-            raster = raster_factory.create_raster(image, (format & 7) | (format & (Raster::MIPMAP | Raster::AUTOMIPMAP)));
+            uint32_t newformat;
+            find_raster_format(image, format & 7, &depth, &newformat);
+            newformat |= format & (Raster::MIPMAP | Raster::AUTOMIPMAP);
+            raster = raster_factory.create_raster(image, newformat);
+            raster->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
         }
 
         raster->from_image(image);
+        raster->unlock();
     }
 
     return raster;
@@ -1017,14 +1317,15 @@ static std::shared_ptr<Texture> read_texture_native_d3d8(
     auto type = read_binary<uint8_t>(istr, "type", VERBOSITY);
     auto compression = read_binary<uint8_t>(istr, "compression", VERBOSITY);
 
-    if (format & Raster::PAL4 || format & Raster::PAL8){
+    if ((format & Raster::PAL4) || (format & Raster::PAL8)) {
         if (!raster_factory.is_p8_supported()) {
             texture->raster = read_as_image(istr, width, height, depth, format | type, num_levels, raster_factory);
             return texture;
         }
     }
 
-    Palette palette{ istr, format };
+    Palette palette = uninitialized;
+    read_palette(palette, istr, format);
 
     texture->raster = raster_factory.create_raster(
         width,
@@ -1042,6 +1343,10 @@ static std::shared_ptr<Texture> read_texture_native_d3d8(
     for(uint32_t i = 0; i < num_levels; i++){
         auto size = read_binary<uint32_t>(istr, "size", VERBOSITY);
         if (i < texture->raster->num_levels()) {
+            auto expected_size = texture->raster->mipmap_level(i).size();
+            if (size != expected_size) {
+                THROW_OR_ABORT((std::stringstream() << "Unexpected mipmap size. Expected: " << expected_size << ", actual: " << size).str());
+            }
             uint8_t* data = texture->raster->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
             read_vector(istr, std::span{ data, size }, "data", VERBOSITY);
             texture->raster->unlock();

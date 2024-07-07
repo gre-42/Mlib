@@ -2,6 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
+#include <Mlib/Geometry/Mesh/Load/Palette.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <filesystem>
 #include <iosfwd>
@@ -27,6 +28,30 @@ using Mlib::UUVector;
 class Geometry;
 struct Clump;
 class IRasterFactory;
+
+enum Platform
+{
+    PLATFORM_NULL = 0,
+    // D3D7
+    PLATFORM_GL   = 2,
+    // MAC
+    PLATFORM_PS2  = 4,
+    PLATFORM_XBOX = 5,
+    // GAMECUBE
+    // SOFTRAS
+    PLATFORM_D3D8 = 8,
+    PLATFORM_D3D9 = 9,
+    // PSP
+
+    // non-stock-RW platforms
+
+    PLATFORM_WDGL = 11,    // WarDrum OpenGL
+    PLATFORM_GL3  = 12,    // my GL3 implementation
+
+    NUM_PLATFORMS,
+
+    FOURCC_PS2 = 0x00325350        // 'PS2\0'
+};
 
 struct Triangle
 {
@@ -65,9 +90,13 @@ struct Image
     uint32_t bpp;	// bytes per pixel
     uint32_t stride;
     std::vector<uint8_t> pixels;
-    uint8_t* palette;
+    Palette palette = uninitialized;
+    void allocate();
     bool has_alpha() const;
+    void compress_palette();
     void unpalletize(bool force_alpha = false);
+    void set_pixels_dxt(uint32_t type, uint8_t *pixels);
+    void remove_mask();
 };
 
 struct Raster
@@ -84,7 +113,7 @@ struct Raster
     int32_t width, height, depth;
     int32_t stride;
     std::vector<uint8_t> pixels;
-    uint8_t *palette;
+    Palette palette;
     // remember for locked rasters
     uint8_t *originalPixels;
     int32_t originalWidth;

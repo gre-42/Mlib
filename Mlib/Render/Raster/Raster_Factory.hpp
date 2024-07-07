@@ -7,9 +7,9 @@ namespace Dff {
 
 struct RasterConfig;
 
-class Gl3RasterFactory: public IRasterFactory {
+class RasterFactory: public IRasterFactory {
 public:
-    explicit Gl3RasterFactory(const RasterConfig& raster_config);
+    explicit RasterFactory(const RasterConfig& raster_config);
     virtual bool is_p8_supported() const override;
     virtual std::unique_ptr<IRaster> create_raster(const Image& img, uint32_t format) const override;
     virtual std::unique_ptr<IRaster> create_raster(
@@ -22,6 +22,7 @@ public:
         uint32_t num_levels,
         bool has_alpha,
         const uint8_t* palette) const override;
+    virtual std::unique_ptr<IRaster> make_raster_native(std::unique_ptr<IRaster>&& raster) const override;
 private:
     const RasterConfig& raster_config_;
 };
