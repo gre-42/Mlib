@@ -13,9 +13,13 @@ void Mlib::instantiate(
 	Scene& scene,
 	const std::list<InstanceInformation>& infos,
 	SceneNodeResources& scene_node_resources,
-	RenderingResources& rendering_resources)
+	RenderingResources& rendering_resources,
+	const std::set<std::string>& exclude)
 {
 	for (const auto& info : infos) {
+		if (exclude.contains(info.resource_name)) {
+			continue;
+		}
 		auto name = info.resource_name + "_inst_" + std::to_string(scene.get_uuid());
 		auto node = make_dunique<SceneNode>(
 			info.trafo.t(),

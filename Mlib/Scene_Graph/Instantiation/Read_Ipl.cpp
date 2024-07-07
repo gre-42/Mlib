@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
+#include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -66,15 +67,16 @@ std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
 		std::string name{ match[2].str() };
 		FixedArray<double, 3> t{ safe_stof(match[3].str()), safe_stof(match[4].str()), safe_stof(match[5].str()) };
 		FixedArray<float, 3> scale{ safe_stof(match[6].str()), safe_stof(match[7].str()), safe_stof(match[8].str()) };
-		if (any(abs(scale - 1.f) > 1e-3f)) {
-			THROW_OR_ABORT("Scale is not 1");
+		float mean_scale = mean(scale);
+		if (any(abs(scale - mean_scale) > 1e-3f)) {
+			lwarn() << name << ": Scale is anisotropic: " << scale;
 		}
 		float angle = safe_stof(match[9].str());
 		FixedArray<float, 3> axis{ safe_stof(match[10].str()), safe_stof(match[11].str()), safe_stof(match[12].str()) };
 		auto r = rodrigues2(axis, angle);
 		result.push_back(InstanceInformation{
 			.resource_name = std::move(name),
-			.trafo = { r, t } });
+			.trafo = { r * mean_scale, t } });
 	}
 	return result;
 }

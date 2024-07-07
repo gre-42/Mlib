@@ -605,8 +605,8 @@ static std::vector<Frame> read_frame_list(
         THROW_OR_ABORT("Could not find struct");
     }
     auto num_frames = read_binary<uint32_t>(istr, "frame list", VERBOSITY);
-    if (num_frames > 100) {
-        THROW_OR_ABORT("Unexpected number of frames");
+    if (num_frames > 1000) {
+        THROW_OR_ABORT("Unexpected number of frames: " + std::to_string(num_frames));
     }
     std::vector<Frame> frames(num_frames);
     for (auto& frame : frames) {
@@ -783,8 +783,8 @@ static MaterialList read_material_list(
     int32_t num_mat = read_binary<int32_t>(istr, "num mat", VERBOSITY);
     if(num_mat == 0)
         return matlist;
-    if (num_mat > 100) {
-        THROW_OR_ABORT("Number of materials too large");
+    if (num_mat > 1000) {
+        THROW_OR_ABORT("Number of materials too large: " + std::to_string(num_mat));
     }
     matlist.materials.resize(num_mat);
     matlist.space = num_mat;

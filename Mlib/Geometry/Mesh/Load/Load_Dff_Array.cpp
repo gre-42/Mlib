@@ -73,13 +73,10 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
         if (a.geometry->morphTargets.empty()) {
             THROW_OR_ABORT("Morph targets empty");
         }
-        if (a.geometry->texCoords.empty()) {
-            THROW_OR_ABORT("Texture coordinates empty");
-        }
         const auto& vertices = a.geometry->morphTargets[0].vertices;
         const auto& normals = a.geometry->morphTargets[0].normals;
         const auto& colors = a.geometry->colors;
-        const auto& uvs = a.geometry->texCoords[0];
+        const auto* uvs = a.geometry->texCoords.empty() ? nullptr : &a.geometry->texCoords[0];
 
         for (const auto& v : a.geometry->triangles) {
             if (v.matId >= tls.size()) {
@@ -97,7 +94,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
             if (!colors.empty() && any(v.v >= integral_cast<uint16_t>(colors.size()))) {
                 THROW_OR_ABORT("Vertex ID too large");
             }
-            if (!uvs.empty() && any(v.v >= integral_cast<uint16_t>(uvs.size()))) {
+            if ((uvs != nullptr) && any(v.v >= integral_cast<uint16_t>(uvs->size()))) {
                 THROW_OR_ABORT("Vertex ID too large");
             }
             auto material_color = materials[v.matId].color.row_range<0, 3>().casted<float>() / 255.f;
@@ -109,9 +106,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                     colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(0)].base(),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(1)].base(),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(2)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(0)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(1)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(2)].base(),
                     {},
                     {},
                     {},
@@ -128,9 +125,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                     colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(0)].base(),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(1)].base(),
-                    uvs.empty() ? fixed_zeros<float, 2>() : uvs[v.v(2)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(0)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(1)].base(),
+                    (uvs == nullptr) ? fixed_zeros<float, 2>() : (*uvs)[v.v(2)].base(),
                     {},
                     {},
                     {},

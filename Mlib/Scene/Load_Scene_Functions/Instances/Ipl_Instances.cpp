@@ -12,6 +12,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(files);
+DECLARE_ARGUMENT(exclude);
 }
 
 const std::string IplInstances::key = "ipl_instances";
@@ -27,11 +28,13 @@ IplInstances::IplInstances(RenderableScene& renderable_scene)
 {}
 
 void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
+    auto empty_set = std::set<std::string>();
     for (const auto& file : args.arguments.pathes_or_variables(KnownArgs::files)) {
         instantiate(
             scene,
             read_ipl(file.path),
             scene_node_resources,
-            RenderingContextStack::primary_rendering_resources());
+            RenderingContextStack::primary_rendering_resources(),
+            args.arguments.at_non_null<std::set<std::string>>(KnownArgs::exclude, empty_set));
     }
 }
