@@ -55,6 +55,7 @@ using namespace Mlib;
 template <class TPos>
 LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& j)
 {
+    j.validate(KnownArgs::options);
     return LoadMeshConfig<TPos>{
         .position = j.at<UFixedArray<TPos, 3>>(KnownArgs::position) * (TPos)meters,
         .rotation = j.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,

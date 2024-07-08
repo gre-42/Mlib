@@ -1376,8 +1376,6 @@ static std::shared_ptr<Texture> read_texture_native(
     if (length > 10'000'000) {
         THROW_OR_ABORT("Texture too large");
     }
-    Texture texture;
-    texture.data.resize(length);
     auto platform = read_binary<uint32_t>(istr, "platform", VERBOSITY);
     switch (platform) {
     case FOURCC_PS2:

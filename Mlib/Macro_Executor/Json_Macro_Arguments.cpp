@@ -65,6 +65,7 @@ static nlohmann::json subst_and_replace(
         auto result = nlohmann::json::object();
         for (const auto& [key, value] : j.items()) {
             if ((key == MacroKeys::required) ||
+                (key == MacroKeys::exclude) ||
                 (key == MacroKeys::arguments) ||
                 (key == MacroKeys::content) ||
                 (key == MacroKeys::comment) ||
@@ -203,7 +204,7 @@ std::optional<JsonMacroArguments> JsonMacroArguments::try_get_child(const std::s
 }
 
 JsonMacroArguments JsonMacroArguments::as_child(const nlohmann::json& j) const {
-    JsonMacroArguments res{j};
+    JsonMacroArguments res{ j };
     res.set_fpath(fpath_);
     res.set_fpathes(fpathes_);
     res.set_spath(spath_);

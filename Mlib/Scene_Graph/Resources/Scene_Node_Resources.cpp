@@ -468,12 +468,12 @@ void SceneNodeResources::add_companion(
 
 std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
     {
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         if (auto rit = resources_.find(name); rit != resources_.end()) {
             return rit->second;
         }
     }
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     if (auto rit = resources_.find(name); rit != resources_.end()) {
         return rit->second;
     }

@@ -248,7 +248,7 @@ void MacroLineExecutor::operator () (
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
             auto j_subst_raw = merged_args.subst_and_replace(j, global_args, asset_references_);
             global_args.unlock();
-            auto j_subst = JsonView{j_subst_raw};
+            auto j_subst = JsonView{ j_subst_raw };
             if (jv.contains(MacroKeys::playback)) {
                 auto name = j_subst.at<std::string>(MacroKeys::playback);
                 auto macro_it = macro_recorder_.json_macros_.find(name);
@@ -298,7 +298,7 @@ void MacroLineExecutor::operator () (
                 }
             } else if (jv.contains(MacroKeys::execute)) {
                 auto mle2 = changed_context(context, let.json());
-                mle2(j_subst.at(MacroKeys::execute), &args, nullptr);
+                mle2(j_subst.at(MacroKeys::execute), caller_args, nullptr);
             } else if (jv.contains(MacroKeys::include)) {
                 auto mle2 = changed_script_filename_and_context(
                     path_resolver.spath(j_subst.at<std::string>(MacroKeys::include)),
