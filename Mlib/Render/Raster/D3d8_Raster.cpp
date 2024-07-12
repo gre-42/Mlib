@@ -207,6 +207,10 @@ void D3d8Raster::unlock()
 	private_flags_ &= ~(Raster::PRIVATELOCK_READ | Raster::PRIVATELOCK_WRITE);
 }
 
+uint8_t* D3d8Raster::palette() {
+	return palette_.data();
+}
+
 void D3d8Raster::set_format() {
 	if(format_ == 0){
 		// have to find a format first
@@ -239,10 +243,10 @@ D3d8Raster::D3d8Raster(
 	uint32_t width,
 	uint32_t height,
 	uint32_t depth,
+	uint32_t palette_size,
 	uint32_t format,
 	uint32_t compression,
 	uint32_t num_levels,
-	const uint8_t* palette,
 	bool has_alpha,
 	const RasterConfig& cfg)
 	: format_{ format }
@@ -255,7 +259,7 @@ D3d8Raster::D3d8Raster(
 	, private_flags_{ 0 }
 	, custom_format_{ 0 }
 	, pixels_{ nullptr }
-	, palette_{ palette }
+	, palette_(4 * palette_size)
 {
 	if ((format & 0xF) != Raster::TEXTURE) {
 		THROW_OR_ABORT("Invalid raster type");
@@ -366,7 +370,7 @@ Image D3d8Raster::to_image()
 
 	if (pallength != 0) {
 		auto out = image.palette.data();
-		auto in = palette_;
+		auto in = palette_.data();
 		for (uint32_t i = 0; i < pallength; i++){
 			conv_RGBA8888_from_RGBA8888(out, in);
 			in += 4;
@@ -414,6 +418,6 @@ uint32_t D3d8Raster::format() const {
 	return format_ & 0xFF00;
 }
 
-uint64_t D3d8Raster::move_texture_handle() {
+std::unique_ptr<Mlib::ITextureHandle>& D3d8Raster::texture_handle() {
 	THROW_OR_ABORT("Non-native GL3 raster has no texture handle");
 }

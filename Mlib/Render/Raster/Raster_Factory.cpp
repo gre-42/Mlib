@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Render/Raster/D3d8_Raster.hpp>
 #include <Mlib/Render/Raster/Gl3_Raster.hpp>
+#include <Mlib/Render/Raster/Ps2_Raster.hpp>
 
 using namespace Mlib::Dff;
 
@@ -18,9 +19,6 @@ std::unique_ptr<IRaster> RasterFactory::create_raster(
 	uint32_t type,
 	const RasterConfig& raster_config) const
 {
-	// Almost the same as d3d9 and ps2 function
-	int32_t width, height, depth, format;
-
 	if ((type & 0xF) != Raster::TEXTURE) {
 		THROW_OR_ABORT("Invalid raster type");
 	}
@@ -28,14 +26,15 @@ std::unique_ptr<IRaster> RasterFactory::create_raster(
 	//	for(width = 1; width < img->width; width <<= 1);
 	//	for(height = 1; height < img->height; height <<= 1);
 	// Perhaps non-power-of-2 textures are acceptable?
-	width = img.width;
-	height = img.height;
+	uint32_t width = img.width;
+	uint32_t height = img.height;
 
-	depth = img.depth;
+	uint32_t depth = img.depth;
 
 	if (depth <= 8)
 		depth = 32;
 
+	uint32_t format;
 	switch (depth) {
 	case 32:
 		if (img.has_alpha())
@@ -71,34 +70,29 @@ std::unique_ptr<IRaster> RasterFactory::create_raster(
 		raster_config);
 }
 
-std::unique_ptr<IRaster> RasterFactory::create_raster(
+std::unique_ptr<IRasterPs2> RasterFactory::create_raster_ps2(
 	uint32_t width,
 	uint32_t height,
 	uint32_t depth,
+	uint32_t palette_size,
 	uint32_t format,
-	uint32_t platform,
+	const RasterConfig& raster_config) const
+{
+	return std::make_unique<Ps2Raster>(width, height, depth, palette_size, format);
+}
+
+std::unique_ptr<IRasterD3d8> RasterFactory::create_raster_d3d8(
+	uint32_t width,
+	uint32_t height,
+	uint32_t depth,
+	uint32_t palette_size,
+	uint32_t format,
 	uint32_t compression,
 	uint32_t num_levels,
 	bool has_alpha,
-	const uint8_t* palette,
 	const RasterConfig& raster_config) const
 {
-	auto raster = [&]() -> std::unique_ptr<IRaster> {
-		switch (platform) {
-		case FOURCC_PS2:
-			THROW_OR_ABORT("FOURCC_PS2 texture not yet implemented");
-		case PLATFORM_D3D8:
-			return std::make_unique<D3d8Raster>(width, height, depth, format, compression, num_levels, palette, has_alpha, raster_config);
-		case PLATFORM_D3D9:
-			THROW_OR_ABORT("PLATFORM_D3D9 texture not yet implemented");
-		case PLATFORM_XBOX:
-			THROW_OR_ABORT("PLATFORM_XBOX texture not yet implemented");
-		case PLATFORM_GL3:
-			return std::make_unique<Gl3Raster>(width, height, depth, format, compression, num_levels, has_alpha, raster_config);
-		};
-		THROW_OR_ABORT("Unknown platform");
-		}();
-	return raster;
+	return std::make_unique<D3d8Raster>(width, height, depth, palette_size, format, compression, num_levels, has_alpha, raster_config);
 }
 
 std::unique_ptr<IRaster> RasterFactory::make_raster_native(

@@ -32,6 +32,7 @@ struct BlendMapTexture;
 enum class InterpolationMode;
 enum class ColorMode;
 struct LoadedFont;
+class ITextureHandle;
 
 struct TextureSizeAndMipmaps {
     GLsizei width;
@@ -161,6 +162,10 @@ public:
         const ColormapWithModifiers& name,
         GLuint id,
         ResourceOwner resource_owner,
+        const TextureSize* texture_size = nullptr);
+    void set_texture(
+        const ColormapWithModifiers& name,
+        std::unique_ptr<ITextureHandle>&& id,
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);

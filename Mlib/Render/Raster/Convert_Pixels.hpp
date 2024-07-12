@@ -111,7 +111,7 @@ inline void conv_RGBA8888_from_BGRA8888(uint8_t *out, const uint8_t *in) { conv_
 inline void conv_RGB888_from_BGR888(uint8_t *out, const uint8_t *in) { conv_BGR888_from_RGB888(out, in); }
 inline void conv_ARGB1555_from_ABGR1555(uint8_t *out, const uint8_t *in) { conv_ABGR1555_from_ARGB1555(out, in); }
 
-inline void expandPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+inline void expandPal4(uint8_t *dst, uint32_t dststride, const uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
 {
     int32_t x, y;
     for(y = 0; y < h; y++)
@@ -121,7 +121,7 @@ inline void expandPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t 
         }
 }
 
-inline void compressPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+inline void compressPal4(uint8_t *dst, uint32_t dststride, const uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
 {
     int32_t x, y;
     for(y = 0; y < h; y++)
@@ -129,7 +129,7 @@ inline void compressPal4(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_
             dst[y*dststride + x] = src[y*srcstride + x*2 + 0] | src[y*srcstride + x*2 + 1] << 4;
 }
 
-inline void expandPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+inline void expandPal4_BE(uint8_t *dst, uint32_t dststride, const uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
 {
     int32_t x, y;
     for(y = 0; y < h; y++)
@@ -139,7 +139,7 @@ inline void expandPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32
         }
 }
 
-inline void compressPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+inline void compressPal4_BE(uint8_t *dst, uint32_t dststride, const uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
 {
     int32_t x, y;
     for(y = 0; y < h; y++)
@@ -147,7 +147,7 @@ inline void compressPal4_BE(uint8_t *dst, uint32_t dststride, uint8_t *src, uint
             dst[y*dststride + x] = src[y*srcstride + x*2 + 1] | src[y*srcstride + x*2 + 0] << 4;
 }
 
-inline void copyPal8(uint8_t *dst, uint32_t dststride, uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
+inline void copyPal8(uint8_t *dst, uint32_t dststride, const uint8_t *src, uint32_t srcstride, int32_t w, int32_t h)
 {
     int32_t x, y;
     for(y = 0; y < h; y++)

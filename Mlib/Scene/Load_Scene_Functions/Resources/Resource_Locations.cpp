@@ -71,8 +71,7 @@ static void add_resource(
                 } else {
                     res.set_texture(
                         cm,
-                        integral_cast<GLuint>(tx->raster->move_texture_handle()),
-                        ResourceOwner::CONTAINER,
+                        std::move(tx->raster->texture_handle()),
                         &size);
                 }
             }

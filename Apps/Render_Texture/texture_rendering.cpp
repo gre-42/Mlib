@@ -109,9 +109,10 @@ int main(int argc, char** argv)
             if (auto filename = parsed.try_named_value("--txd"); filename != nullptr) {
                 auto txd = Dff::read_txd(
                     *filename,
-                    Dff::RasterFactory(Dff::RasterConfig{
+                    Dff::RasterFactory(),
+                    Dff::RasterConfig{
                         .need_to_read_back_textures = true,
-                        .make_native = true}));
+                        .make_native = true});
                 for (auto& tx : txd.textures) {
                     if (!Mlib::re::regex_search(tx->name, re)) {
                         linfo() << "Skipping: " << tx->name;
@@ -129,8 +130,7 @@ int main(int argc, char** argv)
                             .color_mode = ColorMode::RGBA,
                             .mipmap_mode = MipmapMode::WITH_MIPMAPS
                         },
-                        integral_cast<GLuint>(tx->raster->move_texture_handle()),
-                        ResourceOwner::CONTAINER,
+                        std::move(tx->raster->texture_handle()),
                         &size);
                 }
             }

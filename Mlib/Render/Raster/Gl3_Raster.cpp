@@ -8,6 +8,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_2D.hpp>
 #include <Mlib/Render/Raster/Convert_Pixels.hpp>
 #include <Mlib/Render/Raster/Gl3_Caps.hpp>
+#include <Mlib/Render/Raster/Gl3_Texture_Handle.hpp>
 
 #define GL_COMPRESSED_RGB_S3TC_DXT1_EXT                   0x83F0
 #define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT                  0x83F1
@@ -186,13 +187,13 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
     if (native_autogen_mipmap_)
         native_num_levels_ = 1;
 
-    if (native_texture_id_.has_value()) {
+    if (native_texture_id_ != nullptr) {
         THROW_OR_ABORT("Texture already set");
     }
-    native_texture_id_.emplace();
-    CHK(glGenTextures(1, &native_texture_id_.value()));
+    native_texture_id_ = std::make_unique<Gl3TextureHandle>();
+    CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
     {
-        BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_.value() };
+        BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
         CHK(glTexImage2D(GL_TEXTURE_2D, 0, native_internal_format_,
             width_, height_,
             0, native_format_, native_type_, nullptr));
@@ -233,18 +234,18 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                     std::memcpy(pixels_.data(), levels_[level].data.data(), alloc_sz);
                 } else {
                     // GLES is losing here
-                    BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_.value() };
+                    BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
                     CHK(glGetCompressedTexImage(GL_TEXTURE_2D, level, pixels_.data()));
                 }
             } else if (gl3Caps.gles) {
                 if (native_format_ != GL_RGBA) {
                     THROW_OR_ABORT("Unexpected native format");
                 }
-                FrameBufferStorage2D fbs{ native_texture_id_.value(), 0 };
+                FrameBufferStorage2D fbs{ native_texture_id_->handle<GLuint>(), 0 };
                 CHK(glReadPixels(0, 0, level_meta_data.width, level_meta_data.height, native_format_, native_type_, pixels_.data()));
                 //e = glGetError(); printf("GL err4 %x (%x)\n", e, native_format);
             } else {
-                BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_.value() };
+                BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
                 CHK(glPixelStorei(GL_PACK_ALIGNMENT, 1));
                 CHK(glGetTexImage(GL_TEXTURE_2D, level, native_format_, native_type_, pixels_.data()));
             }
@@ -293,7 +294,7 @@ void Gl3Raster::unlock()
     case Raster::CAMERATEXTURE:
         if (private_flags_ & Raster::LOCKWRITE) {
             const auto& level_meta_data = mipmap_level(level);
-            BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_.value() };
+            BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
             if (native_is_compressed_) {
                 CHK(glCompressedTexImage2D(GL_TEXTURE_2D, level, native_internal_format_,
                     level_meta_data.width, level_meta_data.height, 0,
@@ -386,12 +387,12 @@ void Gl3Raster::create_texture()
     if (native_autogen_mipmap_)
         native_num_levels_ = 1;
 
-    if (native_texture_id_.has_value()) {
-        THROW_OR_ABORT("Texture ID alerady set");
+    if (native_texture_id_ != nullptr) {
+        THROW_OR_ABORT("Texture ID already set");
     }
-    native_texture_id_.emplace();
-    CHK(glGenTextures(1, &native_texture_id_.value()));
-    BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_.value() };
+    native_texture_id_ = std::make_unique<Gl3TextureHandle>();
+    CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
+    BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
     CHK(glTexImage2D(GL_TEXTURE_2D, 0, native_internal_format_,
         width_, height_,
         0, native_format_, native_type_, nullptr));
@@ -467,8 +468,8 @@ Gl3Raster::Gl3Raster(
 }
 
 Gl3Raster::~Gl3Raster() {
-    if (native_texture_id_.has_value()) {
-        ABORT(glDeleteTextures(1, &native_texture_id_.value()));
+    if (native_texture_id_ != nullptr) {
+        ABORT(glDeleteTextures(1, &native_texture_id_->handle<GLuint>()));
     }
 }
 
@@ -484,11 +485,9 @@ uint32_t Gl3Raster::format() const {
     return format_ & 0xFF00;
 }
 
-uint64_t Gl3Raster::move_texture_handle() {
-    if (!native_texture_id_.has_value()) {
+std::unique_ptr<Mlib::ITextureHandle>& Gl3Raster::texture_handle() {
+    if (native_texture_id_ == nullptr) {
         THROW_OR_ABORT("Texture ID not set");
     }
-    auto res = native_texture_id_.value();
-    native_texture_id_.reset();
-    return res;
+    return native_texture_id_;
 }

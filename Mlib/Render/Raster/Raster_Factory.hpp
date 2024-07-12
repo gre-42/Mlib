@@ -13,16 +13,22 @@ public:
         const Image& img,
         uint32_t format,
         const RasterConfig& raster_config) const override;
-    virtual std::unique_ptr<IRaster> create_raster(
+    virtual std::unique_ptr<IRasterD3d8> create_raster_d3d8(
         uint32_t width,
         uint32_t height,
         uint32_t depth,
+        uint32_t palette_size,
         uint32_t format,
-        uint32_t platform,
         uint32_t compression,
         uint32_t num_levels,
         bool has_alpha,
-        const uint8_t* palette,
+        const RasterConfig& raster_config) const override;
+    virtual std::unique_ptr<IRasterPs2> create_raster_ps2(
+        uint32_t width,
+        uint32_t height,
+        uint32_t depth,
+        uint32_t palette_size,
+        uint32_t format,
         const RasterConfig& raster_config) const override;
     virtual std::unique_ptr<IRaster> make_raster_native(
         std::unique_ptr<IRaster>&& raster,

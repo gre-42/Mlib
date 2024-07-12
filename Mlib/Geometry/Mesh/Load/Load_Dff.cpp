@@ -4,6 +4,8 @@
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Geometry/Mesh/Load/Palette.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
+#include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_D3d.hpp>
+#include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_Ps2.hpp>
 #include <Mlib/Io/Binary.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
@@ -20,8 +22,6 @@ using Mlib::lwarn;
 using Mlib::verbose_abort;
 using Mlib::IoVerbosity;
 using Mlib::seek_relative_positive;
-
-static const IoVerbosity VERBOSITY = IoVerbosity::SILENT;
 
 static uint32_t library_id_unpack_version(uint32_t libid)
 {
@@ -426,77 +426,7 @@ static ChunkHeaderInfo read_chunk_header_info(std::istream& str) {
     return header;
 }
 
-#define MAKEPLUGINID(v, id) (((v & 0xFFFFFF) << 8) | (id & 0xFF))
-#define MAKEPIPEID(v, id) (((v & 0xFFFF) << 16) | (id & 0xFFFF))
-
-enum VendorID
-{
-    VEND_CORE           = 0,
-    VEND_CRITERIONTK    = 1,
-    VEND_CRITERIONINT   = 4,
-    VEND_CRITERIONWORLD = 5,
-    // Used for rasters (platform-specific)
-    VEND_RASTER         = 10,
-    // Used for driver/device allocation tags
-    VEND_DRIVER         = 11
-};
-
-enum PluginID
-{
-    // Core
-    ID_NAOBJECT      = MAKEPLUGINID(VEND_CORE, 0x00),
-    ID_STRUCT        = MAKEPLUGINID(VEND_CORE, 0x01),
-    ID_STRING        = MAKEPLUGINID(VEND_CORE, 0x02),
-    ID_EXTENSION     = MAKEPLUGINID(VEND_CORE, 0x03),
-    ID_CAMERA        = MAKEPLUGINID(VEND_CORE, 0x05),
-    ID_TEXTURE       = MAKEPLUGINID(VEND_CORE, 0x06),
-    ID_MATERIAL      = MAKEPLUGINID(VEND_CORE, 0x07),
-    ID_MATLIST       = MAKEPLUGINID(VEND_CORE, 0x08),
-    ID_WORLD         = MAKEPLUGINID(VEND_CORE, 0x0B),
-    ID_MATRIX        = MAKEPLUGINID(VEND_CORE, 0x0D),
-    ID_FRAMELIST     = MAKEPLUGINID(VEND_CORE, 0x0E),
-    ID_GEOMETRY      = MAKEPLUGINID(VEND_CORE, 0x0F),
-    ID_CLUMP         = MAKEPLUGINID(VEND_CORE, 0x10),
-    ID_LIGHT         = MAKEPLUGINID(VEND_CORE, 0x12),
-    ID_ATOMIC        = MAKEPLUGINID(VEND_CORE, 0x14),
-    ID_TEXTURENATIVE = MAKEPLUGINID(VEND_CORE, 0x15),
-    ID_TEXDICTIONARY = MAKEPLUGINID(VEND_CORE, 0x16),
-    ID_IMAGE         = MAKEPLUGINID(VEND_CORE, 0x18),
-    ID_GEOMETRYLIST  = MAKEPLUGINID(VEND_CORE, 0x1A),
-    ID_ANIMANIMATION = MAKEPLUGINID(VEND_CORE, 0x1B),
-    ID_RIGHTTORENDER = MAKEPLUGINID(VEND_CORE, 0x1F),
-    ID_UVANIMDICT    = MAKEPLUGINID(VEND_CORE, 0x2B),
-
-    // Toolkit
-    ID_SKYMIPMAP     = MAKEPLUGINID(VEND_CRITERIONTK, 0x10),
-    ID_SKIN          = MAKEPLUGINID(VEND_CRITERIONTK, 0x16),
-    ID_HANIM         = MAKEPLUGINID(VEND_CRITERIONTK, 0x1E),
-    ID_USERDATA      = MAKEPLUGINID(VEND_CRITERIONTK, 0x1F),
-    ID_MATFX         = MAKEPLUGINID(VEND_CRITERIONTK, 0x20),
-    ID_ANISOT        = MAKEPLUGINID(VEND_CRITERIONTK, 0x27),
-    ID_PDS           = MAKEPLUGINID(VEND_CRITERIONTK, 0x31),
-    ID_ADC           = MAKEPLUGINID(VEND_CRITERIONTK, 0x34),
-    ID_UVANIMATION   = MAKEPLUGINID(VEND_CRITERIONTK, 0x35),
-
-    // World
-    ID_MESH          = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x0E),
-    ID_NATIVEDATA    = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x10),
-    ID_VERTEXFMT     = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x11),
-
-    // custom native raster
-    ID_RASTERGL      = MAKEPLUGINID(VEND_RASTER, PLATFORM_GL),
-    ID_RASTERPS2     = MAKEPLUGINID(VEND_RASTER, PLATFORM_PS2),
-    ID_RASTERXBOX    = MAKEPLUGINID(VEND_RASTER, PLATFORM_XBOX),
-    ID_RASTERD3D8    = MAKEPLUGINID(VEND_RASTER, PLATFORM_D3D8),
-    ID_RASTERD3D9    = MAKEPLUGINID(VEND_RASTER, PLATFORM_D3D9),
-    ID_RASTERWDGL    = MAKEPLUGINID(VEND_RASTER, PLATFORM_WDGL),
-    ID_RASTERGL3     = MAKEPLUGINID(VEND_RASTER, PLATFORM_GL3),
-
-    // anything driver/device related (only as allocation tag)
-    ID_DRIVER        = MAKEPLUGINID(VEND_DRIVER, 0)
-};
-
-static bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint32_t *version) {
+bool Mlib::Dff::find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint32_t *version) {
     while (str.peek() != EOF) {
         ChunkHeaderInfo header = read_chunk_header_info(str);
         if (header.type == ID_NAOBJECT) {
@@ -511,6 +441,7 @@ static bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint3
             }
             return true;
         }
+        seek_relative_positive(str, header.length, VERBOSITY);
     }
     return false;
 }
@@ -1156,15 +1087,21 @@ static bool format_has_alpha(uint32_t format)
         (format & 0xF00) == Raster::C4444;
 }
 
-void read_palette(Palette& palette, std::istream& istr, uint32_t format) {
+uint32_t Mlib::Dff::palette_size(uint32_t format) {
     if (format & Raster::PAL4) {
-        palette.resize(32);
-        read_vector(istr, std::span{ palette.data(), 4 * 32 }, "palette", VERBOSITY);
+        return 32;
     } else if (format & Raster::PAL8) {
-        palette.resize(256);
-        read_vector(istr, std::span{ palette.data(), 4 * 256 }, "palette", VERBOSITY);
+        return 256;
     } else {
-        palette.resize(0);
+        return 0;
+    }
+}
+
+void Mlib::Dff::read_palette(Palette& palette, std::istream& istr, uint32_t format) {
+    auto size = palette_size(format);
+    palette.resize(size);
+    if (size != 0) {
+        read_vector(istr, std::span{ palette.data(), 4 * size }, "palette", VERBOSITY);
     }
 }
 
@@ -1208,7 +1145,7 @@ static void find_raster_format(const Image& img, uint32_t type, uint32_t *depth,
 }
 
 // only handles 4 and 8 bit textures right now
-static std::unique_ptr<IRaster> read_as_image(
+std::unique_ptr<IRaster> Mlib::Dff::read_as_image(
     std::istream& istr,
     uint32_t width,
     uint32_t height,
@@ -1253,10 +1190,13 @@ static std::unique_ptr<IRaster> read_as_image(
             image.width = raster->mipmap_level(i).width;
             image.height = raster->mipmap_level(i).height;
             image.stride = image.width * image.bpp;
+            if (image.stride * image.height != size) {
+                THROW_OR_ABORT("Unexpected image size");
+            }
         }
 
         if (format & (Raster::PAL4 | Raster::PAL8)){
-            uint8_t *idx = data.data();
+            const uint8_t *idx = data.data();
             uint8_t *pixels = image.pixels.data();
             for(uint32_t y = 0; y < image.height; y++){
                 uint8_t *line = pixels;
@@ -1290,79 +1230,6 @@ static std::unique_ptr<IRaster> read_as_image(
     return raster;
 }
 
-static std::shared_ptr<Texture> read_texture_native_d3d8(
-    std::istream& istr,
-    const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config)
-{
-    auto texture = std::make_shared<Texture>();
-    // Texture
-    texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
-    texture->name = read_string(istr, 32, "texture name", VERBOSITY);
-    texture->mask = read_string(istr, 32, "texture mask", VERBOSITY);
-
-    // Raster
-    auto format = read_binary<uint32_t>(istr, "format", VERBOSITY);
-    auto has_alpha = (bool)read_binary<uint32_t>(istr, "has alpha", VERBOSITY);
-    auto width = read_binary<uint16_t>(istr, "width", VERBOSITY);
-    auto height = read_binary<uint16_t>(istr, "height", VERBOSITY);
-    auto depth = read_binary<uint8_t>(istr, "depth", VERBOSITY);
-    auto num_levels = read_binary<uint8_t>(istr, "num levels", VERBOSITY);
-    auto type = read_binary<uint8_t>(istr, "type", VERBOSITY);
-    auto compression = read_binary<uint8_t>(istr, "compression", VERBOSITY);
-
-    if ((format & Raster::PAL4) || (format & Raster::PAL8)) {
-        if (!raster_factory.is_p8_supported()) {
-            texture->raster = read_as_image(istr, width, height, depth, format | type, num_levels, raster_factory, raster_config);
-            return texture;
-        }
-    }
-
-    Palette palette = uninitialized;
-    read_palette(palette, istr, format);
-
-    texture->raster = raster_factory.create_raster(
-        width,
-        height,
-        depth,
-        format | type | Raster::DONTALLOCATE,
-        PLATFORM_D3D8,
-        compression,
-        num_levels,
-        has_alpha,
-        palette.data(),
-        raster_config);
-
-    // TODO: check if format supported and convert if necessary
-
-    for(uint32_t i = 0; i < num_levels; i++){
-        auto size = read_binary<uint32_t>(istr, "size", VERBOSITY);
-        if (i < texture->raster->num_levels()) {
-            auto expected_size = texture->raster->mipmap_level(i).size();
-            if (size != expected_size) {
-                THROW_OR_ABORT((std::stringstream() << "Unexpected mipmap size. Expected: " << expected_size << ", actual: " << size).str());
-            }
-            uint8_t* data = texture->raster->lock(i, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
-            read_vector(istr, std::span{ data, size }, "data", VERBOSITY);
-            texture->raster->unlock();
-        } else {
-            seek_relative_positive(istr, size, VERBOSITY);
-        }
-    }
-    if (raster_config.make_native) {
-        texture->raster = raster_factory.make_raster_native(std::move(texture->raster), raster_config);
-    }
-    return texture;
-}
-
-static std::shared_ptr<Texture> read_texture_native_d3d9(
-    std::istream& istr,
-    const std::list<std::unique_ptr<IPlugin>>& plugins)
-{
-    THROW_OR_ABORT("read_texture_native_d3d9 not yet implemented");
-}
-
 static std::shared_ptr<Texture> read_texture_native(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
@@ -1379,7 +1246,7 @@ static std::shared_ptr<Texture> read_texture_native(
     auto platform = read_binary<uint32_t>(istr, "platform", VERBOSITY);
     switch (platform) {
     case FOURCC_PS2:
-        THROW_OR_ABORT("FOURCC_PS2 texture not yet implemented");
+        return read_native_texture_ps2(istr, raster_factory, raster_config);
     case PLATFORM_D3D8:
         return read_texture_native_d3d8(istr, plugins, raster_factory, raster_config);
     case PLATFORM_D3D9:

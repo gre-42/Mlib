@@ -16,6 +16,14 @@ namespace Mlib {
 
 namespace Dff {
 
+static const IoVerbosity VERBOSITY = IoVerbosity::SILENT;
+
+#ifdef BIGENDIAN
+#define ASSERTLITTLE THROW_OR_ABORT("Unsafe code on big-endian")
+#else
+#define ASSERTLITTLE
+#endif
+
 using Mlib::uninitialized;
 using Mlib::FixedArray;
 using Mlib::UFixedArray;
@@ -100,30 +108,9 @@ struct Image
     void remove_mask();
 };
 
-struct Raster
+namespace Raster
 {
     enum { FLIPWAITVSYNCH = 1 };
-
-    int32_t platform;
-
-    // TODO: use bytes
-    int32_t type;
-    int32_t flags;
-    int32_t privateFlags;
-    int32_t format;
-    int32_t width, height, depth;
-    int32_t stride;
-    std::vector<uint8_t> pixels;
-    Palette palette;
-    // remember for locked rasters
-    uint8_t *originalPixels;
-    int32_t originalWidth;
-    int32_t originalHeight;
-    int32_t originalStride;
-    // subraster
-    Raster *parent;
-    int32_t offsetX;
-    int32_t offsetY;
 
     enum Format {
         DEFAULT    = 0,
@@ -166,6 +153,19 @@ struct Raster
         PRIVATELOCK_WRITE_PALETTE    = 0x10,
     };
 };
+
+std::unique_ptr<IRaster> read_as_image(
+    std::istream& istr,
+    uint32_t width,
+    uint32_t height,
+    uint32_t depth,
+    uint32_t format,
+    uint32_t num_levels,
+    const IRasterFactory& raster_factory,
+    const RasterConfig& raster_config);
+
+uint32_t palette_size(uint32_t format);
+void read_palette(Palette& palette, std::istream& istr, uint32_t format);
 
 struct Texture;
 
@@ -371,6 +371,78 @@ struct ChunkHeaderInfo
     uint32_t build;
 };
 static_assert(sizeof(ChunkHeaderInfo) == 16);
+
+#define MAKEPLUGINID(v, id) (((v & 0xFFFFFF) << 8) | (id & 0xFF))
+
+enum VendorID
+{
+    VEND_CORE           = 0,
+    VEND_CRITERIONTK    = 1,
+    VEND_CRITERIONINT   = 4,
+    VEND_CRITERIONWORLD = 5,
+    // Used for rasters (platform-specific)
+    VEND_RASTER         = 10,
+    // Used for driver/device allocation tags
+    VEND_DRIVER         = 11
+};
+
+enum PluginID
+{
+    // Core
+    ID_NAOBJECT      = MAKEPLUGINID(VEND_CORE, 0x00),
+    ID_STRUCT        = MAKEPLUGINID(VEND_CORE, 0x01),
+    ID_STRING        = MAKEPLUGINID(VEND_CORE, 0x02),
+    ID_EXTENSION     = MAKEPLUGINID(VEND_CORE, 0x03),
+    ID_CAMERA        = MAKEPLUGINID(VEND_CORE, 0x05),
+    ID_TEXTURE       = MAKEPLUGINID(VEND_CORE, 0x06),
+    ID_MATERIAL      = MAKEPLUGINID(VEND_CORE, 0x07),
+    ID_MATLIST       = MAKEPLUGINID(VEND_CORE, 0x08),
+    ID_WORLD         = MAKEPLUGINID(VEND_CORE, 0x0B),
+    ID_MATRIX        = MAKEPLUGINID(VEND_CORE, 0x0D),
+    ID_FRAMELIST     = MAKEPLUGINID(VEND_CORE, 0x0E),
+    ID_GEOMETRY      = MAKEPLUGINID(VEND_CORE, 0x0F),
+    ID_CLUMP         = MAKEPLUGINID(VEND_CORE, 0x10),
+    ID_LIGHT         = MAKEPLUGINID(VEND_CORE, 0x12),
+    ID_ATOMIC        = MAKEPLUGINID(VEND_CORE, 0x14),
+    ID_TEXTURENATIVE = MAKEPLUGINID(VEND_CORE, 0x15),
+    ID_TEXDICTIONARY = MAKEPLUGINID(VEND_CORE, 0x16),
+    ID_IMAGE         = MAKEPLUGINID(VEND_CORE, 0x18),
+    ID_GEOMETRYLIST  = MAKEPLUGINID(VEND_CORE, 0x1A),
+    ID_ANIMANIMATION = MAKEPLUGINID(VEND_CORE, 0x1B),
+    ID_RIGHTTORENDER = MAKEPLUGINID(VEND_CORE, 0x1F),
+    ID_UVANIMDICT    = MAKEPLUGINID(VEND_CORE, 0x2B),
+
+    // Toolkit
+    ID_SKYMIPMAP     = MAKEPLUGINID(VEND_CRITERIONTK, 0x10),
+    ID_SKIN          = MAKEPLUGINID(VEND_CRITERIONTK, 0x16),
+    ID_HANIM         = MAKEPLUGINID(VEND_CRITERIONTK, 0x1E),
+    ID_USERDATA      = MAKEPLUGINID(VEND_CRITERIONTK, 0x1F),
+    ID_MATFX         = MAKEPLUGINID(VEND_CRITERIONTK, 0x20),
+    ID_ANISOT        = MAKEPLUGINID(VEND_CRITERIONTK, 0x27),
+    ID_PDS           = MAKEPLUGINID(VEND_CRITERIONTK, 0x31),
+    ID_ADC           = MAKEPLUGINID(VEND_CRITERIONTK, 0x34),
+    ID_UVANIMATION   = MAKEPLUGINID(VEND_CRITERIONTK, 0x35),
+
+    // World
+    ID_MESH          = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x0E),
+    ID_NATIVEDATA    = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x10),
+    ID_VERTEXFMT     = MAKEPLUGINID(VEND_CRITERIONWORLD, 0x11),
+
+    // custom native raster
+    ID_RASTERGL      = MAKEPLUGINID(VEND_RASTER, PLATFORM_GL),
+    ID_RASTERPS2     = MAKEPLUGINID(VEND_RASTER, PLATFORM_PS2),
+    ID_RASTERXBOX    = MAKEPLUGINID(VEND_RASTER, PLATFORM_XBOX),
+    ID_RASTERD3D8    = MAKEPLUGINID(VEND_RASTER, PLATFORM_D3D8),
+    ID_RASTERD3D9    = MAKEPLUGINID(VEND_RASTER, PLATFORM_D3D9),
+    ID_RASTERWDGL    = MAKEPLUGINID(VEND_RASTER, PLATFORM_WDGL),
+    ID_RASTERGL3     = MAKEPLUGINID(VEND_RASTER, PLATFORM_GL3),
+
+    // anything driver/device related (only as allocation tag)
+    ID_DRIVER        = MAKEPLUGINID(VEND_DRIVER, 0)
+};
+#undef MAKEPLUGINID
+
+bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint32_t *version);
 
 class IPlugin {
 public:

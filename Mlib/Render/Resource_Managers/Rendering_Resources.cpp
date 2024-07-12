@@ -3,6 +3,7 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
+#include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
 #include <Mlib/Geometry/Texture/Pack_Boxes.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Images/Extrapolate_Rgba_Colors.hpp>
@@ -1005,6 +1006,19 @@ void RenderingResources::set_texture(
     if (texture_size != nullptr) {
         texture_sizes_.insert_or_assign(name.filename, *texture_size);
     }
+}
+
+void RenderingResources::set_texture(
+    const ColormapWithModifiers& name,
+    std::unique_ptr<ITextureHandle>&& id,
+    const TextureSize* texture_size)
+{
+    set_texture(
+        name,
+        id->handle<GLuint>(),
+        ResourceOwner::CONTAINER,
+        texture_size);
+    id.reset();
 }
 
 void RenderingResources::set_textures_lazy(std::function<void()> func)

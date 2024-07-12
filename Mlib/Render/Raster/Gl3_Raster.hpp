@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <memory>
 #include <vector>
 
 namespace Mlib {
@@ -28,13 +29,13 @@ public:
 	virtual uint32_t height() const override;
 	virtual const MipmapLevel& mipmap_level(uint32_t level) const override;
 	virtual uint32_t num_levels() const override;
-	virtual uint32_t type() const override;
 	virtual uint8_t* lock(uint32_t level, uint32_t lock_mode) override;
 	virtual void unlock() override;
-	virtual uint64_t move_texture_handle() override;
+	virtual std::unique_ptr<ITextureHandle>& texture_handle() override;
 private:
 	void allocate_dxt(const RasterConfig& cfg);
 	void create_texture();
+	uint32_t type() const;
 	uint32_t flags() const;
 	uint32_t format() const;
 	uint32_t num_levels_;
@@ -52,7 +53,7 @@ private:
 	bool native_is_compressed_;
 	uint32_t native_num_levels_;
 	bool native_autogen_mipmap_;
-	std::optional<GLuint> native_texture_id_;
+	std::unique_ptr<ITextureHandle> native_texture_id_;
 	GLenum native_format_;
 	std::vector<MipmapLevel> levels_;
 	uint32_t private_flags_;

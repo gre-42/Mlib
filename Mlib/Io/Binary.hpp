@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
+#include <ostream>
 #include <span>
 #include <string>
 #include <vector>
@@ -51,5 +52,13 @@ void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity ver
 std::string read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity);
 
 void seek_relative_positive(std::istream& str, std::streamoff amount, IoVerbosity verbosity);
+
+template <class T>
+void write_binary(std::ostream& ostr, const T& value, const char* msg) {
+    ostr.write((const char*)&value, sizeof(value));
+    if (ostr.fail()) {
+        THROW_OR_ABORT("Could not write " + std::string(msg) + "to stream");
+    }
+}
 
 }
