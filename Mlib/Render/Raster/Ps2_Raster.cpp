@@ -609,6 +609,7 @@ Image Ps2Raster::to_image()
     image.width = width_;
     image.height = height_;
     image.depth = depth_;
+    image.bpp = depth < 8 ? 1 : depth / 8;
     image.allocate();
 
     if (pallength) {
