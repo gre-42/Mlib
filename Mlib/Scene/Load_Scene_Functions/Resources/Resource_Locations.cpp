@@ -1,6 +1,7 @@
 #include "Resource_Locations.hpp"
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Img_Reader.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>
@@ -21,7 +22,8 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(files);
+DECLARE_ARGUMENT(resource_files);
+DECLARE_ARGUMENT(ide_files);
 DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(config);
 }
@@ -38,16 +40,17 @@ template <class TPosition>
 static void add_resource(
     const std::string& name,
     const std::shared_ptr<IIStreamDictionary>& img,
-    const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg)
+    const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
+    const std::shared_ptr<DrawDistanceDb>& dddb)
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });
     if (extension == ".dff") {
         auto& res = RenderingContextStack::primary_scene_node_resources();
-        res.add_resource_loader(name, [img, cfg, name, &res]() {
+        res.add_resource_loader(name, [img, cfg, name, &res, dddb]() {
             auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
-            return load_renderable_dff(*istr, name, *cfg, res);
+            return load_renderable_dff(*istr, name, *cfg, res, *dddb);
             });
     } else if (extension == ".txd") {
         auto& res = RenderingContextStack::primary_rendering_resources();
@@ -84,36 +87,47 @@ static void add_resource(
 }
 
 template <class TPosition>
-static void add_file_resource(const std::string& name, const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg) {
+static void add_file_resource(
+    const std::string& name,
+    const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg,
+    const std::shared_ptr<DrawDistanceDb>& dddb)
+{
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });
     if (extension == ".img") {
         auto img = ImgReader::load_from_file(name);
         for (const auto& name : img->names()) {
-            add_resource(name, img, cfg);
+            add_resource(name, img, cfg, dddb);
         }
     } else {
         auto path = std::filesystem::path{ name };
         auto dir = std::make_shared<FolderIStreamDictionary>(path.parent_path().string());
-        add_resource(path.filename().string(), dir, cfg);
+        add_resource(path.filename().string(), dir, cfg, dddb);
     }
 }
 
 template <class TPosition>
-static void exec(const LoadSceneJsonUserFunctionArgs& args) {
+static void exec(
+    const LoadSceneJsonUserFunctionArgs& args,
+    const std::shared_ptr<DrawDistanceDb>& dddb)
+{
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
-    for (const auto& s : args.arguments.pathes_or_variables(KnownArgs::files)) {
-        add_file_resource(s.path, cfg);
+    for (const auto& s : args.arguments.pathes_or_variables(KnownArgs::resource_files)) {
+        add_file_resource(s.path, cfg, dddb);
     }
 }
 
 void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
+    auto dddb = std::make_shared<DrawDistanceDb>();
+    for (const auto& f : args.arguments.pathes_or_variables(KnownArgs::ide_files)) {
+        dddb->add_ide(f.path);
+    }
     if (args.arguments.at<bool>(KnownArgs::double_precision)) {
-        exec<double>(args);
+        exec<double>(args, dddb);
     } else {
-        exec<float>(args);
+        exec<float>(args, dddb);
     }
 }

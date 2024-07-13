@@ -1,5 +1,6 @@
 #include "Load_Dff_Array.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
+#include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -10,14 +11,15 @@ using namespace Mlib;
 template <class TPosition>
 std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
     const std::string& filename,
-    const LoadMeshConfig<TPosition>& cfg)
+    const LoadMeshConfig<TPosition>& cfg,
+    const DrawDistanceDb& dddb)
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
         THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
     }
     try {
-        return load_dff(*ifs, std::filesystem::path{ filename }.filename().string() + '_', cfg);
+        return load_dff(*ifs, std::filesystem::path{ filename }.filename().string() + '_', cfg, dddb);
     } catch (std::runtime_error& e) {
         THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
     }
@@ -27,7 +29,8 @@ template <class TPosition>
 std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<TPosition>& cfg)
+    const LoadMeshConfig<TPosition>& cfg,
+    const DrawDistanceDb& dddb)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> result;
     auto clump = Mlib::Dff::read_dff(istr);
@@ -52,7 +55,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
-                    .center_distances = cfg.center_distances,
+                    .center_distances = OrderableFixedArray{ dddb.get_center_distances(name) },
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
@@ -149,10 +152,12 @@ namespace Mlib {
 
 template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff<float>(
     const std::string& filename,
-    const LoadMeshConfig<float>& cfg);
+    const LoadMeshConfig<float>& cfg,
+    const DrawDistanceDb& dddb);
 
 template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_dff<double>(
     const std::string& filename,
-    const LoadMeshConfig<double>& cfg);
+    const LoadMeshConfig<double>& cfg,
+    const DrawDistanceDb& dddb);
 
 }

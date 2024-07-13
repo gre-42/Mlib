@@ -59,7 +59,7 @@ std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
 		}
 		static const auto c = str(", ");
 		static const auto n = group(plus(CharPredicate{[](char c){return c != ',';}}));
-		static const auto reg = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n);
+		static const auto reg = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
 
 		SMatch match;
 		if (!regex_match(line, match, reg)) {

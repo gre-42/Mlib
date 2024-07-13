@@ -6,8 +6,8 @@ using namespace Mlib;
 
 template <class TData>
 FrustumVisibilityCheck<TData>::FrustumVisibilityCheck(const VisibilityCheck<TData>& vc)
-: vc_{vc},
-  frustum_{Frustum3<TData>::from_projection_matrix(vc.mvp())}
+    : vc_{ vc }
+    , frustum_{ Frustum3<TData>::from_projection_matrix(vc.mvp()) }
 {}
 
 template <class TData>

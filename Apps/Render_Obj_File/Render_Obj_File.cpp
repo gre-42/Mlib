@@ -13,6 +13,7 @@
 #include <Mlib/Geometry/Mesh/Bone.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
+#include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
@@ -616,7 +617,8 @@ int main(int argc, char** argv) {
                     scene_node_resources.add_resource(name, load_renderable_dff(
                         filename,
                         cfg<float>(args, light_configuration),
-                        scene_node_resources));
+                        scene_node_resources,
+                        DrawDistanceDb{}));
                 } else if (filename.ends_with(".mhx2")) {
                     auto rmhx2 = std::make_shared<Mhx2FileResource>(
                         filename,

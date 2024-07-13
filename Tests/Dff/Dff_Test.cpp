@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Blend_Mode.hpp>
 #include <Mlib/Geometry/Material/Render_Pass.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
+#include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
@@ -30,7 +31,8 @@ static void test_teapot() {
             .dynamically_lighted = false,
             .physics_material = PhysicsMaterial::NONE,
             .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
-            .werror = true});
+            .werror = true},
+        DrawDistanceDb{});
 }
 
 int main(int argc, char** argv) {
