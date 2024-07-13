@@ -57,9 +57,9 @@ static void transferMinSize(uint32_t psm, uint32_t flags, uint32_t *minw, uint32
     }
 }
 
-#define ALIGN(x,a) ((x) + (a)-1 & ~((a)-1))
-#define ALIGN16(x) ((x) + 0xF & ~0xF)
-#define ALIGN64(x) ((x) + 0x3F & ~0x3F)
+#define ALIGN(x,a) (((x) + (a)-1) & ~((a)-1))
+#define ALIGN16(x) (((x) + 0xF) & ~0xF)
+#define ALIGN64(x) (((x) + 0x3F) & ~0x3F)
 #define NSIZE(dim,pagedim) (((dim) + (pagedim)-1)/(pagedim))
 
 // TODO: these depend on video mode, set in deviceSystem!

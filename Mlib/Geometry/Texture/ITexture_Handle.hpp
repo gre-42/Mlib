@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <cstdint>
+#include <type_traits>
 
 namespace Mlib {
 
@@ -12,14 +13,29 @@ public:
 	{}
 	virtual ~ITextureHandle() = default;
 	template <class T>
-	inline const T& handle() const {
-		return const_cast<ITextureHandle*>(this)->handle();
+	inline T handle() const {
+		if constexpr (std::is_same_v<T, uint32_t>) {
+			return handle32();
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return handle64();
+		} else {
+			THROW_OR_ABORT("Unsupported texture handle type");
+		}
 	}
 	template <class T>
 	inline T& handle() {
-		static_assert(sizeof(T) <= sizeof(handle_type));
-		return reinterpret_cast<T&>(handle_);
+		if constexpr (std::is_same_v<T, uint32_t>) {
+			return handle32();
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return handle64();
+		} else {
+			THROW_OR_ABORT("Unsupported texture handle type");
+		}
 	}
+	virtual uint32_t handle32() const = 0;
+	virtual uint64_t handle64() const = 0;
+	virtual uint32_t& handle32() = 0;
+	virtual uint64_t& handle64() = 0;
 private:
 	handle_type handle_;
 };
