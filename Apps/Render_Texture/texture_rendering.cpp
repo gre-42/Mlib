@@ -112,7 +112,8 @@ int main(int argc, char** argv)
                     Dff::RasterFactory(),
                     Dff::RasterConfig{
                         .need_to_read_back_textures = true,
-                        .make_native = true});
+                        .make_native = true,
+                        .flip_gl_y_axis = true});
                 for (auto& tx : txd.textures) {
                     if (!Mlib::re::regex_search(tx->name, re)) {
                         linfo() << "Skipping: " << tx->name;

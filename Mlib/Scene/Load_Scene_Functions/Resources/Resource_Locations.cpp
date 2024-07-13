@@ -60,7 +60,8 @@ static void add_resource(
                 Dff::RasterFactory{},
                 Dff::RasterConfig{
                     .need_to_read_back_textures = true,
-                    .make_native = true});
+                    .make_native = true,
+                    .flip_gl_y_axis = true});
             for (const auto& tx : txd.textures) {
                 TextureSize size{
                     .width = integral_cast<int>(tx->raster->width()),

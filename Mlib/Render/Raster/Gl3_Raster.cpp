@@ -102,7 +102,9 @@ void Gl3Raster::from_image(const Image& iimage) {
     if (pimage->height != height_) {
         THROW_OR_ABORT("Unexpected image height");
     }
-    uint8_t* ppixels = pixels_.data();
+    uint8_t* ppixels = flip_y_axis_
+        ? pixels_.data() + stride_ * (pimage->height - 1)
+        : pixels_.data();
     for (uint32_t y = 0; y < pimage->height; y++) {
         const uint8_t *imgrow = imgpixels;
         uint8_t *rasrow = ppixels;
@@ -112,7 +114,11 @@ void Gl3Raster::from_image(const Image& iimage) {
             rasrow += native_bpp_;
         }
         imgpixels -= pimage->stride;
-        ppixels += stride_;
+        if (flip_y_axis_) {
+            ppixels -= stride_;
+        } else {
+            ppixels += stride_;
+        }
     }
     if (unlock_required)
         unlock();
@@ -417,6 +423,7 @@ Gl3Raster::Gl3Raster(
     , height_{ height }
     , depth_{ depth }
     , private_flags_{ 0 }
+    , flip_y_axis_{ cfg.flip_gl_y_axis }
 {
     if ((format & 0xF) != Raster::TEXTURE) {
         THROW_OR_ABORT("Invalid raster type");

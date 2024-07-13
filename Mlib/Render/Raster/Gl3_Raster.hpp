@@ -59,6 +59,7 @@ private:
 	uint32_t private_flags_;
 	std::vector<uint8_t> pixels_;
 	std::optional<uint32_t> locked_level_;
+	bool flip_y_axis_;
 };
 
 }
