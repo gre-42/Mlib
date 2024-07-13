@@ -1,5 +1,6 @@
 #include "Read_Ipl.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
@@ -71,9 +72,10 @@ std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
 		if (any(abs(scale - mean_scale) > 1e-3f)) {
 			lwarn() << name << ": Scale is anisotropic: " << scale;
 		}
-		float angle = safe_stof(match[9].str());
-		FixedArray<float, 3> axis{ safe_stof(match[10].str()), safe_stof(match[11].str()), safe_stof(match[12].str()) };
-		auto r = rodrigues2(axis, angle);
+		FixedArray<float, 3> v{ safe_stof(match[9].str()), safe_stof(match[10].str()), safe_stof(match[11].str()) };
+		float s = safe_stof(match[12].str());
+		Quaternion<float> q{ -s, v };
+		auto r = q.to_rotation_matrix();
 		result.push_back(InstanceInformation{
 			.resource_name = std::move(name),
 			.trafo = { r * mean_scale, t } });
