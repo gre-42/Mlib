@@ -1,10 +1,15 @@
 #include "Draw_Distance_Db.hpp"
+#include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
+
+DrawDistanceDb::DrawDistanceDb() = default;
+
+DrawDistanceDb::~DrawDistanceDb() = default;
 
 void DrawDistanceDb::add_ide(const std::string& filename) {
 	auto f = create_ifstream(filename);
