@@ -9,6 +9,17 @@
 
 using namespace Mlib;
 
+// From: https://gtamods.com/wiki/Map_system
+// X: east/west direction
+// Y: north/south direction
+// Z: up/down direction
+static const auto r_to_world = FixedArray<float, 3, 3>::init(
+	1.f, 0.f, 0.f,
+	0.f, 0.f, 1.f,
+	0.f, -1.f, 0.f);
+static const auto t_to_world = fixed_zeros<double, 3>();
+static const TransformationMatrix<float, double, 3> trafo_to_world{ r_to_world, t_to_world };
+
 void Mlib::instantiate(
 	Scene& scene,
 	const std::list<InstanceInformation>& infos,
@@ -21,10 +32,11 @@ void Mlib::instantiate(
 			continue;
 		}
 		auto name = info.resource_name + "_inst_" + std::to_string(scene.get_uuid());
+		auto trafo = trafo_to_world * info.trafo;
 		auto node = make_dunique<SceneNode>(
-			info.trafo.t(),
-			matrix_2_tait_bryan_angles(info.trafo.R()),
-			1.f);
+			trafo.t(),
+			matrix_2_tait_bryan_angles(trafo.R()),
+			info.scale);
 		scene_node_resources.instantiate_renderable(
 			info.resource_name + ".dff",
 			InstantiationOptions{
@@ -35,6 +47,6 @@ void Mlib::instantiate(
 				.scene_node = node.ref(DP_LOC),
 				.renderable_resource_filter = RenderableResourceFilter{}},
 			PreloadBehavior::NO_PRELOAD);
-		scene.add_static_root_node(name, std::move(node));
+		scene.add_root_aggregate_node(name, std::move(node));
 	}
 }

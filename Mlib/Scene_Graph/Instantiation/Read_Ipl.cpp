@@ -78,7 +78,8 @@ std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
 		auto r = q.to_rotation_matrix();
 		result.push_back(InstanceInformation{
 			.resource_name = std::move(name),
-			.trafo = { r * mean_scale, t } });
+			.trafo = { r, t },
+			.scale = mean_scale });
 	}
 	return result;
 }
