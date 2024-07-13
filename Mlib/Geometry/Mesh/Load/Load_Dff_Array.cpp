@@ -141,7 +141,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     TriangleTangentErrorBehavior::ZERO);
             }
         }
-        for (const auto& tl : tls) {
+        for (auto& tl : tls) {
+            if (normals.empty()) {
+                tl.convert_triangle_to_vertex_normals();
+            }
             result.push_back(tl.triangle_array());
         }
     }
