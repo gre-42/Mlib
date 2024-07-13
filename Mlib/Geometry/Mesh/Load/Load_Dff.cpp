@@ -682,9 +682,9 @@ static Material read_material(
         if (!default_surface_properties.has_value()) {
             THROW_OR_ABORT("Default surface properties not specified");
         }
-        material.surfaceProps = default_surface_properties.value();
+        material.surface_properties = default_surface_properties.value();
     } else {
-        material.surfaceProps = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
+        material.surface_properties = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
     }
     if (buf.textured) {
         if (!find_chunk(istr, ID_TEXTURE, nullptr, nullptr)){
@@ -768,8 +768,8 @@ Geometry::Geometry(
         if (this->flags & PRELIT && this->numVertices) {
             this->colors.resize(numVertices);
         }
-        this->texCoords.resize(this->numTexCoordSets);
-        for (auto& tcs : this->texCoords) {
+        this->tex_coords.resize(this->numTexCoordSets);
+        for (auto& tcs : this->tex_coords) {
             tcs.resize(this->numVertices);
         }
 
@@ -793,7 +793,7 @@ static std::shared_ptr<Geometry> read_geometry(
     if (buf.numMorphTargets > 100) {
         THROW_OR_ABORT("Number of morph targets too large");
     }
-    geo->morphTargets.resize(buf.numMorphTargets);
+    geo->morph_targets.resize(buf.numMorphTargets);
     SurfaceProperties surfProps;
     if (version < 0x34000) {
         surfProps = read_binary<SurfaceProperties>(istr, "surface properties", VERBOSITY);
@@ -804,7 +804,7 @@ static std::shared_ptr<Geometry> read_geometry(
             read_vector(istr, geo->colors, "vertices", VERBOSITY);
         }
         for (int32_t i = 0; i < geo->numTexCoordSets; i++) {
-            read_vector(istr, geo->texCoords[i], "texture coordinates", VERBOSITY);
+            read_vector(istr, geo->tex_coords[i], "texture coordinates", VERBOSITY);
         }
         for(int32_t i = 0; i < geo->numTriangles; i++){
             auto tribuf = read_binary<UFixedArray<uint32_t, 2>>(istr, "triangle buffer", VERBOSITY);
@@ -815,7 +815,7 @@ static std::shared_ptr<Geometry> read_geometry(
         }
     }
 
-    for (auto& m : geo->morphTargets) {
+    for (auto& m : geo->morph_targets) {
         m.bounding_sphere = read_binary<UBoundingSphere<float, 3>>(istr, "bounding sphere", VERBOSITY);
         int32_t has_vertices = read_binary<int32_t>(istr, "has vertices", VERBOSITY);
         int32_t has_normals = read_binary<int32_t>(istr, "has normals", VERBOSITY);
@@ -836,7 +836,7 @@ static std::shared_ptr<Geometry> read_geometry(
     if (version < 0x34000) {
         defaultSurfaceProps = surfProps;
     }
-    geo->matList = read_material_list(istr, defaultSurfaceProps, plugins);
+    geo->mat_list = read_material_list(istr, defaultSurfaceProps, plugins);
     read_extension(
         istr,
         *geo,

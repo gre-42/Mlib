@@ -22,6 +22,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(files);
+DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(config);
 }
 
@@ -33,10 +34,11 @@ LoadSceneJsonUserFunction ResourceLocations::json_user_function = [](const LoadS
     execute(args);
 };
 
+template <class TPosition>
 static void add_resource(
     const std::string& name,
     const std::shared_ptr<IIStreamDictionary>& img,
-    const std::shared_ptr<LoadMeshConfig<float>>& cfg)
+    const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg)
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
@@ -81,7 +83,8 @@ static void add_resource(
     }
 }
 
-static void add_file_resource(const std::string& name, const std::shared_ptr<LoadMeshConfig<float>>& cfg) {
+template <class TPosition>
+static void add_file_resource(const std::string& name, const std::shared_ptr<LoadMeshConfig<TPosition>>& cfg) {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c){ return std::tolower(c); });
@@ -97,11 +100,20 @@ static void add_file_resource(const std::string& name, const std::shared_ptr<Loa
     }
 }
 
-void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
-{
-    auto cfg = std::make_shared<LoadMeshConfig<float>>();
-    *cfg = load_mesh_config_from_json<float>(args.arguments.child(KnownArgs::config));
+template <class TPosition>
+static void exec(const LoadSceneJsonUserFunctionArgs& args) {
+    auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
+    *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
     for (const auto& s : args.arguments.pathes_or_variables(KnownArgs::files)) {
         add_file_resource(s.path, cfg);
+    }
+}
+
+void ResourceLocations::execute(const LoadSceneJsonUserFunctionArgs& args)
+{
+    if (args.arguments.at<bool>(KnownArgs::double_precision)) {
+        exec<double>(args);
+    } else {
+        exec<float>(args);
     }
 }

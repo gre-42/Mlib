@@ -3,7 +3,7 @@
 using namespace Mlib;
 
 static const float standard_quad_vertices_values[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-    // positions   // texCoords
+    // positions   // tex_coords
     -1.0f,  1.0f,  0.0f, 1.0f,
     -1.0f, -1.0f,  0.0f, 0.0f,
     1.0f, -1.0f,  1.0f, 0.0f,
@@ -14,7 +14,7 @@ static const float standard_quad_vertices_values[] = { // vertex attributes for 
 };
 
 static const float horizontally_flipped_quad_vertices_values[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-    // positions   // texCoords
+    // positions   // tex_coords
     -1.0f,  1.0f,  1.0f, 1.0f,
     -1.0f, -1.0f,  1.0f, 0.0f,
     1.0f, -1.0f,  0.0f, 0.0f,
@@ -25,7 +25,7 @@ static const float horizontally_flipped_quad_vertices_values[] = { // vertex att
 };
 
 static const float vertically_flipped_quad_vertices_values[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-    // positions   // texCoords
+    // positions   // tex_coords
     -1.0f,  1.0f,  0.0f, 0.0f,
     -1.0f, -1.0f,  0.0f, 1.0f,
     1.0f, -1.0f,  1.0f, 1.0f,

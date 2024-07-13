@@ -7,9 +7,10 @@
 
 using namespace Mlib;
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
+template <class TPosition>
+std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
     const std::string& filename,
-    const LoadMeshConfig<float>& cfg)
+    const LoadMeshConfig<TPosition>& cfg)
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
@@ -22,20 +23,22 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
     }
 }
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
+template <class TPosition>
+std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<float>& cfg)
+    const LoadMeshConfig<TPosition>& cfg)
 {
-    std::list<std::shared_ptr<ColoredVertexArray<float>>> result;
+    std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> result;
     auto clump = Mlib::Dff::read_dff(istr);
     for (const auto& a : clump.atomics) {
         if (a.frame == nullptr) {
             THROW_OR_ABORT("Atomic has no frame");
         }
-        const auto& materials = a.geometry->matList.materials;
-        NonCopyingVector<TriangleList<float>> tls(materials.size());
+        const auto& materials = a.geometry->mat_list.materials;
+        NonCopyingVector<TriangleList<TPosition>> tls(materials.size());
         for (const auto& m : materials) {
+            auto col3 = FixedArray<float, 3>{ m.color(0) / 255.f, m.color(1) / 255.f, m.color(2) / 255.f };
             auto& tl = tls.emplace_back(
                 name + a.frame->name,
                 Material{
@@ -53,9 +56,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
-                        .ambient = m.surfaceProps.ambient,
-                        .diffuse = m.surfaceProps.diffuse,
-                        .specular = m.surfaceProps.specular,
+                        .ambient = OrderableFixedArray<float, 3>(col3 * m.surface_properties.ambient),
+                        .diffuse = OrderableFixedArray<float, 3>(col3 * m.surface_properties.diffuse),
+                        .specular = m.surface_properties.specular,
                         .fresnel = cfg.fresnel
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
@@ -71,13 +74,13 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                 // linfo() << "Texture: " << tex->name;
             }
         }
-        if (a.geometry->morphTargets.empty()) {
+        if (a.geometry->morph_targets.empty()) {
             THROW_OR_ABORT("Morph targets empty");
         }
-        const auto& vertices = a.geometry->morphTargets[0].vertices;
-        const auto& normals = a.geometry->morphTargets[0].normals;
+        const auto& vertices = a.geometry->morph_targets[0].vertices;
+        const auto& normals = a.geometry->morph_targets[0].normals;
         const auto& colors = a.geometry->colors;
-        const auto* uvs = a.geometry->texCoords.empty() ? nullptr : &a.geometry->texCoords[0];
+        const auto* uvs = a.geometry->tex_coords.empty() ? nullptr : &a.geometry->tex_coords[0];
 
         for (const auto& v : a.geometry->triangles) {
             if (v.matId >= tls.size()) {
@@ -101,9 +104,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
             auto material_color = materials[v.matId].color.row_range<0, 3>().casted<float>() / 255.f;
             if (normals.empty()) {
                 tls[v.matId].draw_triangle_wo_normals(
-                    vertices[v.v(0)],
-                    vertices[v.v(1)],
-                    vertices[v.v(2)],
+                    vertices[v.v(0)].casted<TPosition>(),
+                    vertices[v.v(1)].casted<TPosition>(),
+                    vertices[v.v(2)].casted<TPosition>(),
                     colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
@@ -117,9 +120,9 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
                     TriangleTangentErrorBehavior::ZERO);
             } else {
                 tls[v.matId].draw_triangle_with_normals(
-                    vertices[v.v(0)],
-                    vertices[v.v(1)],
-                    vertices[v.v(2)],
+                    vertices[v.v(0)].casted<TPosition>(),
+                    vertices[v.v(1)].casted<TPosition>(),
+                    vertices[v.v(2)].casted<TPosition>(),
                     normals[v.v(0)],
                     normals[v.v(1)],
                     normals[v.v(2)],
@@ -140,4 +143,16 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
         }
     }
     return result;
+}
+
+namespace Mlib {
+
+template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff<float>(
+    const std::string& filename,
+    const LoadMeshConfig<float>& cfg);
+
+template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_dff<double>(
+    const std::string& filename,
+    const LoadMeshConfig<double>& cfg);
+
 }

@@ -203,7 +203,7 @@ struct Texture
 struct Material {
     std::shared_ptr<Texture> texture;
     RGBA color = uninitialized;
-    SurfaceProperties surfaceProps;
+    SurfaceProperties surface_properties;
 };
 
 struct MaterialList
@@ -228,10 +228,10 @@ public:
 
     UUVector<Triangle> triangles;
     UUVector<RGBA> colors;
-    std::vector<UUVector<TexCoords>> texCoords;
+    std::vector<UUVector<TexCoords>> tex_coords;
 
-    std::vector<MorphTarget> morphTargets;
-    MaterialList matList;
+    std::vector<MorphTarget> morph_targets;
+    MaterialList mat_list;
 
     enum Flags
     {

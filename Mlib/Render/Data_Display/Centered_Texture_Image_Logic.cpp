@@ -31,7 +31,7 @@ void CenteredTextureImageLogic::render(
     auto R = fixed_rotation_2d<float>(angle);
     FixedArray<float, 2, 2, 2> pcr = dot(R, pointer_corners);
     float vertices[] = {
-        // positions                                                         // texCoords
+        // positions                                                         // tex_coords
         pcr(0, 0, 0) / canvas_size(0), -pcr(1, 0, 0) / canvas_size(1), 0.0f, 1.0f,
         pcr(0, 0, 1) / canvas_size(0), -pcr(1, 0, 1) / canvas_size(1), 0.0f, 0.0f,
         pcr(0, 1, 1) / canvas_size(0), -pcr(1, 1, 1) / canvas_size(1), 1.0f, 0.0f,

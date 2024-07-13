@@ -34,7 +34,7 @@ void PointerImageLogic::render(
     auto R = fixed_rotation_2d<float>(angle - float(M_PI) / 2.f);
     FixedArray<float, 2, 2, 2> pcr = dot(R, pointer_corners);
     float vertices[] = {
-        // positions                                                                                                            // texCoords
+        // positions                                                                                                            // tex_coords
         (center(0) + pcr(0, 0, 1)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1, 0, 1)) / canvas_size(1) * 2.f - 1.f, 0.0f, 1.0f,
         (center(0) + pcr(0, 0, 0)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1, 0, 0)) / canvas_size(1) * 2.f - 1.f, 0.0f, 0.0f,
         (center(0) + pcr(0, 1, 0)) / canvas_size(0) * 2.f - 1.f, (center(1) + pcr(1, 1, 0)) / canvas_size(1) * 2.f - 1.f, 1.0f, 0.0f,

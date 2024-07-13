@@ -11,13 +11,15 @@ class ColoredVertexArray;
 template <class TPos>
 struct LoadMeshConfig;
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff(
+template <class TPosition>
+std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> load_dff(
     const std::string& filename,
-    const LoadMeshConfig<float>& cfg);
+    const LoadMeshConfig<TPosition>& cfg);
 
-std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff(
+template <class TPosition>
+std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> load_dff(
     std::istream& istr,
     const std::string& name,
-    const LoadMeshConfig<float>& cfg);
+    const LoadMeshConfig<TPosition>& cfg);
 
 }
