@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
+#include <Mlib/Io/Cleanup.hpp>
 
 using namespace Mlib::Dff;
 
@@ -16,8 +17,8 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
     auto texture = std::make_shared<Texture>();
     // Texture
     texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
-    texture->name = read_string(istr, 32, "texture name", VERBOSITY);
-    texture->mask = read_string(istr, 32, "texture mask", VERBOSITY);
+    texture->name = remove_trailing_zeros(read_string(istr, 32, "texture name", VERBOSITY));
+    texture->mask = remove_trailing_zeros(read_string(istr, 32, "texture mask", VERBOSITY));
 
     // Raster
     auto format = read_binary<uint32_t>(istr, "format", VERBOSITY);

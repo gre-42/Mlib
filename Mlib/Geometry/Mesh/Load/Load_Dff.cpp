@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_D3d.hpp>
 #include <Mlib/Geometry/Mesh/Load/Read_Texture_Native_Ps2.hpp>
 #include <Mlib/Io/Binary.hpp>
+#include <Mlib/Io/Cleanup.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Try_Get_Value.hpp>
@@ -629,12 +630,12 @@ static std::shared_ptr<Texture> read_texture(
     if (!find_chunk(istr, ID_STRING, &length, nullptr)) {
         THROW_OR_ABORT("Could not find string");
     }
-    texture->name = read_string(istr, length, "name", VERBOSITY);
+    texture->name = Mlib::remove_trailing_zeros(read_string(istr, length, "name", VERBOSITY));
 
     if (!find_chunk(istr, ID_STRING, &length, nullptr)){
         THROW_OR_ABORT("Could not find string");
     }
-    texture->mask = read_string(istr, length, "mask", VERBOSITY);
+    texture->mask = Mlib::remove_trailing_zeros(read_string(istr, length, "mask", VERBOSITY));
 
     // uint32_t mipState = cfg.mipmapping;
     // uint32_t autoMipState = cfg.auto_mipmapping;
@@ -674,10 +675,9 @@ static Material read_material(
         THROW_OR_ABORT("Could not find struct");
     }
     auto buf = read_binary<MatStreamData>(istr, "material stream data", VERBOSITY);
-    RGBA col = buf.color;
-    buf.color = col;
-    Material material;
-    material.color = buf.color;
+    Material material {
+        .color = buf.color
+    };
     if (version < 0x30400) {
         if (!default_surface_properties.has_value()) {
             THROW_OR_ABORT("Default surface properties not specified");

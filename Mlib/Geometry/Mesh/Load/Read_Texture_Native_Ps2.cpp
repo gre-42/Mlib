@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load/IRaster_Ps2.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
+#include <Mlib/Io/Cleanup.hpp>
 
 using namespace Mlib::Dff;
 
@@ -60,11 +61,11 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     if (!find_chunk(istr, ID_STRING, &length, nullptr)){
         THROW_OR_ABORT("Could not find string chunk");
     }
-    texture->name = read_string(istr, length, "texture name", VERBOSITY);
+    texture->name = remove_trailing_zeros(read_string(istr, length, "texture name", VERBOSITY));
     if(!find_chunk(istr, ID_STRING, &length, nullptr)){
         THROW_OR_ABORT("Could not find string");
     }
-    texture->mask = read_string(istr, length, "texture mask", VERBOSITY);
+    texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", VERBOSITY));
 
     // Raster
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){

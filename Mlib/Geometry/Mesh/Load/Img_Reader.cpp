@@ -1,5 +1,6 @@
 #include "Img_Reader.hpp"
 #include <Mlib/Io/Binary.hpp>
+#include <Mlib/Io/Cleanup.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <istream>
@@ -17,7 +18,7 @@ ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& da
 {
     while (directory.peek() != EOF) {
         auto h = read_binary<DirectoryInfo>(directory, "directory entry", IoVerbosity::SILENT);
-        auto entry_name = std::string{ std::string(h.name, sizeof(h.name)).c_str() };
+        auto entry_name = remove_trailing_zeros(std::string(h.name, sizeof(h.name)));
         // linfo() << "Entry name: " << entry_name;
         directory_.add(
             entry_name,

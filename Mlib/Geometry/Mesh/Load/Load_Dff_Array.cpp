@@ -39,6 +39,7 @@ std::list<std::shared_ptr<ColoredVertexArray<float>>> Mlib::load_dff(
             auto& tl = tls.emplace_back(
                 name + a.frame->name,
                 Material{
+                    .blend_mode = BlendMode::BINARY_05,
                     .textures_color = cfg.textures,
                     .period_world = cfg.period_world,
                     .reflection_map = cfg.reflection_map,
