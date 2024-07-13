@@ -107,9 +107,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
             auto material_color = materials[v.matId].color.row_range<0, 3>().casted<float>() / 255.f;
             if (normals.empty()) {
                 tls[v.matId].draw_triangle_wo_normals(
-                    vertices[v.v(0)].casted<TPosition>(),
-                    vertices[v.v(1)].casted<TPosition>(),
-                    vertices[v.v(2)].casted<TPosition>(),
+                    vertices[v.v(0)].template casted<TPosition>(),
+                    vertices[v.v(1)].template casted<TPosition>(),
+                    vertices[v.v(2)].template casted<TPosition>(),
                     colors.empty() ? material_color : material_color * (colors[v.v(0)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(1)].row_range<0, 3>().casted<float>() / 255.f),
                     colors.empty() ? material_color : material_color * (colors[v.v(2)].row_range<0, 3>().casted<float>() / 255.f),
@@ -123,9 +123,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     TriangleTangentErrorBehavior::ZERO);
             } else {
                 tls[v.matId].draw_triangle_with_normals(
-                    vertices[v.v(0)].casted<TPosition>(),
-                    vertices[v.v(1)].casted<TPosition>(),
-                    vertices[v.v(2)].casted<TPosition>(),
+                    vertices[v.v(0)].template casted<TPosition>(),
+                    vertices[v.v(1)].template casted<TPosition>(),
+                    vertices[v.v(2)].template casted<TPosition>(),
                     normals[v.v(0)],
                     normals[v.v(1)],
                     normals[v.v(2)],

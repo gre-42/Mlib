@@ -916,7 +916,7 @@ static Light read_light(
         light.minusCosAngle = a;
     else
         // tan -> -cos
-        light.minusCosAngle = -1.0f / std::sqrtf(a * a + 1.0f);
+        light.minusCosAngle = -1.0f / std::sqrt(a * a + 1.0f);
     light.object.object.flags = (uint8_t)buf.type_flags;
     read_extension(
         istr,
