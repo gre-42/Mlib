@@ -38,6 +38,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
         if (a.frame == nullptr) {
             THROW_OR_ABORT("Atomic has no frame");
         }
+        if (a.geometry->morph_targets.empty()) {
+            THROW_OR_ABORT("Morph targets empty");
+        }
+        const auto& morph_target = a.geometry->morph_targets[0];
         const auto& materials = a.geometry->mat_list.materials;
         NonCopyingVector<TriangleList<TPosition>> tls(materials.size());
         for (const auto& m : materials) {
@@ -55,7 +59,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
-                    .center_distances = OrderableFixedArray{ dddb.get_center_distances(name) },
+                    .center_distances = OrderableFixedArray{
+                        dddb.get_center_distances(name, morph_target.bounding_sphere.radius()) },
                     .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
@@ -77,11 +82,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                 // linfo() << "Texture: " << tex->name;
             }
         }
-        if (a.geometry->morph_targets.empty()) {
-            THROW_OR_ABORT("Morph targets empty");
-        }
-        const auto& vertices = a.geometry->morph_targets[0].vertices;
-        const auto& normals = a.geometry->morph_targets[0].normals;
+        const auto& vertices = morph_target.vertices;
+        const auto& normals = morph_target.normals;
         const auto& colors = a.geometry->colors;
         const auto* uvs = a.geometry->tex_coords.empty() ? nullptr : &a.geometry->tex_coords[0];
 

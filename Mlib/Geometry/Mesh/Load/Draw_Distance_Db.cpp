@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
+#include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
 
 using namespace Mlib;
@@ -40,7 +41,7 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
 			if (resource_name.starts_with("LOD_")) {
 				center_distances_.try_emplace(resource_name + ".dff", dist, INFINITY);
 			} else {
-				center_distances_.try_emplace(resource_name + ".dff", 0.f, dist);
+				center_distances_.try_emplace(resource_name + ".dff", -INFINITY, dist);
 			}
 			};
 		static const auto c = str(", ");
@@ -80,8 +81,9 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
 	}
 }
 
-const FixedArray<float, 2>& DrawDistanceDb::get_center_distances(
-	const std::string& resource_name) const
+FixedArray<float, 2> DrawDistanceDb::get_center_distances(
+	const std::string& resource_name,
+	float radius) const
 {
-	return center_distances_.get(resource_name);
+	return maximum(center_distances_.get(resource_name) + radius, 0.f);
 }
