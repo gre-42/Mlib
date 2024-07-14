@@ -62,8 +62,10 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         // }
         std::scoped_lock lock{ delete_node_mutex_ };
         {
-            static const DECLARE_REGEX(re, "^beacon.*");
-            scene_.delete_root_nodes(re);
+            for (const auto& name : beacon_nodes_) {
+                scene_.delete_root_node(name);
+            }
+            beacon_nodes_.clear();
             size_t i = 0;
             for (const auto& beacon : beacons) {
                 auto node = make_dunique<SceneNode>(
@@ -78,7 +80,8 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                         .scene_node = node.ref(DP_LOC),
                         .renderable_resource_filter = RenderableResourceFilter{}});
                 // node->set_scale(0.05);
-                scene_.add_root_node("beacon" + std::to_string(i), std::move(node));
+                auto& node_name = beacon_nodes_.emplace_back("beacon" + std::to_string(i));
+                scene_.add_root_node(node_name, std::move(node));
                 ++i;
             }
         }
