@@ -84,7 +84,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .filename = args.arguments.path(KnownArgs::pointer),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            },
+            }.compute_hash(),
             std::move(widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::tick_radius)),

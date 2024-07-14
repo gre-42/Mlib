@@ -119,10 +119,10 @@ int main(int argc, char** argv) {
                         .color = ColormapWithModifiers{
                             .filename = args.named_value("--color"),
                             .histogram = args.named_value("--histogram", ""),
-                            .color_mode = ColorMode::RGB},
+                            .color_mode = ColorMode::RGB}.compute_hash(),
                         .normal = ColormapWithModifiers{
                             .filename = args.named_value("--normal"),
-                            .color_mode = ColorMode::RGB}}}}
+                            .color_mode = ColorMode::RGB}.compute_hash()}}}
                     },
                 Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE } };
             tl.draw_rectangle_wo_normals(

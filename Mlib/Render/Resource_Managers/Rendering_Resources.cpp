@@ -1082,8 +1082,8 @@ void RenderingResources::add_auto_texture_atlas(
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + name);
     std::scoped_lock lock{mutex_};
-    if (textures_.contains({.filename = name})) {
-        THROW_OR_ABORT("Texture with name \"" + name + "\" already exists");
+    if (texture_descriptors_.contains(name)) {
+        THROW_OR_ABORT("Texture descriptor with name \"" + name + "\" already exists");
     }
     cubemap_descriptors_.add(name, CubemapDescriptor{.filenames = filenames});
 }

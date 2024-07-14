@@ -1,6 +1,40 @@
 #include "Colormap_With_Modifiers.hpp"
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
+#include <Mlib/Hash.hpp>
 
 using namespace Mlib;
+
+ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
+    hash = Mlib::hash_combine(
+        filename,
+        desaturate,
+        alpha,
+        histogram,
+        average,
+        multiply,
+        alpha_blend,
+        mean_color,
+        lighten,
+        lighten_left,
+        lighten_right,
+        lighten_top,
+        lighten_bottom,
+        selected_color,
+        selected_color_near,
+        selected_color_far,
+        edge_sigma,
+        times,
+        plus,
+        abs,
+        invert,
+        color_mode,
+        alpha_fac,
+        mipmap_mode,
+        depth_interpolation,
+        anisotropic_filtering_level,
+        wrap_modes);
+    return *this;
+}
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers& t) {
     ostr <<

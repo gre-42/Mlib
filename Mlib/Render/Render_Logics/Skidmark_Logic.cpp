@@ -41,8 +41,11 @@ SkidmarkLogic::SkidmarkLogic(
     , texture_height_{ texture_height }
     , old_fbs_id_{ 0 }
     , old_camera_position_{ fixed_nans<double, 3>() }
+    , colormap_{ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
-{}
+{
+    colormap_.compute_hash();
+}
 
 SkidmarkLogic::~SkidmarkLogic() {
     on_destroy.clear();
@@ -53,7 +56,7 @@ void SkidmarkLogic::deallocate() {
     auto null = std::unique_ptr<FrameBuffer>{ nullptr };
     if (any(fbs_ != null)) {
         // Warning in case of exception during child_logic_.render.
-        rendering_resources_.delete_texture({ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB }, DeletionFailureMode::WARN);
+        rendering_resources_.delete_texture(colormap_, DeletionFailureMode::WARN);
         rendering_resources_.delete_vp("skidmark." + resource_suffix_, DeletionFailureMode::WARN);
         fbs_(0) = nullptr;
         fbs_(1) = nullptr;
@@ -93,7 +96,7 @@ void SkidmarkLogic::render(
         if (old_render_texture_logic_ == nullptr) {
             old_render_texture_logic_ = std::make_shared<FillWithTextureLogic>(
                 rendering_resources_,
-                ColormapWithModifiers{ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB },
+                colormap_,
                 ResourceUpdateCycle::ALWAYS,
                 CullFaceMode::NO_CULL);
         } else if (fbs_(old_fbs_id_) != nullptr) {
@@ -138,7 +141,10 @@ void SkidmarkLogic::render(
         // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
         // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
     }
-    rendering_resources_.set_texture({ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB }, fbs_(new_fbs_id)->texture_color(), ResourceOwner::CALLER);
+    rendering_resources_.set_texture(
+        colormap_,
+        fbs_(new_fbs_id)->texture_color(),
+        ResourceOwner::CALLER);
     rendering_resources_.set_vp("skidmark." + resource_suffix_, vp);
 }
 

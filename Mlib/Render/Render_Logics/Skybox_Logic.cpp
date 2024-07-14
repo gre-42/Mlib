@@ -150,10 +150,7 @@ void SkyboxLogic::render(
 
         CHK(glUniform1i(rp_.skybox_location, 0));
         CHK(glActiveTexture(GL_TEXTURE0));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_texture({
-            .filename = alias_,
-            .color_mode = ColorMode::RGB,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rendering_resources_.get_texture(colormap_)));
 
         va_.bind();
         CHK(glDrawArrays(GL_TRIANGLES, 0, 36));
@@ -202,6 +199,10 @@ void SkyboxLogic::set_alias(const std::string& alias) {
         THROW_OR_ABORT("SkyboxLogic::set_alias called multiple times");
     }
     alias_ = alias;
+    colormap_ = ColormapWithModifiers{
+        .filename = alias_,
+        .color_mode = ColorMode::RGB,
+        .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash();
 }
 
 void SkyboxLogic::print(std::ostream& ostr, size_t depth) const {

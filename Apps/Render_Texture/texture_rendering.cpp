@@ -157,7 +157,7 @@ int main(int argc, char** argv)
                         .filename = *filename,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                    },
+                    }.compute_hash(),
                     ResourceUpdateCycle::ONCE);
             } else if (!parsed.has_named("--rerender_atlas")) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
                     ColormapWithModifiers{
                         .filename = "__texture__",
                         .color_mode = ColorMode::RGBA,
-                        .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                     ResourceUpdateCycle::ONCE,
                     CullFaceMode::CULL,
                     AlphaChannelRole::BLEND,
@@ -195,7 +195,7 @@ int main(int argc, char** argv)
                 ColormapWithModifiers{
                     .filename = "__texture__",
                     .color_mode = ColorMode::RGBA,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                 ResourceUpdateCycle::ONCE);
         } else {
             THROW_OR_ABORT("Expected 0 or 1 unnamed arguments");

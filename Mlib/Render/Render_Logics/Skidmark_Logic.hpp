@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
@@ -47,6 +48,7 @@ private:
     size_t old_fbs_id_;
     std::shared_ptr<FillWithTextureLogic> old_render_texture_logic_;
     FixedArray<double, 3> old_camera_position_;
+    ColormapWithModifiers colormap_;
     DeallocationToken deallocation_token_;
 };
 

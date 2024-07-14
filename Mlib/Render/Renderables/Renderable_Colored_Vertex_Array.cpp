@@ -907,7 +907,8 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::RGB})));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(
+                ColormapWithModifiers{.filename = mname, .color_mode = ColorMode::RGB}.compute_hash())));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -927,7 +928,8 @@ void RenderableColoredVertexArray::render_cva(
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::GRAYSCALE})));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(
+                ColormapWithModifiers{.filename = mname, .color_mode = ColorMode::GRAYSCALE}.compute_hash())));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -954,7 +956,8 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glUniformMatrix4fv(rp.mvp_skidmarks_locations.at(i), 1, GL_TRUE, mvp_skidmark.casted<float>().flat_begin()));
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_skidmark(i))));
-        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture({.filename = mname, .color_mode = ColorMode::RGB})));
+        CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(
+            ColormapWithModifiers{.filename = mname, .color_mode = ColorMode::RGB}.compute_hash())));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -966,10 +969,10 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
-        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_.get_texture({
+        CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
             .filename = reflection_map,
             .color_mode = ColorMode::RGB,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS})));
+            .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         CHK(glActiveTexture(GL_TEXTURE0));
@@ -985,10 +988,10 @@ void RenderableColoredVertexArray::render_cva(
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(0))));
         {
-            ColormapWithModifiers cm{
+            auto cm = ColormapWithModifiers{
                 .filename = secondary_rendering_resources_.get_alias(mname),
                 .color_mode = ColorMode::GRAYSCALE
-            };
+            }.compute_hash();
             GLuint texture = secondary_rendering_resources_.contains_texture(secondary_rendering_resources_.colormap(cm))
                 ? secondary_rendering_resources_.get_texture(cm, TextureRole::COLOR_FROM_DB)
                 : rcva_->rendering_resources_.get_texture(cm, TextureRole::COLOR_FROM_DB);
@@ -1004,9 +1007,9 @@ void RenderableColoredVertexArray::render_cva(
         CHK(glActiveTexture(GL_TEXTURE0));
 
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_dirt(1))));
-        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({
+        CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
                 .filename = cva->material.dirt_texture,
-                .color_mode = ColorMode::RGB},
+                .color_mode = ColorMode::RGB}.compute_hash(),
             TextureRole::COLOR_FROM_DB)));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -1017,10 +1020,10 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_interior != 0) {
         for (size_t i = 0; i < INTERIOR_COUNT; ++i) {
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_interior(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture({
+            CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
                     .filename = cva->material.interior_textures[i],
                     .color_mode = ColorMode::RGB,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                 TextureRole::COLOR_FROM_DB)));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));

@@ -31,7 +31,7 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
                 .filename = args.arguments.path(KnownArgs::resource),
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            },
+            }.compute_hash(),
             ResourceUpdateCycle::ONCE,
             CullFaceMode::CULL,
             AlphaChannelRole::BLEND,

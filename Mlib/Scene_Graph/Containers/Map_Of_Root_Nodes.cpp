@@ -7,7 +7,7 @@
 using namespace Mlib;
 
 MapOfRootNodes::MapOfRootNodes(Scene& scene)
-: scene_{ scene }
+    : scene_{ scene }
 {}
 
 RootNodes& MapOfRootNodes::create(const std::string& name) {

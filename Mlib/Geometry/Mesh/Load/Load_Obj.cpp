@@ -334,29 +334,29 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                 TextureDescriptor td;
                 if (!current_mtl.color_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.color = {
+                    td.color = ColormapWithModifiers{
                         .filename = p.empty() ? current_mtl.color_texture : fs::weakly_canonical(p / current_mtl.color_texture).string(),
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
                         .lighten = OrderableFixedArray(cfg.lighten),
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level };
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level }.compute_hash();
                 }
                 if (!current_mtl.specular_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.specular = {
+                    td.specular = ColormapWithModifiers{
                         .filename = p.empty() ? current_mtl.specular_texture : fs::weakly_canonical(p / current_mtl.specular_texture).string(),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level};
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!current_mtl.bump_texture.empty()) {
                     fs::path p = fs::path(filename).parent_path();
-                    td.normal = {
+                    td.normal = ColormapWithModifiers{
                         .filename = p.empty() ? current_mtl.bump_texture : fs::weakly_canonical(p / current_mtl.bump_texture).string(),
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level};
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
                 if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
                     tl.material.textures_color = { {.texture_descriptor = td } };

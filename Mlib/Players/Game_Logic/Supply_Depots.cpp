@@ -20,10 +20,10 @@ SupplyDepots::SupplyDepots(
     AdvanceTimes& advance_times,
     Players& players,
     const PhysicsEngineConfig& cfg)
-: bvh_{{cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels},
-  advance_times_{advance_times},
-  players_{players},
-  cfg_{cfg}
+    : bvh_{ {cfg.bvh_max_size, cfg.bvh_max_size, cfg.bvh_max_size}, cfg.bvh_levels }
+    , advance_times_{ advance_times }
+    , players_{ players }
+    , cfg_{ cfg }
 {}
 
 SupplyDepots::~SupplyDepots()

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
@@ -51,6 +52,7 @@ private:
     VertexArray va_;
     std::string alias_;
     bool loaded_;
+    ColormapWithModifiers colormap_;
     DeallocationToken deallocation_token_;
 };
 

@@ -22,9 +22,9 @@ LoadSceneJsonUserFunction UpdateGallery::json_user_function = [](const LoadScene
 {
     args.arguments.validate(KnownArgs::options);
     auto entry = args.gallery[args.arguments.at(KnownArgs::instance)];
-    entry->set_image_resource_name({
+    entry->set_image_resource_name(ColormapWithModifiers{
         .filename = args.arguments.path_or_variable(KnownArgs::resource).path,
         .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
         .mipmap_mode = MipmapMode::WITH_MIPMAPS
-    });
+    }.compute_hash());
 };

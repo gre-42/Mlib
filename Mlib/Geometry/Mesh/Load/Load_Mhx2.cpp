@@ -199,7 +199,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                         .histogram = cfg.histogram,
                         .lighten = OrderableFixedArray(cfg.lighten),
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}
+                        .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}
             },
             .shading {
                 .emissive = OrderableFixedArray{cfg.emissive_factor * material.at("emissive_color").get<UFixedArray<float, 3>>()},

@@ -53,7 +53,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
         ColormapWithModifiers{
             .filename = args.arguments.path(KnownArgs::gamepad_texture),
             .color_mode = ColorMode::RGBA
-        },
+        }.compute_hash(),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::right)),

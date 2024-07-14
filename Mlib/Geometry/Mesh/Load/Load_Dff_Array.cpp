@@ -75,11 +75,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     .max_triangle_distance = cfg.max_triangle_distance });
             if (m.texture != nullptr) {
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
-                    .color = {
+                    .color = ColormapWithModifiers{
                         .filename = m.texture->name,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                    }}} };
+                    }.compute_hash()}} };
                 // linfo() << "Texture: " << tex->name;
             }
         }

@@ -94,7 +94,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
                 .filename = c->path(CircularArgs::pointer),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            },
+            }.compute_hash(),
             std::move(widget),
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::font_height)),
             args.layout_constraints.get_pixels(c->at<std::string>(CircularArgs::tick_radius)),

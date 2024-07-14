@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Cached_Hash.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
@@ -37,6 +38,8 @@ struct ColormapWithModifiers {
     InterpolationMode depth_interpolation = InterpolationMode::NEAREST;
     unsigned int anisotropic_filtering_level = 0;
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
+    CachedHash hash;
+    ColormapWithModifiers& compute_hash();
     std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {

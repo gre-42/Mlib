@@ -55,7 +55,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .filename = args.arguments.path(KnownArgs::texture),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
-            },
+            }.compute_hash(),
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update))),
         std::make_unique<Widget>(
             args.layout_constraints.get_pixels(args.arguments.at<std::string>(KnownArgs::left)),

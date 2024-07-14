@@ -32,6 +32,6 @@ void SaveTexturePng::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::filename),
         ColormapWithModifiers{
             .filename = args.arguments.at<std::string>(KnownArgs::name),
-            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))},
+            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))}.compute_hash(),
         TextureRole::COLOR_FROM_DB);
 }

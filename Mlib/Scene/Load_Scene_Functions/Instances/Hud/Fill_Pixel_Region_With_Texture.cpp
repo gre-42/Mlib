@@ -57,7 +57,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
                 .filename = args.arguments.at<std::string>(KnownArgs::texture),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::NO_MIPMAPS
-            },
+            }.compute_hash(),
             resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
             CullFaceMode::CULL,
             AlphaChannelRole::BLEND),

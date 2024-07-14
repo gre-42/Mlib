@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
@@ -54,6 +55,8 @@ private:
     bool with_depth_texture_;
     int lightmap_width_;
     int lightmap_height_;
+    ColormapWithModifiers colormap_color_;
+    ColormapWithModifiers colormap_depth_;
     DeallocationToken deallocation_token_;
 };
 

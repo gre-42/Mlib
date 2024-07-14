@@ -67,11 +67,11 @@ static void add_resource(
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
-                ColormapWithModifiers cm = {
+                auto cm = ColormapWithModifiers{
                     .filename = tx->name,
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                };
+                }.compute_hash();
                 if (res.contains_texture(cm)) {
                     lwarn() << "Ignoring duplicate texture \"" << tx->name << '"';
                 } else {

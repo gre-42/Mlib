@@ -63,7 +63,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
         args.arguments.at<std::string>(KnownArgs::name),
         TextureDescriptor{
-            .color = {
+            .color = ColormapWithModifiers{
                 .filename = args.arguments.path_or_variable(KnownArgs::color).path,
                 .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
                 .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
@@ -90,19 +90,19 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .mipmap_mode = mipmap_mode,
                 .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
                 .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes},
-            .specular = {
+                .wrap_modes = wrap_modes}.compute_hash(),
+            .specular = ColormapWithModifiers{
                 .filename = args.arguments.try_path_or_variable(KnownArgs::specular).path,
                 .color_mode = ColorMode::RGB,
                 .mipmap_mode = mipmap_mode,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes},
-            .normal = {
+                .wrap_modes = wrap_modes}.compute_hash(),
+            .normal = ColormapWithModifiers{
                 .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
                 .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
                 .color_mode = ColorMode::RGB,
                 .mipmap_mode = mipmap_mode,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes} });
+                .wrap_modes = wrap_modes}.compute_hash() });
 
 }
