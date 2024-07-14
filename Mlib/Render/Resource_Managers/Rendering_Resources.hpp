@@ -2,10 +2,12 @@
 #include <Mlib/Activator_Function.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Map/Threadsafe_Map.hpp>
-#include <Mlib/Map/Threadsafe_String_Map.hpp>
+#include <Mlib/Map/Threadsafe_String_Unordered_Map.hpp>
+#include <Mlib/Map/Threadsafe_Unordered_Map.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
@@ -244,25 +246,25 @@ private:
     void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeRecursiveSharedMutex mutex_;
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
-    mutable ThreadsafeMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
-    mutable ThreadsafeMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
-    mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
-    mutable ThreadsafeStringMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
-    mutable ThreadsafeMap<ColormapWithModifiers, TextureType> texture_types_;
-    mutable ThreadsafeStringMap<TextureDescriptor> texture_descriptors_;
-    mutable ThreadsafeMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
-    mutable ThreadsafeStringMap<TextureSize> texture_sizes_;
-    mutable ThreadsafeStringMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
-    mutable ThreadsafeStringMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
-    mutable ThreadsafeStringMap<CubemapDescriptor> cubemap_descriptors_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
+    mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
+    mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
+    mutable ThreadsafeStringUnorderedMap<TextureDescriptor> texture_descriptors_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
+    mutable ThreadsafeStringUnorderedMap<TextureSize> texture_sizes_;
+    mutable ThreadsafeStringUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
+    mutable ThreadsafeStringUnorderedMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
+    mutable ThreadsafeStringUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
     mutable ThreadsafeMap<std::pair<std::string, float>, LoadedFont> font_textures_;
-    ThreadsafeStringMap<std::string> aliases_;
-    ThreadsafeStringMap<FixedArray<double, 4, 4>> vps_;
-    ThreadsafeStringMap<float> offsets_;
-    ThreadsafeStringMap<float> discreteness_;
-    ThreadsafeStringMap<float> scales_;
-    ThreadsafeStringMap<WrapMode> texture_wrap_;
-    ThreadsafeStringMap<BlendMapTexture> blend_map_textures_;
+    ThreadsafeStringUnorderedMap<std::string> aliases_;
+    ThreadsafeStringUnorderedMap<FixedArray<double, 4, 4>> vps_;
+    ThreadsafeStringUnorderedMap<float> offsets_;
+    ThreadsafeStringUnorderedMap<float> discreteness_;
+    ThreadsafeStringUnorderedMap<float> scales_;
+    ThreadsafeStringUnorderedMap<WrapMode> texture_wrap_;
+    ThreadsafeStringUnorderedMap<BlendMapTexture> blend_map_textures_;
     mutable ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;
