@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct Material;
+struct Morphology;
 class ColoredVertexArrayResource;
 
 class BinaryXResource: public ISceneNodeResource {
@@ -12,7 +13,9 @@ public:
     BinaryXResource(
         const FixedArray<float, 2, 2>& square,
         const Material& material_0,
-        const Material& material_90);
+        const Material& material_90,
+        const Morphology& morphology_0,
+        const Morphology& morphology_90);
     ~BinaryXResource();
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;

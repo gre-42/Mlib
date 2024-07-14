@@ -10,7 +10,7 @@ PhysicsResourceFilter::~PhysicsResourceFilter()
 template <class TPos>
 bool PhysicsResourceFilter::matches(const ColoredVertexArray<TPos>& cva) const {
     return
-        any(cva.physics_material & PhysicsMaterial::ATTR_COLLIDE) &&
+        any(cva.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE) &&
         cva_filter.matches(cva);
 }
 

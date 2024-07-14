@@ -1,6 +1,7 @@
 #include "Is_Visible.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Hider.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
@@ -12,14 +13,15 @@ template <class TData>
 bool Mlib::is_visible(
     const VisibilityCheck<TData>& vc,
     const std::string& object_name,
-    const Material& m,
+    const Material& material,
+    const Morphology& morphology,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const Frustum3<TData>* frustum,
     const AxisAlignedBoundingBox<TData, 3>* aabb)
 {
-    assert_true((billboard_id != UINT32_MAX) || m.billboard_atlas_instances.empty());
+    assert_true((billboard_id != UINT32_MAX) || material.billboard_atlas_instances.empty());
     if ((scene_graph_config.renderable_hider != nullptr) &&
         !scene_graph_config.renderable_hider->is_visible(object_name))
     {
@@ -28,19 +30,19 @@ bool Mlib::is_visible(
     if (any(external_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK) ||
         any(external_render_pass & ExternalRenderPassType::DIRTMAP_MASK))
     {
-        ExternalRenderPassType occluder_pass = m.get_occluder_pass(billboard_id);
+        ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id);
         return (occluder_pass & external_render_pass) == external_render_pass;
     }
-    if ((m.aggregate_mode == AggregateMode::NONE) && (m.blend_mode == BlendMode::INVISIBLE)) {
+    if ((material.aggregate_mode == AggregateMode::NONE) && (material.blend_mode == BlendMode::INVISIBLE)) {
         return false;
     }
     if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_OR_ZOOM_NODE)) {
         if (vc.orthographic()) {
             return true;
         }
-        TData max_center_distance = (TData)m.max_center_distance(billboard_id);
+        TData max_center_distance = (TData)material.max_center_distance(billboard_id, morphology);
         TData dist2 = vc.distance_squared();
-        if (!((dist2 >= squared(m.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
+        if (!((dist2 >= squared(morphology.center_distances(0))) && (dist2 <= squared(max_center_distance)))) {
             return false;
         }
         if (!frustum != !aabb) {
@@ -58,7 +60,8 @@ bool Mlib::is_visible(
 template bool Mlib::is_visible<float>(
     const VisibilityCheck<float>& vc,
     const std::string& object_name,
-    const Material& m,
+    const Material& material,
+    const Morphology& morphology,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
@@ -68,7 +71,8 @@ template bool Mlib::is_visible<float>(
 template bool Mlib::is_visible<double>(
     const VisibilityCheck<double>& vc,
     const std::string& object_name,
-    const Material& m,
+    const Material& material,
+    const Morphology& morphology,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,

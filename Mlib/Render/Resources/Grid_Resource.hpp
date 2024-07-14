@@ -4,6 +4,7 @@
 namespace Mlib {
 
 struct Material;
+struct Morphology;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class ColoredVertexArrayResource;
@@ -17,7 +18,8 @@ public:
         double scale,
         double uv_scale,
         double period,
-        const Material& material);
+        const Material& material,
+        const Morphology& morphology);
 
     // ISceneNodeResource, Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;

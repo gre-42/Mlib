@@ -15,7 +15,8 @@ SquareResource::SquareResource(
     const FixedArray<float, 2, 2>& square,
     const FixedArray<float, 2, 2>& uv,
     const TransformationMatrix<float, float, 3>& transformation,
-    const Material& material)
+    const Material& material,
+    const Morphology& morphology)
 {
     if (material.number_of_frames == 0) {
         THROW_OR_ABORT("SquareResource: material.number_of_frames is zero");
@@ -56,7 +57,7 @@ SquareResource::SquareResource(
         std::make_shared<ColoredVertexArray<float>>(
             "SquareResource_" + material.identifier(),
             material,
-            PhysicsMaterial::ATTR_VISIBLE,
+            morphology + PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),

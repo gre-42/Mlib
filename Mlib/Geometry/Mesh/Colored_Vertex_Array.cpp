@@ -21,7 +21,7 @@ template <class TPos>
 ColoredVertexArray<TPos>::ColoredVertexArray(
     std::string name,
     const Material& material,
-    PhysicsMaterial physics_material,
+    const Morphology& morphology,
     ModifierBacklog modifier_backlog,
     UUVector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUVector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
@@ -33,7 +33,7 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     const BoundingSphere<TPos, 3>* bounding_sphere)
     : name{ std::move(name) }
     , material{ material }
-    , physics_material{ physics_material }
+    , morphology{ morphology }
     , modifier_backlog{ modifier_backlog }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
@@ -160,7 +160,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     return std::make_shared<ColoredVertexArray<TPosResult>>(
         name + suffix,
         material,
-        physics_material,
+        morphology,
         modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
@@ -195,7 +195,7 @@ std::shared_ptr<ColoredVertexArray<TPosResult>> ColoredVertexArray<TPos>::transf
     return std::make_shared<ColoredVertexArray<TPosResult>>(
         name + suffix,
         material,
-        physics_material,
+        morphology,
         modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPosResult>, 4>>{},
         std::move(transformed_triangles),
@@ -218,7 +218,7 @@ void ColoredVertexArray<TPos>::quads_sphere(
         collision_polygons.push_back(CollisionPolygonSphere<TPos, 4>{
             .bounding_sphere = quad.bounding_sphere(rng),
             .polygon = quad.polygon(),
-            .physics_material = physics_material,
+            .physics_material = morphology.physics_material,
             .corners = quad.vertices()});
     }
 }
@@ -236,7 +236,7 @@ void ColoredVertexArray<TPos>::triangles_sphere(
         collision_polygons.push_back(CollisionPolygonSphere<TPos, 3>{
             .bounding_sphere = tri.bounding_sphere(rng),
             .polygon = tri.polygon(),
-            .physics_material = physics_material,
+            .physics_material = morphology.physics_material,
             .corners = tri.vertices()});
     }
 }
@@ -254,7 +254,7 @@ std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<TPos>::transform
             .base = CollisionPolygonSphere<double, 3>{
                 .bounding_sphere = tri.bounding_sphere(rng),
                 .polygon = tri.polygon(),
-                .physics_material = physics_material,
+                .physics_material = morphology.physics_material,
                 .corners = tri.vertices()
             },
             .aabb = tri.aabb()});
@@ -273,7 +273,7 @@ std::vector<CollisionLineAabb<double>> ColoredVertexArray<TPos>::transformed_lin
         res.push_back(CollisionLineAabb<double>{
             .base = CollisionLineSphere<double>{
                 .bounding_sphere = line.bounding_sphere(),
-                .physics_material = physics_material,
+                .physics_material = morphology.physics_material,
                 .line = line.vertices(),
                 .ray = line.ray()
             },
@@ -291,7 +291,7 @@ std::vector<CollisionLineSphere<TPos>> ColoredVertexArray<TPos>::lines_sphere() 
         Line3D<TPos> line{ l };
         res.push_back(CollisionLineSphere<TPos>{
             .bounding_sphere = line.bounding_sphere(),
-            .physics_material = physics_material,
+            .physics_material = morphology.physics_material,
             .line = line.vertices(),
             .ray = line.ray()});
     }
@@ -361,8 +361,8 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
     grind_lines.shrink_to_fit();
     return ColoredVertexArray(
         name + "_grind_lines",
-        Material(),
-        PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE,
+        Material{},
+        Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE },
         ModifierBacklog{},
         {},
         {},
@@ -395,8 +395,8 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
     }
     return ColoredVertexArray(
         name + "_contour_edges",
-        Material(),
-        PhysicsMaterial::ATTR_COLLIDE,
+        Material{},
+        Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE },
         ModifierBacklog{},
         {},
         {},
@@ -411,7 +411,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
     float depth,
     PhysicsMaterial destination_physics_material) const
 {
-    if (!any(physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+    if (!any(morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
         THROW_OR_ABORT("Terrain to be decomposed is not collidable");
     }
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
@@ -427,7 +427,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
         std::make_shared<ColoredVertexArray<TPos>>(
             name + "_visual",
             material,
-            physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
+            morphology - PhysicsMaterial::ATTR_COLLIDE,
             modifier_backlog,
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::vector{triangles},
@@ -455,7 +455,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> ColoredVertexArray<TPos>:
                 Material{
                     .aggregate_mode = AggregateMode::ONCE
                 },
-                destination_physics_material | (physics_material & ~removed_attributes),
+                (morphology - removed_attributes) + destination_physics_material,
                 modifier_backlog,
                 UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
                 std::move(triangle_as_list),
@@ -479,7 +479,7 @@ std::string ColoredVertexArray<TPos>::identifier() const {
 template <class TPos>
 void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
     ostr << "ColoredVertexArray(" << name << "): ";
-    ostr << "  visible = " << int(physics_material & PhysicsMaterial::ATTR_VISIBLE) << ' ';
+    ostr << "  visible = " << int(any(morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE)) << ' ';
     ostr << "  #triangles = " << triangles.size() << ' ';
     ostr << "  #lines = " << lines.size() << ' ';
     ostr << "  #triangle_bone_weights = " << triangle_bone_weights.size() << ' ';
@@ -550,7 +550,7 @@ void ColoredVertexArray<TPos>::set_bounds(
 
 template <class TPos>
 double ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
-    return material.max_center_distance(billboard_id);
+    return material.max_center_distance(billboard_id, morphology);
 }
 
 #ifdef __GNUC__

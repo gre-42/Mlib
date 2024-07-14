@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Rectangle_Triangulation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Normal_Error_Behavior.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
@@ -24,7 +25,6 @@ template <class TPos>
 class ColoredVertexArray;
 template <class TPos>
 class VertexHeightBinding;
-enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 class TriangleList {
@@ -34,8 +34,8 @@ class TriangleList {
 public:
     TriangleList(
         std::string name,
-        Material material,
-        PhysicsMaterial physics_material,
+        const Material& material,
+        const Morphology& morphology,
         UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads = {},
         UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles = {},
         UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights = {});
@@ -170,7 +170,7 @@ public:
     void serialize(Archive& archive) {
         archive(name);
         archive(material);
-        archive(physics_material);
+        archive(morphology);
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
@@ -183,14 +183,14 @@ public:
     {
         std::string name;
         Material material;
-        PhysicsMaterial physics_material;
+        Morphology morphology;
         UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;
         UUList<FixedArray<std::vector<BoneWeight>, 3>> triangle_bone_weights;
 
         archive(name);
         archive(material);
-        archive(physics_material);
+        archive(morphology);
         archive(quads);
         archive(triangles);
         archive(triangle_bone_weights);
@@ -198,14 +198,14 @@ public:
         construct(
             name,
             material,
-            physics_material,
+            morphology,
             std::move(quads),
             std::move(triangles),
             std::move(triangle_bone_weights));
     }
     std::string name;
     Material material;
-    PhysicsMaterial physics_material;
+    Morphology morphology;
     ModifierBacklog modifier_backlog;
     UUList<FixedArray<ColoredVertex<TPos>, 4>> quads;
     UUList<FixedArray<ColoredVertex<TPos>, 3>> triangles;

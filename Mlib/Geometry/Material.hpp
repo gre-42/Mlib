@@ -15,6 +15,8 @@
 
 namespace Mlib {
 
+struct Morphology;
+
 /** Material with included sorting support for later rendering.
  *
  * Notes about sorting:
@@ -58,8 +60,6 @@ struct Material {
     TransformationMode transformation_mode = TransformationMode::ALL;
     std::vector<BillboardAtlasInstance> billboard_atlas_instances;
     size_t number_of_frames = 1;
-    OrderableFixedArray<float, 2> center_distances{ default_step_distances };
-    float max_triangle_distance = INFINITY;
     bool cull_faces = true;
     bool reorient_uv0 = false;
     Shading shading;
@@ -74,7 +74,7 @@ struct Material {
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
     const BillboardAtlasInstance& billboard_atlas_instance(uint32_t billboard_id) const;
-    double max_center_distance(uint32_t billboard_id) const;
+    double max_center_distance(uint32_t billboard_id, const Morphology& morphology) const;
     ExternalRenderPassType get_occluder_pass(uint32_t billboard_id) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {
@@ -104,8 +104,6 @@ struct Material {
         archive(transformation_mode);
         archive(billboard_atlas_instances);
         archive(number_of_frames);
-        archive(center_distances);
-        archive(max_triangle_distance);
         archive(cull_faces);
         archive(reorient_uv0);
         archive(shading);

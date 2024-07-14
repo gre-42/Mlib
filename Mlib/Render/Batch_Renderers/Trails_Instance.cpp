@@ -36,7 +36,9 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
             .magnifying_interpolation_mode = InterpolationMode::LINEAR,
             .cull_faces = false,
             .shading = shading },
-        PhysicsMaterial::ATTR_VISIBLE,
+        Morphology{
+            .physics_material = PhysicsMaterial::ATTR_VISIBLE
+        },
         ModifierBacklog{},
         UUVector<FixedArray<ColoredVertex<float>, 4>>{},             // quads
         UUVector<FixedArray<ColoredVertex<float>, 3>>{},             // triangles

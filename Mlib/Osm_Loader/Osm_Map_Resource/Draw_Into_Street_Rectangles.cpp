@@ -28,7 +28,7 @@ void Mlib::draw_into_street_rectangles(
                 .triangle_list = std::make_shared<TriangleList<double>>(
                     tl.styled_road.triangle_list->name,
                     tl.styled_road.triangle_list->material,
-                    tl.styled_road.triangle_list->physics_material),
+                    tl.styled_road.triangle_list->morphology),
                 .uvx = tl.styled_road.uvx}});
     }
     for (const auto& r : street_rectangles) {

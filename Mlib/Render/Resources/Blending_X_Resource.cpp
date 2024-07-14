@@ -18,7 +18,8 @@ using namespace Mlib;
 
 BlendingXResource::BlendingXResource(
     const FixedArray<float, 2, 2>& square,
-    const FixedArray<Material, 2>& materials)
+    const FixedArray<Material, 2>& materials,
+    const FixedArray<Morphology, 2>& morphology)
     : rva_{ uninitialized }
     , square_ { square }
     , aggregate_modes_{
@@ -57,7 +58,7 @@ BlendingXResource::BlendingXResource(
             std::make_shared<ColoredVertexArray<float>>(
                 "BlendingXResource",
                 materials(i),
-                PhysicsMaterial::ATTR_VISIBLE,
+                morphology(i) + PhysicsMaterial::ATTR_VISIBLE,
                 ModifierBacklog{},
                 UUVector<FixedArray<ColoredVertex<float>, 4>>(),
                 std::move(triangles),

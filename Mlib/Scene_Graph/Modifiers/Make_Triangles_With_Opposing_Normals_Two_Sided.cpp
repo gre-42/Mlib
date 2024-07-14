@@ -25,7 +25,7 @@ void Mlib::make_triangles_with_opposing_normals_two_sided(
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
                 cvas.remove_if([&](auto& cva){
-                    if (!any(cva->physics_material & material_filter)) {
+                    if (!any(cva->morphology.physics_material & material_filter)) {
                         return false;
                     }
                     make_triangles_with_opposing_normals_two_sided(*cva, cvas);

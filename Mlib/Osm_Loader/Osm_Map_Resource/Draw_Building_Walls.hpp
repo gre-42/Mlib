@@ -14,6 +14,7 @@ template <class TPos>
 class VertexHeightBinding;
 struct Node;
 struct Material;
+struct Morphology;
 struct Building;
 template <class TPos>
 class TriangleList;
@@ -24,6 +25,7 @@ void draw_building_walls(
     std::list<SteinerPointInfo>* steiner_points,
     std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const Material& material,
+    const Morphology& morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,

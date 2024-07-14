@@ -11,7 +11,7 @@ void Mlib::merge_meshes(
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
     const std::string& name,
     const Material& material,
-    const PhysicsMaterial physics_material)
+    const Morphology& morphology)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
     if (!cvas.empty()) {
@@ -24,7 +24,7 @@ void Mlib::merge_meshes(
         result.push_back(std::make_shared<ColoredVertexArray<TPos>>(
             name,
             material,
-            physics_material,
+            morphology,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             UUVector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),
@@ -41,10 +41,10 @@ namespace Mlib {
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas,
         const std::string& name,
         const Material& material,
-        const PhysicsMaterial physics_material);
+        const Morphology& morphology);
     template void merge_meshes<double>(
         std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
         const std::string& name,
         const Material& material,
-        const PhysicsMaterial physics_material);
+        const Morphology& morphology);
 }

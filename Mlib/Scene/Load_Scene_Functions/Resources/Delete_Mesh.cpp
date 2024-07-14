@@ -33,7 +33,7 @@ LoadSceneJsonUserFunction DeleteMesh::json_user_function = [](const LoadSceneJso
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
                 cvas.remove_if([where](auto& cva){
-                    return any(cva->physics_material & where);
+                    return any(cva->morphology.physics_material & where);
                 });
             };
             for (const auto& acva : resource.get_rendering_arrays()) {

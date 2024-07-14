@@ -230,10 +230,12 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                 .aggregate_mode = cfg.aggregate_mode,
                 .transformation_mode = cfg.transformation_mode,
+                .shading = m.shading}.compute_color_mode(),
+            Morphology{
+                .physics_material = PhysicsMaterial::ATTR_VISIBLE,
                 .center_distances = cfg.center_distances,
                 .max_triangle_distance = cfg.max_triangle_distance,
-                .shading = m.shading}.compute_color_mode(),
-            PhysicsMaterial::ATTR_VISIBLE};
+            }};
         const auto& mesh = geometry.at("mesh");
         UUVector<FixedArray<float, 3>> vertices = mesh.at("vertices").get<UUVector<FixedArray<float, 3>>>();
         UUVector<FixedArray<float, 2>> uv_coordinates = mesh.at("uv_coordinates").get<UUVector<FixedArray<float, 2>>>();

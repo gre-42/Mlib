@@ -15,6 +15,7 @@ using namespace Mlib;
 void Mlib::draw_roofs(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const Material& material,
+    const Morphology& morphology,
     const FixedArray<float, 3>& color,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
@@ -36,7 +37,7 @@ void Mlib::draw_roofs(
         tls.push_back(std::make_shared<TriangleList<double>>(
             "roof_" + std::to_string(number),
             material,
-            BASE_VISIBLE_TERRAIN_MATERIAL));
+            morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
         auto sw = subdivided_way(
             nodes,
             bu.way.nd,

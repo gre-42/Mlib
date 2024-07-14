@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Bone_Weight.hpp>
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
 #include <Mlib/Ignore_Copy.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
@@ -34,7 +35,6 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 template <class TDir, class TPos>
 class OffsetAndQuaternion;
-enum class PhysicsMaterial: uint32_t;
 
 template <class TPos>
 class ColoredVertexArray {
@@ -47,7 +47,7 @@ public:
     ColoredVertexArray(
         std::string name,
         const Material& material,
-        PhysicsMaterial physics_material,
+        const Morphology& morphology,
         ModifierBacklog modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
         UUVector<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
@@ -60,7 +60,7 @@ public:
     ~ColoredVertexArray();
     std::string name;
     Material material;
-    PhysicsMaterial physics_material;
+    Morphology morphology;
     ModifierBacklog modifier_backlog;
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::QUAD)>> quads;
     UUVector<FixedArray<ColoredVertex<TPos>, to_underlying(PrimitiveDimensions::TRIANGLE)>> triangles;
@@ -120,7 +120,7 @@ public:
     void serialize(Archive& archive) {
         archive(name);
         archive(material);
-        archive(physics_material);
+        archive(morphology);
         archive(modifier_backlog);
         archive(quads);
         archive(triangles);
@@ -137,7 +137,7 @@ public:
     {
         std::string name;
         Material material;
-        PhysicsMaterial physics_material;
+        Morphology morphology;
         ModifierBacklog modifier_backlog;
         UUVector<FixedArray<ColoredVertex<TPos>, 4>> quads;
         UUVector<FixedArray<ColoredVertex<TPos>, 3>> triangles;
@@ -148,7 +148,7 @@ public:
 
         archive(name);
         archive(material);
-        archive(physics_material);
+        archive(morphology);
         archive(modifier_backlog);
         archive(quads);
         archive(triangles);
@@ -160,7 +160,7 @@ public:
         construct(
             name,
             material,
-            physics_material,
+            morphology,
             modifier_backlog,
             std::move(quads),
             std::move(triangles),

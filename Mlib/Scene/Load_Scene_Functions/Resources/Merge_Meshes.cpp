@@ -5,6 +5,8 @@
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Modifiers/Merge_Meshes.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -34,7 +36,7 @@ LoadSceneJsonUserFunction MergeMeshes::json_user_function = [](const LoadSceneJs
         (ISceneNodeResource& resource)
         {
             for (const auto& acva : resource.get_rendering_arrays()) {
-                merge_meshes(acva->scvas, name, Material{}, physics_material);
+                merge_meshes(acva->scvas, name, Material{}, Morphology{ .physics_material = physics_material });
                 merge_meshes(
                     acva->dcvas,
                     name,
@@ -44,7 +46,7 @@ LoadSceneJsonUserFunction MergeMeshes::json_user_function = [](const LoadSceneJs
                             .ambient = {0.2f, 0.2f, 0.2f},
                             .diffuse = {0.2f, 0.2f, 0.2f},
                             .specular = {0.f, 0.f, 0.f}}},
-                    physics_material);
+                            Morphology{ .physics_material = physics_material });
             }
         });
 };

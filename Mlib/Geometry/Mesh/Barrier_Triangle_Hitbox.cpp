@@ -66,10 +66,10 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
     float half_width,
     PhysicsMaterial destination_physics_material)
 {
-    if (!any(cva.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
+    if (!any(cva.morphology.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
         THROW_OR_ABORT("Terrain not marked as two-sided");
     }
-    if (!any(cva.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+    if (!any(cva.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
         THROW_OR_ABORT("Terrain to be decomposed is not collidable");
     }
     if (!any(destination_physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
@@ -91,7 +91,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
         std::make_shared<ColoredVertexArray<TPos>>(
             cva.name + "_visual",
             cva.material,
-            cva.physics_material & ~PhysicsMaterial::ATTR_COLLIDE,
+            cva.morphology - PhysicsMaterial::ATTR_COLLIDE,
             cva.modifier_backlog,
             std::vector{cva.quads},
             std::vector{cva.triangles},
@@ -140,7 +140,7 @@ std::vector<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::create_barrier_tria
             Material{
                 .aggregate_mode = AggregateMode::ONCE
             },
-            destination_physics_material | (cva.physics_material & ~removed_attributes),
+            (cva.morphology - removed_attributes) + destination_physics_material,
             cva.modifier_backlog,
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
             std::move(decomposition),

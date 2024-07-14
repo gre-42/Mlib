@@ -84,13 +84,13 @@ void RigidBodies::add_rigid_body(
         // }
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
-                if (any(m->physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
+                if (any(m->morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
                     for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
                         line_bvh_.insert(t.aabb, { rb, t.base });
                     }
                 } else {
-                    bool is_convex = any(m->physics_material & PhysicsMaterial::ATTR_CONVEX);
-                    bool is_concave = any(m->physics_material & PhysicsMaterial::ATTR_CONCAVE);
+                    bool is_convex = any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX);
+                    bool is_concave = any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE);
                     if (is_convex == is_concave) {
                         THROW_OR_ABORT(
                             "Physics material is neither obj_grind_line, nor convex xor concave. Object: \"" + rb.name() +
@@ -98,7 +98,7 @@ void RigidBodies::add_rigid_body(
                             " convex: " + std::to_string(int(is_convex)) +
                             ", concave: " + std::to_string(int(is_concave)));
                     }
-                    if (any(m->physics_material & PhysicsMaterial::ATTR_CONVEX)) {
+                    if (any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
                         auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
                         std::set<OrderableFixedArray<double, 3>> vertex_set;
                         std::vector<const FixedArray<double, 3>*> vertex_vector;
@@ -140,7 +140,7 @@ void RigidBodies::add_rigid_body(
                             RigidBodyAndIntersectableMesh{
                                 .rb = { rb, CURRENT_SOURCE_LOCATION },
                                 .mesh = {
-                                    .physics_material = m->physics_material,
+                                    .physics_material = m->morphology.physics_material,
                                     .mesh = std::make_shared<StaticTransformedMesh>(
                                         m->name,
                                         aabb,
@@ -187,10 +187,10 @@ void RigidBodies::add_rigid_body(
             std::list<TypedMesh<std::pair<BoundingSphere<TPos, 3>, std::shared_ptr<CollisionMesh<TPos>>>>>& meshes)
         {
             for (auto& cva : hitboxes) {
-                if (any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
+                if (any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE)) {
                     THROW_OR_ABORT("Moving objects cannot be concave (due to ridge_map_)");
                 }
-                if (any(cva->physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
+                if (any(cva->morphology.physics_material & PhysicsMaterial::OBJ_ALIGNMENT_PLANE)) {
                     THROW_OR_ABORT("Alignment planes only supported for terrain");
                 }
                 auto any_line_only_mask =
@@ -201,17 +201,17 @@ void RigidBodies::add_rigid_body(
                     PhysicsMaterial::OBJ_GRIND_CONTACT |
                     PhysicsMaterial::OBJ_BULLET_MESH;
                 auto any_mask = PhysicsMaterial::OBJ_HITBOX;
-                if (any(cva->physics_material & any_line_only_mask)) {
+                if (any(cva->morphology.physics_material & any_line_only_mask)) {
                     assert_true(cva->triangles.empty());
                     assert_true(!cva->lines.empty());
-                } else if (any(cva->physics_material & any_mesh_only_mask)) {
+                } else if (any(cva->morphology.physics_material & any_mesh_only_mask)) {
                     assert_true(!cva->triangles.empty());
                     assert_true(cva->lines.empty());
-                } else if (any(cva->physics_material & any_mask)) {
+                } else if (any(cva->morphology.physics_material & any_mask)) {
                     // Do nothing
                 } else if (
-                    any(cva->physics_material & PhysicsMaterial::ATTR_CONVEX) ==
-                    any(cva->physics_material & PhysicsMaterial::ATTR_CONCAVE))
+                    any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX) ==
+                    any(cva->morphology.physics_material & PhysicsMaterial::ATTR_CONCAVE))
                 {
                     THROW_OR_ABORT(
                         "Physics material is not convex xor concave for movable object \"" +
@@ -222,7 +222,7 @@ void RigidBodies::add_rigid_body(
                 if (!vertices.empty()) {
                     BoundingSphere<TPos, 3> bs = welzl_from_iterator<TPos, 3>(vertices.begin(), vertices.end(), rng);
                     meshes.push_back({
-                        .physics_material = cva->physics_material,
+                        .physics_material = cva->morphology.physics_material,
                         .mesh = std::make_pair(bs, std::make_shared<CollisionMesh<TPos>>(*cva))});
                 }
             }

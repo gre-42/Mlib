@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -48,11 +50,15 @@ LoadSceneJsonUserFunction CreateBlendingXResource::json_user_function = [](const
             .diffuse = {0.f, 0.f, 0.f},
             .specular = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
+    Morphology morphology{ .physics_material = PhysicsMaterial::NONE };
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),
-        [square, material](){return std::make_shared<BlendingXResource>(
+        [square, material, morphology](){return std::make_shared<BlendingXResource>(
             square,
             FixedArray<Material, 2>{
                 material,
-                material});});
+                material },
+            FixedArray<Morphology, 2>{
+                morphology,
+                morphology});});
 };

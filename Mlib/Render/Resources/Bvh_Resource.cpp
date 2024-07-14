@@ -12,8 +12,8 @@ using namespace Mlib;
 
 BvhResource::BvhResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& cvas)
-: cvas_{cvas},
-  bvh_{{0.5f, 0.5f, 0.5f}, 10}
+    : cvas_{ cvas }
+    , bvh_{ {0.5f, 0.5f, 0.5f}, 10 }
 {
     for (const auto& cva : cvas) {
         for (const auto& t : cva->triangles) {
@@ -21,7 +21,7 @@ BvhResource::BvhResource(
             for (const auto& p : t.flat_iterable()) {
                 aabb.extend(p.position);
             }
-            bvh_.insert(aabb, {&cva->material, &t});
+            bvh_.insert(aabb, { cva, t });
         }
     }
 }
@@ -31,14 +31,14 @@ static void instantiate_bvh(
     DanglingRef<SceneNode> scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
-    const Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3>& bvh)
+    const Bvh<float, BvhResourcePayload, 3>& bvh)
 {
     if (!bvh.data().empty()) {
         auto aabb = AxisAlignedBoundingBox<float, 3>::empty();
-        std::map<const Material*, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
-        for (const auto& b : bvh.data()) {
-            cvas[b.second.first].push_back(b.second.second);
-            aabb.extend(b.first);
+        std::map<std::shared_ptr<ColoredVertexArray<float>>, std::list<const FixedArray<ColoredVertex<float>, 3>*>> cvas;
+        for (const auto& [db, dv] : bvh.data()) {
+            cvas[dv.cva].push_back(&dv.triangle);
+            aabb.extend(db);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
         auto node = make_dunique<SceneNode>(
@@ -46,7 +46,7 @@ static void instantiate_bvh(
             fixed_zeros<float, 3>(),
             1.f);
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
-        for (const auto& [material, cva] : cvas) {
+        for (const auto& [mm, cva] : cvas) {
             UUVector<FixedArray<ColoredVertex<float>, 3>> vcva(cva.size());
             for (const auto& tri : cva) {
                 auto t = *tri;
@@ -56,16 +56,16 @@ static void instantiate_bvh(
                 vcva.push_back(t);
             }
             lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
-                name,                                                        // name
-                *material,                                                   // material
-                PhysicsMaterial::ATTR_VISIBLE,                               // physics_material
-                ModifierBacklog{},                                           // modifier_backlog
-                UUVector<FixedArray<ColoredVertex<float>, 4>>{},          // quads
-                std::move(vcva),                                             // triangles
-                UUVector<FixedArray<ColoredVertex<float>, 2>>{},          // lines
-                UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},       // triangle_bone_weights
-                UUVector<FixedArray<float, 3>>{},                         // continuous_triangle_texture_layers
-                UUVector<FixedArray<uint8_t, 3>>{}));                     // discrete_triangle_texture_layers
+                name,                                                       // name
+                mm->material,                                               // material
+                mm->morphology,                                             // physics_material
+                ModifierBacklog{},                                          // modifier_backlog
+                UUVector<FixedArray<ColoredVertex<float>, 4>>{},            // quads
+                std::move(vcva),                                            // triangles
+                UUVector<FixedArray<ColoredVertex<float>, 2>>{},            // lines
+                UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},         // triangle_bone_weights
+                UUVector<FixedArray<float, 3>>{},                           // continuous_triangle_texture_layers
+                UUVector<FixedArray<uint8_t, 3>>{}));                       // discrete_triangle_texture_layers
             // lcvas.back()->material.is_small = true;
             // lcvas.back()->material.aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY;
         }
@@ -79,9 +79,9 @@ static void instantiate_bvh(
         scene_node->add_child(name + "_data", std::move(node));
     }
     size_t i = 0;
-    for (const auto& c : bvh.children()) {
+    for (const auto& [cb, cv] : bvh.children()) {
         auto node = make_dunique<SceneNode>(
-            ((c.first.min() + c.first.max()) / 2.f - position_shift).casted<double>(),
+            ((cb.min() + cb.max()) / 2.f - position_shift).casted<double>(),
             fixed_zeros<float, 3>(),
             1.f);
         instantiate_bvh(
@@ -89,7 +89,7 @@ static void instantiate_bvh(
             node.ref(DP_LOC),
             position_shift + node->position().casted<float>(),
             renderable_resource_filter,
-            c.second);
+            cv);
         scene_node->add_child("bvh_" + std::to_string(i), std::move(node));
         ++i;
     }

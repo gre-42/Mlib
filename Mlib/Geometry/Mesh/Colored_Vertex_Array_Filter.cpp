@@ -8,8 +8,8 @@ ColoredVertexArrayFilter::~ColoredVertexArrayFilter() = default;
 template <class TPos>
 bool ColoredVertexArrayFilter::matches(const ColoredVertexArray<TPos>& cva) const {
     return
-        !any(~cva.physics_material & included_tags) &&
-        !any(cva.physics_material & excluded_tags) &&
+        !any(~cva.morphology.physics_material & included_tags) &&
+        !any(cva.morphology.physics_material & excluded_tags) &&
         Mlib::re::regex_search(cva.name, included_names) &&
         !Mlib::re::regex_search(cva.name, excluded_names);
 }

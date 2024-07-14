@@ -59,12 +59,14 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
-            .center_distances = cfg.center_distances,
-            .max_triangle_distance = cfg.max_triangle_distance,
             .cull_faces = cfg.cull_faces_default,
             .shading{.fresnel = cfg.fresnel},
             .dynamically_lighted = cfg.dynamically_lighted},
-        cfg.physics_material};
+        Morphology{
+            .physics_material = cfg.physics_material,
+            .center_distances = cfg.center_distances,
+            .max_triangle_distance = cfg.max_triangle_distance,
+            } };
     tl.material.compute_color_mode();
     StaticFaceLighting sfl;
 

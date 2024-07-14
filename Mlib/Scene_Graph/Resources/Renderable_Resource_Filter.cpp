@@ -10,7 +10,7 @@ RenderableResourceFilter::~RenderableResourceFilter()
 template <class TPos>
 bool RenderableResourceFilter::matches(size_t num, const ColoredVertexArray<TPos>& cva) const {
     return
-        any(cva.physics_material & PhysicsMaterial::ATTR_VISIBLE) &&
+        any(cva.morphology.physics_material & PhysicsMaterial::ATTR_VISIBLE) &&
         (num >= min_num) &&
         (num <= max_num) &&
         cva_filter.matches(cva);

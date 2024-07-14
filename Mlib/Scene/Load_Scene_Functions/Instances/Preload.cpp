@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Info.hpp>
@@ -52,11 +54,11 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
             auto res = RenderingContextStack::primary_scene_node_resources().get_physics_arrays(r);
             auto preload_cvas = [&](const auto &cvas) {
                 for (const auto &a : cvas) {
-                    if (!any(a->physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+                    if (!any(a->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                         continue;
                     }
                     SurfaceContactInfo* c = args.surface_contact_db.get_contact_info(
-                        a->physics_material,
+                        a->morphology.physics_material,
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         for (const auto& s : c->smoke_infos) {

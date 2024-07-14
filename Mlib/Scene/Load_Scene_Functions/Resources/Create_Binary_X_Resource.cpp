@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -51,15 +53,18 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
         // .wrap_mode_t = WrapMode::CLAMP_TO_EDGE,
         .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-        .center_distances = OrderableFixedArray<float, 2>{
-            args.arguments.at<UFixedArray<float, 2>>(
-                KnownArgs::center_distances,
-                FixedArray<float, 2>{0.f, INFINITY })* meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
             .ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient),
             .diffuse = {0.f, 0.f, 0.f},
             .specular = {0.f, 0.f, 0.f}}};
+    Morphology morphology{
+        .physics_material = PhysicsMaterial::NONE,
+        .center_distances = OrderableFixedArray<float, 2>{
+            args.arguments.at<UFixedArray<float, 2>>(
+                KnownArgs::center_distances,
+                FixedArray<float, 2>{0.f, INFINITY })* meters}
+    };
     Material material_0{material};
     Material material_90{material};
     material_0.textures_color = { primary_rendering_resources.get_blend_map_texture(args.arguments.path_or_variable(KnownArgs::texture_filename_0).path) };
@@ -68,8 +73,10 @@ LoadSceneJsonUserFunction CreateBinaryXResource::json_user_function = [](const L
     material_90.compute_color_mode();
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),
-        [square, material_0, material_90](){return std::make_shared<BinaryXResource>(
+        [square, material_0, material_90, morphology](){return std::make_shared<BinaryXResource>(
             square,
             material_0,
-            material_90);});
+            material_90,
+            morphology,
+            morphology);});
 };

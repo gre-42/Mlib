@@ -6,6 +6,7 @@
 namespace Mlib {
 
 struct Material;
+struct Morphology;
 struct BarrierStyle;
 template <class TPos>
 struct ColoredVertex;
@@ -18,6 +19,7 @@ void draw_boundary_barriers(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
     const Material& material,
+    const Morphology& morphology,
     float scale,
     float uv_scale,
     float barrier_height,

@@ -7,6 +7,8 @@
 #include <Mlib/Geometry/Coordinates/Npixels_For_Dpi.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -134,11 +136,13 @@ void ImposterLogic::add_imposter(
             .diffuse = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
             .specular = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}};
     material.compute_color_mode();
+    Morphology morphology{ .physics_material = PhysicsMaterial::NONE };
     SquareResource res{
         FixedArray<float, 2, 2>::init(ips.pos.min(0), ips.pos.min(1), ips.pos.max(0), ips.pos.max(1)),
         FixedArray<float, 2, 2>::init(ips.uv.min(0), ips.uv.min(1), ips.uv.max(0), ips.uv.max(1)),
         TransformationMatrix<float, float, 3>::identity(),
-        material};
+        material,
+        morphology};
     auto new_imposter_node = make_dunique<SceneNode>(
         FixedArray<double, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},

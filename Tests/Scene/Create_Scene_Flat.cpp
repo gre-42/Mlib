@@ -59,7 +59,11 @@ void Mlib::create_scene_flat(
         Material{
             .occluded_pass = ExternalRenderPassType::LIGHTMAP_DEPTH,
             .occluder_pass = ExternalRenderPassType::LIGHTMAP_DEPTH},
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_CHASSIS | PhysicsMaterial::ATTR_CONCAVE,
+        Morphology{ .physics_material =
+            PhysicsMaterial::ATTR_VISIBLE |
+            PhysicsMaterial::ATTR_COLLIDE |
+            PhysicsMaterial::OBJ_CHASSIS |
+            PhysicsMaterial::ATTR_CONCAVE},
         ModifierBacklog{},
         UUVector<FixedArray<ColoredVertex<float>, 4>>(),
         std::move(triangles0_raw),

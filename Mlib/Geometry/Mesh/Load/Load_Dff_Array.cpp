@@ -59,9 +59,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
-                    .center_distances = OrderableFixedArray{
-                        dddb.get_center_distances(name, morph_target.bounding_sphere.radius()) },
-                    .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
                         .ambient = OrderableFixedArray<float, 3>(col3 * m.surface_properties.ambient),
@@ -71,7 +68,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
                 },
-                cfg.physics_material);
+                Morphology{
+                    .physics_material = cfg.physics_material,
+                    .center_distances = OrderableFixedArray{
+                        dddb.get_center_distances(name, morph_target.bounding_sphere.radius()) },
+                    .max_triangle_distance = cfg.max_triangle_distance });
             if (m.texture != nullptr) {
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = {

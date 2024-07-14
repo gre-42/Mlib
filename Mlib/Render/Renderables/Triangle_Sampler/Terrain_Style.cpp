@@ -46,7 +46,7 @@ double TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_node
                 if (billboard_id != UINT32_MAX) {
                     add_distance(name, cva->material.billboard_atlas_instance(billboard_id).max_center_distance);
                 } else {
-                    add_distance(name, cva->material.center_distances(1));
+                    add_distance(name, cva->morphology.center_distances(1));
                 }
             }
         };

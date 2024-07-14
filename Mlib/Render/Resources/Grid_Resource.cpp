@@ -15,14 +15,15 @@ GridResource::GridResource(
     double scale,
     double uv_scale,
     double period,
-    const Material& material)
+    const Material& material,
+    const Morphology& morphology)
 {
     auto trafo = transformation;
     trafo.t() *= scale;
     TriangleList<double> triangles{
         "grid",
         material,
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE};
+        morphology + (PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE) };
 
     for (size_t r = 0; r < size(0); ++r) {
         for (size_t c = 0; c < size(1); ++c) {

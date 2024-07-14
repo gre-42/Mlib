@@ -8,6 +8,7 @@ namespace Mlib {
 template <class TData>
 class VisibilityCheck;
 struct Material;
+struct Morphology;
 struct SceneGraphConfig;
 enum class ExternalRenderPassType;
 template <class TData, size_t tndim>
@@ -21,7 +22,8 @@ public:
     explicit FrustumVisibilityCheck(const VisibilityCheck<TData>& vc);
     bool is_visible(
         const std::string& object_name,
-        const Material& m,
+        const Material& material,
+        const Morphology& morphology,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass,

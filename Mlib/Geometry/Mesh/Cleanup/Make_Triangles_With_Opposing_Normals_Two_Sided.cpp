@@ -13,7 +13,7 @@ void Mlib::make_triangles_with_opposing_normals_two_sided(
     ColoredVertexArray<TPos>& cva,
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& result)
 {
-    if (any(cva.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
+    if (any(cva.morphology.physics_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
         return;
     }
     std::list<FixedArray<ColoredVertex<TPos>, 3>> two_sided_triangles;
@@ -40,7 +40,7 @@ void Mlib::make_triangles_with_opposing_normals_two_sided(
         auto two_sided_array = std::make_shared<ColoredVertexArray<TPos>>(
                 cva.name + "_two_sided",
                 cva.material,
-                cva.physics_material | PhysicsMaterial::ATTR_TWO_SIDED,
+                cva.morphology + PhysicsMaterial::ATTR_TWO_SIDED,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<TPos>, 4>>(),                      // quads
             uuvector(two_sided_triangles.begin(), two_sided_triangles.end()), // triangles

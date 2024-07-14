@@ -19,14 +19,14 @@ using namespace Mlib;
 template <class TPos>
 TriangleList<TPos>::TriangleList(
     std::string name,
-    Material material,
-    PhysicsMaterial physics_material,
+    const Material& material,
+    const Morphology& morphology,
     UUList<FixedArray<ColoredVertex<TPos>, 4>>&& quads,
     UUList<FixedArray<ColoredVertex<TPos>, 3>>&& triangles,
     UUList<FixedArray<std::vector<BoneWeight>, 3>>&& triangle_bone_weights)
     : name{ std::move(name) }
-    , material{ std::move(material) }
-    , physics_material{ physics_material }
+    , material{ material }
+    , morphology{ morphology }
     , quads{ std::move(quads) }
     , triangles{ std::move(triangles) }
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
@@ -579,7 +579,7 @@ std::shared_ptr<ColoredVertexArray<TPos>> TriangleList<TPos>::triangle_array() c
     return std::make_shared<ColoredVertexArray<TPos>>(
         name,
         material,
-        physics_material,
+        morphology,
         modifier_backlog,
         UUVector<FixedArray<ColoredVertex<TPos>, 4>>(quads.begin(), quads.end()),
         UUVector<FixedArray<ColoredVertex<TPos>, 3>>(triangles.begin(), triangles.end()),

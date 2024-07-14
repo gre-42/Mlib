@@ -21,6 +21,7 @@ using namespace Mlib;
 void Mlib::draw_buildings_ceiling_or_ground(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const Material& material,
+    const Morphology& morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
@@ -53,7 +54,7 @@ void Mlib::draw_buildings_ceiling_or_ground(
         tls.push_back(std::make_shared<TriangleList<double>>(
             "ceilings_" + std::to_string(mid++),
             material,
-            BASE_VISIBLE_TERRAIN_MATERIAL));
+            morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
         TerrainTypeTriangleList tl_terrain;
         tl_terrain.insert(TerrainType::UNDEFINED, tls.back());
         BoundingInfo bounding_info{outline, {}, 0.1f};

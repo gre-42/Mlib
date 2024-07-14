@@ -100,13 +100,13 @@ void AnimatedColoredVertexArrays::smoothen_edges(
     if (target == SmoothnessTarget::PHYSICS) {
         std::list<std::shared_ptr<ColoredVertexArray<double>>> new_dvcas;
         for (const auto& l : dcvas) {
-            if (!any(l->physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+            if (!any(l->morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
                 continue;
             }
             new_dvcas.emplace_back(std::make_shared<ColoredVertexArray<double>>(
                 l->name + "_smooth",
                 l->material,
-                l->physics_material & ~PhysicsMaterial::ATTR_VISIBLE,
+                l->morphology - PhysicsMaterial::ATTR_VISIBLE,
                 l->modifier_backlog,
                 UUVector<FixedArray<ColoredVertex<double>, 4>>{},
                 UUVector<FixedArray<ColoredVertex<double>, 3>>{l->triangles},
@@ -114,7 +114,7 @@ void AnimatedColoredVertexArrays::smoothen_edges(
                 UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
                 UUVector<FixedArray<float, 3>>{},
                 UUVector<FixedArray<uint8_t, 3>>{}));
-            l->physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
+            l->morphology.physics_material &= ~PhysicsMaterial::ATTR_COLLIDE;
         }
         Mlib::smoothen_edges(new_dvcas, {}, smoothness, niterations, decay);
         dcvas.insert(dcvas.end(), new_dvcas.begin(), new_dvcas.end());

@@ -7,9 +7,15 @@
 namespace Mlib {
 
 struct Material;
+struct Morphology;
 template <class TPos>
 struct ColoredVertex;
 class RenderingResources;
+
+struct BvhResourcePayload {
+    std::shared_ptr<ColoredVertexArray<float>> cva;
+    const FixedArray<ColoredVertex<float>, 3>& triangle;
+};
 
 class BvhResource: public ISceneNodeResource {
 public:
@@ -18,7 +24,7 @@ public:
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
 private:
     std::list<std::shared_ptr<ColoredVertexArray<float>>> cvas_;
-    Bvh<float, std::pair<const Material*, const FixedArray<ColoredVertex<float>, 3>*>, 3> bvh_;
+    Bvh<float, BvhResourcePayload, 3> bvh_;
 };
 
 }

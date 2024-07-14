@@ -8,6 +8,7 @@ namespace Mlib {
 template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 struct Material;
+struct Morphology;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
@@ -18,13 +19,14 @@ public:
     explicit VisibilityCheck(const FixedArray<TData, 4, 4>& mvp);
     bool is_visible(
         const std::string& object_name,
-        const Material& m,
+        const Material& material,
+        const Morphology& morphology,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass) const;
     bool is_visible(TData max_center_distance) const;
     bool black_is_visible(
-        const Material& m,
+        const Material& material,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         ExternalRenderPassType external_render_pass) const;

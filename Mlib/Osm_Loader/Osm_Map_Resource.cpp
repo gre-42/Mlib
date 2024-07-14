@@ -316,6 +316,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
             buildings,
             nodes,
             config.scale,
@@ -326,7 +327,8 @@ OsmMapResource::OsmMapResource(
         LOG_INFO("draw building ground");
         draw_buildings_ceiling_or_ground(
             osm_triangle_lists.tls_buildings_ground,
-            Material(),
+            Material{},
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
             buildings,
             nodes,
             config.scale,
@@ -378,6 +380,7 @@ OsmMapResource::OsmMapResource(
                 .reorient_uv0 = true,
                 .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                 .draw_distance_noperations = 1000},
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
             wall_barriers,
             nodes,
             config.scale,
@@ -398,6 +401,7 @@ OsmMapResource::OsmMapResource(
                     .reorient_uv0 = true,
                     .shading = material_shading(PhysicsMaterial::SURFACE_BASE_STONE),
                     .draw_distance_noperations = 1000},
+                Morphology{ .physics_material = PhysicsMaterial::NONE },
                 config.scale,
                 config.uv_scale_barrier_wall,
                 config.boundary_barrier_height,
@@ -573,6 +577,7 @@ OsmMapResource::OsmMapResource(
                 .aggregate_mode = AggregateMode::ONCE,
                 .shading = ROOF_REFLECTANCE,
                 .draw_distance_noperations = 1000}.compute_color_mode(),
+            Morphology{ .physics_material = PhysicsMaterial::NONE },
             roof_color,
             buildings,
             nodes,
@@ -1327,7 +1332,7 @@ OsmMapResource::OsmMapResource(
                 tl_terrain_->insert(target_terrain_type, std::make_shared<TriangleList<double>>(
                     terrain_type_to_string(target_terrain_type) + "_autogen",
                     tit->second->material,
-                    tit->second->physics_material));
+                    tit->second->morphology));
                 auto& wayside_grass = *(*tl_terrain_)[target_terrain_type];
                 tit->second->triangles.remove_if([&ground_street_bvh, &max_dist, &wayside_grass](const FixedArray<ColoredVertex<double>, 3>& tri){
                     for (const auto& v : tri.flat_iterable()) {
@@ -1605,7 +1610,7 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
                 .ambient = {1.f, 0.f, 0.f},
                 .diffuse = {1.f, 0.f, 0.f},
                 .specular = {1.f, 0.f, 0.f}}},
-        PhysicsMaterial::NONE};
+        Morphology{ .physics_material = PhysicsMaterial::NONE } };
     for (const auto& l : hri_.acvas->dcvas) {
         for (const auto& t : l->triangles) {
             auto tlc = triangle_largest_cosine<double, 3>({

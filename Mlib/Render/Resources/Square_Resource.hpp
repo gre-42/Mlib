@@ -5,6 +5,7 @@
 namespace Mlib {
 
 struct Material;
+struct Morphology;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 class ColoredVertexArrayResource;
@@ -15,7 +16,8 @@ public:
         const FixedArray<float, 2, 2>& square,
         const FixedArray<float, 2, 2>& uv,
         const TransformationMatrix<float, float, 3>& transformation,
-        const Material& material);
+        const Material& material,
+        const Morphology& morphology);
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;

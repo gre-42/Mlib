@@ -117,7 +117,7 @@ HeightMapResource::HeightMapResource(
         std::make_shared<ColoredVertexArray<float>>(
             "HeightMapResource",
             Material{},
-            PhysicsMaterial::ATTR_VISIBLE,
+            Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE },
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),

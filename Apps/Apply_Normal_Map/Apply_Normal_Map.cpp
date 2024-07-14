@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
                             .filename = args.named_value("--normal"),
                             .color_mode = ColorMode::RGB}}}}
                     },
-                PhysicsMaterial::ATTR_VISIBLE};
+                Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE } };
             tl.draw_rectangle_wo_normals(
                 FixedArray<float, 3>{-1.f, -1.f, -10.f},
                 FixedArray<float, 3>{1.f, -1.f, -10.f},

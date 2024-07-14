@@ -6,12 +6,14 @@ namespace Mlib {
 
 class ColoredVertexArrayResource;
 struct Material;
+struct Morphology;
 
 class BlendingXResource: public ISceneNodeResource {
 public:
     BlendingXResource(
         const FixedArray<float, 2, 2>& square,
-        const FixedArray<Material, 2>& materials);
+        const FixedArray<Material, 2>& materials,
+        const FixedArray<Morphology, 2>& morphology);
     ~BlendingXResource();
     virtual void preload(const RenderableResourceFilter& filter) const override;
     virtual void instantiate_renderable(const InstantiationOptions& options) const override;

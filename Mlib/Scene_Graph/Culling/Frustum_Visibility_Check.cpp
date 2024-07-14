@@ -13,13 +13,14 @@ FrustumVisibilityCheck<TData>::FrustumVisibilityCheck(const VisibilityCheck<TDat
 template <class TData>
 bool FrustumVisibilityCheck<TData>::is_visible(
     const std::string& object_name,
-    const Material& m,
+    const Material& material,
+    const Morphology& morphology,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     ExternalRenderPassType external_render_pass,
     const AxisAlignedBoundingBox<TData, 3>& aabb) const
 {
-    return Mlib::is_visible<TData>(vc_, object_name, m, billboard_id, scene_graph_config, external_render_pass, &frustum_, &aabb);
+    return Mlib::is_visible<TData>(vc_, object_name, material, morphology, billboard_id, scene_graph_config, external_render_pass, &frustum_, &aabb);
 }
 
 namespace Mlib {

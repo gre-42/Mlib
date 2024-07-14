@@ -100,7 +100,7 @@ public:
                 THROW_OR_ABORT("Conflicting number of texture layers in array \"" + a.name + '"');
             }
         }
-        auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), a.material.max_triangle_distance };
+        auto camera_sphere = BoundingSphere<float, 3>{ fixed_zeros<float, 3>(), a.morphology.max_triangle_distance };
         for (size_t i = 0; i < a.triangles.size(); ++i) {
             if (i % THREAD_YIELD_INTERVAL == 0) {
                 std::this_thread::yield();
@@ -108,7 +108,7 @@ public:
             const auto& c = a.triangles[i];
             auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
             // auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
-            if ((a.material.max_triangle_distance != INFINITY) &&
+            if ((a.morphology.max_triangle_distance != INFINITY) &&
                 !camera_sphere.intersects(triangle_sphere) &&
                 !any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
             {
@@ -245,7 +245,6 @@ void AggregateArrayRenderer::update_aggregates(
             continue;
         }
         mat.aggregate_mode = AggregateMode::NONE;
-        mat.center_distances = default_step_distances;
         auto it = mat_lists.find(mat);
         if (it == mat_lists.end()) {
             auto l = construct_aggregate_triangles(*a, rng, external_render_pass);
@@ -269,7 +268,7 @@ void AggregateArrayRenderer::update_aggregates(
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
             AAR_NAME,
             mat,
-            PhysicsMaterial::ATTR_VISIBLE,
+            Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE },
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles),

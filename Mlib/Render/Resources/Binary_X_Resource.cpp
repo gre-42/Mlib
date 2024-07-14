@@ -19,7 +19,9 @@ using namespace Mlib;
 BinaryXResource::BinaryXResource(
     const FixedArray<float, 2, 2>& square,
     const Material& material_0,
-    const Material& material_90)
+    const Material& material_90,
+    const Morphology& morphology_0,
+    const Morphology& morphology_90)
 {
     UUVector<FixedArray<ColoredVertex<float>, 3>> triangles;
     triangles.reserve(2);
@@ -54,7 +56,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray<float>>(
             "BinaryXResource",
             material_0,
-            PhysicsMaterial::ATTR_VISIBLE,
+            morphology_0 + PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles_0),
@@ -67,7 +69,7 @@ BinaryXResource::BinaryXResource(
         std::make_shared<ColoredVertexArray<float>>(
             "BinaryXResource",
             material_90,
-            PhysicsMaterial::ATTR_VISIBLE,
+            morphology_90 + PhysicsMaterial::ATTR_VISIBLE,
             ModifierBacklog{},
             UUVector<FixedArray<ColoredVertex<float>, 4>>(),
             std::move(triangles_90),

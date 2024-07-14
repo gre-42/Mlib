@@ -276,7 +276,7 @@ void RenderableColoredVertexArray::render_cva(
     VisibilityCheck vc{mvp_f};
     if (rcva_->instances_ == nullptr) {
         FrustumVisibilityCheck fvc{vc};
-        if (!fvc.is_visible(cva->name, cva->material, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))
+        if (!fvc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))
         {
             // lerr() << ", skipped (2)";
             return;
@@ -1203,7 +1203,7 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
 {
     for (const auto& cva : aggregate_sorted_continuously_) {
         VisibilityCheck vc{mvp};
-        if (vc.is_visible(cva->name, cva->material, UINT32_MAX, scene_graph_config, external_render_pass.pass))
+        if (vc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
             TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });

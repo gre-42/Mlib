@@ -33,7 +33,7 @@ void Mlib::add_cleanup_mesh_modifier(
             {
                 cvas.remove_if([&](auto& cva){
                     if ((min_vertex_distance != 0) &&
-                        any(cva->physics_material & min_distance_material_filter))
+                        any(cva->morphology.physics_material & min_distance_material_filter))
                     {
                         merge_neighboring_points<TPos>(*cva, bvh, min_vertex_distance);
                     }

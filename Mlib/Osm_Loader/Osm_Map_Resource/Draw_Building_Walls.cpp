@@ -18,6 +18,7 @@ void Mlib::draw_building_walls(
     std::list<SteinerPointInfo>* steiner_points,
     std::map<const FixedArray<double, 3>*, VertexHeightBinding<double>>& vertex_height_bindings,
     const Material& material,
+    const Morphology& morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
@@ -34,7 +35,7 @@ void Mlib::draw_building_walls(
             const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
                 "building_walls_" + std::to_string(mid++),
                 material,
-                BASE_VISIBLE_TERRAIN_MATERIAL));
+                morphology + BASE_VISIBLE_TERRAIN_MATERIAL));
             FixedArray<float, 3> bottom_height_color = height_colors(bl.bottom);
             FixedArray<float, 3> top_height_color = height_colors(bl.top);
             float bottom_ambient_occlusion;

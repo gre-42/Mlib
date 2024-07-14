@@ -1,5 +1,7 @@
 #include "Draw_Ceilings.hpp"
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Building_Part_Type.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Draw_Buildings_Ceiling_Or_Ground.hpp>
 #include <Mlib/Osm_Loader/Osm_Map_Resource/Material_Colors.hpp>
@@ -25,6 +27,7 @@ void Mlib::draw_ceilings(
             .aggregate_mode = AggregateMode::ONCE,
             .shading = CEILING_REFLECTANCE,
             .draw_distance_noperations = 1000}.compute_color_mode(),
+        Morphology{ .physics_material = PhysicsMaterial::NONE },
         buildings,
         nodes,
         config.scale,

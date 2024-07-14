@@ -2,6 +2,8 @@
 #include <Mlib/Argument_List.hpp>
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -89,15 +91,18 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
             // .wrap_mode_t = WrapMode::REPEAT,
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::aggregate_mode)),
             .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
-            .center_distances = OrderableFixedArray<float, 2>{
-                args.arguments.at<UFixedArray<float, 2>>(
-                    KnownArgs::center_distances,
-                    FixedArray<float, 2>{0.f, INFINITY }) * meters},
             .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
             .shading{
                 .emissive = OrderableFixedArray{emissive * emissive_factor},
                 .ambient = OrderableFixedArray{ambient * ambient_factor},
                 .diffuse = OrderableFixedArray{diffuse * diffuse_factor},
                 .specular = OrderableFixedArray{specular * specular_factor}}
-            }.compute_color_mode()));
+            }.compute_color_mode(),
+        Morphology{
+            .physics_material = PhysicsMaterial::NONE,
+            .center_distances = OrderableFixedArray<float, 2>{
+                args.arguments.at<UFixedArray<float, 2>>(
+                    KnownArgs::center_distances,
+                    FixedArray<float, 2>{0.f, INFINITY }) * meters},
+        }));
 };

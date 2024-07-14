@@ -44,6 +44,7 @@ void Mlib::draw_boundary_barriers(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const std::list<FixedArray<ColoredVertex<double>, 3>>& inner_triangles,
     const Material& material,
+    const Morphology& morphology,
     float scale,
     float uv_scale,
     float barrier_height,
@@ -54,7 +55,7 @@ void Mlib::draw_boundary_barriers(
     const auto& tl = tls.emplace_back(std::make_shared<TriangleList<double>>(
         "boundary_barriers",
         material,
-        PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_TWO_SIDED));
+        morphology + PhysicsMaterial::ATTR_VISIBLE + PhysicsMaterial::ATTR_TWO_SIDED));
     // plot_mesh_svg(
     //     "/tmp/contours.svg",
     //     600,

@@ -87,7 +87,7 @@ void Mlib::merge_textures(
                     if (any(cva->material.blend_mode & BlendMode::ANY_CONTINUOUS)) {
                         cva->material.blend_mode = BlendMode::BINARY_05;
                     }
-                    cva->material.max_triangle_distance = merged_materials_config.max_triangle_distance;
+                    cva->morphology.max_triangle_distance = merged_materials_config.max_triangle_distance;
                 }
             }
             if (merged_filenames.empty()) {
@@ -131,7 +131,7 @@ void Mlib::merge_textures(
                             }
                         }
                     }
-                    cva->physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
+                    cva->morphology.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
                 }
             }
             if (merged_triangles.empty()) {
@@ -154,14 +154,16 @@ void Mlib::merge_textures(
                         .occluder_pass = merged_materials_config.occluder_pass,
                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,
                         .aggregate_mode = merged_materials_config.aggregate_mode,
-                        .max_triangle_distance = merged_materials_config.max_triangle_distance,
                         .cull_faces = merged_materials_config.cull_faces,
                         .shading {
                             .emissive = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                             .ambient = OrderableFixedArray<float, 3>{1.f, 1.f, 1.f},
                             .diffuse = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f},
                             .specular = OrderableFixedArray<float, 3>{0.f, 0.f, 0.f}}},
-                    PhysicsMaterial::ATTR_VISIBLE,
+                    Morphology{
+                        .physics_material = PhysicsMaterial::ATTR_VISIBLE,
+                        .max_triangle_distance = merged_materials_config.max_triangle_distance,
+                    },
                     ModifierBacklog{},
                     UUVector<FixedArray<ColoredVertex<double>, 4>>{},
                     UUVector<FixedArray<ColoredVertex<double>, 3>>(merged_triangles.begin(), merged_triangles.end()),

@@ -337,11 +337,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
-                    .center_distances = cfg.center_distances,
-                    .max_triangle_distance = cfg.max_triangle_distance,
                     .cull_faces = cfg.cull_faces_default,
                     .dynamically_lighted = cfg.dynamically_lighted},
-                cfg.physics_material};
+                Morphology{
+                    .physics_material = cfg.physics_material,
+                    .center_distances = cfg.center_distances,
+                    .max_triangle_distance = cfg.max_triangle_distance
+                }};
             auto attrs = MetaAttributes::ATTR_VISIBLE;
             static const DECLARE_REGEX(name_reg, "^(\\d+)?(\\w+)");
             static const size_t NUMBER = 1;
@@ -398,37 +400,37 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
             }
             if (any(attrs & MetaAttributes::ATTR_COLLIDABLE)) {
-                tl.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
-                tl.physics_material |= PhysicsMaterial::ATTR_CONCAVE;
+                tl.morphology.physics_material |= PhysicsMaterial::ATTR_COLLIDE;
+                tl.morphology.physics_material |= PhysicsMaterial::ATTR_CONCAVE;
             }
             if (any(attrs & MetaAttributes::SURFACE_ROAD)) {
-                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
-                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_TARMAC;
+                tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_TARMAC;
                 tl.material.contains_skidmarks = true;
             }
             if (any(attrs & MetaAttributes::SURFACE_GRAVEL)) {
-                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
-                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRAVEL;
+                tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_GRAVEL;
                 tl.material.contains_skidmarks = true;
             }
             if (any(attrs & MetaAttributes::SURFACE_GRASS)) {
-                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
-                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_GRASS;
+                tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_GRASS;
             }
             if (any(attrs & MetaAttributes::SURFACE_SIDE)) {
-                if (any(tl.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
+                if (any(tl.morphology.physics_material & PhysicsMaterial::SURFACE_BASE_MASK)) {
                     THROW_OR_ABORT("Surface material already set");
                 }
-                tl.physics_material |= PhysicsMaterial::SURFACE_BASE_DIRT;
+                tl.morphology.physics_material |= PhysicsMaterial::SURFACE_BASE_DIRT;
             }
             if (!node.isRenderable || !any(attrs & MetaAttributes::ATTR_VISIBLE)) {
-                tl.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
+                tl.morphology.physics_material &= ~PhysicsMaterial::ATTR_VISIBLE;
             }
             if (material != nullptr) {
                 // From: http://www.toms-sim-side.de/tutorials/dokumente/AC_convert.pdf
@@ -442,7 +444,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     attrs |= MetaAttributes::OBJ_TREE;
                 }
                 if (any(attrs & MetaAttributes::OBJ_GRASS)) {
-                    tl.physics_material |= PhysicsMaterial::OBJ_GRASS;
+                    tl.morphology.physics_material |= PhysicsMaterial::OBJ_GRASS;
                 }
                 if (grass_materials.contains(material->name) &&
                     !occluding_meshes.contains(node.name))
@@ -681,8 +683,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     cfg.triangle_tangent_error_behavior);
             }
             if (show_only_collidables) {
-                if (any(tl.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
-                    tl.physics_material |= PhysicsMaterial::ATTR_VISIBLE;
+                if (any(tl.morphology.physics_material & PhysicsMaterial::ATTR_COLLIDE)) {
+                    tl.morphology.physics_material |= PhysicsMaterial::ATTR_VISIBLE;
                     tl.material.textures_color.clear();
                     tl.material.textures_alpha.clear();
                     tl.material.shading.ambient *= 0.3f;

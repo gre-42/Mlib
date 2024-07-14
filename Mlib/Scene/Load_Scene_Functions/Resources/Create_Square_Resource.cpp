@@ -3,6 +3,8 @@
 #include <Mlib/FPath.hpp>
 #include <Mlib/Geometry/Material.hpp>
 #include <Mlib/Geometry/Material/Billboard_Atlas_Instance.hpp>
+#include <Mlib/Geometry/Morphology.hpp>
+#include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
@@ -102,10 +104,6 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
         .transformation_mode = transformation_mode_from_string(args.arguments.at<std::string>(KnownArgs::transformation_mode)),
         .billboard_atlas_instances = billboard_atlas_instances,
         .number_of_frames = args.arguments.at<unsigned int>(KnownArgs::number_of_frames, 1),
-        .center_distances = OrderableFixedArray<float, 2>{
-            args.arguments.at<UFixedArray<float, 2>>(
-                KnownArgs::center_distances,
-                FixedArray<float, 2>{0.f, INFINITY }) * meters},
         .cull_faces = args.arguments.at<bool>(KnownArgs::cull_faces),
         .shading{
             .emissive = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
@@ -113,12 +111,20 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
             .diffuse = {0.f, 0.f, 0.f},
             .specular = {0.f, 0.f, 0.f}}};
     material.compute_color_mode();
+    Morphology morphology{
+        .physics_material = PhysicsMaterial::NONE,
+        .center_distances = OrderableFixedArray<float, 2>{
+            args.arguments.at<UFixedArray<float, 2>>(
+                KnownArgs::center_distances,
+                FixedArray<float, 2>{0.f, INFINITY }) * meters},
+    };
     RenderingContextStack::primary_scene_node_resources().add_resource_loader(
         args.arguments.at<std::string>(KnownArgs::name),
-        [square, transformation, material](){
+        [square, transformation, material, morphology](){
             return std::make_shared<SquareResource>(
                 square,
                 FixedArray<float, 2, 2>::init(0.f, 0.f, 1.f, 1.f),
                 transformation,
-                material);});
+                material,
+                morphology);});
 };

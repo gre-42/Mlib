@@ -9,6 +9,7 @@ namespace Mlib {
 template <class TPos>
 class TriangleList;
 struct Material;
+struct Morphology;
 struct Node;
 struct Building;
 enum class DrawBuildingPartType;
@@ -16,6 +17,7 @@ enum class DrawBuildingPartType;
 void draw_buildings_ceiling_or_ground(
     std::list<std::shared_ptr<TriangleList<double>>>& tls,
     const Material& material,
+    const Morphology& morphology,
     const std::list<Building>& buildings,
     const std::map<std::string, Node>& nodes,
     float scale,
