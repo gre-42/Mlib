@@ -47,6 +47,6 @@ void Mlib::instantiate(
 				.scene_node = node.ref(DP_LOC),
 				.renderable_resource_filter = RenderableResourceFilter{}},
 			PreloadBehavior::NO_PRELOAD);
-		scene.add_root_aggregate_node(name, std::move(node));
+		scene.add_static_root_node(name, std::move(node));
 	}
 }

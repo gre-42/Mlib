@@ -280,7 +280,9 @@ void AggregateArrayRenderer::update_aggregates(
     auto rcva = std::make_shared<ColoredVertexArrayResource>(
         mat_vectors,
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{});
-    auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
+    auto rcvai = mat_vectors.empty()
+        ? nullptr
+        : std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {
         rcva->wait();
     }

@@ -315,24 +315,25 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
     return *it->second;
 }
 
-void Scene::visit(const std::function<void(
+bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, double, 3>& m,
     const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
 {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{mutex_};
-    for (const auto& [_, node] : root_nodes_) {
-        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
-    }
-    for (const auto& [_, node] : static_root_nodes_) {
-        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
-    }
-    for (const auto& [_, node] : root_aggregate_nodes_) {
-        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
-    }
-    for (const auto& [_, node] : root_instances_nodes_) {
-        node->visit(TransformationMatrix<float, double, 3>::identity(), func);
-    }
+    return
+        root_nodes_.visit_all([&func](const auto& node) {
+            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            }) &&
+        static_root_nodes_.visit_all([&func](const auto& node){
+            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            }) &&
+        root_aggregate_nodes_.visit_all([&func](const auto& node){
+            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            }) &&
+        root_instances_nodes_.visit_all([&func](const auto& node){
+            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            });
 }
 
 void Scene::render(
@@ -359,21 +360,19 @@ void Scene::render(
     }
     if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_NODE) {
         DanglingRef<SceneNode> node = [this, &external_render_pass](){
-            std::shared_lock lock{mutex_};
-            auto it = root_nodes_.find(external_render_pass.black_node_name);
-            if (it == root_nodes_.end()) {
+            std::shared_lock lock{ mutex_ };
+            auto res = root_nodes_.try_get(external_render_pass.black_node_name, DP_LOC);
+            if (!res.has_value()) {
                 THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
             }
-            return it->second.ref(DP_LOC);
+            return res.value();
         }();
         node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
-        std::list<DanglingPtr<const SceneNode>> nodes;
+        std::list<DanglingRef<const SceneNode>> nodes;
         {
             std::shared_lock lock{mutex_};
-            for (const auto& [_, node] : root_nodes_) {
-                nodes.push_back(node.get(DP_LOC));
-            }
+            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
         }
         for (const auto& node : nodes) {
             node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
@@ -389,27 +388,21 @@ void Scene::render(
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
         {
-            std::list<DanglingPtr<const SceneNode>> nodes;
+            std::list<DanglingRef<const SceneNode>> nodes;
             {
                 std::shared_lock lock{mutex_};
-                for (const auto& [_, node] : root_nodes_) {
-                    nodes.push_back(node.get(DP_LOC));
-                }
-                for (const auto& [_, node] : static_root_nodes_) {
-                    nodes.push_back(node.get(DP_LOC));
-                }
+                root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
+                static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
             }
             for (const auto& node : nodes) {
                 node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
             }
         }
         {
-            std::list<DanglingPtr<const SceneNode>> nodes;
+            std::list<DanglingRef<const SceneNode>> nodes;
             {
                 std::shared_lock lock{mutex_};
-                for (const auto& [_, node] : root_nodes_) {
-                    nodes.push_back(node.get(DP_LOC));
-                }
+                root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
             }
             for (const auto& node : nodes) {
                 node->append_skidmarks_to_queue(TransformationMatrix<float, double, 3>::identity(), skidmarks);
@@ -430,18 +423,14 @@ void Scene::render(
             }
             LOG_INFO("Scene::render non-blended");
             {
-                std::list<DanglingPtr<const SceneNode>> nodes;
+                std::list<DanglingRef<const SceneNode>> nodes;
                 {
                     std::shared_lock lock{mutex_};
-                    for (const auto& [_, node] : root_nodes_) {
-                       nodes.push_back(node.get(DP_LOC));
-                    }
+                    root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                     for (const auto& node : root_imposter_nodes_) {
-                        nodes.push_back(node);
+                        nodes.push_back(*node);
                     }
-                    for (const auto& [_, node] : static_root_nodes_) {
-                        nodes.push_back(node.get(DP_LOC));
-                    }
+                    static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                 }
                 for (const auto& node : nodes) {
                     node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
@@ -460,15 +449,11 @@ void Scene::render(
                     auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer, task_location](){
-                            std::list<DanglingPtr<const SceneNode>> nodes;
+                            std::list<DanglingRef<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
-                                for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
-                                for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
+                                static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
+                                root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -497,15 +482,11 @@ void Scene::render(
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
                                                   large_instances_renderer, task_location]()
                         {
-                            std::list<DanglingPtr<const SceneNode>> nodes;
+                            std::list<DanglingRef<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
-                                for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
-                                for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
+                                static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
+                                root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
                             for (const auto& node : nodes) {
@@ -534,15 +515,11 @@ void Scene::render(
                     auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer, task_location](){
-                            std::list<DanglingPtr<const SceneNode>> nodes;
+                            std::list<DanglingRef<const SceneNode>> nodes;
                             {
                                 std::shared_lock lock{mutex_};
-                                for (const auto& [_, node] : static_root_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
-                                for (const auto& [_, node] : root_aggregate_nodes_) {
-                                    nodes.push_back(node.get(DP_LOC));
-                                }
+                                static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
+                                root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -589,15 +566,11 @@ void Scene::render(
                                                       small_sorted_instances_renderers, task_location,
                                                       black_render_passes]()
                             {
-                                std::list<DanglingPtr<const SceneNode>> nodes;
+                                std::list<DanglingRef<const SceneNode>> nodes;
                                 {
                                     std::shared_lock lock{mutex_};
-                                    for (const auto& [_, node] : static_root_nodes_) {
-                                        nodes.push_back(node.get(DP_LOC));
-                                    }
-                                    for (const auto& [_, node] : root_instances_nodes_) {
-                                        nodes.push_back(node.get(DP_LOC));
-                                    }
+                                    static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
+                                    root_instances_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
                                 SmallInstancesQueues instances_queues{
@@ -695,17 +668,21 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     if (!morn_.no_root_nodes_scheduled_for_deletion()) {
         THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
     }
-    for (auto it = root_nodes_.begin(); it != root_nodes_.end(); ) {
-        it->second->move(
-            TransformationMatrix<float, double, 3>::identity(),
-            dt,
-            time,
-            scene_node_resources_,
-            nullptr);  // style
-        if (it->second->to_be_deleted()) {
-            delete_root_node((it++)->first);
-        } else {
-            ++it;
+    {
+        auto& drn = root_nodes_.default_nodes();
+        for (auto it = drn.begin(); it != drn.end(); ) {
+            it->second->move(
+                TransformationMatrix<float, double, 3>::identity(),
+                dt,
+                time,
+                scene_node_resources_,
+                nullptr);  // style
+            if (it->second->to_be_deleted()) {
+                delete_root_node((it++)->first);
+            }
+            else {
+                ++it;
+            }
         }
     }
     if (dynamic_lights_ != nullptr) {

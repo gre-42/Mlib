@@ -12,9 +12,6 @@
 
 namespace Mlib {
 
-template <class TData, size_t tndim>
-class BoundingSphere;
-
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 

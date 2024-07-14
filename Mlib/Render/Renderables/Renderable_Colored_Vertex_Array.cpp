@@ -1302,17 +1302,15 @@ BoundingSphere<double, 3> RenderableColoredVertexArray::bounding_sphere() const 
 }
 
 double RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {
-    if (!aggregate_off_.empty()) {
-        THROW_OR_ABORT("RenderableColoredVertexArray::max_center_distance called on nonempty renderables");
-    }
     double result = 0.;
+    for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : instances_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : instances_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
-    if (result == 0.) {
-        THROW_OR_ABORT("Could not calculate visibility AABB, renderable seems to be empty");
-    }
+    // if (result == 0.) {
+    //     THROW_OR_ABORT("Could not calculate visibility AABB, renderable seems to be empty");
+    // }
     return result;
 }
 

@@ -1,5 +1,8 @@
 #pragma once
+#include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <functional>
 #include <map>
 #include <mutex>
 #include <set>
@@ -7,28 +10,34 @@
 
 namespace Mlib {
 
-template <class T>
-class DanglingUniquePtr;
 class SceneNode;
 class DeleteNodeMutex;
 class Scene;
 
+struct RootNodeInfo {
+    DanglingUniquePtr<SceneNode> ptr;
+    double max_center_distance;
+};
+
 class RootNodes {
-    using RootNodesMap = std::map<std::string, DanglingUniquePtr<SceneNode>>;
+    using DefaultNodesMap = std::map<std::string, DanglingRef<SceneNode>>;
+    using SmallStaticNodesBvh = Bvh<double, DanglingRef<SceneNode>, 3>;
+    using NodeContainer = std::map<std::string, RootNodeInfo>;
 public:
     explicit RootNodes(Scene& scene);
     ~RootNodes();
-    RootNodesMap::const_iterator find(const std::string& name) const;
-    RootNodesMap::const_iterator begin() const;
-    RootNodesMap::const_iterator end() const;
-    RootNodesMap::iterator begin();
-    RootNodesMap::iterator end();
+    DefaultNodesMap& default_nodes();
+    bool visit_all(const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const;
+    bool visit(
+        const FixedArray<double, 3>& position,
+        const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const;
     void clear();
     bool erase(const std::string& name);
     bool contains(const std::string& name) const;
-    void add_root_node(
+    std::optional<DanglingRef<SceneNode>> try_get(
         const std::string& name,
-        DanglingUniquePtr<SceneNode>&& scene_node);
+        SOURCE_LOCATION loc);
+    void add_root_node(const std::string& name, DanglingUniquePtr<SceneNode>&& scene_node);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
     bool no_root_nodes_scheduled_for_deletion() const;
@@ -38,7 +47,9 @@ public:
     void print(std::ostream& ostr) const;
 private:
     Scene& scene_;
-    RootNodesMap root_nodes_;
+    DefaultNodesMap default_nodes_map_;             // Contains nodes that are large or moving
+    SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
+    NodeContainer node_container_;
     std::set<std::string> root_nodes_to_delete_;
     mutable std::mutex root_nodes_to_delete_mutex_;
 };

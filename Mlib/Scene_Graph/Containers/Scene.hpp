@@ -79,7 +79,7 @@ public:
     void unregister_nodes(const Mlib::regex& regex);
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
-    void visit(const std::function<void(
+    bool visit_all(const std::function<bool(
         const TransformationMatrix<float, double, 3>& m,
         const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void render(

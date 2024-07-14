@@ -14,7 +14,7 @@ void Mlib::fit_canvas_to_renderables(
     ExternalRenderPassType render_pass)
 {
     auto aabb = AxisAlignedBoundingBox<double, 3>::empty();
-    scene.visit([&](
+    scene.visit_all([&](
         const TransformationMatrix<float, double, 3>& m,
         const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)
     {
@@ -26,6 +26,7 @@ void Mlib::fit_canvas_to_renderables(
                 throw std::runtime_error("Could not extend static light AABB for renderable \"" + n + "\": " + e.what());
             }
         }
+        return true;
     });
     if (any(aabb.min() >= aabb.max())) {
         THROW_OR_ABORT("Scene AABB not positive");

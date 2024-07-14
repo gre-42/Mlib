@@ -204,9 +204,9 @@ public:
     Camera& get_camera() const;
     void add_light(std::unique_ptr<Light>&& light);
     void add_skidmark(std::unique_ptr<Skidmark>&& skidmark);
-    void visit(
+    bool visit_all(
         const TransformationMatrix<float, double, 3>& parent_m,
-        const std::function<void(
+        const std::function<bool(
             const TransformationMatrix<float, double, 3>& m,
             const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void move(
@@ -306,6 +306,7 @@ public:
     void set_periodic_animation(const std::string& name);
     void set_aperiodic_animation(const std::string& name);
     void set_scene_and_state(Scene& scene, SceneNodeState state);
+    SceneNodeState state() const;
     Scene& scene();
     const Scene& scene() const;
     void set_debug_message(std::string message);
