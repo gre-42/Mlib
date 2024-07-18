@@ -16,3 +16,13 @@ InterpolationMode Mlib::interpolation_mode_from_string(std::string_view str) {
     }
     return it->second;
 }
+
+std::string_view Mlib::interpolation_mode_to_string(InterpolationMode mode) {
+    switch (mode) {
+    case InterpolationMode::NEAREST:
+        return "nearest"sv;
+    case InterpolationMode::LINEAR:
+        return "linear"sv;
+    }
+    THROW_OR_ABORT("Unknown interpolation mode: " + std::to_string((int)mode));
+}

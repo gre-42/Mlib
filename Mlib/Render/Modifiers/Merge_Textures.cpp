@@ -2,6 +2,7 @@
 #include <Mlib/Assert.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Material.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Merged_Texture_Name.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
@@ -9,6 +10,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
+#include <Mlib/Map/Map.hpp>
 #include <Mlib/Math/Bool.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -34,7 +36,7 @@ void Mlib::merge_textures(
          mesh_resource_name,
          merged_materials_config]
         (ISceneNodeResource& scene_node_resource){
-            std::map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
+            Map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
@@ -93,20 +95,13 @@ void Mlib::merge_textures(
             if (merged_filenames.empty()) {
                 return;
             }
-            auto keys = [](const auto& container){
-                std::vector<std::string> result;
-                result.reserve(container.size());
-                for (const auto& [k, _] : container) {
-                    result.push_back(k);
-                }
-                return result;
-            };
             // auto keys = std::views::keys(merged_filenames);
             // auto uv_tiles = rendering_resources.generate_texture_atlas(merged_texture_name, std::set(keys.begin(), keys.end()));
             auto uv_tiles = rendering_resources.generate_auto_texture_atlas(
                 merged_materials_config.texture_name,
-                keys(merged_filenames),
-                merged_materials_config.mip_level_count);
+                merged_filenames.keys(),
+                merged_materials_config.mip_level_count,
+                merged_materials_config.anisotropic_filtering_level);
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;

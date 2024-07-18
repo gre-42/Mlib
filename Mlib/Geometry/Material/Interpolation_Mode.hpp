@@ -9,5 +9,6 @@ enum class InterpolationMode {
 };
 
 InterpolationMode interpolation_mode_from_string(std::string_view str);
+std::string_view interpolation_mode_to_string(InterpolationMode mode);
 
 }

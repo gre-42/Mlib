@@ -584,7 +584,7 @@ int main(int argc, char** argv) {
                     .rendering_resources = rendering_resources,
                     .z_order = 0
                 };
-                RenderingContextGuard rcg{primary_rendering_context};
+                RenderingContextGuard rcg{ primary_rendering_context };
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;

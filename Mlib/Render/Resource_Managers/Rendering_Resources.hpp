@@ -96,6 +96,7 @@ struct AutoTextureAtlasDescriptor {
     int height;
     int mip_level_count;
     ColorMode color_mode;
+    unsigned int anisotropic_filtering_level;
     std::vector<std::vector<AutoAtlasTileDescriptor>> tiles;
 };
 
@@ -180,6 +181,7 @@ public:
         const std::string& name,
         const std::vector<std::string>& filenames,
         int mip_level_count,
+        unsigned int anisotropic_filtering_level,
         int size = 4096,
         AutoTextureAtlasDescriptor* atlas = nullptr);
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);

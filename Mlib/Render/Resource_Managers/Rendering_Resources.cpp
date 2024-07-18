@@ -1072,7 +1072,8 @@ void RenderingResources::add_auto_texture_atlas(
                 {
                     .filename = name,
                     .color_mode = texture_atlas_descriptor.color_mode,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS,
+                    .anisotropic_filtering_level = texture_atlas_descriptor.anisotropic_filtering_level
                 },
                 TextureRole::COLOR);
         });
@@ -1277,6 +1278,7 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     const std::string& name,
     const std::vector<std::string>& filenames,
     int mip_level_count,
+    unsigned int anisotropic_filtering_level,
     int size,
     AutoTextureAtlasDescriptor* atlas)
 {
@@ -1312,9 +1314,10 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
         .height = atlas_size_2d(1),
         .mip_level_count = mip_level_count,
         .color_mode = ColorMode::RGBA,
+        .anisotropic_filtering_level = anisotropic_filtering_level,
         .tiles = {}
     };
-    if ((size_t)tad.width * (size_t)tad.height * packed_boxes.size() > 4096 * 4096 * 20) {
+    if ((size_t)tad.width * (size_t)tad.height * packed_boxes.size() > (size_t)4096 * (size_t)4096 * (size_t)20) {
         THROW_OR_ABORT("Atlas too large");
     }
     std::map<std::string, AutoUvTile> result;

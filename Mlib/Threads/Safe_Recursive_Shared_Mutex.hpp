@@ -11,7 +11,7 @@ class SafeRecursiveSharedMutex {
 public:
     void lock() {
         {
-            std::scoped_lock lock{shared_owners_mutex_};
+            std::scoped_lock lock{ shared_owners_mutex_ };
             if (shared_owners_.contains(std::this_thread::get_id())) {
                 THROW_OR_ABORT("Mutex upgrade not supported");
             }
@@ -23,7 +23,7 @@ public:
     }
     void lock_shared() {
         if (!mutex_.is_owner()) {
-            std::scoped_lock lock{shared_owners_mutex_};
+            std::scoped_lock lock{ shared_owners_mutex_ };
             if (++shared_owners_[std::this_thread::get_id()] > 1) {
                 return;
             }
@@ -32,7 +32,7 @@ public:
     }
     void unlock_shared() {
         if (!mutex_.is_owner()) {
-            std::scoped_lock lock{shared_owners_mutex_};
+            std::scoped_lock lock{ shared_owners_mutex_ };
             auto it = shared_owners_.find(std::this_thread::get_id());
             if (it == shared_owners_.end()) {
                 THROW_OR_ABORT("Could not delete shared mutex info");

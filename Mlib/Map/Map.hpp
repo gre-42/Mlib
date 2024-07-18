@@ -11,7 +11,7 @@ class Map: public std::map<TKey, TValue> {
 public:
     Map() {}
     Map(std::initializer_list<typename std::map<TKey, TValue>::value_type> init)
-    : std::map<TKey, TValue>(init)
+        : std::map<TKey, TValue>(init)
     {}
 
     bool contains(const TKey& key) const {

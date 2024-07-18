@@ -46,7 +46,7 @@ public:
         tmp.try_emplace(k, std::forward<Args>(args)...);
         // auto rs = std::make_unique<RenderableScene>(std::forward<Args>(args)...);
         // 2. Acquire the "mutex_" and append the scene to the list of scenes.
-        std::scoped_lock lock{mutex_};
+        std::scoped_lock lock{ mutex_ };
         if (state_ != RenderableScenesState::RUNNING) {
             return { renderable_scenes_.end(), InsertionStatus::FAILURE_SHUTDOWN };
         }

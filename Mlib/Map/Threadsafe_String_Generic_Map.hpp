@@ -27,6 +27,12 @@ public:
         return res.first->second;
     }
 
+    template <class... Args>
+    auto try_emplace(std::string key, Args &&...args) {
+        std::shared_lock lock{ mutex_ };
+        return elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
+    }
+
     void insert_or_assign(const std::string& key, const mapped_type& value) {
         std::scoped_lock lock{ mutex_ };
         elements_.insert_or_assign(key, value);
@@ -87,6 +93,11 @@ public:
 
     const mapped_type& get(const std::string& name) const {
         return const_cast<ThreadsafeStringGenericMap*>(this)->get(name);
+    }
+
+    size_t size() const {
+        std::shared_lock lock{ mutex_ };
+        return elements_.size();
     }
 
     auto begin() { return elements_.begin(); }

@@ -709,7 +709,8 @@ int main(int argc, char** argv) {
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                     .max_triangle_distance = INFINITY,
                     .cull_faces = false,
-                    .mip_level_count = 8
+                    .mip_level_count = 8,
+                    .anisotropic_filtering_level = 0
                 },
                 scene_node_resources,
                 RenderingContextStack::primary_rendering_resources());
