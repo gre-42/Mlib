@@ -4,18 +4,17 @@
 using namespace Mlib;
 
 AggregateMode Mlib::aggregate_mode_from_string(const std::string& str) {
-    if (str == "none") {
-        return AggregateMode::NONE;
-    } else if (str == "once") {
-        return AggregateMode::ONCE;
-    } else if (str == "sorted") {
-        return AggregateMode::SORTED_CONTINUOUSLY;
-    } else if (str == "instances_once") {
-        return AggregateMode::INSTANCES_ONCE;
-    } else if (str == "instances_sorted") {
-        return AggregateMode::INSTANCES_SORTED_CONTINUOUSLY;
+    static const std::map<std::string, AggregateMode> m{
+        {"none", AggregateMode::NONE},
+        {"once", AggregateMode::ONCE},
+        {"sorted", AggregateMode::SORTED_CONTINUOUSLY},
+        {"instances_once", AggregateMode::INSTANCES_ONCE},
+        {"instances_sorted", AggregateMode::INSTANCES_SORTED_CONTINUOUSLY}};
+    auto it = m.find(str);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown aggregate mode: \"" + str + '"');
     }
-    THROW_OR_ABORT("Unknown aggregate mode: \"" + str + '"');
+    return it->second;
 }
 
 std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
@@ -30,7 +29,6 @@ std::string Mlib::aggregate_mode_to_string(AggregateMode aggregate_mode) {
         return "instances_once";
     case AggregateMode::INSTANCES_SORTED_CONTINUOUSLY:
         return "instances_sorted";
-    default:
-        THROW_OR_ABORT("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
     }
+    THROW_OR_ABORT("Unknown aggregate mode: \"" + std::to_string((int)aggregate_mode) + '"');
 }
