@@ -104,7 +104,7 @@ bool Scene::root_node_scheduled_for_deletion(
     const std::string& name,
     bool must_exist) const
 {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     return morn_.root_node_scheduled_for_deletion(name, must_exist);
 }
 
@@ -219,7 +219,7 @@ void Scene::stop_and_join() {
 }
 
 void Scene::wait_until_done() const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     large_aggregate_bg_worker_.wait_until_done();
     large_instances_bg_worker_.wait_until_done();
     small_aggregate_bg_worker_.wait_until_done();
@@ -228,7 +228,7 @@ void Scene::wait_until_done() const {
 
 bool Scene::contains_node(const std::string& name) const {
     delete_node_mutex_.notify_reading();
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     return nodes_.contains(name);
 }
 
@@ -280,7 +280,7 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 
 DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION loc) const {
     delete_node_mutex_.notify_reading();
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
@@ -293,7 +293,7 @@ DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION 
 
 std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::regex& regex) const {
     delete_node_mutex_.notify_reading();
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {
         if (Mlib::re::regex_match(name, regex)) {
@@ -320,7 +320,7 @@ bool Scene::visit_all(const std::function<bool(
     const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
 {
     delete_node_mutex_.notify_reading();
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     return
         root_nodes_.visit_all([&func](const auto& node) {
             return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
@@ -353,7 +353,7 @@ void Scene::render(
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
     {
-        std::shared_lock lock{mutex_};
+        std::shared_lock lock{ mutex_ };
         for (const auto& s : color_styles_) {
             color_styles.push_back(s.get());
         }
@@ -371,7 +371,7 @@ void Scene::render(
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         std::list<DanglingRef<const SceneNode>> nodes;
         {
-            std::shared_lock lock{mutex_};
+            std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
         }
         for (const auto& node : nodes) {
@@ -390,7 +390,7 @@ void Scene::render(
         {
             std::list<DanglingRef<const SceneNode>> nodes;
             {
-                std::shared_lock lock{mutex_};
+                std::shared_lock lock{ mutex_ };
                 root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                 static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
             }
@@ -401,7 +401,7 @@ void Scene::render(
         {
             std::list<DanglingRef<const SceneNode>> nodes;
             {
-                std::shared_lock lock{mutex_};
+                std::shared_lock lock{ mutex_ };
                 root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
             }
             for (const auto& node : nodes) {
@@ -425,7 +425,7 @@ void Scene::render(
             {
                 std::list<DanglingRef<const SceneNode>> nodes;
                 {
-                    std::shared_lock lock{mutex_};
+                    std::shared_lock lock{ mutex_ };
                     root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                     for (const auto& node : root_imposter_nodes_) {
                         nodes.push_back(*node);
@@ -451,7 +451,7 @@ void Scene::render(
                         return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer, task_location](){
                             std::list<DanglingRef<const SceneNode>> nodes;
                             {
-                                std::shared_lock lock{mutex_};
+                                std::shared_lock lock{ mutex_ };
                                 static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                 root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
@@ -484,7 +484,7 @@ void Scene::render(
                         {
                             std::list<DanglingRef<const SceneNode>> nodes;
                             {
-                                std::shared_lock lock{mutex_};
+                                std::shared_lock lock{ mutex_ };
                                 static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                 root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
@@ -517,7 +517,7 @@ void Scene::render(
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer, task_location](){
                             std::list<DanglingRef<const SceneNode>> nodes;
                             {
-                                std::shared_lock lock{mutex_};
+                                std::shared_lock lock{ mutex_ };
                                 static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                 root_aggregate_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                             }
@@ -568,7 +568,7 @@ void Scene::render(
                             {
                                 std::list<DanglingRef<const SceneNode>> nodes;
                                 {
-                                    std::shared_lock lock{mutex_};
+                                    std::shared_lock lock{ mutex_ };
                                     static_root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                     root_instances_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
                                 }
@@ -701,7 +701,7 @@ std::string Scene::get_temporary_instance_suffix() {
 }
 
 void Scene::print(std::ostream& ostr) const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     ostr << "Scene\n";
     ostr << morn_;
 }
@@ -748,7 +748,7 @@ DeleteNodeMutex& Scene::delete_node_mutex() const {
 }
 
 IParticleCreator& Scene::particle_instantiator(const std::string& resource_name) const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     if (particle_renderer_ == nullptr) {
         THROW_OR_ABORT("Particle renderer not set");
     }
