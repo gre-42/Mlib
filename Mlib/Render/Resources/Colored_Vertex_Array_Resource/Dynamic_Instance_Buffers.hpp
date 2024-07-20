@@ -4,6 +4,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Instance_Continuous_Texture_Layer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Position_YAngles.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Rotation_Axis.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
 #include <string>
@@ -44,6 +45,7 @@ public:
     virtual void update() override;
     virtual void bind(
         GLuint instance_attribute_index,
+        FixedArray<GLuint, 2> rotation_axes_attribute_index,
         GLuint billboard_ids_attribute_index,
         GLuint texture_layer_attribute_index) const override;
     virtual size_t tmp_num_instances() const override;
@@ -52,6 +54,7 @@ public:
 private:
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
+    DynamicRotationAxis rotation_axes_[2];
     DynamicBillboardIds billboard_ids_;
     std::optional<DynamicInstanceContinuousTextureLayer> texture_layers_;
     size_t max_num_instances_;

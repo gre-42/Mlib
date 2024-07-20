@@ -4,6 +4,9 @@
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
+
 class IInstanceBuffers {
 public:
     virtual ~IInstanceBuffers() = default;
@@ -12,6 +15,7 @@ public:
     virtual void update() = 0;
     virtual void bind(
         GLuint instance_attribute_index,
+        FixedArray<GLuint, 2> rotation_axes_attribute_index,
         GLuint billboard_ids_attribute_index,
         GLuint texture_layer_attribute_index) const = 0;
     virtual size_t tmp_num_instances() const = 0;

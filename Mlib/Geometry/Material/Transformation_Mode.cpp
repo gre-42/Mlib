@@ -4,14 +4,14 @@
 using namespace Mlib;
 
 TransformationMode Mlib::transformation_mode_from_string(const std::string& str) {
-    if (str == "all") {
-        return TransformationMode::ALL;
-    } else if (str == "position_lookat") {
-        return TransformationMode::POSITION_LOOKAT;
-    } else if (str == "position") {
-        return TransformationMode::POSITION;
-    } else if (str == "position_yangle") {
-        return TransformationMode::POSITION_YANGLE;
+    static const std::map<std::string, TransformationMode> m{
+        {"all", TransformationMode::ALL},
+        {"position_lookat", TransformationMode::POSITION_LOOKAT},
+        {"position", TransformationMode::POSITION},
+        {"position_yangle", TransformationMode::POSITION_YANGLE}};
+    auto it = m.find(str);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown transformation mode: \"" + str + '"');
     }
-    THROW_OR_ABORT("Unknown transformation mode");
+    return it->second;
 }

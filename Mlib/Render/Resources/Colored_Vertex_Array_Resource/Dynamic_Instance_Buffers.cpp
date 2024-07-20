@@ -18,6 +18,7 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     ClearOnUpdate clear_on_update)
     : position_yangles_{ max_num_instances }
     , position_{ max_num_instances }
+    , rotation_axes_{ DynamicRotationAxis{max_num_instances, 0}, DynamicRotationAxis{max_num_instances, 1} }
     , billboard_ids_{ max_num_instances, num_billboard_atlas_components }
     , max_num_instances_{ max_num_instances }
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
@@ -62,11 +63,16 @@ void DynamicInstanceBuffers::append(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.append(m);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
-               (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
+               (transformation_mode_ == TransformationMode::ALL))
     {
         position_.append(m);
     } else {
         THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
+    }
+    if (transformation_mode_ == TransformationMode::ALL) {
+        rotation_axes_[0].append(m);
+        rotation_axes_[1].append(m);
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
@@ -109,11 +115,16 @@ void DynamicInstanceBuffers::move(float dt) {
             if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
                 position_yangles_.remove(i);
             } else if ((transformation_mode_ == TransformationMode::POSITION) ||
-                       (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+                       (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
+                       (transformation_mode_ == TransformationMode::ALL))
             {
                 position_.remove(i);
             } else {
                 THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
+            }
+            if (transformation_mode_ == TransformationMode::ALL) {
+                rotation_axes_[0].remove(i);
+                rotation_axes_[1].remove(i);
             }
             billboard_ids_.remove(i);
             if (has_per_instance_continuous_texture_layer_) {
@@ -160,7 +171,8 @@ void DynamicInstanceBuffers::update()
             position_yangles_.clear();
         }
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
-               (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
+               (transformation_mode_ == TransformationMode::ALL))
     {
         position_.update();
         if (clear_on_update_ == ClearOnUpdate::YES) {
@@ -168,6 +180,14 @@ void DynamicInstanceBuffers::update()
         }
     } else {
         THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (transformation_mode_ == TransformationMode::ALL) {
+        rotation_axes_[0].update();
+        rotation_axes_[1].update();
+        if (clear_on_update_ == ClearOnUpdate::YES) {
+            rotation_axes_[0].clear();
+            rotation_axes_[1].clear();
+        }
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.update();
@@ -188,6 +208,7 @@ void DynamicInstanceBuffers::update()
 
 void DynamicInstanceBuffers::bind(
     GLuint instance_attribute_index,
+    FixedArray<GLuint, 2> rotation_axes_attribute_index,
     GLuint billboard_ids_attribute_index,
     GLuint texture_layer_attribute_index) const
 {
@@ -195,11 +216,16 @@ void DynamicInstanceBuffers::bind(
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
-               (transformation_mode_ == TransformationMode::POSITION_LOOKAT))
+               (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
+               (transformation_mode_ == TransformationMode::ALL))
     {
         position_.bind(instance_attribute_index);
     } else {
         THROW_OR_ABORT("Unsupported transformation mode for instances");
+    }
+    if (transformation_mode_ == TransformationMode::ALL) {
+        rotation_axes_[0].bind(rotation_axes_attribute_index(0));
+        rotation_axes_[1].bind(rotation_axes_attribute_index(1));
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.bind(billboard_ids_attribute_index);

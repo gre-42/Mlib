@@ -96,18 +96,20 @@ enum class ReductionTarget {
     ALPHA
 };
 
-static const size_t IDX_POSITION = 0;
-static const size_t IDX_COLOR = 1;
-static const size_t IDX_UV = 2;
-static const size_t IDX_NORMAL = 3;
-static const size_t IDX_TANGENT = 4;
-static const size_t IDX_INSTANCE_ATTRS = 5;
-static const size_t IDX_BILLBOARD_IDS = 6;
-static const size_t IDX_BONE_INDICES = 7;
-static const size_t IDX_BONE_WEIGHTS = 8;
-static const size_t IDX_TEXTURE_LAYER = 9;
-static const size_t IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 10;
-static const size_t IDX_INTERIOR_MAPPING_MULTIPLIER = 11;
+static const GLuint IDX_POSITION = 0;
+static const GLuint IDX_COLOR = 1;
+static const GLuint IDX_UV = 2;
+static const GLuint IDX_NORMAL = 3;
+static const GLuint IDX_TANGENT = 4;
+static const GLuint IDX_INSTANCE_ATTRS = 5;
+static const GLuint IDX_ROTATION_AXES_0 = 6;
+static const GLuint IDX_ROTATION_AXES_1 = 7;
+static const GLuint IDX_BILLBOARD_IDS = 8;
+static const GLuint IDX_BONE_INDICES = 9;
+static const GLuint IDX_BONE_WEIGHTS = 10;
+static const GLuint IDX_TEXTURE_LAYER = 11;
+static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 12;
+static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 13;
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
@@ -131,6 +133,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_instances,
     bool has_lookat,
     bool has_yangle,
+    bool has_rotation_axes,
     bool has_uv_offset_u,
     size_t nbones,
     bool has_continuous_vertex_texture_layer,
@@ -161,6 +164,10 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec4 instancePosition;" << std::endl;
         } else {
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
+        }
+        if (has_rotation_axes) {
+            sstr << "layout (location=" << IDX_ROTATION_AXES_0 << ") in vec3 rotationAxisX;" << std::endl;
+            sstr << "layout (location=" << IDX_ROTATION_AXES_1 << ") in vec3 rotationAxisY;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
@@ -296,21 +303,27 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_yangle && !has_instances) {
         THROW_OR_ABORT("has_yangle requires has_instances");
     }
-    if (has_lookat || has_yangle) {
-        if (has_yangle) {
-            sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
-        } else if (orthographic) {
-            sstr << "    vec2 dz_xz = normalize(viewDir.xz);" << std::endl;
-        } else {
-            sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
-        }
-        sstr << "    vec3 dz = vec3(dz_xz.x, 0.0, dz_xz.y);" << std::endl;
-        sstr << "    vec3 dy = vec3(0.0, 1.0, 0.0);" << std::endl;
-        sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
+    if (has_lookat || has_yangle || has_rotation_axes) {
         sstr << "    mat3 lookat;" << std::endl;
-        sstr << "    lookat[0] = dx;" << std::endl;
-        sstr << "    lookat[1] = dy;" << std::endl;
-        sstr << "    lookat[2] = dz;" << std::endl;
+        if (has_rotation_axes) {
+            sstr << "    lookat[0] = rotationAxisX;" << std::endl;
+            sstr << "    lookat[1] = rotationAxisY;" << std::endl;
+            sstr << "    lookat[2] = cross(rotationAxisX, rotationAxisY);" << std::endl;
+        } else {
+            if (has_yangle) {
+                sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
+            } else if (orthographic) {
+                sstr << "    vec2 dz_xz = normalize(viewDir.xz);" << std::endl;
+            } else {
+                sstr << "    vec2 dz_xz = normalize(viewPos.xz - instancePosition.xz);" << std::endl;
+            }
+            sstr << "    vec3 dz = vec3(dz_xz.x, 0.0, dz_xz.y);" << std::endl;
+            sstr << "    vec3 dy = vec3(0.0, 1.0, 0.0);" << std::endl;
+            sstr << "    vec3 dx = normalize(cross(dy, dz));" << std::endl;
+            sstr << "    lookat[0] = dx;" << std::endl;
+            sstr << "    lookat[1] = dy;" << std::endl;
+            sstr << "    lookat[2] = dz;" << std::endl;
+        }
         sstr << "    vPosInstance = lookat * vPosInstance;" << std::endl;
         if (has_instances) {
             sstr << "    vPosInstance += instancePosition.xyz;" << std::endl;
@@ -1632,6 +1645,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_instances,
         id.has_lookat,
         id.has_yangle,
+        id.has_rotation_axes,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
         id.has_continuous_texture_layer,
@@ -1956,6 +1970,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(
             IDX_INSTANCE_ATTRS,
+            { IDX_ROTATION_AXES_0, IDX_ROTATION_AXES_1 },
             IDX_BILLBOARD_IDS,
             IDX_TEXTURE_LAYER);
     }
