@@ -38,7 +38,7 @@ std::string asciiify(const T& v) {
     return escape_non_ascii(std::string(reinterpret_cast<const char*>(&v), sizeof(T)));
 }
 
-#define ALIGN16(x) (((x) + 0xF) & ~0xF)
+#define ALIGN16(x) (((x) + 0xFu) & ~0xFu)
 
 std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     std::istream& istr,

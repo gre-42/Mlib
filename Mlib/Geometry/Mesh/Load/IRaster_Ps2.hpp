@@ -7,7 +7,7 @@ namespace Dff {
 class Palette;
 
 namespace Ps2Flags {
-	enum Flags {
+	enum Flags: uint32_t {
 		NEWSTYLE  = 0x1,	// has GIF tags and transfer DMA chain
 		SWIZZLED8 = 0x2,
 		SWIZZLED4 = 0x4

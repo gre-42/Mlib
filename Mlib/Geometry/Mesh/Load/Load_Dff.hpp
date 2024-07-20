@@ -112,7 +112,7 @@ namespace Raster
 {
     enum { FLIPWAITVSYNCH = 1 };
 
-    enum Format {
+    enum Format: uint32_t {
         DEFAULT    = 0,
         C1555      = 0x0100,
         C565       = 0x0200,
@@ -129,7 +129,7 @@ namespace Raster
         PAL4       = 0x4000,
         MIPMAP     = 0x8000
     };
-    enum Type {
+    enum Type: uint32_t {
         NORMAL        = 0x00,
         ZBUFFER       = 0x01,
         CAMERA        = 0x02,
@@ -137,14 +137,14 @@ namespace Raster
         CAMERATEXTURE = 0x05,
         DONTALLOCATE  = 0x80
     };
-    enum LockMode {
+    enum LockMode: uint32_t {
         LOCKWRITE       = 1,
         LOCKREAD        = 2,
         LOCKNOFETCH     = 4,    // don't fetch pixel data
         LOCKRAW         = 8,
     };
 
-    enum
+    enum: uint32_t
     {
         // from RW
         PRIVATELOCK_READ        = 0x02,
@@ -215,16 +215,16 @@ struct MaterialList
 class Geometry {
 public:
     Geometry(
-        int32_t numVerts,
-        int32_t numTris,
+        uint32_t numVerts,
+        uint32_t numTris,
         uint32_t flags);
 
     enum { ID = 8 };
     uint32_t flags;
-    int32_t numTriangles;
-    int32_t numVertices;
-    int32_t numMorphTargets;
-    int32_t numTexCoordSets;
+    uint32_t numTriangles;
+    uint32_t numVertices;
+    uint32_t numMorphTargets;
+    uint32_t numTexCoordSets;
 
     UUVector<Triangle> triangles;
     UUVector<RGBA> colors;
@@ -447,6 +447,7 @@ bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint32_t *ve
 class IPlugin {
 public:
     uint32_t id;
+    virtual ~IPlugin() = default;
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Material& material) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, const std::shared_ptr<Texture>& texture) { return false; }
     virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Frame& frame) { return false; }

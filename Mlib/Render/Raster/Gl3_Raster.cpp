@@ -200,11 +200,11 @@ void Gl3Raster::allocate_dxt(const RasterConfig& cfg) {
     CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
     {
         BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
-        CHK(glTexImage2D(GL_TEXTURE_2D, 0, native_internal_format_,
-            width_, height_,
+        CHK(glTexImage2D(GL_TEXTURE_2D, 0, integral_cast<GLint>(native_internal_format_),
+            integral_cast<GLsizei>(width_), integral_cast<GLsizei>(height_),
             0, native_format_, native_type_, nullptr));
         // TODO: allocate other levels...probably
-        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, native_num_levels_ - 1));
+        CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(native_num_levels_ - 1)));
         // native_filterMode = 0;
         // native_addressU = 0;
         // native_addressV = 0;
@@ -241,19 +241,19 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                 } else {
                     // GLES is losing here
                     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
-                    CHK(glGetCompressedTexImage(GL_TEXTURE_2D, level, pixels_.data()));
+                    CHK(glGetCompressedTexImage(GL_TEXTURE_2D, integral_cast<GLint>(level), pixels_.data()));
                 }
             } else if (gl3Caps.gles) {
                 if (native_format_ != GL_RGBA) {
                     THROW_OR_ABORT("Unexpected native format");
                 }
                 FrameBufferStorage2D fbs{ native_texture_id_->handle<GLuint>(), 0 };
-                CHK(glReadPixels(0, 0, level_meta_data.width, level_meta_data.height, native_format_, native_type_, pixels_.data()));
+                CHK(glReadPixels(0, 0, integral_cast<GLsizei>(level_meta_data.width), integral_cast<GLsizei>(level_meta_data.height), native_format_, native_type_, pixels_.data()));
                 //e = glGetError(); printf("GL err4 %x (%x)\n", e, native_format);
             } else {
                 BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
                 CHK(glPixelStorei(GL_PACK_ALIGNMENT, 1));
-                CHK(glGetTexImage(GL_TEXTURE_2D, level, native_format_, native_type_, pixels_.data()));
+                CHK(glGetTexImage(GL_TEXTURE_2D, integral_cast<GLint>(level), native_format_, native_type_, pixels_.data()));
             }
         }
 
@@ -271,7 +271,7 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
         auto alloc_sz = height_ * stride_;
         pixels_.resize(alloc_sz);
         CHK(glReadBuffer(GL_BACK));
-        CHK(glReadPixels(0, 0, width_, height_, GL_RGB, GL_UNSIGNED_BYTE, pixels_.data()));
+        CHK(glReadPixels(0, 0, integral_cast<GLint>(width_), integral_cast<GLint>(height_), GL_RGB, GL_UNSIGNED_BYTE, pixels_.data()));
 
         private_flags_ = lock_mode;
         break;
@@ -302,9 +302,14 @@ void Gl3Raster::unlock()
             const auto& level_meta_data = mipmap_level(level);
             BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
             if (native_is_compressed_) {
-                CHK(glCompressedTexImage2D(GL_TEXTURE_2D, level, native_internal_format_,
-                    level_meta_data.width, level_meta_data.height, 0,
-                    level_meta_data.size(),
+                CHK(glCompressedTexImage2D(
+                    GL_TEXTURE_2D,
+                    integral_cast<GLint>(level),
+                    integral_cast<GLenum>(native_internal_format_),
+                    integral_cast<GLsizei>(level_meta_data.width),
+                    integral_cast<GLsizei>(level_meta_data.height),
+                    0,
+                    integral_cast<GLsizei>(level_meta_data.size()),
                     pixels_.data()));
                 if (!levels_.empty()) {
                     if (level >= levels_.size()) {
@@ -315,9 +320,16 @@ void Gl3Raster::unlock()
                 }
             } else {
                 CHK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-                CHK(glTexImage2D(GL_TEXTURE_2D, level, native_internal_format_,
-                    level_meta_data.width, level_meta_data.height,
-                    0, native_format_, native_type_, pixels_.data()));
+                CHK(glTexImage2D(
+                    GL_TEXTURE_2D,
+                    integral_cast<GLint>(level),
+                    integral_cast<GLint>(native_internal_format_),
+                    integral_cast<GLsizei>(level_meta_data.width),
+                    integral_cast<GLsizei>(level_meta_data.height),
+                    0,
+                    native_format_,
+                    native_type_,
+                    pixels_.data()));
             }
             if (level == 0 && native_autogen_mipmap_)
                 CHK(glGenerateMipmap(GL_TEXTURE_2D));
@@ -380,8 +392,8 @@ void Gl3Raster::create_texture()
     stride_ = width_ * native_bpp_;
 
     if (format_ & Raster::MIPMAP) {
-        int w = width_;
-        int h = height_;
+        uint32_t w = width_;
+        uint32_t h = height_;
         native_num_levels_ = 1;
         while (w != 1 || h != 1) {
             native_num_levels_++;
@@ -399,11 +411,18 @@ void Gl3Raster::create_texture()
     native_texture_id_ = std::make_unique<Gl3TextureHandle>();
     CHK(glGenTextures(1, &native_texture_id_->handle<GLuint>()));
     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
-    CHK(glTexImage2D(GL_TEXTURE_2D, 0, native_internal_format_,
-        width_, height_,
-        0, native_format_, native_type_, nullptr));
+    CHK(glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        integral_cast<GLint>(native_internal_format_),
+        integral_cast<GLsizei>(width_),
+        integral_cast<GLsizei>(height_),
+        0,
+        native_format_,
+        native_type_,
+        nullptr));
     // TODO: allocate other levels...probably
-    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, native_num_levels_ - 1));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, integral_cast<GLint>(native_num_levels_ - 1)));
 }
 
 Gl3Raster::Gl3Raster(

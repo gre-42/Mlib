@@ -58,16 +58,14 @@ static void transferMinSize(uint32_t psm, uint32_t flags, uint32_t *minw, uint32
 }
 
 #define ALIGN(x,a) (((x) + (a)-1) & ~((a)-1))
-#define ALIGN16(x) (((x) + 0xF) & ~0xF)
-#define ALIGN64(x) (((x) + 0x3F) & ~0x3F)
+#define ALIGN16(x) (((x) + 0xFu) & ~0xFu)
+#define ALIGN64(x) (((x) + 0x3Fu) & ~0x3Fu)
 #define NSIZE(dim,pagedim) (((dim) + (pagedim)-1)/(pagedim))
 
 // TODO: these depend on video mode, set in deviceSystem!
 static const uint32_t cameraFormat = Raster::C8888;
 static const uint32_t cameraDepth = 32;
 static const uint32_t cameraZDepth = 16;
-
-static const uint32_t maxMipLevels = 7;
 
 static void get_raster_format(
     uint32_t& depth,
@@ -260,8 +258,8 @@ static uint32_t swizzle(uint32_t x, uint32_t y, uint32_t logw)
 
     uint32_t nx, ny, n;
     x ^= (Y(1)^Y(2))<<2;
-    nx = (x&7) | ((x>>1)&~7);
-    ny = (y&1) | ((y>>1)&~1);
+    nx = (x&7u) | ((x>>1)&~7u);
+    ny = (y&1u) | ((y>>1)&~1u);
     n = Y(1) | X(3)<<1;
     return n | nx<<2 | ny<<(logw-1+2);
 }

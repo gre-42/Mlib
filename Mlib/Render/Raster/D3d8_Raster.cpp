@@ -250,9 +250,7 @@ D3d8Raster::D3d8Raster(
 	bool has_alpha,
 	const RasterConfig& cfg)
 	: format_{ format }
-	, compression_{ compression }
 	, num_levels_{ num_levels }
-	, has_alpha_{ has_alpha }
 	, width_{ width }
 	, height_{ height }
 	, depth_{ depth }
@@ -288,8 +286,8 @@ Image D3d8Raster::to_image()
 	}
 
 	if (custom_format_ != 0) {
-		int w = width_;
-		int h = height_;
+		uint32_t w = width_;
+		uint32_t h = height_;
 		// pixels are in the upper right corner
 		if (w < 4) w = 4;
 		if (h < 4) h = 4;

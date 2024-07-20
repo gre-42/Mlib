@@ -8,8 +8,6 @@ Gl3TextureHandle::Gl3TextureHandle()
 
 Gl3TextureHandle::~Gl3TextureHandle() = default;
 
-Gl3TextureHandle::~Gl3TextureHandle() = default;
-
 uint32_t Gl3TextureHandle::handle32() const {
 	return handle_;
 }

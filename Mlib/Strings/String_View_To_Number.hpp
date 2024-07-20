@@ -31,7 +31,7 @@ template <> inline uint64_t safe_sto<uint64_t>(const std::string_view& s) { retu
 template <> inline bool safe_sto<bool>(const std::string_view& s) { return safe_stob(s); }
 
 template <class T>
-static T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
+T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
     T res;
     auto end = s.data() + s.size();
     auto [ptr, ec] = std::from_chars(s.data(), end, res);
@@ -44,7 +44,7 @@ static T safe_stox(const std::string_view& s, const char* msg = "safe_stox") {
 
 #ifdef __clang__
 template <>
-double safe_stox<double>(const std::string_view& s, const char* msg) {
+inline double safe_stox<double>(const std::string_view& s, const char* msg) {
     double res;
     auto end = s.data() + s.size();
     auto ptr = fast_double_parser::parse_number(s.data(), end, &res);
@@ -56,7 +56,7 @@ double safe_stox<double>(const std::string_view& s, const char* msg) {
 }
 
 template <>
-float safe_stox<float>(const std::string_view& s, const char* msg) {
+inline float safe_stox<float>(const std::string_view& s, const char* msg) {
     return (float)safe_stox<double>(s, msg);
 }
 #endif

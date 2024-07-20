@@ -50,9 +50,6 @@ private:
 	uint32_t stride_;
 	uint32_t pixel_size_;
 	uint8_t* pixels_;
-	uint32_t palette_width_;
-	uint32_t palette_height_;
-	uint32_t palette_depth_;
 	uint32_t total_size_;
 	uint32_t native_flags_;
 	uint32_t private_flags_;

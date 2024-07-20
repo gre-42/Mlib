@@ -27,6 +27,7 @@ public:
 	virtual Image to_image() override;
 	virtual uint32_t width() const override;
 	virtual uint32_t height() const override;
+	virtual uint32_t type() const override;
 	virtual const MipmapLevel& mipmap_level(uint32_t level) const override;
 	virtual uint32_t num_levels() const override;
 	virtual uint8_t* lock(uint32_t level, uint32_t lock_mode) override;
@@ -35,7 +36,6 @@ public:
 private:
 	void allocate_dxt(const RasterConfig& cfg);
 	void create_texture();
-	uint32_t type() const;
 	uint32_t flags() const;
 	uint32_t format() const;
 	uint32_t num_levels_;

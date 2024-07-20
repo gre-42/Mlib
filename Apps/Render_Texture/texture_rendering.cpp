@@ -30,9 +30,9 @@ using namespace Mlib;
 int main(int argc, char** argv)
 {
     ArgParser parser(
-        "Usage: render_texture {<texture>, --kn5 container.kn5 --filter <regex> [--size <n>] --mip_level_count <n> --mip_level <n> --atlas_layer <n> [--rerender_atlas] [--texname]}",
+        "Usage: render_texture {<texture>, --kn5 container.kn5 --filter <regex> [--size <n>] --mip_level_count <n> --mip_level <n> [--aniso <n>] --atlas_layer <n> [--rerender_atlas] [--texname]}",
         {"--rerender_atlas"},
-        {"--kn5", "--txd", "--filter", "--size", "--mip_level_count", "--mip_level", "--atlas_layer", "--texname"});
+        {"--kn5", "--txd", "--filter", "--size", "--mip_level_count", "--mip_level", "--aniso", "--atlas_layer", "--texname"});
 
     try {
         auto parsed = parser.parsed(argc, argv);
@@ -142,6 +142,7 @@ int main(int argc, char** argv)
                 "__texture__",
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
+                safe_stou(parsed.named_value("--aniso", "0")),
                 safe_stoi(parsed.named_value("--size", "4096")),
                 &atlas);
             for (const auto& [i, t] : enumerate(atlas.tiles)) {

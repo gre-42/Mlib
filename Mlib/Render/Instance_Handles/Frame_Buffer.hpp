@@ -74,8 +74,8 @@ public:
     void bind() override;
     void unbind() override;
     void deallocate();
-    GLuint texture_color();
-    GLuint texture_depth();
+    GLuint texture_color() const;
+    GLuint texture_depth() const;
     StbInfo<uint8_t> color_to_stb_image() const;
 private:
     FrameBufferStorage fb_;

@@ -248,7 +248,7 @@ bool FrameBuffer::is_configured() const {
     return fb_.is_configured();
 }
 
-void FrameBuffer::bind() const {
+void FrameBuffer::bind() {
     if (config_.nsamples_msaa == 1) {
         fb_.bind();
     } else {
@@ -256,7 +256,7 @@ void FrameBuffer::bind() const {
     }
 }
 
-void FrameBuffer::unbind() const {
+void FrameBuffer::unbind() {
     if (config_.nsamples_msaa == 1) {
         fb_.unbind();
     } else {

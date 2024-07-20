@@ -35,7 +35,7 @@ static uint32_t library_id_unpack_version(uint32_t libid)
     }
 }
 
-static int library_id_unpack_build(uint32_t libid)
+static uint32_t library_id_unpack_build(uint32_t libid)
 {
     if (libid & 0xFFFF0000) {
         return libid & 0xFFFF;
@@ -411,8 +411,8 @@ void Image::remove_mask()
 }
 
 struct ChunkHeaderBuf {
-    int32_t type;
-    int32_t size;
+    uint32_t type;
+    uint32_t size;
     uint32_t id;
 };
 static_assert(sizeof(ChunkHeaderBuf) == 12);
@@ -574,18 +574,18 @@ static std::vector<Frame> read_frame_list(
 struct GeoStreamData
 {
     uint32_t flags;
-    int32_t numTriangles;
-    int32_t numVertices;
-    int32_t numMorphTargets;
+    uint32_t numTriangles;
+    uint32_t numVertices;
+    uint32_t numMorphTargets;
 };
 static_assert(sizeof(GeoStreamData) == 16);
 
 struct MatStreamData
 {
-    int32_t flags;    // unused according to RW
+    uint32_t flags;    // unused according to RW
     RGBA color = uninitialized;
-    int32_t unused;
-    int32_t textured;
+    uint32_t unused;
+    uint32_t textured;
 };
 static_assert(sizeof(MatStreamData) == 16);
 
@@ -712,7 +712,7 @@ static MaterialList read_material_list(
     if( !find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
         THROW_OR_ABORT("Could not find struct");
     }
-    int32_t num_mat = read_binary<int32_t>(istr, "num mat", VERBOSITY);
+    uint32_t num_mat = read_binary<uint32_t>(istr, "num mat", VERBOSITY);
     if(num_mat == 0)
         return matlist;
     if (num_mat > 1000) {
@@ -721,10 +721,10 @@ static MaterialList read_material_list(
     matlist.materials.resize(num_mat);
     matlist.space = num_mat;
 
-    std::vector<int32_t> indices(num_mat);
+    std::vector<uint32_t> indices(num_mat);
     read_vector(istr, indices, "indices", VERBOSITY);
 
-    for (int32_t i = 0; i < num_mat; i++){
+    for (uint32_t i = 0; i < num_mat; i++){
         if (indices[i] >= 0) {
             if (indices[i] >= i) {
                 THROW_OR_ABORT("Detected material forward reference");
@@ -741,8 +741,8 @@ static MaterialList read_material_list(
 }
 
 Geometry::Geometry(
-    int32_t numVerts,
-    int32_t numTris,
+    uint32_t numVerts,
+    uint32_t numTris,
     uint32_t flags)
 {
     this->flags = flags & 0xFF00FFFF;
@@ -803,10 +803,10 @@ static std::shared_ptr<Geometry> read_geometry(
         if (geo->flags & Geometry::PRELIT) {
             read_vector(istr, geo->colors, "vertices", VERBOSITY);
         }
-        for (int32_t i = 0; i < geo->numTexCoordSets; i++) {
+        for (uint32_t i = 0; i < geo->numTexCoordSets; i++) {
             read_vector(istr, geo->tex_coords[i], "texture coordinates", VERBOSITY);
         }
-        for(int32_t i = 0; i < geo->numTriangles; i++){
+        for(uint32_t i = 0; i < geo->numTriangles; i++){
             auto tribuf = read_binary<UFixedArray<uint32_t, 2>>(istr, "triangle buffer", VERBOSITY);
             geo->triangles[i].v[0]  = tribuf(0) >> 16;
             geo->triangles[i].v[1]  = tribuf(0);
@@ -977,15 +977,15 @@ static Clump read_clump(std::istream& istr)
     if (length < 4) {
         THROW_OR_ABORT("Struct size too small");
     }
-    int32_t numAtomics = read_binary<int32_t>(istr, "number of atomics", VERBOSITY);
-    int32_t numLights = 0;
-    int32_t numCameras = 0;
+    uint32_t numAtomics = read_binary<uint32_t>(istr, "number of atomics", VERBOSITY);
+    uint32_t numLights = 0;
+    uint32_t numCameras = 0;
     if (version > 0x33000) {
         if (length != 12) {
             THROW_OR_ABORT("Struct size is not 12");
         }
-        numLights = read_binary<int32_t>(istr, "number of lights", VERBOSITY);
-        numCameras = read_binary<int32_t>(istr, "number of cameras", VERBOSITY);
+        numLights = read_binary<uint32_t>(istr, "number of lights", VERBOSITY);
+        numCameras = read_binary<uint32_t>(istr, "number of cameras", VERBOSITY);
     }
 
     // Frame list
