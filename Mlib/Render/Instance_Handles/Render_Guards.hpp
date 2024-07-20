@@ -10,11 +10,11 @@ class RenderToFrameBufferGuard {
     RenderToFrameBufferGuard(const RenderToFrameBufferGuard&) = delete;
     RenderToFrameBufferGuard& operator = (const RenderToFrameBufferGuard&) = delete;
 public:
-    explicit RenderToFrameBufferGuard(const IFrameBuffer& fb);
+    explicit RenderToFrameBufferGuard(IFrameBuffer& fb);
     ~RenderToFrameBufferGuard();
 private:
-    const IFrameBuffer* previous_frame_buffer_;
-    static const IFrameBuffer* last_frame_buffer_;
+    IFrameBuffer* previous_frame_buffer_;
+    static IFrameBuffer* last_frame_buffer_;
 };
 
 class RenderToScreenGuard {

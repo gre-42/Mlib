@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 ArrayFrameBufferStorage::ArrayFrameBufferStorage(GLuint texture_color, GLint level, GLint layer)
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {
     allocate(texture_color, level, layer);
 }
@@ -42,10 +42,10 @@ bool ArrayFrameBufferStorage::is_configured() const {
     return true;
 }
 
-void ArrayFrameBufferStorage::bind() const {
+void ArrayFrameBufferStorage::bind() {
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void ArrayFrameBufferStorage::unbind() const {
+void ArrayFrameBufferStorage::unbind() {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }

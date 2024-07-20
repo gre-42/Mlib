@@ -126,13 +126,13 @@ PostProcessingLogic::PostProcessingLogic(
     bool depth_fog,
     bool low_pass,
     bool high_pass)
-: child_logic_{child_logic},
-  background_color_{background_color},
-  rendering_resources_{RenderingContextStack::primary_rendering_resources()},
-  initialized_{false},
-  depth_fog_{depth_fog},
-  low_pass_{low_pass},
-  high_pass_{high_pass}
+    : child_logic_{ child_logic }
+    , background_color_{ background_color }
+    , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
+    , initialized_{ false }
+    , depth_fog_{ depth_fog }
+    , low_pass_{ low_pass }
+    , high_pass_{ high_pass }
 {}
 
 PostProcessingLogic::~PostProcessingLogic() {

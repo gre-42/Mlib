@@ -42,10 +42,10 @@ bool FrameBufferStorage2D::is_configured() const {
     return true;
 }
 
-void FrameBufferStorage2D::bind() const {
+void FrameBufferStorage2D::bind() {
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void FrameBufferStorage2D::unbind() const {
+void FrameBufferStorage2D::unbind() {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }

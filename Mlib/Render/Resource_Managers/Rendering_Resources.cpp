@@ -496,32 +496,32 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     std::string indent = std::string(indentation, ' ');
     ostr << indent << "Name: " << name_ << '\n';
     ostr << indent << "Texture descriptors\n";
-    for (const auto& x : texture_descriptors_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : texture_descriptors_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "Blend map textures\n";
-    for (const auto& x : blend_map_textures_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : blend_map_textures_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "Textures\n";
-    for (const auto& x : textures_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : textures_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "Aliases\n";
-    for (const auto& x : aliases_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : aliases_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "vps\n";
-    for (const auto& x : vps_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : vps_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "Discreteness\n";
-    for (const auto& x : discreteness_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : discreteness_) {
+        ostr << indent << "  " << n << '\n';
     }
     ostr << indent << "Texture wrap\n";
-    for (const auto& x : texture_wrap_) {
-        ostr << indent << "  " << x.first << '\n';
+    for (const auto& [n, _] : texture_wrap_) {
+        ostr << indent << "  " << n << '\n';
     }
 }
 
@@ -1474,12 +1474,18 @@ void RenderingResources::delete_texture(const ColormapWithModifiers& name, Delet
     LOG_FUNCTION("RenderingResources::delete_texture " + name.filename);
     auto it = textures_.try_extract(name);
     if (it.empty()) {
-        if (deletion_failure_mode == DeletionFailureMode::WARN) {
+        switch (deletion_failure_mode) {
+        case DeletionFailureMode::IGNORE:
+            // Do nothing
+            return;
+        case DeletionFailureMode::WARN:
             lwarn() << "Could not delete texture " << name.filename;
-        } else {
+            return;
+        case DeletionFailureMode::ABORT:
             verbose_abort("Could not delete texture " + name.filename);
         }
-    } else if (it.mapped().owner == ResourceOwner::CONTAINER) {
+        verbose_abort("Unknown deletion failure mode: \"" + std::to_string((int)deletion_failure_mode + '"'));
+    } else {
         try_delete_texture(it.mapped().handle);
     }
 }

@@ -54,7 +54,7 @@ static void add_resource(
             });
     } else if (extension == ".txd") {
         auto& res = RenderingContextStack::primary_rendering_resources();
-        append_render_allocator([img, name, &res](){
+        res.set_textures_lazy([img, name, &res](){
             auto txd = Dff::read_txd(
                 *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION),
                 Dff::RasterFactory{},

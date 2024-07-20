@@ -7,10 +7,6 @@ namespace Mlib {
 
 class ITextureHandle {
 public:
-	using handle_type = uint64_t;
-	inline ITextureHandle()
-		: handle_{ (handle_type)-1 }
-	{}
 	virtual ~ITextureHandle() = default;
 	template <class T>
 	inline T handle() const {
@@ -36,8 +32,6 @@ public:
 	virtual uint64_t handle64() const = 0;
 	virtual uint32_t& handle32() = 0;
 	virtual uint64_t& handle64() = 0;
-private:
-	handle_type handle_;
 };
 
 }

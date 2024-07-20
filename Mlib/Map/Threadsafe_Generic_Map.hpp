@@ -21,6 +21,15 @@ public:
     }
     ~ThreadsafeGenericMap() = default;
 
+    ThreadsafeGenericMap& operator = (ThreadsafeGenericMap&& other)
+    {
+        std::scoped_lock lock{ mutex_, other.mutex_ };
+        elements_ = std::move(other.elements_);
+        value_name_ = std::move(other.value_name_);
+        key_to_string_ = std::move(other.key_to_string_);
+        return *this;
+    }
+
     template <class... Args>
     mapped_type& add(key_type key, Args &&...args) {
         std::scoped_lock lock{ mutex_ };
@@ -30,6 +39,15 @@ public:
                 "\" already exists");
         }
         return res.first->second;
+    }
+
+    mapped_type& add_node(node_type&& node) {
+        std::shared_lock lock{ mutex_ };
+        auto it = elements_.insert(std::move(node));
+        if (!it.inserted) {
+            THROW_OR_ABORT(value_name_ + " with name \"" + key_to_string_(node.key()) + "\" already exists");
+        }
+        return it.position->second;
     }
 
     void insert_or_assign(const key_type& key, const mapped_type& value) {
@@ -68,7 +86,7 @@ public:
     }
 
     node_type extract(const key_type& key) {
-        std::shared_lock lock{ mutex_ };
+        std::scoped_lock lock{ mutex_ };
         auto res = elements_.extract(key);
         if (res.empty()) {
             THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
@@ -77,7 +95,7 @@ public:
     }
 
     node_type try_extract(const key_type& key) {
-        std::shared_lock lock{ mutex_ };
+        std::scoped_lock lock{ mutex_ };
         return elements_.extract(key);
     }
 

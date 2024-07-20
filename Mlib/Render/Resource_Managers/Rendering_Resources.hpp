@@ -107,6 +107,7 @@ struct CubemapDescriptor {
 };
 
 enum class DeletionFailureMode {
+    IGNORE,
     WARN,
     ABORT
 };

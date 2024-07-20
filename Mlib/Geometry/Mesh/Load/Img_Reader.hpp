@@ -13,7 +13,7 @@ struct EntryInfo {
 	std::streamsize size;
 };
 
-class ImgReader: public IIStreamDictionary, public DanglingBaseClass {
+class ImgReader: public IIStreamDictionary, public virtual DanglingBaseClass {
 	ImgReader(const ImgReader&) = delete;
 	ImgReader& operator = (ImgReader&& other) = delete;
 public:

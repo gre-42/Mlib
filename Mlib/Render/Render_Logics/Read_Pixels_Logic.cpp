@@ -14,7 +14,7 @@
 using namespace Mlib;
 
 ReadPixelsLogic::ReadPixelsLogic(RenderLogic& child_logic)
-: child_logic_{child_logic}
+    : child_logic_{ child_logic }
 {}
 
 ReadPixelsLogic::~ReadPixelsLogic() {
@@ -37,7 +37,7 @@ void ReadPixelsLogic::render(
             if (o.rgb.initialized() || o.depth.initialized()) {
                 THROW_OR_ABORT("ReadPixelsLogic::render detected multiple rendering calls");
             }
-            ViewportGuard vg{o.width, o.height};
+            ViewportGuard vg{ o.width, o.height };
             FrameBuffer fbs;
             // Not setting MSAA
             fbs.configure({
@@ -47,7 +47,7 @@ void ReadPixelsLogic::render(
                 .depth_kind = o.depth_kind
             });
             {
-                RenderToFrameBufferGuard rfg{fbs};
+                RenderToFrameBufferGuard rfg{ fbs };
                 child_logic_.render(
                     LayoutConstraintParameters{
                         .dpi = o.dpi,

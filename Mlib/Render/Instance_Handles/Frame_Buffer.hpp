@@ -71,11 +71,11 @@ public:
     virtual ~FrameBuffer();
     void configure(const FrameBufferConfig& config);
     bool is_configured() const override;
-    void bind() const override;
-    void unbind() const override;
+    void bind() override;
+    void unbind() override;
     void deallocate();
-    GLuint texture_color() const;
-    GLuint texture_depth() const;
+    GLuint texture_color();
+    GLuint texture_depth();
     StbInfo<uint8_t> color_to_stb_image() const;
 private:
     FrameBufferStorage fb_;

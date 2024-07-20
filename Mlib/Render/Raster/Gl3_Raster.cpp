@@ -460,6 +460,7 @@ Gl3Raster::Gl3Raster(
     }
 
     if (compression != 0) {
+        verbose_abort("This code is not yet fully implemented, it produces a resource leak by discarding the previously allocated texture");
         allocate_dxt(cfg);
     }
     levels_ = MipmapLevel::compute(

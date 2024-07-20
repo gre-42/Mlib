@@ -10,16 +10,15 @@ namespace Mlib {
 class SafeRecursiveSharedMutex {
 public:
     void lock() {
-        {
-            std::scoped_lock lock{ shared_owners_mutex_ };
-            if (shared_owners_.contains(std::this_thread::get_id())) {
-                THROW_OR_ABORT("Mutex upgrade not supported");
-            }
-        }
+        throw_if_mutex_upgrade();
         mutex_.lock();
     }
     void unlock() {
         mutex_.unlock();
+    }
+    bool try_lock() {
+        throw_if_mutex_upgrade();
+        return mutex_.try_lock();
     }
     void lock_shared() {
         if (!mutex_.is_owner()) {
@@ -47,6 +46,12 @@ public:
         mutex_.unlock_shared();
     }
 private:
+    void throw_if_mutex_upgrade() {
+        std::scoped_lock lock{ shared_owners_mutex_ };
+        if (shared_owners_.contains(std::this_thread::get_id())) {
+            THROW_OR_ABORT("Mutex upgrade not supported");
+        }
+    }
     RecursiveSharedMutex mutex_;
     std::mutex shared_owners_mutex_;
     std::unordered_map<std::thread::id, uint32_t> shared_owners_;

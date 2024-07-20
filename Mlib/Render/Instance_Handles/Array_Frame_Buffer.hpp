@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
-#include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Instance_Handles/IFrame_Buffer.hpp>
 
 namespace Mlib {
 
@@ -15,8 +15,8 @@ private:
     void allocate(GLuint texture_color, GLint level, GLint layer);
     void deallocate();
     bool is_configured() const override;
-    void bind() const override;
-    void unbind() const override;
+    void bind() override;
+    void unbind() override;
     GLuint frame_buffer_ = (GLuint)-1;
     DeallocationToken deallocation_token_;
 };
