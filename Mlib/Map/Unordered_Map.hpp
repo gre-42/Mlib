@@ -1,9 +1,9 @@
 #include <Mlib/Map/Generic_Map.hpp>
-#include <map>
+#include <unordered_map>
 
 namespace Mlib {
 
 template <class TKey, class TValue>
-using Map = GenericMap<std::map<TKey, TValue>>;
+using UnorderedMap = GenericMap<std::unordered_map<TKey, TValue>>;
 
 }
