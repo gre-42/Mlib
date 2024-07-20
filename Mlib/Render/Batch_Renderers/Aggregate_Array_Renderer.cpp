@@ -209,7 +209,7 @@ void AggregateArrayRenderer::update_aggregates(
     TaskLocation task_location)
 {
     {
-        std::scoped_lock lock_guard{mutex_};
+        std::scoped_lock lock_guard{ mutex_ };
         if (next_rcva_ != nullptr) {
             // lwarn() << "Aggregated arrays were not drawn at all (transfer to GPU too slow, can happen for small scenes)";
             return;
@@ -287,7 +287,7 @@ void AggregateArrayRenderer::update_aggregates(
         rcva->wait();
     }
     {
-        std::scoped_lock lock_guard{mutex_};
+        std::scoped_lock lock_guard{ mutex_ };
         if (next_rcva_ != nullptr) {
             verbose_abort("AggregateArrayRenderer::update_aggregates called in parallel");
         }
@@ -312,7 +312,7 @@ void AggregateArrayRenderer::render_aggregates(
     const ExternalRenderPass& external_render_pass,
     const std::list<const ColorStyle*>& color_styles) const
 {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     if (is_initialized_) {
         if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
             next_rcva_ = nullptr;
@@ -349,12 +349,12 @@ void AggregateArrayRenderer::render_aggregates(
 }
 
 bool AggregateArrayRenderer::is_initialized() const {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     return is_initialized_;
 }
 
 void AggregateArrayRenderer::invalidate() {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     is_initialized_ = false;
     next_rcva_ = nullptr;
     rcvai_ = nullptr;

@@ -23,9 +23,8 @@ std::string Mlib::background_copy_state_to_string(BackgroundCopyState s) {
         return "ready";
     case BackgroundCopyState::AWAITED:
         return "awaited";
-    default:
-        THROW_OR_ABORT("Unknown background copy state");
     }
+    THROW_OR_ABORT("Unknown background copy state");
 }
 
 static bool buffer_data_supported() {

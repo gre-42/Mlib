@@ -67,9 +67,9 @@ void ArrayInstancesRenderer::update_instances(
         rcva->wait();
     }
     {
-        std::scoped_lock lock_guard{mutex_};
+        std::scoped_lock lock_guard{ mutex_ };
         if (next_rcva_ != nullptr) {
-            lwarn() << "Could not aggregate instances in time";
+            lwarn() << this << ": Could not aggregate instances in time";
             return;
         }
         std::swap(next_rcva_, rcva);
@@ -88,7 +88,7 @@ void ArrayInstancesRenderer::render_instances(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     if (is_initialized_) {
         if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
             next_rcva_ = nullptr;
@@ -111,19 +111,19 @@ void ArrayInstancesRenderer::render_instances(
             skidmarks,
             scene_graph_config,
             render_config,
-            {external_render_pass, InternalRenderPass::AGGREGATE},
+            { external_render_pass, InternalRenderPass::AGGREGATE },
             nullptr,    // animation_state
             {});        // color_style
     }
 }
 
 bool ArrayInstancesRenderer::is_initialized() const {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     return is_initialized_;
 }
 
 void ArrayInstancesRenderer::invalidate() {
-    std::scoped_lock lock_guard{mutex_};
+    std::scoped_lock lock_guard{ mutex_ };
     is_initialized_ = false;
     next_rcva_ = nullptr;
     rcvai_ = nullptr;
