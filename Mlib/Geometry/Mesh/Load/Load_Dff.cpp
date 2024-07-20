@@ -725,7 +725,7 @@ static MaterialList read_material_list(
     read_vector(istr, indices, "indices", VERBOSITY);
 
     for (uint32_t i = 0; i < num_mat; i++){
-        if (indices[i] >= 0) {
+        if (indices[i] != UINT32_MAX) {
             if (indices[i] >= i) {
                 THROW_OR_ABORT("Detected material forward reference");
             }

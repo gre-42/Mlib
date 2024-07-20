@@ -15,7 +15,7 @@ private:
 	std::weak_ptr<ActivationState> state_;
 };
 
-class ActivationState: std::enable_shared_from_this<ActivationState> {
+class ActivationState: public std::enable_shared_from_this<ActivationState> {
 	ActivationState(const ActivationState&) = delete;
 	ActivationState& operator = (const ActivationState&) = delete;
 	friend Activator;
