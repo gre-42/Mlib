@@ -3,7 +3,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Billboard_Ids.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Position.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Position_YAngles.hpp>
-#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Rotation_Axis.hpp>
+#include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Static_Rotation_Quaternion.hpp>
 #include <string>
 #include <vector>
 
@@ -27,7 +27,7 @@ public:
     virtual void update() override;
     virtual void bind(
         GLuint instance_attribute_index,
-        FixedArray<GLuint, 2> rotation_axes_attribute_index,
+        GLuint rotation_quaternion_attribute_index,
         GLuint billboard_ids_attribute_index,
         GLuint texture_layer_attribute_index) const override;
     virtual size_t tmp_num_instances() const override;
@@ -37,7 +37,7 @@ private:
     std::vector<TransformationAndBillboardId> instances_;
     StaticPositionYAngles position_yangles_;
     StaticPosition position_;
-    StaticRotationAxis rotation_axes_[2];
+    StaticRotationQuaternion rotation_quaternion;
     StaticBillboardIds billboard_ids_;
     uint32_t num_billboard_atlas_components_;
     TransformationMode transformation_mode_;

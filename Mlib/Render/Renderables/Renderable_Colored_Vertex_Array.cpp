@@ -520,7 +520,7 @@ void RenderableColoredVertexArray::render_cva(
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
     bool has_yangle = (cva->material.transformation_mode == TransformationMode::POSITION_YANGLE);
-    bool has_rotation_axes = has_instances && (cva->material.transformation_mode == TransformationMode::ALL);
+    bool has_rotation_quaternion = has_instances && (cva->material.transformation_mode == TransformationMode::ALL);
     OrderableFixedArray<float, 4> alpha_distances = uninitialized;
     bool fragments_depend_on_distance;
     if (is_lightmap) {
@@ -619,7 +619,7 @@ void RenderableColoredVertexArray::render_cva(
             .has_instances = has_instances,
             .has_lookat = has_lookat,
             .has_yangle = has_yangle,
-            .has_rotation_axes = has_rotation_axes,
+            .has_rotation_quaternion = has_rotation_quaternion,
             .has_uv_offset_u = (cva->material.number_of_frames != 1),  // Texture is required in lightmap also due to alpha channel.
             .has_continuous_texture_layer = has_continuous_texture_layer,
             .has_discrete_vertex_texture_layer = si.has_discrete_triangle_texture_layers(),

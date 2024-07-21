@@ -15,7 +15,7 @@ StaticInstanceBuffers::StaticInstanceBuffers(
     : instances_{ std::move(instances_moved_from) }
     , position_yangles_{ instances_ }
     , position_{ instances_ }
-    , rotation_axes_{ StaticRotationAxis{instances_, 0}, StaticRotationAxis{instances_, 1} }
+    , rotation_quaternion{ instances_ }
     , billboard_ids_{ instances_, num_billboard_atlas_components }
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
     , transformation_mode_{ transformation_mode }
@@ -42,9 +42,7 @@ bool StaticInstanceBuffers::copy_in_progress() const {
         THROW_OR_ABORT("Unsupported transformation mode for instances");
     }
     if (transformation_mode_ == TransformationMode::ALL) {
-        if (rotation_axes_[0].copy_in_progress() ||
-            rotation_axes_[1].copy_in_progress())
-        {
+        if (rotation_quaternion.copy_in_progress()) {
             return true;
         }
     }
@@ -68,8 +66,7 @@ void StaticInstanceBuffers::wait() const {
         THROW_OR_ABORT("Unsupported transformation mode for instances");
     }
     if (transformation_mode_ == TransformationMode::ALL) {
-        rotation_axes_[0].wait();
-        rotation_axes_[1].wait();
+        rotation_quaternion.wait();
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.wait();
@@ -81,7 +78,7 @@ void StaticInstanceBuffers::update() {
 
 void StaticInstanceBuffers::bind(
     GLuint instance_attribute_index,
-    FixedArray<GLuint, 2> rotation_axes_attribute_index,
+    GLuint rotation_quaternion_attribute_index,
     GLuint billboard_ids_attribute_index,
     GLuint texture_layer_attribute_index) const
 {
@@ -96,8 +93,7 @@ void StaticInstanceBuffers::bind(
         THROW_OR_ABORT("Unsupported transformation mode for instances");
     }
     if (transformation_mode_ == TransformationMode::ALL) {
-        rotation_axes_[0].bind(rotation_axes_attribute_index(0));
-        rotation_axes_[1].bind(rotation_axes_attribute_index(1));
+        rotation_quaternion.bind(rotation_quaternion_attribute_index);
     }
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.bind(billboard_ids_attribute_index);

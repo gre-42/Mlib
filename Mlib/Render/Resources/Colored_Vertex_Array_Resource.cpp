@@ -102,14 +102,13 @@ static const GLuint IDX_UV = 2;
 static const GLuint IDX_NORMAL = 3;
 static const GLuint IDX_TANGENT = 4;
 static const GLuint IDX_INSTANCE_ATTRS = 5;
-static const GLuint IDX_ROTATION_AXES_0 = 6;
-static const GLuint IDX_ROTATION_AXES_1 = 7;
-static const GLuint IDX_BILLBOARD_IDS = 8;
-static const GLuint IDX_BONE_INDICES = 9;
-static const GLuint IDX_BONE_WEIGHTS = 10;
-static const GLuint IDX_TEXTURE_LAYER = 11;
-static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 12;
-static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 13;
+static const GLuint IDX_ROTATION_QUATERNION = 6;
+static const GLuint IDX_BILLBOARD_IDS = 7;
+static const GLuint IDX_BONE_INDICES = 8;
+static const GLuint IDX_BONE_WEIGHTS = 9;
+static const GLuint IDX_TEXTURE_LAYER = 10;
+static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 11;
+static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 12;
 
 static GenShaderText vertex_shader_text_gen{[](
     const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
@@ -133,7 +132,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_instances,
     bool has_lookat,
     bool has_yangle,
-    bool has_rotation_axes,
+    bool has_rotation_quaternion,
     bool has_uv_offset_u,
     size_t nbones,
     bool has_continuous_vertex_texture_layer,
@@ -165,9 +164,8 @@ static GenShaderText vertex_shader_text_gen{[](
         } else {
             sstr << "layout (location=" << IDX_INSTANCE_ATTRS << ") in vec3 instancePosition;" << std::endl;
         }
-        if (has_rotation_axes) {
-            sstr << "layout (location=" << IDX_ROTATION_AXES_0 << ") in vec3 rotationAxisX;" << std::endl;
-            sstr << "layout (location=" << IDX_ROTATION_AXES_1 << ") in vec3 rotationAxisY;" << std::endl;
+        if (has_rotation_quaternion) {
+            sstr << "layout (location=" << IDX_ROTATION_QUATERNION << ") in vec4 rotationQuaternion;" << std::endl;
         }
     } else if (has_lookat && !orthographic) {
         sstr << "const vec3 instancePosition = vec3(0.0, 0.0, 0.0);" << std::endl;
@@ -249,6 +247,11 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "uniform vec3 viewPos;" << std::endl;
         }
     }
+    if ((nbones != 0) || has_rotation_quaternion) {
+        sstr << "vec3 rotate(vec4 v, vec3 p) {" << std::endl;
+        sstr << "    return p + 2.0 * cross(v.xyz, cross(v.xyz, p) + v.w * p);" << std::endl;
+        sstr << "}" << std::endl;
+    }
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
     if (has_discrete_atlas_texture_layer) {
@@ -282,7 +285,7 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "        vec3 o = bone_positions[i];" << std::endl;
             sstr << "        vec4 v = bone_quaternions[i];" << std::endl;
             sstr << "        vec3 p = vPos;" << std::endl;
-            sstr << "        vPosInstance += weight * (o + p + 2.0 * cross(v.xyz, cross(v.xyz, p) + v.w * p));" << std::endl;
+            sstr << "        vPosInstance += weight * (o + rotate(v, p));" << std::endl;
             sstr << "    }" << std::endl;
         }
     } else {
@@ -303,13 +306,11 @@ static GenShaderText vertex_shader_text_gen{[](
     if (has_yangle && !has_instances) {
         THROW_OR_ABORT("has_yangle requires has_instances");
     }
-    if (has_lookat || has_yangle || has_rotation_axes) {
-        sstr << "    mat3 lookat;" << std::endl;
-        if (has_rotation_axes) {
-            sstr << "    lookat[0] = rotationAxisX;" << std::endl;
-            sstr << "    lookat[1] = rotationAxisY;" << std::endl;
-            sstr << "    lookat[2] = cross(rotationAxisX, rotationAxisY);" << std::endl;
+    if (has_lookat || has_yangle || has_rotation_quaternion) {
+        if (has_rotation_quaternion) {
+            sstr << "    vPosInstance = rotate(rotationQuaternion, vPosInstance);" << std::endl;
         } else {
+            sstr << "    mat3 lookat;" << std::endl;
             if (has_yangle) {
                 sstr << "    vec2 dz_xz = vec2(sin(instancePosition.w), cos(instancePosition.w));" << std::endl;
             } else if (orthographic) {
@@ -323,13 +324,17 @@ static GenShaderText vertex_shader_text_gen{[](
             sstr << "    lookat[0] = dx;" << std::endl;
             sstr << "    lookat[1] = dy;" << std::endl;
             sstr << "    lookat[2] = dz;" << std::endl;
+            sstr << "    vPosInstance = lookat * vPosInstance;" << std::endl;
         }
-        sstr << "    vPosInstance = lookat * vPosInstance;" << std::endl;
         if (has_instances) {
             sstr << "    vPosInstance += instancePosition.xyz;" << std::endl;
         }
         if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
-            sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
+            if (has_rotation_quaternion) {
+                sstr << "    vNormalInstance = rotate(rotationQuaternion, vNormalInstance);" << std::endl;
+            } else {
+                sstr << "    vNormalInstance = lookat * vNormalInstance;" << std::endl;
+            }
         }
     } else if (has_instances && !has_lookat) {
         sstr << "    vPosInstance = vPosInstance + instancePosition;" << std::endl;
@@ -1645,7 +1650,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_instances,
         id.has_lookat,
         id.has_yangle,
-        id.has_rotation_axes,
+        id.has_rotation_quaternion,
         id.has_uv_offset_u,
         triangles_res_->bone_indices.size(),
         id.has_continuous_texture_layer,
@@ -1970,7 +1975,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     if (instances_ != nullptr) {
         instances_->at(cva.get())->bind(
             IDX_INSTANCE_ATTRS,
-            { IDX_ROTATION_AXES_0, IDX_ROTATION_AXES_1 },
+            IDX_ROTATION_QUATERNION,
             IDX_BILLBOARD_IDS,
             IDX_TEXTURE_LAYER);
     }
@@ -2073,9 +2078,11 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
 
     CHK(glBindVertexArray(0));
     if (it == vertex_arrays_.end()) {
-        auto& result = *si;  // store data before std::move (unique_ptr)
-        vertex_arrays_.insert(std::make_pair(cva.get(), std::move(si)));
-        return result;
+        auto res = vertex_arrays_.try_emplace(cva.get(), std::move(si));
+        if (!res.second) {
+            verbose_abort("Could not add vertex array");
+        }
+        return *res.first->second;
     } else {
         return *it->second;
     }
