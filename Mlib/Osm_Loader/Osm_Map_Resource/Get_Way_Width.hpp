@@ -1,10 +1,14 @@
 #pragma once
+#include <map>
 #include <string>
 
 namespace Mlib {
 
+template <class TBaseMap>
+class GenericMap;
+
 template <class TKey, class TValue>
-class Map;
+using Map = GenericMap<std::map<TKey, TValue>>;
 
 float get_way_width(
     const Map<std::string, std::string>& tags,
