@@ -33,6 +33,7 @@ public:
 
 private:
     RenderingResources& rendering_resources_;
+    mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;
     mutable std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;

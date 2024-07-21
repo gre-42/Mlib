@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
+#include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Threads/Safe_Shared_Mutex.hpp>
@@ -31,21 +32,24 @@ class ColoredVertexArrayResource:
     ColoredVertexArrayResource(const ColoredVertexArrayResource& other) = delete;
     ColoredVertexArrayResource& operator = (const ColoredVertexArrayResource& other) = delete;
 public:
-    using Vertices = std::unordered_map<const ColoredVertexArray<float>*, std::shared_ptr<IVertexData>>;
-    using Instances = std::unordered_map<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>;
+    using Vertices = UnorderedMap<const ColoredVertexArray<float>*, std::shared_ptr<IVertexData>>;
+    using Instances = UnorderedMap<const ColoredVertexArray<float>*, std::shared_ptr<IInstanceBuffers>>;
     ColoredVertexArrayResource(
         std::shared_ptr<AnimatedColoredVertexArrays> triangles,
         Vertices&& vertices,
-        std::unique_ptr<Instances>&& instances);
+        std::unique_ptr<Instances>&& instances,
+        std::weak_ptr<ColoredVertexArrayResource> vertex_data);
     ColoredVertexArrayResource(
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
         Vertices&& vertices,
-        std::unique_ptr<Instances>&& instances);
+        std::unique_ptr<Instances>&& instances,
+        std::weak_ptr<ColoredVertexArrayResource> vertex_data);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<float>>& striangles,
         Vertices&& vertices,
-        std::unique_ptr<Instances>&& instances);
+        std::unique_ptr<Instances>&& instances,
+        std::weak_ptr<ColoredVertexArrayResource> vertex_data);
     ColoredVertexArrayResource(
         const std::shared_ptr<ColoredVertexArray<double>>& dtriangles,
         std::unique_ptr<Instances>&& instances);
@@ -126,6 +130,7 @@ private:
     RenderingResources& rendering_resources_;
     mutable Vertices vertex_arrays_;
     std::unique_ptr<Instances> instances_;
+    std::weak_ptr<ColoredVertexArrayResource> vertex_data_;
     mutable SafeSharedMutex mutex_;
 };
 

@@ -1285,12 +1285,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     std::shared_ptr<AnimatedColoredVertexArrays> triangles,
     Vertices&& vertices,
-    std::unique_ptr<Instances>&& instances)
+    std::unique_ptr<Instances>&& instances,
+    std::weak_ptr<ColoredVertexArrayResource> vertex_data)
     : triangles_res_{ std::move(triangles) }
     , scene_node_resources_{ RenderingContextStack::primary_scene_node_resources() }
     , rendering_resources_{ RenderingContextStack::primary_rendering_resources() }
     , vertex_arrays_{ std::move(vertices) }
     , instances_{ std::move(instances) }
+    , vertex_data_{ std::move(vertex_data) }
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
@@ -1301,11 +1303,13 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles,
     Vertices&& vertices,
-    std::unique_ptr<Instances>&& instances)
+    std::unique_ptr<Instances>&& instances,
+    std::weak_ptr<ColoredVertexArrayResource> vertex_data)
 : ColoredVertexArrayResource{
     std::make_shared<AnimatedColoredVertexArrays>(),
     std::move(vertices),
-    std::move(instances)}
+    std::move(instances),
+    std::move(vertex_data)}
 {
     triangles_res_->scvas = striangles;
     triangles_res_->dcvas = dtriangles;
@@ -1317,12 +1321,14 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles,
     Vertices&& vertices,
-    std::unique_ptr<Instances>&& instances)
+    std::unique_ptr<Instances>&& instances,
+    std::weak_ptr<ColoredVertexArrayResource> vertex_data)
     : ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{striangles},
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
         std::move(vertices),
-        std::move(instances))
+        std::move(instances),
+        std::move(vertex_data))
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
@@ -1332,7 +1338,8 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
         std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
         std::list<std::shared_ptr<ColoredVertexArray<double>>>{dtriangles},
         Vertices{},
-        std::move(instances))
+        std::move(instances),
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 // From: https://stackoverflow.com/questions/26379311/calling-initializer-list-constructor-via-make-unique-make-shared
@@ -1347,7 +1354,8 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     : ColoredVertexArrayResource(
         striangles,
         Vertices{},
-        std::make_unique<Instances>(make_init_list({ Instances::value_type{striangles.get(), instances} })))
+        std::make_unique<Instances>(make_init_list({ Instances::value_type{striangles.get(), instances} })),
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
@@ -1356,11 +1364,16 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
     : ColoredVertexArrayResource(
         striangles,
         Vertices(make_init_list({ Vertices::value_type{striangles.get(), vertices} })),
-        nullptr)
+        nullptr,
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(const std::shared_ptr<AnimatedColoredVertexArrays>& triangles)
-    : ColoredVertexArrayResource(triangles, Vertices{}, nullptr)
+    : ColoredVertexArrayResource(
+        triangles,
+        Vertices{},
+        nullptr,
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
@@ -1376,17 +1389,32 @@ ColoredVertexArrayResource::ColoredVertexArrayResource(
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& striangles,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& dtriangles)
-    : ColoredVertexArrayResource(striangles, dtriangles, Vertices{}, nullptr)
+    : ColoredVertexArrayResource(
+        striangles,
+        dtriangles,
+        Vertices{},
+        nullptr,
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<float>>& striangles)
-    : ColoredVertexArrayResource({ striangles }, std::list<std::shared_ptr<ColoredVertexArray<double>>>{}, Vertices{}, nullptr)
+    : ColoredVertexArrayResource(
+        { striangles },
+        std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+        Vertices{},
+        nullptr,
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::ColoredVertexArrayResource(
     const std::shared_ptr<ColoredVertexArray<double>>& dtriangles)
-    : ColoredVertexArrayResource(std::list<std::shared_ptr<ColoredVertexArray<float>>>{}, { dtriangles }, Vertices{}, nullptr)
+    : ColoredVertexArrayResource(
+        std::list<std::shared_ptr<ColoredVertexArray<float>>>{},
+        { dtriangles },
+        Vertices{},
+        nullptr,
+        std::weak_ptr<ColoredVertexArrayResource>())
 {}
 
 ColoredVertexArrayResource::~ColoredVertexArrayResource() = default;
@@ -1940,20 +1968,30 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
         return *it->second;
     }
     std::unique_ptr<IVertexData> si;
-    IVertexData* pva;
-    if (it == vertex_arrays_.end()) {
-        if (cva->triangles.empty()) {
-            THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
+    auto& va = [&]() -> IVertexData& {
+        if (it == vertex_arrays_.end()) {
+            if (cva->triangles.empty()) {
+                THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
+            }
+            std::shared_ptr<IArrayBuffer> inherited_vertices;
+            if (auto p = vertex_data_.lock(); p != nullptr) {
+                if (auto v = p->vertex_arrays_.try_get(cva.get()); v != nullptr) {
+                    inherited_vertices = (*v)->vertex_buffer().fork();
+                }
+            }
+            si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size(), inherited_vertices);
+            return *si;
+        } else {
+            return *it->second;
         }
-        si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size());
-        pva = si.get();
-    } else {
-        pva = it->second.get();
-    }
-    auto& va = *pva;
+        }();
     // https://stackoverflow.com/a/13405205/2292832
     va.initialize();
-    va.vertex_buffer().set(cva->triangles);
+    if (va.vertex_buffer().is_awaited()) {
+        va.vertex_buffer().bind();
+    } else {
+        va.vertex_buffer().set(cva->triangles);
+    }
 
     ColoredVertex<float>* cv = nullptr;
     CHK(glEnableVertexAttribArray(IDX_POSITION));
@@ -1981,49 +2019,53 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {
-        UUVector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
-        for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
-            const auto& td = cva->triangle_bone_weights[tid];  // std::vector of bone weights.
-            auto& ts = triangle_bone_weights[tid];             // FixedArray of sorted bone weights.
-            for (size_t vid = 0; vid < CW::length(td); ++vid) {
-                auto vd = td(vid);   // Copy of std::vector of bone weights, to be sorted.
-                auto& vs = ts(vid);  // Reference to FixedArray of sorted bone weights.
-                // Sort in descending order
-                std::sort(vd.begin(), vd.end(), [](const BoneWeight& w0, const BoneWeight& w1){return w0.weight > w1.weight;});
-                float sum_weights = 0;
-                for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
-                    if (i < vd.size()) {
-                        if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
-                            THROW_OR_ABORT(
-                                "Bone index too large in get_vertex_array: " +
-                                std::to_string(vd[i].bone_index) + " >= " +
-                                std::to_string(triangles_res_->bone_indices.size()));
+        if (va.bone_weight_buffer().is_awaited()) {
+            va.bone_weight_buffer().bind();
+        } else {
+            UUVector<FixedArray<ShaderBoneWeight, 3>> triangle_bone_weights(cva->triangle_bone_weights.size());
+            for (size_t tid = 0; tid < triangle_bone_weights.size(); ++tid) {
+                const auto& td = cva->triangle_bone_weights[tid];  // std::vector of bone weights.
+                auto& ts = triangle_bone_weights[tid];             // FixedArray of sorted bone weights.
+                for (size_t vid = 0; vid < CW::length(td); ++vid) {
+                    auto vd = td(vid);   // Copy of std::vector of bone weights, to be sorted.
+                    auto& vs = ts(vid);  // Reference to FixedArray of sorted bone weights.
+                    // Sort in descending order
+                    std::sort(vd.begin(), vd.end(), [](const BoneWeight& w0, const BoneWeight& w1){return w0.weight > w1.weight;});
+                    float sum_weights = 0;
+                    for (size_t i = 0; i < ANIMATION_NINTERPOLATED; ++i) {
+                        if (i < vd.size()) {
+                            if (vd[i].bone_index >= triangles_res_->bone_indices.size()) {
+                                THROW_OR_ABORT(
+                                    "Bone index too large in get_vertex_array: " +
+                                    std::to_string(vd[i].bone_index) + " >= " +
+                                    std::to_string(triangles_res_->bone_indices.size()));
+                            }
+                            if (vd[i].bone_index > 255) {
+                                THROW_OR_ABORT("Bone index too large for unsigned char");
+                            }
+                            vs.indices[i] = (unsigned char)vd[i].bone_index;
+                            vs.weights[i] = vd[i].weight;
+                            sum_weights += vs.weights[i];
+                        } else {
+                            vs.indices[i] = 0;
+                            vs.weights[i] = 0;
                         }
-                        if (vd[i].bone_index > 255) {
-                            THROW_OR_ABORT("Bone index too large for unsigned char");
-                        }
-                        vs.indices[i] = (unsigned char)vd[i].bone_index;
-                        vs.weights[i] = vd[i].weight;
-                        sum_weights += vs.weights[i];
-                    } else {
-                        vs.indices[i] = 0;
-                        vs.weights[i] = 0;
+                    }
+                    if (sum_weights < 1e-3) {
+                        THROW_OR_ABORT("Sum of weights too small");
+                    }
+                    if (sum_weights > 1.1) {
+                        THROW_OR_ABORT("Sum of weights too large");
+                    }
+                    for (float& weight : vs.weights) {
+                        weight /= sum_weights;
                     }
                 }
-                if (sum_weights < 1e-3) {
-                    THROW_OR_ABORT("Sum of weights too small");
-                }
-                if (sum_weights > 1.1) {
-                    THROW_OR_ABORT("Sum of weights too large");
-                }
-                for (float& weight : vs.weights) {
-                    weight /= sum_weights;
-                }
             }
+            va.bone_weight_buffer().set(triangle_bone_weights);
+            // The "triangle_bone_weights" array is temporary, so wait until it is transferred.
+            va.bone_weight_buffer().wait();
         }
-        va.bone_weight_buffer().set(triangle_bone_weights);
-        // The "triangle_bone_weights" array is temporary, so wait until it is transferred.
-        va.bone_weight_buffer().wait();
 
         ShaderBoneWeight* bw = nullptr;
         CHK(glEnableVertexAttribArray(IDX_BONE_INDICES));
@@ -2037,37 +2079,49 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
         THROW_OR_ABORT("Detected both, discrete and continuous texture layers");
     }
     if (va.has_continuous_triangle_texture_layers()) {
-        if (cva->continuous_triangle_texture_layers.size() != cva->triangles.size()) {
-            THROW_OR_ABORT("#continuous_triangle_texture_layers != #triangles");
+        if (va.texture_layer_buffer().is_awaited()) {
+            va.texture_layer_buffer().bind();
+        } else {
+            if (cva->continuous_triangle_texture_layers.size() != cva->triangles.size()) {
+                THROW_OR_ABORT("#continuous_triangle_texture_layers != #triangles");
+            }
+            va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers);
         }
-        va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribPointer(IDX_TEXTURE_LAYER, 1, GL_FLOAT, GL_FALSE, sizeof(float), nullptr));
     }
     if (va.has_discrete_triangle_texture_layers()) {
-        if (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()) {
-            THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
+        if (va.texture_layer_buffer().is_awaited()) {
+            va.texture_layer_buffer().bind();
+        } else {
+            if (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()) {
+                THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
+            }
+            va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers);
         }
-        va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers);
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
         CHK(glVertexAttribIPointer(IDX_TEXTURE_LAYER, 1, GL_UNSIGNED_BYTE, sizeof(uint8_t), nullptr));
     }
     if (!cva->material.interior_textures.empty()) {
-        std::vector<ShaderInteriorMappedFacade> shader_interior_mapped_facade;
-        shader_interior_mapped_facade.reserve(3 * cva->triangles.size());
-        for (const auto& t : cva->triangles) {
-            for (size_t i = 0; i < 3; ++i) {
-                shader_interior_mapped_facade.push_back(ShaderInteriorMappedFacade{
-                    .bottom_left = t(0).position,
-                    .multiplier = FixedArray<float, 2>{1.f, 1.f}
-                    });
+        if (va.interior_mapping_buffer().is_awaited()) {
+            va.interior_mapping_buffer().bind();
+        } else {
+            std::vector<ShaderInteriorMappedFacade> shader_interior_mapped_facade;
+            shader_interior_mapped_facade.reserve(3 * cva->triangles.size());
+            for (const auto& t : cva->triangles) {
+                for (size_t i = 0; i < 3; ++i) {
+                    shader_interior_mapped_facade.push_back(ShaderInteriorMappedFacade{
+                        .bottom_left = t(0).position,
+                        .multiplier = FixedArray<float, 2>{1.f, 1.f}
+                        });
+                }
             }
+            va.interior_mapping_buffer().set(shader_interior_mapped_facade);
+            // The "shader_interior_mapped_facade" array is temporary, so wait until it is transferred.
+            va.interior_mapping_buffer().wait();
         }
-        va.interior_mapping_buffer().set(shader_interior_mapped_facade);
-        // The "shader_interior_mapped_facade" array is temporary, so wait until it is transferred.
-        va.interior_mapping_buffer().wait();
 
         ShaderInteriorMappedFacade* im = nullptr;
         CHK(glEnableVertexAttribArray(IDX_INTERIOR_MAPPING_BOTTOM_LEFT));
@@ -2110,11 +2164,14 @@ void ColoredVertexArrayResource::import_bone_weights(
 }
 
 bool ColoredVertexArrayResource::copy_in_progress() const {
+    // for (const auto& [i, cva] : enumerate(triangles_res_->scvas)) {
     for (const auto& cva : triangles_res_->scvas) {
         if (get_vertex_array(cva).copy_in_progress()) {
+            // linfo() << this << " - vertex copy " << i << " " << cva->name;
             return true;
         }
         if ((instances_ != nullptr) && (instances_->at(cva.get())->copy_in_progress())) {
+            // linfo() << this << " - instances copy " << i << " " << cva->name;
             return true;
         }
     }

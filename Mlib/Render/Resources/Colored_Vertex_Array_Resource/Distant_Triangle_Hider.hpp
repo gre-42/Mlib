@@ -22,7 +22,8 @@ class DistantTriangleHider: public IVertexData {
 public:
     DistantTriangleHider(
         std::shared_ptr<ColoredVertexArray<float>> cva,
-        size_t ntriangles);
+        size_t ntriangles,
+        std::shared_ptr<IArrayBuffer> inherited_vertices);
     virtual void update(std::chrono::steady_clock::time_point time) override;
     virtual void bind() const override;
     virtual bool copy_in_progress() const override;
@@ -46,7 +47,8 @@ public:
         bool is_static) override;
 
 private:
-    BufferBackgroundCopy vertices_;
+    std::shared_ptr<IArrayBuffer> inherited_vertices_;
+    std::shared_ptr<BufferBackgroundCopy> vertices_;
     BufferBackgroundCopy bone_weights_;
     BufferBackgroundCopy texture_layers_;
     BufferBackgroundCopy interior_mapping_;

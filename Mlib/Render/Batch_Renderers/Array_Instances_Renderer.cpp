@@ -57,11 +57,16 @@ void ArrayInstancesRenderer::update_instances(
             integral_cast<uint32_t>(a->material.billboard_atlas_instances.size()),
             a->name)});
     }
-    auto rcva = std::make_shared<ColoredVertexArrayResource>(
-        mat_vectors,
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
-        ColoredVertexArrayResource::Vertices{},
-        std::move(cva_instances));
+    std::shared_ptr<ColoredVertexArrayResource> rcva;
+    {
+        std::scoped_lock lock_guard{ mutex_ };
+        rcva = std::make_shared<ColoredVertexArrayResource>(
+            mat_vectors,
+            std::list<std::shared_ptr<ColoredVertexArray<double>>>{},
+            ColoredVertexArrayResource::Vertices{},
+            std::move(cva_instances),
+            rcva_);
+    }
     auto rcvai = std::make_unique<RenderableColoredVertexArray>(rendering_resources_, rcva, RenderableResourceFilter{});
     if (task_location == TaskLocation::FOREGROUND) {
         rcva->wait();
@@ -91,7 +96,7 @@ void ArrayInstancesRenderer::render_instances(
     std::scoped_lock lock_guard{ mutex_ };
     if (is_initialized_) {
         if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
-            next_rcva_ = nullptr;
+            rcva_ = std::move(next_rcva_);
             rcvai_ = std::move(next_rcvai_);
             offset_ = next_offset_;
         }

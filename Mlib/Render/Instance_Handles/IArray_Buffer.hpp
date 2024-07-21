@@ -29,6 +29,8 @@ public:
 	virtual void wait() const = 0;
     virtual void update() = 0;
     virtual void bind() const = 0;
+    virtual bool is_awaited() const = 0;
+    virtual std::shared_ptr<IArrayBuffer> fork() = 0;
 protected:
     virtual void set_type_erased(const char* begin, const char* end) = 0;
 };

@@ -38,15 +38,20 @@ static bool buffer_data_supported() {
 #endif
 }
 
-BufferBackgroundCopy::BufferBackgroundCopy()
-    : buffer_{ (GLuint)-1 }
+BufferBackgroundCopy::BufferBackgroundCopy(size_t min_bytes)
+    : min_bytes_{ min_bytes }
+    , buffer_{ (GLuint)-1 }
     , is_mapped_{ false }
     , state_{ BackgroundCopyState::UNINITIALIZED }
+    , forked_{ false }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(DeallocationMode::DIRECT); }) }
 {}
 
 void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 {
+    if (forked_) {
+        THROW_OR_ABORT("BufferBackgroundCopy::set_type_erased on forked object");
+    }
     if (state_ != BackgroundCopyState::UNINITIALIZED) {
         THROW_OR_ABORT("Buffer already set, state: " + std::to_string((int)state_));
     }
@@ -60,7 +65,7 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-	if ((begin == nullptr) || !buffer_data_supported()) {
+	if ((begin == nullptr) || ((end - begin) < min_bytes_) || !buffer_data_supported()) {
 		CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
 		is_mapped_ = false;
 		std::promise<void> p;
@@ -73,19 +78,9 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
         CHK(glBufferStorage(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT));
         CHK(char* dest = (char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         is_mapped_ = true;
-        if ((((std::uintptr_t)dest & 0x3) == 0) &&
-            (((std::uintptr_t)begin & 0x3) == 0) &&
-            (((std::uintptr_t)end & 0x3) == 0))
-        {
-            future_ = std::async(std::launch::async, [dest, begin, end]() {
-                std::copy((const uint32_t*)begin, (const uint32_t*)end, (uint32_t*)dest);
-                });
-        } else {
-            lwarn() << "Addresses are not aligned to 4 bytes, copying might be slow";
-            future_ = std::async(std::launch::async, [dest, begin, end]() {
-                std::copy(begin, end, dest);
-                });
-        }
+        future_ = std::async(std::launch::async, [dest, begin, end]() {
+            std::copy(begin, end, dest);
+            });
 #endif
 	}
     state_ = BackgroundCopyState::COPY_IN_PROGRESS;
@@ -134,6 +129,17 @@ void BufferBackgroundCopy::update() {
 
 void BufferBackgroundCopy::bind() const {
     CHK(glBindBuffer(GL_ARRAY_BUFFER, handle())); 
+}
+
+bool BufferBackgroundCopy::is_awaited() const {
+    return state_ == BackgroundCopyState::AWAITED;
+}
+
+std::shared_ptr<IArrayBuffer> BufferBackgroundCopy::fork() {
+    if (state_ != BackgroundCopyState::AWAITED) {
+        THROW_OR_ABORT("BufferBackgroundCopy: attempt to fork a non-awaited object");
+    }
+    return shared_from_this();
 }
 
 GLuint BufferBackgroundCopy::handle() const {

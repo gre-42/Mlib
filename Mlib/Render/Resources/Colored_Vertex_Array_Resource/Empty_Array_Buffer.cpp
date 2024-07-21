@@ -23,8 +23,14 @@ void EmptyArrayBuffer::bind() const {
     THROW_OR_ABORT("EmptyArrayBuffer::bind called");
 }
 
+bool EmptyArrayBuffer::is_awaited() const {
+    THROW_OR_ABORT("EmptyArrayBuffer::is_awaited called");
+}
+
+std::shared_ptr<IArrayBuffer> EmptyArrayBuffer::fork() {
+    THROW_OR_ABORT("EmptyArrayBuffer::fork called");
+}
+
 void EmptyArrayBuffer::set_type_erased(const char* begin, const char* end) {
-    if (begin != end) {
-        THROW_OR_ABORT("EmptyArrayBuffer::set_type_erased: only empty ranges are supported");
-    }
+    THROW_OR_ABORT("EmptyArrayBuffer::set_type_erased called");
 }

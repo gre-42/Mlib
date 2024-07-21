@@ -19,6 +19,8 @@ public:
     virtual void wait() const override;
     virtual void update() override;
     virtual void bind() const override;
+    virtual bool is_awaited() const override;
+    virtual std::shared_ptr<IArrayBuffer> fork() override;
 
     void append(const FixedArray<float, 3>& layers);
     FixedArray<float, 3>& operator [] (size_t i);

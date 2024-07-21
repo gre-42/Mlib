@@ -26,6 +26,14 @@ void DynamicTriangle::bind() const {
     return data_.bind();
 }
 
+bool DynamicTriangle::is_awaited() const {
+    return true;
+}
+
+std::shared_ptr<IArrayBuffer> DynamicTriangle::fork() {
+    THROW_OR_ABORT("DynamicTriangle::fork not available (only supported for static buffers)");
+}
+
 void DynamicTriangle::append(const FixedArray<ColoredVertex<float>, 3>& t) {
     data_.append(t);
 }
@@ -35,8 +43,10 @@ void DynamicTriangle::remove(size_t i) {
 }
 
 void DynamicTriangle::set_type_erased(const char* begin, const char* end) {
-    if (begin != end) {
-        THROW_OR_ABORT("DynamicTriangle::set_type_erased: only empty ranges are supported");
-    }
-    data_.bind();
+    THROW_OR_ABORT("DynamicTriangle::set_type_erased called, but \"is_awaited=true\"");
+    // This code was before the introduction of the "is_awaited" function.
+    // if (begin != end) {
+    //     THROW_OR_ABORT("DynamicTriangle::set_type_erased: only empty ranges are supported");
+    // }
+    // data_.bind();
 }

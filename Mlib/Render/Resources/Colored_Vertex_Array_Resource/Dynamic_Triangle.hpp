@@ -17,6 +17,8 @@ public:
     virtual void wait() const override;
     virtual void update() override;
     virtual void bind() const override;
+    virtual bool is_awaited() const override;
+    virtual std::shared_ptr<IArrayBuffer> fork() override;
 
     void append(const FixedArray<ColoredVertex<float>, 3>& t);
     void remove(size_t i);

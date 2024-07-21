@@ -14,6 +14,8 @@ public:
     virtual void wait() const override;
     virtual void update() override;
     virtual void bind() const override;
+    virtual bool is_awaited() const override;
+    virtual std::shared_ptr<IArrayBuffer> fork() override;
 
 protected:
     virtual void set_type_erased(const char* begin, const char* end) override;

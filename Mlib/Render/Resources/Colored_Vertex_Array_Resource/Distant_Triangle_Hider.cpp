@@ -21,9 +21,12 @@ using namespace Mlib;
 
 DistantTriangleHider::DistantTriangleHider(
     std::shared_ptr<ColoredVertexArray<float>> cva,
-    size_t ntriangles)
-    : va_{
-        vertices_,
+    size_t ntriangles,
+    std::shared_ptr<IArrayBuffer> inherited_vertices)
+    : inherited_vertices_{ std::move(inherited_vertices) }
+    , vertices_{ inherited_vertices_ == nullptr ? std::make_shared<BufferBackgroundCopy>() : nullptr }
+    , va_{
+        inherited_vertices_ == nullptr ? *vertices_ : *inherited_vertices_,
         bone_weights_,
         texture_layers_,
         interior_mapping_ }
