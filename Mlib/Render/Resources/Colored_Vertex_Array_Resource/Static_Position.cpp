@@ -25,8 +25,8 @@ void StaticPosition::wait() const {
     buffer_.wait();
 }
 
-void StaticPosition::bind(GLuint attribute_index) const {
-    buffer_.set(positions_);
+void StaticPosition::bind(GLuint attribute_index, TaskLocation task_location) const {
+    buffer_.set(positions_, task_location);
 
     CHK(glEnableVertexAttribArray(attribute_index));
     CHK(glVertexAttribPointer(attribute_index, 3, GL_FLOAT, GL_FALSE, sizeof(Position), nullptr));

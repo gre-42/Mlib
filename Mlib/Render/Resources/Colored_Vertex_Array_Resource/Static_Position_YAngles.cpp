@@ -29,8 +29,8 @@ void StaticPositionYAngles::wait() const {
     buffer_.wait();
 }
 
-void StaticPositionYAngles::bind(GLuint attribute_index) const {
-    buffer_.set(positions_);
+void StaticPositionYAngles::bind(GLuint attribute_index, TaskLocation task_location) const {
+    buffer_.set(positions_, task_location);
 
     CHK(glEnableVertexAttribArray(attribute_index));
     CHK(glVertexAttribPointer(attribute_index, 4, GL_FLOAT, GL_FALSE, sizeof(Position), nullptr));

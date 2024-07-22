@@ -1440,7 +1440,7 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
             if (requires_aggregation(*cva)) {
                 continue;
             }
-            get_vertex_array(cva).wait();
+            get_vertex_array(cva, TaskLocation::FOREGROUND);
             if (instances_ != nullptr) {
                 instances_->at(cva.get())->wait();
             }
@@ -1949,7 +1949,9 @@ bool ColoredVertexArrayResource::requires_aggregation(const ColoredVertexArray<f
     return (cva.material.aggregate_mode != AggregateMode::NONE) && (instances_ == nullptr);
 }
 
-IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const
+IVertexData& ColoredVertexArrayResource::get_vertex_array(
+    const std::shared_ptr<ColoredVertexArray<float>>& cva,
+    TaskLocation task_location) const
 {
     if (requires_aggregation(*cva)) {
         THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
@@ -1990,7 +1992,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
     if (va.vertex_buffer().is_awaited()) {
         va.vertex_buffer().bind();
     } else {
-        va.vertex_buffer().set(cva->triangles);
+        va.vertex_buffer().set(cva->triangles, task_location);
     }
 
     ColoredVertex<float>* cv = nullptr;
@@ -2015,7 +2017,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
             IDX_INSTANCE_ATTRS,
             IDX_ROTATION_QUATERNION,
             IDX_BILLBOARD_IDS,
-            IDX_TEXTURE_LAYER);
+            IDX_TEXTURE_LAYER,
+            task_location);
     }
     assert_true(cva->triangle_bone_weights.empty() == !triangles_res_->skeleton);
     if (triangles_res_->skeleton != nullptr) {
@@ -2062,9 +2065,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
                     }
                 }
             }
-            va.bone_weight_buffer().set(triangle_bone_weights);
             // The "triangle_bone_weights" array is temporary, so wait until it is transferred.
-            va.bone_weight_buffer().wait();
+            va.bone_weight_buffer().set(triangle_bone_weights, TaskLocation::FOREGROUND);
         }
 
         ShaderBoneWeight* bw = nullptr;
@@ -2085,7 +2087,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
             if (cva->continuous_triangle_texture_layers.size() != cva->triangles.size()) {
                 THROW_OR_ABORT("#continuous_triangle_texture_layers != #triangles");
             }
-            va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers);
+            va.texture_layer_buffer().set(cva->continuous_triangle_texture_layers, task_location);
         }
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
@@ -2098,7 +2100,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
             if (cva->discrete_triangle_texture_layers.size() != cva->triangles.size()) {
                 THROW_OR_ABORT("#discrete_triangle_texture_layers != #triangles");
             }
-            va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers);
+            va.texture_layer_buffer().set(cva->discrete_triangle_texture_layers, task_location);
         }
 
         CHK(glEnableVertexAttribArray(IDX_TEXTURE_LAYER));
@@ -2118,9 +2120,8 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(const std::shared_ptr<
                         });
                 }
             }
-            va.interior_mapping_buffer().set(shader_interior_mapped_facade);
             // The "shader_interior_mapped_facade" array is temporary, so wait until it is transferred.
-            va.interior_mapping_buffer().wait();
+            va.interior_mapping_buffer().set(shader_interior_mapped_facade, TaskLocation::FOREGROUND);
         }
 
         ShaderInteriorMappedFacade* im = nullptr;
@@ -2166,7 +2167,7 @@ void ColoredVertexArrayResource::import_bone_weights(
 bool ColoredVertexArrayResource::copy_in_progress() const {
     // for (const auto& [i, cva] : enumerate(triangles_res_->scvas)) {
     for (const auto& cva : triangles_res_->scvas) {
-        if (get_vertex_array(cva).copy_in_progress()) {
+        if (get_vertex_array(cva, TaskLocation::BACKGROUND).copy_in_progress()) {
             // linfo() << this << " - vertex copy " << i << " " << cva->name;
             return true;
         }
@@ -2180,7 +2181,7 @@ bool ColoredVertexArrayResource::copy_in_progress() const {
 
 void ColoredVertexArrayResource::wait() const {
     for (const auto& cva : triangles_res_->scvas) {
-        get_vertex_array(cva).wait();
+        get_vertex_array(cva, TaskLocation::FOREGROUND);
         if (instances_ != nullptr) {
             instances_->at(cva.get())->wait();
         }

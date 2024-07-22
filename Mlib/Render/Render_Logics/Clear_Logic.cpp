@@ -66,7 +66,7 @@ ClearLogic::~ClearLogic() = default;
 void ClearLogic::ensure_va_initialized() {
     if (!va_.initialized()) {
         va_.initialize();
-        va_.vertex_buffer.set(quad_vertices);
+        va_.vertex_buffer.set(quad_vertices, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr));
         CHK(glBindVertexArray(0));

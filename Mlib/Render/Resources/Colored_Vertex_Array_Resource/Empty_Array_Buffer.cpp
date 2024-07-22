@@ -31,6 +31,10 @@ std::shared_ptr<IArrayBuffer> EmptyArrayBuffer::fork() {
     THROW_OR_ABORT("EmptyArrayBuffer::fork called");
 }
 
-void EmptyArrayBuffer::set_type_erased(const char* begin, const char* end) {
+void EmptyArrayBuffer::set_type_erased(
+    const char* begin,
+    const char* end,
+    TaskLocation task_location)
+{
     THROW_OR_ABORT("EmptyArrayBuffer::set_type_erased called");
 }

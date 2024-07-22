@@ -80,23 +80,26 @@ void StaticInstanceBuffers::bind(
     GLuint instance_attribute_index,
     GLuint rotation_quaternion_attribute_index,
     GLuint billboard_ids_attribute_index,
-    GLuint texture_layer_attribute_index) const
+    GLuint texture_layer_attribute_index,
+    TaskLocation task_location) const
 {
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
-        position_yangles_.bind(instance_attribute_index);
+        position_yangles_.bind(instance_attribute_index, task_location);
     } else if ((transformation_mode_ == TransformationMode::POSITION) ||
                (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
                (transformation_mode_ == TransformationMode::ALL))
     {
-        position_.bind(instance_attribute_index);
+        position_.bind(instance_attribute_index, task_location);
     } else {
         THROW_OR_ABORT("Unsupported transformation mode for instances");
     }
     if (transformation_mode_ == TransformationMode::ALL) {
-        rotation_quaternion.bind(rotation_quaternion_attribute_index);
+        rotation_quaternion.bind(
+            rotation_quaternion_attribute_index,
+            task_location);
     }
     if (num_billboard_atlas_components_ != 0) {
-        billboard_ids_.bind(billboard_ids_attribute_index);
+        billboard_ids_.bind(billboard_ids_attribute_index, task_location);
     }
 }
 

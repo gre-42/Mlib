@@ -27,8 +27,8 @@ void StaticRotationQuaternion::wait() const {
     buffer_.wait();
 }
 
-void StaticRotationQuaternion::bind(GLuint attribute_index) const {
-    buffer_.set(quaternions_);
+void StaticRotationQuaternion::bind(GLuint attribute_index, TaskLocation task_location) const {
+    buffer_.set(quaternions_, task_location);
 
     CHK(glEnableVertexAttribArray(attribute_index));
     CHK(glVertexAttribPointer(attribute_index, 4, GL_FLOAT, GL_FALSE, sizeof(RotationQuaternion), nullptr));

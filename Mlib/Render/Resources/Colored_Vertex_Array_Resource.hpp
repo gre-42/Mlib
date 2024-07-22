@@ -22,6 +22,7 @@ struct TransformationAndBillboardId;
 struct BlendMapTexture;
 class IVertexData;
 class IInstanceBuffers;
+enum class TaskLocation;
 
 class ColoredVertexArrayResource:
     public ISceneNodeResource,
@@ -124,7 +125,9 @@ private:
         const std::vector<BlendMapTexture*>& textures_color,
         const std::vector<BlendMapTexture*>& textures_alpha) const;
     bool requires_aggregation(const ColoredVertexArray<float> &cva) const;
-    IVertexData& get_vertex_array(const std::shared_ptr<ColoredVertexArray<float>>& cva) const;
+    IVertexData& get_vertex_array(
+        const std::shared_ptr<ColoredVertexArray<float>>& cva,
+        TaskLocation task_location) const;
     std::shared_ptr<AnimatedColoredVertexArrays> triangles_res_;
     SceneNodeResources& scene_node_resources_;
     RenderingResources& rendering_resources_;

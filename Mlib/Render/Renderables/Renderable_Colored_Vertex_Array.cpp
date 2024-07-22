@@ -25,6 +25,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IInstance_Buffers.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
 #include <Mlib/Render/Toggle_Benchmark_Rendering.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Culling/Frustum_Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Culling/Instances_Are_Visible.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
@@ -566,7 +567,7 @@ void RenderableColoredVertexArray::render_cva(
             THROW_OR_ABORT("Unexpected texture type (expected a 2D array)");
         }
     }
-    IVertexData& si = rcva_->get_vertex_array(cva);
+    IVertexData& si = rcva_->get_vertex_array(cva, TaskLocation::FOREGROUND);
     if (si.has_discrete_triangle_texture_layers() &&
         has_discrete_atlas_texture_layer)
     {

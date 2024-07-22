@@ -29,7 +29,8 @@ public:
         GLuint instance_attribute_index,
         GLuint rotation_quaternion_attribute_index,
         GLuint billboard_ids_attribute_index,
-        GLuint texture_layer_attribute_index) const override;
+        GLuint texture_layer_attribute_index,
+        TaskLocation task_location) const override;
     virtual size_t tmp_num_instances() const override;
     virtual GLsizei num_instances() const override;
     virtual bool has_continuous_texture_layer() const override;

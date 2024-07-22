@@ -23,7 +23,10 @@ public:
     void append(const FixedArray<ColoredVertex<float>, 3>& t);
     void remove(size_t i);
 protected:
-    virtual void set_type_erased(const char* begin, const char* end) override;
+    virtual void set_type_erased(
+        const char* begin,
+        const char* end,
+        TaskLocation task_location) override;
 
 private:
     DynamicBase<FixedArray<ColoredVertex<float>, 3>> data_;

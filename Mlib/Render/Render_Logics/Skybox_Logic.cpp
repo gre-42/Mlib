@@ -123,7 +123,7 @@ void SkyboxLogic::render(
             rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
 
             va_.initialize();
-            va_.vertex_buffer.set(skybox_vertices);
+            va_.vertex_buffer.set(skybox_vertices, TaskLocation::FOREGROUND);
             CHK(glEnableVertexAttribArray(0));
             CHK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr));
             CHK(glBindVertexArray(0));

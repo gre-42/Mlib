@@ -42,7 +42,11 @@ void DynamicTriangle::remove(size_t i) {
     data_.remove(i);
 }
 
-void DynamicTriangle::set_type_erased(const char* begin, const char* end) {
+void DynamicTriangle::set_type_erased(
+    const char* begin,
+    const char* end,
+    TaskLocation task_location)
+{
     THROW_OR_ABORT("DynamicTriangle::set_type_erased called, but \"is_awaited=true\"");
     // This code was before the introduction of the "is_awaited" function.
     // if (begin != end) {

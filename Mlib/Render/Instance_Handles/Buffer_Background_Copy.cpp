@@ -47,7 +47,10 @@ BufferBackgroundCopy::BufferBackgroundCopy(size_t min_bytes)
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(DeallocationMode::DIRECT); }) }
 {}
 
-void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
+void BufferBackgroundCopy::set_type_erased(
+    const char* begin,
+    const char* end,
+    TaskLocation task_location)
 {
     if (forked_) {
         THROW_OR_ABORT("BufferBackgroundCopy::set_type_erased on forked object");
@@ -65,12 +68,14 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
 
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-	if ((begin == nullptr) || ((end - begin) < min_bytes_) || !buffer_data_supported()) {
+	if ((begin == nullptr) ||
+        (integral_cast<size_t>(end - begin) < min_bytes_) ||
+        (task_location == TaskLocation::FOREGROUND) ||
+        !buffer_data_supported())
+    {
 		CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
 		is_mapped_ = false;
-		std::promise<void> p;
-		p.set_value();
-		future_ = p.get_future();
+        state_ = BackgroundCopyState::AWAITED;
 	} else {
 #ifdef __ANDROID__
         verbose_abort("Internal error: buffer-data not supported on Android");
@@ -82,8 +87,8 @@ void BufferBackgroundCopy::set_type_erased(const char* begin, const char* end)
             std::copy(begin, end, dest);
             });
 #endif
-	}
-    state_ = BackgroundCopyState::COPY_IN_PROGRESS;
+        state_ = BackgroundCopyState::COPY_IN_PROGRESS;
+    }
 }
 
 BufferBackgroundCopy::~BufferBackgroundCopy() {

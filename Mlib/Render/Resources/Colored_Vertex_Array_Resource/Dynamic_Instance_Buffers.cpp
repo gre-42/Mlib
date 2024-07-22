@@ -5,6 +5,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
+#include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -206,8 +207,12 @@ void DynamicInstanceBuffers::bind(
     GLuint instance_attribute_index,
     GLuint rotation_quaternion_attribute_index,
     GLuint billboard_ids_attribute_index,
-    GLuint texture_layer_attribute_index) const
+    GLuint texture_layer_attribute_index,
+    TaskLocation task_location) const
 {
+    if (task_location != TaskLocation::FOREGROUND) {
+        THROW_OR_ABORT("DynamicInstanceBuffers only supports foreground tasks");
+    }
     std::shared_lock lock{ mutex_ };
     if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
         position_yangles_.bind(instance_attribute_index);

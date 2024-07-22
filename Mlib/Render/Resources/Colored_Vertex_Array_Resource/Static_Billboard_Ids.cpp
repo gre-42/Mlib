@@ -37,11 +37,14 @@ void StaticBillboardIds::wait() const {
     buffer_.wait();
 }
 
-void StaticBillboardIds::bind(GLuint attribute_index) const {
+void StaticBillboardIds::bind(
+    GLuint attribute_index,
+    TaskLocation task_location) const
+{
     if (num_billboard_atlas_components_ == 0) {
         THROW_OR_ABORT("Attempt to bind zero billboard-IDs");
     }
-    buffer_.set(billboard_ids_);
+    buffer_.set(billboard_ids_, task_location);
 
     CHK(glEnableVertexAttribArray(attribute_index));
     CHK(glVertexAttribIPointer(attribute_index, 1, GL_UNSIGNED_INT, sizeof(BillboardId), nullptr));

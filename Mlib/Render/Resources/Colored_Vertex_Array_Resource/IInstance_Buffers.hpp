@@ -6,6 +6,7 @@ namespace Mlib {
 
 template <typename TData, size_t... tshape>
 class FixedArray;
+enum class TaskLocation;
 
 class IInstanceBuffers {
 public:
@@ -17,7 +18,8 @@ public:
         GLuint instance_attribute_index,
         GLuint rotation_quaternion_attribute_index,
         GLuint billboard_ids_attribute_index,
-        GLuint texture_layer_attribute_index) const = 0;
+        GLuint texture_layer_attribute_index,
+        TaskLocation task_location) const = 0;
     virtual size_t tmp_num_instances() const = 0;
     virtual GLsizei num_instances() const = 0;
     virtual bool has_continuous_texture_layer() const = 0;

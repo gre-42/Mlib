@@ -45,7 +45,10 @@ public:
     }
 
 protected:
-    virtual void set_type_erased(const char *begin, const char *end) override;
+    virtual void set_type_erased(
+        const char *begin,
+        const char *end,
+        TaskLocation task_location) override;
 
 private:
     void deallocate(DeallocationMode mode);

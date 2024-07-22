@@ -33,7 +33,7 @@ VertexArray& GenericPostProcessingLogic::va() {
     if (!va_.initialized()) {
         // screen quad VAO
         va_.initialize();
-        va_.vertex_buffer.set(quad_vertices_, quad_vertices_ + 4 * 6);
+        va_.vertex_buffer.set(quad_vertices_, quad_vertices_ + 4 * 6, TaskLocation::FOREGROUND);
         CHK(glEnableVertexAttribArray(0));
         CHK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0));
         CHK(glEnableVertexAttribArray(1));

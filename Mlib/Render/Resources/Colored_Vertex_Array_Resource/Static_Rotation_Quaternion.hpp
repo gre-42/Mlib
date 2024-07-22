@@ -18,7 +18,7 @@ public:
     ~StaticRotationQuaternion();
     bool copy_in_progress() const;
     void wait() const;
-    void bind(GLuint attribute_index) const;
+    void bind(GLuint attribute_index, TaskLocation task_location) const;
 
 private:
     using RotationQuaternion = Quaternion<float>;
