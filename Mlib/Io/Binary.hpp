@@ -10,9 +10,18 @@
 namespace Mlib {
 
 enum class IoVerbosity {
-    SILENT,
-    VERBOSE
+    SILENT = 0,
+    DATA = 1 << 0,
+    METADATA = 1 << 1
 };
+
+inline IoVerbosity operator & (IoVerbosity a, IoVerbosity b) {
+    return (IoVerbosity)((int)a & (int)b);
+}
+
+inline bool any(IoVerbosity v) {
+    return v != IoVerbosity::SILENT;
+}
 
 void print_chars(std::span<char> span);
 
@@ -23,7 +32,7 @@ T read_binary(std::istream& istr, const char* msg, IoVerbosity verbosity) {
     if (istr.fail()) {
         THROW_OR_ABORT("Could not read " + std::string(msg) + " from stream");
     }
-    if (verbosity == IoVerbosity::VERBOSE) {
+    if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(&result);
         char* end = begin + sizeof(result);
         print_chars({ begin, end });
@@ -42,7 +51,7 @@ void read_vector(std::istream& istr, TVec& vec, const char* msg, IoVerbosity ver
     if (istr.fail()) {
         THROW_OR_ABORT("Could not read vector from stream: " + std::string(msg));
     }
-    if (verbosity == IoVerbosity::VERBOSE) {
+    if (any(verbosity & IoVerbosity::DATA)) {
         char* begin = reinterpret_cast<char*>(vec.data());
         char* end = begin + sizeof(vec[0]) * vec.size();
         print_chars({ begin, end });

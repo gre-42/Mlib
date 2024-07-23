@@ -43,12 +43,13 @@ std::string asciiify(const T& v) {
 std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     std::istream& istr,
     const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config)
+    const RasterConfig& raster_config,
+    IoVerbosity verbosity)
 {
     // if(!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
     //     THROW_OR_ABORT("Could not find struct");
     // }
-    // auto fourcc = read_binary<uint32_t>(istr, "fourcc", VERBOSITY);
+    // auto fourcc = read_binary<uint32_t>(istr, "fourcc", verbosity);
     // if(fourcc != FOURCC_PS2){
     //     THROW_OR_ABORT((std::stringstream() << "Unexpected fourcc: 0x" << std::ios::hex << fourcc << ", " << asciiify(fourcc)).str());
     // }
@@ -57,26 +58,26 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
 
     // Texture
     uint32_t length;
-    texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", VERBOSITY);
-    if (!find_chunk(istr, ID_STRING, &length, nullptr)){
+    texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", verbosity);
+    if (!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)){
         THROW_OR_ABORT("Could not find string chunk");
     }
-    texture->name = remove_trailing_zeros(read_string(istr, length, "texture name", VERBOSITY));
-    if(!find_chunk(istr, ID_STRING, &length, nullptr)){
+    texture->name = remove_trailing_zeros(read_string(istr, length, "texture name", verbosity));
+    if(!find_chunk(istr, ID_STRING, &length, nullptr, verbosity)){
         THROW_OR_ABORT("Could not find string");
     }
-    texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", VERBOSITY));
+    texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", verbosity));
 
     // Raster
-    if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
+    if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
         THROW_OR_ABORT("Could not find struct");
     }
     uint32_t version;
-    if(!find_chunk(istr, ID_STRUCT, nullptr, &version)){
+    if(!find_chunk(istr, ID_STRUCT, nullptr, &version, verbosity)){
         THROW_OR_ABORT("Could not find struct");
     }
     ASSERTLITTLE;
-    auto streamExt = read_binary<StreamRasterExt>(istr, "stream raster ext", VERBOSITY);
+    auto streamExt = read_binary<StreamRasterExt>(istr, "stream raster ext", verbosity);
 
     /*
     printf("%X %X %X %X %X %016llX %X %X %016llX %016llX %X %X %X %X\n",
@@ -121,7 +122,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
         }
     }
 
-    if (!find_chunk(istr, ID_STRUCT, &length, nullptr)){
+    if (!find_chunk(istr, ID_STRUCT, &length, nullptr, verbosity)){
         THROW_OR_ABORT("Could not find struct");
     }
     if (length != ALIGN16((streamExt.width * streamExt.height * streamExt.depth) / 8) + streamExt.paletteSize) {
@@ -142,15 +143,15 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     }
     if (streamExt.paletteSize == 0) {
         auto pixels = raster_ps2->lock(0, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
-        read_vector(istr, std::span{ pixels, length }, "PS2 pixels (0)", VERBOSITY);
+        read_vector(istr, std::span{ pixels, length }, "PS2 pixels (0)", verbosity);
         raster_ps2->unlock();
     } else {
         auto pixels = raster_ps2->lock(0, Raster::LOCKWRITE | Raster::LOCKNOFETCH);
-        read_vector(istr, std::span{ pixels, raster_ps2->pixel_size() }, "PS2 pixels (1)", VERBOSITY);
+        read_vector(istr, std::span{ pixels, raster_ps2->pixel_size() }, "PS2 pixels (1)", verbosity);
         raster_ps2->unlock();
 
         auto pal = raster_ps2->lock_palette(Raster::LOCKWRITE | Raster::LOCKNOFETCH);
-        read_vector(istr, std::span{ pal, streamExt.paletteSize }, "PS2 palette", VERBOSITY);
+        read_vector(istr, std::span{ pal, streamExt.paletteSize }, "PS2 palette", verbosity);
     }
 
     if (raster_config.make_native) {

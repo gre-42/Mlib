@@ -33,7 +33,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
     const DrawDistanceDb& dddb)
 {
     std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> result;
-    auto clump = Mlib::Dff::read_dff(istr);
+    auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
     for (const auto& a : clump.atomics) {
         if (a.frame == nullptr) {
             THROW_OR_ABORT("Atomic has no frame");
@@ -47,7 +47,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
         for (const auto& m : materials) {
             auto col3 = FixedArray<float, 3>{ m.color(0) / 255.f, m.color(1) / 255.f, m.color(2) / 255.f };
             auto& tl = tls.emplace_back(
-                name + a.frame->name,
+                name + "_" + a.frame->name,
                 Material{
                     .blend_mode = BlendMode::BINARY_05,
                     .textures_color = cfg.textures,

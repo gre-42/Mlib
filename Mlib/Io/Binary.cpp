@@ -27,7 +27,7 @@ void Mlib::seek_relative_positive(std::istream& istr, std::streamoff amount, IoV
     if (amount < 0) {
         THROW_OR_ABORT("Seek in negative direction");
     }
-    if (verbosity == IoVerbosity::VERBOSE) {
+    if (any(verbosity & IoVerbosity::DATA)) {
         for (std::streamoff i = 0; i < amount; ++i) {
             auto c = istr.get();
             if (c == EOF) {

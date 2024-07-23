@@ -16,8 +16,6 @@ namespace Mlib {
 
 namespace Dff {
 
-static const IoVerbosity VERBOSITY = IoVerbosity::SILENT;
-
 #ifdef BIGENDIAN
 #define ASSERTLITTLE THROW_OR_ABORT("Unsafe code on big-endian")
 #else
@@ -162,10 +160,11 @@ std::unique_ptr<IRaster> read_as_image(
     uint32_t format,
     uint32_t num_levels,
     const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config);
+    const RasterConfig& raster_config,
+    IoVerbosity verbosity);
 
 uint32_t palette_size(uint32_t format);
-void read_palette(Palette& palette, std::istream& istr, uint32_t format);
+void read_palette(Palette& palette, std::istream& istr, uint32_t format, IoVerbosity verbosity);
 
 struct Texture;
 
@@ -442,20 +441,25 @@ enum PluginID
 };
 #undef MAKEPLUGINID
 
-bool find_chunk(std::istream& str, uint32_t type, uint32_t *length, uint32_t *version);
+bool find_chunk(
+    std::istream& str,
+    uint32_t type,
+    uint32_t *length,
+    uint32_t *version,
+    IoVerbosity verbosity);
 
 class IPlugin {
 public:
     uint32_t id;
     virtual ~IPlugin() = default;
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Material& material) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, const std::shared_ptr<Texture>& texture) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Frame& frame) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Atomic& atomic) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Clump& clump) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Light& light) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Camera& camera) { return false; }
-    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Geometry& geometry) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Material& material, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, const std::shared_ptr<Texture>& texture, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Frame& frame, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Atomic& atomic, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Clump& clump, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Light& light, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Camera& camera, IoVerbosity verbosity) { return false; }
+    virtual bool read(std::istream& istr, const ChunkHeaderInfo& header, Geometry& geometry, IoVerbosity verbosity) { return false; }
     virtual void always_callback(Material& material) {};
     virtual void always_callback(const std::shared_ptr<Texture>& texture) {};
     virtual void always_callback(Frame& frame) {};
@@ -466,9 +470,19 @@ public:
     virtual void always_callback(Geometry& geometry) {};
 };
 
-Clump read_dff(std::istream& istr);
-TexDictionary read_txd(const std::filesystem::path& path, const IRasterFactory& raster_factory, const RasterConfig& raster_config);
-TexDictionary read_txd(std::istream& istr, const IRasterFactory& raster_factory, const RasterConfig& raster_config);
+Clump read_dff(std::istream& istr, IoVerbosity verbosity);
+
+TexDictionary read_txd(
+    const std::filesystem::path& path,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
+    IoVerbosity verbosity);
+
+TexDictionary read_txd(
+    std::istream& istr,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
+    IoVerbosity verbosity);
 
 }
 
