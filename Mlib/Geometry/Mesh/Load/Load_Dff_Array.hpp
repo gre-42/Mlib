@@ -13,13 +13,18 @@ struct LoadMeshConfig;
 class DrawDistanceDb;
 
 template <class TPosition>
-std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> load_dff(
+struct DffArrays {
+    std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> renderables;
+};
+
+template <class TPosition>
+DffArrays<TPosition> load_dff(
     const std::string& filename,
     const LoadMeshConfig<TPosition>& cfg,
     const DrawDistanceDb& dddb);
 
 template <class TPosition>
-std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> load_dff(
+DffArrays<TPosition> load_dff(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<TPosition>& cfg,

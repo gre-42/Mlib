@@ -1,15 +1,17 @@
 #include "Load_Dff_Array.hpp"
 #include <Mlib/Array/Non_Copying_Vector.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 
 using namespace Mlib;
 
 template <class TPosition>
-std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
+DffArrays<TPosition> Mlib::load_dff(
     const std::string& filename,
     const LoadMeshConfig<TPosition>& cfg,
     const DrawDistanceDb& dddb)
@@ -26,13 +28,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
 }
 
 template <class TPosition>
-std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
+DffArrays<TPosition> Mlib::load_dff(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<TPosition>& cfg,
     const DrawDistanceDb& dddb)
 {
-    std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> result;
+    DffArrays<TPosition> result;
     auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
     for (const auto& a : clump.atomics) {
         if (a.frame == nullptr) {
@@ -40,6 +42,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
         }
         if (a.geometry->morph_targets.empty()) {
             THROW_OR_ABORT("Morph targets empty");
+        }
+        auto m = a.frame->matrix.casted<float, TPosition>();
+        for (size_t p = a.frame->parent; p != -1;) {
+            if (p >= clump.frames.size()) {
+                THROW_OR_ABORT("Parent frame index out of bounds");
+            }
+            const auto& parent = clump.frames[p];
+            m = parent.matrix.casted<float, TPosition>() * m;
+            p = parent.parent;
         }
         const auto& morph_target = a.geometry->morph_targets[0];
         const auto& materials = a.geometry->mat_list.materials;
@@ -71,7 +82,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
                 Morphology{
                     .physics_material = cfg.physics_material,
                     .center_distances = OrderableFixedArray{
-                        dddb.get_center_distances(name, morph_target.bounding_sphere.radius()) },
+                        dddb.get_center_distances(a.frame->name, morph_target.bounding_sphere.radius()) },
                     .max_triangle_distance = cfg.max_triangle_distance });
             if (m.texture != nullptr) {
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
@@ -148,7 +159,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
             if (normals.empty()) {
                 tl.convert_triangle_to_vertex_normals();
             }
-            result.push_back(tl.triangle_array());
+            result.renderables.push_back(tl.triangle_array()->transformed<TPosition>(m, "_root_frame"));
         }
     }
     return result;
@@ -156,12 +167,12 @@ std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> Mlib::load_dff(
 
 namespace Mlib {
 
-template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_dff<float>(
+template DffArrays<float> load_dff<float>(
     const std::string& filename,
     const LoadMeshConfig<float>& cfg,
     const DrawDistanceDb& dddb);
 
-template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_dff<double>(
+template DffArrays<double> load_dff<double>(
     const std::string& filename,
     const LoadMeshConfig<double>& cfg,
     const DrawDistanceDb& dddb);

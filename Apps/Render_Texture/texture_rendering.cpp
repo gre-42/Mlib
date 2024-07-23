@@ -109,11 +109,12 @@ int main(int argc, char** argv)
             if (auto filename = parsed.try_named_value("--txd"); filename != nullptr) {
                 auto txd = Dff::read_txd(
                     *filename,
-                    Dff::RasterFactory(),
-                    Dff::RasterConfig{
+                    rvalue_address(Dff::RasterFactory()),
+                    rvalue_address(Dff::RasterConfig{
                         .need_to_read_back_textures = true,
                         .make_native = true,
-                        .flip_gl_y_axis = true});
+                        .flip_gl_y_axis = true}),
+                    IoVerbosity::SILENT);
                 for (auto& tx : txd.textures) {
                     if (!Mlib::re::regex_search(tx->name, re)) {
                         linfo() << "Skipping: " << tx->name;

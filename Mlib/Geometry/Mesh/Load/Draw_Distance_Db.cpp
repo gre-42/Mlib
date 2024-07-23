@@ -37,11 +37,13 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
 			section.clear();
 			continue;
 		}
-		auto set_distances = [&](const std::string& resource_name, float dist){
-			if (resource_name.starts_with("LOD_")) {
-				center_distances_.try_emplace(resource_name + ".dff", dist, INFINITY);
-			} else {
-				center_distances_.try_emplace(resource_name + ".dff", -INFINITY, dist);
+		auto set_distances = [&](const std::string& resource_name, float dist[], size_t n){
+			center_distances_.try_emplace(resource_name, -INFINITY, dist[0]);
+			float prev = -INFINITY;
+			for (size_t i = 0; i < n; ++i) {
+				center_distances_.try_emplace(resource_name + "_l" + std::to_string(i), prev, dist[i]);
+				center_distances_.try_emplace(resource_name + "_L" + std::to_string(i), prev, dist[i]);
+				prev = dist[i];
 			}
 			};
 		static const auto c = str(", ");
@@ -55,11 +57,23 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
 
 			SMatch match;
 			if (regex_match(line, match, reg1)) {
-				set_distances(std::string{ match[2].str() }, safe_stof(match[5].str()));
+				if (match[4].str() != "1") {
+					THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
+				}
+				float distances[] = { safe_stof(match[5].str()) };
+				set_distances(std::string{ match[2].str() }, distances, 1);
 			} else if (regex_match(line, match, reg2)) {
-				set_distances(std::string{ match[2].str() }, safe_stof(match[5].str()));
+				if (match[4].str() != "2") {
+					THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
+				}
+				float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()) };
+				set_distances(std::string{ match[2].str() }, distances, 2);
 			} else if (regex_match(line, match, reg3)) {
-				set_distances(std::string{ match[2].str() }, safe_stof(match[5].str()));
+				if (match[4].str() != "3") {
+					THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
+				}
+				float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()), safe_stof(match[7].str()) };
+				set_distances(std::string{ match[2].str() }, distances, 3);
 			} else {
 				THROW_OR_ABORT("Could not parse line \"" + line + '"');
 			}
@@ -70,7 +84,11 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
 
 			SMatch match;
 			if (regex_match(line, match, reg1)) {
-				set_distances(std::string{ match[2].str() }, safe_stof(match[5].str()));
+				if (match[4].str() != "1") {
+					THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
+				}
+				float distances[] = { safe_stof(match[5].str()) };
+				set_distances(std::string{ match[2].str() }, distances, 1);
 			} else {
 				THROW_OR_ABORT("Could not parse line \"" + line + '"');
 			}

@@ -57,11 +57,12 @@ static void add_resource(
         res.set_textures_lazy([img, name, &res](){
             auto txd = Dff::read_txd(
                 *img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION),
-                Dff::RasterFactory{},
-                Dff::RasterConfig{
+                rvalue_address(Dff::RasterFactory{}),
+                rvalue_address(Dff::RasterConfig{
                     .need_to_read_back_textures = true,
                     .make_native = true,
-                    .flip_gl_y_axis = true});
+                    .flip_gl_y_axis = true}),
+                IoVerbosity::SILENT);
             for (const auto& tx : txd.textures) {
                 TextureSize size{
                     .width = integral_cast<int>(tx->raster->width()),

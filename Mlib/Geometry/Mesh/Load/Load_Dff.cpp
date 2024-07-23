@@ -577,7 +577,7 @@ static std::vector<Frame> read_frame_list(
             "frame",
             verbosity);
         if (any(verbosity & IoVerbosity::METADATA)) {
-            linfo() << "Frame: " << frame.name;
+            linfo() << "Frame: " << frame.name << ", Parent: " << frame.parent;
         }
     }
     return frames;
