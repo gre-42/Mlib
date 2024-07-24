@@ -292,7 +292,7 @@ void Gl3Raster::unlock()
     if (!locked_level_.has_value()) {
         THROW_OR_ABORT("Raster unlock without previous lock");
     }
-    auto level = locked_level_.value();
+    auto level = *locked_level_;
 
     switch (type()) {
     case Raster::NORMAL:

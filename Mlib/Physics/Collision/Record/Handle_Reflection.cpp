@@ -319,11 +319,11 @@ void Mlib::handle_reflection(
             if (dist.min < -dist.max) {
                 if (c.q0 != nullptr) {
                     q0f = -(*c.q0);
-                    cf.q0 = &q0f.value();
+                    cf.q0 = &(*q0f);
                 }
                 if (c.t0 != nullptr) {
                     t0f = -(*c.t0);
-                    cf.t0 = &t0f.value();
+                    cf.t0 = &(*t0f);
                 }
             }
         }

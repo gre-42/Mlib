@@ -17,12 +17,12 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const BaseKeyBinding& base_
     for (const auto& [k, v] : base_key_binding.joystick_axes) {
         ostr << "analog role: " << k << '\n';
         if (v.joystick.has_value()) {
-            ostr << "joystick axis: " <<  v.joystick.value().axis << '\n';
-            ostr << "joystick axis sign and threshold: " << v.joystick.value().sign_and_threshold << '\n';
+            ostr << "joystick axis: " <<  v.joystick->axis << '\n';
+            ostr << "joystick axis sign and threshold: " << v.joystick->sign_and_threshold << '\n';
         }
         if (v.tap.has_value()) {
-            ostr << "tap axis: " <<  v.tap.value().axis << '\n';
-            ostr << "tap axis sign and threshold: " << v.tap.value().sign_and_threshold << '\n';
+            ostr << "tap axis: " <<  v.tap->axis << '\n';
+            ostr << "tap axis sign and threshold: " << v.tap->sign_and_threshold << '\n';
         }
     }
     return ostr;

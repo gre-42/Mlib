@@ -484,7 +484,7 @@ OsmMapResource::OsmMapResource(
                     {},                             // contour
                     {{coords[0], coords[1], 0.f}},  // highlighted_nodes
                     {}                              // crossed_nodes
-                    ).T().reversed(0).save_to_file(prefix.value() + "_r_" + std::to_string(r) + ".png");
+                    ).T().reversed(0).save_to_file(*prefix + "_r_" + std::to_string(r) + ".png");
             }
         }
         // {
@@ -598,7 +598,7 @@ OsmMapResource::OsmMapResource(
                 l->tls_no_backfaces(),
                 !prefix.has_value()
                     ? ""
-                    : prefix.value() + std::to_string(i) + ".png");
+                    : *prefix + std::to_string(i) + ".png");
             ++i;
         }
     }
@@ -980,7 +980,7 @@ OsmMapResource::OsmMapResource(
                             {e.c(0), e.c(1), 0.f}
                         },
                         {}                                // crossed_nodes
-                    ).T().reversed(0).save_to_file(prefix.value() + "_r_" + std::to_string(r) + ".png");
+                    ).T().reversed(0).save_to_file(*prefix + "_r_" + std::to_string(r) + ".png");
                 }
                 handle_triangle_exception(e, "add models failed, debug image saved");
             } else {
@@ -1447,7 +1447,7 @@ OsmMapResource::OsmMapResource(
                     }
                     IndexedFaceSet<float, float, size_t> indexed_face_set{ triangles };
                     if (auto nm = try_getenv("OSM_NAVMESH_FILENAME"); nm.has_value()) {
-                        save_obj(nm.value(), indexed_face_set, nullptr);
+                        save_obj(*nm, indexed_face_set, nullptr);
                     }
                     NavigationMeshBuilder nmb{
                         indexed_face_set,
@@ -1783,7 +1783,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
         if (!rs.has_value()) {
             THROW_OR_ABORT("Please specify the \"OSM_WAYPOINT_BBOX_RADIUS\" environment variable (should be in the range 1 - 2)");
         }
-        double r = safe_stod(rs.value());
+        double r = safe_stod(*rs);
         // way_points_.at(WayPointLocation::STREET).plot(wf + debug_prefix + "street.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::SIDEWALK).plot(wf + debug_prefix + "sidewalk.svg", 600, 600, 0.1f);
         // way_points_.at(WayPointLocation::EXPLICIT).plot(wf + debug_prefix + "explicit.svg", 600, 600, 0.1f);
@@ -1796,16 +1796,16 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
             FixedArray<double, 2>{-r, -r}};
         auto hitbox_positions = hri_.bri->hitbox_positions();
         if (auto it = way_points_.find(JoinedWayPointSandbox::STREET); it != way_points_.end()) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(*wf + debug_prefix + "street.svg", it->second, bounding_contour, hitbox_positions);
         }
         if (auto it = way_points_.find(JoinedWayPointSandbox::SIDEWALK); it != way_points_.end()) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "sidewalk.svg", it->second, bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(*wf + debug_prefix + "sidewalk.svg", it->second, bounding_contour, hitbox_positions);
         }
         if (auto it = way_points_.find(JoinedWayPointSandbox::EXPLICIT_GROUND); it != way_points_.end()) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "explicit_ground.svg", it->second, bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(*wf + debug_prefix + "explicit_ground.svg", it->second, bounding_contour, hitbox_positions);
         }
         if (auto it = way_points_.find(JoinedWayPointSandbox::RUNWAY_OR_TAXIWAY_OR_AIRWAY); it != way_points_.end()) {
-            plot_way_points_and_obstacles(wf.value() + debug_prefix + "runway_or_taxiway_or_airway.svg", it->second, bounding_contour, hitbox_positions);
+            plot_way_points_and_obstacles(*wf + debug_prefix + "runway_or_taxiway_or_airway.svg", it->second, bounding_contour, hitbox_positions);
         }
     }
 }
@@ -1813,7 +1813,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
 void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const
 {
     if (auto wp = try_getenv("OSM_OBJ_PREFIX"); wp.has_value()) {
-        save_to_obj_file(wp.value() + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
+        save_to_obj_file(*wp + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
     }
 }
 

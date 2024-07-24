@@ -365,7 +365,7 @@ void Scene::render(
             if (!res.has_value()) {
                 THROW_OR_ABORT("Could not find black node with name \"" + external_render_pass.black_node_name + '"');
             }
-            return res.value();
+            return *res;
         }();
         node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {

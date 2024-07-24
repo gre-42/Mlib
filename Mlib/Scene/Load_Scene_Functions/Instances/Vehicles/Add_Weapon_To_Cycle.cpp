@@ -62,10 +62,10 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             {
                 JsonMacroArguments subst;
                 if (capture.has_value()) {
-                    subst.insert_json(capture.value());
+                    subst.insert_json(*capture);
                 }
                 if (player_name.has_value()) {
-                    subst.insert_json("PLAYER_NAME", player_name.value());
+                    subst.insert_json("PLAYER_NAME", *player_name);
                 }
                 subst.insert_json("AMMO_TYPE", ammo_type);
                 subst.insert_json("BULLET_TYPE", bullet_type);

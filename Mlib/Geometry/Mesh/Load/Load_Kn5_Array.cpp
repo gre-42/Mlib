@@ -220,22 +220,22 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (settings_json.materials.contains(m.name)) {
                 const auto& ms = settings_json.materials.at(m.name);
                 if (ms.properties.ksDiffuse.has_value()) {
-                    m.ksDiffuse = ms.properties.ksDiffuse.value();
+                    m.ksDiffuse = *ms.properties.ksDiffuse;
                 }
                 if (ms.properties.ksAmbient.has_value()) {
-                    m.ksAmbient = ms.properties.ksAmbient.value();
+                    m.ksAmbient = *ms.properties.ksAmbient;
                 }
                 if (ms.properties.ksSpecular.has_value()) {
-                    m.ksSpecular = ms.properties.ksSpecular.value();
+                    m.ksSpecular = *ms.properties.ksSpecular;
                 }
                 if (ms.properties.ksSpecularEXP.has_value()) {
-                    m.ksSpecularEXP = ms.properties.ksSpecularEXP.value();
+                    m.ksSpecularEXP = *ms.properties.ksSpecularEXP;
                 }
                 if (ms.properties.ksEmissive.has_value()) {
-                    m.ksEmissive = ms.properties.ksEmissive.value();
+                    m.ksEmissive = *ms.properties.ksEmissive;
                 }
                 if (ms.properties.ksAlphaRef.has_value()) {
-                    m.ksAlphaRef = ms.properties.ksAlphaRef.value();
+                    m.ksAlphaRef = *ms.properties.ksAlphaRef;
                 }
             }
         }
@@ -324,7 +324,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
         for (const auto& [_, node] : kn5.nodes) {
             auto material = node.materialID.has_value()
-                ? &kn5.materials.at(node.materialID.value())
+                ? &kn5.materials.at(*node.materialID)
                 : nullptr;
 
             TriangleList<TPos> tl{
@@ -365,7 +365,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
-                if (number.has_value() && (number.value() > 0)) {
+                if (number.has_value() && (*number > 0)) {
                     attrs |= MetaAttributes::ATTR_COLLIDABLE;
                 }
                 if (any(attrs & MetaAttributes::ATTR_COLLIDABLE) &&
@@ -725,27 +725,27 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             if (auto gm = ext_config.try_get("LIGHTING", "LIT_MULT");
                 gm.has_value())
             {
-                lit_mult = safe_stof(gm.value());
+                lit_mult = safe_stof(*gm);
             }
             if (auto gm = ext_config.try_get("LIGHTING", "SPECULAR_MULT");
                 gm.has_value())
             {
-                specular_mult = safe_stof(gm.value());
+                specular_mult = safe_stof(*gm);
             }
             if (auto gm = ext_config.try_get("GRASS_FX", "GRASS_MATERIALS");
                 gm.has_value())
             {
-                grass_materials = string_to_set(gm.value(), re);
+                grass_materials = string_to_set(*gm, re);
             }
             if (auto gm = ext_config.try_get("GRASS_FX", "OCCLUDING_MESHES");
                 gm.has_value())
             {
-                occluding_meshes = string_to_set(gm.value(), re);
+                occluding_meshes = string_to_set(*gm, re);
             }
             if (auto gm = ext_config.try_get("GRASS_FX", "TEXTURE_GRID");
                 gm.has_value())
             {
-                texture_grid = string_to_vector(gm.value(), re, safe_stou);
+                texture_grid = string_to_vector(*gm, re, safe_stou);
             }
         }
     }

@@ -99,7 +99,7 @@ ImposterLogic::ImposterLogic(
     if (!aabb.has_value()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + debug_prefix_ + '"');
     }
-    obj_relative_aabb_ = aabb.value();
+    obj_relative_aabb_ = *aabb;
     orig_node->insert_node_hider(orig_hider);
 }
 
@@ -239,9 +239,9 @@ void ImposterLogic::render(
 
         {
             auto iv = TransformationMatrix<float, double, 3>(
-                la.value().extrinsic_R, camera_position);
+                la->extrinsic_R, camera_position);
             auto mv = (TransformationMatrix<float, double, 3>::inverse(
-                la.value().extrinsic_R, camera_position) *
+                la->extrinsic_R, camera_position) *
                 m);
             size_t i = 0;
             if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
@@ -260,7 +260,7 @@ void ImposterLogic::render(
         }
 
         auto npixels = npixels_for_dpi(
-            la.value().sensor_aabb,
+            la->sensor_aabb,
             dpi,
             1,
             max_texture_size_);
@@ -269,14 +269,14 @@ void ImposterLogic::render(
         }
         auto imposter_camera_node = make_dunique<SceneNode>(
             camera_position,
-            matrix_2_tait_bryan_angles(la.value().extrinsic_R),
+            matrix_2_tait_bryan_angles(la->extrinsic_R),
             1.f);
         imposter_camera_node->set_camera(
             std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
-                    npixels.value().scaled_sensor_aabb,
-                    la.value().near_plane,
-                    la.value().far_plane),
+                    npixels->scaled_sensor_aabb,
+                    la->near_plane,
+                    la->far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
         RenderedSceneDescriptor imposter_rsd{
             .external_render_pass = {
@@ -290,10 +290,10 @@ void ImposterLogic::render(
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
-        ViewportGuard vg{npixels.value().width, npixels.value().height};
+        ViewportGuard vg{ npixels->width, npixels->height };
         fbs_->configure({
-            .width = npixels.value().width,
-            .height = npixels.value().height,
+            .width = npixels->width,
+            .height = npixels->height,
             .color_internal_format = GL_RGBA,
             .color_format = GL_RGBA,
             .nsamples_msaa = render_config.imposter_nsamples_msaa});
@@ -313,18 +313,18 @@ void ImposterLogic::render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .end_pixel = (float)npixels.value().width},
+                    .end_pixel = (float)npixels->width},
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
-                    .end_pixel = (float)npixels.value().height},
+                    .end_pixel = (float)npixels->height},
                 render_config,
                 scene_graph_config,
                 render_results,
                 imposter_rsd);
             // // Disable antialiasing to get this to work.
-            // VectorialPixels<float, 4> vpx{ArrayShape{size_t(npixels.value().height), size_t(npixels.value().width)}};
-            // CHK(glReadPixels(0, 0, npixels.value().width, npixels.value().height, GL_RGBA, GL_FLOAT, vpx->flat_begin()));
+            // VectorialPixels<float, 4> vpx{ArrayShape{size_t(npixels->height), size_t(npixels->width)}};
+            // CHK(glReadPixels(0, 0, npixels->width, npixels->height, GL_RGBA, GL_FLOAT, vpx->flat_begin()));
             // StbImage4::from_float_rgba(vpx.to_array()).reversed(0).save_to_file("/tmp/imposter-" + debug_prefix_ + ".png");
         }
 
@@ -332,8 +332,8 @@ void ImposterLogic::render(
         // TODO: Remove StandardRenderLogic
         add_imposter(
             ImposterParameters{
-                la.value().sensor_aabb,
-                npixels.value().scaled_sensor_aabb,
+                la->sensor_aabb,
+                npixels->scaled_sensor_aabb,
                 float(cam_to_obj2_len)},
             m.t(),
             camera_position(1),

@@ -19,7 +19,7 @@ public:
 		if (!value_.has_value()) {
 			THROW_OR_ABORT("Hash not computed");
 		}
-		return value_.value();
+		return *value_;
 	}
 	bool operator < (const CachedHash&) const {
 		return false;

@@ -10,10 +10,10 @@ OptionalMaterialHider::OptionalMaterialHider() {
     auto fn = try_getenv("HIDDEN_MATERIALS");
     if (fn.has_value()) {
         hidden_names_.emplace();
-        auto f = create_ifstream(fn.value());
+        auto f = create_ifstream(*fn);
         for (std::string line; std::getline(*f, line); )
         {
-            hidden_names_.value().insert(line);
+            hidden_names_->insert(line);
         }
     }
 }
@@ -25,7 +25,7 @@ bool OptionalMaterialHider::is_hidden(const Material& material) const {
     if (material.textures_color.empty()) {
         return false;
     }
-    bool result = hidden_names_.value().contains(
+    bool result = hidden_names_->contains(
         material.textures_color[0].texture_descriptor.color.filename);
     if (print_materials_ && !result) {
         linfo() << "Drawing material " << material.identifier();

@@ -121,7 +121,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
             [mle = args.macro_line_executor,
-             l = g.value(),
+             l = *g,
              capture = args.arguments.try_at_non_null(KnownArgs::capture)]
             (
                 const std::optional<std::string>& player,
@@ -132,13 +132,13 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             {
                 JsonMacroArguments local_args;
                 if (capture.has_value()) {
-                    local_args.insert_json(capture.value());
+                    local_args.insert_json(*capture);
                 }
                 if (player.has_value()) {
-                    local_args.set("PLAYER_NAME", player.value());
+                    local_args.set("PLAYER_NAME", *player);
                 }
                 if (target.has_value()) {
-                    local_args.set("TARGET", target.value());
+                    local_args.set("TARGET", *target);
                 }
                 local_args.set("BULLET_SUFFIX", bullet_suffix);
                 local_args.set("BULLET_VELOCITY", velocity / kph);
@@ -176,10 +176,10 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_substitutions;
             if (capture.has_value()) {
-                local_substitutions.insert_json(capture.value());
+                local_substitutions.insert_json(*capture);
             }
             local_substitutions.insert_json("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
-            macro_line_executor(macro.value(), &local_substitutions, nullptr);
+            macro_line_executor(*macro, &local_substitutions, nullptr);
         },
         delete_node_mutex);
 }

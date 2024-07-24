@@ -25,7 +25,7 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
     if (!R.has_value()) {
         return std::nullopt;
     }
-    result.extrinsic_R = R.value();
+    result.extrinsic_R = *R;
     TransformationMatrix<float, double, 3> lookat0{
         result.extrinsic_R,
         camera_position};

@@ -699,7 +699,7 @@ static Material read_material(
         if (!default_surface_properties.has_value()) {
             THROW_OR_ABORT("Default surface properties not specified");
         }
-        material.surface_properties = default_surface_properties.value();
+        material.surface_properties = *default_surface_properties;
     } else {
         material.surface_properties = read_binary<SurfaceProperties>(istr, "surface properties", verbosity);
     }

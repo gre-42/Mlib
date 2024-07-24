@@ -152,7 +152,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
                 return player_skill.has_value()
-                    ? player_skill.value()
+                    ? *player_skill
                     : default_skills.at(source).at(name);
             };
             auto team = player.at<std::string>(PlayerKeys::team);
@@ -165,7 +165,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                         MacroKeys::playback,
                         (jv.at(ToplevelKeys::library).get<std::string>() + ".create_player_and_" +
                             vars.database.at<std::string>("CLASS") +
-                            "_for_" + controller.value())
+                            "_for_" + *controller)
                     },
                     {
                         MacroKeys::arguments,

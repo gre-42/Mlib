@@ -23,7 +23,7 @@ std::set<std::pair<OrderableFixedArray<TPos, 3>, OrderableFixedArray<TPos, 3>>>
                 // plot_mesh_svg("/tmp/cc.svg", 800, 800, triangles, {}, {edge.first, edge.second});
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename.has_value()) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(debug_filename.value());
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {edge.first, edge.second}).T().reversed(0).save_to_file(*debug_filename);
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, debug image saved");
                 } else {
                     throw EdgeException(edge.first, edge.second, "Detected duplicate edge, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -76,7 +76,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
                     if (!neighbors.insert(v).second) {
                         auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                         if (debug_filename.has_value()) {
-                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(debug_filename.value());
+                            plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {v.first, v.second}).T().reversed(0).save_to_file(*debug_filename);
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, debug image saved");
                         } else {
                             throw EdgeException(v.first, v.second, "Contour neighbor already set, consider setting the CONTOUR_DEBUG_FILENAME environment variable");
@@ -332,7 +332,7 @@ std::list<std::list<FixedArray<TPos, 3>>> Mlib::find_contours(
             } catch (const std::runtime_error& e) {
                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                 if (debug_filename.has_value()) {
-                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(debug_filename.value());
+                    plot_mesh(ArrayShape{8000, 8000}, 1, 4, triangles, {}, {}, {(*t)(0).position, (*t)(1).position, (*t)(2).position}).T().reversed(0).save_to_file(*debug_filename);
                     THROW_OR_ABORT(std::string(e.what()) + ", debug image saved");
                 } else {
                     THROW_OR_ABORT(std::string(e.what()) + ", consider setting the CONTOUR_DEBUG_FILENAME environment variable");

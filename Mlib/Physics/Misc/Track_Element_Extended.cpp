@@ -13,9 +13,9 @@ TrackElementExtended TrackElementExtended::create(
         result.meters_to_start = 0.;
     } else {
         auto ds = std::sqrt(sum(squared(
-            predecessor.value().transformation().position() -
+            predecessor->transformation().position() -
             result.transformation().position())));
-        result.meters_to_start = predecessor.value().meters_to_start + ds;
+        result.meters_to_start = predecessor->meters_to_start + ds;
     }
     return result;
 }

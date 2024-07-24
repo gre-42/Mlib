@@ -41,7 +41,7 @@ void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoi
     waypoint_id_ = waypoint_id;
     if (has_waypoint()) {
         if (max_waypoint_history_length_ > 0) {
-            waypoint_history_.push_back(waypoint.value());
+            waypoint_history_.push_back(*waypoint);
             if (waypoint_history_.size() > max_waypoint_history_length_) {
                 waypoint_history_.pop_front();
             }
@@ -65,7 +65,7 @@ void SingleWaypoint::clear_waypoint() {
 void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
     if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
-            add_beacon(Beacon::create(waypoint_.value().position, "beacon"));
+            add_beacon(Beacon::create(waypoint_->position, "beacon"));
         }
         for (const auto& w : waypoint_history_) {
             add_beacon(Beacon::create(w.position, "beacon"));
@@ -148,7 +148,10 @@ const SingleWaypoint::WayPoint& SingleWaypoint::get_waypoint() const {
     if (!has_waypoint()) {
         THROW_OR_ABORT("Waypoint not defined");
     }
-    return waypoint_.value();
+    if (!waypoint_.has_value()) {
+        verbose_abort("Internal error in SingleWaypoint::get_waypoint");
+    }
+    return *waypoint_;
 }
 
 size_t SingleWaypoint::nwaypoints_reached() const {

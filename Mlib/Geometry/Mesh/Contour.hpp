@@ -110,7 +110,7 @@ void extract_triangles_inside_contours(
                                 const auto& c = t((i + 2) % 3);
                                 auto debug_filename = try_getenv("CONTOUR_DEBUG_FILENAME");
                                 if (debug_filename.has_value()) {
-                                    std::string dbf{ debug_filename.value() };
+                                    const auto& dbf = *debug_filename;
                                     if (dbf.ends_with(".png")) {
                                         plot_mesh(ArrayShape{ 8000, 8000 }, 1, 4, triangles, { contours[contour_id], contours[it->second] }, { O{a}, O{b}, O{c} }, {}).T().reversed(0).save_to_file(dbf);
                                     } else if (dbf.ends_with(".svg")) {

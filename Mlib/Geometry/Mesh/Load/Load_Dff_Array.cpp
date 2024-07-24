@@ -156,9 +156,9 @@ DffArrays<TPosition> Mlib::load_dff(
             }
         }
         for (auto& tl : tls) {
-            if (normals.empty()) {
-                tl.convert_triangle_to_vertex_normals();
-            }
+            // if (normals.empty()) {
+            //     tl.convert_triangle_to_vertex_normals();
+            // }
             result.renderables.push_back(tl.triangle_array()->transformed<TPosition>(m, "_root_frame"));
         }
     }

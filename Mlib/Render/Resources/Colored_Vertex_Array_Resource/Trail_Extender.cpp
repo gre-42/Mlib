@@ -34,7 +34,7 @@ void TrailExtender::append_location(
         THROW_OR_ABORT("Trail instance move not called");
     }
     if (previous_center_.has_value()) {
-        auto& prev = previous_center_.value();
+        auto& prev = *previous_center_;
         auto dz = (location.t() - prev.position).casted<float>();
         auto dz_l2 = sum(squared(dz));
         auto duration = std::chrono::duration<float>(trails_instance_.time() - prev.time).count() * seconds;
@@ -51,7 +51,7 @@ void TrailExtender::append_location(
         if (!lookat.has_value()) {
             return;
         }
-        const auto& R = lookat.value();
+        const auto& R = *lookat;
         auto RS = R;
         for (size_t r = 0; r < 3; ++r) {
             RS(r, 2) = -dz(r);

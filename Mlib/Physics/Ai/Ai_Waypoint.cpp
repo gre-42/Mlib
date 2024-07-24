@@ -26,7 +26,7 @@ FixedArray<double, 3> AiWaypoint::interpolated_position(
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desination is undefined");
 	}
-	auto& pod = position_of_destination_.value().position;
+	auto& pod = position_of_destination_->position;
 	FixedArray<double, 3> dy3{ 0., (double)dy, 0. };
 	if ((waypoint_history_ == nullptr) ||
 		waypoint_history_->empty())
@@ -62,7 +62,7 @@ FixedArray<double, 3> AiWaypoint::position_of_destination(float dy) const {
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desintation not defined");
 	}
-	auto res = position_of_destination_.value().position;
+	auto res = position_of_destination_->position;
 	res(1) += (double)dy;
 	return res;
 }
@@ -71,7 +71,7 @@ WayPointLocation AiWaypoint::flags() const {
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desintation not defined");
 	}
-	return position_of_destination_.value().flags;
+	return position_of_destination_->flags;
 }
 
 FixedArray<float, 3> AiWaypoint::velocity_of_destination(const FixedArray<float, 3>& deflt) const {
@@ -100,5 +100,5 @@ FixedArray<float, 3> AiWaypoint::velocity_at_destination() const {
 	if (!velocity_at_destination_.has_value()) {
 		THROW_OR_ABORT("Velocity at destination is undefined");
 	}
-	return velocity_at_destination_.value();
+	return *velocity_at_destination_;
 }

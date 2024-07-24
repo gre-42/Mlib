@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
                 }
                 scene.add_root_node(name, make_dunique<SceneNode>(
                     FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
-                    matrix_2_tait_bryan_angles(R.value()).casted<float>(),
+                    matrix_2_tait_bryan_angles(*R).casted<float>(),
                     1.f));
                 auto light = std::make_unique<Light>(Light{
                     .shadow_render_pass = ExternalRenderPassType::NONE});

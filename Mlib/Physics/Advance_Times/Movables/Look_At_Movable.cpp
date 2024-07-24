@@ -36,7 +36,7 @@ void LookAtMovable::advance_time(float dt, std::chrono::steady_clock::time_point
     const auto& dpos = dmat.t();
     auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos);
     if (R.has_value()) {
-        transformation_matrix_.R() = R.value().casted<float>();
+        transformation_matrix_.R() = R->casted<float>();
     }
 }
 

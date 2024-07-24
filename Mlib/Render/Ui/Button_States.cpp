@@ -178,20 +178,20 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
                 if (!b.has_value()) {
                     continue;
                 }
-                if (only_pressed && !gamepad_state_.buttons[b.value()]) {
+                if (only_pressed && !gamepad_state_.buttons[*b]) {
                     continue;
                 }
-                sstr << n << "=" << (unsigned int)gamepad_state_.buttons[b.value()] << " ";
+                sstr << n << "=" << (unsigned int)gamepad_state_.buttons[*b] << " ";
             }
             sstr << std::endl;
             for (const auto& [n, b] : joystick_axes_map) {
                 if (!b.has_value()) {
                     continue;
                 }
-                if (only_pressed && (std::fabs(gamepad_state_.axes[b.value()]) != 1.0)) {
+                if (only_pressed && (std::fabs(gamepad_state_.axes[*b]) != 1.0)) {
                     continue;
                 }
-                sstr << n << "=" << gamepad_state_.axes[b.value()] << " ";
+                sstr << n << "=" << gamepad_state_.axes[*b] << " ";
             }
         }
         sstr << std::endl;
@@ -221,7 +221,7 @@ bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) co
     }
     if (!k.gamepad_button.empty()) {
         auto button = gamepad_buttons_map.get(k.gamepad_button);
-        if (button.has_value() && get_gamepad_button_down(button.value())) {
+        if (button.has_value() && get_gamepad_button_down(*button)) {
             return true;
         }
     }

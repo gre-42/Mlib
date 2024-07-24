@@ -48,7 +48,7 @@ void DefineWinnerConditionals::execute(const LoadSceneJsonUserFunctionArgs& args
                 nlohmann::json()
             }}));
         } else {
-            const auto& lte = lapTimeEvent.value();
+            const auto& lte = *lapTimeEvent;
             if (lte.event.vehicle_colors.empty()) {
                 THROW_OR_ABORT("Could not find a single vehicle color");
             }

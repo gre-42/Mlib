@@ -28,7 +28,7 @@ std::optional<GlLookatBoundingSphere> Mlib::gl_lookat_bounding_sphere(
     if (!lookat.has_value()) {
         return std::nullopt;
     }
-    result.camera_model_matrix.R() = lookat.value();
+    result.camera_model_matrix.R() = *lookat;
     result.near_plane = (float)(dist_camera_to_observed - observed_bounding_sphere.radius());
     result.far_plane = (float)(dist_camera_to_observed + observed_bounding_sphere.radius());
     return result;

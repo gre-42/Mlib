@@ -83,15 +83,15 @@ void HudOpponentZoomLogic::render(
         return;
     }
     auto zoom_camera_node = make_dunique<SceneNode>(
-        la.value().camera_model_matrix.t(),
-        matrix_2_tait_bryan_angles(la.value().camera_model_matrix.R()),
+        la->camera_model_matrix.t(),
+        matrix_2_tait_bryan_angles(la->camera_model_matrix.R()),
         1.f);
     zoom_camera_node->set_camera(
         std::make_unique<PerspectiveCamera>(
             PerspectiveCameraConfig{
                 .y_fov = scaled_fov_,
-                .near_plane = la.value().near_plane,
-                .far_plane = la.value().far_plane },
+                .near_plane = la->near_plane,
+                .far_plane = la->far_plane },
             PerspectiveCamera::Postprocessing::ENABLED));
     RenderedSceneDescriptor zoom_rsd{
         .external_render_pass = {

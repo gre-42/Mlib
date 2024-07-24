@@ -29,7 +29,7 @@ std::optional<AudioSourceState<float>> AudioListener::get_relative_position(cons
     if (!listener_inverse_state_.has_value()) {
         return std::nullopt;
     }
-    const auto& il = listener_inverse_state_.value();
+    const auto& il = *listener_inverse_state_;
     return AudioSourceState<float>{
         .position = il.pose.transform(state.position).casted<float>(),
         .velocity = il.velocity + il.pose.rotate(state.velocity)

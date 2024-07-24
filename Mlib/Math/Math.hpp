@@ -290,7 +290,7 @@ std::optional<Array<TData>> solve_symm_inplace(
     if (!L.has_value()) {
         return std::nullopt;
     }
-    return solve_LU(L.value(), L.value().vH(), B);
+    return solve_LU(*L, L->vH(), B);
 }
 
 template <class TDerivedB, class TData>
@@ -340,7 +340,7 @@ std::optional<Array<TData>> solve_symm_1d(
     if (!res.has_value()) {
         return std::nullopt;
     }
-    return res.value().flattened();
+    return res->flattened();
 }
 
 template <class TArrayA, class TArrayB>
@@ -393,7 +393,7 @@ std::optional<Array<typename TArray::value_type>> lstsq_chol_1d(
     if (!res.has_value()) {
         return std::nullopt;
     }
-    return res.value().flattened();
+    return res->flattened();
 }
 
 template <class TArray>

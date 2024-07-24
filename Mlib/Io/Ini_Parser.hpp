@@ -24,7 +24,7 @@ public:
         if (!s.has_value()) {
             return std::nullopt;
         }
-        return safe_stox<T>(s.value());
+        return safe_stox<T>(*s);
     }
     const std::map<std::string, std::map<std::string, std::string>>& sections() const;
     const std::map<std::string, std::list<std::map<std::string, std::string>>>& lists() const;

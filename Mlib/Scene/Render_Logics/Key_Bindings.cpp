@@ -301,8 +301,8 @@ void KeyBindings::increment_external_forces(
                 rb.rbp_.rotation_ = dot2d(rb.rbp_.rotation_, rodrigues1(alpha * k->rotate));
             }
             if (k->car_surface_power.has_value()) {
-                rb.set_surface_power("main", EnginePowerIntent{.surface_power = k->car_surface_power.value()});
-                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = k->car_surface_power.value()});
+                rb.set_surface_power("main", EnginePowerIntent{.surface_power = *k->car_surface_power});
+                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = *k->car_surface_power});
             }
             if (k->max_velocity != INFINITY) {
                 rb.set_max_velocity(k->max_velocity);
@@ -318,14 +318,14 @@ void KeyBindings::increment_external_forces(
             if (any(k->tires_z != 0.f)) {
                 rb.tires_z_ += k->tires_z;
             }
-            if ((alpha == 0) && k->wants_to_jump.has_value() && k->wants_to_jump.value()) {
+            if ((alpha == 0) && k->wants_to_jump.has_value() && *k->wants_to_jump) {
                 rb.set_wants_to_jump();
             }
             if (k->wants_to_grind.has_value()) {
-                rb.grind_state_.wants_to_grind_ = k->wants_to_grind.value();
+                rb.grind_state_.wants_to_grind_ = *k->wants_to_grind;
             }
             if (k->fly_forward_factor.has_value()) {
-                rb.fly_forward_state_.wants_to_fly_forward_factor_ = k->fly_forward_factor.value();
+                rb.fly_forward_state_.wants_to_fly_forward_factor_ = *k->fly_forward_factor;
             }
         }
     }
@@ -468,15 +468,15 @@ void KeyBindings::increment_external_forces(
             cfg);
         if (enable_controls && !std::isnan(alpha)) {
             if (k->surface_power.has_value()) {
-                rb.avatar_controller().walk(k->surface_power.value(), alpha);
-                rb.avatar_controller().increment_legs_z(k->legs_z.value() * alpha);
+                rb.avatar_controller().walk(*k->surface_power, alpha);
+                rb.avatar_controller().increment_legs_z((*k->legs_z) * alpha);
             }
             if (k->angular_velocity.has_value()) {
                 if (k->yaw) {
-                    rb.avatar_controller().increment_yaw(k->angular_velocity.value() * cfg.dt_substeps(), alpha);
+                    rb.avatar_controller().increment_yaw((*k->angular_velocity) * cfg.dt_substeps(), alpha);
                 }
                 if (k->pitch) {
-                    rb.avatar_controller().increment_pitch(k->angular_velocity.value() * cfg.dt_substeps(), alpha);
+                    rb.avatar_controller().increment_pitch((*k->angular_velocity) * cfg.dt_substeps(), alpha);
                 }
             }
         }
@@ -553,19 +553,19 @@ void KeyBindings::increment_external_forces(
         if (enable_controls && !std::isnan(alpha)) {
             auto& rb = k->player->rigid_body();
             if (k->turbine_power.has_value()) {
-                rb.plane_controller().accelerate(k->turbine_power.value(), alpha);
+                rb.plane_controller().accelerate(*k->turbine_power, alpha);
             }
             if (k->brake.has_value()) {
-                rb.plane_controller().brake(k->brake.value(), alpha);
+                rb.plane_controller().brake(*k->brake, alpha);
             }
             if (k->pitch.has_value()) {
-                rb.plane_controller().pitch(alpha * k->pitch.value(), alpha);
+                rb.plane_controller().pitch(alpha * (*k->pitch), alpha);
             }
             if (k->yaw.has_value()) {
-                rb.plane_controller().yaw(alpha * k->yaw.value(), alpha);
+                rb.plane_controller().yaw(alpha * (*k->yaw), alpha);
             }
             if (k->roll.has_value()) {
-                rb.plane_controller().roll(alpha * k->roll.value(), alpha);
+                rb.plane_controller().roll(alpha * (*k->roll), alpha);
             }
         }
     }

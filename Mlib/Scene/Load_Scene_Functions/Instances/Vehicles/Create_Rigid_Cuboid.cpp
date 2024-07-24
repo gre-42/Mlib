@@ -102,17 +102,17 @@ void CreateRigidCuboid::execute(const LoadSceneJsonUserFunctionArgs& args)
             collidable_mode);
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_triangle_to_obj(filename.value(), {e.a, e.b, e.c});
+            save_triangle_to_obj(*filename, {e.a, e.b, e.c});
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     } catch (const PolygonEdgeException<double, 3>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_triangle_to_obj(filename.value(), e.poly);
+            save_triangle_to_obj(*filename, e.poly);
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     } catch (const PolygonEdgeException<double, 4>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
-            save_quad_to_obj(filename.value(), e.poly);
+            save_quad_to_obj(*filename, e.poly);
         }
         throw std::runtime_error(e.str("Error", scene_node_resources.get_geographic_mapping("world")));
     }

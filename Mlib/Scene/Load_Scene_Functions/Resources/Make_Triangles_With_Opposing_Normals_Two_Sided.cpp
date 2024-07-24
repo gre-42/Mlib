@@ -22,7 +22,7 @@ LoadSceneJsonUserFunction MakeTrianglesWithOpposingNormalsTwoSided::json_user_fu
 
     auto material_filter = PhysicsMaterial::NONE;
     if (auto f = args.arguments.try_at<std::string>(KnownArgs::material_filter); f.has_value()) {
-        material_filter = physics_material_from_string(f.value());
+        material_filter = physics_material_from_string(*f);
     }
     make_triangles_with_opposing_normals_two_sided(
         args.arguments.at<std::string>(KnownArgs::resource_name),

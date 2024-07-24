@@ -88,7 +88,7 @@ void FollowMovable::advance_time(float dt, std::chrono::steady_clock::time_point
     transformation_matrix_.t(1) += y_adapt_;
     auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_.casted<double>());
     if (R.has_value()) {
-        transformation_matrix_.R() = R.value().casted<float>();
+        transformation_matrix_.R() = R->casted<float>();
     }
     dpos_old_ = dpos3;
 }

@@ -68,7 +68,7 @@ TirePowerIntent RigidBodyEngine::consume_tire_power(
 
     float max_surface_power = (ntires_old_ == 0) || !engine_power_.has_value()
         ? 0.f
-        : engine_power_.value().get_power();
+        : engine_power_->get_power();
     if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
@@ -137,7 +137,7 @@ TirePowerIntent RigidBodyEngine::consume_rotor_power(
 
     float max_surface_power = (ntires_old_ == 0) || !engine_power_.has_value()
         ? 0.f
-        : engine_power_.value().get_power();
+        : engine_power_->get_power();
     if (hand_brake_pulled_ || std::isnan(max_surface_power)) {
         return TirePowerIntent{
             .power = NAN,
@@ -190,7 +190,7 @@ void RigidBodyEngine::advance_time(
         average_tire_w_ /= (float)tires_w_.size();
     }
     if (engine_power_.has_value()) {
-        auto& engine_power = engine_power_.value();
+        auto& engine_power = *engine_power_;
         if (!std::isnan(average_tire_w_)) {
             engine_power.auto_set_gear(dt, average_tire_w_);
         }
@@ -212,7 +212,7 @@ float RigidBodyEngine::engine_w() const {
     if (!engine_power_.has_value()) {
         THROW_OR_ABORT("RigidBodyEngine::engine_w() requested but no engine provided");
     }
-    return engine_power_.value().engine_w();
+    return engine_power_->engine_w();
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const TirePowerIntent& power_intent) {
@@ -233,7 +233,7 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RigidBodyEngine& engi
         ostr << "   consumed " << c << '\n';
     }
     if (engine.engine_power_.has_value()) {
-        ostr << engine.engine_power_.value() << '\n';
+        ostr << *engine.engine_power_ << '\n';
     }
     ostr << "   ntires_old " << engine.ntires_old_ << '\n';
     ostr << "   hand_brake_pulled " << (int)engine.hand_brake_pulled_ << '\n';

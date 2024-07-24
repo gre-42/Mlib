@@ -39,7 +39,7 @@ bool TrackReader::read(double& progress) {
         THROW_OR_ABORT("TrackReader::read without geographic mapping");
     }
     if (!sequence_->eof()) {
-        while (!finished() && (!track_element1_.has_value() || (track_element1_.value().progress(interpolation_key_) < progress)))
+        while (!finished() && (!track_element1_.has_value() || (track_element1_->progress(interpolation_key_) < progress)))
         {
             if (track_element1_.has_value()) {
                 track_element0_ = track_element1_;
@@ -79,12 +79,15 @@ bool TrackReader::read(double& progress) {
                 track_element0_ = track_element1_;
             }
         }
-        if (track_element1_.value().progress(interpolation_key_) == track_element0_.value().progress(interpolation_key_)) {
+        if (!track_element0_.has_value() || !track_element1_.has_value()) {
+            verbose_abort("Internal error in TrackReader::read");
+        }
+        if (track_element1_->progress(interpolation_key_) == track_element0_->progress(interpolation_key_)) {
             track_element_ = track_element0_.value();
         } else {
             float alpha = float(
-                (progress - track_element0_.value().progress(interpolation_key_)) /
-                (track_element1_.value().progress(interpolation_key_) - track_element0_.value().progress(interpolation_key_)));
+                (progress - track_element0_->progress(interpolation_key_)) /
+                (track_element1_->progress(interpolation_key_) - track_element0_->progress(interpolation_key_)));
             assert_true(alpha >= 0);
             assert_true(alpha <= 1);
             if (interpolation_mode_ == TrackReaderInterpolationMode::NEAREST_NEIGHBOR) {
@@ -92,7 +95,7 @@ bool TrackReader::read(double& progress) {
             } else if (interpolation_mode_ != TrackReaderInterpolationMode::LINEAR) {
                 THROW_OR_ABORT("Unknown track-reader interpolation-mode");
             }
-            track_element_ = interpolated(track_element0_.value(), track_element1_.value(), alpha);
+            track_element_ = interpolated(*track_element0_, *track_element1_, alpha);
         }
         return true;
     }

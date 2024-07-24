@@ -87,7 +87,7 @@ Gun::Gun(
 {
     if (punch_angle_node != nullptr) {
         punch_angle_node_on_clear_.emplace(punch_angle_node->on_clear, CURRENT_SOURCE_LOCATION);
-        punch_angle_node_on_clear_.value().add(
+        punch_angle_node_on_clear_->add(
             [this]() { punch_angle_node_ = nullptr; },
             CURRENT_SOURCE_LOCATION);
     }

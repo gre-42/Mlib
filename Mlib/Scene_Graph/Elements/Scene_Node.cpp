@@ -1070,11 +1070,11 @@ void SceneNode::set_position(
     trafo_.offset() = position;
     if (!time.has_value()) {
         // Do nothing
-    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+    } else if (*time == std::chrono::steady_clock::time_point()) {
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
-        trafo_history_.append(trafo_, time.value());
+        trafo_history_.append(trafo_, *time);
     }
 }
 
@@ -1090,11 +1090,11 @@ void SceneNode::set_rotation(
     rotation_matrix_ = tait_bryan_angles_2_matrix(rotation);
     if (!time.has_value()) {
         // Do nothing
-    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+    } else if (*time == std::chrono::steady_clock::time_point()) {
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
-        trafo_history_.append(trafo_, time.value());
+        trafo_history_.append(trafo_, *time);
     }
 }
 
@@ -1118,11 +1118,11 @@ void SceneNode::set_relative_pose(
     set_scale(scale);
     if (!time.has_value()) {
         // Do nothing
-    } else if (time.value() == std::chrono::steady_clock::time_point()) {
+    } else if (*time == std::chrono::steady_clock::time_point()) {
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
-        trafo_history_.append(trafo_, time.value());
+        trafo_history_.append(trafo_, *time);
     }
 }
 
@@ -1245,9 +1245,9 @@ std::optional<AxisAlignedBoundingBox<double, 3>> SceneNode::relative_aabb() cons
         if (cb.has_value()) {
             auto m = c.scene_node->relative_model_matrix();
             if (!result.has_value()) {
-                result = cb.value().transformed(m);
+                result = cb->transformed(m);
             } else {
-                result.value().extend(cb.value().transformed(m));
+                result->extend(cb->transformed(m));
             }
         }
     }

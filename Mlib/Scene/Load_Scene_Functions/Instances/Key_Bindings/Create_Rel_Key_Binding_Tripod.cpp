@@ -45,7 +45,7 @@ void CreateRelKeyBindingTripod::execute(const LoadSceneJsonUserFunctionArgs& arg
         .dynamic_node = [&scene=scene, &sc=selected_cameras]() -> DanglingPtr<SceneNode> {
             auto name = sc.camera_node_name();
             auto cycle = sc.cycle(name);
-            if (cycle.has_value() && (cycle.value() == CameraCycleType::TRIPOD)) {
+            if (cycle.has_value() && (*cycle == CameraCycleType::TRIPOD)) {
                 return scene.get_node(name, DP_LOC).ptr();
             }
             return nullptr;

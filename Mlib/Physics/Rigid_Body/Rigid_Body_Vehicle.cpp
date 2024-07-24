@@ -240,7 +240,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
                 .position = abs_location.t() },
             c.cfg);
         if (wing->trail_source.has_value()) {
-            const auto& s = wing->trail_source.value();
+            const auto& s = *wing->trail_source;
             if (std::abs(lvel) > s.minimum_velocity) {
                 TransformationMatrix<float, double, 3> trail_location{
                     abs_location.R(),
@@ -379,7 +379,7 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
                 }
                 rbp_.rotation_ =
                     Quaternion<float>{ rbp_.rotation_ }
-                    .slerp(Quaternion<float>{ r1.value() }, cfg.alignment_slerp)
+                    .slerp(Quaternion<float>{ *r1 }, cfg.alignment_slerp)
                     .to_rotation_matrix();
             }
         } else {
@@ -443,7 +443,7 @@ FixedArray<double, 3> RigidBodyVehicle::abs_grind_point() const {
     if (!grind_state_.grind_point_.has_value()) {
         THROW_OR_ABORT("Grind point is not set");
     }
-    return rbp_.transform_to_world_coordinates(grind_state_.grind_point_.value());
+    return rbp_.transform_to_world_coordinates(*grind_state_.grind_point_);
 }
 
 FixedArray<double, 3> RigidBodyVehicle::abs_target() const {
@@ -646,9 +646,9 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
     }
     auto de = delta_engines_.end();
     if (tire.delta_engine.has_value()) {
-        de = delta_engines_.find(tire.delta_engine.value());
+        de = delta_engines_.find(*tire.delta_engine);
         if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + tire.delta_engine.value() + "\" exists");
+            THROW_OR_ABORT("No delta engine with name \"" + *tire.delta_engine + "\" exists");
         }
     }
     return e->second.consume_tire_power(
@@ -668,9 +668,9 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     }
     auto de = delta_engines_.end();
     if (rotor.delta_engine.has_value()) {
-        de = delta_engines_.find(rotor.delta_engine.value());
+        de = delta_engines_.find(*rotor.delta_engine);
         if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + rotor.delta_engine.value() + "\" exists");
+            THROW_OR_ABORT("No delta engine with name \"" + *rotor.delta_engine + "\" exists");
         }
     }
     return e->second.consume_rotor_power(
@@ -1086,14 +1086,14 @@ FixedArray<float, 3> TrailerHitches::get_position_female() const {
     if (!female_.has_value()) {
         THROW_OR_ABORT("Vehicle has no female trailer hitch");
     }
-    return female_.value();
+    return *female_;
 }
 
 FixedArray<float, 3> TrailerHitches::get_position_male() const {
     if (!male_.has_value()) {
         THROW_OR_ABORT("Vehicle has no male trailer hitch");
     }
-    return male_.value();
+    return *male_;
 }
 
 void TrailerHitches::set_position_female(const FixedArray<float, 3>& position) {

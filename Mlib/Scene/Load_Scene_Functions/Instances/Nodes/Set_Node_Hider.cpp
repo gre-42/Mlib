@@ -144,14 +144,14 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_args;
             if (capture.has_value()) {
-                local_args.insert_json(capture.value());
+                local_args.insert_json(*capture);
             }
             if (punch_angle_node != nullptr) {
                 auto rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
             }
-            macro_line_executor(on_hide.value(), &local_args, nullptr);
+            macro_line_executor(*on_hide, &local_args, nullptr);
         },
         [
             macro_line_executor = args.macro_line_executor,
@@ -163,9 +163,9 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_args;
             if (capture.has_value()) {
-                local_args.insert_json(capture.value());
+                local_args.insert_json(*capture);
             }
-            macro_line_executor(on_destroy.value(), &local_args, nullptr);
+            macro_line_executor(*on_destroy, &local_args, nullptr);
         },
         [
             punch_angle_node,
@@ -178,14 +178,14 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             }
             JsonMacroArguments local_args;
             if (capture.has_value()) {
-                local_args.insert_json(capture.value());
+                local_args.insert_json(*capture);
             }
             if (punch_angle_node != nullptr) {
                 auto rotation = punch_angle_node->rotation();
                 local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
                 local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
             }
-            macro_line_executor(on_update.value(), &local_args, nullptr);
+            macro_line_executor(*on_update, &local_args, nullptr);
         });
     auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
     node_to_hide->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });

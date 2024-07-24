@@ -72,7 +72,7 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& rb = get_rigid_body_vehicle(scene.get_node(vehicle, DP_LOC));
     RigidBodyPulses* wheel_rbp = nullptr;
     if (wheel_node_name.has_value()) {
-        auto wheel_node = scene.get_node(wheel_node_name.value(), DP_LOC);
+        auto wheel_node = scene.get_node(*wheel_node_name, DP_LOC);
         if (has_rigid_body_vehicle(wheel_node)) {
             wheel_rbp = &get_rigid_body_vehicle(wheel_node).rbp_;
         } else {

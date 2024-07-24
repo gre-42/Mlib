@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 
             if (ftl.has_value()) {
                 // CHK(glViewport(0, 0, 1024, 1024));
-                ftl.value().render();
+                ftl->render();
             } else if (!atlas.tiles.empty()) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {

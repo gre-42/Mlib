@@ -23,7 +23,7 @@ std::optional<std::string> Mlib::try_getenv(const char* name) {
 std::string Mlib::str_getenv(const char* name) {
     auto res = try_getenv(name);
     if (res.has_value()) {
-        return res.value();
+        return *res;
     } else {
         THROW_OR_ABORT("No environment variable with name \"" + std::string{ name } + "\" exists");
     }

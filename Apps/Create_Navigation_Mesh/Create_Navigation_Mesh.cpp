@@ -41,10 +41,10 @@ int main(int argc, char** argv) {
         if (!end.has_value()) {
             THROW_OR_ABORT("Could not localize end");
         }
-        linfo() << "Start " << start.value().position;
-        linfo() << "End " << end.value().position;
+        linfo() << "Start " << start->position;
+        linfo() << "End " << end->position;
         linfo() << "Shortest path";
-        for (const auto& p : nmb.ssm.shortest_path(start.value(), end.value(), 2.f)) {
+        for (const auto& p : nmb.ssm.shortest_path(*start, *end, 2.f)) {
             linfo() << p;
         }
     } catch (const std::runtime_error& e) {

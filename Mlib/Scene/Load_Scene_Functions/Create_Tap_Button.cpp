@@ -26,7 +26,7 @@ const std::string CreateTapButton::key = "create_tap_button";
 template <class T, class TOperation>
 std::optional<decltype(TOperation()(T()))> otransform(const std::optional<T>& v, const TOperation& op) {
     if (v.has_value()) {
-        return op(v.value());
+        return op(*v);
     }
     return std::nullopt;
 }

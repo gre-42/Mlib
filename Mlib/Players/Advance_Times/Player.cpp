@@ -669,7 +669,7 @@ void Player::select_best_weapon_in_inventory() {
     if (!best_weapon.has_value()) {
         return;
     }
-    weapon_cycle().set_desired_weapon(name_, best_weapon.value());
+    weapon_cycle().set_desired_weapon(name_, *best_weapon);
 }
 
 bool Player::ramming() const {

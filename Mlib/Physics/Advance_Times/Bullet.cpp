@@ -88,7 +88,7 @@ void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) 
         if (!R.has_value()) {
             THROW_OR_ABORT("Could not update bullet rotation");
         }
-        rigid_body_pulses_.rotation_ = R.value();
+        rigid_body_pulses_.rotation_ = *R;
     }
     if (has_trail_) {
         trail_generator_.advance_time(dt);

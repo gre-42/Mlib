@@ -492,19 +492,19 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
     {
         std::shared_lock lock{ aabb_mutex_.value };
         if (aabb_.has_value()) {
-            return aabb_.value();
+            return *aabb_;
         }
     }
     std::scoped_lock lock{ aabb_mutex_.value };
     if (aabb_.has_value()) {
-        return aabb_.value();
+        return *aabb_;
     }
     auto vs = vertices();
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
     }
     aabb_ = AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end());
-    return aabb_.value();
+    return *aabb_;
 }
 
 template <class TPos>
@@ -512,19 +512,19 @@ BoundingSphere<TPos, 3> ColoredVertexArray<TPos>::bounding_sphere() const {
     {
         std::shared_lock lock{ bounding_sphere_mutex_.value };
         if (bounding_sphere_.has_value()) {
-            return bounding_sphere_.value();
+            return *bounding_sphere_;
         }
     }
     std::scoped_lock lock{ bounding_sphere_mutex_.value };
     if (bounding_sphere_.has_value()) {
-        return bounding_sphere_.value();
+        return *bounding_sphere_;
     }
     auto vs = vertices();
     if (vs.empty()) {
         THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name + "\" because it has no vertices");
     }
     bounding_sphere_ = BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end());
-    return bounding_sphere_.value();
+    return *bounding_sphere_;
 }
 
 template <class TPos>

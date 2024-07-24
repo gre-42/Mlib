@@ -45,7 +45,7 @@ void Mlib::save_kn5(
     WriteString(*f, "sc6969");
     WriteBinary<int32_t>(*f, version, "version");
     if (unknownNo.has_value()) {
-        WriteBinary<int32_t>(*f, unknownNo.value(), "unknownNo");
+        WriteBinary<int32_t>(*f, *unknownNo, "unknownNo");
     }
 
     // Textures

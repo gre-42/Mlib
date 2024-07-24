@@ -109,7 +109,7 @@ std::optional<BoundingSphere<TData, 3>> circumscribed_sphere(
     if (!optional_center.has_value()) {
         return std::nullopt;
     }
-    auto center = scale * optional_center.value() + x(0);
+    auto center = scale * (*optional_center) + x(0);
     return BoundingSphere<TData, 3>::from_center_and_iterator(center, x.flat_begin(), x.flat_end());
 }
 
@@ -163,7 +163,7 @@ std::optional<BoundingSphere<TData, tndim>> welzl(
         if (!D.has_value()) {
             return std::nullopt;
         }
-        if (D.value().contains(*p_c, TData(WELZL_INTERIOR_THRESHOLD))) {
+        if (D->contains(*p_c, TData(WELZL_INTERIOR_THRESHOLD))) {
             P.resize(P.size() + 1);
             P[P.size() - 1] = P[p_i];
             P[p_i] = p_c;
@@ -192,7 +192,7 @@ BoundingSphere<TData, tndim> welzl_from_vector(
     for (size_t i = 0; i < 100; ++i) {
         auto result = welzl(P, R, rng);
         if (result.has_value()) {
-            return result.value();
+            return *result;
         }
         std::shuffle(P.begin(), P.end(), rng);
     }

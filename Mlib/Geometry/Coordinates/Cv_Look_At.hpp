@@ -19,7 +19,7 @@ TransformationMatrix<TData, TData, 3> cv_lookat_relative(
     }
     return opengl_to_cv_extrinsic_matrix(
         TransformationMatrix<float, float, 3>{
-            R.value(),
+            *R,
             cv_to_opengl_coordinates(camera_pos) });
 }
 

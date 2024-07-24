@@ -9,10 +9,10 @@ OptionalMeshHider::OptionalMeshHider() {
     auto fn = try_getenv("HIDDEN_MESHES");
     if (fn.has_value()) {
         hidden_names_.emplace();
-        auto f = create_ifstream(fn.value());
+        auto f = create_ifstream(*fn);
         for (std::string line; std::getline(*f, line); )
         {
-            hidden_names_.value().insert(line);
+            hidden_names_->insert(line);
         }
     }
 }
@@ -21,7 +21,7 @@ bool OptionalMeshHider::is_hidden(const std::string& name) const {
     if (!hidden_names_.has_value()) {
         return false;
     }
-    bool result = hidden_names_.value().contains(name);
+    bool result = hidden_names_->contains(name);
     if (print_names_ && !result) {
         linfo() << "Drawing mesh " << name;
     }

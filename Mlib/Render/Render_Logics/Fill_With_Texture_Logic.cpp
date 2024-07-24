@@ -78,7 +78,7 @@ void FillWithTextureLogic::set_image_resource_name(const ColormapWithModifiers& 
 void FillWithTextureLogic::update_texture_id() {
     if (!rp_.allocated()) {
         if (layer_.has_value()) {
-            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(layer_.value()).c_str());
+            rp_.allocate(simple_vertex_shader_text_, fragment_shader_text_layer(*layer_).c_str());
         } else {
             rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
         }

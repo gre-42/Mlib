@@ -911,7 +911,7 @@ int main(int argc, char** argv) {
                 }
                 scene.add_root_node(name, make_dunique<SceneNode>(
                     FixedArray<double, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
-                    matrix_2_tait_bryan_angles(R.value()).casted<float>(),
+                    matrix_2_tait_bryan_angles(*R).casted<float>(),
                     1.f));
                 auto light = create_light(name);
                 lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
@@ -935,7 +935,7 @@ int main(int argc, char** argv) {
                     }
                     scene.add_root_node(name, make_dunique<SceneNode>(
                         FixedArray<double, 3>{r * cos(a) + center(0), center(1), r * sin(a) + center(2)},
-                        matrix_2_tait_bryan_angles(R.value()).casted<float>(),
+                        matrix_2_tait_bryan_angles(*R).casted<float>(),
                         1.f));
                     auto light = create_light(name);
                     lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
@@ -974,12 +974,12 @@ int main(int argc, char** argv) {
             auto la = gl_lookat_aabb(
                 scene.get_node("follower_camera", DP_LOC)->position(),
                 scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
-                aabb.value());
+                *aabb);
             if (!la.has_value()) {
                 throw std::runtime_error("Could not compute frustum, camera might be inside the object's AABB");
             }
             auto npixels = npixels_for_dpi(
-                la.value().sensor_aabb,
+                la->sensor_aabb,
                 PerspectiveCameraConfig().dpi((float)render_config.windowed_height),
                 1,
                 2048);
@@ -987,17 +987,17 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("Could not compute npixels, object might be too small or too large");
             }
             if (args.has_named_value("--output")) {
-                render_results.outputs.at(rsd).width = npixels.value().width;
-                render_results.outputs.at(rsd).height = npixels.value().height;
+                render_results.outputs.at(rsd).width = npixels->width;
+                render_results.outputs.at(rsd).height = npixels->height;
             }
             scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<FrustumCamera>(
                 FrustumCameraConfig::from_sensor_aabb(
-                    npixels.value().scaled_sensor_aabb,
-                    la.value().near_plane,
-                    la.value().far_plane),
+                    npixels->scaled_sensor_aabb,
+                    la->near_plane,
+                    la->far_plane),
                 FrustumCamera::Postprocessing::ENABLED));
             scene.get_node("follower_camera", DP_LOC)->set_rotation(
-                matrix_2_tait_bryan_angles(la.value().extrinsic_R),
+                matrix_2_tait_bryan_angles(la->extrinsic_R),
                 std::chrono::steady_clock::time_point());
         } else {
             scene.add_root_node("follower_camera", make_dunique<SceneNode>(

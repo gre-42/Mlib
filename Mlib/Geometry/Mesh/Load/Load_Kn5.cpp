@@ -166,12 +166,12 @@ static void readNodes(
     }
 
     if (!parentID.has_value()) { newNode.hmatrix = newNode.tmatrix; }
-    else { newNode.hmatrix = nodeList.at(parentID.value()).hmatrix * newNode.tmatrix; }
+    else { newNode.hmatrix = nodeList.at(*parentID).hmatrix * newNode.tmatrix; }
 
     if (verbose) {
         std::stringstream matInfo;
         if (newNode.materialID.has_value()) {
-            const auto& material = model.materials.at(newNode.materialID.value());
+            const auto& material = model.materials.at(*newNode.materialID);
             matInfo <<
                 " material: " << material.name <<
                 " shader: " << material.shader;
