@@ -10,7 +10,6 @@
 #include <Mlib/Render/Input_Map/Tap_Button_Map.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Try_Get_Value.hpp>
 #include <cmath>
 #include <iostream>
 #include <mutex>
@@ -205,15 +204,15 @@ void ButtonStates::print(bool physical, bool only_pressed) const {
 
 bool ButtonStates::key_down(const BaseKeyBinding& k, const std::string& role) const {
     if (auto joystick_axis = k.get_joystick_axis(role); joystick_axis != nullptr) {
-        if (auto j = try_get_value(joystick_axis->joystick); j != nullptr) {
-            if (auto axis = try_get_value(joystick_axes_map.get(j->axis));
-                    (axis != nullptr) &&
+        if (const auto& j = joystick_axis->joystick; j.has_value()) {
+            if (const auto& axis = joystick_axes_map.get(j->axis);
+                    axis.has_value() &&
                     get_gamepad_digital_axis(*axis, j->sign_and_threshold))
             {
                 return true;
             }
         }
-        if (auto j = try_get_value(joystick_axis->tap); j != nullptr) {
+        if (const auto& j = joystick_axis->tap; j.has_value()) {
             auto axis = tap_analog_axes_map.get(j->axis);
             if (get_tap_analog_digital_axis(axis, j->sign_and_threshold)) {
                 return true;

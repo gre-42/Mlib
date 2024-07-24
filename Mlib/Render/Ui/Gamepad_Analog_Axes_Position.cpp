@@ -7,7 +7,6 @@
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
-#include <Mlib/Try_Get_Value.hpp>
 #include <cmath>
 
 using namespace Mlib;
@@ -65,15 +64,15 @@ float GamepadAnalogAxesPosition::axis_alpha()
             result = v;
         }
     };
-    if (const auto* b = try_get_value(axes->joystick); b != nullptr) {
+    if (const auto& b = axes->joystick; b.has_value()) {
         const auto& id = joystick_axes_map.get(b->axis);
-        if (auto* idv = try_get_value(id); idv != nullptr) {
-            float v = button_states_.get_gamepad_axis(*idv);
+        if (id.has_value()) {
+            float v = button_states_.get_gamepad_axis(*id);
             update_result(::axis_alpha(*b, v));
         }
     }
-    if (const auto* b = try_get_value(axes->tap); b != nullptr) {
-        auto id = tap_analog_axes_map.get(b->axis);
+    if (const auto& b = axes->tap; b.has_value()) {
+        const auto& id = tap_analog_axes_map.get(b->axis);
         float v = button_states_.get_tap_joystick_axis(id);
         update_result(::axis_alpha(*b, v));
     }

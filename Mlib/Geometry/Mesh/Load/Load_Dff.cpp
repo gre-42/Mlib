@@ -10,7 +10,6 @@
 #include <Mlib/Io/Cleanup.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Os/Os.hpp>
-#include <Mlib/Try_Get_Value.hpp>
 #include <optional>
 
 // This file is based on the "librw" project (https://github.com/aap/librw)
