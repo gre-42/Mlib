@@ -11,15 +11,25 @@ using namespace Mlib::Dff;
 std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
     IoVerbosity verbosity)
 {
+    if ((raster_factory != nullptr) && (raster_config == nullptr)) {
+        THROW_OR_ABORT("Received raster factory without config");
+    }
     auto texture = std::make_shared<Texture>();
     // Texture
     texture->filter_addressing = read_binary<uint32_t>(istr, "filter addressing", verbosity);
     texture->name = remove_trailing_zeros(read_string(istr, 32, "texture name", verbosity));
     texture->mask = remove_trailing_zeros(read_string(istr, 32, "texture mask", verbosity));
+
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << "Texture name: " << texture->name << ", mask: " << texture->mask;
+    }
+    if (raster_factory == nullptr) {
+        return nullptr;
+    }
 
     // Raster
     auto format = read_binary<uint32_t>(istr, "format", verbosity);
@@ -32,7 +42,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
     auto compression = read_binary<uint8_t>(istr, "compression", verbosity);
 
     if ((format & Raster::PAL4) || (format & Raster::PAL8)) {
-        if (!raster_factory.is_p8_supported()) {
+        if (!raster_factory->is_p8_supported()) {
             texture->raster = read_as_image(
                 istr,
                 width,
@@ -40,8 +50,8 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
                 depth,
                 format | type,
                 num_levels,
-                raster_factory,
-                raster_config,
+                *raster_factory,
+                *raster_config,
                 verbosity);
             return texture;
         }
@@ -49,7 +59,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
 
     uint32_t pal_size = palette_size(format);
 
-    auto raster_d3d8 = raster_factory.create_raster_d3d8(
+    auto raster_d3d8 = raster_factory->create_raster_d3d8(
         width,
         height,
         depth,
@@ -58,7 +68,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
         compression,
         num_levels,
         has_alpha,
-        raster_config);
+        *raster_config);
 
     if (pal_size != 0) {
         uint8_t* pal = raster_d3d8->palette();
@@ -80,8 +90,8 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
             seek_relative_positive(istr, size, verbosity);
         }
     }
-    if (raster_config.make_native) {
-        texture->raster = raster_factory.make_raster_native(std::move(raster_d3d8), raster_config);
+    if (raster_config->make_native) {
+        texture->raster = raster_factory->make_raster_native(std::move(raster_d3d8), *raster_config);
     } else {
         texture->raster = std::move(raster_d3d8);
     }

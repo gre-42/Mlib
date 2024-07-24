@@ -42,8 +42,8 @@ std::string asciiify(const T& v) {
 
 std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     std::istream& istr,
-    const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
     IoVerbosity verbosity)
 {
     // if(!find_chunk(istr, ID_STRUCT, nullptr, nullptr)){
@@ -53,6 +53,10 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     // if(fourcc != FOURCC_PS2){
     //     THROW_OR_ABORT((std::stringstream() << "Unexpected fourcc: 0x" << std::ios::hex << fourcc << ", " << asciiify(fourcc)).str());
     // }
+
+    if ((raster_factory != nullptr) && (raster_config == nullptr)) {
+        THROW_OR_ABORT("Received raster factory without config");
+    }
 
     auto texture = std::make_shared<Texture>();
 
@@ -67,6 +71,13 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
         THROW_OR_ABORT("Could not find string");
     }
     texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", verbosity));
+
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << "Texture name: " << texture->name << ", mask: " << texture->mask;
+    }
+    if (raster_factory == nullptr) {
+        return nullptr;
+    }
 
     // Raster
     if (!find_chunk(istr, ID_STRUCT, nullptr, nullptr, verbosity)){
@@ -97,13 +108,13 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     streamExt.mipmapVal);
     */
     
-    auto raster_ps2 = raster_factory.create_raster_ps2(
+    auto raster_ps2 = raster_factory->create_raster_ps2(
         streamExt.width,
         streamExt.height,
         streamExt.depth,
         streamExt.paletteSize,
         streamExt.rasterFormat,
-        raster_config);
+        *raster_config);
 
     // this is weird stuff
     if (streamExt.version < 2) {
@@ -154,8 +165,8 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
         read_vector(istr, std::span{ pal, streamExt.paletteSize }, "PS2 palette", verbosity);
     }
 
-    if (raster_config.make_native) {
-        texture->raster = raster_factory.make_raster_native(std::move(raster_ps2), raster_config);
+    if (raster_config->make_native) {
+        texture->raster = raster_factory->make_raster_native(std::move(raster_ps2), *raster_config);
     } else {
         texture->raster = std::move(raster_ps2);
     }

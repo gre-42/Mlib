@@ -14,8 +14,8 @@ struct RasterConfig;
 std::shared_ptr<Texture> read_texture_native_d3d8(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
     IoVerbosity verbosity);
 
 std::shared_ptr<Texture> read_texture_native_d3d9(

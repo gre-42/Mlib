@@ -650,6 +650,9 @@ static std::shared_ptr<Texture> read_texture(
     }
     texture->mask = Mlib::remove_trailing_zeros(read_string(istr, length, "mask", verbosity));
 
+    if (any(verbosity & IoVerbosity::METADATA)) {
+        linfo() << "Texture ref: " << texture->name << ", mask: " << texture->mask;
+    }
     // uint32_t mipState = cfg.mipmapping;
     // uint32_t autoMipState = cfg.auto_mipmapping;
     // int32_t filter = filterAddressing & 0xFF;
@@ -1260,8 +1263,8 @@ std::unique_ptr<IRaster> Mlib::Dff::read_as_image(
 static std::shared_ptr<Texture> read_texture_native(
     std::istream& istr,
     const std::list<std::unique_ptr<IPlugin>>& plugins,
-    const IRasterFactory& raster_factory,
-    const RasterConfig& raster_config,
+    const IRasterFactory* raster_factory,
+    const RasterConfig* raster_config,
     IoVerbosity verbosity)
 {
     uint32_t length;
@@ -1306,16 +1309,23 @@ static TexDictionary read_texdictionary(
     tex_dict.textures.reserve(num_textures);
     while (num_textures-- != 0) {
         uint32_t length;
-        if (!find_chunk(istr, ID_TEXTURENATIVE, &length, nullptr, verbosity)){
+        if (!find_chunk(istr, ID_TEXTURENATIVE, &length, nullptr, verbosity)) {
             THROW_OR_ABORT("Could not find texture");
         }
         if (raster_factory == nullptr) {
-            seek_relative_positive(istr, length, verbosity);
-        } else {
-            if (raster_config == nullptr) {
-                THROW_OR_ABORT("Raster factory requires raster config");
+            auto old_pos = istr.tellg();
+            read_texture_native(istr, plugins, raster_factory, raster_config, verbosity);
+            auto new_pos = istr.tellg();
+            if (new_pos < old_pos) {
+                THROW_OR_ABORT("Unexpected stream position (0)");
             }
-            tex_dict.textures.push_back(read_texture_native(istr, plugins, *raster_factory, *raster_config, verbosity));
+            auto diff = new_pos - old_pos;
+            if (diff > length) {
+                THROW_OR_ABORT("Unexpected stream position (1)");
+            }
+            seek_relative_positive(istr, length - diff, verbosity);
+        } else {
+            tex_dict.textures.push_back(read_texture_native(istr, plugins, raster_factory, raster_config, verbosity));
         }
     }
     return tex_dict;
