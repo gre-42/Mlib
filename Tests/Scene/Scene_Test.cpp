@@ -27,6 +27,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -85,6 +86,7 @@ void test_physics_engine(unsigned int seed) {
         .wire_frame = BoolRenderOption::UNCHANGED,
         .window_title = "Physics test",
         .show_mouse_cursor = true};
+    InputConfig input_config;
     FixedTimeSleeper render_sleeper{ 1.f / 60.f };
     SetFps set_fps{
         &render_sleeper,
@@ -93,6 +95,7 @@ void test_physics_engine(unsigned int seed) {
     };
     Render render{
         render_config,
+        input_config,
         num_renderings,
         set_fps,
         [is_interactive]() {

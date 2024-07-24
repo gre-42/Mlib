@@ -31,6 +31,7 @@
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Render.hpp>
@@ -507,6 +508,7 @@ int main(int argc, char** argv) {
             .double_buffer = !args.has_named("--no_double_buffer"),
             .normalmaps = !args.has_named("--no_normalmaps"),
             .show_mouse_cursor = true};
+        InputConfig input_config;
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         MeasureFps mf{
             0.005f,
@@ -518,6 +520,7 @@ int main(int argc, char** argv) {
             []() { return false; }};
         Render render{
             render_config,
+            input_config,
             num_renderings,
             set_fps,
             []() { return std::chrono::steady_clock::now(); },

@@ -6,6 +6,7 @@
 #include <Mlib/Images/Resample/Pyramid.hpp>
 #include <Mlib/Images/StbImage3.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Normal_Type.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -56,9 +57,16 @@ int main(int argc, char** argv) {
 
         std::atomic_size_t num_renderings = SIZE_MAX;
         RenderConfig render_config;
+        InputConfig input_config;
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{ &sleeper };
-        Render render{ render_config, num_renderings, set_fps, []() { return std::chrono::steady_clock::now(); } };
+        Render render{
+            render_config,
+            input_config,
+            num_renderings,
+            set_fps,
+            []() { return std::chrono::steady_clock::now(); }
+        };
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
         TrailResources trail_resources;

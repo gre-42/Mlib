@@ -7,6 +7,7 @@
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
@@ -83,10 +84,12 @@ int main(int argc, char** argv) {
         RenderConfig render_config{
             .windowed_width = args.has_named_value("--width") ? safe_stoi(args.named_value("--width")) : (int)in_color.shape(1),
             .windowed_height = args.has_named_value("--height") ? safe_stoi(args.named_value("--height")) : (int)in_color.shape(0)};
+        InputConfig input_config;
         FixedTimeSleeper sleeper{ safe_stof(args.named_value("--sleep_dt", "0.01667")) };
         SetFps set_fps{ &sleeper };
         Render render{
             render_config,
+            input_config,
             num_renderings,
             set_fps,
             []() { return std::chrono::steady_clock::now(); },

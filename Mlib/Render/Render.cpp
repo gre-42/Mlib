@@ -30,6 +30,7 @@ static void error_callback(int error, const char* description)
 
 Render::Render(
     const RenderConfig& render_config,
+    const InputConfig& input_config,
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
     std::function<std::chrono::steady_clock::time_point()> frame_time,
@@ -39,6 +40,7 @@ Render::Render(
     , frame_time_{ std::move(frame_time) }
     , render_results_{ render_results }
     , render_config_{ render_config }
+    , input_config_{ input_config }
 {
     if (!frame_time_) {
         THROW_OR_ABORT("frame_time not set");
@@ -110,7 +112,7 @@ void Render::print_hardware_info() const {
 
 Renderer Render::generate_renderer() const
 {
-    return Renderer{*window_, render_config_, num_renderings_, set_fps_, frame_time_, render_results_};
+    return Renderer{*window_, render_config_, input_config_, num_renderings_, set_fps_, frame_time_, render_results_};
 }
 
 void Render::render(

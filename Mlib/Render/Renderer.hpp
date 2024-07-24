@@ -20,6 +20,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 template <typename TData, size_t... tshape>
 class FixedArray;
+struct InputConfig;
 
 class Renderer {
     friend void handle_events(
@@ -27,11 +28,13 @@ class Renderer {
         ButtonStates *button_states,
         CursorStates *cursor_states,
         CursorStates *scroll_wheel_states,
+        const InputConfig& input_config,
         const std::function<void()>& callback);
 public:
     Renderer(
         Window& window,
         const RenderConfig& render_config,
+        const InputConfig& input_config,
         std::atomic_size_t& num_renderings,
         SetFps& set_fps,
         std::function<std::chrono::steady_clock::time_point()> frame_time,
@@ -51,6 +54,7 @@ private:
     bool continue_rendering() const;
     Window& window_;
     const RenderConfig& render_config_;
+    const InputConfig& input_config_;
     std::atomic_size_t& num_renderings_;
     RenderResults* render_results_;
     SetFps& set_fps_;
@@ -62,6 +66,7 @@ void handle_events(
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states,
+    const InputConfig& input_config,
     const std::function<void()>& callback);
 
 }

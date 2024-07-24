@@ -18,6 +18,7 @@
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
@@ -229,19 +230,20 @@ std::future<void> loader_thread(
     });
 }
 
-void main_func(
+static void main_func(
     const ParsedArgs& args,
     ButtonStates& button_states,
     CursorStates& cursor_states,
     CursorStates& scroll_wheel_states,
     size_t args_num_renderings,
     Renderer* renderer,
+    const InputConfig& input_config,
     const std::function<void()>& event_callback)
 {
     if (args.has_named("--no_render")) {
         std::cout << "Exiting because of --no_render" << std::endl;
     } else {
-        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states, event_callback);
+        handle_events(*renderer, &button_states, &cursor_states, &scroll_wheel_states, input_config, event_callback);
         if (args_num_renderings != SIZE_MAX) {
             std::cout << "Exiting because of --num_renderings" << std::endl;
         }
@@ -294,6 +296,7 @@ int main(int argc, char** argv) {
         "    [--no_physics]\n"
         "    [--physics_dt <dt>]\n"
         "    [--render_dt <dt>]\n"
+        "    [--input_polling_interval <dt>]\n"
         "    [--render_max_residual_time <dt>]\n"
         "    [--no_control_physics_fps ]\n"
         "    [--print_render_fps_interval <n>]\n"
@@ -390,6 +393,7 @@ int main(int argc, char** argv) {
          "--physics_dt",
          "--nsubsteps",
          "--render_dt",
+         "--input_polling_interval",
          "--render_max_residual_time",
          "--stiction_coefficient",
          "--friction_coefficient",
@@ -449,6 +453,9 @@ int main(int argc, char** argv) {
             .swap_interval = safe_stoi(args.named_value("--swap_interval", "1")),
             .fullscreen_refresh_rate = safe_stoi(args.named_value("--fullscreen_refresh_rate", "0")),
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
+        InputConfig input_config{
+            .polling_interval_seconds = safe_stof(args.named_value("--input_polling_interval", "0.00416667"))
+        };
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 1.0f * physics_dt });
@@ -466,6 +473,7 @@ int main(int argc, char** argv) {
         // Declared as first class to let destructors of other classes succeed.
         Render render{
             render_config,
+            input_config,
             num_renderings,
             render_set_fps.set_fps,
             [&render_set_fps]() { return render_set_fps.ft.frame_time(); } };
@@ -638,6 +646,7 @@ int main(int argc, char** argv) {
                         scroll_wheel_states,
                         args_num_renderings,
                         renderer.get(),
+                        input_config,
                         [&window_logic](){ window_logic.handle_events(); });
                 } catch (...) {
                     add_unhandled_exception(std::current_exception());

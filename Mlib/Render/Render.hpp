@@ -26,6 +26,7 @@ class CursorStates;
 class Camera;
 class Renderer;
 struct RenderConfig;
+struct InputConfig;
 class SetFps;
 
 template <typename TData, size_t... tshape>
@@ -38,6 +39,7 @@ class Render {
 public:
     explicit Render(
         const RenderConfig& render_config,
+        const InputConfig& input_config,
         std::atomic_size_t& num_renderings,
         SetFps& set_fps,
         std::function<std::chrono::steady_clock::time_point()> frame_time,
@@ -86,6 +88,7 @@ private:
     std::function<std::chrono::steady_clock::time_point()> frame_time_;
     RenderResults* render_results_;
     const RenderConfig& render_config_;
+    const InputConfig& input_config_;
     std::unique_ptr<Window> window_;
 };
 

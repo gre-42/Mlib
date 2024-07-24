@@ -6,6 +6,7 @@
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Results.hpp>
@@ -33,16 +34,18 @@ using namespace Mlib;
 Renderer::Renderer(
     Window& window,
     const RenderConfig& render_config,
+    const InputConfig& input_config,
     std::atomic_size_t& num_renderings,
     SetFps& set_fps,
     std::function<std::chrono::steady_clock::time_point()> frame_time,
     RenderResults* render_results)
-: window_{window},
-  render_config_{render_config},
-  num_renderings_{num_renderings},
-  render_results_{render_results},
-  set_fps_{set_fps},
-  frame_time_{std::move(frame_time)}
+    : window_{ window }
+    , render_config_{ render_config }
+    , input_config_{ input_config }
+    , num_renderings_{ num_renderings }
+    , render_results_{ render_results }
+    , set_fps_{ set_fps }
+    , frame_time_{ std::move(frame_time) }
 {
     if (unhandled_exceptions_occured()) {
         print_unhandled_exceptions();
@@ -204,7 +207,7 @@ void Renderer::render_and_handle_events(
             ThreadInitializer ti{"render", ThreadAffinity::POOL};
             render(logic, scene_graph_config);
         })};
-    handle_events(*this, button_states, cursor_states, scroll_wheel_states, event_handler);
+    handle_events(*this, button_states, cursor_states, scroll_wheel_states, input_config_, event_handler);
 }
 
 bool Renderer::continue_rendering() const {
@@ -221,6 +224,7 @@ void Mlib::handle_events(
     ButtonStates* button_states,
     CursorStates* cursor_states,
     CursorStates* scroll_wheel_states,
+    const InputConfig& input_config,
     const std::function<void()>& callback)
 {
     RendererUserClass user_object{
@@ -248,7 +252,8 @@ void Mlib::handle_events(
         // PeriodicLagFinder lag_finder{ "Events: ", std::chrono::milliseconds{ 100 }};
         while (renderer.continue_rendering()) {
             // lag_finder.start();
-            GLFW_CHK(glfwPollEvents());
+            // GLFW_CHK(glfwPollEvents());
+            GLFW_CHK(glfwWaitEventsTimeout(input_config.polling_interval_seconds));
             if (button_states != nullptr) {
                 button_states->update_gamepad_state();
             }
