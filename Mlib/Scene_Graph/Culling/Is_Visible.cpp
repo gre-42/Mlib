@@ -33,7 +33,7 @@ bool Mlib::is_visible(
         ExternalRenderPassType occluder_pass = material.get_occluder_pass(billboard_id);
         return (occluder_pass & external_render_pass) == external_render_pass;
     }
-    if ((material.aggregate_mode == AggregateMode::NONE) && (material.blend_mode == BlendMode::INVISIBLE)) {
+    if (material.blend_mode == BlendMode::INVISIBLE) {
         return false;
     }
     if (any(external_render_pass & ExternalRenderPassType::STANDARD_OR_IMPOSTER_OR_ZOOM_NODE)) {
