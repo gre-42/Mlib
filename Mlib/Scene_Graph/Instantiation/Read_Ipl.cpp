@@ -11,19 +11,25 @@
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;
 
-std::list<InstanceInformation> Mlib::read_ipl(const std::filesystem::path& filename) {
+std::list<InstanceInformation> Mlib::read_ipl(
+	const std::filesystem::path& filename,
+	RenderingDynamics rendering_dynamics)
+{
 	auto istr = create_ifstream(filename, std::ios_base::in);
 	if (istr->fail()) {
 		THROW_OR_ABORT("Could not open \"" + filename.string() + '"');
 	}
 	try {
-		return read_ipl(*istr);
+		return read_ipl(*istr, rendering_dynamics);
 	} catch (const std::runtime_error& e) {
 		throw std::runtime_error("Could not read \"" + filename.string() + "\": " + e.what());
 	}
 }
 
-std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
+std::list<InstanceInformation> Mlib::read_ipl(
+	std::istream& istr,
+	RenderingDynamics rendering_dynamics)
+{
 	{
 		std::string header;
 		std::getline(istr, header);
@@ -79,7 +85,8 @@ std::list<InstanceInformation> Mlib::read_ipl(std::istream& istr) {
 		result.push_back(InstanceInformation{
 			.resource_name = std::move(name),
 			.trafo = { r, t },
-			.scale = mean_scale });
+			.scale = mean_scale,
+			.rendering_dynamics = rendering_dynamics});
 	}
 	return result;
 }

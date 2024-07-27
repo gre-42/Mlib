@@ -1,6 +1,7 @@
 #include "Instantiate_Frames.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -47,6 +48,10 @@ void Mlib::instantiate(
 				.scene_node = node.ref(DP_LOC),
 				.renderable_resource_filter = RenderableResourceFilter{}},
 			PreloadBehavior::NO_PRELOAD);
-		scene.add_static_root_node(name, std::move(node));
+		if (!any(node->rendering_strategies())) {
+			lwarn() << "Skipping invisible instance \"" << name << '"';
+		} else {
+			scene.auto_add_root_node(name, std::move(node), info.rendering_dynamics);
+		}
 	}
 }

@@ -10,6 +10,8 @@
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Render_Logics/Countdown_Logic.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 
@@ -63,5 +65,9 @@ void Countdown::execute(const LoadSceneJsonUserFunctionArgs& args)
         { countdown_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);
-    scene.add_root_node(args.arguments.at<std::string>(KnownArgs::node), std::move(node));
+    scene.add_root_node(
+        args.arguments.at<std::string>(KnownArgs::node),
+        std::move(node),
+        RenderingDynamics::MOVING,
+        RenderingStrategies::OBJECT);
 }

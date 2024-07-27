@@ -24,6 +24,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -150,20 +152,24 @@ int main(int argc, char** argv) {
                     .scene_node = scene_node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }
-        scene.add_root_node("obj", std::move(scene_node));
+        scene.auto_add_root_node("obj", std::move(scene_node), RenderingDynamics::STATIC);
 
         std::list<Light*> lights;
         if (light_configuration == "one") {
-            scene.add_root_node("light_node0", make_dunique<SceneNode>(
-                FixedArray<double, 3>{
-                    safe_stof(args.named_value("--light_x", "0")),
-                    safe_stof(args.named_value("--light_y", "50")),
-                    safe_stof(args.named_value("--light_z", "0"))},
-                FixedArray<float, 3>{
-                    safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
-                    safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
-                    safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
-                1.f));
+            scene.add_root_node(
+                "light_node0",
+                make_dunique<SceneNode>(
+                    FixedArray<double, 3>{
+                        safe_stof(args.named_value("--light_x", "0")),
+                        safe_stof(args.named_value("--light_y", "50")),
+                        safe_stof(args.named_value("--light_z", "0"))},
+                    FixedArray<float, 3>{
+                        safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
+                        safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
+                        safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
+                    1.f),
+                RenderingDynamics::STATIC,
+                RenderingStrategies::OBJECT);
             auto light = std::make_unique<Light>(Light{
                 .shadow_render_pass = ExternalRenderPassType::NONE});
             lights.push_back(light.get());
@@ -187,10 +193,14 @@ int main(int argc, char** argv) {
                 if (!R.has_value()) {
                     THROW_OR_ABORT("Lookat failed for light " + std::to_string(i));
                 }
-                scene.add_root_node(name, make_dunique<SceneNode>(
-                    FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
-                    matrix_2_tait_bryan_angles(*R).casted<float>(),
-                    1.f));
+                scene.add_root_node(
+                    name,
+                    make_dunique<SceneNode>(
+                        FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
+                        matrix_2_tait_bryan_angles(*R).casted<float>(),
+                        1.f),
+                    RenderingDynamics::STATIC,
+                    RenderingStrategies::OBJECT);
                 auto light = std::make_unique<Light>(Light{
                     .shadow_render_pass = ExternalRenderPassType::NONE});
                 lights.push_back(light.get());
@@ -203,7 +213,11 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Unknown light configuration");
         }
         
-        scene.add_root_node("follower_camera", make_dunique<SceneNode>());
+        scene.add_root_node(
+            "follower_camera",
+            make_dunique<SceneNode>(),
+            RenderingDynamics::MOVING,
+            RenderingStrategies::OBJECT);
         scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<OrthoCamera>(
             OrthoCameraConfig{.left_plane = -1, .right_plane = 1, .bottom_plane = -1, .top_plane = 1},
             OrthoCamera::Postprocessing::ENABLED));

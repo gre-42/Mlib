@@ -118,6 +118,8 @@ enum class LockingStrategy {
     ACQUIRE_LOCK
 };
 
+enum class RenderingStrategies;
+
 PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
 
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
@@ -215,6 +217,7 @@ public:
         std::chrono::steady_clock::time_point time,
         SceneNodeResources* scene_node_resources,
         const AnimationState* animation_state);
+    RenderingStrategies rendering_strategies() const;
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
         const FixedArray<double, 4, 4>& parent_mvp,

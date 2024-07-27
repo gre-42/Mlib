@@ -4,6 +4,8 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -12,7 +14,8 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(type);
+DECLARE_ARGUMENT(dynamics);
+DECLARE_ARGUMENT(strategy);
 DECLARE_ARGUMENT(name);
 DECLARE_ARGUMENT(position);
 DECLARE_ARGUMENT(rotation);
@@ -85,16 +88,11 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));
-    auto type = args.arguments.at<std::string>(KnownArgs::type);
-    if (type == "aggregate") {
-        scene.add_root_aggregate_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
-    } else if (type == "instances") {
-        scene.add_root_instances_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
-    } else if (type == "static") {
-        scene.add_static_root_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
-    } else if (type == "dynamic") {
-        scene.add_root_node(args.arguments.at<std::string>(KnownArgs::name), std::move(node));
-    } else {
-        THROW_OR_ABORT("Unknown root node type: " + type);
-    }
+    auto rendering_dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics, "moving"));
+    auto rendering_strategy = rendering_strategy_from_string(args.arguments.at<std::string>(KnownArgs::strategy, "object"));
+    scene.add_root_node(
+        args.arguments.at<std::string>(KnownArgs::name),
+        std::move(node),
+        rendering_dynamics,
+        rendering_strategy);
 }

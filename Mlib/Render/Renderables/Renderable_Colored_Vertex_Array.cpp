@@ -33,6 +33,7 @@
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Instances/Large_Instances_Queue.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
@@ -1170,6 +1171,26 @@ void RenderableColoredVertexArray::render(
             animation_state,
             color_style);
     }
+}
+
+RenderingStrategies RenderableColoredVertexArray::rendering_strategies() const {
+    auto result = RenderingStrategies::NONE;
+    if (!aggregate_off_.empty()) {
+        result |= RenderingStrategies::OBJECT;
+    }
+    if (!aggregate_once_.empty()) {
+        result |= RenderingStrategies::MESH_ONCE;
+    }
+    if (!aggregate_sorted_continuously_.empty()) {
+        result |= RenderingStrategies::MESH_SORTED_CONTINUOUSLY;
+    }
+    if (!instances_once_.empty()) {
+        result |= RenderingStrategies::INSTANCES_ONCE;
+    }
+    if (!instances_sorted_continuously_.empty()) {
+        result |= RenderingStrategies::INSTANCES_SORTED_CONTINUOUSLY;
+    }
+    return result;
 }
 
 bool RenderableColoredVertexArray::requires_render_pass(ExternalRenderPassType render_pass) const {

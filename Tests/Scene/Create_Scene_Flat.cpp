@@ -20,6 +20,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -184,9 +186,9 @@ void Mlib::create_scene_flat(
     scene_nodeL->add_light(std::make_unique<Light>(Light{
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 
-    scene.add_root_node("obj", std::move(scene_nodeR));
-    scene.add_root_node("follower_camera", make_dunique<SceneNode>());
-    scene.add_root_node("light_node", std::move(scene_nodeL));
+    scene.auto_add_root_node("obj", std::move(scene_nodeR), RenderingDynamics::MOVING);
+    scene.add_root_node("follower_camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("light_node", std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
         PerspectiveCamera::Postprocessing::ENABLED));

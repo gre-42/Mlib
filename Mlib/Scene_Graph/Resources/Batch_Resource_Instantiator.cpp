@@ -7,6 +7,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
@@ -122,7 +123,7 @@ void BatchResourceInstantiator::instantiate_renderables(
                     p.scale,
                     INITIAL_POSE);
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
-                options.scene_node->scene().add_root_node(child_name, std::move(node));
+                options.scene_node->scene().auto_add_root_node(child_name, std::move(node), RenderingDynamics::MOVING);
             } else {
                 node->set_relative_pose(
                     p.position,

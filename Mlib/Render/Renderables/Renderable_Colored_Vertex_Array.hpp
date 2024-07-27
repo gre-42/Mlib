@@ -24,6 +24,7 @@ public:
         const std::shared_ptr<const ColoredVertexArrayResource>& rcva,
         const RenderableResourceFilter& renderable_resource_filter);
     ~RenderableColoredVertexArray();
+    virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
     virtual int continuous_blending_z_order() const override;

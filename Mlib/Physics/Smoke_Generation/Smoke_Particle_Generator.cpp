@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
@@ -47,7 +48,7 @@ void SmokeParticleGenerator::generate_root(
                 .instance_name = resource_name,
                 .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = RenderableResourceFilter{}});
-        scene_.add_root_node(node_name, std::move(node));
+        scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::STATIC);
     } else if (particle_type == ParticleType::INSTANCE) {
         scene_.particle_instantiator(resource_name).add_particle(
             TransformationMatrix<float, double, 3>{

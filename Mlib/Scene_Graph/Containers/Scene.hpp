@@ -32,6 +32,8 @@ struct ExternalRenderPass;
 struct RenderConfig;
 struct ColorStyle;
 class Renderable;
+enum class RenderingDynamics;
+enum class RenderingStrategies;
 
 class Scene {
     friend RootNodes;
@@ -47,18 +49,33 @@ public:
     Scene& operator = (const Scene&) = delete;
     ~Scene();
     bool contains_node(const std::string& name) const;
-    void add_root_node(
+    void add_moving_root_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
     void add_static_root_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
-    void add_root_aggregate_node(
+    void add_root_aggregate_once_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
-    void add_root_instances_node(
+    void add_root_aggregate_always_node(
         const std::string& name,
         DanglingUniquePtr<SceneNode>&& scene_node);
+    void add_root_instances_once_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node);
+    void add_root_instances_always_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node);
+    void auto_add_root_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node,
+        RenderingDynamics rendering_dynamics);
+    void add_root_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node,
+        RenderingDynamics rendering_dynamics,
+        RenderingStrategies rendering_strategy);
     void add_root_imposter_node(DanglingRef<SceneNode> scene_node);
     bool root_node_scheduled_for_deletion(
         const std::string& name,
@@ -119,8 +136,10 @@ private:
     MapOfRootNodes morn_;
     RootNodes& root_nodes_;
     RootNodes& static_root_nodes_;
-    RootNodes& root_aggregate_nodes_;
-    RootNodes& root_instances_nodes_;
+    RootNodes& root_aggregate_once_nodes_;
+    RootNodes& root_aggregate_always_nodes_;
+    RootNodes& root_instances_once_nodes_;
+    RootNodes& root_instances_always_nodes_;
     std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
     mutable SafeRecursiveSharedMutex mutex_;

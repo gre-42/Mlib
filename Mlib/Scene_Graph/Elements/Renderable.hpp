@@ -28,12 +28,14 @@ struct AnimationState;
 struct ColorStyle;
 struct ExternalRenderPass;
 enum class ExternalRenderPassType;
+enum class RenderingStrategies;
 class SceneNode;
 class SmallInstancesQueues;
 class LargeInstancesQueue;
 
 class Renderable {
 public:
+    virtual RenderingStrategies rendering_strategies() const = 0;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const = 0;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const = 0;
     virtual int continuous_blending_z_order() const;

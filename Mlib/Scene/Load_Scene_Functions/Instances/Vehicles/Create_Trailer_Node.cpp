@@ -10,6 +10,8 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -52,5 +54,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         pose1.get_scale());
     scene.add_root_node(
         args.arguments.at<std::string>(KnownArgs::trailer_node),
-        std::move(node));
+        std::move(node),
+        RenderingDynamics::MOVING,
+        RenderingStrategies::OBJECT);
 }

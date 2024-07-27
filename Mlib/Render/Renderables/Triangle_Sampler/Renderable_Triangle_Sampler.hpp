@@ -34,6 +34,7 @@ public:
         double scale,
         UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
+    virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
     virtual void append_sorted_instances_to_queue(

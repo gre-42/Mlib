@@ -65,6 +65,8 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -828,11 +830,12 @@ int main(int argc, char** argv) {
                 }
             }
         }
-        if (args.has_named("--large_object_mode")) {
-            scene.add_root_aggregate_node("obj", std::move(scene_node));
-        } else {
-            scene.add_root_node("obj", std::move(scene_node));
-        }
+        scene.auto_add_root_node(
+            "obj",
+            std::move(scene_node),
+            args.has_named("--large_object_mode")
+                ? RenderingDynamics::STATIC
+                : RenderingDynamics::MOVING);
 
         size_t light_beacon_index = 0;
         auto add_light_beacon_if_set = [&](DanglingRef<SceneNode> scene_node){
@@ -871,16 +874,20 @@ int main(int argc, char** argv) {
         std::list<LightAndNode> lights;
         SelectedCameras selected_cameras{scene};
         if (light_configuration == "one") {
-            scene.add_root_node("light_node0", make_dunique<SceneNode>(
-                FixedArray<double, 3>{
-                    safe_stof(args.named_value("--light_x", "0")),
-                    safe_stof(args.named_value("--light_y", "50")),
-                    safe_stof(args.named_value("--light_z", "0"))},
-                FixedArray<float, 3>{
-                    safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
-                    safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
-                    safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
-                1.f));
+            scene.add_root_node(
+                "light_node0",
+                make_dunique<SceneNode>(
+                    FixedArray<double, 3>{
+                        safe_stof(args.named_value("--light_x", "0")),
+                        safe_stof(args.named_value("--light_y", "50")),
+                        safe_stof(args.named_value("--light_z", "0"))},
+                    FixedArray<float, 3>{
+                        safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
+                        safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
+                        safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
+                    1.f),
+                RenderingDynamics::STATIC,
+                RenderingStrategies::OBJECT);
             auto light = create_light("light_node0");
             lights.push_back({.light = *light, .node = scene.get_node("light_node0", DP_LOC)});
             scene.get_node("light_node0", DP_LOC)->add_light(std::move(light));
@@ -909,10 +916,14 @@ int main(int argc, char** argv) {
                 if (!R.has_value()) {
                     THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
                 }
-                scene.add_root_node(name, make_dunique<SceneNode>(
-                    FixedArray<double, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
-                    matrix_2_tait_bryan_angles(*R).casted<float>(),
-                    1.f));
+                scene.add_root_node(
+                    name,
+                    make_dunique<SceneNode>(
+                        FixedArray<double, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
+                        matrix_2_tait_bryan_angles(*R).casted<float>(),
+                        1.f),
+                    RenderingDynamics::STATIC,
+                    RenderingStrategies::OBJECT);
                 auto light = create_light(name);
                 lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
                 scene.get_node(name, DP_LOC)->add_light(std::move(light));
@@ -933,10 +944,14 @@ int main(int argc, char** argv) {
                     if (!R.has_value()) {
                         THROW_OR_ABORT("Could not compute lookat for light " + std::to_string(i));
                     }
-                    scene.add_root_node(name, make_dunique<SceneNode>(
-                        FixedArray<double, 3>{r * cos(a) + center(0), center(1), r * sin(a) + center(2)},
-                        matrix_2_tait_bryan_angles(*R).casted<float>(),
-                        1.f));
+                    scene.add_root_node(
+                        name,
+                        make_dunique<SceneNode>(
+                            FixedArray<double, 3>{r * cos(a) + center(0), center(1), r * sin(a) + center(2)},
+                            matrix_2_tait_bryan_angles(*R).casted<float>(),
+                            1.f),
+                        RenderingDynamics::STATIC,
+                        RenderingStrategies::OBJECT);
                     auto light = create_light(name);
                     lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
                     scene.get_node(name, DP_LOC)->add_light(std::move(light));
@@ -953,7 +968,11 @@ int main(int argc, char** argv) {
         }
         if (args.has_named_value("--background_light_ambience")) {
             std::string name = "background_light";
-            scene.add_root_node(name, make_dunique<SceneNode>());
+            scene.add_root_node(
+                name,
+                make_dunique<SceneNode>(),
+                RenderingDynamics::MOVING,
+                RenderingStrategies::OBJECT);
             auto light = create_light(name);
             lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
             scene.get_node(name, DP_LOC)->add_light(std::move(light));
@@ -970,7 +989,7 @@ int main(int argc, char** argv) {
             if (!aabb.has_value()) {
                 throw std::runtime_error("Node has no AABB");
             }
-            scene.add_root_node("follower_camera", make_dunique<SceneNode>());
+            scene.add_root_node("follower_camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
                 scene.get_node("follower_camera", DP_LOC)->position(),
                 scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
@@ -1000,16 +1019,20 @@ int main(int argc, char** argv) {
                 matrix_2_tait_bryan_angles(la->extrinsic_R),
                 std::chrono::steady_clock::time_point());
         } else {
-            scene.add_root_node("follower_camera", make_dunique<SceneNode>(
-                FixedArray<double, 3>{
-                    safe_stof(args.named_value("--camera_x", "0")),
-                    safe_stof(args.named_value("--camera_y", "0")),
-                    safe_stof(args.named_value("--camera_z", "0"))},
-                FixedArray<float, 3>{
-                    safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
-                    safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
-                    safe_stof(args.named_value("--camera_angle_z", "0")) * degrees},
-                1.f));
+            scene.add_root_node(
+                "follower_camera",
+                make_dunique<SceneNode>(
+                    FixedArray<double, 3>{
+                        safe_stof(args.named_value("--camera_x", "0")),
+                        safe_stof(args.named_value("--camera_y", "0")),
+                        safe_stof(args.named_value("--camera_z", "0"))},
+                    FixedArray<float, 3>{
+                        safe_stof(args.named_value("--camera_angle_x", "0")) * degrees,
+                        safe_stof(args.named_value("--camera_angle_y", "0")) * degrees,
+                        safe_stof(args.named_value("--camera_angle_z", "0")) * degrees},
+                    1.f),
+                RenderingDynamics::MOVING,
+                RenderingStrategies::OBJECT);
             scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
                 PerspectiveCameraConfig{
                     .y_fov = safe_stof(args.named_value("--y_fov", "90")) * degrees},

@@ -6,6 +6,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -81,7 +82,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                         .renderable_resource_filter = RenderableResourceFilter{}});
                 // node->set_scale(0.05);
                 auto& node_name = beacon_nodes_.emplace_back("beacon" + std::to_string(i));
-                scene_.add_root_node(node_name, std::move(node));
+                scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::STATIC);
                 ++i;
             }
         }

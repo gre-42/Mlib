@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
@@ -162,7 +163,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
             node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
-            scene_.add_root_node(beacon_info.beacon_node_name, std::move(node));
+            scene_.auto_add_root_node(beacon_info.beacon_node_name, std::move(node), RenderingDynamics::STATIC);
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
         }

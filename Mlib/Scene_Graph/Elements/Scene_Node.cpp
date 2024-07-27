@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
@@ -452,12 +453,12 @@ void SceneNode::add_instances_child(
 {
     std::scoped_lock lock{ mutex_ };
     setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
-    if (!instances_children_.insert(std::make_pair(name, SceneNodeInstances{
+    if (!instances_children_.try_emplace(name, SceneNodeInstances{
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
         .max_center_distance = 0.,
         .small_instances = Bvh<double, PositionAndYAngle, 3>({0.1, 0.1, 0.1}, 10),
-        .large_instances = std::list<PositionAndYAngle>()})).second)
+        .large_instances = std::list<PositionAndYAngle>()}).second)
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
     }
@@ -767,6 +768,24 @@ bool SceneNode::visit_all(
         }
     }
     return true;
+}
+
+RenderingStrategies SceneNode::rendering_strategies() const {
+    RenderingStrategies result = RenderingStrategies::NONE;
+    std::shared_lock lock{ mutex_ };
+    for (const auto& [_, r] : renderables_) {
+        result |= r->rendering_strategies();
+    }
+    for (const auto& [_, n] : children_) {
+        result |= n.scene_node->rendering_strategies();
+    }
+    for (const auto& [_, n] : aggregate_children_) {
+        result |= n.scene_node->rendering_strategies();
+    }
+    for (const auto& [_, n] : instances_children_) {
+        result |= n.scene_node->rendering_strategies();
+    }
+    return result;
 }
 
 bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {

@@ -18,6 +18,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -157,7 +159,11 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
     std::string bullet_node_name = "car_node" + suffix;
     if (generate_smart_bullet_) {
         auto np = node.ref(DP_LOC);
-        scene_.add_root_node(bullet_node_name, std::move(node));
+        scene_.add_root_node(
+            bullet_node_name,
+            std::move(node),
+            RenderingDynamics::MOVING,
+            RenderingStrategies::OBJECT);
         generate_smart_bullet_(
             player_ == nullptr ? std::nullopt : std::optional{ player_->name() },
             suffix,
@@ -232,7 +238,11 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
         rc.collision_observers_.emplace_back(std::move(bullet));
-        scene_.add_root_node(bullet_node_name, std::move(node));
+        scene_.add_root_node(
+            bullet_node_name,
+            std::move(node),
+            RenderingDynamics::MOVING,
+            RenderingStrategies::OBJECT);
     }
 }
 

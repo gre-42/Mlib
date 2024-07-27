@@ -14,6 +14,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Type.hpp>
 #include <Mlib/Render/Yield.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Instances/Small_Instances_Queues.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -41,6 +42,10 @@ RenderableTriangleSampler::RenderableTriangleSampler(
 
 RenderableTriangleSampler::~RenderableTriangleSampler()
 {}
+
+RenderingStrategies RenderableTriangleSampler::rendering_strategies() const {
+    return RenderingStrategies::INSTANCES_SORTED_CONTINUOUSLY;
+}
 
 bool RenderableTriangleSampler::requires_render_pass(ExternalRenderPassType render_pass) const
 {
