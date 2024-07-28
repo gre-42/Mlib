@@ -1565,7 +1565,7 @@ void OsmMapResource::save_to_obj_file(
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
     std::map<ColormapWithModifiers, std::string> autogen_textures;
     auto get_filename = [&](const ColormapWithModifiers& color, TextureRole role) -> std::string {
-        if (color.filename.empty()) {
+        if (color.filename->empty()) {
             return "";
         }
         auto it = autogen_textures.find(color);

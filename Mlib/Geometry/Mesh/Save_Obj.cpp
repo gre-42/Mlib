@@ -20,7 +20,7 @@ void Mlib::save_obj(
     for (const std::shared_ptr<ColoredVertexArray<double>>& cva : cvas) {
         if (cva->name.empty()) {
             if (!cva->material.textures_color.empty()) {
-                THROW_OR_ABORT("Empty name, material: \"" + cva->material.textures_color.front().texture_descriptor.color.filename);
+                THROW_OR_ABORT("Empty name, material: \"" + *cva->material.textures_color.front().texture_descriptor.color.filename);
             } else {
                 THROW_OR_ABORT("Empty name, no material color texture");
             }

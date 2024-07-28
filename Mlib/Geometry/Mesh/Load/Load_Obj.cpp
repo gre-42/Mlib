@@ -358,7 +358,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash();
                 }
-                if (!td.color.filename.empty() || !td.specular.filename.empty() || !td.normal.filename.empty()) {
+                if (!td.color.filename->empty() || !td.specular.filename->empty() || !td.normal.filename->empty()) {
                     tl.material.textures_color = { {.texture_descriptor = td } };
                 } else {
                     tl.material.textures_color = cfg.textures;

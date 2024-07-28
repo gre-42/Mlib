@@ -169,7 +169,7 @@ static StbInfo<uint8_t> stb_load_texture(
 }
 
 static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifiers& color, FlipMode flip_mode) {
-    std::string touch_file = color.filename + ".xpltd";
+    std::string touch_file = *color.filename + ".xpltd";
     bool has_color_selector =
         (color.selected_color_near != 0.f) ||
         (color.selected_color_far != INFINITY);
@@ -200,12 +200,12 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     StbInfo<uint8_t> si0;
     if (!color.alpha.empty()) {
         if (source_color_mode != ColorMode::RGBA) {
-            THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + color.filename + '"');
+            THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + *color.filename + '"');
         }
         si0 = stb_load_texture(
             color.filename, (int)ColorMode::RGB, flip_mode);
         if (si0.nrChannels != 3) {
-            THROW_OR_ABORT("#channels not 3: \"" + color.filename + '"');
+            THROW_OR_ABORT("#channels not 3: \"" + *color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
             color.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
@@ -458,15 +458,15 @@ static void check_color_mode(
 {
     if ((role == TextureRole::COLOR) || (role == TextureRole::COLOR_FROM_DB)) {
         if (color.color_mode == ColorMode::UNDEFINED) {
-            THROW_OR_ABORT("Colormode undefined in color texture \"" + color.filename + '"');
+            THROW_OR_ABORT("Colormode undefined in color texture \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::SPECULAR) {
         if (color.color_mode != ColorMode::RGB) {
-            THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + color.filename + '"');
+            THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::NORMAL) {
         if (color.color_mode != ColorMode::RGB) {
-            THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + color.filename + '"');
+            THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::TRUSTED) {
         // Do nothing
@@ -497,7 +497,7 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     ostr << indent << "Name: " << name_ << '\n';
     ostr << indent << "Texture descriptors\n";
     for (const auto& [n, _] : texture_descriptors_) {
-        ostr << indent << "  " << n << '\n';
+        ostr << indent << "  " << *n << '\n';
     }
     ostr << indent << "Blend map textures\n";
     for (const auto& [n, _] : blend_map_textures_) {
@@ -539,7 +539,9 @@ RenderingResources::RenderingResources(
     , texture_types_{
         "Texture types",
         [](const ColormapWithModifiers& e) { return e.filename; } }
-    , texture_descriptors_{ "Texture descriptor" }
+    , texture_descriptors_{
+        "Texture descriptor",
+        [](const VariableAndHash<std::string>& e) { return *e; } }
     , textures_{ "Texture", [](const ColormapWithModifiers& e) { return e.filename; } }
     , texture_sizes_{ "Texture size" }
     , manual_atlas_tile_descriptors_{ "Manual atlas tile descriptor" }
@@ -599,20 +601,20 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     const TextureDescriptor& desc = dit != nullptr
         ? *dit
         : descriptor;
-    if (!desc.color.filename.empty()) {
+    if (!desc.color.filename->empty()) {
         preload(desc.color, TextureRole::COLOR);
     }
-    if (!desc.specular.filename.empty()) {
+    if (!desc.specular.filename->empty()) {
         preload(desc.specular, TextureRole::SPECULAR);
     }
-    if (!desc.normal.filename.empty()) {
+    if (!desc.normal.filename->empty()) {
         preload(desc.normal, TextureRole::NORMAL);
     }
 }
 
 void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole role) const {
     LOG_FUNCTION("RenderingResources::preload, color=" + color);
-    if (color.filename.empty()) {
+    if (color.filename->empty()) {
         THROW_OR_ABORT("Attempt to preload empty texture");
     }
     if (textures_.contains(color)) {
@@ -721,7 +723,7 @@ TextureType RenderingResources::texture_type(
     if (auto it = texture_types_.try_get(name); it != nullptr) {
         return *it;
     }
-    if (path_exists(name.filename)) {
+    if (path_exists(*name.filename)) {
         return TextureType::TEXTURE_2D;
     }
     THROW_OR_ABORT("Could not find texture:\n" + (std::stringstream() << name).str());
@@ -764,10 +766,10 @@ std::string RenderingResources::get_texture_filename(
             sis.push_back(get_texture_data(color, role, FlipMode::VERTICAL));
         }
         if (sis.empty()) {
-            THROW_OR_ABORT("Texture array \"" + color.filename + "\" has no layers");
+            THROW_OR_ABORT("Texture array \"" + *color.filename + "\" has no layers");
         }
         if (sis.size() != 1) {
-            lwarn() << "Texture array \"" << color.filename << "\" has more than one layer. Only saving the first one.";
+            lwarn() << "Texture array \"" << *color.filename << "\" has more than one layer. Only saving the first one.";
         }
         const auto& si = sis[0];
         if (!default_filename.ends_with(".png")) {
@@ -861,7 +863,7 @@ GLuint RenderingResources::get_texture(
 
     if (auto aptr = get_or_extract<EXTRACT_PROCESSED>(auto_atlas_tile_descriptors_, color.filename); aptr != nullptr) {
         if (caller_type != CallerType::PRELOAD) {
-            THROW_OR_ABORT("Texture source is not preload for texture \"" + color.filename + '"');
+            THROW_OR_ABORT("Texture source is not preload for texture \"" + *color.filename + '"');
         }
         texture = render_to_texture_2d_array(
             aptr->width,
@@ -888,7 +890,7 @@ GLuint RenderingResources::get_texture(
                 return initialize_dds_texture(color);
             }();
             auto original_key = ColormapWithModifiers{
-                .filename = "__original_texture__",
+                .filename = std::string{"__original_texture__"},
                 .color_mode = (ColorMode)sinfo.nchannels,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             };
@@ -1031,13 +1033,13 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
 {
     LOG_FUNCTION("RenderingResources::add_texture_descriptor " + name);
     if (descriptor.color.color_mode == ColorMode::UNDEFINED) {
-        THROW_OR_ABORT("Colormode undefined color texture: \"" + descriptor.color.filename + '"');
+        THROW_OR_ABORT("Colormode undefined color texture: \"" + *descriptor.color.filename + '"');
     }
-    if (!descriptor.specular.filename.empty() && (descriptor.specular.color_mode != ColorMode::RGB)) {
-        THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + descriptor.specular.filename + '"');
+    if (!descriptor.specular.filename->empty() && (descriptor.specular.color_mode != ColorMode::RGB)) {
+        THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + *descriptor.specular.filename + '"');
     }
-    if (!descriptor.normal.filename.empty() && (descriptor.normal.color_mode != ColorMode::RGB)) {
-        THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + descriptor.normal.filename + '"');
+    if (!descriptor.normal.filename->empty() && (descriptor.normal.color_mode != ColorMode::RGB)) {
+        THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *descriptor.normal.filename + '"');
     }
     texture_descriptors_.add(name, descriptor);
 }
@@ -1114,7 +1116,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
             auto sit = source_images.find(desc);
             if (sit == source_images.end()) {
                 if (!source_images.try_emplace(desc, get_texture_data(desc, role, flip_mode)).second) {
-                    verbose_abort("Could not cache \"" + desc.filename + '"');
+                    verbose_abort("Could not cache \"" + *desc.filename + '"');
                 }
             }
             atlas_tiles.push_back(AtlasTile{
@@ -1134,7 +1136,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
         build_image_atlas(sis, atlas_tiles);
         return sis;
     }
-    THROW_OR_ABORT("Unknown texture array: \"" + color.filename + '"');
+    THROW_OR_ABORT("Unknown texture array: \"" + *color.filename + '"');
 }
 
 StbInfo<uint8_t> RenderingResources::get_texture_data(
@@ -1176,7 +1178,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     }
     if (auto it = preloaded_processed_texture_data_.try_get(color); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy \"" + color.filename + '"');
+            THROW_OR_ABORT("Refusing to copy \"" + *color.filename + '"');
         }
         auto result = stb_create<uint8_t>(it->width, it->height, it->nrChannels);
         std::copy(it->data.get(), it->data.get() + it->width * it->height * it->nrChannels, result.data.get());
@@ -1184,7 +1186,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     }
     if (auto it = preloaded_raw_texture_data_.try_get(color.filename); it != nullptr) {
         if (copy_behavior == CopyBehavior::RAISE) {
-            THROW_OR_ABORT("Refusing to copy \"" + color.filename + '"');
+            THROW_OR_ABORT("Refusing to copy \"" + *color.filename + '"');
         }
         return stb_load8(color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
     }
@@ -1475,10 +1477,10 @@ void RenderingResources::delete_texture(const ColormapWithModifiers& name, Delet
             // Do nothing
             return;
         case DeletionFailureMode::WARN:
-            lwarn() << "Could not delete texture " << name.filename;
+            lwarn() << "Could not delete texture " << *name.filename;
             return;
         case DeletionFailureMode::ABORT:
-            verbose_abort("Could not delete texture " + name.filename);
+            verbose_abort("Could not delete texture " + *name.filename);
         }
         verbose_abort("Unknown deletion failure mode: \"" + std::to_string((int)deletion_failure_mode + '"'));
     } else {

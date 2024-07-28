@@ -38,7 +38,7 @@ ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const ColormapWithModifiers& t) {
     ostr <<
-        "filename: " << t.filename << '\n' <<
+        "filename: " << *t.filename << '\n' <<
         "desaturate: " << (int)t.desaturate << '\n' <<
         "alpha: " << t.alpha << '\n' <<
         "histogram: " << t.histogram << '\n' <<

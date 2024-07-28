@@ -558,7 +558,10 @@ static std::vector<Frame> read_frame_list(
                 buf.right(2), buf.up(2), buf.at(2)),
             buf.pos };
         if ((buf.parent_index != UINT32_MAX) && (buf.parent_index >= frames.size())) {
-            THROW_OR_ABORT("Parent frame ID too large");
+            THROW_OR_ABORT(
+                "Parent frame ID too large. Size: " +
+                std::to_string(frames.size()) + ", ID: " +
+                std::to_string(buf.parent_index));
         }
         frame.parent = buf.parent_index;
     }

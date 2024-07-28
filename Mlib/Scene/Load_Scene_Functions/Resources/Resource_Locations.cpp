@@ -74,7 +74,7 @@ static void add_resource(
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
-                    lwarn() << "Ignoring duplicate texture \"" << tx->name << '"';
+                    lwarn() << "Ignoring duplicate texture \"" << tx->name << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
                 } else {
                     res.set_texture(
                         cm,

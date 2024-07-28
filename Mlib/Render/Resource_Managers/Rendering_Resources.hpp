@@ -14,6 +14,7 @@
 #include <Mlib/Render/Resource_Managers/Font_Name_And_Height_Hash.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -256,7 +257,7 @@ private:
     mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
     mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
-    mutable ThreadsafeStringUnorderedMap<TextureDescriptor> texture_descriptors_;
+    mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringUnorderedMap<TextureSize> texture_sizes_;
     mutable ThreadsafeStringUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;

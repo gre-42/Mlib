@@ -390,7 +390,7 @@ static GenShaderText vertex_shader_text_gen{[](
         linfo();
         linfo() << "Vertex";
         if (!textures_color.empty()) {
-            linfo() << "Color: " + textures_color[0]->texture_descriptor.color.filename;
+            linfo() << "Color: " + *textures_color[0]->texture_descriptor.color.filename;
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -854,7 +854,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         if (target == ReductionTarget::COLOR) {
             sstr << "    float sum_weights = 0.0;" << std::endl;
             if (has_normalmap) {
-                if (textures_color[0]->texture_descriptor.normal.filename.empty()) {
+                if (textures_color[0]->texture_descriptor.normal.filename->empty()) {
                     sstr << "    vec3 tnorm = vec3(0.0, 0.0, 1.0);" << std::endl;
                 } else {
                     sstr << "    vec3 tnorm = 2.0 * texture(texture_normalmap[0], " << tex_coords(*textures_color[0]) << ").rgb - 1.0;" << std::endl;
@@ -976,7 +976,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 sstr << "            float intensity = texture(textures_alpha[" << i << "], " << tex_coords(*t) << ").r;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
             } else {
-                THROW_OR_ABORT("Texture: \"" + t->texture_descriptor.color.filename + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color.color_mode) + '"');
+                THROW_OR_ABORT("Texture: \"" + *t->texture_descriptor.color.filename + "\". Unsupported color mode: \"" + color_mode_to_string(t->texture_descriptor.color.color_mode) + '"');
             }
             if (any(t->role & BlendMapRole::ANY_DETAIL_MASK)) {
                 // Do nothing
@@ -1016,7 +1016,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 }
                 if (target == ReductionTarget::COLOR) {
                     if (has_normalmap) {
-                        if (t->texture_descriptor.normal.filename.empty()) {
+                        if (t->texture_descriptor.normal.filename->empty()) {
                             sstr << "            tnorm.z += final_weight;" << std::endl;
                         } else {
                             sstr << "            tnorm += final_weight * (2.0 * texture(texture_normalmap[" << i << "], " << tex_coords(*t) << ").rgb - 1.0);" << std::endl;
@@ -1035,10 +1035,10 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    }" << std::endl;
         }
         if ((target == ReductionTarget::ALPHA) && (textures[0]->reweight_mode != BlendMapReweightMode::UNDEFINED)) {
-            THROW_OR_ABORT("Target is alpha and reweighting is not undefined in texture \"" + textures[0]->texture_descriptor.color.filename + '"');
+            THROW_OR_ABORT("Target is alpha and reweighting is not undefined in texture \"" + *textures[0]->texture_descriptor.color.filename + '"');
         }
         if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::UNDEFINED)) {
-            THROW_OR_ABORT("Target is color and reweighting is undefined in texture \"" + textures[0]->texture_descriptor.color.filename + '"');
+            THROW_OR_ABORT("Target is color and reweighting is undefined in texture \"" + *textures[0]->texture_descriptor.color.filename + '"');
         }
         if ((target == ReductionTarget::COLOR) && (textures[0]->reweight_mode == BlendMapReweightMode::ENABLED)) {
             sstr << "    if (sum_weights < 1e-3) {" << std::endl;
@@ -1272,7 +1272,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         linfo();
         linfo() << "Fragment";
         if (!textures_color.empty()) {
-            linfo() << "Color: " + textures_color[0]->texture_descriptor.color.filename;
+            linfo() << "Color: " + *textures_color[0]->texture_descriptor.color.filename;
         }
         std::string line;
         for (size_t i = 1; std::getline(sstr, line); ++i) {
@@ -1824,7 +1824,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         if (id.ntextures_normal != 0) {
             size_t i = 0;
             for (const auto& r : textures_color) {
-                if (!r->texture_descriptor.normal.filename.empty()) {
+                if (!r->texture_descriptor.normal.filename->empty()) {
                     rp->texture_normalmap_locations[i] = checked_glGetUniformLocation(rp->program, ("texture_normalmap[" + std::to_string(i) + "]").c_str());
                 }
                 ++i;
@@ -1934,7 +1934,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     } catch (const std::runtime_error& e) {
         std::string identifier;
         if (!textures_color.empty()) {
-            identifier = "\nAmbient+diffuse: " + textures_color[0]->texture_descriptor.color.filename;
+            identifier = "\nAmbient+diffuse: " + *textures_color[0]->texture_descriptor.color.filename;
         }
         THROW_OR_ABORT(
             std::string("Could not generate render program.\n") +

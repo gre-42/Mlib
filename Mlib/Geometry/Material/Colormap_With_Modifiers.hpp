@@ -5,13 +5,14 @@
 #include <Mlib/Geometry/Material/Mipmap_Mode.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <iosfwd>
 #include <string>
 
 namespace Mlib {
 
 struct ColormapWithModifiers {
-    std::string filename;
+    VariableAndHash<std::string> filename;
     float desaturate = 0.f;
     std::string alpha = "";
     std::string histogram = "";

@@ -17,7 +17,7 @@ Material& Material::compute_color_mode() {
 
 bool Material::has_normalmap() const {
     for (const auto& t : textures_color) {
-        if (!t.texture_descriptor.normal.filename.empty()) {
+        if (!t.texture_descriptor.normal.filename->empty()) {
             return true;
         }
     }
@@ -47,7 +47,7 @@ bool Material::fragments_depend_on_normal() const {
 
 std::string Material::identifier() const {
     if (textures_color.size() > 0) {
-        return "color: " + textures_color.front().texture_descriptor.color.filename;
+        return "color: " + *textures_color.front().texture_descriptor.color.filename;
     } else {
         return "<no texture>";
     }

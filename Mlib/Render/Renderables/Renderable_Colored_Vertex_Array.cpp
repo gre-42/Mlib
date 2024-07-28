@@ -366,11 +366,11 @@ void RenderableColoredVertexArray::render_cva(
     }
     auto check_sanity_common = [&cva](const std::vector<BlendMapTexture>& textures){
         for (const auto& t : textures) {
-            if (t.texture_descriptor.color.filename.empty()) {
+            if (t.texture_descriptor.color.filename->empty()) {
                 THROW_OR_ABORT("Empty color or alpha texture not supported, cva: " + cva->name);
             }
             if (t.texture_descriptor.color.color_mode == ColorMode::UNDEFINED) {
-                THROW_OR_ABORT("Material's color or alpha texture \"" + t.texture_descriptor.color.filename + "\" has undefined color mode");
+                THROW_OR_ABORT("Material's color or alpha texture \"" + *t.texture_descriptor.color.filename + "\" has undefined color mode");
             }
         }
     };
@@ -379,10 +379,10 @@ void RenderableColoredVertexArray::render_cva(
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (i == 0) {
                 if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color.color_mode == ColorMode::RGBA)) {
-                    THROW_OR_ABORT("Opaque material's color texture \"" + t.texture_descriptor.color.filename + "\" was loaded as RGBA");
+                    THROW_OR_ABORT("Opaque material's color texture \"" + *t.texture_descriptor.color.filename + "\" was loaded as RGBA");
                 }
                 if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color.color_mode != ColorMode::RGBA)) {
-                    THROW_OR_ABORT("Transparent material's color texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGBA");
+                    THROW_OR_ABORT("Transparent material's color texture \"" + *t.texture_descriptor.color.filename + "\" was not loaded as RGBA");
                 }
             }
         }
@@ -393,12 +393,12 @@ void RenderableColoredVertexArray::render_cva(
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
             if (t.texture_descriptor.color.color_mode != ColorMode::RGB) {
-                THROW_OR_ABORT("Color-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as RGB, but an alpha-texture was set");
+                THROW_OR_ABORT("Color-texture \"" + *t.texture_descriptor.color.filename + "\" was not loaded as RGB, but an alpha-texture was set");
             }
         }
         for (const auto& [i, t] : enumerate(cva->material.textures_alpha)) {
             if (t.texture_descriptor.color.color_mode != ColorMode::GRAYSCALE) {
-                THROW_OR_ABORT("Alpha-texture \"" + t.texture_descriptor.color.filename + "\" was not loaded as grayscale");
+                THROW_OR_ABORT("Alpha-texture \"" + *t.texture_descriptor.color.filename + "\" was not loaded as grayscale");
             }
         }
     }
@@ -506,10 +506,10 @@ void RenderableColoredVertexArray::render_cva(
     if (is_lightmap || cva->material.textures_color.empty() || filtered_lights.empty() || all(specular == 0.f)) {
         tic.ntextures_specular = 0;
     } else if (cva->material.textures_color.size() == 1) {
-        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename.empty();
+        tic.ntextures_specular = !cva->material.textures_color[0].texture_descriptor.specular.filename->empty();
     } else {
         for (const auto& t : cva->material.textures_color) {
-            if (!t.texture_descriptor.specular.filename.empty()) {
+            if (!t.texture_descriptor.specular.filename->empty()) {
                 THROW_OR_ABORT("Specular maps not supported for blended textures");
             }
         }
@@ -538,7 +538,7 @@ void RenderableColoredVertexArray::render_cva(
     if ((tic.ntextures_color == 0) && (tic.ntextures_dirt != 0)) {
         THROW_OR_ABORT(
             "Combination of ((ntextures_color == 0) && (ntextures_dirt != 0)) is not supported. Textures: " +
-            join(" ", cva->material.textures_color, [](const auto& v) { return v.texture_descriptor.color.filename; }));
+            join(" ", cva->material.textures_color, [](const auto& v) { return *v.texture_descriptor.color.filename; }));
     }
     bool reorient_normals = !cva->material.cull_faces && (any(diffuse != 0.f) || any(specular != 0.f));
     if (cva->material.cull_faces && cva->material.reorient_uv0) {
@@ -740,7 +740,7 @@ void RenderableColoredVertexArray::render_cva(
     if (tic.ntextures_normal != 0) {
         size_t i = 0;
         for (const auto& t : cva->material.textures_color) {
-            if (!t.texture_descriptor.normal.filename.empty()) {
+            if (!t.texture_descriptor.normal.filename->empty()) {
                 CHK(glUniform1i(rp.texture_normalmap_locations.at(i), (GLint)tic.id_normal(i)));
             }
             ++i;
@@ -944,7 +944,7 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind normalmap texture");
     if (tic.ntextures_normal != 0) {
         for (const auto& [i, t] : enumerate(cva->material.textures_color)) {
-            if (!t.texture_descriptor.normal.filename.empty()) {
+            if (!t.texture_descriptor.normal.filename->empty()) {
                 CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_normal(i))));
                 CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(t.texture_descriptor.normal)));
                 setup_texture(t.texture_descriptor);
@@ -1040,7 +1040,7 @@ void RenderableColoredVertexArray::render_cva(
         assert_true(tic.ntextures_specular == 1);
         assert_true(cva->material.textures_color.size() == 1);
         const auto& desc = cva->material.textures_color[0].texture_descriptor;
-        assert_true(!desc.specular.filename.empty());
+        assert_true(!desc.specular.filename->empty());
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_specular())));
         CHK(glBindTexture(GL_TEXTURE_2D, rcva_->rendering_resources_.get_texture(desc.specular)));
         setup_texture(desc);
