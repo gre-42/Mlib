@@ -38,19 +38,21 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
             continue;
         }
         auto set_distances = [&](const std::string& resource_name, const std::string& texture_dictionary, float dist[], size_t n){
+            auto texture_dictionary_lower = texture_dictionary;
+            std::transform(texture_dictionary_lower.begin(), texture_dictionary_lower.end(), texture_dictionary_lower.begin(), ::tolower);
             ide_items_.try_emplace(
                 resource_name,
-                texture_dictionary,
+                texture_dictionary_lower,
                 FixedArray<float, 2>{ -INFINITY, dist[0] });
             float prev = -INFINITY;
             for (size_t i = 0; i < n; ++i) {
                 ide_items_.try_emplace(
                     resource_name + "_l" + std::to_string(i),
-                    texture_dictionary,
+                    texture_dictionary_lower,
                     FixedArray<float, 2>{ prev, dist[i] });
                 ide_items_.try_emplace(
                     resource_name + "_L" + std::to_string(i),
-                    texture_dictionary,
+                    texture_dictionary_lower,
                     FixedArray<float, 2>{ prev, dist[i] });
                 prev = dist[i];
             }

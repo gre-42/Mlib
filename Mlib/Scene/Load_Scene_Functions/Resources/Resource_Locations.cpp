@@ -68,16 +68,16 @@ static void add_resource(
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
-                auto tx_name_lower = tx->name;
-                std::transform(tx_name_lower.begin(), tx_name_lower.end(), tx_name_lower.begin(),
+                auto filename = name + '_' + tx->name;
+                std::transform(filename.begin(), filename.end(), filename.begin(),
                     ::tolower);
                 auto cm = ColormapWithModifiers{
-                    .filename = name + '_' + tx_name_lower,
+                    .filename = filename,
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
-                    lwarn() << "Ignoring duplicate texture \"" << tx_name_lower << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
+                    lwarn() << "Ignoring duplicate texture \"" << tx->name << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
                 } else {
                     res.set_texture(
                         cm,
