@@ -89,7 +89,7 @@ public:
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.extract(key);
         if (res.empty()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
+            THROW_OR_ABORT(value_name_ + " with name \"" + key_to_string_(key) + "\" does not exist");
         }
         return res;
     }

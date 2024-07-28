@@ -40,7 +40,12 @@ struct ColormapWithModifiers {
     OrderableFixedArray<WrapMode, 2> wrap_modes = { WrapMode::REPEAT, WrapMode::REPEAT };
     CachedHash hash;
     ColormapWithModifiers& compute_hash();
-    std::partial_ordering operator <=> (const ColormapWithModifiers&) const = default;
+    inline std::partial_ordering operator <=> (const ColormapWithModifiers& other) const {
+        return hash.get() <=> other.hash.get();
+    }
+    inline bool operator == (const ColormapWithModifiers& other) const {
+        return hash.get() == other.hash.get();
+    }
     template <class Archive>
     void serialize(Archive& archive) {
         archive(filename);

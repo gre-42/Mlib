@@ -545,7 +545,7 @@ RenderingResources::RenderingResources(
     , manual_atlas_tile_descriptors_{ "Manual atlas tile descriptor" }
     , auto_atlas_tile_descriptors_{ "Auto atlas tile descriptor" }
     , cubemap_descriptors_{ "Cubemap descriptor" }
-    , font_textures_{ "Font", [](const auto& e) { return e.first; } }
+    , font_textures_{ "Font", [](const auto& e) { return e.ttf_filename; } }
     , aliases_{ "Alias" }
     , vps_{ "VP" }
     , offsets_{ "Offset" }
@@ -688,7 +688,7 @@ bool RenderingResources::texture_is_loaded_unsafe(const ColormapWithModifiers& n
 }
 
 bool RenderingResources::contains_texture(const ColormapWithModifiers& name) const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     return textures_.contains(name) || auto_atlas_tile_descriptors_.contains(name.filename);
 }
 
@@ -838,10 +838,6 @@ GLuint RenderingResources::get_texture(
     }
     check_color_mode(color, role);
     LOG_FUNCTION("RenderingResources::get_texture " + color.filename);
-    if (auto it = textures_.try_get(color); it != nullptr) {
-        return it->handle;
-    }
-    std::scoped_lock lock{mutex_};
     if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
     }
@@ -1505,15 +1501,9 @@ std::ostream& Mlib::operator << (std::ostream& ostr, const RenderingResources& r
     return ostr;
 }
 
-const LoadedFont& RenderingResources::get_font_texture(
-    const std::string& ttf_filename,
-    float font_height_pixels) const
+const LoadedFont& RenderingResources::get_font_texture(const FontNameAndHeight& font_descriptor) const
 {
-    if (auto it = font_textures_.try_get({ttf_filename, font_height_pixels}); it != nullptr) {
-        return *it;
-    }
-    std::scoped_lock lock{mutex_};
-    if (auto it = font_textures_.try_get({ttf_filename, font_height_pixels}); it != nullptr) {
+    if (auto it = font_textures_.try_get(font_descriptor); it != nullptr) {
         return *it;
     }
     LoadedFont font;
@@ -1521,10 +1511,10 @@ const LoadedFont& RenderingResources::get_font_texture(
         const size_t TEXTURE_SIZE = 1024;
         std::vector<unsigned char> temp_bitmap(TEXTURE_SIZE * TEXTURE_SIZE);
         {
-            std::vector<uint8_t> ttf_buffer = read_file_bytes(ttf_filename);
+            std::vector<uint8_t> ttf_buffer = read_file_bytes(font_descriptor.ttf_filename);
             // ASCII 32..126 is 95 glyphs
             font.cdata.resize(96);
-            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, font.cdata.data()); // no guarantee this fits!
+            font.bottom_y = stbtt_BakeFontBitmap_get_y0(ttf_buffer.data(), 0, font_descriptor.height_pixels, temp_bitmap.data(), TEXTURE_SIZE, TEXTURE_SIZE, 32, 96, font.cdata.data()); // no guarantee this fits!
             // can free ttf_buffer at this point
         }
         CHK(glGenTextures(1, &font.texture_handle));
@@ -1533,7 +1523,7 @@ const LoadedFont& RenderingResources::get_font_texture(
         // can free temp_bitmap at this point
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    return font_textures_.add({ttf_filename, font_height_pixels}, std::move(font));
+    return font_textures_.add(font_descriptor, std::move(font));
 }
 
 void RenderingResources::save_to_file(

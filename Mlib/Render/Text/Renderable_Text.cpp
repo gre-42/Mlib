@@ -56,7 +56,7 @@ TextResource::TextResource(
     : va_{ vertices_, empty_, empty_, empty_ }
     , loaded_font_{ nullptr }
     , canvas_size_{ uninitialized }
-    , ttf_filename_{ std::move(ttf_filename) }
+    , font_descriptor_{ .ttf_filename = std::move(ttf_filename), .height_pixels = NAN }
     , color_{ color }
     , max_nchars_{ max_nchars }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
@@ -71,11 +71,13 @@ void TextResource::ensure_initialized(float font_height) const
     if (rp_.allocated()) {
         return;
     }
+    font_descriptor_.height_pixels = font_height;
+    font_descriptor_.compute_hash();
     vdata_.reserve(max_nchars_);
     if (loaded_font_ != nullptr) {
         THROW_OR_ABORT("loaded_font is not null");
     }
-    loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(ttf_filename_, font_height);
+    loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(font_descriptor_);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
     rp_.color_location = checked_glGetUniformLocation(rp_.program, "color3");
     rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");

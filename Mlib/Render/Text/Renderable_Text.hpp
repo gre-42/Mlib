@@ -4,6 +4,7 @@
 #include <Mlib/Render/Instance_Handles/Buffer_Background_Copy.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
+#include <Mlib/Render/Resource_Managers/Font_Name_And_Height.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <string>
 #include <vector>
@@ -70,7 +71,7 @@ private:
     mutable const LoadedFont* loaded_font_;
     mutable FixedArray<float, 2> canvas_size_;
 
-    std::string ttf_filename_;
+    mutable FontNameAndHeight font_descriptor_;
     FixedArray<float, 3> color_;
     size_t max_nchars_;
 

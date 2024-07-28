@@ -8,8 +8,10 @@
 #include <Mlib/Map/Threadsafe_Map.hpp>
 #include <Mlib/Map/Threadsafe_String_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_Unordered_Map.hpp>
+#include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Render/Resource_Managers/Font_Name_And_Height_Hash.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <cstdint>
@@ -229,7 +231,7 @@ public:
         FlipMode flip_mode,
         CopyBehavior copy_behavior = CopyBehavior::RAISE) const;
 
-    const LoadedFont& get_font_texture(const std::string& ttf_filename, float font_height_pixels) const;
+    const LoadedFont& get_font_texture(const FontNameAndHeight& font_descriptor) const;
 
     void save_to_file(const std::string& filename, const ColormapWithModifiers& color, TextureRole role) const;
     void save_array_to_file(const std::string& filename_prefix, const ColormapWithModifiers& color, TextureRole role) const;
@@ -253,14 +255,14 @@ private:
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
     mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
     mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
+    mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeStringUnorderedMap<TextureDescriptor> texture_descriptors_;
-    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
+    mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringUnorderedMap<TextureSize> texture_sizes_;
     mutable ThreadsafeStringUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeStringUnorderedMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
-    mutable ThreadsafeMap<std::pair<std::string, float>, LoadedFont> font_textures_;
+    mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
     ThreadsafeStringUnorderedMap<std::string> aliases_;
     ThreadsafeStringUnorderedMap<FixedArray<double, 4, 4>> vps_;
     ThreadsafeStringUnorderedMap<float> offsets_;
