@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <compare>
 #include <map>
 
@@ -40,7 +40,7 @@ private:
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

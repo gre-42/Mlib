@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Event_Emitter.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <optional>
 #include <string>
@@ -34,7 +34,7 @@ private:
     CameraCycle camera_cycle_tripod_;
     std::string fallback_camera_node_name_;
     std::string camera_node_name_;
-    mutable SafeSharedMutex camera_mutex_;
+    mutable SafeRecursiveSharedMutex camera_mutex_;
 };
 
 }

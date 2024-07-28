@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <string>
 #include <vector>
 
@@ -19,7 +19,7 @@ public:
 private:
     SelectedCameras& selected_cameras_;
     std::vector<std::string> camera_names_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

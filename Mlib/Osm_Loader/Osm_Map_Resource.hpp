@@ -7,7 +7,7 @@
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <list>
 
 namespace p2t {
@@ -135,7 +135,7 @@ private:
     std::shared_ptr<TriangleList<double>> tl_mud_path_visuals_;
 
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
-    mutable SafeSharedMutex street_bvh_mutex_;
+    mutable SafeRecursiveSharedMutex street_bvh_mutex_;
 
     TerrainStyles terrain_styles_;
 };

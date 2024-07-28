@@ -7,7 +7,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <mutex>
 #include <string>
@@ -44,7 +44,7 @@ protected:
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
     float health_;
-    mutable SafeSharedMutex health_mutex_;
+    mutable SafeRecursiveSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
     DestructionGuards dgs_;

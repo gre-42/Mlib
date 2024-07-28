@@ -9,7 +9,7 @@
 #endif
 
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <set>
 
 namespace Mlib {
@@ -43,16 +43,16 @@ public:
 private:
 #ifdef __ANDROID__
     std::unordered_map<int, float> gamepad_axes_;
-    mutable SafeSharedMutex gamepad_axes_mutex_;
+    mutable SafeRecursiveSharedMutex gamepad_axes_mutex_;
 #else
     GLFWgamepadstate gamepad_state_;
     bool has_gamepad_;
-    mutable SafeSharedMutex gamepad_state_mutex_;
+    mutable SafeRecursiveSharedMutex gamepad_state_mutex_;
 #endif
     std::set<int> keys_down_;
     std::set<int> mouse_buttons_down_;
-    mutable SafeSharedMutex keys_mutex_;
-    mutable SafeSharedMutex mouse_button_mutex_;
+    mutable SafeRecursiveSharedMutex keys_mutex_;
+    mutable SafeRecursiveSharedMutex mouse_button_mutex_;
 };
 
 }

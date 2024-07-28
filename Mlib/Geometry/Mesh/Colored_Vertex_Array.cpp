@@ -41,6 +41,8 @@ ColoredVertexArray<TPos>::ColoredVertexArray(
     , triangle_bone_weights{ std::move(triangle_bone_weights) }
     , continuous_triangle_texture_layers{ std::move(continuous_triangle_texture_layers) }
     , discrete_triangle_texture_layers{ std::move(discrete_triangle_texture_layers) }
+    , aabb_has_value_{ false }
+    , bounding_sphere_has_value_{ false }
 {
     assert_true(!this->name.empty());
     if (!this->triangle_bone_weights.empty() && (this->triangle_bone_weights.size() != this->triangles.size())) {
@@ -326,7 +328,7 @@ void ColoredVertexArray<TPos>::downsample_triangles(size_t n) {
 }
 
 template <class TPos>
-ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const {
+std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const {
     TPos cos_edge_angle = std::cos(edge_angle);
     TPos cos_averaged_normal_angle = std::cos(averaged_normal_angle);
     UUVector<FixedArray<ColoredVertex<TPos>, 2>> grind_lines;
@@ -359,21 +361,21 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_grind_lines(TPos edg
         }
     }
     grind_lines.shrink_to_fit();
-    return ColoredVertexArray(
+    return std::make_shared<ColoredVertexArray>(
         name + "_grind_lines",
         Material{},
         Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE | PhysicsMaterial::OBJ_GRIND_LINE },
         ModifierBacklog{},
-        {},
-        {},
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>>{},
         std::move(grind_lines),
-        {},
-        {},
-        {});
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>{});
 }
 
 template <class TPos>
-ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() const {
+std::shared_ptr<ColoredVertexArray<TPos>> ColoredVertexArray<TPos>::generate_contour_edges() const {
     using O = OrderableFixedArray<TPos, 3>;
     std::set<std::pair<O, O>> edges;
     for (const auto& t : triangles) {
@@ -393,17 +395,17 @@ ColoredVertexArray<TPos> ColoredVertexArray<TPos>::generate_contour_edges() cons
             ColoredVertex<TPos>{e.first},
             ColoredVertex<TPos>{e.second}});
     }
-    return ColoredVertexArray(
+    return std::make_shared<ColoredVertexArray>(
         name + "_contour_edges",
         Material{},
         Morphology{ .physics_material = PhysicsMaterial::ATTR_COLLIDE },
         ModifierBacklog{},
-        {},
-        {},
+        UUVector<FixedArray<ColoredVertex<TPos>, 4>>{},
+        UUVector<FixedArray<ColoredVertex<TPos>, 3>>{},
         std::move(contour_edges),
-        {},
-        {},
-        {});
+        UUVector<FixedArray<std::vector<BoneWeight>, 3>>{},
+        UUVector<FixedArray<float, 3>>{},
+        UUVector<FixedArray<uint8_t, 3>>{});
 }
 
 template <class TPos>
@@ -488,14 +490,11 @@ void ColoredVertexArray<TPos>::print(std::ostream& ostr) const {
 }
 
 template <class TPos>
-AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
-    {
-        std::shared_lock lock{ aabb_mutex_.value };
-        if (aabb_.has_value()) {
-            return *aabb_;
-        }
+const AxisAlignedBoundingBox<TPos, 3>& ColoredVertexArray<TPos>::aabb() const {
+    if (aabb_has_value_) {
+        return *aabb_;
     }
-    std::scoped_lock lock{ aabb_mutex_.value };
+    std::scoped_lock lock{ aabb_mutex_ };
     if (aabb_.has_value()) {
         return *aabb_;
     }
@@ -504,18 +503,16 @@ AxisAlignedBoundingBox<TPos, 3> ColoredVertexArray<TPos>::aabb() const {
         THROW_OR_ABORT("Cannot compute AABB of \"" + name + "\" because it has no vertices");
     }
     aabb_ = AxisAlignedBoundingBox<TPos, 3>::from_iterator(vs.begin(), vs.end());
+    aabb_has_value_ = true;
     return *aabb_;
 }
 
 template <class TPos>
-BoundingSphere<TPos, 3> ColoredVertexArray<TPos>::bounding_sphere() const {
-    {
-        std::shared_lock lock{ bounding_sphere_mutex_.value };
-        if (bounding_sphere_.has_value()) {
-            return *bounding_sphere_;
-        }
+const BoundingSphere<TPos, 3>& ColoredVertexArray<TPos>::bounding_sphere() const {
+    if (bounding_sphere_has_value_) {
+        return *bounding_sphere_;
     }
-    std::scoped_lock lock{ bounding_sphere_mutex_.value };
+    std::scoped_lock lock{ bounding_sphere_mutex_ };
     if (bounding_sphere_.has_value()) {
         return *bounding_sphere_;
     }
@@ -524,6 +521,7 @@ BoundingSphere<TPos, 3> ColoredVertexArray<TPos>::bounding_sphere() const {
         THROW_OR_ABORT("Cannot compute bounding sphere of \"" + name + "\" because it has no vertices");
     }
     bounding_sphere_ = BoundingSphere<TPos, 3>::from_iterator(vs.begin(), vs.end());
+    bounding_sphere_has_value_ = true;
     return *bounding_sphere_;
 }
 
@@ -533,18 +531,20 @@ void ColoredVertexArray<TPos>::set_bounds(
     const BoundingSphere<TPos, 3>& bounding_sphere)
 {
     {
-        std::scoped_lock lock{ aabb_mutex_.value };
+        std::scoped_lock lock{ aabb_mutex_ };
         if (aabb_.has_value()) {
             THROW_OR_ABORT("AABB already set");
         }
         aabb_ = aabb;
+        aabb_has_value_ = true;
     }
     {
-        std::scoped_lock lock{ bounding_sphere_mutex_.value };
+        std::scoped_lock lock{ bounding_sphere_mutex_ };
         if (bounding_sphere_.has_value()) {
             THROW_OR_ABORT("Bounding sphere already set");
         }
         bounding_sphere_ = bounding_sphere;
+        bounding_sphere_has_value_ = true;
     }
 }
 

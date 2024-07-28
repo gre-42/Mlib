@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@ public:
     ILayoutPixels& get_pixels(const std::string& name) const;
     void set_pixels(const std::string& name, std::unique_ptr<ILayoutPixels>&& position);
 private:
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     std::map<std::string, std::unique_ptr<ILayoutPixels>> pixels_;
 };
 

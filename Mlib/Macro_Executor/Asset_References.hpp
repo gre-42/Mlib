@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -27,7 +27,7 @@ public:
 
 private:
     std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

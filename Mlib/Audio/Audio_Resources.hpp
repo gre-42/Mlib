@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -45,7 +45,7 @@ private:
     mutable std::map<std::string, AudioFileSequenceInformation> buffer_sequence_filenames_;
     mutable std::map<std::string, std::shared_ptr<AudioBufferSequenceWithHysteresis>>
         buffer_sequences_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

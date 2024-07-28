@@ -7,9 +7,9 @@
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
-#include <Mlib/Ignore_Copy.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>
+#include <atomic>
 #include <cereal/access.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -42,8 +42,6 @@ class ColoredVertexArray {
     ColoredVertexArray(const ColoredVertexArray&) = delete;
     ColoredVertexArray& operator = (const ColoredVertexArray&) = delete;
 public:
-    ColoredVertexArray(ColoredVertexArray&&) = default;
-    ColoredVertexArray& operator = (ColoredVertexArray&&) = default;
     ColoredVertexArray(
         std::string name,
         const Material& material,
@@ -87,8 +85,8 @@ public:
     }
     bool empty() const;
     UUVector<FixedArray<TPos, 3>> vertices() const;
-    AxisAlignedBoundingBox<TPos, 3> aabb() const;
-    BoundingSphere<TPos, 3> bounding_sphere() const;
+    const AxisAlignedBoundingBox<TPos, 3>& aabb() const;
+    const BoundingSphere<TPos, 3>& bounding_sphere() const;
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
         const BoundingSphere<TPos, 3>& bounding_sphere);
@@ -109,8 +107,8 @@ public:
         const TransformationMatrix<float, double, 3>& tm) const;
     std::vector<CollisionLineSphere<TPos>> lines_sphere() const;
     void downsample_triangles(size_t n);
-    ColoredVertexArray generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
-    ColoredVertexArray generate_contour_edges() const;
+    std::shared_ptr<ColoredVertexArray> generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;
+    std::shared_ptr<ColoredVertexArray> generate_contour_edges() const;
     std::vector<std::shared_ptr<ColoredVertexArray>> split(
         float depth,
         PhysicsMaterial destination_physics_material) const;
@@ -174,8 +172,10 @@ private:
     bool empty_from() const;
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
     mutable std::optional<BoundingSphere<TPos, 3>> bounding_sphere_;
-    mutable IgnoreCopy<SafeSharedMutex> aabb_mutex_;
-    mutable IgnoreCopy<SafeSharedMutex> bounding_sphere_mutex_;
+    mutable SafeRecursiveSharedMutex aabb_mutex_;
+    mutable SafeRecursiveSharedMutex bounding_sphere_mutex_;
+    mutable std::atomic_bool aabb_has_value_;
+    mutable std::atomic_bool bounding_sphere_has_value_;
 };
 
 }

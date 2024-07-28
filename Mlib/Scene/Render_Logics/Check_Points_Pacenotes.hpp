@@ -6,7 +6,7 @@
 #include <Mlib/Render/Data_Display/Pacenote_Display.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <optional>
 #include <vector>
 
@@ -62,7 +62,7 @@ private:
     TextResource text_;
     PacenoteDisplay display_;
     DestructionFunctionsRemovalTokens on_destroy_check_points_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

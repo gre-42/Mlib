@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -26,7 +26,7 @@ public:
     const std::list<std::unique_ptr<IAssetLoader>>& loaders() const;
 private:
     std::map<std::string, ReplacementParameterAndFilename> replacement_parameters_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     std::list<std::unique_ptr<IAssetLoader>> asset_loaders_;
 };
 

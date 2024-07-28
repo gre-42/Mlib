@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <string>
 #include <vector>
 
@@ -50,7 +50,7 @@ public:
 private:
     void compute_animated_arrays_unsafe();
     mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable SafeSharedMutex acva_mutex_;
+    mutable SafeRecursiveSharedMutex acva_mutex_;
     SceneNodeResources& scene_node_resources_;
     std::vector<std::string> resource_names_;
 };

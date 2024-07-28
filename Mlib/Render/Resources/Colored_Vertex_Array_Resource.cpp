@@ -1539,12 +1539,12 @@ std::shared_ptr<ISceneNodeResource> ColoredVertexArrayResource::generate_contour
     std::list<std::shared_ptr<ColoredVertexArray<float>>> dest_scvas;
     std::list<std::shared_ptr<ColoredVertexArray<double>>> dest_dcvas;
     for (auto& t : triangles_res_->scvas) {
-        dest_scvas.push_back(std::make_shared<ColoredVertexArray<float>>(
-            t->generate_contour_edges()));
+        dest_scvas.push_back(
+            t->generate_contour_edges());
     }
     for (auto& t : triangles_res_->dcvas) {
-        dest_dcvas.push_back(std::make_shared<ColoredVertexArray<double>>(
-            t->generate_contour_edges()));
+        dest_dcvas.push_back(
+            t->generate_contour_edges());
     }
     return std::make_shared<ColoredVertexArrayResource>(dest_scvas, dest_dcvas);
 }

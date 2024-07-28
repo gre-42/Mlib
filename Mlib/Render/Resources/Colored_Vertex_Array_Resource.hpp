@@ -5,7 +5,7 @@
 #include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
 #include <unordered_map>
@@ -134,7 +134,7 @@ private:
     mutable Vertices vertex_arrays_;
     std::unique_ptr<Instances> instances_;
     std::weak_ptr<ColoredVertexArrayResource> vertex_data_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }

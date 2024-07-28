@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@ public:
     void insert(const std::string& name, std::shared_ptr<FillWithTextureLogic> render_logic);
     std::shared_ptr<FillWithTextureLogic> operator [] (const std::string& name) const;
 private:
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
     std::map<std::string, std::shared_ptr<FillWithTextureLogic>> render_logics_;
 };
 

@@ -51,14 +51,14 @@ std::shared_ptr<AnimatedColoredVertexArrays> AnimatedColoredVertexArrays::genera
     auto result = std::make_shared<AnimatedColoredVertexArrays>();
     for (const auto& t : scvas) {
         if (filter.matches(*t)) {
-            result->scvas.push_back(std::make_shared<ColoredVertexArray<float>>(
-                t->generate_grind_lines(edge_angle, averaged_normal_angle)));
+            result->scvas.push_back(
+                t->generate_grind_lines(edge_angle, averaged_normal_angle));
         }
     }
     for (const auto& t : dcvas) {
         if (filter.matches(*t)) {
-            result->dcvas.push_back(std::make_shared<ColoredVertexArray<double>>(
-                t->generate_grind_lines(edge_angle, averaged_normal_angle)));
+            result->dcvas.push_back(
+                t->generate_grind_lines(edge_angle, averaged_normal_angle));
         }
     }
     return result;

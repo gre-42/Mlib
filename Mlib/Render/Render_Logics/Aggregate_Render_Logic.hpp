@@ -1,6 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -40,7 +40,7 @@ private:
     std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
     std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
-    SafeSharedMutex mutex_;
+    SafeRecursiveSharedMutex mutex_;
 };
 
 }

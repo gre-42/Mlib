@@ -1,4 +1,4 @@
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <thread>
 
@@ -18,7 +18,7 @@ public:
 
 private:
     std::atomic<std::thread::id> m_holder;
-    SafeSharedMutex mutex_;
+    SafeRecursiveSharedMutex mutex_;
 };
 
 }

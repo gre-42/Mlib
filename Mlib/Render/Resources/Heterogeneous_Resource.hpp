@@ -2,7 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <memory>
 #include <string>
 
@@ -78,8 +78,8 @@ public:
 private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable std::shared_ptr<AnimatedColoredVertexArrays> physics_arrays_;
-    mutable SafeSharedMutex rcva_mutex_;
-    mutable SafeSharedMutex physics_arrays_mutex_;
+    mutable SafeRecursiveSharedMutex rcva_mutex_;
+    mutable SafeRecursiveSharedMutex physics_arrays_mutex_;
     const SceneNodeResources& scene_node_resources_;
     TransformationMatrix<double, double, 3> geographic_mapping_;
 };

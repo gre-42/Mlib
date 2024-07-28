@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera_Config.hpp>
-#include <Mlib/Threads/Safe_Shared_Mutex.hpp>
+#include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 
 namespace Mlib {
 
@@ -29,7 +29,7 @@ public:
 private:
     PerspectiveCameraConfig cfg_;
     Postprocessing postprocessing_;
-    mutable SafeSharedMutex mutex_;
+    mutable SafeRecursiveSharedMutex mutex_;
 };
 
 }
