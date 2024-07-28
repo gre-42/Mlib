@@ -15,7 +15,7 @@ static void add_resource(
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if (extension == ".dff") {
         linfo() << "dff: " << name;
         auto istr = img->read(name, std::ios::binary, CURRENT_SOURCE_LOCATION);
@@ -36,7 +36,7 @@ static void add_file_resource(const std::string& name)
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if (extension == ".img") {
         linfo() << "img: " << name;
         auto img = ImgReader::load_from_file(name);

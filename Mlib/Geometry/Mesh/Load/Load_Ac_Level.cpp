@@ -60,7 +60,7 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         auto tags = jv.at<std::set<std::string>>("tags");
         auto run = jv.at<std::string>("run");
         std::transform(run.begin(), run.end(), run.begin(),
-            [](unsigned char c){ return std::tolower(c); });
+            ::tolower);
         if ((run == "point to point") ||
             (run == "point-to-point") ||
             (run == "drift!") ||

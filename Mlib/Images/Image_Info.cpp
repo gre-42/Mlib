@@ -13,7 +13,7 @@ ImageInfo ImageInfo::load(const std::string& filename, const std::vector<uint8_t
     };
     auto extension = std::filesystem::path{filename}.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if ((extension == ".jpg") ||
         (extension == ".png") ||
         (extension == ".bmp"))

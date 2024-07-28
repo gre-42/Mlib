@@ -78,6 +78,7 @@ DffArrays<TPosition> Mlib::load_dff(
                 material.color(0) / 255.f,
                 material.color(1) / 255.f,
                 material.color(2) / 255.f };
+            auto ide = dddb.get_item(a.frame->name, morph_target.bounding_sphere.radius());
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{
@@ -102,13 +103,14 @@ DffArrays<TPosition> Mlib::load_dff(
                 },
                 Morphology{
                     .physics_material = cfg.physics_material,
-                    .center_distances = OrderableFixedArray{
-                        dddb.get_center_distances(a.frame->name, morph_target.bounding_sphere.radius()) },
+                    .center_distances = OrderableFixedArray{ ide.center_distances },
                     .max_triangle_distance = cfg.max_triangle_distance });
             if (material.texture != nullptr) {
+                auto texture_name_lower = material.texture->name;
+                std::transform(texture_name_lower.begin(), texture_name_lower.end(), texture_name_lower.begin(), ::tolower);
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
-                        .filename = material.texture->name,
+                        .filename = ide.texture_dictionary + ".txd_" + texture_name_lower,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()}} };

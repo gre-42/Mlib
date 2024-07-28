@@ -45,7 +45,7 @@ static void add_resource(
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if (extension == ".dff") {
         auto& res = RenderingContextStack::primary_scene_node_resources();
         res.add_resource_loader(name, [img, cfg, name, &res, dddb]() {
@@ -68,13 +68,16 @@ static void add_resource(
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
+                auto tx_name_lower = tx->name;
+                std::transform(tx_name_lower.begin(), tx_name_lower.end(), tx_name_lower.begin(),
+                    ::tolower);
                 auto cm = ColormapWithModifiers{
-                    .filename = tx->name,
+                    .filename = name + '_' + tx_name_lower,
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
-                    lwarn() << "Ignoring duplicate texture \"" << tx->name << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
+                    lwarn() << "Ignoring duplicate texture \"" << tx_name_lower << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
                 } else {
                     res.set_texture(
                         cm,
@@ -96,7 +99,7 @@ static void add_file_resource(
 {
     auto extension = std::filesystem::path{ name }.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if (extension == ".img") {
         auto img = ImgReader::load_from_file(name);
         for (const auto& name : img->names()) {

@@ -1624,7 +1624,7 @@ void RenderingResources::add_texture(
     }
     auto extension = std::filesystem::path{name}.extension().string();
     std::transform(extension.begin(), extension.end(), extension.begin(),
-        [](unsigned char c){ return std::tolower(c); });
+        ::tolower);
     if ((extension == ".jpg") ||
         (extension == ".png") ||
         (extension == ".bmp"))
