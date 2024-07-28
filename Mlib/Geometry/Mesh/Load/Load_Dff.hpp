@@ -279,7 +279,7 @@ public:
 struct Frame {
     std::string name;
     TransformationMatrix<float, float, 3> matrix = uninitialized;
-    int32_t parent;
+    uint32_t parent;
 };
 
 struct Object {
@@ -339,8 +339,8 @@ struct FrameStreamData
     FixedArray<float, 3> up = uninitialized;
     FixedArray<float, 3> at = uninitialized;
     FixedArray<float, 3> pos = uninitialized;
-    int32_t parent;
-    int32_t matflag;
+    uint32_t parent;
+    uint32_t matflag;
 };
 static_assert(sizeof(FrameStreamData) == 56);
 

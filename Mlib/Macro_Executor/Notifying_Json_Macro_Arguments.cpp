@@ -6,7 +6,7 @@ using namespace Mlib;
 NotifyingJsonMacroArguments::NotifyingJsonMacroArguments() = default;
 
 void NotifyingJsonMacroArguments::set_and_notify(const std::string& key, const nlohmann::json& value) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     json_macro_arguments_.set(key, value);
     for (const auto& f : observers_) {
         f();
@@ -14,7 +14,7 @@ void NotifyingJsonMacroArguments::set_and_notify(const std::string& key, const n
 }
 
 void NotifyingJsonMacroArguments::merge_and_notify(const JsonMacroArguments& other) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     json_macro_arguments_.merge(other);
     for (const auto& f : observers_) {
         f();
@@ -26,12 +26,12 @@ JsonMacroArgumentsAndLock NotifyingJsonMacroArguments::json_macro_arguments() co
 }
 
 void NotifyingJsonMacroArguments::add_observer(const std::function<void()>& func) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     observers_.push_back(func);
 }
 
 void NotifyingJsonMacroArguments::clear_observers() {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     observers_.clear();
 }
 

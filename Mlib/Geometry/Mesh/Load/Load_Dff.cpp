@@ -557,12 +557,8 @@ static std::vector<Frame> read_frame_list(
                 buf.right(1), buf.up(1), buf.at(1),
                 buf.right(2), buf.up(2), buf.at(2)),
             buf.pos };
-        if (buf.parent >= 0) {
-            if (integral_cast<size_t>(buf.parent) >= frames.size()) {
-                THROW_OR_ABORT("Parent frame ID too large");
-            }
-        } else if (buf.parent != -1) {
-            THROW_OR_ABORT("Unexpected parent frame ID");
+        if ((buf.parent != UINT32_MAX) && (buf.parent >= frames.size())) {
+            THROW_OR_ABORT("Parent frame ID too large");
         }
         frame.parent = buf.parent;
     }

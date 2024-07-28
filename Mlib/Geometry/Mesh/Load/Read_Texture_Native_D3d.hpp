@@ -4,6 +4,9 @@
 #include <memory>
 
 namespace Mlib {
+
+enum class IoVerbosity;
+
 namespace Dff {
 
 class IRasterFactory;

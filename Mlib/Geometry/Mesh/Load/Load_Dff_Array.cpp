@@ -44,7 +44,7 @@ DffArrays<TPosition> Mlib::load_dff(
             THROW_OR_ABORT("Morph targets empty");
         }
         auto m = a.frame->matrix.casted<float, TPosition>();
-        for (size_t p = a.frame->parent; p != -1;) {
+        for (uint32_t p = a.frame->parent; p != UINT32_MAX;) {
             if (p >= clump.frames.size()) {
                 THROW_OR_ABORT("Parent frame index out of bounds");
             }
@@ -159,7 +159,7 @@ DffArrays<TPosition> Mlib::load_dff(
             // if (normals.empty()) {
             //     tl.convert_triangle_to_vertex_normals();
             // }
-            result.renderables.push_back(tl.triangle_array()->transformed<TPosition>(m, "_root_frame"));
+            result.renderables.push_back(tl.triangle_array()->template transformed<TPosition>(m, "_root_frame"));
         }
     }
     return result;

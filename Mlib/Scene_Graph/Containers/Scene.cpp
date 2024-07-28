@@ -131,6 +131,8 @@ void Scene::add_root_node(
     RenderingStrategies rendering_strategy)
 {
     switch (rendering_strategy) {
+    case RenderingStrategies::NONE:
+        THROW_OR_ABORT("Rendering strategy of node \"" + name + "\" is \"none\"");
     case RenderingStrategies::OBJECT:
         switch (rendering_dynamics) {
         case RenderingDynamics::STATIC:
