@@ -557,10 +557,10 @@ static std::vector<Frame> read_frame_list(
                 buf.right(1), buf.up(1), buf.at(1),
                 buf.right(2), buf.up(2), buf.at(2)),
             buf.pos };
-        if ((buf.parent != UINT32_MAX) && (buf.parent >= frames.size())) {
+        if ((buf.parent_index != UINT32_MAX) && (buf.parent_index >= frames.size())) {
             THROW_OR_ABORT("Parent frame ID too large");
         }
-        frame.parent = buf.parent;
+        frame.parent = buf.parent_index;
     }
     for (auto& frame : frames) {
         read_extension(
@@ -572,7 +572,7 @@ static std::vector<Frame> read_frame_list(
             "frame",
             verbosity);
         if (any(verbosity & IoVerbosity::METADATA)) {
-            linfo() << "Frame: " << frame.name << ", Parent: " << frame.parent;
+            linfo() << "Frame: " << frame.name << ", Parent: " << frame.parent << ", Trafo:\n" << frame.matrix.semi_affine();
         }
     }
     return frames;

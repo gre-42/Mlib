@@ -32,7 +32,8 @@ static void test_teapot() {
             .physics_material = PhysicsMaterial::NONE,
             .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
             .werror = true},
-        DrawDistanceDb{});
+        DrawDistanceDb{},
+        FramePosition::KEEP);
 }
 
 int main(int argc, char** argv) {

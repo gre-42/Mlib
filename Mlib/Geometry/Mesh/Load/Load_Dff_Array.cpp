@@ -14,14 +14,20 @@ template <class TPosition>
 DffArrays<TPosition> Mlib::load_dff(
     const std::string& filename,
     const LoadMeshConfig<TPosition>& cfg,
-    const DrawDistanceDb& dddb)
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position)
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
         THROW_OR_ABORT("Could not open file for read: \"" + filename + '"');
     }
     try {
-        return load_dff(*ifs, std::filesystem::path{ filename }.filename().string() + '_', cfg, dddb);
+        return load_dff(
+            *ifs,
+            std::filesystem::path{ filename }.filename().string() + '_',
+            cfg,
+            dddb,
+            frame_position);
     } catch (std::runtime_error& e) {
         THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
     }
@@ -32,7 +38,8 @@ DffArrays<TPosition> Mlib::load_dff(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<TPosition>& cfg,
-    const DrawDistanceDb& dddb)
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position)
 {
     DffArrays<TPosition> result;
     auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
@@ -43,20 +50,34 @@ DffArrays<TPosition> Mlib::load_dff(
         if (a.geometry->morph_targets.empty()) {
             THROW_OR_ABORT("Morph targets empty");
         }
-        auto m = a.frame->matrix.casted<float, TPosition>();
+        auto trafo = a.frame->matrix.casted<float, TPosition>();
         for (uint32_t p = a.frame->parent; p != UINT32_MAX;) {
             if (p >= clump.frames.size()) {
                 THROW_OR_ABORT("Parent frame index out of bounds");
             }
             const auto& parent = clump.frames[p];
-            m = parent.matrix.casted<float, TPosition>() * m;
+            trafo = parent.matrix.casted<float, TPosition>() * trafo;
             p = parent.parent;
         }
+        [&]() {
+            switch (frame_position) {
+            case FramePosition::ZERO:
+                trafo.t() = 0.f;
+                return;
+            case FramePosition::KEEP:
+                // Do nothing
+                return;
+            }
+            THROW_OR_ABORT("Unknown frame position: \"" + std::to_string((int)frame_position) + '"');
+            }();
         const auto& morph_target = a.geometry->morph_targets[0];
         const auto& materials = a.geometry->mat_list.materials;
         NonCopyingVector<TriangleList<TPosition>> tls(materials.size());
-        for (const auto& m : materials) {
-            auto col3 = FixedArray<float, 3>{ m.color(0) / 255.f, m.color(1) / 255.f, m.color(2) / 255.f };
+        for (const auto& material : materials) {
+            auto col3 = FixedArray<float, 3>{
+                material.color(0) / 255.f,
+                material.color(1) / 255.f,
+                material.color(2) / 255.f };
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{
@@ -72,9 +93,9 @@ DffArrays<TPosition> Mlib::load_dff(
                     .transformation_mode = cfg.transformation_mode,
                     .cull_faces = cfg.cull_faces_default,
                     .shading = {
-                        .ambient = OrderableFixedArray<float, 3>(col3 * m.surface_properties.ambient),
-                        .diffuse = OrderableFixedArray<float, 3>(col3 * m.surface_properties.diffuse),
-                        .specular = m.surface_properties.specular,
+                        .ambient = OrderableFixedArray<float, 3>(col3 * material.surface_properties.ambient),
+                        .diffuse = OrderableFixedArray<float, 3>(col3 * material.surface_properties.diffuse),
+                        .specular = material.surface_properties.specular,
                         .fresnel = cfg.fresnel
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
@@ -84,10 +105,10 @@ DffArrays<TPosition> Mlib::load_dff(
                     .center_distances = OrderableFixedArray{
                         dddb.get_center_distances(a.frame->name, morph_target.bounding_sphere.radius()) },
                     .max_triangle_distance = cfg.max_triangle_distance });
-            if (m.texture != nullptr) {
+            if (material.texture != nullptr) {
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
-                        .filename = m.texture->name,
+                        .filename = material.texture->name,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()}} };
@@ -159,7 +180,7 @@ DffArrays<TPosition> Mlib::load_dff(
             // if (normals.empty()) {
             //     tl.convert_triangle_to_vertex_normals();
             // }
-            result.renderables.push_back(tl.triangle_array()->template transformed<TPosition>(m, "_root_frame"));
+            result.renderables.push_back(tl.triangle_array()->template transformed<TPosition>(trafo, "_root_frame"));
         }
     }
     return result;
@@ -170,11 +191,13 @@ namespace Mlib {
 template DffArrays<float> load_dff<float>(
     const std::string& filename,
     const LoadMeshConfig<float>& cfg,
-    const DrawDistanceDb& dddb);
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position);
 
 template DffArrays<double> load_dff<double>(
     const std::string& filename,
     const LoadMeshConfig<double>& cfg,
-    const DrawDistanceDb& dddb);
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position);
 
 }

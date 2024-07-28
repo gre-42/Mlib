@@ -15,9 +15,9 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
 {
     auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
     if constexpr (std::is_same_v<TPos, float>) {
-        hr->acvas->scvas = load_dff(istr, name, cfg, dddb).renderables;
+        hr->acvas->scvas = load_dff(istr, name, cfg, dddb, FramePosition::ZERO).renderables;
     } else if constexpr (std::is_same_v<TPos, double>) {
-        hr->acvas->dcvas = load_dff(istr, name, cfg, dddb).renderables;
+        hr->acvas->dcvas = load_dff(istr, name, cfg, dddb, FramePosition::ZERO).renderables;
     } else {
         THROW_OR_ABORT("Unknown mesh precision");
     }
@@ -33,9 +33,9 @@ std::shared_ptr<ISceneNodeResource> Mlib::load_renderable_dff(
 {
     auto hr = std::make_shared<HeterogeneousResource>(scene_node_resources);
     if constexpr (std::is_same_v<TPos, float>) {
-        hr->acvas->scvas = load_dff(filename, cfg, dddb).renderables;
+        hr->acvas->scvas = load_dff(filename, cfg, dddb, FramePosition::ZERO).renderables;
     } else if constexpr (std::is_same_v<TPos, double>) {
-        hr->acvas->dcvas = load_dff(filename, cfg, dddb).renderables;
+        hr->acvas->dcvas = load_dff(filename, cfg, dddb, FramePosition::ZERO).renderables;
     } else {
         THROW_OR_ABORT("Unknown mesh precision");
     }

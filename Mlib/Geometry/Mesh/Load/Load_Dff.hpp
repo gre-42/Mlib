@@ -339,8 +339,8 @@ struct FrameStreamData
     FixedArray<float, 3> up = uninitialized;
     FixedArray<float, 3> at = uninitialized;
     FixedArray<float, 3> pos = uninitialized;
-    uint32_t parent;
-    uint32_t matflag;
+    uint32_t parent_index;
+    uint32_t matrix_flags;
 };
 static_assert(sizeof(FrameStreamData) == 56);
 

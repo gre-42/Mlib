@@ -12,6 +12,11 @@ template <class TPos>
 struct LoadMeshConfig;
 class DrawDistanceDb;
 
+enum class FramePosition {
+    ZERO,
+    KEEP
+};
+
 template <class TPosition>
 struct DffArrays {
     std::list<std::shared_ptr<ColoredVertexArray<TPosition>>> renderables;
@@ -21,13 +26,15 @@ template <class TPosition>
 DffArrays<TPosition> load_dff(
     const std::string& filename,
     const LoadMeshConfig<TPosition>& cfg,
-    const DrawDistanceDb& dddb);
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position);
 
 template <class TPosition>
 DffArrays<TPosition> load_dff(
     std::istream& istr,
     const std::string& name,
     const LoadMeshConfig<TPosition>& cfg,
-    const DrawDistanceDb& dddb);
+    const DrawDistanceDb& dddb,
+    FramePosition frame_position);
 
 }
