@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <map>
+#include <optional>
 
 namespace Mlib {
 
@@ -10,7 +11,7 @@ namespace Mlib {
  * Don't forget to update the "insert" function when adding new fields.
  */
 struct ColorStyle {
-    Mlib::regex selector;
+    std::optional<Mlib::regex> selector;
     FixedArray<float, 3> emissive{-1.f, -1.f, -1.f};
     FixedArray<float, 3> ambient{-1.f, -1.f, -1.f};
     FixedArray<float, 3> diffuse{-1.f, -1.f, -1.f};
@@ -25,6 +26,7 @@ struct ColorStyle {
     std::map<std::string, std::string> reflection_maps;
     float reflection_strength = 1.f;
     void insert(const ColorStyle& other);
+    bool matches(const std::string& name) const;
 };
 
 }

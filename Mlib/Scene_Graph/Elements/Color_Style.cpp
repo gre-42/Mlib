@@ -28,3 +28,9 @@ void ColorStyle::insert(const ColorStyle& other) {
         this->reflection_maps[key] = value;
     }
 }
+
+bool ColorStyle::matches(const std::string& name) const {
+    return
+        !selector.has_value() ||
+        Mlib::re::regex_search(name, *selector);
+}

@@ -569,7 +569,6 @@ int main(int argc, char** argv) {
         // Setting style before adding renderables to avoid race condition.
         if (light_configuration == "emissive") {
             scene_node->add_color_style(std::unique_ptr<ColorStyle>(new ColorStyle{
-                .selector = Mlib::compile_regex(""),
                 .emissive = {1.f, 1.f, 1.f}}));
         }
         auto create_light = [&args](const std::string& resource_suffix) {

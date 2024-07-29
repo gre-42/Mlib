@@ -151,7 +151,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
             .lap_index = track_reader_.lap_id()});
         if (i01_ == beacon_nodes_.size()) {
             auto node = make_dunique<SceneNode>();
-            node->add_color_style(std::make_unique<ColorStyle>(ColorStyle{.selector = Mlib::compile_regex("")}));
+            node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
                 .beacon_node = node.get(DP_LOC)});

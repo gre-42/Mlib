@@ -544,7 +544,7 @@ bool SceneNode::has_color_style(const std::string& name) const {
     std::shared_lock lock{ mutex_ };
     bool style_found = false;
     for (const auto& s : color_styles_) {
-        if (!Mlib::re::regex_search(name, s->selector)) {
+        if (!s->matches(name)) {
             continue;
         }
         if (style_found) {
@@ -563,7 +563,7 @@ const ColorStyle& SceneNode::color_style(const std::string& name) const {
     std::shared_lock lock{ mutex_ };
     ColorStyle* result = nullptr;
     for (const auto& s : color_styles_) {
-        if (!Mlib::re::regex_search(name, s->selector)) {
+        if (!s->matches(name)) {
             continue;
         }
         if (result != nullptr) {
@@ -852,7 +852,7 @@ void SceneNode::render(
         for (const auto& [n, r] : renderables_) {
             ColorStyle r_style;
             for (const auto& style : ecolor_styles) {
-                if (Mlib::re::regex_search(n, style->selector)) {
+                if (style->matches(n)) {
                     r_style.insert(*style);
                 }
             }

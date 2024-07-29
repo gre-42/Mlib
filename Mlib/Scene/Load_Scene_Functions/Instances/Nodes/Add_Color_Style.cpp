@@ -42,7 +42,9 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
         parsed_reflection_maps = args.arguments.at<std::map<std::string, std::string>>(KnownArgs::reflection_maps);
     }
     auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
-        .selector = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::selector, "")),
+        .selector = args.arguments.contains(KnownArgs::selector)
+            ? std::optional{ Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::selector)) }
+            : std::nullopt,
         .ambient = args.arguments.contains(KnownArgs::ambient)
             ? args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient)
             : fixed_full<float, 3>(-1),
