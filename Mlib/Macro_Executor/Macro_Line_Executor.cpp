@@ -94,6 +94,7 @@ DECLARE_ARGUMENT(exclude);
 DECLARE_ARGUMENT(required);
 DECLARE_ARGUMENT(declare_macro);
 DECLARE_ARGUMENT(content);
+DECLARE_ARGUMENT(let);
 }
 
 MacroLineExecutor::MacroLineExecutor(
@@ -182,7 +183,7 @@ void MacroLineExecutor::operator () (
         merged_args.merge(*local_json_macro_arguments);
     }
     if (j.type() == nlohmann::detail::value_t::object) {
-        JsonView jv{j};
+        JsonView jv{ j };
         jv.validate(MacroKeys::options);
         if ((int)jv.contains(MacroKeys::call) +
             (int)jv.contains(MacroKeys::declare_macro) +
