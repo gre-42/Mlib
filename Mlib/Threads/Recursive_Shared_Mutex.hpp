@@ -1,15 +1,17 @@
 #pragma once
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <shared_mutex>
 #include <thread>
 
 namespace Mlib {
 
-class RecursiveSharedMutex {
+template <class TMutex>
+class GenericRecursiveSharedMutex {
 public:
-    RecursiveSharedMutex()
-    : count_{0}
+    GenericRecursiveSharedMutex()
+        : count_{ 0 }
     {}
-    ~RecursiveSharedMutex() = default;
+    ~GenericRecursiveSharedMutex() = default;
     void lock() {
         if (!is_owner()) {
             mutex_.lock();
@@ -48,9 +50,12 @@ public:
         return owner_ == std::this_thread::get_id();
     }
 private:
-    std::shared_mutex mutex_;
+    TMutex mutex_;
     std::atomic<std::thread::id> owner_;
     std::atomic_uint32_t count_;
 };
+
+using RecursiveSharedMutex = GenericRecursiveSharedMutex<std::shared_mutex>;
+using SafeAtomicRecursiveSharedMutex = GenericRecursiveSharedMutex<SafeAtomicSharedMutex>;
 
 }

@@ -10,6 +10,7 @@
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Threads/Dispatcher.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Try_Find.hpp>
 #include <iostream>
 
@@ -210,6 +211,12 @@ void test_log() {
     linfo() << "a\nbc\nd";
 }
 
+void test_atomic_recursive_shared_mutex() {
+    SafeAtomicRecursiveSharedMutex m;
+    std::scoped_lock lock{ m };
+    std::scoped_lock lock2{ m };
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
@@ -225,5 +232,6 @@ int main(int argc, const char** argv) {
     test_dangling_unique2();
     test_try_find();
     test_log();
+    test_atomic_recursive_shared_mutex();
     return 0;
 }
