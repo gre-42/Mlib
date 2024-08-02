@@ -2,9 +2,9 @@
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <functional>
 #include <map>
-#include <mutex>
 #include <set>
 #include <string>
 
@@ -51,7 +51,7 @@ private:
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;
     std::set<std::string> root_nodes_to_delete_;
-    mutable std::mutex root_nodes_to_delete_mutex_;
+    mutable AtomicMutex root_nodes_to_delete_mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RootNodes& root_nodes);

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Any_Gl.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <functional>
 #include <list>
 #include <mutex>
@@ -7,7 +8,7 @@
 namespace Mlib {
 
 struct GcBacklog {
-    std::mutex mutex;
+    AtomicMutex mutex;
     std::list<GLuint> handles;
     void operator () (GLuint handle);
     void clear(const std::function<void(GLuint)>& deallocator);

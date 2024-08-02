@@ -67,7 +67,7 @@ private:
     DanglingBaseClassPtr<DestructionObserver<DanglingRef<SceneNode>>> destruction_observer_;
     INodeHider* node_hider_;
     DanglingRef<SceneNode> node_;
-    std::scoped_lock<SafeRecursiveSharedMutex> lock_;
+    std::scoped_lock<SafeAtomicRecursiveSharedMutex> lock_;
 };
 
 }

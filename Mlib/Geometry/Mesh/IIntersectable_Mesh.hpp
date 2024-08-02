@@ -1,7 +1,7 @@
 #pragma once
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstddef>
 #include <set>
-#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -51,7 +51,7 @@ public:
     virtual AxisAlignedBoundingBox<double, 3> aabb() const = 0;
 private:
     mutable std::unique_ptr<CollisionVertices> collision_vertices_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeAtomicSharedMutex mutex_;
 };
 
 }

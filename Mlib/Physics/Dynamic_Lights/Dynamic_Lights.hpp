@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <chrono>
 #include <cstddef>
 #include <functional>
-#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -31,7 +31,7 @@ public:
 private:
 	const DynamicLightDb& db_;
 	std::set<IDynamicLight*> instances_;
-	mutable std::mutex mutex_;
+	mutable AtomicMutex mutex_;
 };
 
 }

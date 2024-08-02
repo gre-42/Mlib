@@ -12,10 +12,10 @@ template <class T>
 class ThreadsafeDefaultMap {
 public:
     explicit ThreadsafeDefaultMap(
-        SafeRecursiveSharedMutex& mutex,
+        SafeAtomicRecursiveSharedMutex& mutex,
         std::function<T(const std::string&)> deflt)
-    : mutex_{mutex},
-      default_{deflt}
+        : mutex_{ mutex }
+        , default_{ deflt }
     {}
 
     void insert(const std::string& name, const T& value) {
@@ -55,7 +55,7 @@ public:
     auto begin() const { return elements_.begin(); }
     auto end() const { return elements_.end(); }
 private:
-    SafeRecursiveSharedMutex& mutex_;
+    SafeAtomicRecursiveSharedMutex& mutex_;
     std::map<std::string, T> elements_;
     std::function<T(const std::string&)> default_;
 };

@@ -12,6 +12,7 @@ concept pointers_are_comparable = requires(const T2* v) {
 #ifndef WITHOUT_DANGLING_UNIQUE_PTR
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <cstdint>
 #include <map>
 #include <mutex>
@@ -24,7 +25,7 @@ struct PointedSourceLocation;
 template <class T>
 std::map<const void*, PointedSourceLocation>& locs_();
 template <class T>
-std::mutex& loc_mutex_();
+AtomicMutex& loc_mutex_();
 
 template <class T>
 inline std::map<const void*, ::Mlib::PointedSourceLocation>& locs() {
@@ -32,7 +33,7 @@ inline std::map<const void*, ::Mlib::PointedSourceLocation>& locs() {
 }
 
 template <class T>
-inline std::mutex& loc_mutex() {
+inline AtomicMutex& loc_mutex() {
     return loc_mutex_<std::remove_const_t<T>>();
 }
 
@@ -43,8 +44,8 @@ inline std::mutex& loc_mutex() {
         return result;                                                          \
     }                                                                           \
     template <>                                                                 \
-    std::mutex& ::Mlib::loc_mutex_<T>() {                                       \
-        static std::mutex result;                                               \
+    ::Mlib::AtomicMutex& ::Mlib::loc_mutex_<T>() {                              \
+        static AtomicMutex result;                                              \
         return result;                                                          \
     }
 

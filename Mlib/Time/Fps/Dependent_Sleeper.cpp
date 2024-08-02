@@ -3,6 +3,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 
 using namespace Mlib;
@@ -20,7 +21,7 @@ void DependentSleeper::reset() {
 }
 
 bool DependentSleeper::is_up_to_date() const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     for (const auto& b : busy_state_providers_) {
         if (!b->is_up_to_date()) {
             return false;

@@ -30,7 +30,7 @@ class RenderableScenes {
 public:
     RenderableScenes();
     ~RenderableScenes();
-    GuardedIterable<map_type::iterator, std::shared_lock<SafeRecursiveSharedMutex>> guarded_iterable();
+    GuardedIterable<map_type::iterator, std::shared_lock<SafeAtomicRecursiveSharedMutex>> guarded_iterable();
     map_type::iterator unsafe_begin();
     map_type::iterator unsafe_end();
     RenderableScene& operator[](const std::string& name);
@@ -64,7 +64,7 @@ private:
     RenderableScenesState state_;
     std::list<std::string> renderable_scenes_name_list_;
     map_type renderable_scenes_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

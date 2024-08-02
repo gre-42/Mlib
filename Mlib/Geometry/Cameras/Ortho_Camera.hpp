@@ -39,7 +39,7 @@ public:
 private:
     OrthoCameraConfig cfg_;
     Postprocessing postprocessing_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

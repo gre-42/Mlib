@@ -1,5 +1,6 @@
 #include "Fifo_Log.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <mutex>
 #include <ostream>
 
 using namespace Mlib;

@@ -4,6 +4,8 @@
 namespace Mlib {
 
 class AtomicMutex {
+	AtomicMutex(const AtomicMutex&) = delete;
+	AtomicMutex& operator = (const AtomicMutex&) = delete;
 public:
 	inline AtomicMutex()
 		: ctr_{ 0 }

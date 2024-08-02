@@ -26,7 +26,7 @@ public:
     const std::list<std::unique_ptr<IAssetLoader>>& loaders() const;
 private:
     std::map<std::string, ReplacementParameterAndFilename> replacement_parameters_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     std::list<std::unique_ptr<IAssetLoader>> asset_loaders_;
 };
 

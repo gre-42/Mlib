@@ -48,7 +48,7 @@ public:
     bool get_bool(const std::string& key) const;
 private:
     std::map<std::string, std::string> s_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const SubstitutionMap& s);

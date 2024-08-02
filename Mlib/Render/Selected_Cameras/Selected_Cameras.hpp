@@ -34,7 +34,7 @@ private:
     CameraCycle camera_cycle_tripod_;
     std::string fallback_camera_node_name_;
     std::string camera_node_name_;
-    mutable SafeRecursiveSharedMutex camera_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex camera_mutex_;
 };
 
 }

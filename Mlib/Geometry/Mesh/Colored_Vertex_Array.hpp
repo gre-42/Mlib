@@ -172,8 +172,8 @@ private:
     bool empty_from() const;
     mutable std::optional<AxisAlignedBoundingBox<TPos, 3>> aabb_;
     mutable std::optional<BoundingSphere<TPos, 3>> bounding_sphere_;
-    mutable SafeRecursiveSharedMutex aabb_mutex_;
-    mutable SafeRecursiveSharedMutex bounding_sphere_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex aabb_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex bounding_sphere_mutex_;
     mutable std::atomic_bool aabb_has_value_;
     mutable std::atomic_bool bounding_sphere_has_value_;
 };

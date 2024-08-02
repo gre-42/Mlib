@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
 #include <cmath>
 #include <functional>
 #include <list>
-#include <mutex>
 
 namespace Mlib {
 
@@ -41,7 +41,7 @@ public:
 private:
     PositionRequirement position_requirement_;
     std::list<AudioSourceAndGain> sources_;
-    std::mutex mutex_;
+    AtomicMutex mutex_;
     std::function<bool()> paused_;
     JThread fader_;
 };

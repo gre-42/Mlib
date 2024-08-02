@@ -46,7 +46,7 @@ RenderableScenes::~RenderableScenes() {
     }
 }
 
-GuardedIterable<RenderableScenes::map_type::iterator, std::shared_lock<SafeRecursiveSharedMutex>> RenderableScenes::guarded_iterable() {
+GuardedIterable<RenderableScenes::map_type::iterator, std::shared_lock<SafeAtomicRecursiveSharedMutex>> RenderableScenes::guarded_iterable() {
     if (shutting_down()) {
         verbose_abort("RenderableScenes shutting down");
     }

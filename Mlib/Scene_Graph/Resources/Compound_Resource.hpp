@@ -50,7 +50,7 @@ public:
 private:
     void compute_animated_arrays_unsafe();
     mutable std::shared_ptr<AnimatedColoredVertexArrays> acvas_;
-    mutable SafeRecursiveSharedMutex acva_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex acva_mutex_;
     SceneNodeResources& scene_node_resources_;
     std::vector<std::string> resource_names_;
 };

@@ -28,7 +28,7 @@ public:
     void add_observer(const std::function<void()>& func);
     void clear_observers();
 private:
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     JsonMacroArguments json_macro_arguments_;
     std::list<std::function<void()>> observers_;
 };
@@ -40,7 +40,7 @@ public:
     operator const nlohmann::json&() const;
     void unlock();
 private:
-    std::shared_lock<SafeRecursiveSharedMutex> lock_;
+    std::shared_lock<SafeAtomicRecursiveSharedMutex> lock_;
     const NotifyingJsonMacroArguments& args_;
 };
 

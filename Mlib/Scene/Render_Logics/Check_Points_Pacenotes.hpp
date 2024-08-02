@@ -62,7 +62,7 @@ private:
     TextResource text_;
     PacenoteDisplay display_;
     DestructionFunctionsRemovalTokens on_destroy_check_points_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

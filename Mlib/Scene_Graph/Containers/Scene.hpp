@@ -4,6 +4,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
@@ -142,12 +143,12 @@ private:
     RootNodes& root_instances_always_nodes_;
     std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
     DeleteNodeMutex& delete_node_mutex_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;
     mutable BackgroundLoop large_instances_bg_worker_;
     mutable BackgroundLoop small_aggregate_bg_worker_;
     mutable BackgroundLoop small_instances_bg_worker_;
-    std::mutex uuid_mutex_;
+    AtomicMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;
     std::list<std::unique_ptr<const ColorStyle>> color_styles_;

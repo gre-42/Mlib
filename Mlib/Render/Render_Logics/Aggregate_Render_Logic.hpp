@@ -40,7 +40,7 @@ private:
     std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers_;
     std::shared_ptr<IAggregateRenderer> large_aggregate_renderer_;
     std::shared_ptr<IInstancesRenderer> large_instances_renderer_;
-    SafeRecursiveSharedMutex mutex_;
+    SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

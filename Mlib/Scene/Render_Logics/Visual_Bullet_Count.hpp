@@ -5,7 +5,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Render_Text_Logic.hpp>
-#include <mutex>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 
 namespace Mlib {
 
@@ -51,7 +51,7 @@ private:
     DanglingBaseClassRef<Player> player_;
     std::unique_ptr<IWidget> widget_;
     std::string text_;
-    std::mutex mutex_;
+    AtomicMutex mutex_;
 };
 
 }

@@ -15,7 +15,7 @@ public:
     ILayoutPixels& get_pixels(const std::string& name) const;
     void set_pixels(const std::string& name, std::unique_ptr<ILayoutPixels>&& position);
 private:
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     std::map<std::string, std::unique_ptr<ILayoutPixels>> pixels_;
 };
 

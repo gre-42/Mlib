@@ -15,7 +15,7 @@ public:
     void insert(const std::string& name, std::shared_ptr<FillWithTextureLogic> render_logic);
     std::shared_ptr<FillWithTextureLogic> operator [] (const std::string& name) const;
 private:
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     std::map<std::string, std::shared_ptr<FillWithTextureLogic>> render_logics_;
 };
 

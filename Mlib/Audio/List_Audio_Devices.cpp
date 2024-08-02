@@ -6,6 +6,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cstddef>
 #include <cstring>
+#include <mutex>
 
 using namespace Mlib;
 

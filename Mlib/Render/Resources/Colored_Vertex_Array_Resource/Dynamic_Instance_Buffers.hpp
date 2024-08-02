@@ -67,7 +67,7 @@ private:
     std::vector<float> animation_times_;
     std::vector<const BillboardSequence*> billboard_sequences_;
     ClearOnUpdate clear_on_update_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

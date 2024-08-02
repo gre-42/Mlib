@@ -45,7 +45,7 @@ private:
     mutable std::map<std::string, AudioFileSequenceInformation> buffer_sequence_filenames_;
     mutable std::map<std::string, std::shared_ptr<AudioBufferSequenceWithHysteresis>>
         buffer_sequences_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

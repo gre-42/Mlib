@@ -40,7 +40,7 @@ private:
     UiFocus& ui_focus_;
     int next_smallest_id_;
     int next_largest_id_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Base_Log.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <list>
-#include <mutex>
 
 namespace Mlib {
 
@@ -13,7 +13,7 @@ public:
 private:
     std::list<std::pair<LogEntrySeverity, std::string>> entries_;
     size_t max_log_size_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
 };
 
 }

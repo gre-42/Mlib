@@ -4,7 +4,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Dynamic_Triangle.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/IVertex_Data.hpp>
-#include <mutex>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 
 namespace Mlib {
 
@@ -59,7 +59,7 @@ private:
     EmptyArrayBuffer empty_;
     VertexArray va_;
     std::chrono::steady_clock::time_point time_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
 };
 
 }

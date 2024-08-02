@@ -65,7 +65,7 @@ private:
     std::list<LapTimeEventAndId> lap_time_events_;
     const SceneNodeResources& scene_node_resources_;
     RaceIdentifier race_identifier_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

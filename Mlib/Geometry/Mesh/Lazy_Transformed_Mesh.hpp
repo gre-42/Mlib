@@ -4,9 +4,9 @@
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
-#include <mutex>
 #include <vector>
 
 namespace Mlib {
@@ -56,7 +56,7 @@ private:
     mutable std::vector<CollisionLineSphere<double>> transformed_lines_;
     mutable std::vector<CollisionLineSphere<double>> transformed_edges_;
     mutable std::vector<CollisionRidgeSphere> transformed_ridges_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
     mutable std::atomic_bool quads_calculated_ = false;
     mutable std::atomic_bool triangles_calculated_ = false;
     mutable std::atomic_bool lines_calculated_ = false;

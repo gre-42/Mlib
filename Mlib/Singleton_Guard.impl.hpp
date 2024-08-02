@@ -3,6 +3,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -10,7 +11,7 @@ template <class TSingleton>
 TSingleton* Singleton<TSingleton>::instance_ = nullptr;
 
 template <class TSingleton>
-std::shared_mutex Singleton<TSingleton>::mutex_;
+SafeAtomicSharedMutex Singleton<TSingleton>::mutex_;
 
 template <class TSingleton>
 SingletonGuard<TSingleton>::SingletonGuard(TSingleton& instance)

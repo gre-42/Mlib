@@ -78,8 +78,8 @@ public:
 private:
     mutable std::shared_ptr<ColoredVertexArrayResource> rcva_;
     mutable std::shared_ptr<AnimatedColoredVertexArrays> physics_arrays_;
-    mutable SafeRecursiveSharedMutex rcva_mutex_;
-    mutable SafeRecursiveSharedMutex physics_arrays_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex rcva_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex physics_arrays_mutex_;
     const SceneNodeResources& scene_node_resources_;
     TransformationMatrix<double, double, 3> geographic_mapping_;
 };

@@ -2,6 +2,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <atomic>
 #include <shared_mutex>
 #include <type_traits>
@@ -32,7 +33,7 @@ private:
     const SourceLocation& loc(const void* ptr) const;
 
     std::unordered_map<const void*, SourceLocation> locs_;
-    mutable std::shared_mutex loc_mutex_;
+    mutable SafeAtomicSharedMutex loc_mutex_;
 };
 
 struct CopyDanglingClassPtr {};

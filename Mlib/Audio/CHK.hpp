@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <AL/alut.h>
 #include <iostream>
@@ -9,7 +10,7 @@
 
 namespace Mlib {
 
-extern std::mutex al_error_mutex;
+extern AtomicMutex al_error_mutex;
 
 }
 

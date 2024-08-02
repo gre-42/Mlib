@@ -11,7 +11,7 @@ struct TapButtonsStates {
     std::list<TapButtonState> button_states;
     std::map<int, bool> button_down;
     std::map<int, float> joystick_axis_position;
-    mutable SafeRecursiveSharedMutex mutex;
+    mutable SafeAtomicRecursiveSharedMutex mutex;
     inline void clear() {
         std::scoped_lock lock{mutex};
         button_states.clear();

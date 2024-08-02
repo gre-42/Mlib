@@ -10,8 +10,8 @@ namespace Mlib {
 template <class T>
 class ThreadsafeCreatorMap {
 public:
-    explicit ThreadsafeCreatorMap(SafeRecursiveSharedMutex& mutex)
-    : mutex_{mutex}
+    explicit ThreadsafeCreatorMap(SafeAtomicRecursiveSharedMutex& mutex)
+        : mutex_{ mutex }
     {}
 
     void insert_creator(
@@ -56,7 +56,7 @@ public:
     auto begin() const { return elements_.begin(); }
     auto end() const { return elements_.end(); }
 private:
-    SafeRecursiveSharedMutex& mutex_;
+    SafeAtomicRecursiveSharedMutex& mutex_;
     std::map<std::string, T> elements_;
     std::map<std::string, std::function<T()>> creators_;
 };

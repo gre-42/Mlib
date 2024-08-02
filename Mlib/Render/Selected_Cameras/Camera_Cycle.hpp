@@ -19,7 +19,7 @@ public:
 private:
     SelectedCameras& selected_cameras_;
     std::vector<std::string> camera_names_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

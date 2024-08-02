@@ -6,6 +6,8 @@
 namespace Mlib {
 
 class SafeAtomicSharedMutex {
+	SafeAtomicSharedMutex(const SafeAtomicSharedMutex&) = delete;
+	SafeAtomicSharedMutex& operator = (const SafeAtomicSharedMutex&) = delete;
 public:
 	inline SafeAtomicSharedMutex()
 		: locked_{ false }

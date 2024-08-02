@@ -27,7 +27,7 @@ public:
 
 private:
     std::map<std::string, AssetGroupReplacementParameters> replacement_parameters_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

@@ -43,16 +43,16 @@ public:
 private:
 #ifdef __ANDROID__
     std::unordered_map<int, float> gamepad_axes_;
-    mutable SafeRecursiveSharedMutex gamepad_axes_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex gamepad_axes_mutex_;
 #else
     GLFWgamepadstate gamepad_state_;
     bool has_gamepad_;
-    mutable SafeRecursiveSharedMutex gamepad_state_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex gamepad_state_mutex_;
 #endif
     std::set<int> keys_down_;
     std::set<int> mouse_buttons_down_;
-    mutable SafeRecursiveSharedMutex keys_mutex_;
-    mutable SafeRecursiveSharedMutex mouse_button_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex keys_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mouse_button_mutex_;
 };
 
 }

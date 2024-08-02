@@ -3,6 +3,7 @@
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Sleep.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -23,7 +24,7 @@ CrossFade::CrossFade(
             while (!fader_.get_stop_token().stop_requested()) {
                 {
                     bool pause = paused_();
-                    std::scoped_lock lock{mutex_};
+                    std::scoped_lock lock{ mutex_ };
                     if (pause) {
                         for (auto &s : sources_) {
                             s.source->mute();

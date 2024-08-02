@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <compare>
-#include <mutex>
 #include <string>
 
 namespace Mlib {
@@ -13,7 +13,7 @@ public:
     explicit operator std::string() const;
 private:
     std::string str_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
 };
 
 }

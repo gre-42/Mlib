@@ -1,5 +1,5 @@
 #pragma once
-#include <shared_mutex>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 
 namespace Mlib {
 
@@ -24,7 +24,7 @@ public:
 
 private:
     static TSingleton* instance_;
-    static std::shared_mutex mutex_;
+    static SafeAtomicSharedMutex mutex_;
 };
 
 }

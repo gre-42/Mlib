@@ -1,3 +1,3 @@
 #include "CHK.hpp"
 
-std::mutex Mlib::al_error_mutex;
+Mlib::AtomicMutex Mlib::al_error_mutex;

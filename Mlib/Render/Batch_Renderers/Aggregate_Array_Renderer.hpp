@@ -2,8 +2,8 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <atomic>
-#include <mutex>
 
 namespace Mlib {
 
@@ -39,7 +39,7 @@ private:
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;
     mutable FixedArray<double, 3> offset_;
     FixedArray<double, 3> next_offset_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
     bool is_initialized_;
 };
 

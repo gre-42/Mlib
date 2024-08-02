@@ -18,7 +18,7 @@ public:
 
 private:
     std::atomic<std::thread::id> m_holder;
-    SafeRecursiveSharedMutex mutex_;
+    SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

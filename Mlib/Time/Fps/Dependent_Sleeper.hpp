@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <Mlib/Time/Fps/ISleeper.hpp>
-#include <shared_mutex>
 #include <unordered_set>
 
 namespace Mlib {
@@ -21,7 +21,7 @@ public:
     void unregister_busy_state_provider(const SetFps& busy_state_provider);
 private:
     std::unordered_set<const SetFps*> busy_state_providers_;
-    mutable std::shared_mutex mutex_;
+    mutable SafeAtomicSharedMutex mutex_;
 };
 
 class BusyStateProviderGuard {

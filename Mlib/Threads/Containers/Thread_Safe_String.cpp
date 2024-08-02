@@ -1,5 +1,6 @@
 #include "Thread_Safe_String.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <mutex>
 
 using namespace Mlib;
 

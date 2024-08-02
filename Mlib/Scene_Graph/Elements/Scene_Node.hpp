@@ -365,7 +365,7 @@ private:
     std::string periodic_animation_;
     std::string aperiodic_animation_;
     SceneNodeState state_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     std::atomic_bool shutting_down_;
     std::string debug_message_;
 };

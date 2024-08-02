@@ -58,15 +58,15 @@ public:
         archive(config);
     }
 private:
-    mutable SafeRecursiveSharedMutex max_distance_to_camera_mutex_;
-    mutable SafeRecursiveSharedMutex distances_to_bdry_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex max_distance_to_camera_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex distances_to_bdry_mutex_;
     mutable double max_distance_to_camera_ = NAN;
     mutable TerrainStyleDistancesToBdry distances_to_bdry_;
 
-    mutable SafeRecursiveSharedMutex foliagemap_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex foliagemap_mutex_;
     mutable Array<float> foliagemap_array_;
 
-    mutable SafeRecursiveSharedMutex mudmap_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mudmap_mutex_;
     mutable Array<float> mudmap_array_;
 };
 

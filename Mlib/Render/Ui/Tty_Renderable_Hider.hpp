@@ -2,8 +2,8 @@
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IRenderable_Hider.hpp>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <set>
-#include <shared_mutex>
 
 namespace Mlib {
 
@@ -21,7 +21,7 @@ private:
 	ButtonPress increase_;
 	ButtonPress decrease_much_;
 	ButtonPress increase_much_;
-	std::shared_mutex mutex_;
+	SafeAtomicSharedMutex mutex_;
 };
 
 }

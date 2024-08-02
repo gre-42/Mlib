@@ -2,7 +2,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
-#include <mutex>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 
 namespace Mlib {
 
@@ -54,8 +54,8 @@ public:
 		const LayoutConstraintParameters& ly,
 		const RenderedSceneDescriptor& frame_id);
 private:
-	mutable std::mutex render_mutex_;
-	std::mutex offset_mutex_;
+	mutable AtomicMutex render_mutex_;
+	AtomicMutex offset_mutex_;
 	FixedArray<float, 2> center_;
 	FixedArray<float, 2> size_;
 	HudErrorBehavior hud_error_behavior_;

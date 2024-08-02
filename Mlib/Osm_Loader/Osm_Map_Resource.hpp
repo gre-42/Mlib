@@ -135,7 +135,7 @@ private:
     std::shared_ptr<TriangleList<double>> tl_mud_path_visuals_;
 
     mutable std::unique_ptr<Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>> street_bvh_;
-    mutable SafeRecursiveSharedMutex street_bvh_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex street_bvh_mutex_;
 
     TerrainStyles terrain_styles_;
 };

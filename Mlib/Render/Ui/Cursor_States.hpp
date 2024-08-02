@@ -1,6 +1,6 @@
 #pragma once
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <list>
-#include <mutex>
 #include <set>
 
 namespace Mlib {
@@ -17,7 +17,7 @@ public:
     void update_cursor(double x, double y);
 private:
     std::list<IncrementalMovement*> cursor_movements_;
-    std::mutex cursor_movements_mutex_;
+    AtomicMutex cursor_movements_mutex_;
 };
 
 }

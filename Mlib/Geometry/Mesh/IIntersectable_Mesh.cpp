@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Ridge.hpp>
 #include <Mlib/Geometry/Mesh/Collision_Vertices.hpp>
 #include <mutex>
+#include <shared_mutex>
 
 using namespace Mlib;
 

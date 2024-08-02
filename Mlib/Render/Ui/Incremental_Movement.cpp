@@ -4,6 +4,7 @@
 #include <Mlib/Render/Key_Bindings/Base_Cursor_Axis_Binding.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
@@ -20,7 +21,7 @@ IncrementalMovement::~IncrementalMovement() {
 }
 
 void IncrementalMovement::update_cursor(double x, double y) {
-    std::scoped_lock lock{cursor_coordinates_mutex_};
+    std::scoped_lock lock{ cursor_coordinates_mutex_ };
     cursor_x_ += x;
     cursor_y_ += y;
 }
@@ -59,7 +60,7 @@ float IncrementalMovement::axis_alpha(const BaseCursorAxisBinding& binding, floa
     if (std::isnan(binding.sign_and_scale)) {
         THROW_OR_ABORT("Cursor axis sign_and_scale is NAN");
     }
-    std::scoped_lock lock{cursor_coordinates_mutex_};
+    std::scoped_lock lock{ cursor_coordinates_mutex_ };
     auto v = (float)consume_cursor_unsafe(binding.axis);
     if (sign(v) != sign(binding.sign_and_scale)) {
         return NAN;

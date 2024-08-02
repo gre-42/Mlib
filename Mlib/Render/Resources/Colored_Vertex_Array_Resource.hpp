@@ -134,7 +134,7 @@ private:
     mutable Vertices vertex_arrays_;
     std::unique_ptr<Instances> instances_;
     std::weak_ptr<ColoredVertexArrayResource> vertex_data_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

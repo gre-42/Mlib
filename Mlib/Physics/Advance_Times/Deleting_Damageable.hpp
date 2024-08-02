@@ -44,7 +44,7 @@ protected:
     AdvanceTimes& advance_times_;
     std::string root_node_name_;
     float health_;
-    mutable SafeRecursiveSharedMutex health_mutex_;
+    mutable SafeAtomicRecursiveSharedMutex health_mutex_;
     bool delete_node_when_health_leq_zero_;
     RigidBodyVehicle* rb_;
     DestructionGuards dgs_;

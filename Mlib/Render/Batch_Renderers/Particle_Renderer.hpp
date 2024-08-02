@@ -29,7 +29,7 @@ public:
         const ExternalRenderPass& external_render_pass) const override;
 
 private:
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
     ParticleResources& resources_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleCreator>> instantiators_;

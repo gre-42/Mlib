@@ -31,7 +31,7 @@ public:
 private:
     FrustumCameraConfig cfg_;
     Postprocessing postprocessing_;
-    mutable SafeRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }
