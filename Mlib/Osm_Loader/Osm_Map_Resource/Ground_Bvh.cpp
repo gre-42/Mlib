@@ -1,6 +1,7 @@
 #include "Ground_Bvh.hpp"
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Coordinates/Barycentric_Coordinates.hpp>
+#include <Mlib/Geometry/Intersection/Intersectable_Point.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_Area.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -54,7 +55,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>
 bool GroundBvh::height(double& height, const FixedArray<double, 2>& pt) const
 {
     return !bvh_.visit(
-        AxisAlignedBoundingBox<double, 2>::from_point(pt),
+        IntersectablePoint{ pt },
         [&pt, &height](const Triangle3d& t)
     {
         Triangle2d tri2{
@@ -80,7 +81,7 @@ bool GroundBvh::height3d(double& height, const FixedArray<double, 3>& pt) const
     double best_height = NAN;
     FixedArray<double, 2> pt2d{pt(0), pt(1)};
     bvh_.visit(
-        AxisAlignedBoundingBox<double, 2>::from_point(pt2d),
+        IntersectablePoint{ pt2d },
         [&](const Triangle3d& t)
     {
         Triangle2d tri2{

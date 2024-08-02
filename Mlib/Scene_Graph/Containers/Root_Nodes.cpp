@@ -1,4 +1,5 @@
 #include "Root_Nodes.hpp"
+#include <Mlib/Geometry/Intersection/Intersectable_Point.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -41,7 +42,7 @@ bool RootNodes::visit(
         }
     }
     return small_static_nodes_bvh_.visit(
-        AxisAlignedBoundingBox<double, 3>::from_point(position),
+        IntersectablePoint{ position },
         op);
 }
 
