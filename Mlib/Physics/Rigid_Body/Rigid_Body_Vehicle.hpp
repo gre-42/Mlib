@@ -51,6 +51,7 @@ enum class VehicleDomain;
 enum class ActorType;
 enum class ActorTask;
 enum class VehicleAiMoveToStatus;
+class ObjectPool;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -112,6 +113,7 @@ class RigidBodyVehicle:
     public virtual DanglingBaseClass {
 public:
     RigidBodyVehicle(
+        ObjectPool& object_pool,
         const RigidBodyPulses& rbp,
         std::string name,
         std::string asset_id,
@@ -294,6 +296,7 @@ public:
     VehicleDomain next_vehicle_domain_;
     ActorTask actor_task_;
     float waypoint_ofs_;
+    ObjectPool& object_pool_;
 private:
     void advance_time_skate(const PhysicsEngineConfig& cfg);
 };

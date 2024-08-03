@@ -73,11 +73,11 @@ public:
     explicit RigidBodies(const PhysicsEngineConfig& cfg);
     ~RigidBodies();
     void add_rigid_body(
-        std::unique_ptr<RigidBodyVehicle>&& rigid_body,
+        RigidBodyVehicle& rigid_body,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
         const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
         CollidableMode collidable_mode);
-    void delete_rigid_body(const RigidBodyVehicle* rigid_body);
+    void delete_rigid_body(const RigidBodyVehicle& rigid_body);
     void optimize_search_time(std::ostream& ostr) const;
     void print_search_time() const;
     void plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;

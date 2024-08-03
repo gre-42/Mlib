@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 
@@ -82,7 +83,8 @@ RigidBodyPulses Mlib::rigid_disk_pulses(
     };
 }
 
-std::unique_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
+std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_cuboid(
+    ObjectPool& object_pool,
     std::string name,
     std::string asset_id,
     float mass,
@@ -93,14 +95,17 @@ std::unique_ptr<RigidBodyVehicle> Mlib::rigid_cuboid(
     const FixedArray<float, 3>& I_rotation,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
-    return std::make_unique<RigidBodyVehicle>(
+    return object_pool.create_unique<RigidBodyVehicle>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         rigid_cuboid_pulses(mass, size, com, v, w, I_rotation),
         std::move(name),
         std::move(asset_id),
         geographic_coordinates);
 }
 
-std::unique_ptr<RigidBodyVehicle> Mlib::rigid_disk(
+std::unique_ptr<RigidBodyVehicle, DeleteFromPool<RigidBodyVehicle>> Mlib::rigid_disk(
+    ObjectPool& object_pool,
     std::string name,
     std::string asset_id,
     float mass,
@@ -111,7 +116,9 @@ std::unique_ptr<RigidBodyVehicle> Mlib::rigid_disk(
     const FixedArray<float, 3>& I_rotation,
     const TransformationMatrix<double, double, 3>* geographic_coordinates)
 {
-    return std::make_unique<RigidBodyVehicle>(
+    return object_pool.create_unique<RigidBodyVehicle>(
+        CURRENT_SOURCE_LOCATION,
+        object_pool,
         rigid_disk_pulses(mass, radius, com, v, w, I_rotation),
         std::move(name),
         std::move(asset_id),

@@ -17,29 +17,29 @@ public:
     void link_absolute_movable_and_additional_node(
         DanglingRef<SceneNode> moved_node,
         DanglingRef<SceneNode> observed_node,
-        std::unique_ptr<TAbsoluteMovable>&& absolute_movable,
+        std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         SourceLocation loc) const
     {
         // 1. Set movable, which updates the transformation-matrix.
         AbsoluteMovableSetter ams{ moved_node, std::move(absolute_movable) };
         // 2. Add to physics engine.
-        auto& am = global_object_pool.add(std::move(ams.absolute_movable), loc);
-        advance_times_.add_advance_time({ am, loc }, loc);
+        advance_times_.add_advance_time({ *ams.absolute_movable, loc }, loc);
         // 3. Observe an additional node.
-        observed_node->clearing_observers.add({ am, loc });
+        observed_node->clearing_observers.add({ *ams.absolute_movable, loc });
+        ams.absolute_movable.release();
     }
 
     template <class TAbsoluteMovable>
     void link_absolute_movable(
         DanglingRef<SceneNode> node,
-        std::unique_ptr<TAbsoluteMovable>&& absolute_movable,
+        std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
         SourceLocation loc) const
     {
         // 1. Set movable, which updates the transformation-matrix.
         AbsoluteMovableSetter ams{ node, std::move(absolute_movable) };
         // 2. Add to physics engine.
-        auto& am = global_object_pool.add(std::move(ams.absolute_movable), loc);
-        advance_times_.add_advance_time({ am, loc }, loc);
+        advance_times_.add_advance_time({ *ams.absolute_movable, loc }, loc);
+        ams.absolute_movable.release();
     }
 
     template <class TRelativeMovable>

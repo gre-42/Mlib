@@ -72,6 +72,7 @@ for path, dirs, files in os.walk('.'):
         'TGURelWithDebInfo',
         'LGURelWithDebInfo',
         'LTGURelWithDebInfo',
+        'LGMRelWithDebInfo',
         'GUDebug',
         'AUDebug',
         'AURelease',

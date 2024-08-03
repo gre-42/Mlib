@@ -1220,6 +1220,18 @@ int RenderableColoredVertexArray::continuous_blending_z_order() const {
     return continuous_blending_z_order_;
 }
 
+void RenderableColoredVertexArray::append_filtered_to_queue(
+    std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
+    std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+    const ColoredVertexArrayFilter& filter) const
+{
+    for (const auto& e : aggregate_off_) {
+        if (filter.matches(*e)) {
+            float_queue.push_back(e);
+        }
+    }
+}
+
 void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
     const FixedArray<double, 4, 4>& mvp,
     const TransformationMatrix<float, double, 3>& m,

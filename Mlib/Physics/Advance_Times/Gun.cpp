@@ -192,7 +192,8 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         // node->clearing_observers.add(*bullet);
         rc.collision_observers_.emplace_back(std::move(bullet));
     } else {
-        std::unique_ptr<RigidBodyVehicle> rcu = rigid_cuboid(
+        auto rcu = rigid_cuboid(
+            global_object_pool,
             "bullet",
             "bullet_no_id",
             bullet_properties_.mass,
@@ -213,10 +214,11 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
                         .renderable_resource_filter = RenderableResourceFilter{} });
             }
             rigid_bodies_.add_rigid_body(
-                std::move(ams.absolute_movable),
+                *ams.absolute_movable,
                 scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->scvas,
                 scene_node_resources_.get_physics_arrays(bullet_properties_.hitbox_resource_name)->dcvas,
                 CollidableMode::MOVING);
+            ams.absolute_movable.release();
         }
         auto bullet = std::make_unique<Bullet>(
             scene_,

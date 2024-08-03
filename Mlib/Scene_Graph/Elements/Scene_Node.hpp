@@ -26,6 +26,7 @@ class AxisAlignedBoundingBox;
 template <class TData, size_t tndim>
 class BoundingSphere;
 
+struct ColoredVertexArrayFilter;
 struct SceneGraphConfig;
 struct RenderConfig;
 class Scene;
@@ -141,6 +142,7 @@ public:
     ~SceneNode();
     bool shutting_down() const;
 
+    void set_absolute_movable(DanglingBaseClassRef<IAbsoluteMovable> absolute_movable);
     IAbsoluteMovable& get_absolute_movable() const;
     bool has_absolute_movable() const;
     void clear_absolute_movable();
@@ -267,6 +269,11 @@ public:
     void append_skidmarks_to_queue(
         const TransformationMatrix<float, double, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks) const;
+    void append_static_filtered_to_queue(
+        const TransformationMatrix<float, double, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        const ColoredVertexArrayFilter& filter) const;
     const FixedArray<double, 3>& position() const;
     FixedArray<float, 3> rotation() const;
     float scale() const;

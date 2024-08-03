@@ -251,7 +251,7 @@ std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<TPos>::transform
     res.reserve(triangles.size());
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        Triangle3D<double> tri{t, tm};
+        Triangle3D<double> tri{ t, tm };
         res.push_back(CollisionPolygonAabb<double, 3>{
             .base = CollisionPolygonSphere<double, 3>{
                 .bounding_sphere = tri.bounding_sphere(rng),
@@ -271,7 +271,7 @@ std::vector<CollisionLineAabb<double>> ColoredVertexArray<TPos>::transformed_lin
     std::vector<CollisionLineAabb<double>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D<double> line{l, tm};
+        Line3D<double> line{ l, tm };
         res.push_back(CollisionLineAabb<double>{
             .base = CollisionLineSphere<double>{
                 .bounding_sphere = line.bounding_sphere(),

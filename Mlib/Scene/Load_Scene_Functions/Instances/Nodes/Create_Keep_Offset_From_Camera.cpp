@@ -41,7 +41,8 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
     auto grid2 = follower_camera->grid(
         args.arguments.at<float>(KnownArgs::texture_width),
         args.arguments.at<float>(KnownArgs::texture_height));
-    auto follower = std::make_unique<KeepOffsetFromCamera>(
+    auto follower = global_object_pool.create_unique<KeepOffsetFromCamera>(
+        CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         scene,
         selected_cameras,

@@ -45,6 +45,7 @@ static const float WHEEL_RADIUS = 0.25f;
 using namespace Mlib;
 
 RigidBodyVehicle::RigidBodyVehicle(
+    ObjectPool& object_pool,
     const RigidBodyPulses& rbp,
     std::string name,
     std::string asset_id,
@@ -90,6 +91,7 @@ RigidBodyVehicle::RigidBodyVehicle(
     , next_vehicle_domain_{ VehicleDomain::UNDEFINED }
     , actor_task_{ ActorTask::UNDEFINED }
     , waypoint_ofs_{ 0.f }
+    , object_pool_{ object_pool }
 {
     if (name_.empty()) {
         THROW_OR_ABORT("No name given for rigid body vehicle");
@@ -477,7 +479,7 @@ void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object)
         }
         destroyed_object->clear_absolute_movable();
     }
-    global_object_pool.remove(this);
+    object_pool_.remove(this);
 }
 
 void RigidBodyVehicle::set_max_velocity(float max_velocity) {

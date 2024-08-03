@@ -774,6 +774,24 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     times_.append(time);
 }
 
+void Scene::append_static_filtered_to_queue(
+    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+    const ColoredVertexArrayFilter& filter) const
+{
+    LOG_FUNCTION("Scene::append_static_filtered_to_queue");
+    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
+    static_root_nodes_.visit_all([&](const auto& node) {
+        node->append_static_filtered_to_queue(
+            TransformationMatrix<float, double, 3>::identity(),
+            float_queue,
+            double_queue,
+            filter);
+        return true;
+        });
+}
+
 size_t Scene::get_uuid() {
     std::scoped_lock lock{uuid_mutex_};
     return uuid_++;

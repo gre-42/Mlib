@@ -4,6 +4,7 @@
 #include <Mlib/Source_Location.hpp>
 #include <compare>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <type_traits>
@@ -21,6 +22,8 @@
 
 namespace Mlib {
 
+class ObjectPool;
+    
 struct ObjectAndSourceLocation {
     std::function<void()> deallocate;
     Object* object;
@@ -33,6 +36,28 @@ struct ObjectAndSourceLocation {
 enum class InObjectPoolDestructor {
     CLEAR,
     ASSERT_NO_LEAKS
+};
+
+template <class T>
+class DeleteFromPool {
+public:
+    DeleteFromPool() noexcept
+        : p_{ nullptr }
+    {}
+    DeleteFromPool(std::nullptr_t) noexcept
+        : p_{ nullptr }
+    {}
+    DeleteFromPool(const DeleteFromPool& other) noexcept
+        : p_{ other.p_ }
+    {}
+    explicit DeleteFromPool(ObjectPool& p) noexcept
+        : p_{ &p }
+    {}
+    void operator () (T* v) {
+        p_->remove(v);
+    }
+private:
+    ObjectPool* p_;
 };
 
 class ObjectPool {
@@ -64,6 +89,19 @@ public:
         add([o]() { std::allocator<T>().deallocate(o, 1); }, *o, loc);
         return *o;
     }
+    template<class T, class... Args>
+        requires std::is_convertible_v<T&, Object&>
+    std::unique_ptr<T, DeleteFromPool<T>> create_unique(SourceLocation loc, Args&&... args) {
+        auto& res = create<T>(loc, args...);
+        return { &res, DeleteFromPool<T>(*this) };
+    }
+    template<class T, class... Args>
+        requires std::is_convertible_v<T&, Object&>
+    std::shared_ptr<T> create_shared(SourceLocation loc, Args&&... args) {
+        auto& res = create<T>(loc, args...);
+        return { &res, DeleteFromPool<T>(*this) };
+    }
+
     void remove(Object* o);
     void remove(Object& o);
     void clear();

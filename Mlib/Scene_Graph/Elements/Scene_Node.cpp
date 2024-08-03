@@ -186,6 +186,16 @@ void SceneNode::remove_node_hider(INodeHider& node_hider) {
     }
 }
 
+void SceneNode::set_absolute_movable(
+    DanglingBaseClassRef<IAbsoluteMovable> absolute_movable)
+{
+    std::scoped_lock lock{ mutex_ };
+    if (absolute_movable_ != nullptr) {
+        verbose_abort("Absolute movable already set");
+    }
+    absolute_movable_ = absolute_movable.ptr();
+}
+
 IAbsoluteMovable& SceneNode::get_absolute_movable() const {
     std::shared_lock lock{ mutex_ };
     if (absolute_movable_ == nullptr) {
@@ -1032,6 +1042,33 @@ void SceneNode::append_large_instances_to_queue(
             i.scene_node->append_large_instances_to_queue(mvp, m, offset, j, instances_queue, scene_graph_config);
             return true;
         });
+    }
+}
+
+void SceneNode::append_static_filtered_to_queue(
+    const TransformationMatrix<float, double, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+    const ColoredVertexArrayFilter& filter) const
+{
+    std::shared_lock lock{ mutex_ };
+    if (state_ != SceneNodeState::STATIC) {
+        THROW_OR_ABORT("Cannot append static filtered to queue for a non-static node");
+    }
+    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    for (const auto& [_, r] : renderables_) {
+        std::list<std::shared_ptr<ColoredVertexArray<float>>> float_q;
+        std::list<std::shared_ptr<ColoredVertexArray<double>>> double_q;
+        r->append_filtered_to_queue(float_q, double_q, filter);
+        for (const auto& cva : float_q) {
+            float_queue.emplace_back(m, std::move(cva));
+        }
+        for (const auto& cva : double_q) {
+            double_queue.emplace_back(m, std::move(cva));
+        }
+    }
+    for (const auto& [_, c] : children_) {
+        c.scene_node->append_static_filtered_to_queue(m, float_queue, double_queue, filter);
     }
 }
 

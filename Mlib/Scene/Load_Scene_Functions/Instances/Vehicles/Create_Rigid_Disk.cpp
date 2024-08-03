@@ -55,7 +55,8 @@ CreateRigidDisk::CreateRigidDisk(RenderableScene& renderable_scene)
 
 void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::unique_ptr<RigidBodyVehicle> rb = rigid_disk(
+    auto rb = rigid_disk(
+        global_object_pool,
         args.arguments.at<std::string>(KnownArgs::name),
         args.arguments.at<std::string>(KnownArgs::asset_id),
         args.arguments.at<float>(KnownArgs::mass) * kg,
@@ -96,10 +97,11 @@ void CreateRigidDisk::execute(const LoadSceneJsonUserFunctionArgs& args)
     // 2. Add to physics engine.
     try {
         physics_engine.rigid_bodies_.add_rigid_body(
-            std::move(ams.absolute_movable),
+            *ams.absolute_movable,
             s_hitboxes,
             d_hitboxes,
             collidable_mode);
+        ams.absolute_movable.release();
     } catch (const TriangleException<double>& e) {
         if (auto filename = try_getenv("RIGID_BODY_TRIANGLE_FILENAME"); filename.has_value()) {
             save_triangle_to_obj(*filename, {e.a, e.b, e.c});

@@ -80,6 +80,7 @@ DffArrays<TPosition> Mlib::load_dff(
                 material.color(1) / 255.f,
                 material.color(2) / 255.f };
             const auto& ide = dddb.get_item(a.frame->name);
+            auto center_distances = ide.center_distances(morph_target.bounding_sphere.radius());
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{
@@ -104,8 +105,10 @@ DffArrays<TPosition> Mlib::load_dff(
                     .dynamically_lighted = cfg.dynamically_lighted
                 },
                 Morphology{
-                    .physics_material = cfg.physics_material,
-                    .center_distances = OrderableFixedArray{ ide.center_distances(morph_target.bounding_sphere.radius()) },
+                    .physics_material = (center_distances(0) == 0.f)
+                        ? cfg.physics_material
+                        : (cfg.physics_material & ~PhysicsMaterial::ATTR_COLLIDE),
+                    .center_distances = OrderableFixedArray{ center_distances },
                     .max_triangle_distance = cfg.max_triangle_distance });
             if (material.texture != nullptr) {
                 auto filename_lower = ide.texture_dictionary + ".txd_" + material.texture->name;

@@ -1,6 +1,12 @@
 #include "Ipl_Instances.hpp"
 #include <Mlib/Argument_List.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Cleanup_Mesh.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Colored_Vertex_Array_Filter.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Physics/Collision/Collidable_Mode.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
@@ -15,6 +21,7 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(files);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
+DECLARE_ARGUMENT(min_vertex_distance);
 }
 
 const std::string IplInstances::key = "ipl_instances";
@@ -40,5 +47,46 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
             scene_node_resources,
             RenderingContextStack::primary_rendering_resources(),
             exclude);
+    }
+    {
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>> double_queue;
+        {
+            static ColoredVertexArrayFilter filter{
+                .included_tags = PhysicsMaterial::ATTR_COLLIDE
+            };
+            scene.append_static_filtered_to_queue(float_queue, double_queue, filter);
+        }
+        std::list<std::shared_ptr<ColoredVertexArray<double>>> hitboxes;
+        {
+            auto filter = PhysicsMaterial::NONE;
+            auto min_vertex_distance = args.arguments.at<double>(KnownArgs::min_vertex_distance);
+            auto modulo_uv = false;
+            CleanupMesh<double> cleanup;
+            for (const auto& [t, q] : float_queue) {
+                auto cva = q->transformed<double>(t, "_ipl_float");
+                cleanup(*cva, filter, min_vertex_distance, modulo_uv);
+                if (!cva->empty()) {
+                    hitboxes.push_back(cva);
+                }
+            }
+            for (const auto& [t, q] : double_queue) {
+                auto cva = q->transformed<double>(t, "_ipl_double");
+                cleanup(*cva, filter, min_vertex_distance, modulo_uv);
+                if (!cva->empty()) {
+                    hitboxes.push_back(cva);
+                }
+            }
+        }
+        auto rb = rigid_cuboid(
+            object_pool,
+            "ipl_static",               // name
+            "none",                     // asset_id
+            INFINITY,                   // mass
+            fixed_ones<float, 3>(),     // size
+            fixed_ones<float, 3>());    // com
+        rb->set_absolute_model_matrix(TransformationMatrix<float, double, 3>::identity());
+        physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, hitboxes, CollidableMode::STATIC);
+        rb.release();
     }
 }

@@ -33,8 +33,8 @@ void Mlib::create_scene_slide(
     PhysicsEngine& pe,
     SelectedCameras& selected_cameras)
 {
-    auto rb_slide = rigid_cuboid("slide", "slide_no_id", INFINITY, {1.f, 2.f, 3.f});
-    auto rb_box = rigid_cuboid("box", "box_no_id", 3.f * kg, {2.f, 3.f, 4.f});
+    auto rb_slide = rigid_cuboid(global_object_pool, "slide", "slide_no_id", INFINITY, {1.f, 2.f, 3.f});
+    auto rb_box = rigid_cuboid(global_object_pool, "box", "box_no_id", 3.f * kg, {2.f, 3.f, 4.f});
 
     auto load_slide = [](
         const FixedArray<float, 3>& scale,
@@ -149,7 +149,9 @@ void Mlib::create_scene_slide(
         AbsoluteMovableSetter ams_slide{scene.get_node("obj_slide", DP_LOC), std::move(rb_slide)};
         AbsoluteMovableSetter ams_box{scene.get_node("obj_box", DP_LOC), std::move(rb_box)};
 
-        pe.rigid_bodies_.add_rigid_body(std::move(ams_slide.absolute_movable), triangles_slide, {}, CollidableMode::STATIC);
-        pe.rigid_bodies_.add_rigid_body(std::move(ams_box.absolute_movable), triangles_box, {}, CollidableMode::MOVING);
+        pe.rigid_bodies_.add_rigid_body(*ams_slide.absolute_movable, triangles_slide, {}, CollidableMode::STATIC);
+        pe.rigid_bodies_.add_rigid_body(*ams_box.absolute_movable, triangles_box, {}, CollidableMode::MOVING);
+        ams_slide.absolute_movable.release();
+        ams_box.absolute_movable.release();
     }
 }

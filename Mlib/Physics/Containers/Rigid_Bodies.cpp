@@ -11,7 +11,6 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Images/Svg.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
-#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -50,12 +49,12 @@ RigidBodies::~RigidBodies() {
 }
 
 void RigidBodies::add_rigid_body(
-    std::unique_ptr<RigidBodyVehicle>&& rigid_body,
+    RigidBodyVehicle& rigid_body,
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& s_hitboxes,
     const std::list<std::shared_ptr<ColoredVertexArray<double>>>& d_hitboxes,
     CollidableMode collidable_mode)
 {
-    auto& rb = *rigid_body;
+    auto& rb = rigid_body;
     bool has_meshes = !s_hitboxes.empty() || !d_hitboxes.empty();
     if ((collidable_mode == CollidableMode::NONE) && has_meshes) {
         THROW_OR_ABORT("Non-collidable has meshes: \"" + rb.name() + '"');
@@ -64,12 +63,11 @@ void RigidBodies::add_rigid_body(
         THROW_OR_ABORT("Collidable has no meshes: \"" + rb.name() + '"');
     }
     {
-        auto& ref = global_object_pool.add(std::move(rigid_body), CURRENT_SOURCE_LOCATION);
-        auto rit = rigid_bodies_.try_emplace(&rb, DanglingBaseClassRef<RigidBodyVehicle>{ ref, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+        auto rit = rigid_bodies_.try_emplace(&rb, DanglingBaseClassRef<RigidBodyVehicle>{ rb, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
         if (!rit.second) {
             verbose_abort("Rigid body already exists");
         }
-        rit.first->second.on_destroy([this, &rb]() { delete_rigid_body(&rb); }, CURRENT_SOURCE_LOCATION);
+        rit.first->second.on_destroy([this, &rb]() { delete_rigid_body(rb); }, CURRENT_SOURCE_LOCATION);
     }
     if (!collidable_modes_.insert({ &rb, collidable_mode }).second) {
         verbose_abort("Could not insert collidable mode");
@@ -156,7 +154,7 @@ void RigidBodies::add_rigid_body(
                         }
                         auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
                         for (const auto& t : transformed) {
-                            triangle_bvh_.insert(t.aabb, {rb, t.base});
+                            triangle_bvh_.insert(t.aabb, { rb, t.base });
                         }
                         if (collision_ridges_baking_status_ == CollisionRidgeBakingStatus::BAKED) {
                             THROW_OR_ABORT("Collision ridges already baked");
@@ -234,12 +232,12 @@ void RigidBodies::add_rigid_body(
     }
 }
 
-void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
-    auto it = collidable_modes_.find(rigid_body);
+void RigidBodies::delete_rigid_body(const RigidBodyVehicle& rigid_body) {
+    auto it = collidable_modes_.find(&rigid_body);
     if (it == collidable_modes_.end()) {
         THROW_OR_ABORT("Could not find rigid body for deletion (collidable mode)");
     }
-    if (rigid_body->mass() == INFINITY) {
+    if (rigid_body.mass() == INFINITY) {
         if (it->second == CollidableMode::STATIC) {
             convex_mesh_bvh_.clear();
             triangle_bvh_.clear();
@@ -255,20 +253,20 @@ void RigidBodies::delete_rigid_body(const RigidBodyVehicle* rigid_body) {
                (it->second == CollidableMode::NONE))
     {
         {
-            auto it = std::find_if(objects_.begin(), objects_.end(), [rigid_body](const auto& e){ return &e.rigid_body.get() == rigid_body; });
+            auto it = std::find_if(objects_.begin(), objects_.end(), [&rigid_body](const auto& e){ return &e.rigid_body.get() == &rigid_body; });
             if (it == objects_.end()) {
                 THROW_OR_ABORT("Could not delete dynamic rigid body (4)");
             }
             objects_.erase(it);
         }
-        transformed_objects_.remove_if([rigid_body](const RigidBodyAndIntersectableMeshes& rbtm){
-            return (&rbtm.rigid_body.get() == rigid_body);
+        transformed_objects_.remove_if([&rigid_body](const RigidBodyAndIntersectableMeshes& rbtm){
+            return (&rbtm.rigid_body.get() == &rigid_body);
         });
     } else {
         THROW_OR_ABORT("Could not delete rigid body (5)");
     }
     collidable_modes_.erase(it);
-    rigid_bodies_.erase(rigid_body);
+    rigid_bodies_.erase(&rigid_body);
 }
 
 void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {

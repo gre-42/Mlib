@@ -1,11 +1,8 @@
 #include "Add_Cleanup_Mesh_Modifier.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Bvh.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Merge_Neighboring_Points.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Modulo_Uv.hpp>
-#include <Mlib/Geometry/Mesh/Cleanup/Remove_Degenerate_Triangles.hpp>
+#include <Mlib/Geometry/Mesh/Cleanup/Cleanup_Mesh.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -27,30 +24,24 @@ void Mlib::add_cleanup_mesh_modifier(
         modulo_uv]
         (ISceneNodeResource& resource)
         {
-            auto cleanup = [min_distance_material_filter, min_vertex_distance, modulo_uv]<class TPos>(
-                Bvh<TPos, FixedArray<TPos, 3>, 3>& bvh,
+            auto cleanup = [&]<class TPos>(
+                CleanupMesh<TPos>& ccleanup,
                 std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas)
             {
                 cvas.remove_if([&](auto& cva){
-                    if ((min_vertex_distance != 0) &&
-                        any(cva->morphology.physics_material & min_distance_material_filter))
-                    {
-                        merge_neighboring_points<TPos>(*cva, bvh, min_vertex_distance);
-                    }
-                    remove_degenerate_triangles(*cva);
-                    // remove_duplicate_triangles(*cva);
-                    // remove_triangles_with_opposing_normals(*cva);
-                    if (modulo_uv) {
-                        Mlib::modulo_uv(*cva);
-                    }
+                    ccleanup(
+                        *cva,
+                        min_distance_material_filter,
+                        min_vertex_distance,
+                        modulo_uv);
                     return cva->empty();
                     });
             };
-            Bvh<float, FixedArray<float, 3>, 3> sbvh{FixedArray<float, 3>{0.1f, 0.1f, 0.1f}, 17};
-            Bvh<double, FixedArray<double, 3>, 3> dbvh{FixedArray<double, 3>{0.1, 0.1, 0.1}, 17};
+            CleanupMesh<float> scleanup;
+            CleanupMesh<double> dcleanup;
             for (const auto& acva : resource.get_rendering_arrays()) {
-                cleanup(sbvh, acva->scvas);
-                cleanup(dbvh, acva->dcvas);
+                cleanup(scleanup, acva->scvas);
+                cleanup(dcleanup, acva->dcvas);
             }
         });
 }

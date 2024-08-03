@@ -40,7 +40,8 @@ void FollowNode::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at(KnownArgs::follower), DP_LOC);
     DanglingRef<SceneNode> followed_node = scene.get_node(args.arguments.at(KnownArgs::followed), DP_LOC);
     auto distance = args.arguments.at<float>(KnownArgs::distance);
-    auto follower = std::make_unique<FollowMovable>(
+    auto follower = global_object_pool.create_unique<FollowMovable>(
+        CURRENT_SOURCE_LOCATION,
         physics_engine.advance_times_,
         followed_node,
         followed_node->get_absolute_movable(),

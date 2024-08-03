@@ -82,10 +82,10 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .specular_factor = j.at<UFixedArray<float, 3>>(KnownArgs::specular_factor, fixed_ones<float, 3>()),
         .fresnel{
             .reflectance = {
-            .min = j.at<float>(KnownArgs::fresnel_min, 0.f),
-            .max = j.at<float>(KnownArgs::fresnel_max, 0.f),
-            .exponent = j.at<float>(KnownArgs::fresnel_exponent, 0.f)
-        },
+                .min = j.at<float>(KnownArgs::fresnel_min, 0.f),
+                .max = j.at<float>(KnownArgs::fresnel_max, 0.f),
+                .exponent = j.at<float>(KnownArgs::fresnel_exponent, 0.f)
+            },
             .ambient = OrderableFixedArray{ j.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient, fixed_zeros<float, 3>()) }
         },
         .desaturate = j.at<float>(KnownArgs::desaturate, 0.f),

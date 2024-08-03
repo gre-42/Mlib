@@ -15,6 +15,7 @@ template <class TData, size_t tndim>
 class AxisAlignedBoundingBox;
 template <class TData, size_t tndim>
 class BoundingSphere;
+struct ColoredVertexArrayFilter;
 template <class TPos>
 class ColoredVertexArray;
 struct TransformedColoredVertexArray;
@@ -63,6 +64,10 @@ public:
         const FixedArray<double, 3>& offset,
         const SceneGraphConfig& scene_graph_config,
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const;
+    virtual void append_filtered_to_queue(
+        std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
+        std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+        const ColoredVertexArrayFilter& filter) const;
     virtual void append_sorted_instances_to_queue(
         const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,

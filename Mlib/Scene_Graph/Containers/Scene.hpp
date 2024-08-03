@@ -33,6 +33,9 @@ struct ExternalRenderPass;
 struct RenderConfig;
 struct ColorStyle;
 class Renderable;
+struct ColoredVertexArrayFilter;
+template <class TPos>
+class ColoredVertexArray;
 enum class RenderingDynamics;
 enum class RenderingStrategies;
 
@@ -109,6 +112,10 @@ public:
         const ExternalRenderPass& external_render_pass,
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
     void move(float dt, std::chrono::steady_clock::time_point time);
+    void append_static_filtered_to_queue(
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        const ColoredVertexArrayFilter& filter) const;
     size_t get_uuid();
     std::string get_temporary_instance_suffix();
     void print(std::ostream& ostr) const;

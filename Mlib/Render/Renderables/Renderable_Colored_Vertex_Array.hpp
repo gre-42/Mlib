@@ -40,6 +40,10 @@ public:
         const RenderPass& render_pass,
         const AnimationState* animation_state,
         const ColorStyle* color_style) const override;
+    virtual void append_filtered_to_queue(
+        std::list<std::shared_ptr<ColoredVertexArray<float>>>& float_queue,
+        std::list<std::shared_ptr<ColoredVertexArray<double>>>& double_queue,
+        const ColoredVertexArrayFilter& filter) const override;
     virtual void append_sorted_aggregates_to_queue(
         const FixedArray<double, 4, 4>& mvp,
         const TransformationMatrix<float, double, 3>& m,
