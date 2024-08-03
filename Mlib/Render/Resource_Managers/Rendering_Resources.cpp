@@ -47,7 +47,7 @@
 #include <memory>
 #include <mutex>
 #include <nv_dds/nv_dds.hpp>
-#include <stb/stb_image_resize.h>
+#include <stb/stb_image_resize2.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_alpha_fac.hpp>
 #include <stb_cpp/stb_array.hpp>

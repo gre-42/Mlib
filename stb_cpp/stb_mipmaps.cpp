@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <stb/stb_image.h>
-#include <stb/stb_image_resize.h>
+#include <stb/stb_image_resize2.h>
 #include <stb/stb_image_write.h>
 #include <stb_cpp/stb_array.hpp>
 
@@ -42,7 +42,7 @@ void downsample_rgba_inplace(
     array_2_stb_image(substitute_nans(ar, 0.f).casted<unsigned char>(), data);
     {
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
-        if (!stbir_resize_uint8(
+        if (!stbir_resize_uint8_linear(
             data,
             width,
             height,
@@ -51,7 +51,7 @@ void downsample_rgba_inplace(
             (width == 0 || height == 0) ? 1 : width / 2,
             (width == 0 || height == 0) ? 1 : height / 2,
             0,
-            4))
+            (stbir_pixel_layout)4))
         {
             THROW_OR_ABORT("could not resize image");
         }
@@ -74,7 +74,7 @@ void downsample_rgba_inplace0(
     }
     {
         TemporarilyIgnoreFloatingPointExeptions ignore_except;
-        if (!stbir_resize_uint8(
+        if (!stbir_resize_uint8_linear(
             data,
             width,
             height,
@@ -83,7 +83,7 @@ void downsample_rgba_inplace0(
             (width == 0 || height == 0) ? 1 : width / 2,
             (width == 0 || height == 0) ? 1 : height / 2,
             0,
-            4))
+            (stbir_pixel_layout)4))
         {
             THROW_OR_ABORT("could not resize image");
         }

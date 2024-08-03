@@ -3,7 +3,7 @@
 #include <Mlib/Images/Normalize.hpp>
 #include <Mlib/Images/Ppm_Image.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <stb/stb_image_resize.h>
+#include <stb/stb_image_resize2.h>
 #include <stb_cpp/stb_array.hpp>
 #include <stb_cpp/stb_image_load.hpp>
 #include <vector>
