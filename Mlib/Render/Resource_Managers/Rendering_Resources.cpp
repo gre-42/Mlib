@@ -1469,6 +1469,7 @@ void RenderingResources::delete_vp(const std::string& name, DeletionFailureMode 
         }
     }
 }
+
 void RenderingResources::delete_texture(const ColormapWithModifiers& name, DeletionFailureMode deletion_failure_mode) {
     LOG_FUNCTION("RenderingResources::delete_texture " + name.filename);
     auto it = textures_.try_extract(name);

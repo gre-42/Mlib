@@ -41,21 +41,11 @@ enum class InObjectPoolDestructor {
 template <class T>
 class DeleteFromPool {
 public:
-    DeleteFromPool() noexcept
-        : p_{ nullptr }
-    {}
-    DeleteFromPool(std::nullptr_t) noexcept
-        : p_{ nullptr }
-    {}
-    DeleteFromPool(const DeleteFromPool& other) noexcept
-        : p_{ other.p_ }
-    {}
-    explicit DeleteFromPool(ObjectPool& p) noexcept
-        : p_{ &p }
-    {}
-    void operator () (T* v) {
-        p_->remove(v);
-    }
+    DeleteFromPool() noexcept;
+    DeleteFromPool(std::nullptr_t) noexcept;
+    DeleteFromPool(const DeleteFromPool& other) noexcept;
+    explicit DeleteFromPool(ObjectPool& p) noexcept;
+    void operator () (T* v);
 private:
     ObjectPool* p_;
 };
@@ -115,6 +105,31 @@ private:
     std::unordered_set<Object*> deleting_ptrs_;
     bool clearing_;
 };
+
+template <class T>
+DeleteFromPool<T>::DeleteFromPool() noexcept
+    : p_{ nullptr }
+{}
+
+template <class T>
+DeleteFromPool<T>::DeleteFromPool(std::nullptr_t) noexcept
+    : p_{ nullptr }
+{}
+
+template <class T>
+DeleteFromPool<T>::DeleteFromPool(const DeleteFromPool& other) noexcept
+    : p_{ other.p_ }
+{}
+
+template <class T>
+DeleteFromPool<T>::DeleteFromPool(ObjectPool& p) noexcept
+    : p_{ &p }
+{}
+
+template <class T>
+void DeleteFromPool<T>::operator () (T* v) {
+    p_->remove(v);
+}
 
 MLIB_MEMORY_API extern ObjectPool global_object_pool;
 
