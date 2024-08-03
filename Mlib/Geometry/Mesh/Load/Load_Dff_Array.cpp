@@ -2,6 +2,7 @@
 #include <Mlib/Array/Non_Copying_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Load/Draw_Distance_Db.hpp>
+#include <Mlib/Geometry/Mesh/Load/Ide_Flags.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Load_Mesh_Config.hpp>
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
@@ -78,11 +79,12 @@ DffArrays<TPosition> Mlib::load_dff(
                 material.color(0) / 255.f,
                 material.color(1) / 255.f,
                 material.color(2) / 255.f };
-            auto ide = dddb.get_item(a.frame->name, morph_target.bounding_sphere.radius());
+            const auto& ide = dddb.get_item(a.frame->name);
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{
-                    .blend_mode = BlendMode::BINARY_05,
+                    .blend_mode = any(ide.flags & IdeFlags::ADDITIVE) ? BlendMode::CONTINUOUS_ADD : BlendMode::BINARY_05,
+                    .depth_test = !any(ide.flags & IdeFlags::NO_ZBUFFER_WRITE),
                     .textures_color = cfg.textures,
                     .period_world = cfg.period_world,
                     .reflection_map = cfg.reflection_map,
@@ -92,18 +94,18 @@ DffArrays<TPosition> Mlib::load_dff(
                     .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                     .aggregate_mode = cfg.aggregate_mode,
                     .transformation_mode = cfg.transformation_mode,
-                    .cull_faces = cfg.cull_faces_default,
+                    .cull_faces = any(ide.flags & IdeFlags::CULL) ? cfg.cull_faces_default : false,
                     .shading = {
-                        .ambient = OrderableFixedArray<float, 3>(col3 * material.surface_properties.ambient),
-                        .diffuse = OrderableFixedArray<float, 3>(col3 * material.surface_properties.diffuse),
-                        .specular = material.surface_properties.specular,
+                        .ambient = OrderableFixedArray<float, 3>((cfg.ambient_factor * col3) * material.surface_properties.ambient),
+                        .diffuse = OrderableFixedArray<float, 3>((cfg.diffuse_factor * col3) * material.surface_properties.diffuse),
+                        .specular = OrderableFixedArray<float, 3>(cfg.specular_factor * material.surface_properties.specular),
                         .fresnel = cfg.fresnel
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
                 },
                 Morphology{
                     .physics_material = cfg.physics_material,
-                    .center_distances = OrderableFixedArray{ ide.center_distances },
+                    .center_distances = OrderableFixedArray{ ide.center_distances(morph_target.bounding_sphere.radius()) },
                     .max_triangle_distance = cfg.max_triangle_distance });
             if (material.texture != nullptr) {
                 auto filename_lower = ide.texture_dictionary + ".txd_" + material.texture->name;

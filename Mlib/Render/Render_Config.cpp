@@ -79,6 +79,7 @@ void RenderConfig::apply_material(
                 case BlendMode::BINARY_08:
                     break;
                 case BlendMode::BINARY_05_ADD:
+                case BlendMode::CONTINUOUS_ADD:
                     CHK(glEnable(GL_BLEND));
                     CHK(glBlendFunc(GL_ONE, GL_ONE));
                     CHK(glDepthMask(GL_FALSE));

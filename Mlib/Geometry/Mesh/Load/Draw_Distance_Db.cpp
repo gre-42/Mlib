@@ -37,23 +37,32 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
             section.clear();
             continue;
         }
-        auto set_distances = [&](const std::string& resource_name, const std::string& texture_dictionary, float dist[], size_t n){
+        auto set_distances = [&](
+            const std::string& resource_name,
+            const std::string& texture_dictionary,
+            float dist[],
+            size_t n,
+            IdeFlags flags)
+        {
             auto texture_dictionary_lower = texture_dictionary;
             std::transform(texture_dictionary_lower.begin(), texture_dictionary_lower.end(), texture_dictionary_lower.begin(), ::tolower);
             ide_items_.try_emplace(
                 resource_name,
                 texture_dictionary_lower,
-                FixedArray<float, 2>{ -INFINITY, dist[0] });
+                FixedArray<float, 2>{ -INFINITY, dist[0] },
+                flags);
             float prev = -INFINITY;
             for (size_t i = 0; i < n; ++i) {
                 ide_items_.try_emplace(
                     resource_name + "_l" + std::to_string(i),
                     texture_dictionary_lower,
-                    FixedArray<float, 2>{ prev, dist[i] });
+                    FixedArray<float, 2>{ prev, dist[i] },
+                    flags);
                 ide_items_.try_emplace(
                     resource_name + "_L" + std::to_string(i),
                     texture_dictionary_lower,
-                    FixedArray<float, 2>{ prev, dist[i] });
+                    FixedArray<float, 2>{ prev, dist[i] },
+                    flags);
                 prev = dist[i];
             }
             };
@@ -72,19 +81,22 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
                 float distances[] = { safe_stof(match[5].str()) };
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1);
+                auto flags = (IdeFlags)safe_stoi(match[6].str());
+                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1, flags);
             } else if (regex_match(line, match, reg2)) {
                 if (match[4].str() != "2") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
                 float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()) };
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 2);
+                auto flags = (IdeFlags)safe_stoi(match[7].str());
+                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 2, flags);
             } else if (regex_match(line, match, reg3)) {
                 if (match[4].str() != "3") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
                 float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()), safe_stof(match[7].str()) };
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 3);
+                auto flags = (IdeFlags)safe_stoi(match[8].str());
+                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 3, flags);
             } else {
                 THROW_OR_ABORT("Could not parse line \"" + line + '"');
             }
@@ -99,7 +111,8 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
                 float distances[] = { safe_stof(match[5].str()) };
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1);
+                auto flags = (IdeFlags)safe_stoi(match[6].str());
+                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1, flags);
             } else {
                 THROW_OR_ABORT("Could not parse line \"" + line + '"');
             }
@@ -110,13 +123,12 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
     }
 }
 
-IdeItem DrawDistanceDb::get_item(
-    const std::string& resource_name,
-    float radius) const
+const IdeItem& DrawDistanceDb::get_item(const std::string& resource_name) const
 {
-    const auto& raw_item = ide_items_.get(resource_name);
-    return {
-        .texture_dictionary = raw_item.texture_dictionary,
-        .center_distances = maximum(raw_item.center_distances + radius, 0.f)
-    };
+    return ide_items_.get(resource_name);
+}
+
+FixedArray<float, 2> IdeItem::center_distances(float radius) const
+{
+    return maximum(raw_center_distances + radius, 0.f);
 }

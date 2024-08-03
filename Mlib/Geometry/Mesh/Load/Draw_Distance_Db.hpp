@@ -6,14 +6,13 @@
 
 namespace Mlib {
 
-struct RawIdeItem {
-    std::string texture_dictionary;
-    FixedArray<float, 2> center_distances;
-};
+enum class IdeFlags;
 
 struct IdeItem {
-    const std::string& texture_dictionary;
-    FixedArray<float, 2> center_distances;
+    std::string texture_dictionary;
+    FixedArray<float, 2> raw_center_distances;
+    IdeFlags flags;
+    FixedArray<float, 2> center_distances(float radius) const;
 };
 
 class DrawDistanceDb {
@@ -21,11 +20,9 @@ public:
     DrawDistanceDb();
     ~DrawDistanceDb();
     void add_ide(const std::string& filename);
-    IdeItem get_item(
-        const std::string& resource_name,
-        float radius) const;
+    const IdeItem& get_item(const std::string& resource_name) const;
 private:
-    Map<std::string, RawIdeItem> ide_items_;
+    Map<std::string, IdeItem> ide_items_;
 };
 
 }
