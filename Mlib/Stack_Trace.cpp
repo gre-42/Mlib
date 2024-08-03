@@ -85,11 +85,12 @@ void Mlib::print_stacktrace(unsigned int max_frames)
 using namespace Mlib;
 
 /** Print a demangled stack backtrace of the caller function to FILE* out. */
-void Mlib::print_stacktrace(unsigned int max_frames)
+void Mlib::print_stacktrace()
 {
     lerr() << "stack trace:";
 
     // storage array for stack trace address data
+    static const size_t max_frames = 100;
     void* addrlist[max_frames+1];
 
     if (max_frames >= INT_MAX) {
