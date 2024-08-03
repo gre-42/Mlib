@@ -45,7 +45,7 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
             scene,
             read_ipl(file.path, dynamics),
             scene_node_resources,
-            RenderingContextStack::primary_rendering_resources(),
+            rendering_resources,
             exclude);
     }
     {

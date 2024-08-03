@@ -1408,7 +1408,8 @@ const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& na
         THROW_OR_ABORT(
             "Could not find vp with name " + name + "."
             " Forgot to add a LightmapLogic for the light?"
-            " Are dirtmaps enabled for the current scene?");
+            " Are dirtmaps enabled for the current scene?"
+            " Are primary/secondary rendering resources mixed up?");
     }
     return *it;
 }
