@@ -24,7 +24,8 @@ static std::string rendering_strategy_to_string(RenderingStrategies rendering_st
 std::string Mlib::rendering_strategies_to_string(RenderingStrategies rendering_strategies) {
 	std::string result = "";
 	using UT = std::underlying_type<RenderingStrategies>::type;
-	for (auto candidate = (RenderingStrategies)1; (UT)candidate != 0; (UT&)candidate <<= 1) {
+	for (UT ucandidate = 1; ucandidate != 0; ucandidate <<= 1) {
+		auto candidate = (RenderingStrategies)ucandidate;
 		if (any(rendering_strategies & candidate)) {
 			if (result.empty()) {
 				result += '|' + rendering_strategy_to_string(candidate);
