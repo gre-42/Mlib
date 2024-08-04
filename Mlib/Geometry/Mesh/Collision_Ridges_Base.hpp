@@ -21,9 +21,12 @@ public:
     ~CollisionRidgesBase();
     using Ridges = std::set<TOrderableRidgeSphere>;
     using const_iterator = typename Ridges::const_iterator;
+    using node_type = typename Ridges::node_type;
     const_iterator begin() const;
     const_iterator end() const;
+    node_type extract(const_iterator it);
     size_t size() const;
+    bool empty() const;
     void clear();
 protected:
     void insert(

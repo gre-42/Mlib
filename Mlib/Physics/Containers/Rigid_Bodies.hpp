@@ -106,7 +106,7 @@ private:
     mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
     mutable std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*> ridge_map_;
     Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
-    CollisionRidgesRigidBody collision_ridges_;
+    mutable CollisionRidgesRigidBody collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };
 

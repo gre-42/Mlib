@@ -44,8 +44,18 @@ typename CollisionRidgesBase<TOrderableRidgeSphere>::const_iterator CollisionRid
 }
 
 template <class TOrderableRidgeSphere>
+typename CollisionRidgesBase<TOrderableRidgeSphere>::node_type CollisionRidgesBase<TOrderableRidgeSphere>::extract(const_iterator it) {
+    return ridges_.extract(it);
+}
+
+template <class TOrderableRidgeSphere>
 size_t CollisionRidgesBase<TOrderableRidgeSphere>::size() const {
     return ridges_.size();
+}
+
+template <class TOrderableRidgeSphere>
+bool CollisionRidgesBase<TOrderableRidgeSphere>::empty() const {
+    return ridges_.empty();
 }
 
 template <class TOrderableRidgeSphere>

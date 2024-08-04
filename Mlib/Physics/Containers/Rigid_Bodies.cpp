@@ -290,7 +290,7 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
     add_meshes(o.dmeshes);
     transformed_objects_.push_back({
         .rigid_body = o.rigid_body,
-        .meshes = std::move(transformed_meshes)});
+        .meshes = std::move(transformed_meshes) });
 }
 
 void RigidBodies::optimize_search_time(std::ostream& ostr) const {
@@ -363,7 +363,9 @@ const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<dou
 
 void RigidBodies::bake_collision_ridges() const
 {
-    for (const auto& e : collision_ridges_) {
+    while (!collision_ridges_.empty()) {
+        auto node = collision_ridges_.extract(collision_ridges_.begin());
+        const auto& e = node.value();
         if (!e.collision_ridge_sphere.is_touchable(SingleFaceBehavior::UNTOUCHABLE)) {
             continue;
         }
@@ -373,16 +375,16 @@ void RigidBodies::bake_collision_ridges() const
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});
         r->crp.finalize();
-        auto a = OrderableFixedArray{r->crp.edge(0)};
-        auto b = OrderableFixedArray{r->crp.edge(1)};
+        auto a = OrderableFixedArray{ r->crp.edge(0) };
+        auto b = OrderableFixedArray{ r->crp.edge(1) };
         if (a < b) {
-            if (!ridge_map_.insert({{a, b}, &r->crp}).second) {
+            if (!ridge_map_.insert({ {a, b}, &r->crp }).second) {
                 std::stringstream sstr;
                 sstr << "Could not insert into ridge-map. Edge: " << a << " <-> " << b << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
                 THROW_OR_ABORT(sstr.str());
             }
         } else {
-            if (!ridge_map_.insert({{b, a}, &r->crp}).second) {
+            if (!ridge_map_.insert({ {b, a}, &r->crp }).second) {
                 std::stringstream sstr;
                 sstr << "Could not insert into ridge-map. Edge: " << b << " <-> " << a << "; Rigid bodies: \"" << e.rb.name() << "\", \"" << r->rb.name() << '"';
                 THROW_OR_ABORT(sstr.str());
