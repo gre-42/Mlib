@@ -25,8 +25,8 @@ public:
     Quaternion()
     {}
     Quaternion(const TData& s, const FixedArray<TData, 3>& v)
-    : v_{v},
-      s_{s}
+        : v_{ v }
+        , s_{ s }
     {}
     /**
      * From: https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
