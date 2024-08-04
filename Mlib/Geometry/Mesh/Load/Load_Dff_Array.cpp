@@ -16,7 +16,7 @@ DffArrays<TPosition> Mlib::load_dff(
     const std::string& filename,
     const LoadMeshConfig<TPosition>& cfg,
     const DrawDistanceDb& dddb,
-    FramePosition frame_position)
+    FrameTransformation frame_transformation)
 {
     auto ifs = create_ifstream(filename, std::ios::binary);
     if (ifs->fail()) {
@@ -28,7 +28,7 @@ DffArrays<TPosition> Mlib::load_dff(
             std::filesystem::path{ filename }.filename().string() + '_',
             cfg,
             dddb,
-            frame_position);
+            frame_transformation);
     } catch (std::runtime_error& e) {
         THROW_OR_ABORT("Could not read file \"" + filename + "\": "+ e.what());
     }
@@ -40,7 +40,7 @@ DffArrays<TPosition> Mlib::load_dff(
     const std::string& name,
     const LoadMeshConfig<TPosition>& cfg,
     const DrawDistanceDb& dddb,
-    FramePosition frame_position)
+    FrameTransformation frame_transformation)
 {
     DffArrays<TPosition> result;
     auto clump = Mlib::Dff::read_dff(istr, IoVerbosity::SILENT);
@@ -60,17 +60,12 @@ DffArrays<TPosition> Mlib::load_dff(
             trafo = parent.matrix.casted<float, TPosition>() * trafo;
             p = parent.parent;
         }
-        [&]() {
-            switch (frame_position) {
-            case FramePosition::ZERO:
-                trafo.t() = 0.f;
-                return;
-            case FramePosition::KEEP:
-                // Do nothing
-                return;
-            }
-            THROW_OR_ABORT("Unknown frame position: \"" + std::to_string((int)frame_position) + '"');
-            }();
+        if (any(frame_transformation & FrameTransformation::ZERO_POSITION)) {
+            trafo.t() = 0.f;
+        }
+        if (any(frame_transformation & FrameTransformation::IDENTITY_ROTATION)) {
+            trafo.R() = fixed_identity_array<float, 3>();
+        }
         const auto& morph_target = a.geometry->morph_targets[0];
         const auto& materials = a.geometry->mat_list.materials;
         NonCopyingVector<TriangleList<TPosition>> tls(materials.size());
@@ -199,12 +194,12 @@ template DffArrays<float> load_dff<float>(
     const std::string& filename,
     const LoadMeshConfig<float>& cfg,
     const DrawDistanceDb& dddb,
-    FramePosition frame_position);
+    FrameTransformation frame_transformation);
 
 template DffArrays<double> load_dff<double>(
     const std::string& filename,
     const LoadMeshConfig<double>& cfg,
     const DrawDistanceDb& dddb,
-    FramePosition frame_position);
+    FrameTransformation frame_transformation);
 
 }

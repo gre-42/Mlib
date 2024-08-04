@@ -33,7 +33,7 @@ static void test_teapot() {
             .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
             .werror = true},
         DrawDistanceDb{},
-        FramePosition::KEEP);
+        FrameTransformation::KEEP);
 }
 
 int main(int argc, char** argv) {
