@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -12,9 +13,9 @@ class FixedArray;
 
 bool compute_edge_overlap(
 	const IntersectionScene& c,
-	const FixedArray<double, 3>& intersection_point,
+	const FixedArray<ScenePos, 3>& intersection_point,
 	bool& sat_used,
-	double& overlap,
-	FixedArray<double, 3>& normal);
+	ScenePos& overlap,
+	FixedArray<ScenePos, 3>& normal);
 
 }

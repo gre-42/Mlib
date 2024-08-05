@@ -18,7 +18,7 @@ class SceneNodeResources;
 enum class UpAxis;
 
 struct TriangleAndSeed {
-    const FixedArray<ColoredVertex<double>, 3>& triangle;
+    const FixedArray<ColoredVertex<ScenePos>, 3>& triangle;
     unsigned int seed;
 };
 
@@ -29,36 +29,36 @@ public:
         const SceneNodeResources& scene_node_resources,
         const TerrainStyles& terrain_styles,
         const TerrainTriangles& terrain_triangles,
-        const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
-        const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
-        double scale,
+        const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
+        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* street_bvh,
+        ScenePos scale,
         UpAxis up_axis);
     virtual ~RenderableTriangleSampler();
     virtual RenderingStrategies rendering_strategies() const override;
     virtual bool requires_render_pass(ExternalRenderPassType render_pass) const override;
     virtual bool requires_blending_pass(ExternalRenderPassType render_pass) const override;
     virtual void append_sorted_instances_to_queue(
-        const FixedArray<double, 4, 4>& mvp,
-        const TransformationMatrix<float, double, 3>& m,
-        const TransformationMatrix<float, double, 3>& iv,
-        const FixedArray<double, 3>& offset,
+        const FixedArray<ScenePos, 4, 4>& mvp,
+        const TransformationMatrix<float, ScenePos, 3>& m,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const FixedArray<ScenePos, 3>& offset,
         uint32_t billboard_id,
         const SceneGraphConfig& scene_graph_config,
         SmallInstancesQueues& instances_queue) const override;
     virtual void extend_aabb(
-        const TransformationMatrix<float, double, 3>& mv,
+        const TransformationMatrix<float, ScenePos, 3>& mv,
         ExternalRenderPassType render_pass,
-        AxisAlignedBoundingBox<double, 3>& aabb) const override;
+        AxisAlignedBoundingBox<ScenePos, 3>& aabb) const override;
 private:
     const SceneNodeResources& scene_node_resources_;
     const TerrainStyles& terrain_styles_;
     const TerrainTriangles terrain_triangles_;
-    const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass_;
-    const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh_;
-    double scale_;
+    const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*> no_grass_;
+    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* street_bvh_;
+    ScenePos scale_;
     UpAxis up_axis_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> grass_bvhs_;
-    mutable std::optional<std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>> no_grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>> grass_bvhs_;
+    mutable std::optional<std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>> no_grass_bvhs_;
 };
 
 }

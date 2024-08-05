@@ -48,9 +48,9 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
             JsonMacroArguments a{capture};
             a.insert_json(nlohmann::json{
-                {"HUMAN_NODE_POSITION", p.position / (double)meters},
+                {"HUMAN_NODE_POSITION", p.position / (ScenePos)meters},
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
-                {"CAR_NODE_POSITION", p.position / (double)meters},
+                {"CAR_NODE_POSITION", p.position / (ScenePos)meters},
                 {"CAR_NODE_ANGLES", p.rotation / degrees},
                 // Velocity and angular velocity should be calculated dynamically from the parent of the
                 // spawn point using "parent.velocity_at_position" and "parent.angular_velocity_at_position".

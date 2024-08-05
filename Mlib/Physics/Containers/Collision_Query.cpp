@@ -12,22 +12,22 @@ CollisionQuery::CollisionQuery(PhysicsEngine& physics_engine)
 {}
 
 bool CollisionQuery::can_see(
-    const FixedArray<double, 3>& watcher,
-    const FixedArray<double, 3>& watched,
+    const FixedArray<ScenePos, 3>& watcher,
+    const FixedArray<ScenePos, 3>& watched,
     const RigidBodyVehicle* excluded0,
     const RigidBodyVehicle* excluded1,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
-    FixedArray<double, 3>* intersection_point,
-    std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon,
+    FixedArray<ScenePos, 3>* intersection_point,
+    std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    RaySegment3D<double> ray{ watcher, watched };
-    FixedArray<FixedArray<double, 3>, 2> l{ ray.start, ray.stop() };
-    double t_min = INFINITY;
-    std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*> triangle_min;
-    BoundingSphere<double, 3> bs{ l };
+    RaySegment3D<ScenePos> ray{ watcher, watched };
+    FixedArray<FixedArray<ScenePos, 3>, 2> l{ ray.start, ray.stop() };
+    ScenePos t_min = INFINITY;
+    std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*> triangle_min;
+    BoundingSphere<ScenePos, 3> bs{ l };
     if (!only_terrain) {
         for (const auto& o0 : physics_engine_.rigid_bodies_.transformed_objects()) {
             if (&o0.rigid_body.get() == excluded0 ||
@@ -46,8 +46,8 @@ bool CollisionQuery::can_see(
                     if (!polygon0.bounding_sphere.intersects(bs)) {
                         return true;
                     }
-                    double t;
-                    FixedArray<double, 3> intersection_pt = uninitialized;
+                    ScenePos t;
+                    FixedArray<ScenePos, 3> intersection_pt = uninitialized;
                     if (ray.intersects(
                         polygon0.polygon,
                         &t,
@@ -103,8 +103,8 @@ bool CollisionQuery::can_see(
                 {
                     continue;
                 }
-                double t;
-                FixedArray<double, 3> intersection_pt = uninitialized;
+                ScenePos t;
+                FixedArray<ScenePos, 3> intersection_pt = uninitialized;
                 if (ray.intersects(
                     t0.polygon,
                     &t,
@@ -145,8 +145,8 @@ bool CollisionQuery::can_see(
             if (!any(t0.ctp.physics_material & collidable_mask)) {
                 return true;
             }
-            double t;
-            FixedArray<double, 3> intersection_pt = uninitialized;
+            ScenePos t;
+            FixedArray<ScenePos, 3> intersection_pt = uninitialized;
             if (ray.intersects(
                 t0.ctp.polygon,
                 &t,
@@ -196,14 +196,14 @@ bool CollisionQuery::can_see(
     const RigidBodyVehicle& watched,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
-    double height_offset,
+    ScenePos height_offset,
     float time_offset,
-    FixedArray<double, 3>* intersection_point,
-    std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon,
+    FixedArray<ScenePos, 3>* intersection_point,
+    std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    FixedArray<double, 3> d = {0.f, height_offset, 0.f};
+    FixedArray<ScenePos, 3> d = {0.f, height_offset, 0.f};
     if (time_offset != 0) {
         RigidBodyPulses watcher_rbp = watcher.rbp_;
         RigidBodyPulses watched_rbp = watched.rbp_;
@@ -237,17 +237,17 @@ bool CollisionQuery::can_see(
 
 bool CollisionQuery::can_see(
     const RigidBodyVehicle& watcher,
-    const FixedArray<double, 3>& watched,
+    const FixedArray<ScenePos, 3>& watched,
     bool only_terrain,
     PhysicsMaterial collidable_mask,
-    double height_offset,
+    ScenePos height_offset,
     float time_offset,
-    FixedArray<double, 3>* intersection_point,
-    std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon,
+    FixedArray<ScenePos, 3>* intersection_point,
+    std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon,
     const RigidBodyVehicle** seen_object,
     const IIntersectableMesh** seen_mesh) const
 {
-    FixedArray<double, 3> d = {0.f, height_offset, 0.f };
+    FixedArray<ScenePos, 3> d = {0.f, height_offset, 0.f };
     if (time_offset != 0) {
         RigidBodyPulses rbp = watcher.rbp_;
         rbp.advance_time(time_offset);

@@ -40,7 +40,7 @@ SkidmarkLogic::SkidmarkLogic(
     , texture_width_{ texture_width }
     , texture_height_{ texture_height }
     , old_fbs_id_{ 0 }
-    , old_camera_position_{ fixed_nans<double, 3>() }
+    , old_camera_position_{ fixed_nans<ScenePos, 3>() }
     , colormap_{ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
@@ -86,7 +86,7 @@ void SkidmarkLogic::render(
     auto p = skidmark_camera->projection_matrix();
     auto v = skidmark_node_->absolute_view_matrix();
     auto iv = skidmark_node_->absolute_model_matrix();
-    auto vp = dot2d(p.casted<double>(), v.affine());
+    auto vp = dot2d(p.casted<ScenePos>(), v.affine());
     fbs_(new_fbs_id)->configure({
         .width = texture_width_,
         .height = texture_height_,
@@ -102,8 +102,8 @@ void SkidmarkLogic::render(
         } else if (fbs_(old_fbs_id_) != nullptr) {
             old_render_texture_logic_->update_texture_id();
         }
-        std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
-        std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>> skidmarks;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> lights;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> skidmarks;
         RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
         RenderToScreenGuard rsg;
         {

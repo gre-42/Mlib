@@ -50,7 +50,7 @@ void AudioSource::set_pitch(float value) {
     AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 
-void AudioSource::set_position(const AudioSourceState<double>& position) {
+void AudioSource::set_position(const AudioSourceState<ScenePos>& position) {
     auto relpos = AudioListener::get_relative_position(position);
     if (!relpos.has_value()) {
         return;

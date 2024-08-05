@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <memory>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ void collide_triangle_and_edges(
     RigidBodyVehicle& o0,
     RigidBodyVehicle& o1,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionPolygonSphere<double, 3>& t0,
+    const CollisionPolygonSphere<ScenePos, 3>& t0,
     const CollisionHistory& history);
 
 }

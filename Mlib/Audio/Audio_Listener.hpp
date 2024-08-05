@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -11,7 +12,7 @@ class AudioListener {
 
 public:
     static void set_transformation(const AudioListenerState& state);
-    static std::optional<AudioSourceState<float>> get_relative_position(const AudioSourceState<double> &state);
+    static std::optional<AudioSourceState<float>> get_relative_position(const AudioSourceState<ScenePos> &state);
     static void set_gain(float f);
     static void mute();
     static void unmute();

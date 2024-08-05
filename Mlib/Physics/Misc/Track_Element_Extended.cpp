@@ -20,11 +20,11 @@ TrackElementExtended TrackElementExtended::create(
     return result;
 }
 
-const OffsetAndTaitBryanAngles<float, double, 3>& TrackElementExtended::transformation() const {
+const OffsetAndTaitBryanAngles<float, ScenePos, 3>& TrackElementExtended::transformation() const {
     return element.transformation();
 }
 
-void TrackElementExtended::set_y_position(double value) {
+void TrackElementExtended::set_y_position(ScenePos value) {
     if (element.transformations.empty()) {
         THROW_OR_ABORT("Extended track element is empty");
     }

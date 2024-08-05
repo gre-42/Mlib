@@ -14,7 +14,7 @@ DynamicLights::~DynamicLights() = default;
 
 std::unique_ptr<IDynamicLight> DynamicLights::instantiate(
 	const std::string& name,
-	const std::function<FixedArray<double, 3>()>& get_position,
+	const std::function<FixedArray<ScenePos, 3>()>& get_position,
 	std::chrono::steady_clock::time_point time)
 {
 	const auto& config = db_.get(name);
@@ -60,7 +60,7 @@ void DynamicLights::set_time(std::chrono::steady_clock::time_point time) {
 	}
 }
 
-FixedArray<float, 3> DynamicLights::get_color(const FixedArray<double, 3>& target_position) const {
+FixedArray<float, 3> DynamicLights::get_color(const FixedArray<ScenePos, 3>& target_position) const {
 	FixedArray<float, 3> result = fixed_zeros<float, 3>();
 	std::scoped_lock lock{ mutex_ };
 	for (const auto& l : instances_) {

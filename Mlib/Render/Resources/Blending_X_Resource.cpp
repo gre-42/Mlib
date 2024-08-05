@@ -12,6 +12,7 @@
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -82,7 +83,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
 {
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
+            FixedArray<ScenePos, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
             fixed_zeros<float, 3>(),
             1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -100,7 +101,10 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{double(-(square_(1, 0) - square_(0, 0)) / 4.f), 0., 0. },
+            FixedArray<ScenePos, 3>{
+                -(square_(1, 0) - square_(0, 0)) / 4.f,
+                0.f,
+                0.f },
             fixed_zeros<float, 3>(),
             1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{
@@ -118,7 +122,7 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f },
+            FixedArray<ScenePos, 3>{0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
             1.f);
         rva_(1)->instantiate_renderable(InstantiationOptions{
@@ -136,7 +140,10 @@ void BlendingXResource::instantiate_renderable(const InstantiationOptions& optio
     }
     {
         auto node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{0., 0., -(square_(1, 1) - square_(0, 1)) / 4. },
+            FixedArray<ScenePos, 3>{
+                0.f,
+                0.f,
+                -(square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
             1.f);
         rva_(0)->instantiate_renderable(InstantiationOptions{

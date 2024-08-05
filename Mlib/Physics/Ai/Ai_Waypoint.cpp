@@ -18,30 +18,30 @@ AiWaypoint::AiWaypoint(
 	, waypoint_history_{ waypoint_history }
 {}
 
-FixedArray<double, 3> AiWaypoint::interpolated_position(
-	const FixedArray<double, 3>& vehicle_position,
-	double radius_squared,
+FixedArray<ScenePos, 3> AiWaypoint::interpolated_position(
+	const FixedArray<ScenePos, 3>& vehicle_position,
+	ScenePos radius_squared,
 	float dy) const
 {
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desination is undefined");
 	}
 	auto& pod = position_of_destination_->position;
-	FixedArray<double, 3> dy3{ 0., (double)dy, 0. };
+	FixedArray<ScenePos, 3> dy3{ 0.f, dy, 0.f };
 	if ((waypoint_history_ == nullptr) ||
 		waypoint_history_->empty())
 	{
 		return pod + dy3;
 	}
-	RaySegment3D<double> rs(waypoint_history_->rbegin()->position, pod);
-	double lambda;
+	RaySegment3D<ScenePos> rs(waypoint_history_->rbegin()->position, pod);
+	ScenePos lambda;
 	if (!ray_intersects_sphere(
 		rs.start,
 		rs.direction,
 		vehicle_position,
 		radius_squared,
 		&lambda,
-		(double*)nullptr))
+		(ScenePos*)nullptr))
 	{
 		return pod + dy3;
 	} else {
@@ -58,12 +58,12 @@ bool AiWaypoint::has_position_of_destination() const {
 	return position_of_destination_.has_value();
 }
 
-FixedArray<double, 3> AiWaypoint::position_of_destination(float dy) const {
+FixedArray<ScenePos, 3> AiWaypoint::position_of_destination(float dy) const {
 	if (!position_of_destination_.has_value()) {
 		THROW_OR_ABORT("Position of desintation not defined");
 	}
 	auto res = position_of_destination_->position;
-	res(1) += (double)dy;
+	res(1) += dy;
 	return res;
 }
 

@@ -33,8 +33,8 @@ public:
     ~FollowMovable();
     void initialize(DanglingRef<SceneNode> follower_node);
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
@@ -42,11 +42,11 @@ private:
     DanglingPtr<const SceneNode> followed_node_;
     IAbsoluteMovable* followed_;
     float attachment_distance_;
-    FixedArray<double, 2> attachment_position_;
+    FixedArray<ScenePos, 2> attachment_position_;
     FixedArray<float, 3> node_displacement_;
     FixedArray<float, 3> look_at_displacement_;
-    TransformationMatrix<float, double, 3> transformation_matrix_;
-    FixedArray<double, 3> dpos_old_;
+    TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
+    FixedArray<ScenePos, 3> dpos_old_;
     float snappiness_;
     float y_adaptivity_;
     float y_adapt_;

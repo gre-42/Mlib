@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -16,7 +17,7 @@ public:
     ~SmokeTrailGenerator();
     void advance_time(float dt);
     void maybe_generate(
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         const std::string& resource_name,
         const std::string& instance_prefix,

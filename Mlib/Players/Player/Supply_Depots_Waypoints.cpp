@@ -17,7 +17,7 @@ SupplyDepotsWaypoints::SupplyDepotsWaypoints(
 {}
 
 struct WaypointAndTTotalDistance {
-    double ttotal_distance;
+    ScenePos ttotal_distance;
     size_t waypoint_id;
 };
 
@@ -29,7 +29,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
     //         }
     //         g_beacons.push_back(
     //             Beacon{
-    //                 .location = TransformationMatrix<float, double, 3>{
+    //                 .location = TransformationMatrix<float, ScenePos, 3>{
     //                     (float)total_distances_.at(i) / (100.f * meters) * fixed_identity_array<float, 3>(),
     //                     waypoint_positions_.at(i)
     //                 },
@@ -61,7 +61,7 @@ bool SupplyDepotsWaypoints::select_next_waypoint() {
         auto compute_ttotal_distance = [this, &p](size_t waypoint_id) {
             // g_beacons.push_back(
             //     Beacon{
-            //         .location = TransformationMatrix<float, double, 3>{
+            //         .location = TransformationMatrix<float, ScenePos, 3>{
             //             0.2f * fixed_identity_array<float, 3>(),
             //             waypoint_positions_.at(waypoint_id)
             //         },

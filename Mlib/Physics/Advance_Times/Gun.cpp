@@ -77,7 +77,7 @@ Gun::Gun(
     , team_{ nullptr }
     , cool_down_{ cool_down }
     , time_since_last_shot_{ 0 }
-    , absolute_model_matrix_{ fixed_nans<double, 4, 4 >() }
+    , absolute_model_matrix_{ fixed_nans<ScenePos, 4, 4 >() }
     , punch_angle_{ 0.f, 0.f, 0.f }
     , punch_angle_rng_{ punch_angle_rng }
     , muzzle_flash_resource_{ muzzle_flash_resource }
@@ -255,12 +255,12 @@ void Gun::generate_muzzle_flash_hider() {
         *node_,
         muzzle_flash_resource_,
         "muzzle_flash_node" + muzzle_flash_suffix,
-        muzzle_flash_position_.casted<double>(),
+        muzzle_flash_position_.casted<ScenePos>(),
         muzzle_flash_animation_time_);
     generate_muzzle_flash_hider_(muzzle_flash_suffix);
 }
 
-void Gun::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)
+void Gun::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
 {
     absolute_model_matrix_ = absolute_model_matrix;
 }
@@ -271,7 +271,7 @@ void Gun::trigger(IPlayer* player, ITeam* team) {
     team_ = team;
 }
 
-const TransformationMatrix<float, double, 3>& Gun::absolute_model_matrix() const {
+const TransformationMatrix<float, ScenePos, 3>& Gun::absolute_model_matrix() const {
     return absolute_model_matrix_;
 }
 

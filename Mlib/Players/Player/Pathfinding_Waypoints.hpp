@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -17,7 +18,7 @@ struct PhysicsEngineConfig;
 
 class PathfindingWaypoints {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
 
     explicit PathfindingWaypoints(
         Player& player,
@@ -31,7 +32,7 @@ private:
     Player& player_;
     const PhysicsEngineConfig& cfg_;
     std::unique_ptr<PointsAndAdjacencyResource> waypoints_;
-    std::unique_ptr<Bvh<double, size_t, 3>> waypoints_bvh_;
+    std::unique_ptr<Bvh<ScenePos, size_t, 3>> waypoints_bvh_;
 };
 
 }

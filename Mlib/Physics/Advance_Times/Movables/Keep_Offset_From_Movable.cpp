@@ -19,7 +19,7 @@ KeepOffsetFromMovable::KeepOffsetFromMovable(
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
     , offset_{ offset }
-    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {
     followed_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
@@ -31,14 +31,14 @@ void KeepOffsetFromMovable::advance_time(float dt, std::chrono::steady_clock::ti
     if (followed_ == nullptr) {
         return;
     }
-    transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_.casted<double>();
+    transformation_matrix_.t() = followed_->get_new_absolute_model_matrix().t() + offset_.casted<ScenePos>();
 }
 
-void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void KeepOffsetFromMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, double, 3> KeepOffsetFromMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> KeepOffsetFromMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

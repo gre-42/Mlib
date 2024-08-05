@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) = 0;
-    virtual void set_position(const AudioSourceState<double>& position) = 0;
+    virtual void set_position(const AudioSourceState<ScenePos>& position) = 0;
 };
 
 }

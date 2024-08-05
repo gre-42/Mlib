@@ -75,11 +75,11 @@ static void flying_key_callback(
         }
     } else {
         if (user_object.button_states.key_down({.key = "UP"})) {
-            user_object.position -= (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<double>();
+            user_object.position -= (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) -= 0.04f;
         }
         if (user_object.button_states.key_down({.key = "DOWN"})) {
-            user_object.position += (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<double>();
+            user_object.position += (0.2f * tait_bryan_angles_2_matrix(user_object.angles).column(2)).casted<ScenePos>();
             // user_object.position(2) += 0.04f;
         }
         if (user_object.button_states.key_down({.key = "LEFT"})) {

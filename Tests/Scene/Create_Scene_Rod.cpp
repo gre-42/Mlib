@@ -102,7 +102,7 @@ void Mlib::create_scene_rod(
         .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node0->set_rotation({0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
-    scene_node0->set_position({0., -4., 0.}, INITIAL_POSE);
+    scene_node0->set_position({0.f, -4.f, 0.f}, INITIAL_POSE);
     scene_node1_0->set_rotation({0.f, 0.f, 0.1f * float(M_PI)}, INITIAL_POSE);
 
     scene_nodeR->add_child("n0", std::move(scene_node0));

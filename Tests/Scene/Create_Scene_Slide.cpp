@@ -121,11 +121,11 @@ void Mlib::create_scene_slide(
         .scene_node = scene_node_box.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_slide->set_rotation({0.f, -90.f * degrees, 0.f}, INITIAL_POSE);
-    scene_node_slide->set_position({-5., 0., -90.}, INITIAL_POSE);
+    scene_node_slide->set_position({-5.f, 0.f, -90.f}, INITIAL_POSE);
     scene_node_box->set_rotation({0.f, 0.f, 10.f * degrees}, INITIAL_POSE);
-    scene_node_box->set_position({-10., 10., -90.}, INITIAL_POSE);
+    scene_node_box->set_position({-10.f, 10.f, -90.f}, INITIAL_POSE);
 
-    scene_node_light->set_position({0., 50., -90.}, INITIAL_POSE);
+    scene_node_light->set_position({0.f, 50.f, -90.f}, INITIAL_POSE);
     scene_node_light->set_rotation({-90.f * degrees, 0.f, 0.f}, INITIAL_POSE);
     scene_node_light->add_light(std::make_unique<Light>(Light{
         .resource_suffix = "light_node",

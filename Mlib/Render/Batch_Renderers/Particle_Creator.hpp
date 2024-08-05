@@ -15,7 +15,7 @@ public:
     
     ~ParticleCreator();
 
-    virtual void add_particle(const TransformationMatrix<float, double, 3>& transformation_matrix) override;
+    virtual void add_particle(const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) override;
 private:
     ParticlesInstance &particles_instance_;
     BillboardSequence billboard_sequence_;

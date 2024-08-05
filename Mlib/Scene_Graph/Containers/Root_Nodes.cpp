@@ -11,7 +11,7 @@ using namespace Mlib;
 
 RootNodes::RootNodes(Scene& scene)
     : scene_{ scene }
-    , small_static_nodes_bvh_{ FixedArray<double, 3>{5., 5., 5.}, 12 }
+    , small_static_nodes_bvh_{ fixed_full<ScenePos, 3>(5), 12 }
 {}
 
 RootNodes::~RootNodes() {
@@ -33,7 +33,7 @@ bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const Scene
 }
 
 bool RootNodes::visit(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
 {
     for (auto& [_, node] : default_nodes_map_) {
@@ -92,7 +92,7 @@ void RootNodes::add_root_node(
     }
     if (is_static && (md != INFINITY)) {
         small_static_nodes_bvh_.insert(
-            AxisAlignedBoundingBox<double, 3>::from_center_and_radius(ref->position(), md),
+            AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), md),
             ref);
     } else if (!default_nodes_map_.try_emplace(name, ref).second) {
         verbose_abort("add_root_node could not insert node \"" + name + '"');

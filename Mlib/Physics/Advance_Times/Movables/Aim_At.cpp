@@ -22,8 +22,8 @@ AimAt::AimAt(
     float gravity,
     float locked_on_cosine,
     std::function<float()> velocity_estimation_error)
-    : absolute_point_to_aim_at_((double)NAN)
-    , relative_point_to_aim_at_((double)NAN)
+    : absolute_point_to_aim_at_((ScenePos)NAN)
+    , relative_point_to_aim_at_((ScenePos)NAN)
     , followed_node_{ nullptr }
     , gun_node_{ gun_node.ptr() }
     , follower_{ get_rigid_body_vehicle(follower_node) }
@@ -50,15 +50,15 @@ AimAt::~AimAt() {
     on_destroy.clear();
 }
 
-void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     if (followed_ != nullptr) {
         {
             auto bullet_launch_position =
                 gun_node_->absolute_model_matrix().t() -
-                (bullet_start_offset_ * gun_node_->absolute_model_matrix().R().column(2)).casted<double>();
+                (bullet_start_offset_ * gun_node_->absolute_model_matrix().R().column(2)).casted<ScenePos>();
             auto initial_bullet_velocity = follower_.velocity_at_position(bullet_launch_position);
             float verr = velocity_estimation_error_();
-            auto offset = fixed_zeros<double, 3>();
+            auto offset = fixed_zeros<ScenePos, 3>();
             float t = 0;
             for (size_t i = 0; ; ++i) {
                 RigidBodyPulses rbp = followed_->rbp_;
@@ -76,7 +76,7 @@ void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, double, 
                     bullet_start_offset_,
                     bullet_velocity_,
                     bullet_feels_gravity_ ? gravity_ : 0.f,
-                    1e-6,
+                    (ScenePos)1e-6,
                     10 };
                 if (std::isnan(aim.aim_offset)) {
                     absolute_point_to_aim_at_ = NAN;
@@ -141,10 +141,10 @@ void AimAt::set_bullet_feels_gravity(bool value) {
     bullet_feels_gravity_ = value;
 }
 
-const FixedArray<double, 3>& AimAt::absolute_point_to_aim_at() const {
+const FixedArray<ScenePos, 3>& AimAt::absolute_point_to_aim_at() const {
     return absolute_point_to_aim_at_;
 }
 
-const FixedArray<double, 3>& AimAt::relative_point_to_aim_at() const {
+const FixedArray<ScenePos, 3>& AimAt::relative_point_to_aim_at() const {
     return relative_point_to_aim_at_;
 }

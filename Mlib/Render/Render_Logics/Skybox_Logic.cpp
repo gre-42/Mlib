@@ -170,11 +170,11 @@ float SkyboxLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& SkyboxLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& SkyboxLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& SkyboxLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& SkyboxLogic::iv() const {
     return child_logic_.iv();
 }
 

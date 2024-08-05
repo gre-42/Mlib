@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <memory>
 #include <optional>
 
@@ -13,7 +14,7 @@ class SceneNode;
 
 struct AbsoluteMovableKeyBinding {
     DanglingPtr<SceneNode> node;
-    VectorAtPosition<float, double, 3> force;
+    VectorAtPosition<float, ScenePos, 3> force;
     FixedArray<float, 3> rotate;
     std::optional<float> car_surface_power;
     float max_velocity;

@@ -64,7 +64,7 @@ static void from_json(const nlohmann::json& j, BillboardAtlasInstance& bb) {
     j.at(BB::vertex_scale).get_to(bb.vertex_scale);
     bb.texture_layer = jv.at<uint8_t>(BB::layer, 0);
     j.at(BB::alpha_distances).get_to(bb.alpha_distances);
-    bb.max_center_distance = json_get<double>(j.at(BB::max_center_distance));
+    bb.max_center_distance = json_get<ScenePos>(j.at(BB::max_center_distance));
     bb.occluder_pass = external_render_pass_type_from_string(j.at(BB::occluder_pass).get<std::string>());
 }
 

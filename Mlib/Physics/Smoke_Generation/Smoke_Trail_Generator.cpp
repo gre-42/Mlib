@@ -15,7 +15,7 @@ void SmokeTrailGenerator::advance_time(float dt) {
 }
 
 void SmokeTrailGenerator::maybe_generate(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     const std::string& resource_name,
     const std::string& instance_prefix,

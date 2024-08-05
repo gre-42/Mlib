@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <chrono>
 #include <list>
 
@@ -13,7 +14,7 @@ public:
     virtual ~IDynamicLights() = default;
     virtual void append_time(std::chrono::steady_clock::time_point time) = 0;
     virtual void set_time(std::chrono::steady_clock::time_point time) = 0;
-    virtual FixedArray<float, 3> get_color(const FixedArray<double, 3>& target_position) const = 0;
+    virtual FixedArray<float, 3> get_color(const FixedArray<ScenePos, 3>& target_position) const = 0;
 };
 
 }

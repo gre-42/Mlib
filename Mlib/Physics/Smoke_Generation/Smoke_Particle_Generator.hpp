@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <string>
 
@@ -27,7 +28,7 @@ public:
     void generate_root(
         const std::string& resource_name,
         const std::string& node_name,
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float animation_duration,
         ParticleType particle_type);
@@ -35,7 +36,7 @@ public:
         DanglingRef<SceneNode> parent,
         const std::string& resource_name,
         const std::string& child_node_name,
-        const FixedArray<double, 3>& relative_position,
+        const FixedArray<ScenePos, 3>& relative_position,
         float animation_duration);
     std::string generate_suffix();
 private:

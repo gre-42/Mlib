@@ -49,22 +49,22 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
             exclude);
     }
     {
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>> double_queue;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>> double_queue;
         {
             static ColoredVertexArrayFilter filter{
                 .included_tags = PhysicsMaterial::ATTR_COLLIDE
             };
             scene.append_static_filtered_to_queue(float_queue, double_queue, filter);
         }
-        std::list<std::shared_ptr<ColoredVertexArray<double>>> hitboxes;
+        std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>> hitboxes;
         {
             auto filter = PhysicsMaterial::NONE;
-            auto min_vertex_distance = args.arguments.at<double>(KnownArgs::min_vertex_distance);
+            auto min_vertex_distance = args.arguments.at<ScenePos>(KnownArgs::min_vertex_distance);
             auto modulo_uv = false;
-            CleanupMesh<double> cleanup;
+            CleanupMesh<ScenePos> cleanup;
             for (const auto& [t, q] : float_queue) {
-                auto cva = q->transformed<double>(t, "_ipl_float");
+                auto cva = q->transformed<ScenePos>(t, "_ipl_float");
                 cleanup(*cva, filter, min_vertex_distance, modulo_uv);
                 if (!cva->empty()) {
                     hitboxes.push_back(cva);
@@ -85,7 +85,7 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
             INFINITY,                   // mass
             fixed_ones<float, 3>(),     // size
             fixed_ones<float, 3>());    // com
-        rb->set_absolute_model_matrix(TransformationMatrix<float, double, 3>::identity());
+        rb->set_absolute_model_matrix(TransformationMatrix<float, ScenePos, 3>::identity());
         physics_engine.rigid_bodies_.add_rigid_body(*rb, {}, hitboxes, CollidableMode::STATIC);
         rb.release();
     }

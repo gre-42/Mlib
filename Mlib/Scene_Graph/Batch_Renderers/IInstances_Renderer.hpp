@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <list>
 #include <memory>
@@ -50,14 +51,14 @@ public:
     virtual bool is_initialized() const = 0;
     virtual void invalidate() = 0;
     virtual void
-    update_instances(const FixedArray<double, 3> &offset,
+    update_instances(const FixedArray<ScenePos, 3> &offset,
                      const std::list<TransformedColoredVertexArray> &sorted_aggregate_queue,
                      TaskLocation task_location) = 0;
     virtual void render_instances(
-        const FixedArray<double, 4, 4> &vp,
-        const TransformationMatrix<float, double, 3> &iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light *>> &lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const FixedArray<ScenePos, 4, 4> &vp,
+        const TransformationMatrix<float, ScenePos, 3> &iv,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light *>> &lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig &scene_graph_config,
         const RenderConfig &render_config,
         const ExternalRenderPass &external_render_pass) const = 0;

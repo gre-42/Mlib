@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -10,7 +11,7 @@ namespace Mlib {
 enum class AggregateMode;
 
 struct ObjectResourceDescriptor {
-    FixedArray<double, 3> position = uninitialized;
+    FixedArray<ScenePos, 3> position = uninitialized;
     float yangle;
     std::string name;
     float scale;

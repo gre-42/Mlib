@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -17,7 +18,7 @@ class DestructionFunctionsRemovalTokens;
 
 struct SupplyDepot {
     DanglingRef<SceneNode> node;
-    FixedArray<double, 3> center;
+    FixedArray<ScenePos, 3> center;
     std::map<std::string, uint32_t> supplies;
     float cooldown;
     float time_since_last_visit;
@@ -35,17 +36,17 @@ public:
     void reset_cooldown();
     void handle_supply_depots(float dt);
     bool visit_supply_depots(
-        const FixedArray<double, 3> position,
+        const FixedArray<ScenePos, 3> position,
         const std::function<bool(const SupplyDepot&)>& visitor) const;
     bool visit_supply_depots(
-        const FixedArray<double, 3> position,
+        const FixedArray<ScenePos, 3> position,
         const std::function<bool(SupplyDepot&)>& visitor);
     virtual void add_supply_depot(
         DanglingRef<SceneNode> scene_node,
         const std::map<std::string, uint32_t>& supplies,
         float cooldown) override;
 private:
-    Bvh<double, SupplyDepot, 3> bvh_;
+    Bvh<ScenePos, SupplyDepot, 3> bvh_;
     AdvanceTimes& advance_times_;
     Players& players_;
     const PhysicsEngineConfig& cfg_;

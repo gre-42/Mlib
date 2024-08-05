@@ -26,7 +26,7 @@ void from_json(const nlohmann::json& j, AnimatedDynamicLightConfiguration& item)
         jv.at<std::vector<float>>(KnownConfigArgs::time),
         jv.at<UUVector<FixedArray<float, 3>>>(KnownConfigArgs::intensities) };
     item.squared_distance_to_intensity = {
-        jv.at_vector<double>(KnownConfigArgs::distances, [](double v) { return squared(v); }),
+        jv.at_vector<ScenePos>(KnownConfigArgs::distances, [](ScenePos v) { return squared(v); }),
         jv.at<std::vector<float>>(KnownConfigArgs::intensities),
         OutOfRangeBehavior::CLAMP};
 }

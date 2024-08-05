@@ -7,8 +7,8 @@ TrailStorage::TrailStorage(
     TrailsInstance& trails_instance,
     TrailSequence trail_sequence,
     const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
-    double min_spawn_length,
-    double max_spawn_length,
+    ScenePos min_spawn_length,
+    ScenePos max_spawn_length,
     float spawn_duration)
     : trails_instance_{ trails_instance }
     , trail_sequence_{ std::move(trail_sequence) }

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <functional>
 #include <list>
 #include <map>
@@ -47,8 +48,8 @@ private:
         const SpawnPoint& sp);
     std::vector<SpawnPoint*> shuffled_spawn_points();
     std::vector<SpawnPoint> spawn_points_;
-    std::vector<std::unique_ptr<Bvh<double, const SpawnPoint*, 3>>> spawn_points_bvh_split_;
-    std::unique_ptr<Bvh<double, const SpawnPoint*, 3>> spawn_points_bvh_singular_;
+    std::vector<std::unique_ptr<Bvh<ScenePos, const SpawnPoint*, 3>>> spawn_points_bvh_split_;
+    std::unique_ptr<Bvh<ScenePos, const SpawnPoint*, 3>> spawn_points_bvh_singular_;
     VehicleSpawners& vehicle_spawners_;
     Players& players_;
     GameLogicConfig& cfg_;

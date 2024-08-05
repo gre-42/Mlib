@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <vector>
 
@@ -17,7 +18,7 @@ enum class WayPointLocation;
 
 class SupplyDepotsWaypoints {
 public:
-    using WaypointAndFlags = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+    using WaypointAndFlags = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
     using PointsAndAdjacencyResource = PointsAndAdjacency<WaypointAndFlags>;
 
     SupplyDepotsWaypoints(
@@ -32,7 +33,7 @@ private:
     SupplyDepots& supply_depots_;
     UUVector<WaypointAndFlags> waypoint_positions_;
     std::vector<size_t> predecessors_;
-    std::vector<double> total_distances_;
+    std::vector<ScenePos> total_distances_;
 };
 
 }

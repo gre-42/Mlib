@@ -26,9 +26,9 @@ LargeInstancesQueue::~LargeInstancesQueue()
 
 void LargeInstancesQueue::insert(
     const std::list<std::shared_ptr<ColoredVertexArray<float>>>& scvas,
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const FixedArray<ScenePos, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     InvisibilityHandling invisibility_handling)

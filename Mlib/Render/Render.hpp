@@ -2,6 +2,7 @@
 #ifndef __ANDROID__
 
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -65,7 +66,7 @@ public:
         float scale = 1,
         float camera_z = 0,
         const SceneGraphConfig& scene_graph_config = SceneGraphConfig(),
-        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
+        const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations = nullptr) const;
 
     void render_node(
         DanglingUniquePtr<SceneNode>&& node,
@@ -75,7 +76,7 @@ public:
         float camera_z,
         const SceneGraphConfig& scene_graph_config,
         std::unique_ptr<Camera>&& camera,
-        const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations = nullptr) const;
+        const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations = nullptr) const;
 
     GLFWwindow& glfw_window() const;
     IWindow& window() const;

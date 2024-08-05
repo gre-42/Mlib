@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction AddFoliageResource::json_user_function = [](const Load
         scene_node_resources,
         args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func),
         args.arguments.at_vector<std::string>(KnownArgs::dirty_near_grass_resource_names, parse_resource_name_func),
-        args.arguments.at<double>(KnownArgs::near_grass_distance),
+        args.arguments.at<ScenePos>(KnownArgs::near_grass_distance),
         args.arguments.path_or_variable(KnownArgs::near_grass_foliagemap).path,
         1.f / args.arguments.at<float>(KnownArgs::near_grass_foliagemap_period),
         args.arguments.at<float>(KnownArgs::scale, 1.f),

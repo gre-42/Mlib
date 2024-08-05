@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <iosfwd>
 
 namespace Mlib {
@@ -21,25 +22,25 @@ public:
         const FixedArray<float, 3>& com,    // center of mass
         const FixedArray<float, 3>& v,      // velocity
         const FixedArray<float, 3>& w,      // angular velocity
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         bool I_is_diagonal);
 
     FixedArray<float, 3> abs_z() const;
-    FixedArray<double, 3> abs_position() const;
-    TransformationMatrix<float, double, 3> abs_transformation() const;
+    FixedArray<ScenePos, 3> abs_position() const;
+    TransformationMatrix<float, ScenePos, 3> abs_transformation() const;
     const FixedArray<float, 3, 3>& abs_I() const;
     const FixedArray<float, 3, 3>& abs_I_inv() const;
-    FixedArray<float, 3> velocity_at_position(const FixedArray<double, 3>& position) const;
+    FixedArray<float, 3> velocity_at_position(const FixedArray<ScenePos, 3>& position) const;
     FixedArray<float, 3> solve_abs_I(const FixedArray<float, 3>& x) const;
     FixedArray<float, 3> dot1d_abs_I(const FixedArray<float, 3>& x) const;
-    FixedArray<double, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
-    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<double, 3>& position);
+    FixedArray<ScenePos, 3> transform_to_world_coordinates(const FixedArray<float, 3>& v) const;
+    void set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position);
     void integrate_delta_v(const FixedArray<float, 3>& dv);
     void integrate_delta_angular_momentum(const FixedArray<float, 3>& dL, float extra_w = 0.f);
-    void integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w = 0.f);
+    void integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w = 0.f);
     float energy() const;
-    float effective_mass(const VectorAtPosition<float, double, 3>& vp) const;
+    float effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const;
 
     void advance_time(float dt);
 
@@ -50,7 +51,7 @@ public:
     FixedArray<float, 3> w_;    // angular velocity
 
     FixedArray<float, 3, 3> rotation_;
-    FixedArray<double, 3> abs_com_;
+    FixedArray<ScenePos, 3> abs_com_;
 
 private:
     bool I_is_diagonal_;

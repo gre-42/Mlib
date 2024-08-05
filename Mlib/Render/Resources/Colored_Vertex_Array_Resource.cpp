@@ -111,7 +111,7 @@ static const GLuint IDX_INTERIOR_MAPPING_BOTTOM_LEFT = 11;
 static const GLuint IDX_INTERIOR_MAPPING_MULTIPLIER = 12;
 
 static GenShaderText vertex_shader_text_gen{[](
-    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>>& lights,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
     size_t texture_modifier_hash,
@@ -436,8 +436,8 @@ static void bisect_texture_layer(
 }
 
 static GenShaderText fragment_shader_text_textured_rgb_gen{[](
-    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>>& lights,
-    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>>& skidmarks,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>>& lights,
+    const NotSortedArray<std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>>& skidmarks,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_color,
     const NotSortedArray<std::vector<BlendMapTexture*>>& textures_alpha,
     const NotSortedArray<std::vector<size_t>>& lightmap_indices,
@@ -1637,8 +1637,8 @@ void ColoredVertexArrayResource::print(std::ostream& ostr) const {
 
 const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     const RenderProgramIdentifier& id,
-    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
-    const std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& filtered_skidmarks,
+    const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& filtered_lights,
+    const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& filtered_skidmarks,
     const std::vector<size_t>& lightmap_indices,
     const std::vector<size_t>& light_noshadow_indices,
     const std::vector<size_t>& light_shadow_indices,

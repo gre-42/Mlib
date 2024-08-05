@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <chrono>
 #include <list>
 #include <memory>
@@ -38,23 +39,23 @@ public:
     ~TrailsInstance();
 
     void add_triangle(
-        const FixedArray<ColoredVertex<double>, 3>& triangle,
+        const FixedArray<ColoredVertex<ScenePos>, 3>& triangle,
         const FixedArray<float, 3>& time,
         const TrailSequence& trail_sequence);
     void move(float dt, std::chrono::steady_clock::time_point time);
     std::chrono::steady_clock::time_point time() const;
     void preload() const;
     void render(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const FixedArray<ScenePos, 4, 4>& vp,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const;
 
 private:
-    FixedArray<double, 3> offset_;
+    FixedArray<ScenePos, 3> offset_;
     std::shared_ptr<AnimatedTextureLayer> dynamic_vertex_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
     std::unique_ptr<RenderableColoredVertexArray> rcva_;

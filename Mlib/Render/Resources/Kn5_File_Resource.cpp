@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Kn5_Array.hpp>
 #include <Mlib/Render/Resources/Heterogeneous_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;
 
@@ -30,7 +31,6 @@ template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     const SceneNodeResources&,
     IDdsResources*,
     IRaceLogic*);
-
 template std::shared_ptr<ISceneNodeResource> load_renderable_kn5(
     const std::string& file_or_directory,
     const LoadMeshConfig<double>&,

@@ -2,6 +2,7 @@
 #include <Mlib/Physics/Actuators/Engine_Power.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
@@ -50,7 +51,7 @@ public:
     void reset_forces();
     void advance_time(
         float dt,
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& velocity);
     float engine_w() const;
 

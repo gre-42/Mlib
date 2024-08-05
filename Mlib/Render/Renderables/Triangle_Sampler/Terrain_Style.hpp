@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <vector>
 
@@ -18,7 +19,7 @@ struct TerrainStyleConfig {
     std::vector<ParsedResourceName> near_resource_names_mountain_regular;
     std::vector<ParsedResourceName> near_resource_names_valley_dirt;
     std::vector<ParsedResourceName> near_resource_names_mountain_dirt;
-    double much_near_distance = INFINITY;
+    ScenePos much_near_distance = INFINITY;
     std::string foliagemap_filename;
     float foliagemap_scale = 1.f;
     std::string mudmap_filename;
@@ -39,8 +40,8 @@ struct TerrainStyleConfig {
 };
 
 struct TerrainStyleDistancesToBdry {
-    double min_distance_to_bdry = NAN;
-    double max_distance_to_bdry = NAN;
+    ScenePos min_distance_to_bdry = NAN;
+    ScenePos max_distance_to_bdry = NAN;
     bool is_active = false;
 };
 
@@ -51,7 +52,7 @@ public:
     const Array<float>& foliagemap() const;
     const Array<float>& mudmap() const;
     bool is_visible() const;
-    double max_distance_to_camera(const SceneNodeResources& scene_node_resources) const;
+    ScenePos max_distance_to_camera(const SceneNodeResources& scene_node_resources) const;
     TerrainStyleDistancesToBdry distances_to_bdry() const;
     template <class Archive>
     void serialize(Archive& archive) {
@@ -60,7 +61,7 @@ public:
 private:
     mutable SafeAtomicRecursiveSharedMutex max_distance_to_camera_mutex_;
     mutable SafeAtomicRecursiveSharedMutex distances_to_bdry_mutex_;
-    mutable double max_distance_to_camera_ = NAN;
+    mutable ScenePos max_distance_to_camera_ = NAN;
     mutable TerrainStyleDistancesToBdry distances_to_bdry_;
 
     mutable SafeAtomicRecursiveSharedMutex foliagemap_mutex_;

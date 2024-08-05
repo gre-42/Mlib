@@ -83,7 +83,7 @@ void RigidBodies::add_rigid_body(
         auto add_hitboxes = [&]<typename TPos>(const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& hitboxes) {
             for (auto& m : hitboxes) {
                 if (any(m->morphology.physics_material & PhysicsMaterial::OBJ_GRIND_LINE)) {
-                    for (const auto& t : m->transformed_lines_bbox(rb.get_new_absolute_model_matrix())) {
+                    for (const auto& t : m->template transformed_lines_bbox<ScenePos>(rb.get_new_absolute_model_matrix())) {
                         line_bvh_.insert(t.aabb, { rb, t.base });
                     }
                 } else {
@@ -97,24 +97,24 @@ void RigidBodies::add_rigid_body(
                             ", concave: " + std::to_string(int(is_concave)));
                     }
                     if (any(m->morphology.physics_material & PhysicsMaterial::ATTR_CONVEX)) {
-                        auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
-                        std::set<OrderableFixedArray<double, 3>> vertex_set;
-                        std::vector<const FixedArray<double, 3>*> vertex_vector;
+                        auto transformed = m->template transformed_triangles_bbox<ScenePos>(rb.get_new_absolute_model_matrix());
+                        std::set<OrderableFixedArray<ScenePos, 3>> vertex_set;
+                        std::vector<const FixedArray<ScenePos, 3>*> vertex_vector;
                         vertex_vector.reserve(3 * transformed.size());
-                        for (const CollisionPolygonAabb<double, 3>& t : transformed) {
+                        for (const CollisionPolygonAabb<ScenePos, 3>& t : transformed) {
                             for (const auto& v : t.base.corners.flat_iterable()) {
                                 if (vertex_set.insert(OrderableFixedArray{v}).second) {
                                     vertex_vector.push_back(&v);
                                 }
                             }
                         }
-                        auto aabb = AxisAlignedBoundingBox<double, 3>::from_iterator(vertex_set.begin(), vertex_set.end());
-                        BoundingSphere<double, 3> bounding_sphere = welzl_from_vector<double, 3>(vertex_vector, rng);
-                        std::vector<CollisionPolygonSphere<double, 3>> triangles;
+                        auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_iterator(vertex_set.begin(), vertex_set.end());
+                        BoundingSphere<ScenePos, 3> bounding_sphere = welzl_from_vector<ScenePos, 3>(vertex_vector, rng);
+                        std::vector<CollisionPolygonSphere<ScenePos, 3>> triangles;
                         std::vector<CollisionRidgeSphere> ridges;
-                        std::vector<CollisionLineSphere<double>> lines;
+                        std::vector<CollisionLineSphere<ScenePos>> lines;
                         triangles.reserve(transformed.size());
-                        for (const CollisionPolygonAabb<double, 3>& t : transformed) {
+                        for (const CollisionPolygonAabb<ScenePos, 3>& t : transformed) {
                             triangles.push_back(t.base);
                         }
 
@@ -143,16 +143,16 @@ void RigidBodies::add_rigid_body(
                                         m->name,
                                         aabb,
                                         bounding_sphere,
-                                        std::vector<CollisionPolygonSphere<double, 4>>(),
+                                        std::vector<CollisionPolygonSphere<ScenePos, 4>>(),
                                         std::move(triangles),
                                         std::move(lines),
-                                        std::vector<CollisionLineSphere<double>>{},
+                                        std::vector<CollisionLineSphere<ScenePos>>{},
                                         std::move(ridges))}});
                     } else {
                         if (collision_ridges_baking_status_ != CollisionRidgeBakingStatus::NOT_BAKED) {
                             THROW_OR_ABORT("Collision ridges already baked, or previous baking failed");
                         }
-                        auto transformed = m->transformed_triangles_bbox(rb.get_new_absolute_model_matrix());
+                        auto transformed = m->template transformed_triangles_bbox<ScenePos>(rb.get_new_absolute_model_matrix());
                         for (const auto& t : transformed) {
                             triangle_bvh_.insert(t.aabb, { rb, t.base });
                         }
@@ -306,15 +306,15 @@ void RigidBodies::print_search_time() const {
 }
 
 void RigidBodies::plot_convex_mesh_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    convex_mesh_bvh_.plot_svg<double>(filename, axis0, axis1);
+    convex_mesh_bvh_.plot_svg<ScenePos>(filename, axis0, axis1);
 }
 
 void RigidBodies::plot_triangle_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    triangle_bvh_.plot_svg<double>(filename, axis0, axis1);
+    triangle_bvh_.plot_svg<ScenePos>(filename, axis0, axis1);
 }
 
 void RigidBodies::plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const {
-    line_bvh_.plot_svg<double>(filename, axis0, axis1);
+    line_bvh_.plot_svg<ScenePos>(filename, axis0, axis1);
 }
 
 IterableWrapper<std::list<RigidBodyAndMeshes>> RigidBodies::objects() const {
@@ -327,15 +327,15 @@ IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> RigidBodies::transfo
         const_cast<std::list<RigidBodyAndIntersectableMeshes>&>(transformed_objects_));
 }
 
-const Bvh<double, RigidBodyAndIntersectableMesh, 3>& RigidBodies::convex_mesh_bvh() const {
+const Bvh<ScenePos, RigidBodyAndIntersectableMesh, 3>& RigidBodies::convex_mesh_bvh() const {
     return convex_mesh_bvh_;
 }
 
-const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle_bvh() const {
+const Bvh<ScenePos, RigidBodyAndCollisionTriangleSphere, 3>& RigidBodies::triangle_bvh() const {
     return triangle_bvh_;
 }
 
-const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() const {
+const Bvh<ScenePos, RigidBodyAndCollisionLineSphere, 3>& RigidBodies::line_bvh() const {
     return line_bvh_;
 }
 
@@ -350,12 +350,12 @@ void RigidBodies::bake_collision_ridges_if_necessary() const {
     }
 }
 
-const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
+const Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3>& RigidBodies::ridge_bvh() const {
     bake_collision_ridges_if_necessary();
     return ridge_bvh_;
 }
 
-const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
+const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& RigidBodies::ridge_map()
 {
     bake_collision_ridges_if_necessary();
     return ridge_map_;
@@ -370,7 +370,7 @@ void RigidBodies::bake_collision_ridges() const
             continue;
         }
         auto* r = ridge_bvh_.insert(
-            AxisAlignedBoundingBox<double, 3>::from_points(e.collision_ridge_sphere.edge),
+            AxisAlignedBoundingBox<ScenePos, 3>::from_points(e.collision_ridge_sphere.edge),
             RigidBodyAndCollisionRidgeSphere{
                 .rb = e.rb,
                 .crp = e.collision_ridge_sphere});

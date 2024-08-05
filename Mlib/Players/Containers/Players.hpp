@@ -2,6 +2,7 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Source_Location.hpp>
 #include <list>
 #include <map>
@@ -34,7 +35,7 @@ class Players {
     Players(const Players&) = delete;
     Players& operator = (const Players&) = delete;
 public:
-    using WaypointAndFlags = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+    using WaypointAndFlags = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
 
     explicit Players(
         size_t max_tracks,

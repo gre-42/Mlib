@@ -17,10 +17,10 @@ using namespace Mlib;
 
 bool Mlib::compute_edge_overlap(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& intersection_point,
     bool& sat_used,
-    double& overlap,
-    FixedArray<double, 3>& normal)
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& normal)
 {
     if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
         THROW_OR_ABORT("compute_edge_overlap: Not exactly one of q0/t0 are set");
@@ -75,12 +75,12 @@ bool Mlib::compute_edge_overlap(
             }
             StaticTransformedMesh stm(
                 "temp",
-                AxisAlignedBoundingBox<double, 3>::from_points(corners0),
-                BoundingSphere<double, 3>{corners0},
-                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<double, 4>>{*c.q0} : std::vector<CollisionPolygonSphere<double, 4>>(),
-                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<double, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<double, 3>>(),
-                std::vector<CollisionLineSphere<double>>(),
-                std::vector<CollisionLineSphere<double>>(),
+                AxisAlignedBoundingBox<ScenePos, 3>::from_points(corners0),
+                BoundingSphere<ScenePos, 3>{corners0},
+                (c.q0 != nullptr) ? std::vector<CollisionPolygonSphere<ScenePos, 4>>{*c.q0} : std::vector<CollisionPolygonSphere<ScenePos, 4>>(),
+                (c.t0 != nullptr) ? std::vector<CollisionPolygonSphere<ScenePos, 3>>{*c.t0} : std::vector<CollisionPolygonSphere<ScenePos, 3>>(),
+                std::vector<CollisionLineSphere<ScenePos>>(),
+                std::vector<CollisionLineSphere<ScenePos>>(),
                 std::move(ridges));
 
             assert_true(c.r1 != nullptr);
@@ -125,7 +125,7 @@ bool Mlib::compute_edge_overlap(
         if (dot0d(intersection_point - c.o0.rbp_.abs_position(), normal) < 0.) {
             return false;
         }
-        // overlap = std::min((double)c.history.cfg.overlap_clipped, overlap);
+        // overlap = std::min((ScenePos)c.history.cfg.overlap_clipped, overlap);
         c.history.ridge_intersection_points[&c.o0].push_back(intersection_point);
     } else {
         bool first_convex = any(c.mesh0_material & PhysicsMaterial::ATTR_CONVEX);

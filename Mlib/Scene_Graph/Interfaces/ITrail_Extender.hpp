@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -15,7 +16,7 @@ class ITrailExtender {
 public:
     virtual ~ITrailExtender() = default;
     virtual void append_location(
-        const TransformationMatrix<float, double, 3>& location,
+        const TransformationMatrix<float, ScenePos, 3>& location,
         TrailLocationType location_type) = 0;
 
 };

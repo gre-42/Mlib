@@ -43,7 +43,7 @@ Bystanders::~Bystanders()
 bool Bystanders::spawn_for_vip(
     VehicleSpawner& spawner,
     const FixedArray<float, 3>& vip_z,
-    const FixedArray<double, 3>& vip_pos)
+    const FixedArray<ScenePos, 3>& vip_pos)
 {
     // assert_true(player.game_mode() == GameMode::BYSTANDER);
     if (spawner.has_scene_vehicle()) {
@@ -51,7 +51,7 @@ bool Bystanders::spawn_for_vip(
     }
     bool success = false;
     spawn_.spawn_points_bvh_split_.at(current_bvh_)->visit(
-        AxisAlignedBoundingBox<double, 3>::from_center_and_radius(vip_pos, cfg_.r_spawn_far),
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(vip_pos, cfg_.r_spawn_far),
         [&](const SpawnPoint* sp)
     {
         if ((sp->type == SpawnPointType::PARKING) == (spawner.has_player() && spawner.get_player()->has_way_points())) {
@@ -60,13 +60,13 @@ bool Bystanders::spawn_for_vip(
         if ((sp->location == WayPointLocation::SIDEWALK) != (spawner.has_player() && spawner.get_player()->is_pedestrian())) {
             return true;
         }
-        double dist2 = sum(squared(sp->position - vip_pos));
+        ScenePos dist2 = sum(squared(sp->position - vip_pos));
         // Abort if too far away.
         if (dist2 > squared(cfg_.r_spawn_far)) {
             return true;
         }
         // Abort if behind car.
-        if (dot0d(sp->position - vip_pos, vip_z.casted<double>()) > 0) {
+        if (dot0d(sp->position - vip_pos, vip_z.casted<ScenePos>()) > 0) {
             return true;
         }
         // Abort if another car is nearby.
@@ -127,18 +127,18 @@ bool Bystanders::spawn_for_vip(
 bool Bystanders::delete_for_vip(
     VehicleSpawner& spawner,
     const FixedArray<float, 3>& vip_z,
-    const FixedArray<double, 3>& vip_pos)
+    const FixedArray<ScenePos, 3>& vip_pos)
 {
     if (!spawner.has_scene_vehicle()) {
         THROW_OR_ABORT("Spawner has no scene vehicle");
     }
     size_t ndelete_votes = 0;
     for (const auto& vehicle : spawner.get_scene_vehicles()) {
-        FixedArray<double, 3> player_pos = vehicle->scene_node()->position();
-        double dist2 = sum(squared(player_pos - vip_pos));
+        FixedArray<ScenePos, 3> player_pos = vehicle->scene_node()->position();
+        ScenePos dist2 = sum(squared(player_pos - vip_pos));
         if (dist2 > squared(cfg_.r_delete_near)) {
             // Abort if behind car.
-            if (dot0d(player_pos - vip_pos, vip_z.casted<double>()) > 0) {
+            if (dot0d(player_pos - vip_pos, vip_z.casted<ScenePos>()) > 0) {
                 ++ndelete_votes;
                 continue;
             }
@@ -196,8 +196,8 @@ void Bystanders::handle_bystanders() {
     if (players_.players().empty()) {
         return;
     }
-    TransformationMatrix<float, double, 3> vip_m = vip_->scene_node()->absolute_model_matrix();
-    const FixedArray<double, 3>& vip_pos = vip_m.t();
+    TransformationMatrix<float, ScenePos, 3> vip_m = vip_->scene_node()->absolute_model_matrix();
+    const FixedArray<ScenePos, 3>& vip_pos = vip_m.t();
     FixedArray<float, 3> vip_z = z3_from_3x3(vip_m.R());
     auto it = vehicle_spawners_.spawners().begin();
     using players_map_difference_type = decltype(vehicle_spawners_.spawners().begin())::difference_type;

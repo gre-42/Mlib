@@ -65,10 +65,10 @@ void PhysicsEngine::collide(
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
     permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
-    std::unordered_map<const FixedArray<FixedArray<double, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
+    std::unordered_map<const FixedArray<FixedArray<ScenePos, 3>, 2>*, IntersectionSceneAndContact> raycast_intersections;
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
     std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
-    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>> ridge_intersection_points;
+    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>> ridge_intersection_points;
     SatTracker st;
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");

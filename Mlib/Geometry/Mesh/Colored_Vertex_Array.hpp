@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Modifier_Backlog.hpp>
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Primitive_Dimensions.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/To_Underlying.hpp>
 #include <atomic>
@@ -90,7 +91,7 @@ public:
     void set_bounds(
         const AxisAlignedBoundingBox<TPos, 3>& aabb,
         const BoundingSphere<TPos, 3>& bounding_sphere);
-    double max_center_distance(uint32_t billboard_id) const;
+    ScenePos max_center_distance(uint32_t billboard_id) const;
     template <class TPosResult, class TPosTransform>
     std::shared_ptr<ColoredVertexArray<TPosResult>> transformed(
         const UUVector<OffsetAndQuaternion<float, TPosTransform>>& qs,
@@ -101,10 +102,12 @@ public:
         const std::string& suffix) const;
     void quads_sphere(std::vector<CollisionPolygonSphere<TPos, 4>>& collision_polygons) const;
     void triangles_sphere(std::vector<CollisionPolygonSphere<TPos, 3>>& collision_polygons) const;
-    std::vector<CollisionPolygonAabb<double, 3>> transformed_triangles_bbox(
-        const TransformationMatrix<float, double, 3>& tm) const;
-    std::vector<CollisionLineAabb<double>> transformed_lines_bbox(
-        const TransformationMatrix<float, double, 3>& tm) const;
+    template <class TPosResult, class TPosTransform>
+    std::vector<CollisionPolygonAabb<TPosResult, 3>> transformed_triangles_bbox(
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
+    template <class TPosResult, class TPosTransform>
+    std::vector<CollisionLineAabb<TPosResult>> transformed_lines_bbox(
+        const TransformationMatrix<float, TPosTransform, 3>& tm) const;
     std::vector<CollisionLineSphere<TPos>> lines_sphere() const;
     void downsample_triangles(size_t n);
     std::shared_ptr<ColoredVertexArray> generate_grind_lines(TPos edge_angle, TPos averaged_normal_angle) const;

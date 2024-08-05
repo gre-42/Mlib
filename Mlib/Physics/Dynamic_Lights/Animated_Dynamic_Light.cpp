@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 AnimatedDynamicLight::AnimatedDynamicLight(
-    std::function<FixedArray<double, 3>()> get_position,
+    std::function<FixedArray<ScenePos, 3>()> get_position,
     std::chrono::steady_clock::time_point time,
     const AnimatedDynamicLightConfiguration& config,
     DynamicLights& container)
@@ -14,7 +14,7 @@ AnimatedDynamicLight::AnimatedDynamicLight(
     , position_history_ { get_position_(), time }
     , config_{ config }
     , container_{ container }
-    , position_{ fixed_nans<double, 3>() }
+    , position_{ fixed_nans<ScenePos, 3>() }
     , color_{ fixed_nans<float, 3>() }
 {}
 
@@ -32,7 +32,7 @@ void AnimatedDynamicLight::set_time(std::chrono::steady_clock::time_point time) 
     color_ = config_.time_to_color(elapsed(time));
 }
 
-FixedArray<float, 3> AnimatedDynamicLight::get_color(const FixedArray<double, 3>& target_position) const
+FixedArray<float, 3> AnimatedDynamicLight::get_color(const FixedArray<ScenePos, 3>& target_position) const
 {
     auto dist2 = sum(squared(position_ - target_position));
     return config_.squared_distance_to_intensity(dist2) * color_;

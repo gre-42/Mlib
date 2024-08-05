@@ -7,10 +7,10 @@ using namespace Mlib;
 
 std::optional<GlLookatBoundingSphere> Mlib::gl_lookat_bounding_sphere(
     float fov,
-    const TransformationMatrix<float, double, 3>& observer_model_matrix,
-    const BoundingSphere<double, 3>& observed_bounding_sphere)
+    const TransformationMatrix<float, ScenePos, 3>& observer_model_matrix,
+    const BoundingSphere<ScenePos, 3>& observed_bounding_sphere)
 {
-    if (observed_bounding_sphere.radius() < 1e-6) {
+    if (observed_bounding_sphere.radius() < ScenePos(1e-6)) {
         return std::nullopt;
     }
     GlLookatBoundingSphere result{
@@ -22,7 +22,7 @@ std::optional<GlLookatBoundingSphere> Mlib::gl_lookat_bounding_sphere(
         return std::nullopt;
     }
     dir /= std::sqrt(l2);
-    auto dist_camera_to_observed = distance_for_fov((double)fov, observed_bounding_sphere.radius());
+    auto dist_camera_to_observed = distance_for_fov((ScenePos)fov, observed_bounding_sphere.radius());
     result.camera_model_matrix.t() = observed_bounding_sphere.center() - dir * dist_camera_to_observed;
     auto lookat = gl_lookat_relative(dir.casted<float>());
     if (!lookat.has_value()) {

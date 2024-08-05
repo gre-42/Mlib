@@ -1,10 +1,11 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
 struct AudioListenerState {
-    TransformationMatrix<float, double, 3> pose;
+    TransformationMatrix<float, ScenePos, 3> pose;
     FixedArray<float, 3> velocity;
 };
 

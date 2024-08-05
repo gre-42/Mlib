@@ -11,6 +11,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -74,7 +75,7 @@ struct Material {
     bool fragments_depend_on_distance() const;
     bool fragments_depend_on_normal() const;
     const BillboardAtlasInstance& billboard_atlas_instance(uint32_t billboard_id) const;
-    double max_center_distance(uint32_t billboard_id, const Morphology& morphology) const;
+    ScenePos max_center_distance(uint32_t billboard_id, const Morphology& morphology) const;
     ExternalRenderPassType get_occluder_pass(uint32_t billboard_id) const;
     std::string identifier() const;
     inline auto rendering_sorting_key() const {

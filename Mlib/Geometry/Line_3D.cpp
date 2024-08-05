@@ -17,13 +17,13 @@ Line3D<TPos>::Line3D(
 {}
 
 template <class TPos>
-template <class TPos2>
+template <class TPos2, class TPosTransform>
 Line3D<TPos>::Line3D(
     const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation)
+    const TransformationMatrix<float, TPosTransform, 3>& transformation)
     : vertices_{
-        transformation.transform(vertices(0).position.template casted<double>()),
-        transformation.transform(vertices(1).position.template casted<double>())}
+        transformation.transform(vertices(0).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(1).position.template casted<TPosTransform>())}
 {}
 
 template <class TPos>
@@ -52,7 +52,14 @@ namespace Mlib {
 template class Line3D<float>;
 template class Line3D<double>;
 
-template Line3D<double>::Line3D(const FixedArray<ColoredVertex<float>, 2>&vertices, const TransformationMatrix<float, double, 3>&transformation);
-template Line3D<double>::Line3D(const FixedArray<ColoredVertex<double>, 2>&vertices, const TransformationMatrix<float, double, 3>&transformation);
+template Line3D<double>::Line3D(
+    const FixedArray<ColoredVertex<float>, 2>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Line3D<double>::Line3D(
+    const FixedArray<ColoredVertex<double>, 2>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Line3D<float>::Line3D(
+    const FixedArray<ColoredVertex<float>, 2>& vertices,
+    const TransformationMatrix<float, float, 3>& transformation);
 
 }

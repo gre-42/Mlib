@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <iosfwd>
 #include <vector>
 
@@ -26,10 +27,10 @@ struct TrackElement {
         const std::vector<double>& data,
         const TransformationMatrix<double, double, 3>& geographic_mapping,
         size_t ntransformations);
-    const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;
+    const OffsetAndTaitBryanAngles<float, ScenePos, 3>& transformation() const;
 
     float elapsed_seconds;
-    UVector<OffsetAndTaitBryanAngles<float, double, 3>> transformations;
+    UVector<OffsetAndTaitBryanAngles<float, ScenePos, 3>> transformations;
 };
 
 TrackElement interpolated(const TrackElement& a, const TrackElement& b, float alpha);

@@ -9,7 +9,7 @@ using namespace Mlib;
 Wing::Wing(
     DanglingPtr<SceneNode> angle_of_attack_node,
     DanglingPtr<SceneNode> brake_angle_node,
-    const TransformationMatrix<float, double, 3>& relative_location,
+    const TransformationMatrix<float, ScenePos, 3>& relative_location,
     const Interp<float>& fac,
     float lift_coefficient,
     float angle_coefficient_yz,
@@ -33,8 +33,8 @@ Wing::Wing(
 
 Wing::~Wing() = default;
 
-TransformationMatrix<float, double, 3> Wing::absolute_location(
-    const TransformationMatrix<float, double, 3>& parent_location)
+TransformationMatrix<float, ScenePos, 3> Wing::absolute_location(
+    const TransformationMatrix<float, ScenePos, 3>& parent_location)
 {
     return parent_location * relative_location_;
 }

@@ -20,10 +20,10 @@ template <class TPos>
 class Line3D {
 public:
     explicit Line3D(const FixedArray<ColoredVertex<TPos>, 2>& vertices);
-    template <class TPos2>
+    template <class TPos2, class TPosTransform>
     Line3D(
         const FixedArray<ColoredVertex<TPos2>, 2>& vertices,
-        const TransformationMatrix<float, double, 3>& transformation);
+        const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<FixedArray<TPos, 3>, 2>& vertices() const;
     RaySegment3D<TPos> ray() const;
     BoundingSphere<TPos, 3> bounding_sphere() const;

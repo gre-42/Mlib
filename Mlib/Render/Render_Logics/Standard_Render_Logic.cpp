@@ -138,11 +138,11 @@ float StandardRenderLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& StandardRenderLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& StandardRenderLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& StandardRenderLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& StandardRenderLogic::iv() const {
     return child_logic_.iv();
 }
 

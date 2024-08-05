@@ -19,14 +19,14 @@ public:
 	virtual ~DynamicLights() override;
 	std::unique_ptr<IDynamicLight> instantiate(
 		const std::string& name,
-		const std::function<FixedArray<double, 3>()>& get_position,
+		const std::function<FixedArray<ScenePos, 3>()>& get_position,
 		std::chrono::steady_clock::time_point time);
 	void erase(IDynamicLight& light);
 
 	// IDynamicLights
 	virtual void append_time(std::chrono::steady_clock::time_point time) override;
 	virtual void set_time(std::chrono::steady_clock::time_point time) override;
-	virtual FixedArray<float, 3> get_color(const FixedArray<double, 3>& target_position) const override;
+	virtual FixedArray<float, 3> get_color(const FixedArray<ScenePos, 3>& target_position) const override;
 
 private:
 	const DynamicLightDb& db_;

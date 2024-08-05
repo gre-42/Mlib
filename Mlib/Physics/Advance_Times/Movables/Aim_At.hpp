@@ -31,7 +31,7 @@ public:
         float locked_on_cosine,
         std::function<float()> velocity_estimation_error);
     ~AimAt();
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
 
     bool has_followed() const;
@@ -41,12 +41,12 @@ public:
     void set_bullet_velocity(float value);
     void set_bullet_feels_gravity(bool value);
 
-    const FixedArray<double, 3>& absolute_point_to_aim_at() const;
-    const FixedArray<double, 3>& relative_point_to_aim_at() const;
+    const FixedArray<ScenePos, 3>& absolute_point_to_aim_at() const;
+    const FixedArray<ScenePos, 3>& relative_point_to_aim_at() const;
 
 private:
-    FixedArray<double, 3> absolute_point_to_aim_at_;
-    FixedArray<double, 3> relative_point_to_aim_at_;
+    FixedArray<ScenePos, 3> absolute_point_to_aim_at_;
+    FixedArray<ScenePos, 3> relative_point_to_aim_at_;
     DanglingPtr<SceneNode> followed_node_;
     DanglingPtr<SceneNode> gun_node_;
     const RigidBodyVehicle& follower_;

@@ -7,6 +7,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;
 
@@ -42,7 +43,7 @@ static void instantiate_bvh(
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
         auto node = make_dunique<SceneNode>(
-            (center - position_shift).casted<double>(),
+            (center - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
             1.f);
         std::list<std::shared_ptr<ColoredVertexArray<float>>> lcvas;
@@ -81,7 +82,7 @@ static void instantiate_bvh(
     size_t i = 0;
     for (const auto& [cb, cv] : bvh.children()) {
         auto node = make_dunique<SceneNode>(
-            ((cb.min() + cb.max()) / 2.f - position_shift).casted<double>(),
+            ((cb.min() + cb.max()) / 2.f - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
             1.f);
         instantiate_bvh(

@@ -109,7 +109,7 @@ void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) 
 }
 
 void Bullet::notify_collided(
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& intersection_point,
     std::chrono::steady_clock::time_point time,
     RigidBodyVehicle& rigid_body,
     CollisionRole collision_role,
@@ -139,7 +139,7 @@ void Bullet::notify_collided(
         ParticleType::NODE);
     if (trace_extender_ != nullptr) {
         trace_extender_->append_location(
-            TransformationMatrix<float, double, 3>{rigid_body_pulses_.rotation_, intersection_point},
+            TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
             TrailLocationType::ENDPOINT);
     }
 }
@@ -170,7 +170,7 @@ void Bullet::cause_damage(RigidBodyVehicle& rigid_body, float amount) {
 }
 
 void Bullet::cause_damage(
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& intersection_point,
     RigidBodyVehicle& rigid_body)
 {
     if (props_.damage_radius == 0) {
@@ -183,7 +183,7 @@ void Bullet::cause_damage(
             {
                 continue;
             }
-            double dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
+            ScenePos dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
             if (dist2 > squared(props_.damage_radius)) {
                 continue;
             }

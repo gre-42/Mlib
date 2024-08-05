@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <random>
 
 namespace Mlib {
@@ -31,11 +32,11 @@ private:
     bool spawn_for_vip(
         VehicleSpawner& spawner,
         const FixedArray<float, 3>& vip_z,
-        const FixedArray<double, 3>& vip_pos);
+        const FixedArray<ScenePos, 3>& vip_pos);
     bool delete_for_vip(
         VehicleSpawner& spawner,
         const FixedArray<float, 3>& vip_z,
-        const FixedArray<double, 3>& vip_pos);
+        const FixedArray<ScenePos, 3>& vip_pos);
     std::mt19937 current_bystander_rng_;
     std::mt19937 current_bvh_rng_;
     size_t current_bvh_;

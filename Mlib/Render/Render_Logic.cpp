@@ -22,11 +22,11 @@ float RenderLogic::far_plane() const {
     THROW_OR_ABORT("far_plane not implemented");
 }
 
-const FixedArray<double, 4, 4>& RenderLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& RenderLogic::vp() const {
     THROW_OR_ABORT("vp not implemented");
 }
 
-const TransformationMatrix<float, double, 3>& RenderLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& RenderLogic::iv() const {
     THROW_OR_ABORT("iv not implemented");
 }
 

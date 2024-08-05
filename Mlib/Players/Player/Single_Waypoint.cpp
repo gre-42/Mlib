@@ -35,7 +35,7 @@ void SingleWaypoint::set_target_velocity(float v) {
 void SingleWaypoint::set_waypoint_internal(const std::optional<WayPoint>& waypoint, size_t waypoint_id) {
     previous_waypoint_id_ = waypoint_id_;
     if (!waypoint.has_value()) {
-        waypoint_ = { { 4., 2., 42. }, WayPointLocation::NONE };
+        waypoint_ = { { 4.f, 2.f, 42.f }, WayPointLocation::NONE };
     }
     waypoint_ = waypoint;
     waypoint_id_ = waypoint_id;
@@ -117,9 +117,9 @@ void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
     if (ofstr.fail()) {
         THROW_OR_ABORT("Could not open \"" + filename + "\" for write");
     }
-    Svg<double> svg{ofstr, 600, 600};
-    std::vector<double> x;
-    std::vector<double> y;
+    Svg<ScenePos> svg{ofstr, 600, 600};
+    std::vector<ScenePos> x;
+    std::vector<ScenePos> y;
     x.resize(waypoint_history_.size());
     y.resize(waypoint_history_.size());
     size_t i = 0;

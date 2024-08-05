@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
@@ -9,8 +10,8 @@ class TransformationMatrix;
 class IAbsoluteMovable {
 public:
     virtual ~IAbsoluteMovable() = default;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) = 0;
-    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const = 0;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) = 0;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const = 0;
 };
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
@@ -14,19 +15,19 @@ class CollidableTriangleSampler {
 public:
     CollidableTriangleSampler(
         const TerrainStyles& terrain_styles,
-        double scale,
+        ScenePos scale,
         UpAxis up_axis);
     void add_near_hitboxes(
         const TerrainTriangles& tl_terrain,
-        const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
+        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>& street_bvh,
         HeterogeneousResource& hri);
     void add_far_hitboxes(
         const TerrainTriangles& tl_terrain,
-        const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& street_bvh,
+        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>& street_bvh,
         HeterogeneousResource& hri);
 private:
     const TerrainStyles& terrain_styles_;
-    double scale_;
+    ScenePos scale_;
     UpAxis up_axis_;
 };
 

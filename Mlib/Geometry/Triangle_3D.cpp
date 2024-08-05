@@ -17,14 +17,14 @@ Triangle3D<TPos>::Triangle3D(const FixedArray<ColoredVertex<TPos>, 3>& vertices)
 {}
 
 template <class TPos>
-template <class TPos2>
+template <class TPos2, class TPosTransform>
 Triangle3D<TPos>::Triangle3D(
     const FixedArray<ColoredVertex<TPos2>, 3>& vertices,
-    const TransformationMatrix<float, double, 3>& transformation)
+    const TransformationMatrix<float, TPosTransform, 3>& transformation)
     : vertices_{
-        transformation.transform(vertices(0).position.template casted<double>()),
-        transformation.transform(vertices(1).position.template casted<double>()),
-        transformation.transform(vertices(2).position.template casted<double>())}
+        transformation.transform(vertices(0).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(1).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(2).position.template casted<TPosTransform>())}
 {}
 
 template <class TPos>
@@ -52,7 +52,14 @@ namespace Mlib {
 template class Triangle3D<float>;
 template class Triangle3D<double>;
 
-template Triangle3D<double>::Triangle3D(const FixedArray<ColoredVertex<float>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
-template Triangle3D<double>::Triangle3D(const FixedArray<ColoredVertex<double>, 3>& vertices, const TransformationMatrix<float, double, 3>& transformation);
+template Triangle3D<double>::Triangle3D(
+    const FixedArray<ColoredVertex<float>, 3>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Triangle3D<double>::Triangle3D(
+    const FixedArray<ColoredVertex<double>, 3>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Triangle3D<float>::Triangle3D(
+    const FixedArray<ColoredVertex<float>, 3>& vertices,
+    const TransformationMatrix<float, float, 3>& transformation);
 
 }

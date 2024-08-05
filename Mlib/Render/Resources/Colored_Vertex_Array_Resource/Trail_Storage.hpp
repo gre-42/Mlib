@@ -2,6 +2,7 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <vector>
 
 namespace Mlib {
@@ -18,8 +19,8 @@ public:
         TrailsInstance& trails_instance,
         TrailSequence trail_sequence,
         const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
-        double min_spawn_length,
-        double max_spawn_length,
+        ScenePos min_spawn_length,
+        ScenePos max_spawn_length,
         float spawn_duration);
     virtual std::unique_ptr<ITrailExtender> add_trail_extender() override;
 
@@ -27,8 +28,8 @@ private:
     TrailsInstance& trails_instance_;
     TrailSequence trail_sequence_;
     const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment_;
-    double min_spawn_length_;
-    double max_spawn_length_;
+    ScenePos min_spawn_length_;
+    ScenePos max_spawn_length_;
     float spawn_duration_;
 };
 

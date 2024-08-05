@@ -72,13 +72,22 @@ std::list<InstanceInformation> Mlib::read_ipl(
             THROW_OR_ABORT("Could not parse line \"" + line + '"');
         }
         std::string name{ match[2].str() };
-        FixedArray<double, 3> t{ safe_stof(match[3].str()), safe_stof(match[4].str()), safe_stof(match[5].str()) };
-        FixedArray<float, 3> scale{ safe_stof(match[6].str()), safe_stof(match[7].str()), safe_stof(match[8].str()) };
+        FixedArray<ScenePos, 3> t{
+            safe_stox<ScenePos>(match[3].str()),
+            safe_stox<ScenePos>(match[4].str()),
+            safe_stox<ScenePos>(match[5].str()) };
+        FixedArray<float, 3> scale{
+            safe_stof(match[6].str()),
+            safe_stof(match[7].str()),
+            safe_stof(match[8].str()) };
         float mean_scale = mean(scale);
         if (any(abs(scale - mean_scale) > 1e-3f)) {
             lwarn() << name << ": Scale is anisotropic: " << scale;
         }
-        FixedArray<float, 3> v{ safe_stof(match[9].str()), safe_stof(match[10].str()), safe_stof(match[11].str()) };
+        FixedArray<float, 3> v{
+            safe_stof(match[9].str()),
+            safe_stof(match[10].str()),
+            safe_stof(match[11].str()) };
         float s = safe_stof(match[12].str());
         // if (auto l2 = sum(squared(v)) + squared(s);
         //     std::abs(l2 - 1.f) > 1e-6)

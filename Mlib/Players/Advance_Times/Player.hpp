@@ -23,6 +23,7 @@
 #include <Mlib/Players/Player/Supply_Depots_Waypoints.hpp>
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
@@ -126,7 +127,7 @@ class Player final:
     Player(const Player&) = delete;
     Player& operator = (const Player&) = delete;
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
 
     Player(
         Scene& scene,
@@ -149,7 +150,7 @@ public:
     void set_can_shoot(ControlSource control_source, bool value);
     void set_can_select_weapon(ControlSource control_source, bool value);
     void set_can_select_opponent(ControlSource control_source, bool value);
-    void set_select_opponent_hysteresis_factor(double factor);
+    void set_select_opponent_hysteresis_factor(ScenePos factor);
     void reset_node();
     void set_scene_vehicle(SceneVehicle& pv, const std::string& desired_role);
     RigidBodyVehicle& rigid_body();
@@ -179,7 +180,7 @@ public:
         float height_offset = 0,
         float time_offset = 0) const;
     bool can_see(
-        const FixedArray<double, 3>& pos,
+        const FixedArray<ScenePos, 3>& pos,
         bool only_terrain = false,
         float height_offset = 0,
         float time_offset = 0) const;
@@ -307,9 +308,9 @@ private:
     SupplyDepotsWaypoints supply_depots_waypoints_;
     PlaybackWaypoints playback_waypoints_;
     const Focuses& focuses_;
-    double select_opponent_hysteresis_factor_;
+    ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
-    std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>> way_points_;
+    std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>> way_points_;
 };
 
 }

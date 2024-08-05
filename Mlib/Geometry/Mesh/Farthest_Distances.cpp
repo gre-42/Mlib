@@ -8,11 +8,11 @@ using namespace Mlib;
 
 VertexDistances Mlib::get_farthest_distances(
     const IIntersectableMesh& mesh,
-    const PlaneNd<double, 3>& plane)
+    const PlaneNd<ScenePos, 3>& plane)
 {
     VertexDistances res{
-        .min = (double)INFINITY,
-        .max = -(double)INFINITY
+        .min = (ScenePos)INFINITY,
+        .max = -(ScenePos)INFINITY
     };
     for (const auto& v : mesh.get_vertices()) {
         auto dist = dot0d(v, plane.normal) + plane.intercept;

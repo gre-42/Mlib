@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <variant>
 
 namespace Mlib {
@@ -15,14 +16,14 @@ class CollisionQuery {
 public:
     CollisionQuery(PhysicsEngine& physics_engine);
     bool can_see(
-        const FixedArray<double, 3>& watcher,
-        const FixedArray<double, 3>& watched,
+        const FixedArray<ScenePos, 3>& watcher,
+        const FixedArray<ScenePos, 3>& watched,
         const RigidBodyVehicle* excluded0 = nullptr,
         const RigidBodyVehicle* excluded1 = nullptr,
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
-        FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
+        FixedArray<ScenePos, 3>* intersection_point = nullptr,
+        std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
@@ -30,21 +31,21 @@ public:
         const RigidBodyVehicle& watched,
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
-        double height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0,
-        FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
+        FixedArray<ScenePos, 3>* intersection_point = nullptr,
+        std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
     bool can_see(
         const RigidBodyVehicle& watcher,
-        const FixedArray<double, 3>& watched,
+        const FixedArray<ScenePos, 3>& watched,
         bool only_terrain = false,
         PhysicsMaterial collidable_mask = PhysicsMaterial::OBJ_BULLET_COLLIDABLE_MASK,
-        double height_offset = 0,
+        ScenePos height_offset = 0,
         float time_offset = 0,
-        FixedArray<double, 3>* intersection_point = nullptr,
-        std::variant<const CollisionPolygonSphere<double, 3>*, const CollisionPolygonSphere<double, 4>*>* intersection_polygon = nullptr,
+        FixedArray<ScenePos, 3>* intersection_point = nullptr,
+        std::variant<const CollisionPolygonSphere<ScenePos, 3>*, const CollisionPolygonSphere<ScenePos, 4>*>* intersection_polygon = nullptr,
         const RigidBodyVehicle** seen_object = nullptr,
         const IIntersectableMesh** seen_mesh = nullptr) const;
 private:

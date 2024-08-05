@@ -2,6 +2,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 struct GLFWwindow;
 
@@ -27,9 +28,9 @@ public:
     BoolRenderOption& cull_faces;
     DeleteNodeMutex& delete_node_mutex;
     SetFps* physics_set_fps;
-    FixedArray<double, 3> position = fixed_nans<double, 3>();
+    FixedArray<ScenePos, 3> position = fixed_nans<ScenePos, 3>();
     FixedArray<float, 3> angles = fixed_nans<float, 3>();
-    FixedArray<double, 3> obj_position = fixed_nans<double, 3>();
+    FixedArray<ScenePos, 3> obj_position = fixed_nans<ScenePos, 3>();
     FixedArray<float, 3> obj_angles = fixed_nans<float, 3>();
     std::string obj_node_name = "obj";
 };

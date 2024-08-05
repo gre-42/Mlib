@@ -12,8 +12,8 @@ TrailExtender::TrailExtender(
     TrailsInstance& trails_instance,
     const TrailSequence& trail_sequence,
     const UUVector<FixedArray<ColoredVertex<float>, 3>>& segment,
-    double min_spawn_length,
-    double max_spawn_length,
+    ScenePos min_spawn_length,
+    ScenePos max_spawn_length,
     float spawn_duration)
     : trails_instance_{ trails_instance }
     , trail_sequence_{ trail_sequence }
@@ -28,7 +28,7 @@ TrailExtender::TrailExtender(
 }
 
 void TrailExtender::append_location(
-    const TransformationMatrix<float, double, 3>& location,
+    const TransformationMatrix<float, ScenePos, 3>& location,
     TrailLocationType location_type) {
     if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
         THROW_OR_ABORT("Trail instance move not called");
@@ -56,7 +56,7 @@ void TrailExtender::append_location(
         for (size_t r = 0; r < 3; ++r) {
             RS(r, 2) = -dz(r);
         }
-        TransformationMatrix<float, double, 3> loc{
+        TransformationMatrix<float, ScenePos, 3> loc{
             RS,
             prev.position };
         auto op = [this](const FixedArray<float, 2>& uv){
@@ -64,8 +64,8 @@ void TrailExtender::append_location(
         };
         if (previous_vertices_.empty()) {
             for (const auto& t0 : segment_) {
-                auto t = t0.applied<ColoredVertex<double>>([&loc, &R, &op](const auto& v){
-                    return v.template casted<double>().transformed(loc, R).transformed_uv(op); });
+                auto t = t0.applied<ColoredVertex<ScenePos>>([&loc, &R, &op](const auto& v){
+                    return v.template casted<ScenePos>().transformed(loc, R).transformed_uv(op); });
                 FixedArray<float, 3> time = uninitialized;
                 for (size_t i = 0; i < 3; ++i) {
                     if (t0(i).position(2) == -1.f) {
@@ -81,12 +81,12 @@ void TrailExtender::append_location(
             }
         } else {
             for (const auto& t0 : segment_) {
-                FixedArray<ColoredVertex<double>, 3> t = uninitialized;
+                FixedArray<ColoredVertex<ScenePos>, 3> t = uninitialized;
                 FixedArray<float, 3> time = uninitialized;
                 for (size_t i = 0; i < 3; ++i) {
                     OrderableFixedArray<float, 2> k{ t0(i).position(0), t0(i).position(1) };
                     if (t0(i).position(2) == -1.f) {
-                        t(i) = t0(i).casted<double>().transformed(loc, R).transformed_uv(op);
+                        t(i) = t0(i).casted<ScenePos>().transformed(loc, R).transformed_uv(op);
                         current_vertices_.insert_or_assign(k, t(i).position);
                         time(i) = 0.f;
                     } else if (t0(i).position(2) == 0.f) {
@@ -94,7 +94,7 @@ void TrailExtender::append_location(
                         if (it == previous_vertices_.end()) {
                             THROW_OR_ABORT("TrailExtender::append_location: Could not find previous vertex");
                         }
-                        t(i) = t0(i).casted<double>().transformed_uv(op);
+                        t(i) = t0(i).casted<ScenePos>().transformed_uv(op);
                         t(i).position = it->second;
                         time(i) = duration;
                     } else {

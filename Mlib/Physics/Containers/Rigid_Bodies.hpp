@@ -8,6 +8,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <functional>
 #include <map>
 #include <memory>
@@ -48,12 +49,12 @@ struct RigidBodyAndIntersectableMesh {
 
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
-    CollisionPolygonSphere<double, 3> ctp;
+    CollisionPolygonSphere<ScenePos, 3> ctp;
 };
 
 struct RigidBodyAndCollisionLineSphere {
     RigidBodyVehicle& rb;
-    CollisionLineSphere<double> clp;
+    CollisionLineSphere<ScenePos> clp;
 };
 
 struct RigidBodyAndCollisionRidgeSphere {
@@ -85,11 +86,11 @@ public:
     void plot_line_bvh_svg(const std::string& filename, size_t axis0, size_t axis1) const;
     IterableWrapper<std::list<RigidBodyAndMeshes>> objects() const;
     IterableWrapper<std::list<RigidBodyAndIntersectableMeshes>> transformed_objects() const;
-    const Bvh<double, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
-    const Bvh<double, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
-    const Bvh<double, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
-    const std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*>& ridge_map();
-    const Bvh<double, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
+    const Bvh<ScenePos, RigidBodyAndIntersectableMesh, 3>& convex_mesh_bvh() const;
+    const Bvh<ScenePos, RigidBodyAndCollisionTriangleSphere, 3>& triangle_bvh() const;
+    const Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3>& ridge_bvh() const;
+    const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map();
+    const Bvh<ScenePos, RigidBodyAndCollisionLineSphere, 3>& line_bvh() const;
     bool empty() const;
 private:
     void transform_object_and_add(const RigidBodyAndMeshes& o);
@@ -101,11 +102,11 @@ private:
     std::list<RigidBodyAndIntersectableMeshes> transformed_objects_;
     std::map<const RigidBodyVehicle*, CollidableMode> collidable_modes_;
     // BVHs. Do not forget to .clear() the BVHs in the "delete_rigid_body" method.
-    Bvh<double, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
-    Bvh<double, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
-    mutable Bvh<double, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
-    mutable std::map<std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>>, const CollisionRidgeSphere*> ridge_map_;
-    Bvh<double, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
+    Bvh<ScenePos, RigidBodyAndIntersectableMesh, 3> convex_mesh_bvh_;
+    Bvh<ScenePos, RigidBodyAndCollisionTriangleSphere, 3> triangle_bvh_;
+    mutable Bvh<ScenePos, RigidBodyAndCollisionRidgeSphere, 3> ridge_bvh_;
+    mutable std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*> ridge_map_;
+    Bvh<ScenePos, RigidBodyAndCollisionLineSphere, 3> line_bvh_;
     mutable CollisionRidgesRigidBody collision_ridges_;
     mutable CollisionRidgeBakingStatus collision_ridges_baking_status_;
 };

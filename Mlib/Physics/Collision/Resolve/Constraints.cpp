@@ -19,7 +19,7 @@ template <class TRigidBodyPulsesArg, class TRigidBodyPulsesField>
 GenericNormalContactInfo1<TRigidBodyPulsesArg, TRigidBodyPulsesField>::GenericNormalContactInfo1(
     TRigidBodyPulsesArg rbp,
     const BoundedPlaneInequalityConstraint& pc,
-    const FixedArray<double, 3>& p)
+    const FixedArray<ScenePos, 3>& p)
     : rbp_{ rbp }
     , pc_{ pc }
     , p_{ p }
@@ -49,7 +49,7 @@ NormalContactInfo2::NormalContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedPlaneInequalityConstraint& pc,
-    const FixedArray<double, 3>& p,
+    const FixedArray<ScenePos, 3>& p,
     const std::function<void(float)>& notify_lambda_final)
     : rbp0_{ rbp0 }
     , rbp1_{ rbp1 }
@@ -197,7 +197,7 @@ void PlaneContactInfo2::solve(float dt, float relaxation, size_t iteration, size
 FrictionContactInfo1::FrictionContactInfo1(
     RigidBodyPulses& rbp,
     const NormalImpulse& normal_impulse,
-    const FixedArray<double, 3>& p,
+    const FixedArray<ScenePos, 3>& p,
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b,
@@ -315,7 +315,7 @@ FrictionContactInfo2::FrictionContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const NormalImpulse& normal_impulse,
-    const FixedArray<double, 3>& p,
+    const FixedArray<ScenePos, 3>& p,
     float stiction_coefficient,
     float friction_coefficient,
     const FixedArray<float, 3>& b)
@@ -486,7 +486,7 @@ void TireContactInfo1::solve(float dt, float relaxation, size_t iteration, size_
 ShockAbsorberContactInfo1::ShockAbsorberContactInfo1(
     RigidBodyPulses& rbp,
     const BoundedShockAbsorberConstraint& sc,
-    const FixedArray<double, 3>& p)
+    const FixedArray<ScenePos, 3>& p)
     : rbp_{ rbp }
     , sc_{ sc }
     , p_{ p }
@@ -505,7 +505,7 @@ ShockAbsorberContactInfo2::ShockAbsorberContactInfo2(
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
     const BoundedShockAbsorberConstraint& sc,
-    const FixedArray<double, 3>& p)
+    const FixedArray<ScenePos, 3>& p)
     : rbp0_{ rbp0 }
     , rbp1_{ rbp1 }
     , sc_{ sc }

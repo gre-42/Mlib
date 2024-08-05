@@ -26,10 +26,10 @@ public:
         float dyaw_max,
         const std::function<float()>& increment_yaw_error);
     ~YawPitchLookAtNodes();
-    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     void increment_yaw(float dyaw, float relaxation);
@@ -41,7 +41,7 @@ private:
     AimAt& aim_at_node_;
     float dyaw_;
     float dyaw_max_;
-    TransformationMatrix<float, double, 3> relative_model_matrix_;
+    TransformationMatrix<float, ScenePos, 3> relative_model_matrix_;
     PitchLookAtNode& pitch_look_at_node_;
     std::function<float()> increment_yaw_error_;
 };

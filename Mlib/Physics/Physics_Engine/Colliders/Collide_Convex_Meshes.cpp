@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Lines.hpp>
 #include <Mlib/Physics/Collision/Detect/Collide_Triangle_And_Triangles.hpp>
 #include <Mlib/Physics/Collision/Typed_Mesh.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;
 
@@ -15,8 +16,8 @@ static void collide(
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
     const CollisionHistory& history,
     PhysicsMaterial line_mask,
-    const CollisionPolygonSphere<double, 4>* q0,
-    const CollisionPolygonSphere<double, 3>* t0)
+    const CollisionPolygonSphere<ScenePos, 4>* q0,
+    const CollisionPolygonSphere<ScenePos, 3>* t0)
 {
     collide_triangle_and_triangles(
         o0,

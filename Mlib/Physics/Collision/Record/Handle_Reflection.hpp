@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -9,7 +10,7 @@ class FixedArray;
 
 void handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& intersection_point,
     float surface_stiction_factor);
 
 }

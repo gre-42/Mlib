@@ -20,16 +20,16 @@ using namespace Mlib;
 
 DriveOrWalkAi::DriveOrWalkAi(
     const DanglingBaseClassRef<Player>& player,
-    double waypoint_reached_radius,
+    ScenePos waypoint_reached_radius,
     float rest_radius,
     float lookahead_velocity,
     float takeoff_velocity,
     float takeoff_velocity_delta,
     float max_velocity,
     float max_delta_velocity_brake,
-    double collision_avoidance_radius_brake,
-    double collision_avoidance_radius_wait,
-    double collision_avoidance_radius_correct,
+    ScenePos collision_avoidance_radius_brake,
+    ScenePos collision_avoidance_radius_wait,
+    ScenePos collision_avoidance_radius_correct,
     float collision_avoidance_intersect_cos,
     float collision_avoidance_step_aside_cos,
     float collision_avoidance_step_aside_distance)
@@ -105,8 +105,8 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     auto waypoint_flags = ai_waypoint.flags();
     auto pod = ai_waypoint.position_of_destination(player_rb.waypoint_ofs_);
     VehicleAiMoveToStatus result = VehicleAiMoveToStatus::NONE;
-    FixedArray<double, 3> pos3 = player_rb.rbp_.abs_position();
-    double distance_to_waypoint2 = sum(squared(pos3 - pod));
+    FixedArray<ScenePos, 3> pos3 = player_rb.rbp_.abs_position();
+    ScenePos distance_to_waypoint2 = sum(squared(pos3 - pod));
     float lookahead_fac2 = std::max(
         1.f,
         sum(squared(player_rb.rbp_.v_)) /
@@ -147,10 +147,10 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
         }
         auto p_p3 = p_rb.rbp_.abs_position();
         auto d = p_p3 - p3;
-        double dl2 = sum(squared(d));
+        ScenePos dl2 = sum(squared(d));
         [&]() {
             if (dl2 < squared(collision_avoidance_radius_brake_)) {
-                if (dot0d(d, z3.casted<double>()) < 0) {
+                if (dot0d(d, z3.casted<ScenePos>()) < 0) {
                     player_->car_movement.step_on_brakes();
                     result |= VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
                     return;
@@ -159,22 +159,22 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
             if (dl2 < squared(collision_avoidance_radius_wait_)) {
                 auto p_z3 = p_rb.rbp_.abs_z();
                 if (std::abs(dot0d(z3, p_z3)) < collision_avoidance_intersect_cos_) {
-                    FixedArray<double, 2> intersection = uninitialized;
+                    FixedArray<ScenePos, 2> intersection = uninitialized;
                     if (!intersect_rays(
                         intersection,
-                        FixedArray<double, 2>{ p3(0), p3(2) },
-                        FixedArray<double, 2>{ z3(0), z3(2) },
-                        FixedArray<double, 2>{ p_p3(0), p_p3(2) },
-                        FixedArray<double, 2>{ p_z3(0), p_z3(2) },
-                        0.,
-                        0.))
+                        FixedArray<ScenePos, 2>{ p3(0), p3(2) },
+                        FixedArray<ScenePos, 2>{ z3(0), z3(2) },
+                        FixedArray<ScenePos, 2>{ p_p3(0), p_p3(2) },
+                        FixedArray<ScenePos, 2>{ p_z3(0), p_z3(2) },
+                        ScenePos(0),
+                        ScenePos(0)))
                     {
                         player_->car_movement.step_on_brakes();
                         result |= VehicleAiMoveToStatus::STOPPED_TO_AVOID_COLLISION;
                         return;
                     }
-                    auto iv0 = (intersection - FixedArray<double, 2>{ p3(0), p3(2) }).casted<float>();
-                    auto iv1 = (intersection - FixedArray<double, 2>{ p_p3(0), p_p3(2) }).casted<float>();
+                    auto iv0 = (intersection - FixedArray<ScenePos, 2>{ p3(0), p3(2) }).casted<float>();
+                    auto iv1 = (intersection - FixedArray<ScenePos, 2>{ p_p3(0), p_p3(2) }).casted<float>();
                     if (dot0d(z, iv0) < 0) {
                         auto d2_0 = sum(squared(iv0));
                         auto d2_1 = sum(squared(iv1));
@@ -191,7 +191,7 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
                 (dl2 < squared(collision_avoidance_radius_correct_)))
             {
                 if ((player_rb.avatar_controller_ != nullptr) ||
-                    (dot0d(d, z3.casted<double>()) / std::sqrt(dl2) < -collision_avoidance_step_aside_cos_))
+                    (dot0d(d, z3.casted<ScenePos>()) / std::sqrt(dl2) < -collision_avoidance_step_aside_cos_))
                 {
                     if (player_->driving_direction() == DrivingDirection::CENTER || player_->driving_direction() == DrivingDirection::RIGHT) {
                         d_wpt = collision_avoidance_step_aside_distance_;
@@ -255,17 +255,17 @@ VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     float zl2 = sum(squared(z));
     if (zl2 > 1e-12) {
         z /= std::sqrt(zl2);
-        auto wpt = FixedArray<double, 2>{ pod(0), pod(2) } - FixedArray<double, 2>{ p3(0), p3(2) };
-        auto m = FixedArray<double, 2, 2>::init(
+        auto wpt = FixedArray<ScenePos, 2>{ pod(0), pod(2) } - FixedArray<ScenePos, 2>{ p3(0), p3(2) };
+        auto m = FixedArray<ScenePos, 2, 2>::init(
             z(1), -z(0),
             z(0), z(1));
         wpt = dot1d(m, wpt);
         auto wpt2 = sum(squared(wpt));
         if (wpt2 > 1e-12) {
-            wpt += FixedArray<double, 2>(-wpt(1), wpt(0)) / std::sqrt(wpt2) * double(d_wpt);
+            wpt += FixedArray<ScenePos, 2>(-wpt(1), wpt(0)) / std::sqrt(wpt2) * ScenePos(d_wpt);
             auto wpt2c = std::sqrt(sum(squared(wpt)));
             if (player_rb.avatar_controller_ != nullptr) {
-                player_rb.avatar_controller_->increment_legs_z((FixedArray<double, 3>{wpt(0), 0., wpt(1)} / wpt2c).casted<float>());
+                player_rb.avatar_controller_->increment_legs_z((FixedArray<ScenePos, 3>{wpt(0), ScenePos(0), wpt(1)} / wpt2c).casted<float>());
                 // player_rb.avatar_controller_->increment_legs_z(FixedArray<float, 3>{0.f, 0.f, -1.f});
                 if (player_->target_rb() == nullptr) {
                     // Rotate waypoint back to global coordinates.

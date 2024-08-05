@@ -16,7 +16,7 @@ RigidBodyPulses::RigidBodyPulses(
     const FixedArray<float, 3>& com,  // center of mass
     const FixedArray<float, 3>& v,    // velocity
     const FixedArray<float, 3>& w,    // angular velocity
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
     : mass_{mass}
@@ -25,7 +25,7 @@ RigidBodyPulses::RigidBodyPulses(
     , v_{v}
     , w_{w}
     , rotation_{tait_bryan_angles_2_matrix(rotation)}
-    , abs_com_{dot1d(rotation_, com_).casted<double>() + position}
+    , abs_com_{dot1d(rotation_, com_).casted<ScenePos>() + position}
     , I_is_diagonal_{I_is_diagonal}
     , abs_I_{ fixed_nans<float, 3, 3>() }
     , abs_I_inv_{ fixed_nans<float, 3, 3>() }
@@ -33,7 +33,7 @@ RigidBodyPulses::RigidBodyPulses(
 
 void RigidBodyPulses::advance_time(float dt)
 {
-    abs_com_ += (dt * v_).casted<double>();
+    abs_com_ += (dt * v_).casted<ScenePos>();
     rotation_ = dot2d(rodrigues1(dt * w_, false), rotation_);  // false = check_angle
     rotation_ = tait_bryan_angles_2_matrix(matrix_2_tait_bryan_angles(rotation_));
     if (!I_is_diagonal_) {
@@ -73,31 +73,31 @@ void RigidBodyPulses::update_abs_I_and_inv() {
     abs_I_inv_ = fixed_symmetric_inverse_3x3(abs_I());
 }
 
-FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<double, 3>& position) const {
+FixedArray<float, 3> RigidBodyPulses::velocity_at_position(const FixedArray<ScenePos, 3>& position) const {
     return v_ + cross(w_, (position - abs_com_).casted<float>());
 }
 
-FixedArray<double, 3> RigidBodyPulses::abs_position() const {
+FixedArray<ScenePos, 3> RigidBodyPulses::abs_position() const {
     // abs_com_ = dot1d(rotation_, com_) + position_;
-    return abs_com_ - dot1d(rotation_, com_).casted<double>();
+    return abs_com_ - dot1d(rotation_, com_).casted<ScenePos>();
 }
 
-TransformationMatrix<float, double, 3> RigidBodyPulses::abs_transformation() const {
-    return TransformationMatrix<float, double, 3>{ rotation_, abs_position() };
+TransformationMatrix<float, ScenePos, 3> RigidBodyPulses::abs_transformation() const {
+    return TransformationMatrix<float, ScenePos, 3>{ rotation_, abs_position() };
 }
 
-FixedArray<double, 3> RigidBodyPulses::transform_to_world_coordinates(const FixedArray<float, 3>& v) const {
+FixedArray<ScenePos, 3> RigidBodyPulses::transform_to_world_coordinates(const FixedArray<float, 3>& v) const {
     // return dot1d(rbp.rotation_, v) + rbp.abs_position()
-    return dot1d(rotation_, v - com_).casted<double>() + abs_com_;
+    return dot1d(rotation_, v - com_).casted<ScenePos>() + abs_com_;
 }
 
 FixedArray<float, 3> RigidBodyPulses::abs_z() const {
     return z3_from_3x3(rotation_);
 }
 
-void RigidBodyPulses::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<double, 3>& position) {
+void RigidBodyPulses::set_pose(const FixedArray<float, 3, 3>& rotation, const FixedArray<ScenePos, 3>& position) {
     rotation_ = rotation;
-    abs_com_ = dot1d(rotation_, com_).casted<double>() + position;
+    abs_com_ = dot1d(rotation_, com_).casted<ScenePos>() + position;
     if (!I_is_diagonal_) {
         update_abs_I_and_inv();
     }
@@ -135,7 +135,7 @@ void RigidBodyPulses::integrate_delta_angular_momentum(const FixedArray<float, 3
     w_ += (1 + extra_w) * solve_abs_I(dL);
 }
 
-void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, double, 3>& J, float extra_w)
+void RigidBodyPulses::integrate_impulse(const VectorAtPosition<float, ScenePos, 3>& J, float extra_w)
 {
     if (any(abs(J.vector) > 1e5f)) {
         THROW_OR_ABORT("J.vector out of bounds");
@@ -149,7 +149,7 @@ float RigidBodyPulses::energy() const {
     return 0.5f * (mass_ * sum(squared(v_)) + dot0d(w_, dot1d_abs_I(w_)));
 }
 
-float RigidBodyPulses::effective_mass(const VectorAtPosition<float, double, 3>& vp) const {
+float RigidBodyPulses::effective_mass(const VectorAtPosition<float, ScenePos, 3>& vp) const {
     FixedArray<float, 3> J2 = cross((vp.position - abs_com_).casted<float>(), vp.vector);
     return 1.f / (1.f / mass_ + dot0d(J2, solve_abs_I(J2)));
 }

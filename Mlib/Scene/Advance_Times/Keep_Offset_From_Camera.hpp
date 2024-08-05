@@ -29,8 +29,8 @@ public:
         DanglingRef<SceneNode> follower_node);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, double, 3> get_new_absolute_model_matrix() const override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
@@ -40,7 +40,7 @@ private:
     FixedArray<float, 3> offset_;
     FixedArray<float, 3> grid_;
     DanglingPtr<SceneNode> follower_node_;
-    TransformationMatrix<float, double, 3> transformation_matrix_;
+    TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
     std::unique_ptr<EventReceiverDeletionToken> camera_changed_deletion_token_;
 };
 

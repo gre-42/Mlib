@@ -162,12 +162,12 @@ void Mlib::create_scene_flat(
         .scene_node = scene_node1_2.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {
-        scene_node1_1->set_position(FixedArray<double, 3>{0., 4., 0.}, INITIAL_POSE);
-        scene_node1_2->set_position(FixedArray<double, 3>{0., 8., 0.}, INITIAL_POSE);
+        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.f, 4.f, 0.f}, INITIAL_POSE);
+        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.f, 8.f, 0.f}, INITIAL_POSE);
     } else {
         scene_node0->set_rotation(FixedArray<float, 3>{0.f, 0.f, 0.001f * float(M_PI)}, INITIAL_POSE);
-        scene_node1_1->set_position(FixedArray<double, 3>{0.1f + prng(), 4.f + prng(), 0.5f + prng()}, INITIAL_POSE);
-        scene_node1_2->set_position(FixedArray<double, 3>{0.1f + prng(), 8.f + prng(), 0.5f + prng()}, INITIAL_POSE);
+        scene_node1_1->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 4.f + prng(), 0.5f + prng()}, INITIAL_POSE);
+        scene_node1_2->set_position(FixedArray<ScenePos, 3>{0.1f + prng(), 8.f + prng(), 0.5f + prng()}, INITIAL_POSE);
         scene_node1_0->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.1f * float(M_PI) + rrng()}, INITIAL_POSE);
         scene_node1_1->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, INITIAL_POSE);
         scene_node1_2->set_rotation(FixedArray<float, 3>{0.f + rrng(), 0.f + rrng(), 0.05f * float(M_PI) + rrng()}, INITIAL_POSE);
@@ -215,7 +215,7 @@ void Mlib::create_scene_flat(
 
     // Check if the initialization does not change the node positions.
     // Not that only "physics advance time" can change the positions.
-    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
+    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<ScenePos, 3>());
     scene.move(physics_cfg.dt, std::chrono::steady_clock::now());
-    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<double, 3>());
+    assert_allclose(scene.get_node("obj", DP_LOC)->get_child("n0")->position(), fixed_zeros<ScenePos, 3>());
 }

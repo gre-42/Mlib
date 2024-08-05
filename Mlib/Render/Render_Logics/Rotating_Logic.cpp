@@ -114,7 +114,7 @@ RotatingLogic::RotatingLogic(
     float scale,
     float camera_z,
     const FixedArray<float, 3>& background_color,
-    const std::vector<TransformationMatrix<float, double, 3>>* beacon_locations)
+    const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations)
     : window_{window}
     , scene_{scene}
     , button_states_{ button_states }
@@ -151,14 +151,14 @@ void RotatingLogic::render(
 
     DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);
     cn->set_position(
-        FixedArray<double, 3>{0.f, 0.f, user_object_.camera_z},
+        FixedArray<ScenePos, 3>{0.f, 0.f, user_object_.camera_z},
         std::nullopt);
     auto co = cn->get_camera().copy();
     co->set_aspect_ratio(aspect_ratio);
-    FixedArray<double, 4, 4> vp = dot2d(
-        co->projection_matrix().casted<double>(),
+    FixedArray<ScenePos, 4, 4> vp = dot2d(
+        co->projection_matrix().casted<ScenePos>(),
         cn->absolute_view_matrix().affine());
-    TransformationMatrix<float, double, 3> iv = cn->absolute_model_matrix();
+    TransformationMatrix<float, ScenePos, 3> iv = cn->absolute_model_matrix();
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
         DanglingRef<SceneNode> on = scene_.get_node("obj", DP_LOC);
@@ -172,7 +172,7 @@ void RotatingLogic::render(
     if ((user_object_.beacon_locations != nullptr) && !user_object_.beacon_locations->empty()) {
         DanglingRef<SceneNode> bn = scene_.get_node("obj", DP_LOC)->get_child("beacon");
         size_t beacon_index = std::clamp<size_t>(user_object_.beacon_index, 0, user_object_.beacon_locations->size() - 1);
-        const TransformationMatrix<float, double, 3> pose = (*user_object_.beacon_locations)[beacon_index];
+        const TransformationMatrix<float, ScenePos, 3> pose = (*user_object_.beacon_locations)[beacon_index];
         float scale = pose.get_scale();
         bn->set_relative_pose(pose.t(), matrix_2_tait_bryan_angles(pose.R() / scale), scale, std::nullopt);
     }
@@ -198,11 +198,11 @@ float RotatingLogic::far_plane() const {
     return 100;
 }
 
-const FixedArray<double, 4, 4>& RotatingLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& RotatingLogic::vp() const {
     THROW_OR_ABORT("RotatingLogic::vp not implemented");
 }
 
-const TransformationMatrix<float, double, 3>& RotatingLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& RotatingLogic::iv() const {
     THROW_OR_ABORT("RotatingLogic::iv not implemented");
 }
 

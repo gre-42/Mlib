@@ -40,7 +40,7 @@ void RigidBodyRecorder::advance_time(float dt, std::chrono::steady_clock::time_p
     }
     track_writer_.write(TrackElement{
         .elapsed_seconds = std::chrono::duration<float>{std::chrono::steady_clock::now() - start_time_}.count(),
-        .transformations = {OffsetAndTaitBryanAngles<float, double, 3>{rbp_->rotation_, rbp_->abs_position()}}});
+        .transformations = {OffsetAndTaitBryanAngles<float, ScenePos, 3>{rbp_->rotation_, rbp_->abs_position()}}});
 }
 
 void RigidBodyRecorder::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {

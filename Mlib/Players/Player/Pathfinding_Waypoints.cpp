@@ -34,12 +34,12 @@ void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
 
 void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypoints)
 {
-    waypoints_bvh_ = std::make_unique<Bvh<double, size_t, 3>>(
-        FixedArray<double, 3>{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size},
+    waypoints_bvh_ = std::make_unique<Bvh<ScenePos, size_t, 3>>(
+        FixedArray<ScenePos, 3>{cfg_.bvh_max_size, cfg_.bvh_max_size, cfg_.bvh_max_size},
         cfg_.bvh_levels);
     waypoints_ = std::make_unique<PointsAndAdjacencyResource>(waypoints);
     for (const auto& [i, p] : enumerate(waypoints.points)) {
-        waypoints_bvh_->insert(AxisAlignedBoundingBox<double, 3>::from_point(p.position), i);
+        waypoints_bvh_->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(p.position), i);
     }
     // waypoints_bvh_->optimize_search_time(std::cout);
     player_.single_waypoint_.notify_set_waypoints(waypoints_->points.size());
@@ -73,21 +73,21 @@ void PathfindingWaypoints::select_next_waypoint() {
         return;
     }
     FixedArray<float, 3> z3 = player_.rigid_body().rbp_.abs_z();
-    FixedArray<double, 3> pos3 = player_.rigid_body().rbp_.abs_position();
+    FixedArray<ScenePos, 3> pos3 = player_.rigid_body().rbp_.abs_position();
     if (!player_.single_waypoint_.has_waypoint()) {
         // If we have no current waypoint, find closest point in waypoints array.
         float max_distance = 100;
         size_t closest_id = SIZE_MAX;
-        double closest_distance2 = INFINITY;
+        ScenePos closest_distance2 = INFINITY;
         waypoints_bvh_->visit(
-            AxisAlignedBoundingBox<double, 3>::from_center_and_radius(pos3, max_distance),
+            AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(pos3, max_distance),
             [&](size_t i)
         {
             const auto& rs = waypoints_->points.at(i).position;
             auto diff = rs - pos3;
             auto dist2 = sum(squared(diff));
             if ((dist2 < 1e-6) ||
-                (dot0d(diff / std::sqrt(dist2), z3.casted<double>()) < -std::cos(45. * degrees)))
+                (dot0d(diff / std::sqrt(dist2), z3.casted<ScenePos>()) < -std::cos(45. * degrees)))
             {
                 if (dist2 < closest_distance2) {
                     closest_distance2 = dist2;
@@ -106,10 +106,10 @@ void PathfindingWaypoints::select_next_waypoint() {
             auto deflt = std::chrono::steady_clock::time_point();
             size_t best_id = SIZE_MAX;
             auto best_time = deflt;
-            double best_distance = NAN;
+            ScenePos best_distance = NAN;
             for (const auto& [r, _] : waypoints_->adjacency.column(player_.single_waypoint_.target_waypoint_id())) {
                 auto candidate_time = player_.single_waypoint_.last_visited(r);
-                auto candidate_distance = dot0d(waypoints_->points.at(r).position - pos3, z3.casted<double>());
+                auto candidate_distance = dot0d(waypoints_->points.at(r).position - pos3, z3.casted<ScenePos>());
                 auto r_is_better = [&]() {
                     if (best_id == SIZE_MAX) {
                         return true;

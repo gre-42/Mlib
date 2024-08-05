@@ -12,6 +12,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <Mlib/Render/Resource_Managers/Font_Name_And_Height_Hash.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
@@ -201,8 +202,8 @@ public:
     void set_alias(std::string alias, std::string name);
     std::string get_alias(const std::string& alias) const;
     bool contains_alias(const std::string& alias) const;
-    const FixedArray<double, 4, 4>& get_vp(const std::string& name) const;
-    void set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp);
+    const FixedArray<ScenePos, 4, 4>& get_vp(const std::string& name) const;
+    void set_vp(const std::string& name, const FixedArray<ScenePos, 4, 4>& vp);
     float get_offset(const std::string& name) const;
     void set_offset(const std::string& name, float value);
     float get_discreteness(const std::string& name) const;
@@ -265,7 +266,7 @@ private:
     mutable ThreadsafeStringUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
     ThreadsafeStringUnorderedMap<std::string> aliases_;
-    ThreadsafeStringUnorderedMap<FixedArray<double, 4, 4>> vps_;
+    ThreadsafeStringUnorderedMap<FixedArray<ScenePos, 4, 4>> vps_;
     ThreadsafeStringUnorderedMap<float> offsets_;
     ThreadsafeStringUnorderedMap<float> discreteness_;
     ThreadsafeStringUnorderedMap<float> scales_;

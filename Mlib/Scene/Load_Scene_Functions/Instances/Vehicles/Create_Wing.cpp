@@ -61,7 +61,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     DanglingRef<SceneNode> vehicle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::vehicle), DP_LOC);
     auto& vehicle_rb = get_rigid_body_vehicle(vehicle_node);
-    auto position = args.arguments.at<UFixedArray<double, 3>>(KnownArgs::position) * (double)meters;
+    auto position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
     auto rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     size_t wing_id = args.arguments.at<size_t>(KnownArgs::wing_id);
     auto r = tait_bryan_angles_2_matrix<float>(rotation);
@@ -91,7 +91,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_unique<Wing>(
             angle_of_attack_node,
             brake_angle_node,
-            TransformationMatrix<float, double, 3>{ r, position },
+            TransformationMatrix<float, ScenePos, 3>{ r, position },
             fac,
             LIFT_COEFF_UNITS * args.arguments.at<float>(KnownArgs::lift_c),
             ANGLE_COEFF_UNITS * args.arguments.at<float>(KnownArgs::angle_yz),

@@ -9,13 +9,13 @@ using namespace Mlib;
 
 void Mlib::fit_canvas_to_renderables(
     Scene& scene,
-    const TransformationMatrix<float, double, 3>& v,
+    const TransformationMatrix<float, ScenePos, 3>& v,
     OrthoCamera& camera,
     ExternalRenderPassType render_pass)
 {
-    auto aabb = AxisAlignedBoundingBox<double, 3>::empty();
+    auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     scene.visit_all([&](
-        const TransformationMatrix<float, double, 3>& m,
+        const TransformationMatrix<float, ScenePos, 3>& m,
         const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)
     {
         auto mv = v * m;

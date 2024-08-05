@@ -3,6 +3,7 @@
 #include <Mlib/Audio/Cross_Fade.hpp>
 #endif
 #include <Mlib/Physics/Actuators/Engine_Event_Listener.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <functional>
 #include <memory>
 #include <string>
@@ -25,7 +26,7 @@ public:
         float tires_angular_velocity,
         const EnginePowerIntent& engine_power_intent,
         float max_surface_power) override;
-    virtual void set_position(const AudioSourceState<double>& position) override;
+    virtual void set_position(const AudioSourceState<ScenePos>& position) override;
 private:
 #ifndef WITHOUT_ALUT
     std::shared_ptr<AudioBufferSequenceWithHysteresis> driving_buffer_sequence_;

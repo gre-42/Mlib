@@ -77,11 +77,11 @@ float DirtmapLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& DirtmapLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& DirtmapLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& DirtmapLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& DirtmapLogic::iv() const {
     return child_logic_.iv();
 }
 

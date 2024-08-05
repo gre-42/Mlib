@@ -16,6 +16,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <filesystem>
@@ -26,14 +27,14 @@ namespace fs = std::filesystem;
 
 using namespace Mlib;
 
-static const FixedArray<double, 3> SPAWN_OFFSET = {0., 2., 0.};
+static const FixedArray<ScenePos, 3> SPAWN_OFFSET = {0.f, 2.f, 0.f};
 
 static const auto M = FixedArray<float, 3, 3>::init(
     -1.f, 0.f, 0.f,
     0.f, 1.f, 0.f,
     0.f, 0.f, -1.f);
 
-FixedArray<float, 3, 3> trafo(const FixedArray<float, 3, 3>& R) {
+static FixedArray<float, 3, 3> trafo(const FixedArray<float, 3, 3>& R) {
     return dot2d(dot2d(M.T(), R), M);
 }
 
@@ -48,51 +49,51 @@ static FixedArray<float, 3, 3> ac_start_to_car(const FixedArray<float, 3, 3>& R)
     }
 }
 
-static TransformationMatrix<float, double, 3> ac_start_to_car(const TransformationMatrix<float, double, 3>& tm)
+static TransformationMatrix<float, ScenePos, 3> ac_start_to_car(const TransformationMatrix<float, ScenePos, 3>& tm)
 {
-    return TransformationMatrix<float, double, 3>{ac_start_to_car(tm.R()), tm.t() + SPAWN_OFFSET};
+    return TransformationMatrix<float, ScenePos, 3>{ac_start_to_car(tm.R()), tm.t() + SPAWN_OFFSET};
 }
  
-// static TransformationMatrix<float, double, 3> ac_center(
-//     const TransformationMatrix<float, double, 3>& left,
-//     const TransformationMatrix<float, double, 3>& right)
+// static TransformationMatrix<float, ScenePos, 3> ac_center(
+//     const TransformationMatrix<float, ScenePos, 3>& left,
+//     const TransformationMatrix<float, ScenePos, 3>& right)
 // {
 //     // Semetin
 //     auto d = dot0d((right.t() - left.t()).casted<float>(), left.R().column(0));
-//     return TransformationMatrix<float, double, 3>{
+//     return TransformationMatrix<float, ScenePos, 3>{
 //         d > 0.f
 //             ? left.R()
 //             : dot2d(left.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, 180.f * degrees)),
 //         (left.t() + right.t()) / 2.};
 // }
 
-static TransformationMatrix<float, double, 3> ac_portal(
-    const TransformationMatrix<float, double, 3>& left,
-    const TransformationMatrix<float, double, 3>& right)
+static TransformationMatrix<float, ScenePos, 3> ac_portal(
+    const TransformationMatrix<float, ScenePos, 3>& left,
+    const TransformationMatrix<float, ScenePos, 3>& right)
 {
     auto x = (right.t() - left.t()).casted<float>();
     auto y = FixedArray<float, 3>{0.f, 1.f, 0.f};
     x -= dot0d(x, y) * y;
     x /= std::sqrt(sum(squared(x)));
     auto z = cross(x, y);
-    return TransformationMatrix<float, double, 3>{
+    return TransformationMatrix<float, ScenePos, 3>{
         FixedArray<float, 3, 3>::init(
             x(0), y(0), z(0),
             x(1), y(1), z(1),
             x(2), y(2), z(2)),
-        (left.t() + right.t()) / 2.};
+        (left.t() + right.t()) / ScenePos(2)};
 }
 
-static TransformationMatrix<float, double, 3> ac_start_to_car(
-    const TransformationMatrix<float, double, 3>& left,
-    const TransformationMatrix<float, double, 3>& right)
+static TransformationMatrix<float, ScenePos, 3> ac_start_to_car(
+    const TransformationMatrix<float, ScenePos, 3>& left,
+    const TransformationMatrix<float, ScenePos, 3>& right)
 {
     return ac_portal(left, right);
 }
 
-static TransformationMatrix<float, double, 3> ac_waypoint(
-    const TransformationMatrix<float, double, 3>& left,
-    const TransformationMatrix<float, double, 3>& right)
+static TransformationMatrix<float, ScenePos, 3> ac_waypoint(
+    const TransformationMatrix<float, ScenePos, 3>& left,
+    const TransformationMatrix<float, ScenePos, 3>& right)
 {
     return ac_portal(left, right);
 }
@@ -251,7 +252,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
             // https://assettocorsamods.net/threads/build-your-first-track-basic-guide.12/
             // Read checkpoints
-            std::list<TransformationMatrix<float, double, 3>> checkpoints;
+            std::list<TransformationMatrix<float, ScenePos, 3>> checkpoints;
             for (size_t i = 0; ; ++i) {
                 auto time_l = nodes.find("AC_TIME_" + std::to_string(i) + "_L");
                 auto time_r = nodes.find("AC_TIME_" + std::to_string(i) + "_R");
@@ -259,13 +260,13 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     break;
                 }
                 checkpoints.push_back(ac_waypoint(
-                    time_l->second->hmatrix.casted<float, double>(),
-                    time_r->second->hmatrix.casted<float, double>()));
+                    time_l->second->hmatrix.casted<float, ScenePos>(),
+                    time_r->second->hmatrix.casted<float, ScenePos>()));
             }
             // No periodic extension by default.
             if (auto it = nodes.find("AC_PIT_0"); it != nodes.end()) {
                 race_logic->set_start_pose(
-                    ac_start_to_car(it->second->hmatrix.casted<float, double>()),
+                    ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
                     fixed_zeros<float, 3>() / kph,  // velocity
                     fixed_zeros<float, 3>() / rpm,  // angular_velocity
                     0);                             // rank
@@ -281,8 +282,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 if ((start_l != nodes.end()) && (start_r != nodes.end())) {
                     race_logic->set_start_pose(
                         ac_start_to_car(
-                            start_l->second->hmatrix.casted<float, double>(),
-                            start_r->second->hmatrix.casted<float, double>()),
+                            start_l->second->hmatrix.casted<float, ScenePos>(),
+                            start_r->second->hmatrix.casted<float, ScenePos>()),
                         fixed_zeros<float, 3>() / kph,  // velocity
                         fixed_zeros<float, 3>() / rpm,  // angular_velocity
                         0);                             // rank
@@ -290,8 +291,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     auto finish_r = nodes.find(name_finish_r);
                     if ((finish_l != nodes.end()) && (finish_r != nodes.end())) {
                         checkpoints.push_back(ac_waypoint(
-                            finish_l->second->hmatrix.casted<float, double>(),
-                            finish_r->second->hmatrix.casted<float, double>()));
+                            finish_l->second->hmatrix.casted<float, ScenePos>(),
+                            finish_r->second->hmatrix.casted<float, ScenePos>()));
                     }
                     raceway_is_circular = false;
                 }
@@ -308,7 +309,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 "AC_OPEN_FINISH_R");
             if (auto it = nodes.find("AC_START_0"); it != nodes.end()) {
                 race_logic->set_start_pose(
-                    ac_start_to_car(it->second->hmatrix.casted<float, double>()),
+                    ac_start_to_car(it->second->hmatrix.casted<float, ScenePos>()),
                     fixed_zeros<float, 3>() / kph,  // velocity
                     fixed_zeros<float, 3>() / rpm,  // angular_velocity
                     0);                             // rank
@@ -791,7 +792,7 @@ template std::list<std::shared_ptr<ColoredVertexArray<float>>> load_kn5_array<fl
     IRaceLogic*);
 template std::list<std::shared_ptr<ColoredVertexArray<double>>> load_kn5_array<double>(
     const std::string& file_or_directory,
-    const LoadMeshConfig<double>&,
+    const LoadMeshConfig<ScenePos>&,
     IDdsResources*,
     IRaceLogic*);
 }

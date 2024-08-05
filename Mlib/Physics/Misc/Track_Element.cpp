@@ -88,7 +88,7 @@ TrackElement TrackElement::from_vector(
     return result;
 }
 
-const OffsetAndTaitBryanAngles<float, double, 3>& TrackElement::transformation() const {
+const OffsetAndTaitBryanAngles<float, ScenePos, 3>& TrackElement::transformation() const {
     if (transformations.empty()) {
         THROW_OR_ABORT("Track element is empty");
     }
@@ -103,8 +103,8 @@ TrackElement Mlib::interpolated(const TrackElement& a, const TrackElement& b, fl
     result.elapsed_seconds = (1 - alpha) * a.elapsed_seconds + alpha * b.elapsed_seconds;
     result.transformations.resize(a.transformations.size());
     for (size_t i = 0; i < a.transformations.size(); ++i) {
-        auto qa = OffsetAndQuaternion<float, double>::from_tait_bryan_angles(a.transformations[i]);
-        auto qb = OffsetAndQuaternion<float, double>::from_tait_bryan_angles(b.transformations[i]);
+        auto qa = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(a.transformations[i]);
+        auto qb = OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles(b.transformations[i]);
         auto qi = qa.slerp(qb, alpha);
         result.transformations[i].position() = qi.offset();
         result.transformations[i].rotation() = qi.quaternion().to_tait_bryan_angles();

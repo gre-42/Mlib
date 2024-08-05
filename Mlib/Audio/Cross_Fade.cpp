@@ -109,7 +109,7 @@ void CrossFade::stop() {
     sources_.clear();
 }
 
-void CrossFade::set_position(const AudioSourceState<double>& position) {
+void CrossFade::set_position(const AudioSourceState<ScenePos>& position) {
     std::scoped_lock lock{ mutex_ };
     for (auto& s : sources_) {
         s.source->set_position(position);

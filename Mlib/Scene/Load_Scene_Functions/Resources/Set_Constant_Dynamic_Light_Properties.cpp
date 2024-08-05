@@ -22,7 +22,7 @@ void from_json(const nlohmann::json& j, ConstantDynamicLightConfiguration& item)
 
     item.color = jv.at<UFixedArray<float, 3>>(KnownConfigArgs::color);
     item.squared_distance_to_intensity = {
-        jv.at_vector<double>(KnownConfigArgs::distances, [](double v) { return squared(v); }),
+        jv.at_vector<ScenePos>(KnownConfigArgs::distances, [](ScenePos v) { return squared(v); }),
         jv.at<std::vector<float>>(KnownConfigArgs::intensities),
         OutOfRangeBehavior::CLAMP};
 }

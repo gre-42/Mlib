@@ -6,16 +6,16 @@
 using namespace Mlib;
 
 SatOverlapCombiner::SatOverlapCombiner(
-    const std::set<OrderableFixedArray<double, 3>>& vertices0,
-    const std::set<OrderableFixedArray<double, 3>>& vertices1)
+    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
+    const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1)
 	: keep_normal_{ false }
     , best_normal_{ uninitialized }
-	, best_min_overlap_{ (double)INFINITY }
+	, best_min_overlap_{ (ScenePos)INFINITY }
     , vertices0_{ vertices0 }
     , vertices1_{ vertices1 }
 {}
 
-double SatOverlapCombiner::overlap_signed(const FixedArray<double, 3>& normal) const {
+ScenePos SatOverlapCombiner::overlap_signed(const FixedArray<ScenePos, 3>& normal) const {
     return sat_overlap_signed(
         normal,
         vertices0_,
@@ -23,9 +23,9 @@ double SatOverlapCombiner::overlap_signed(const FixedArray<double, 3>& normal) c
 }
 
 void SatOverlapCombiner::overlap_unsigned(
-    const FixedArray<double, 3>& normal,
-    double& overlap0,
-    double& overlap1) const
+    const FixedArray<ScenePos, 3>& normal,
+    ScenePos& overlap0,
+    ScenePos& overlap1) const
 {
     sat_overlap_unsigned(
         normal,
@@ -35,10 +35,10 @@ void SatOverlapCombiner::overlap_unsigned(
         overlap1);
 }
 
-void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, double max_keep_normal)
+void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, ScenePos max_keep_normal)
 {
     if (max_keep_normal != -INFINITY) {
-        double sat_overl = overlap_signed(-e1.normal);
+        ScenePos sat_overl = overlap_signed(-e1.normal);
         if (sat_overl < best_min_overlap_) {
             best_min_overlap_ = sat_overl;
             best_normal_ = -e1.normal;
@@ -49,13 +49,13 @@ void SatOverlapCombiner::combine_sticky_ridge(const CollisionRidgeSphere& e1, do
 
 void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const CollisionRidgeSphere& e1) {
     auto n = cross(e0.ray.direction, e1.ray.direction);
-    double l2 = sum(squared(n));
+    ScenePos l2 = sum(squared(n));
     if (l2 < 1e-6) {
         return;
     }
     n /= std::sqrt(l2);
-    double overlap0;
-    double overlap1;
+    ScenePos overlap0;
+    ScenePos overlap1;
     overlap_unsigned(n, overlap0, overlap1);
     if (overlap0 < overlap1) {
         if (e0.is_oriented() && (-dot0d(n, e0.normal) < e0.min_cos - 1e-4)) {
@@ -86,8 +86,8 @@ void SatOverlapCombiner::combine_ridges(const CollisionRidgeSphere& e0, const Co
     }
 }
 
-void SatOverlapCombiner::combine_plane(const FixedArray<double, 3>& normal) {
-    double sat_overl = overlap_signed(normal);
+void SatOverlapCombiner::combine_plane(const FixedArray<ScenePos, 3>& normal) {
+    ScenePos sat_overl = overlap_signed(normal);
     if (sat_overl < best_min_overlap_) {
         best_min_overlap_ = sat_overl;
         if (!keep_normal_) {

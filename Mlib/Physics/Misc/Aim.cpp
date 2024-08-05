@@ -19,12 +19,12 @@ using namespace Mlib;
 // solve(tan(a)*v*t-1/2*g*t^2/cos(a)/v/t+c, a);
 // tan(a)=(2*c*v+g*t)/(2*t*v^2)
 Aim::Aim(
-    const FixedArray<double, 3>& gun_pos,
-    const FixedArray<double, 3>& target_pos,
-    double bullet_start_offset,
-    double velocity,
-    double gravity,
-    double eps,
+    const FixedArray<ScenePos, 3>& gun_pos,
+    const FixedArray<ScenePos, 3>& target_pos,
+    ScenePos bullet_start_offset,
+    ScenePos velocity,
+    ScenePos gravity,
+    ScenePos eps,
     size_t niterations)
 {
     // Maxima code
@@ -37,19 +37,19 @@ Aim::Aim(
     auto y = target_pos(1) - gun_pos(1);
     angle0 = std::atan2(y, x);
 
-    auto t = [x, bullet_start_offset, velocity](double a) {
-        auto ca = cos(a);
+    auto t = [x, bullet_start_offset, velocity](ScenePos a) {
+        auto ca = std::cos(a);
         return (x - ca * bullet_start_offset) / (ca * velocity);
     };
-    auto ft = [y, bullet_start_offset, velocity, gravity](double a, double ta) {
-        auto sa = sin(a);
+    auto ft = [y, bullet_start_offset, velocity, gravity](ScenePos a, ScenePos ta) {
+        auto sa = std::sin(a);
         auto yt = sa * bullet_start_offset + sa * velocity * ta - gravity / 2 * squared(ta);
         return yt - y;
     };
-    auto f = [&t, &ft](double a) {
+    auto f = [&t, &ft](ScenePos a) {
         return ft(a, t(a));
     };
-    auto df = [x, bullet_start_offset, velocity, gravity](double a) {
+    auto df = [x, bullet_start_offset, velocity, gravity](ScenePos a) {
         auto ca = std::cos(a);
         auto sa = std::sin(a);
         return
@@ -61,7 +61,7 @@ Aim::Aim(
             squared(ca) + x + (squared(sa) * bullet_start_offset) / ca;
         };
     angle = NAN;
-    for (double a = angle0; a < double(M_PI / 2); a += 0.2) {
+    for (ScenePos a = angle0; a < ScenePos(M_PI / 2); a += ScenePos(0.2)) {
         if (f(a) > 0) {
             angle = newton_1d(f, df, a, eps, niterations, false);
             break;

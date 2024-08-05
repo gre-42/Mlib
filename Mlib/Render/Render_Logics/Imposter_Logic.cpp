@@ -119,8 +119,8 @@ ImposterLogic::~ImposterLogic() {
 
 void ImposterLogic::add_imposter(
     const ImposterParameters& ips,
-    const FixedArray<double, 3>& orig_node_position,
-    double camera_y,
+    const FixedArray<ScenePos, 3>& orig_node_position,
+    ScenePos camera_y,
     float angle_y)
 {
     assert_true(imposter_node_ == nullptr);
@@ -144,7 +144,7 @@ void ImposterLogic::add_imposter(
         material,
         morphology};
     auto new_imposter_node = make_dunique<SceneNode>(
-        FixedArray<double, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
+        FixedArray<ScenePos, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
     res.instantiate_renderable(InstantiationOptions{
@@ -182,19 +182,19 @@ void ImposterLogic::render(
     {
         auto cam_cp = camera_node->get_camera().copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
-        auto mvp = dot2d(cam_cp->projection_matrix().casted<double>(), (v * m).affine());
-        VisibilityCheck<double> vc{mvp};
+        auto mvp = dot2d(cam_cp->projection_matrix().casted<ScenePos>(), (v * m).affine());
+        VisibilityCheck<ScenePos> vc{mvp};
         if (vc.orthographic()) {
             delete_imposter_if_exists();
             return;
         }
-        auto frustum = Frustum3<double>::from_projection_matrix(mvp);
+        auto frustum = Frustum3<ScenePos>::from_projection_matrix(mvp);
         if (!frustum.intersects(obj_relative_aabb_)) {
             return;
         }
     }
     auto camera_position = camera_node->absolute_model_matrix().t();
-    auto cam_to_obj2 = FixedArray<double, 2>{
+    auto cam_to_obj2 = FixedArray<ScenePos, 2>{
         m.t(0) - camera_position(0),
         m.t(2) - camera_position(2)};
     auto cam_to_obj2_len2 = sum(squared(cam_to_obj2));
@@ -211,7 +211,7 @@ void ImposterLogic::render(
     if (imposter_node_ != nullptr) {
         auto mv = v * m;
         size_t i = 0;
-        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
+        imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
             auto pc = mv.transform(corner).casted<float>();
             auto pc_old = v.transform(old_projected_bbox_(i++)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
@@ -238,13 +238,13 @@ void ImposterLogic::render(
         }
 
         {
-            auto iv = TransformationMatrix<float, double, 3>(
+            auto iv = TransformationMatrix<float, ScenePos, 3>(
                 la->extrinsic_R, camera_position);
-            auto mv = (TransformationMatrix<float, double, 3>::inverse(
+            auto mv = (TransformationMatrix<float, ScenePos, 3>::inverse(
                 la->extrinsic_R, camera_position) *
                 m);
             size_t i = 0;
-            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<double, 3>& corner){
+            if (!obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
                 auto pc = mv.transform(corner);
                 if (pc(2) > -1e-12) {
                     return false;
@@ -349,11 +349,11 @@ float ImposterLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& ImposterLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& ImposterLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& ImposterLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& ImposterLogic::iv() const {
     return child_logic_.iv();
 }
 

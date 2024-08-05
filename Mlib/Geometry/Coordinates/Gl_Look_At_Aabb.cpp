@@ -5,9 +5,9 @@
 using namespace Mlib;
 
 std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
-    const FixedArray<double, 3>& camera_position,
-    const TransformationMatrix<float, double, 3>& object_model_matrix,
-    const AxisAlignedBoundingBox<double, 3>& object_aabb)
+    const FixedArray<ScenePos, 3>& camera_position,
+    const TransformationMatrix<float, ScenePos, 3>& object_model_matrix,
+    const AxisAlignedBoundingBox<ScenePos, 3>& object_aabb)
 {
     GlLookatAabb result{
         .extrinsic_R = uninitialized,
@@ -26,13 +26,13 @@ std::optional<GlLookatAabb> Mlib::gl_lookat_aabb(
         return std::nullopt;
     }
     result.extrinsic_R = *R;
-    TransformationMatrix<float, double, 3> lookat0{
+    TransformationMatrix<float, ScenePos, 3> lookat0{
         result.extrinsic_R,
         camera_position};
     auto object_model_matrix_rel = lookat0.inverted() * object_model_matrix;
     result.near_plane = INFINITY;
     result.far_plane = -INFINITY;
-    if (!object_aabb.for_each_corner([&](const FixedArray<double, 3>& corner) {
+    if (!object_aabb.for_each_corner([&](const FixedArray<ScenePos, 3>& corner) {
         auto dc = object_model_matrix_rel.transform(corner).casted<float>();
         // This also excludes points behind the camera.
         if (dc(2) > -1e-12) {

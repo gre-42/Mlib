@@ -3,7 +3,7 @@
 
 using namespace Mlib;
 
-std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>> OrderableRidgeSphereBase::key() const
+std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>> OrderableRidgeSphereBase::key() const
 {
     if (OrderableFixedArray{collision_ridge_sphere.edge(0)} > OrderableFixedArray{collision_ridge_sphere.edge(1)}) {
         return std::make_pair(

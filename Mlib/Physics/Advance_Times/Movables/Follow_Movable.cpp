@@ -29,11 +29,11 @@ FollowMovable::FollowMovable(
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
     , attachment_distance_{ attachment_distance }
-    , attachment_position_{ fixed_nans<double, 2>() }
+    , attachment_position_{ fixed_nans<ScenePos, 2>() }
     , node_displacement_{ node_displacement }
     , look_at_displacement_{ look_at_displacement }
-    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
-    , dpos_old_{ fixed_nans<double, 3>() }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
+    , dpos_old_{ fixed_nans<ScenePos, 3>() }
     , snappiness_{ snappiness }
     , y_adaptivity_{ y_adaptivity }
     , y_adapt_{ 0 }
@@ -69,31 +69,31 @@ void FollowMovable::advance_time(float dt, std::chrono::steady_clock::time_point
     if (!initialized_) {
         THROW_OR_ABORT("FollowMovable not initialized");
     }
-    FixedArray<double, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
-    FixedArray<double, 2> dpos2{dpos3(0), dpos3(2)};
-    FixedArray<double, 2> dpos_old2{dpos_old_(0), dpos_old_(2)};
-    FixedArray<double, 2> residual2 = attachment_position_ - double(snappiness_) * dpos2 - double(1 - snappiness_) * dpos_old2;
+    FixedArray<ScenePos, 3> dpos3 = followed_->get_new_absolute_model_matrix().t();
+    FixedArray<ScenePos, 2> dpos2{dpos3(0), dpos3(2)};
+    FixedArray<ScenePos, 2> dpos_old2{dpos_old_(0), dpos_old_(2)};
+    FixedArray<ScenePos, 2> residual2 = attachment_position_ - ScenePos(snappiness_) * dpos2 - ScenePos(1 - snappiness_) * dpos_old2;
     residual2 *= attachment_distance_ / std::sqrt(sum(squared(residual2)));
     attachment_position_ = dpos2 + residual2;
     transformation_matrix_.t(0) = attachment_position_(0) + node_displacement_(0);
     transformation_matrix_.t(1) = dpos3(1) + node_displacement_(1);
     transformation_matrix_.t(2) = attachment_position_(1) + node_displacement_(2);
-    FixedArray<double, 3> dp = dpos3 - dpos_old_;
-    FixedArray<double, 2> dx2{dp(0), dp(2)};
-    double dy = dp(1);
-    double dx2_len2 = sum(squared(dx2));
+    FixedArray<ScenePos, 3> dp = dpos3 - dpos_old_;
+    FixedArray<ScenePos, 2> dx2{dp(0), dp(2)};
+    ScenePos dy = dp(1);
+    ScenePos dx2_len2 = sum(squared(dx2));
     if ((dx2_len2 > 1e-3 * dt_dt_ref_) && (dot0d(residual2, dx2) < 0)) {
         y_adapt_ = y_adaptivity_ * exponential_smoother_(kalman_filter_(std::clamp(float(-dy / std::sqrt(dx2_len2)), 0.f, 0.5f)));
     }
     transformation_matrix_.t(1) += y_adapt_;
-    auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_.casted<double>());
+    auto R = gl_lookat_absolute(transformation_matrix_.t(), dpos3 + look_at_displacement_.casted<ScenePos>());
     if (R.has_value()) {
         transformation_matrix_.R() = R->casted<float>();
     }
     dpos_old_ = dpos3;
 }
 
-void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     if (std::abs(absolute_model_matrix.get_scale2() - 1) > 1e-6) {
         THROW_OR_ABORT("FollowMovable does not support scaling");
     }
@@ -102,7 +102,7 @@ void FollowMovable::set_absolute_model_matrix(const TransformationMatrix<float, 
     attachment_position_(1) = transformation_matrix_.t(2) - node_displacement_(2);
 }
 
-TransformationMatrix<float, double, 3> FollowMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> FollowMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

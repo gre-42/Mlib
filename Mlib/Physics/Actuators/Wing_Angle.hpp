@@ -16,15 +16,15 @@ public:
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     // IRelativeMovable
-    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
 private:
     DanglingPtr<SceneNode> node_;
     float& angle_;
     FixedArray<float, 3> rotation_axis_;
-    FixedArray<double, 3> position_;
+    FixedArray<ScenePos, 3> position_;
 };
 
 }

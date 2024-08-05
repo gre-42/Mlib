@@ -244,16 +244,17 @@ void ColoredVertexArray<TPos>::triangles_sphere(
 }
 
 template <class TPos>
-std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const
+template <class TPosResult, class TPosTransform>
+std::vector<CollisionPolygonAabb<TPosResult, 3>> ColoredVertexArray<TPos>::transformed_triangles_bbox(
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    std::vector<CollisionPolygonAabb<double, 3>> res;
+    std::vector<CollisionPolygonAabb<TPosResult, 3>> res;
     res.reserve(triangles.size());
     auto rng = welzl_rng();
     for (const auto& t : triangles) {
-        Triangle3D<double> tri{ t, tm };
-        res.push_back(CollisionPolygonAabb<double, 3>{
-            .base = CollisionPolygonSphere<double, 3>{
+        Triangle3D<TPosResult> tri{ t, tm };
+        res.push_back(CollisionPolygonAabb<TPosResult, 3>{
+            .base = CollisionPolygonSphere<TPosResult, 3>{
                 .bounding_sphere = tri.bounding_sphere(rng),
                 .polygon = tri.polygon(),
                 .physics_material = morphology.physics_material,
@@ -265,15 +266,16 @@ std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<TPos>::transform
 }
 
 template <class TPos>
-std::vector<CollisionLineAabb<double>> ColoredVertexArray<TPos>::transformed_lines_bbox(
-    const TransformationMatrix<float, double, 3>& tm) const
+template <class TPosResult, class TPosTransform>
+std::vector<CollisionLineAabb<TPosResult>> ColoredVertexArray<TPos>::transformed_lines_bbox(
+    const TransformationMatrix<float, TPosTransform, 3>& tm) const
 {
-    std::vector<CollisionLineAabb<double>> res;
+    std::vector<CollisionLineAabb<TPosResult>> res;
     res.reserve(lines.size());
     for (const auto& l : lines) {
-        Line3D<double> line{ l, tm };
-        res.push_back(CollisionLineAabb<double>{
-            .base = CollisionLineSphere<double>{
+        Line3D<TPosResult> line{ l, tm };
+        res.push_back(CollisionLineAabb<TPosResult>{
+            .base = CollisionLineSphere<TPosResult>{
                 .bounding_sphere = line.bounding_sphere(),
                 .physics_material = morphology.physics_material,
                 .line = line.vertices(),
@@ -549,7 +551,7 @@ void ColoredVertexArray<TPos>::set_bounds(
 }
 
 template <class TPos>
-double ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
+ScenePos ColoredVertexArray<TPos>::max_center_distance(uint32_t billboard_id) const {
     return material.max_center_distance(billboard_id, morphology);
 }
 
@@ -575,3 +577,17 @@ template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<double>::
 template std::shared_ptr<ColoredVertexArray<float>> ColoredVertexArray<float>::transformed(
     const UUVector<OffsetAndQuaternion<float, float>>& qs,
     const std::string& suffix) const;
+
+template std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<double>::transformed_triangles_bbox(
+    const TransformationMatrix<float, double, 3>& tm) const;
+template std::vector<CollisionLineAabb<double>> ColoredVertexArray<double>::transformed_lines_bbox(
+    const TransformationMatrix<float, double, 3>& tm) const;
+template std::vector<CollisionPolygonAabb<double, 3>> ColoredVertexArray<float>::transformed_triangles_bbox(
+    const TransformationMatrix<float, double, 3>& tm) const;
+template std::vector<CollisionLineAabb<double>> ColoredVertexArray<float>::transformed_lines_bbox(
+    const TransformationMatrix<float, double, 3>& tm) const;
+
+template std::vector<CollisionPolygonAabb<float, 3>> ColoredVertexArray<float>::transformed_triangles_bbox(
+    const TransformationMatrix<float, float, 3>& tm) const;
+template std::vector<CollisionLineAabb<float>> ColoredVertexArray<float>::transformed_lines_bbox(
+    const TransformationMatrix<float, float, 3>& tm) const;

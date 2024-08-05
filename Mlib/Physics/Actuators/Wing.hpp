@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Actuators/Trail_Source.hpp>
 #include <Mlib/Physics/Actuators/Wing_Angle.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -17,7 +18,7 @@ public:
     Wing(
         DanglingPtr<SceneNode> angle_of_attack_node,
         DanglingPtr<SceneNode> brake_angle_node,
-        const TransformationMatrix<float, double, 3>& relative_location,
+        const TransformationMatrix<float, ScenePos, 3>& relative_location,
         const Interp<float>& fac,
         float lift_coefficient,
         float angle_coefficient_yz,
@@ -27,8 +28,8 @@ public:
         float brake_angle,
         std::optional<TrailSource> trail_source);
     ~Wing();
-    TransformationMatrix<float, double, 3> absolute_location(
-        const TransformationMatrix<float, double, 3>& parent_location);
+    TransformationMatrix<float, ScenePos, 3> absolute_location(
+        const TransformationMatrix<float, ScenePos, 3>& parent_location);
     Interp<float> fac;
     float lift_coefficient;
     float angle_coefficient_yz;
@@ -41,7 +42,7 @@ public:
     std::optional<TrailSource> trail_source;
 
 private:
-    TransformationMatrix<float, double, 3> relative_location_;
+    TransformationMatrix<float, ScenePos, 3> relative_location_;
 };
 
 }

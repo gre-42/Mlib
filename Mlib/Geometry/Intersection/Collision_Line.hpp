@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Ray_Segment_3D.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -14,8 +15,8 @@ struct CollisionLineSphere {
     PhysicsMaterial physics_material;
     FixedArray<FixedArray<TData, 3>, 2> line;
     RaySegment3D<TData> ray;
-    CollisionLineSphere<double> transformed(
-        const TransformationMatrix<float, double, 3>& transformation_matrix) const
+    CollisionLineSphere<ScenePos> transformed(
+        const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) const
     {
         return {
             bounding_sphere.transformed(transformation_matrix),

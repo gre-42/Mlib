@@ -8,7 +8,7 @@ void Mlib::jump(
     RigidBodyPulses& o0,
     RigidBodyPulses& o1,
     float dv,
-    const VectorAtPosition<float, double, 3>& vp)
+    const VectorAtPosition<float, ScenePos, 3>& vp)
 {
     if (o0.mass_ == INFINITY) {
         float mc = o1.effective_mass(vp);

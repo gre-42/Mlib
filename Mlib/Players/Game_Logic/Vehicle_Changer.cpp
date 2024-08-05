@@ -9,6 +9,7 @@
 #include <Mlib/Players/Scene_Vehicle/Vehicle_Spawner.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -117,7 +118,7 @@ void VehicleChanger::enter_vehicle(VehicleSpawner& a, SceneVehicle& b) {
         float angle = std::atan2(-a_dir(2), a_dir(0)) - float(M_PI / 2.);
         b_rb.rbp_.set_pose(
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, angle, 0.f}),
-            a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<double>());
+            a_trafo.t() + (a_rb_old.door_distance_ * a_dir).casted<ScenePos>());
         b_rb.rbp_.v_ = 0.f;
         b_rb.rbp_.w_ = 0.f;
         b.scene_node()->invalidate_transformation_history();

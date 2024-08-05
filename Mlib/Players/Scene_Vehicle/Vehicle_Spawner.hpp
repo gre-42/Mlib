@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <chrono>
 #include <functional>
 #include <list>
@@ -52,7 +53,7 @@ public:
     void set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>&& scene_vehicle);
     
     void set_spawn_vehicle(SpawnVehicle spawn_vehicle);
-    void spawn(const SpawnPoint& spawn_point, double spawn_y_offset);
+    void spawn(const SpawnPoint& spawn_point, ScenePos spawn_y_offset);
 
     float get_time_since_spawn() const;
     bool get_spotted_by_vip() const;

@@ -21,10 +21,10 @@ using namespace Mlib;
 #endif
 
 LazyTransformedMesh::LazyTransformedMesh(
-    const TransformationMatrix<float, double, 3>& transformation_matrix,
+    const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
     const BoundingSphere<float, 3>& bounding_sphere,
     const std::shared_ptr<CollisionMesh<float>>& collision_mesh,
-    double max_min_cos_ridge)
+    ScenePos max_min_cos_ridge)
     : max_min_cos_ridge_{max_min_cos_ridge}
     , transformation_matrix_{ transformation_matrix }
     , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
@@ -32,10 +32,10 @@ LazyTransformedMesh::LazyTransformedMesh(
 {}
 
 LazyTransformedMesh::LazyTransformedMesh(
-    const TransformationMatrix<float, double, 3>& transformation_matrix,
+    const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
     const BoundingSphere<double, 3>& bounding_sphere,
     const std::shared_ptr<CollisionMesh<double>>& collision_mesh,
-    double max_min_cos_ridge)
+    ScenePos max_min_cos_ridge)
     : max_min_cos_ridge_{ max_min_cos_ridge }
     , transformation_matrix_{ transformation_matrix }
     , transformed_bounding_sphere_{ bounding_sphere.transformed(transformation_matrix) }
@@ -44,15 +44,15 @@ LazyTransformedMesh::LazyTransformedMesh(
 
 LazyTransformedMesh::~LazyTransformedMesh() = default;
 
-bool LazyTransformedMesh::intersects(const BoundingSphere<double, 3>& sphere) const {
+bool LazyTransformedMesh::intersects(const BoundingSphere<ScenePos, 3>& sphere) const {
     return transformed_bounding_sphere_.intersects(sphere);
 }
 
-bool LazyTransformedMesh::intersects(const PlaneNd<double, 3>& plane) const {
+bool LazyTransformedMesh::intersects(const PlaneNd<ScenePos, 3>& plane) const {
     return transformed_bounding_sphere_.intersects(plane);
 }
 
-const std::vector<CollisionPolygonSphere<double, 4>>& LazyTransformedMesh::get_quads_sphere() const {
+const std::vector<CollisionPolygonSphere<ScenePos, 4>>& LazyTransformedMesh::get_quads_sphere() const {
     if (!quads_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!quads_calculated_) {
@@ -76,7 +76,7 @@ const std::vector<CollisionPolygonSphere<double, 4>>& LazyTransformedMesh::get_q
 }
 
 
-const std::vector<CollisionPolygonSphere<double, 3>>& LazyTransformedMesh::get_triangles_sphere() const {
+const std::vector<CollisionPolygonSphere<ScenePos, 3>>& LazyTransformedMesh::get_triangles_sphere() const {
     if (!triangles_calculated_) {
         std::scoped_lock lock{mutex_};
         if (!triangles_calculated_) {
@@ -99,7 +99,7 @@ const std::vector<CollisionPolygonSphere<double, 3>>& LazyTransformedMesh::get_t
     return transformed_triangles_;
 }
 
-const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_edges_sphere() const {
+const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_edges_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -153,7 +153,7 @@ const std::vector<CollisionRidgeSphere>& LazyTransformedMesh::get_ridges_sphere(
     return transformed_ridges_;
 }
 
-const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_lines_sphere() const {
+const std::vector<CollisionLineSphere<ScenePos>>& LazyTransformedMesh::get_lines_sphere() const {
     //if (msh.vertices->size() == 0) {
     //    lerr() << "Skipping mesh without triangles";
     //}
@@ -179,12 +179,12 @@ const std::vector<CollisionLineSphere<double>>& LazyTransformedMesh::get_lines_s
     return transformed_lines_;
 }
 
-BoundingSphere<double, 3> LazyTransformedMesh::bounding_sphere() const {
+BoundingSphere<ScenePos, 3> LazyTransformedMesh::bounding_sphere() const {
     return transformed_bounding_sphere_;
 }
 
-AxisAlignedBoundingBox<double, 3> LazyTransformedMesh::aabb() const {
-    return AxisAlignedBoundingBox<double, 3>::from_center_and_radius(
+AxisAlignedBoundingBox<ScenePos, 3> LazyTransformedMesh::aabb() const {
+    return AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(
         transformed_bounding_sphere_.center(),
         transformed_bounding_sphere_.radius());
 }

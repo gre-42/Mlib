@@ -22,7 +22,7 @@ GravityCorrection Mlib::gravity_correction_from_string(const std::string& str) {
 Rotor::Rotor(
     const std::string& engine,
     const std::optional<std::string>& delta_engine,
-    const TransformationMatrix<float, double, 3>& rest_location,
+    const TransformationMatrix<float, ScenePos, 3>& rest_location,
     float power2lift,
     float w,
     GravityCorrection gravity_correction,
@@ -58,22 +58,22 @@ Rotor::Rotor(
 
 Rotor::~Rotor() = default;
 
-TransformationMatrix<float, double, 3> Rotor::rotated_location(
-    const TransformationMatrix<float, double, 3>& parent_location,
+TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
+    const TransformationMatrix<float, ScenePos, 3>& parent_location,
     const FixedArray<float, 3>& parent_velocity)
 {
-    auto scaled_movement = [this](const FixedArray<double, 3>& pos) {
-        if (all(pos == 0.)) {
-            return fixed_zeros<double, 3>();
+    auto scaled_movement = [this](const FixedArray<ScenePos, 3>& pos) {
+        if (all(pos == ScenePos(0))) {
+            return fixed_zeros<ScenePos, 3>();
         } else {
             if (std::isnan(radius_)) {
                 THROW_OR_ABORT("Rotor radius not set");
             }
-            return pos * radius_ / 2.;
+            return pos * radius_ / ScenePos(2);
         }
     };
-    TransformationMatrix<float, double, 3> abs_rest_location = parent_location * rest_location;
-    TransformationMatrix<float, double, 3> r_controller{
+    TransformationMatrix<float, ScenePos, 3> abs_rest_location = parent_location * rest_location;
+    TransformationMatrix<float, ScenePos, 3> r_controller{
         tait_bryan_angles_2_matrix<float>(angles),
         scaled_movement(movement)};
     if (gravity_correction_ != GravityCorrection::NONE) {
@@ -121,17 +121,17 @@ TransformationMatrix<float, double, 3> Rotor::rotated_location(
                     d /= d_len;
                     float ang = std::asin(std::clamp(d_len, 0.f, 1.f));
                     FixedArray<float, 3, 3> m = rodrigues2(d, signed_min(ang, max_align_to_gravity_));
-                    TransformationMatrix<float, double, 3> M{ m, fixed_zeros<double, 3>() };
+                    TransformationMatrix<float, ScenePos, 3> M{ m, fixed_zeros<ScenePos, 3>() };
                     return abs_rest_location * M * r_controller;
                 }
             } else if (gravity_correction_ == GravityCorrection::MOVE) {
                 // Move the effective contact point within the rotor's plane
                 // to simulate a change in the blades' angle of attack.
-                FixedArray<double, 3> pos{
-                    (double)align_to_gravity_pid_x_(g(0)),
-                    (double)align_to_gravity_pid_y_(g(1)),
-                    0.};
-                TransformationMatrix<float, double, 3> M{ fixed_identity_array<float, 3>(), scaled_movement(pos) };
+                FixedArray<ScenePos, 3> pos{
+                    (ScenePos)align_to_gravity_pid_x_(g(0)),
+                    (ScenePos)align_to_gravity_pid_y_(g(1)),
+                    0.f};
+                TransformationMatrix<float, ScenePos, 3> M{ fixed_identity_array<float, 3>(), scaled_movement(pos) };
                 return abs_rest_location * M * r_controller;
             } else {
                 THROW_OR_ABORT("Unknown rotor movement");

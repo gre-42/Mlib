@@ -57,7 +57,7 @@ TrailsInstance::TrailsInstance(
     const std::vector<float>& continuous_layer_y,
     size_t max_num_segments,
     const RenderableResourceFilter& filter)
-    : offset_((double)NAN)
+    : offset_((ScenePos)NAN)
     , dynamic_vertex_buffers_{ std::make_shared<AnimatedTextureLayer>(max_num_segments) }
     , cvar_{ std::make_shared<ColoredVertexArrayResource>(gen_array(texture, shading, continuous_layer_x, continuous_layer_y), dynamic_vertex_buffers_) }
     , rcva_{ std::make_unique<RenderableColoredVertexArray>(RenderingContextStack::primary_rendering_resources(), cvar_, filter) }
@@ -67,7 +67,7 @@ TrailsInstance::TrailsInstance(
 TrailsInstance::~TrailsInstance() = default;
 
 void TrailsInstance::add_triangle(
-    const FixedArray<ColoredVertex<double>, 3>& triangle,
+    const FixedArray<ColoredVertex<ScenePos>, 3>& triangle,
     const FixedArray<float, 3>& time,
     const TrailSequence& sequence)
 {
@@ -93,10 +93,10 @@ void TrailsInstance::preload() const {
 }
 
 void TrailsInstance::render(
-    const FixedArray<double, 4, 4>& vp,
-    const TransformationMatrix<float, double, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+    const FixedArray<ScenePos, 4, 4>& vp,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
@@ -107,7 +107,7 @@ void TrailsInstance::render(
     if (any(isnan(offset_))) {
         verbose_abort("TrailsInstance::render internal error");
     }
-    TransformationMatrix<float, double, 3> m{ fixed_identity_array<float, 3>(), offset_ };
+    TransformationMatrix<float, ScenePos, 3> m{ fixed_identity_array<float, 3>(), offset_ };
     rcva_->render(
         dot2d(vp, m.affine()),
         m,

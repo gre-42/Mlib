@@ -26,7 +26,7 @@ void AudioListener::set_transformation(const AudioListenerState& listener_state)
     // AL_CHK(alListenerfv(AL_ORIENTATION, orientation));
 }
 
-std::optional<AudioSourceState<float>> AudioListener::get_relative_position(const AudioSourceState<double>& state) {
+std::optional<AudioSourceState<float>> AudioListener::get_relative_position(const AudioSourceState<ScenePos>& state) {
     if (!listener_inverse_state_.has_value()) {
         return std::nullopt;
     }

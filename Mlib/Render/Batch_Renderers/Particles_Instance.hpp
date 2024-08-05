@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <list>
 #include <memory>
 
@@ -39,7 +40,7 @@ public:
     size_t num_billboard_atlas_components() const;
 
     void add_particle(
-        const TransformationMatrix<float, double, 3>& transformation_matrix,
+        const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
         const BillboardSequence& sequence);
 
     void move(float dt);
@@ -47,16 +48,16 @@ public:
     void preload() const;
 
     void render(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const FixedArray<ScenePos, 4, 4>& vp,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const;
 
 private:
-    FixedArray<double, 3> offset_;
+    FixedArray<ScenePos, 3> offset_;
     std::shared_ptr<DynamicInstanceBuffers> dynamic_instance_buffers_;
     std::shared_ptr<ColoredVertexArrayResource> cvar_;
     std::unique_ptr<RenderableColoredVertexArray> rcva_;

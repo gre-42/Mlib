@@ -378,8 +378,10 @@ void Image::set_pixels_dxt(uint32_t type, uint8_t *pixels)
 void Image::remove_mask()
 {
     if(this->depth <= 8){
-        assert(this->palette);
         uint32_t pallen = 4 * (1 << this->depth);
+        if (this->palette.size() != pallen + 4) {
+            THROW_OR_ABORT("Unexpected palette size");
+        }
         for(uint32_t i = 0; i < pallen; i += 4)
             this->palette[i+3] = 0xFF;
         return;

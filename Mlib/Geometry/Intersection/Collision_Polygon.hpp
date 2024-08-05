@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -24,14 +25,14 @@ struct CollisionPolygonSphere {
             .corners = corners
         };
     }
-    CollisionPolygonSphere<double, tnvertices> transformed(
-        const TransformationMatrix<float, double, 3>& transformation_matrix) const
+    CollisionPolygonSphere<ScenePos, tnvertices> transformed(
+        const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) const
     {
         return {
             .bounding_sphere = bounding_sphere.transformed(transformation_matrix),
-            .polygon = polygon.template casted<double>().transformed(transformation_matrix),
+            .polygon = polygon.template casted<ScenePos>().transformed(transformation_matrix),
             .physics_material = physics_material,
-            .corners = corners.template applied<FixedArray<double, 3>>([&](const auto& c){ return transformation_matrix.transform(c); })
+            .corners = corners.template applied<FixedArray<ScenePos, 3>>([&](const auto& c){ return transformation_matrix.transform(c); })
         };
     }
 };

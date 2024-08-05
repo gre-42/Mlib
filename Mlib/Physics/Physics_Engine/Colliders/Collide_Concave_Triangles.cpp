@@ -9,7 +9,7 @@ using namespace Mlib;
 void Mlib::collide_concave_triangles(
     const PhysicsEngineConfig& cfg,
     std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>>& concave_t0_intersections,
-    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<double, 3>>>& ridge_intersection_points)
+    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>>& ridge_intersection_points)
 {
     for (auto& [rb1, cs] : concave_t0_intersections) {
         auto it = ridge_intersection_points.find(rb1);

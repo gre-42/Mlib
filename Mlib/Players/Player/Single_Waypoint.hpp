@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -17,7 +18,7 @@ class SingleWaypoint {
     SingleWaypoint(const SingleWaypoint&) = delete;
     SingleWaypoint& operator = (const SingleWaypoint&) = delete;
 public:
-    using WayPoint = PointAndFlags<FixedArray<double, 3>, WayPointLocation>;
+    using WayPoint = PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>;
 
     explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();

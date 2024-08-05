@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <compare>
 #include <map>
 #include <string>
@@ -26,9 +27,9 @@ public:
     virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
 
     SurfaceContactInfo* notify_contact(
-        const FixedArray<double, 3>& intersection_point,
+        const FixedArray<ScenePos, 3>& intersection_point,
         const FixedArray<float, 3>& rotation,
-        const FixedArray<double, 3>& surface_normal,
+        const FixedArray<ScenePos, 3>& surface_normal,
         const IntersectionScene& c);
     void advance_time(float dt);
 private:

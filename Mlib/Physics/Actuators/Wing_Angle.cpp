@@ -8,7 +8,7 @@ WingAngle::WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray
     : node_{ node }
     , angle_{ angle }
     , rotation_axis_{ rotation_axis }
-    , position_{ fixed_nans<double, 3>() }
+    , position_{ fixed_nans<ScenePos, 3>() }
 {
     if (node != nullptr) {
         node->set_relative_movable({ *this, CURRENT_SOURCE_LOCATION });
@@ -39,20 +39,20 @@ void WingAngle::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     node_ = nullptr;
 }
 
-void WingAngle::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void WingAngle::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     position_ = relative_model_matrix.t();
 }
 
-void WingAngle::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void WingAngle::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     // Do nothing
 }
 
-void WingAngle::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void WingAngle::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     // Do nothing
 }
 
-TransformationMatrix<float, double, 3> WingAngle::get_new_relative_model_matrix() const {
-    return TransformationMatrix<float, double, 3>{
+TransformationMatrix<float, ScenePos, 3> WingAngle::get_new_relative_model_matrix() const {
+    return TransformationMatrix<float, ScenePos, 3>{
         rodrigues2(rotation_axis_, angle_),
         position_};
 }

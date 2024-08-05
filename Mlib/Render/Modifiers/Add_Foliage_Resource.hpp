@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ void add_foliage_resource(
     SceneNodeResources& scene_node_resources,
     const std::vector<ParsedResourceName>& near_grass_resources,
     const std::vector<ParsedResourceName>& dirty_near_grass_resources,
-    double near_grass_distance,
+    ScenePos near_grass_distance,
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,

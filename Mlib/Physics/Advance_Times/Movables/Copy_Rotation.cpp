@@ -8,24 +8,24 @@ using namespace Mlib;
 
 CopyRotation::CopyRotation(DanglingRef<SceneNode> from)
     : from_{ from.ptr() }
-    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
 
 CopyRotation::~CopyRotation() {
     on_destroy.clear();
 }
 
-void CopyRotation::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
+void CopyRotation::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix)
 {
     transformation_matrix_ = relative_model_matrix;
 }
 
-void CopyRotation::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix)
+void CopyRotation::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix)
 {
     transformation_matrix_.t() = relative_model_matrix.t();
 }
 
-void CopyRotation::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix)
+void CopyRotation::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix)
 {
     if (from_ == nullptr) {
         return;
@@ -33,7 +33,7 @@ void CopyRotation::set_absolute_model_matrix(const TransformationMatrix<float, d
     transformation_matrix_.R() = from_->relative_model_matrix().R();
 }
 
-TransformationMatrix<float, double, 3> CopyRotation::get_new_relative_model_matrix() const
+TransformationMatrix<float, ScenePos, 3> CopyRotation::get_new_relative_model_matrix() const
 {
     return transformation_matrix_;
 }

@@ -61,11 +61,11 @@ public:
         DeleteNodeMutex& delete_node_mutex);
     ~Gun();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     void trigger(
         IPlayer* player = nullptr,
         ITeam* team = nullptr);
-    const TransformationMatrix<float, double, 3>& absolute_model_matrix() const;
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix() const;
     bool is_none_gun() const;
     const FixedArray<float, 3>& punch_angle() const;
     size_t nbullets_available() const;
@@ -99,7 +99,7 @@ private:
     ITeam* team_;
     float cool_down_;
     float time_since_last_shot_;
-    TransformationMatrix<float, double, 3> absolute_model_matrix_;
+    TransformationMatrix<float, ScenePos, 3> absolute_model_matrix_;
     FixedArray<float, 3> punch_angle_;
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng_;
     std::string muzzle_flash_resource_;

@@ -10,7 +10,7 @@ class OrderableFixedArray;
 
 struct OrderableRidgeSphereBase {
     CollisionRidgeSphere collision_ridge_sphere;
-    std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>> key() const;
+    std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>> key() const;
     bool operator < (const OrderableRidgeSphereBase& other) const;
 };
 
@@ -31,7 +31,7 @@ public:
 protected:
     void insert(
         const TOrderableRidgeSphere& ridge,
-        double max_min_cos_ridge);
+        ScenePos max_min_cos_ridge);
 private:
     Ridges ridges_;
 };

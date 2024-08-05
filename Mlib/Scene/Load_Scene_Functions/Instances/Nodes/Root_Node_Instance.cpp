@@ -35,7 +35,7 @@ RootNodeInstance::RootNodeInstance(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-static FixedArray<double, 3> parse_position(
+static FixedArray<ScenePos, 3> parse_position(
     const TransformationMatrix<double, double, 3>* inverse_geographic_coordinates,
     const std::string& x_str,
     const std::string& y_str,
@@ -55,11 +55,11 @@ static FixedArray<double, 3> parse_position(
         }
         return inverse_geographic_coordinates->transform(
             FixedArray<double, 3>{
-                safe_stof(match_y[1].str()),
-                safe_stof(match_x[1].str()),
-                safe_stof(z_str)});
+                safe_stod(match_y[1].str()),
+                safe_stod(match_x[1].str()),
+                safe_stod(z_str)}).casted<ScenePos>();
     } else {
-        return FixedArray<double, 3>{
+        return FixedArray<ScenePos, 3>{
             safe_stof(x_str),
             safe_stof(y_str),
             safe_stof(z_str)};
@@ -68,7 +68,7 @@ static FixedArray<double, 3> parse_position(
 
 void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    FixedArray<double, 3> pos = uninitialized;
+    FixedArray<ScenePos, 3> pos = uninitialized;
     // root nodes do not have a default pose
     auto jpos = args.arguments.at<UFixedArray<nlohmann::json, 3>>(KnownArgs::position);
     if ((jpos(0).type() == nlohmann::detail::value_t::string) &&
@@ -81,10 +81,10 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
             jpos(1).get<std::string>(),
             jpos(2).get<std::string>());
     } else {
-        pos = jpos.applied<double>([](const nlohmann::json& j){return j.get<double>();});
+        pos = jpos.applied<ScenePos>([](const nlohmann::json& j){return j.get<ScenePos>();});
     }
     auto node = make_dunique<SceneNode>(
-        pos * (double)meters,
+        pos * (ScenePos)meters,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),
         pose_interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::interpolation, "enabled")));

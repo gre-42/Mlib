@@ -1401,7 +1401,7 @@ bool RenderingResources::contains_alias(const std::string& alias) const {
     return aliases_.contains(alias);
 }
 
-const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
+const FixedArray<ScenePos, 4, 4>& RenderingResources::get_vp(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_vp " + name);
     auto it = vps_.try_get(name);
     if (it == nullptr) {
@@ -1414,7 +1414,7 @@ const FixedArray<double, 4, 4>& RenderingResources::get_vp(const std::string& na
     return *it;
 }
 
-void RenderingResources::set_vp(const std::string& name, const FixedArray<double, 4, 4>& vp) {
+void RenderingResources::set_vp(const std::string& name, const FixedArray<ScenePos, 4, 4>& vp) {
     LOG_FUNCTION("RenderingResources::set_vp " + name);
     vps_.insert_or_assign(name, vp);
 }

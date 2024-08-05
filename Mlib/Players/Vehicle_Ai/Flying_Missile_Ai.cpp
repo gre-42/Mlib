@@ -70,7 +70,7 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 
     auto distance2 = sum(squared(pod - rigid_body_.rbp_.abs_position()));
     auto eta = std::min(eta_max_, std::sqrt(distance2 / sum(squared(rigid_body_.rbp_.v_))));
-    auto corrected_position_of_destination = pod + eta * vod.casted<double>();
+    auto corrected_position_of_destination = pod + eta * vod.casted<ScenePos>();
 
     auto dir_d = corrected_position_of_destination - rigid_body_.rbp_.abs_position();
     auto l2_d = sum(squared(dir_d));

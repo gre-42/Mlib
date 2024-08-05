@@ -11,11 +11,11 @@ template <size_t tnvertices>
 static void compute_relevant_polys(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
-    std::vector<const CollisionPolygonSphere<double, tnvertices>*>& relevant_polys0,
-    std::vector<const CollisionPolygonSphere<double, tnvertices>*>& relevant_polys1)
+    std::vector<const CollisionPolygonSphere<ScenePos, tnvertices>*>& relevant_polys0,
+    std::vector<const CollisionPolygonSphere<ScenePos, tnvertices>*>& relevant_polys1)
 {
-    const std::vector<CollisionPolygonSphere<double, tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
-    const std::vector<CollisionPolygonSphere<double, tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<ScenePos, tnvertices>>& triangles0 = mesh0.get_polygons_sphere<tnvertices>();
+    const std::vector<CollisionPolygonSphere<ScenePos, tnvertices>>& triangles1 = mesh1.get_polygons_sphere<tnvertices>();
     relevant_polys0.reserve(triangles0.size());
     relevant_polys1.reserve(triangles1.size());
     for (const auto& t0 : triangles0) {
@@ -32,8 +32,8 @@ static void compute_relevant_polys(
 
 template <size_t tnvertices>
 static void update_sat(
-    const std::vector<const CollisionPolygonSphere<double, tnvertices>*>& relevant_polys0,
-    const std::vector<const CollisionPolygonSphere<double, tnvertices>*>& relevant_polys1,
+    const std::vector<const CollisionPolygonSphere<ScenePos, tnvertices>*>& relevant_polys0,
+    const std::vector<const CollisionPolygonSphere<ScenePos, tnvertices>*>& relevant_polys1,
     SatOverlapCombiner& sac)
 {
     for (const auto& t0 : relevant_polys0) {
@@ -47,8 +47,8 @@ static void update_sat(
 void SatTracker::get_collision_plane(
     const IIntersectableMesh& mesh0,
     const IIntersectableMesh& mesh1,
-    double& min_overlap,
-    FixedArray<double, 3>& normal) const
+    ScenePos& min_overlap,
+    FixedArray<ScenePos, 3>& normal) const
 {
     if (&mesh0 == &mesh1) {
         THROW_OR_ABORT("Mesh compared to itself");
@@ -62,16 +62,16 @@ void SatTracker::get_collision_plane(
         collision_planes_.insert(std::make_pair(
             &mesh0,
             std::map<const IIntersectableMesh*,
-                std::pair<double, FixedArray<double, 3>>>()));
+                std::pair<ScenePos, FixedArray<ScenePos, 3>>>()));
     }
     auto& collision_planes_m0 = collision_planes_.at(&mesh0);
     if (collision_planes_m0.find(&mesh1) == collision_planes_m0.end()) {
         std::vector<const CollisionRidgeSphere*> relevant_edges0;
         std::vector<const CollisionRidgeSphere*> relevant_edges1;
-        std::vector<const CollisionPolygonSphere<double, 3>*> relevant_triangles0;
-        std::vector<const CollisionPolygonSphere<double, 3>*> relevant_triangles1;
-        std::vector<const CollisionPolygonSphere<double, 4>*> relevant_quads0;
-        std::vector<const CollisionPolygonSphere<double, 4>*> relevant_quads1;
+        std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles0;
+        std::vector<const CollisionPolygonSphere<ScenePos, 3>*> relevant_triangles1;
+        std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads0;
+        std::vector<const CollisionPolygonSphere<ScenePos, 4>*> relevant_quads1;
         compute_relevant_polys(mesh0, mesh1, relevant_quads0, relevant_quads1);
         compute_relevant_polys(mesh0, mesh1, relevant_triangles0, relevant_triangles1);
         {

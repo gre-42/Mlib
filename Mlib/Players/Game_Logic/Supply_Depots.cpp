@@ -38,12 +38,12 @@ void SupplyDepots::reset_cooldown() {
 }
 
 bool SupplyDepots::visit_supply_depots(
-    const FixedArray<double, 3> position,
+    const FixedArray<ScenePos, 3> position,
     const std::function<bool(const SupplyDepot&)>& visitor) const
 {
-    BoundingSphere<double, 3> bs(position, cfg_.supply_depot_attraction_radius);
+    BoundingSphere<ScenePos, 3> bs(position, cfg_.supply_depot_attraction_radius);
     return bvh_.visit(
-        AxisAlignedBoundingBox<double, 3>::from_center_and_radius(bs.center(), bs.radius()),
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(bs.center(), bs.radius()),
         [&](const SupplyDepot& supply_depot)
         {
             if (supply_depot.is_cooling_down()) {
@@ -57,7 +57,7 @@ bool SupplyDepots::visit_supply_depots(
 }
 
 bool SupplyDepots::visit_supply_depots(
-    const FixedArray<double, 3> position,
+    const FixedArray<ScenePos, 3> position,
     const std::function<bool(SupplyDepot&)>& visitor)
 {
     const SupplyDepots& sd = *this;
@@ -105,7 +105,7 @@ void SupplyDepots::add_supply_depot(
 {
     auto center = scene_node->absolute_model_matrix().t();
     auto payload = bvh_.insert(
-        AxisAlignedBoundingBox<double, 3>::from_point(center),
+        AxisAlignedBoundingBox<ScenePos, 3>::from_point(center),
         SupplyDepot{
             .node = scene_node,
             .center = center,

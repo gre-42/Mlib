@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -9,7 +10,7 @@ class TransformationMatrix;
 class IParticleCreator {
 public:
     virtual ~IParticleCreator() = default;
-    virtual void add_particle(const TransformationMatrix<float, double, 3>& transformation_matrix) = 0;
+    virtual void add_particle(const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) = 0;
     
 };
 

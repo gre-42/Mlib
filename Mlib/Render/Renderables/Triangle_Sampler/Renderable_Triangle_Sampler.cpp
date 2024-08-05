@@ -27,9 +27,9 @@ RenderableTriangleSampler::RenderableTriangleSampler(
     const SceneNodeResources& scene_node_resources,
     const TerrainStyles& terrain_styles,
     const TerrainTriangles& terrain_triangles,
-    const std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*>& no_grass,
-    const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* street_bvh,
-    double scale,
+    const std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*>& no_grass,
+    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* street_bvh,
+    ScenePos scale,
     UpAxis up_axis)
 : scene_node_resources_{scene_node_resources},
   terrain_styles_{terrain_styles},
@@ -58,10 +58,10 @@ bool RenderableTriangleSampler::requires_blending_pass(ExternalRenderPassType re
 }
 
 void RenderableTriangleSampler::append_sorted_instances_to_queue(
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const TransformationMatrix<float, double, 3>& iv,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
+    const FixedArray<ScenePos, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queue) const
@@ -69,11 +69,11 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
     unsigned int yield_counter = 0;
     bool orthographic = VisibilityCheck{ mvp }.orthographic();
     auto sample_triangles = [&](
-        const Bvh<double, TriangleAndSeed, 3>& triangle_bvh,
+        const Bvh<ScenePos, TriangleAndSeed, 3>& triangle_bvh,
         const TerrainStyle& terrain_style,
-        const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh)
+        const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh)
     {
-        double max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources_);
+        ScenePos max_distance_to_camera = terrain_style.max_distance_to_camera(scene_node_resources_);
 
         TriangleInteriorInstancesSampler tiis{
             terrain_style,
@@ -85,13 +85,13 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
             terrain_style.mudmap()};
         auto traverse_triangle = [&](const TriangleAndSeed& t){
             if (!orthographic) {
-                BoundingSphere<double, 3> bs{FixedArray<FixedArray<double, 3>, 3>{
+                BoundingSphere<ScenePos, 3> bs{FixedArray<FixedArray<ScenePos, 3>, 3>{
                     t.triangle(0).position,
                     t.triangle(1).position,
                     t.triangle(2).position}};
-                TranslationMatrix<double, 3> mc_rel{ bs.center() };
+                TranslationMatrix<ScenePos, 3> mc_rel{ bs.center() };
                 auto mvp_center = mvp * mc_rel;
-                if (!VisibilityCheck{ mvp_center }.is_visible(2. * bs.radius() / scale_ + max_distance_to_camera)) {
+                if (!VisibilityCheck{ mvp_center }.is_visible(ScenePos(2) * bs.radius() / scale_ + max_distance_to_camera)) {
                     return;
                 }
             }
@@ -99,7 +99,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                 t.triangle,
                 t.seed,
                 [this, &mvp, &m, &offset, &scene_graph_config, &instances_queue, &yield_counter](
-                    const FixedArray<double, 3>& p,
+                    const FixedArray<ScenePos, 3>& p,
                     const ParsedResourceName& prn)
                 {
                     if (++yield_counter >= THREAD_YIELD_INTERVAL) {
@@ -107,7 +107,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
                         std::this_thread::yield();
                     };
                     auto scvas = scene_node_resources_.get_single_precision_arrays(prn.name);
-                    TranslationMatrix<double, 3> mi_rel{ p };
+                    TranslationMatrix<ScenePos, 3> mi_rel{ p };
                     auto mvp_instance = mvp * mi_rel;
                     auto m_instance_d = m * mi_rel;
                     instances_queue.insert(
@@ -129,7 +129,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         } else {
             auto rel_camera_position = m.inverted_scaled().transform(iv.t());
             triangle_bvh.visit(
-                AxisAlignedBoundingBox<double, 3>::from_center_and_radius(rel_camera_position, max_distance_to_camera * scale_),
+                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(rel_camera_position, max_distance_to_camera * scale_),
                 [&traverse_triangle](const TriangleAndSeed& t){
                     traverse_triangle(t);
                     return true;
@@ -137,13 +137,13 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         }
     };
     auto add_triangles = [this](
-        std::map<const TerrainStyle*, Bvh<double, TriangleAndSeed, 3>>& bvhs,
+        std::map<const TerrainStyle*, Bvh<ScenePos, TriangleAndSeed, 3>>& bvhs,
         const TerrainStyle& terrain_style,
-        const UUList<FixedArray<ColoredVertex<double>, 3>>& gtl)
+        const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>& gtl)
     {
         auto it = bvhs.find(&terrain_style);
         if (it == bvhs.end()) {
-            auto ins = bvhs.try_emplace(&terrain_style, FixedArray<double, 3>{0.3 * scale_, 0.3 * scale_, 0.3 * scale_}, 17);
+            auto ins = bvhs.try_emplace(&terrain_style, fixed_full<ScenePos, 3>(ScenePos(0.3) * scale_), 17);
             if (!ins.second) {
                 verbose_abort("Internal error, could not insert BVH");
             }
@@ -152,7 +152,7 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
         unsigned int seed = 0;
         for (const auto& t : gtl) {
             ++seed;
-            auto aabb = AxisAlignedBoundingBox<double, 3>::from_points(FixedArray<FixedArray<double, 3>, 3>{
+            auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::from_points(FixedArray<FixedArray<ScenePos, 3>, 3>{
                 t(0).position,
                 t(1).position,
                 t(2).position});
@@ -223,9 +223,9 @@ void RenderableTriangleSampler::append_sorted_instances_to_queue(
 }
 
 void RenderableTriangleSampler::extend_aabb(
-    const TransformationMatrix<float, double, 3>& mv,
+    const TransformationMatrix<float, ScenePos, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<double, 3>& aabb) const
+    AxisAlignedBoundingBox<ScenePos, 3>& aabb) const
 {
     // Not yet implemented
 }

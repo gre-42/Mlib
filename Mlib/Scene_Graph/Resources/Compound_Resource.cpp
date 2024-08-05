@@ -91,7 +91,7 @@ std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> 
 
 void CompoundResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, double, 3>& model_matrix) const
+    const TransformationMatrix<float, ScenePos, 3>& model_matrix) const
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (const auto& [i, n] : enumerate(resource_names_)) {

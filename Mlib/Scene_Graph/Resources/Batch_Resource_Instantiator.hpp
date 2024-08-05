@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <list>
 #include <map>
 #include <memory>
@@ -27,14 +28,14 @@ public:
     ~BatchResourceInstantiator();
 
     void add_parsed_resource_name(
-        const FixedArray<double, 3>& p,
+        const FixedArray<ScenePos, 3>& p,
         const ParsedResourceName& prn,
         float dyangle,
         float scale);
 
     void add_parsed_resource_name(
-        const FixedArray<double, 2>& p,
-        double height,
+        const FixedArray<ScenePos, 2>& p,
+        ScenePos height,
         const ParsedResourceName& prn,
         float dyangle,
         float scale);
@@ -52,13 +53,13 @@ public:
         const InstantiationOptions& options) const;
     
     void instantiate_hitboxes(
-        std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
+        std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>>& cvas,
         const SceneNodeResources& scene_node_resources) const;
         
-    void insert_into(std::list<FixedArray<double, 3>*>& positions);
-    void remove(std::set<const FixedArray<double, 3>*> vertices_to_delete);
+    void insert_into(std::list<FixedArray<ScenePos, 3>*>& positions);
+    void remove(std::set<const FixedArray<ScenePos, 3>*> vertices_to_delete);
 
-    std::list<FixedArray<double, 3>> hitbox_positions() const;
+    std::list<FixedArray<ScenePos, 3>> hitbox_positions() const;
 
     template <class Archive>
     void serialize(Archive& archive) {

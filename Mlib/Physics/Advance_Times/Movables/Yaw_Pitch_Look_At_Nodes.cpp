@@ -17,7 +17,7 @@ YawPitchLookAtNodes::YawPitchLookAtNodes(
     : aim_at_node_{ aim_at }
     , dyaw_{ 0.f }
     , dyaw_max_{ dyaw_max }
-    , relative_model_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    , relative_model_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
     , pitch_look_at_node_{ pitch_look_at_node }
     , increment_yaw_error_{ increment_yaw_error }
 {}
@@ -26,15 +26,15 @@ YawPitchLookAtNodes::~YawPitchLookAtNodes() {
     on_destroy.clear();
 }
 
-void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     relative_model_matrix_ = relative_model_matrix;
 }
 
-void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void YawPitchLookAtNodes::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     relative_model_matrix_ = relative_model_matrix;
 }
 
-void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
         float dyaw = z_to_yaw(-aim_at_node_.relative_point_to_aim_at());
         float eyaw = increment_yaw_error_();
@@ -42,9 +42,9 @@ void YawPitchLookAtNodes::set_absolute_model_matrix(const TransformationMatrix<f
     }
     relative_model_matrix_ =
         relative_model_matrix_ *
-        TransformationMatrix<float, double, 3>{
+        TransformationMatrix<float, ScenePos, 3>{
             tait_bryan_angles_2_matrix(FixedArray<float, 3>{0.f, dyaw_, 0.f}),
-            fixed_zeros<double, 3>()};
+            fixed_zeros<ScenePos, 3>()};
     dyaw_ = 0.f;
 }
 
@@ -57,7 +57,7 @@ void YawPitchLookAtNodes::set_yaw(float yaw) {
     increment_yaw(std::remainderf(yaw - dyaw_ - z_to_yaw(relative_model_matrix_.R().column(2)), float(2 * M_PI)), 1.f);
 }
 
-TransformationMatrix<float, double, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> YawPitchLookAtNodes::get_new_relative_model_matrix() const {
     return relative_model_matrix_;
 }
 

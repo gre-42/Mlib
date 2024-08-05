@@ -26,7 +26,7 @@ PitchLookAtNode::PitchLookAtNode(
     , pitch_min_{ pitch_min }
     , pitch_max_{ pitch_max }
     , dpitch_max_{ dpitch_max }
-    , relative_position_{ fixed_nans<double, 3>() }
+    , relative_position_{ fixed_nans<ScenePos, 3>() }
     , dpitch_head_{ NAN }
     , head_node_{ nullptr }
     , increment_pitch_error_{ increment_pitch_error }
@@ -36,16 +36,16 @@ PitchLookAtNode::~PitchLookAtNode() {
     on_destroy.clear();
 }
 
-void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void PitchLookAtNode::set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
     pitch_ = z_to_pitch(z3_from_3x3(relative_model_matrix.R()));
 }
 
-void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) {
+void PitchLookAtNode::set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) {
     relative_position_ = relative_model_matrix.t();
 }
 
-void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void PitchLookAtNode::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     if (!any(isnan(aim_at_node_.relative_point_to_aim_at()))) {
         float dpitch = z_to_pitch(-aim_at_node_.relative_point_to_aim_at());
         float epitch = increment_pitch_error_();
@@ -65,13 +65,13 @@ void PitchLookAtNode::set_pitch(float pitch) {
     increment_pitch(std::remainderf(pitch - dpitch_ - pitch_, float(2 * M_PI)), 1.f);
 }
 
-TransformationMatrix<float, double, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> PitchLookAtNode::get_new_relative_model_matrix() const {
     if (head_node_ != nullptr) {
         head_node_->set_rotation(
             FixedArray<float, 3>{pitch_ + (std::isnan(dpitch_head_) ? 0.f : dpitch_head_), 0.f, 0.f},
             SUCCESSOR_POSE);
     }
-    return TransformationMatrix<float, double, 3>{
+    return TransformationMatrix<float, ScenePos, 3>{
         tait_bryan_angles_2_matrix(FixedArray<float, 3>{pitch_, 0.f, 0.f}),
         relative_position_};
 }

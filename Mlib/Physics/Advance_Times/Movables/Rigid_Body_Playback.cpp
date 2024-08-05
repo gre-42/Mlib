@@ -63,13 +63,13 @@ DanglingBaseClassRef<IAbsoluteMovable> RigidBodyPlayback::get_playback_object(si
 }
 
 RigidBodySinglePlayback::RigidBodySinglePlayback()
-    : transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    : transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
 
-void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void RigidBodySinglePlayback::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, double, 3> RigidBodySinglePlayback::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> RigidBodySinglePlayback::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }

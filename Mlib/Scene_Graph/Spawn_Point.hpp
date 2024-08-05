@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
@@ -14,7 +15,7 @@ enum class SpawnPointType {
 struct SpawnPoint {
     SpawnPointType type;
     WayPointLocation location;
-    FixedArray<double, 3> position = uninitialized;
+    FixedArray<ScenePos, 3> position = uninitialized;
     FixedArray<float, 3> rotation = uninitialized;
     std::string team;
     template <class Archive>

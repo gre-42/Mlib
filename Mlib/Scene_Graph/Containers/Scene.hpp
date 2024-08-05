@@ -4,6 +4,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene_Graph/Containers/Map_Of_Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Background_Loop.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -101,11 +102,11 @@ public:
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     bool visit_all(const std::function<bool(
-        const TransformationMatrix<float, double, 3>& m,
+        const TransformationMatrix<float, ScenePos, 3>& m,
         const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void render(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
+        const FixedArray<ScenePos, 4, 4>& vp,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
         DanglingRef<const SceneNode> camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -113,8 +114,8 @@ public:
         const std::function<std::function<void()>(std::function<void()>)>& run_in_background = [](std::function<void()> f){return f;}) const;
     void move(float dt, std::chrono::steady_clock::time_point time);
     void append_static_filtered_to_queue(
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const;
     size_t get_uuid();
     std::string get_temporary_instance_suffix();

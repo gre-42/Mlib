@@ -14,8 +14,8 @@ PermanentBoundedPlaneEqualityContact::PermanentBoundedPlaneEqualityContact(
     DanglingRef<SceneNode> scene_node1,
     RigidBodyPulses& rbp0,
     RigidBodyPulses& rbp1,
-    const FixedArray<double, 3>& p0,
-    const FixedArray<double, 3>& p1,
+    const FixedArray<ScenePos, 3>& p0,
+    const FixedArray<ScenePos, 3>& p1,
     const FixedArray<float, 3>& normal0)
     : PermanentNodeContact{
         permanent_contacts,

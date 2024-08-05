@@ -159,10 +159,10 @@ int main(int argc, char** argv) {
             scene.add_root_node(
                 "light_node0",
                 make_dunique<SceneNode>(
-                    FixedArray<double, 3>{
-                        safe_stof(args.named_value("--light_x", "0")),
-                        safe_stof(args.named_value("--light_y", "50")),
-                        safe_stof(args.named_value("--light_z", "0"))},
+                    FixedArray<ScenePos, 3>{
+                        safe_stox<ScenePos>(args.named_value("--light_x", "0")),
+                        safe_stox<ScenePos>(args.named_value("--light_y", "50")),
+                        safe_stox<ScenePos>(args.named_value("--light_z", "0"))},
                     FixedArray<float, 3>{
                         safe_stof(args.named_value("--light_angle_x", "-45")) * degrees,
                         safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
@@ -196,7 +196,10 @@ int main(int argc, char** argv) {
                 scene.add_root_node(
                     name,
                     make_dunique<SceneNode>(
-                        FixedArray<double, 3>{float(r * cos(a)) + center(0), center(1), float(r * sin(a)) + center(2)},
+                        FixedArray<ScenePos, 3>{
+                            ScenePos(r * std::cos(a)) + center(0),
+                            center(1),
+                            ScenePos(r * std::sin(a)) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
                         1.f),
                     RenderingDynamics::STATIC,

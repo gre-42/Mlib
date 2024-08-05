@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Material/Blend_Distances.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 
 namespace Mlib {
@@ -12,7 +13,7 @@ struct BillboardAtlasInstance {
     OrderableFixedArray<float, 2> uv_offset = uninitialized;
     uint8_t texture_layer;
     OrderableFixedArray<float, 3> vertex_scale = uninitialized;
-    double max_center_distance;
+    ScenePos max_center_distance;
     ExternalRenderPassType occluder_pass;
     OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
     std::partial_ordering operator <=> (const BillboardAtlasInstance&) const = default;

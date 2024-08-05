@@ -95,7 +95,7 @@ std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> 
 
 void ISceneNodeResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, double, 3>& model_matrix) const
+    const TransformationMatrix<float, ScenePos, 3>& model_matrix) const
 {
     THROW_OR_ABORT("\"save_to_obj_file\" not implemented");
 }

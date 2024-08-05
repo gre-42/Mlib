@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -11,12 +12,12 @@ class FixedArray;
 class IRaceLogic {
 public:
     virtual void set_start_pose(
-        const TransformationMatrix<float, double, 3>& pose,
+        const TransformationMatrix<float, ScenePos, 3>& pose,
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity,
         unsigned int rank) = 0;
     virtual void set_checkpoints(
-        const std::vector<TransformationMatrix<float, double, 3>>& checkpoints) = 0;
+        const std::vector<TransformationMatrix<float, ScenePos, 3>>& checkpoints) = 0;
     virtual void set_circularity(bool is_circular) = 0;
 };
 

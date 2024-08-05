@@ -26,8 +26,8 @@ struct TrackElementExtended {
         }
         THROW_OR_ABORT("Unknown track element interpolation key");
     }
-    const OffsetAndTaitBryanAngles<float, double, 3>& transformation() const;
-    void set_y_position(double value);
+    const OffsetAndTaitBryanAngles<float, ScenePos, 3>& transformation() const;
+    void set_y_position(ScenePos value);
 };
 
 TrackElementExtended interpolated(const TrackElementExtended& a, const TrackElementExtended& b, float alpha);

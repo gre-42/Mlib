@@ -5,6 +5,7 @@
 #include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Program.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <functional>
 #include <list>
@@ -116,8 +117,8 @@ public:
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
-        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>>& filtered_lights,
-        const std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& filtered_skidmarks,
+        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& filtered_lights,
+        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& filtered_skidmarks,
         const std::vector<size_t>& lightmap_indices,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,

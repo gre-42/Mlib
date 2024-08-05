@@ -27,8 +27,8 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual float near_plane() const override;
     virtual float far_plane() const override;
-    virtual const FixedArray<double, 4, 4>& vp() const override;
-    virtual const TransformationMatrix<float, double, 3>& iv() const override;
+    virtual const FixedArray<ScenePos, 4, 4>& vp() const override;
+    virtual const TransformationMatrix<float, ScenePos, 3>& iv() const override;
     virtual DanglingRef<const SceneNode> camera_node() const override;
     virtual bool requires_postprocessing() const override;
     virtual void reset() override;
@@ -37,8 +37,8 @@ public:
 private:
     const Scene& scene_;
     const SelectedCameras& cameras_;
-    FixedArray<double, 4, 4> vp_;
-    TransformationMatrix<float, double, 3> iv_;
+    FixedArray<ScenePos, 4, 4> vp_;
+    TransformationMatrix<float, ScenePos, 3> iv_;
     DanglingPtr<const SceneNode> camera_node_;
 };
 

@@ -25,7 +25,7 @@ bool TerrainStyle::is_visible() const {
     return config.is_visible();
 }
 
-double TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_node_resources) const {
+ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_node_resources) const {
     {
         std::shared_lock lock{max_distance_to_camera_mutex_};
         if (!std::isnan(max_distance_to_camera_)) {
@@ -34,8 +34,8 @@ double TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_node
     }
     std::scoped_lock lock{max_distance_to_camera_mutex_};
     if (std::isnan(max_distance_to_camera_)) {
-        double max_distance_to_camera = 0.f;
-        auto add_distance = [&max_distance_to_camera](const std::string& name, double distance){
+        ScenePos max_distance_to_camera = 0.f;
+        auto add_distance = [&max_distance_to_camera](const std::string& name, ScenePos distance){
             if (!std::isfinite(distance)) {
                 THROW_OR_ABORT("Resource \"" + name + "\" contains non-finite maximum center distance");
             }
@@ -92,14 +92,14 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
             .max_distance_to_bdry = 0.f,
             .is_active = false
         };
-        auto add_min_distance = [&distances_to_bdry](const std::string& name, double distance){
+        auto add_min_distance = [&distances_to_bdry](const std::string& name, ScenePos distance){
             if (!std::isfinite(distance)) {
                 THROW_OR_ABORT("Resource \"" + name + "\" contains non-finite minimum distance to bdry");
             }
             distances_to_bdry.min_distance_to_bdry = std::min(distance, distances_to_bdry.min_distance_to_bdry);
             distances_to_bdry.is_active |= (distance != 0);
         };
-        auto add_max_distance = [&distances_to_bdry](const std::string& name, double distance){
+        auto add_max_distance = [&distances_to_bdry](const std::string& name, ScenePos distance){
             if (distance == INFINITY) {
                 return;
             }

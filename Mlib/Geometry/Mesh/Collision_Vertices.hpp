@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 #include <set>
 
@@ -10,12 +11,12 @@ class FixedArray;
 
 class CollisionVertices {
 public:
-    using Vertices = std::set<OrderableFixedArray<double, 3>>;
+    using Vertices = std::set<OrderableFixedArray<ScenePos, 3>>;
     using const_iterator = Vertices::const_iterator;
-    void insert(const FixedArray<FixedArray<double, 3>, 4>& quad);
-    void insert(const FixedArray<FixedArray<double, 3>, 3>& tri);
-    void insert(const FixedArray<FixedArray<double, 3>, 2>& line);
-    void insert(const FixedArray<double, 3>& vertex);
+    void insert(const FixedArray<FixedArray<ScenePos, 3>, 4>& quad);
+    void insert(const FixedArray<FixedArray<ScenePos, 3>, 3>& tri);
+    void insert(const FixedArray<FixedArray<ScenePos, 3>, 2>& line);
+    void insert(const FixedArray<ScenePos, 3>& vertex);
     const_iterator begin() const;
     const_iterator end() const;
     inline const Vertices& get() const {

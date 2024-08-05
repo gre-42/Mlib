@@ -86,7 +86,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         blades_mount_0 = c.at<UFixedArray<float, 3>>(BladesArgs::blades_mount_0);
         blades_mount_1 = c.at<UFixedArray<float, 3>>(BladesArgs::blades_mount_1);
     }
-    FixedArray<double, 3> position = args.arguments.at<UFixedArray<double, 3>>(KnownArgs::position) * (double)meters;
+    FixedArray<ScenePos, 3> position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
     FixedArray<float, 3> rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
     auto engine = args.arguments.at<std::string>(KnownArgs::engine);
     auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
@@ -117,7 +117,7 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_unique<Rotor>(
             engine,
             delta_engine,
-            TransformationMatrix<float, double, 3>{ r, position },
+            TransformationMatrix<float, ScenePos, 3>{ r, position },
             power2lift,
             w,
             gravity_correction,

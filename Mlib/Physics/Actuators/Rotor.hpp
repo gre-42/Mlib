@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <string>
 
@@ -19,7 +20,7 @@ public:
     Rotor(
         const std::string& engine,
         const std::optional<std::string>& delta_engine,
-        const TransformationMatrix<float, double, 3>& rest_location,
+        const TransformationMatrix<float, ScenePos, 3>& rest_location,
         float power2lift,
         float w,
         GravityCorrection gravity_correction,
@@ -37,13 +38,13 @@ public:
     Rotor(const Rotor&) = delete;
     Rotor& operator = (const Rotor&) = delete;
     ~Rotor();
-    TransformationMatrix<float, double, 3> rotated_location(
-        const TransformationMatrix<float, double, 3>& parent_location,
+    TransformationMatrix<float, ScenePos, 3> rotated_location(
+        const TransformationMatrix<float, ScenePos, 3>& parent_location,
         const FixedArray<float, 3>& parent_velocity);
     FixedArray<float, 3> rotation_axis() const;
-    TransformationMatrix<float, double, 3> rest_location;
+    TransformationMatrix<float, ScenePos, 3> rest_location;
     FixedArray<float, 3> angles;
-    FixedArray<double, 3> movement;
+    FixedArray<ScenePos, 3> movement;
     float power2lift;
     float w;
     FixedArray<float, 3> vehicle_mount_0;
@@ -52,7 +53,7 @@ public:
     FixedArray<float, 3> blades_mount_1;
 private:
     GravityCorrection gravity_correction_;
-    double radius_;
+    ScenePos radius_;
     float max_align_to_gravity_;
     PidController<float, float> align_to_gravity_pid_x_;
     PidController<float, float> align_to_gravity_pid_y_;

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Geometry/Plane_Nd.hpp>
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iosfwd>
 #include <list>
@@ -14,8 +15,8 @@ class AttachedWheel;
 struct PhysicsEngineConfig;
 
 struct PointEqualityConstraint {
-    FixedArray<double, 3> p0;
-    FixedArray<double, 3> p1;
+    FixedArray<ScenePos, 3> p0;
+    FixedArray<ScenePos, 3> p1;
     float beta = 0.5;
     inline FixedArray<float, 3> v(float dt) const {
         return beta / dt * (p1 - p0).casted<float>();
@@ -45,7 +46,7 @@ struct PlaneEqualityConstraint {
 };
 
 struct NormalImpulse {
-    FixedArray<double, 3> normal;
+    FixedArray<ScenePos, 3> normal;
     float lambda_total = 0;
 };
 
@@ -198,7 +199,7 @@ public:
     GenericNormalContactInfo1(
         TRigidBodyPulsesArg rbp,
         const BoundedPlaneInequalityConstraint& pc,
-        const FixedArray<double, 3>& p);
+        const FixedArray<ScenePos, 3>& p);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return pc_.constraint.normal_impulse;
@@ -206,7 +207,7 @@ public:
 private:
     TRigidBodyPulsesField rbp_;
     BoundedPlaneInequalityConstraint pc_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
 };
 
 using NormalContactInfo1 = GenericNormalContactInfo1<RigidBodyPulses&, RigidBodyPulses&>;
@@ -218,7 +219,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedPlaneInequalityConstraint& pc,
-        const FixedArray<double, 3>& p,
+        const FixedArray<ScenePos, 3>& p,
         const std::function<void(float)>& notify_lambda_final = [](float){});
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     virtual void finalize() override;
@@ -229,7 +230,7 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     BoundedPlaneInequalityConstraint pc_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
     std::function<void(float)> notify_lambda_final_;
 };
 
@@ -238,7 +239,7 @@ public:
     ShockAbsorberContactInfo1(
         RigidBodyPulses& rbp,
         const BoundedShockAbsorberConstraint& sc,
-        const FixedArray<double, 3>& p);
+        const FixedArray<ScenePos, 3>& p);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
@@ -246,7 +247,7 @@ public:
 private:
     RigidBodyPulses& rbp_;
     BoundedShockAbsorberConstraint sc_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
 };
 
 class ShockAbsorberContactInfo2: public IContactInfo {
@@ -255,7 +256,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const BoundedShockAbsorberConstraint& sc,
-        const FixedArray<double, 3>& p);
+        const FixedArray<ScenePos, 3>& p);
     virtual void solve(float dt, float relaxation, size_t iteration, size_t niterations) override;
     const NormalImpulse& normal_impulse() const {
         return sc_.constraint.normal_impulse;
@@ -264,7 +265,7 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     BoundedShockAbsorberConstraint sc_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
 };
 
 class FrictionContactInfo1: public IContactInfo {
@@ -273,7 +274,7 @@ public:
     FrictionContactInfo1(
         RigidBodyPulses& rbp,
         const NormalImpulse& normal_impulse,
-        const FixedArray<double, 3>& p,
+        const FixedArray<ScenePos, 3>& p,
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b,
@@ -309,7 +310,7 @@ private:
     FixedArray<float, 3> b_;
     RigidBodyPulses& rbp_;
     const NormalImpulse& normal_impulse_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
     FixedArray<float, 3> clamping_direction_;
@@ -329,7 +330,7 @@ public:
         RigidBodyPulses& rbp0,
         RigidBodyPulses& rbp1,
         const NormalImpulse& normal_impulse,
-        const FixedArray<double, 3>& p,
+        const FixedArray<ScenePos, 3>& p,
         float stiction_coefficient,
         float friction_coefficient,
         const FixedArray<float, 3>& b);
@@ -343,7 +344,7 @@ private:
     RigidBodyPulses& rbp0_;
     RigidBodyPulses& rbp1_;
     const NormalImpulse& normal_impulse_;
-    FixedArray<double, 3> p_;
+    FixedArray<ScenePos, 3> p_;
     float stiction_coefficient_;
     float friction_coefficient_;
 };

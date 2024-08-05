@@ -47,8 +47,8 @@ LoadSceneJsonUserFunction AnimatedTrails::json_user_function = [](const LoadScen
          u_offset = args.arguments.at<float>(KnownArgs::u_offset),
          u_scale = args.arguments.at<float>(KnownArgs::u_scale),
          duration = args.arguments.at<float>(KnownArgs::duration) * seconds,
-         min_spawn_length = args.arguments.at<double>(KnownArgs::min_spawn_length) * meters,
-         max_spawn_length = args.arguments.at<double>(KnownArgs::max_spawn_length) * meters,
+         min_spawn_length = args.arguments.at<ScenePos>(KnownArgs::min_spawn_length) * meters,
+         max_spawn_length = args.arguments.at<ScenePos>(KnownArgs::max_spawn_length) * meters,
          spawn_duration = args.arguments.at<float>(KnownArgs::spawn_duration) * seconds]
         (TrailsInstance& trails_instance)
         {

@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
@@ -17,8 +18,8 @@ struct GlLookatAabb {
 };
 
 std::optional<GlLookatAabb> gl_lookat_aabb(
-    const FixedArray<double, 3>& camera_position,
-    const TransformationMatrix<float, double, 3>& object_model_matrix,
-    const AxisAlignedBoundingBox<double, 3>& object_aabb);
+    const FixedArray<ScenePos, 3>& camera_position,
+    const TransformationMatrix<float, ScenePos, 3>& object_model_matrix,
+    const AxisAlignedBoundingBox<ScenePos, 3>& object_aabb);
 
 }

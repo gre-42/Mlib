@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-std::pair<OrderableFixedArray<double, 3>, OrderableFixedArray<double, 3>> OrderableEdgeSphere::key() const
+std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>> OrderableEdgeSphere::key() const
 {
     if (OrderableFixedArray{collision_line_sphere.line(0)} > OrderableFixedArray{collision_line_sphere.line(1)}) {
         return std::make_pair(
@@ -27,7 +27,7 @@ CollisionEdges::~CollisionEdges() = default;
 
 template <size_t tnvertices>
 void CollisionEdges::insert(
-    const FixedArray<FixedArray<double, 3>, tnvertices>& tri,
+    const FixedArray<FixedArray<ScenePos, 3>, tnvertices>& tri,
     PhysicsMaterial physics_material)
 {
     for (size_t i = 0; i < tnvertices; ++i) {
@@ -36,13 +36,13 @@ void CollisionEdges::insert(
 }
 
 void CollisionEdges::insert(
-    const FixedArray<double, 3>& a,
-    const FixedArray<double, 3>& b,
+    const FixedArray<ScenePos, 3>& a,
+    const FixedArray<ScenePos, 3>& b,
     PhysicsMaterial physics_material)
 {
     OrderableEdgeSphere edge{
         .collision_line_sphere{
-            .bounding_sphere{BoundingSphere<double, 3>{FixedArray<FixedArray<double, 3>, 2>{a, b}}},
+            .bounding_sphere{BoundingSphere<ScenePos, 3>{FixedArray<FixedArray<ScenePos, 3>, 2>{a, b}}},
             .physics_material = physics_material,
             .line{a, b},
             .ray{a, b}} };
@@ -63,9 +63,9 @@ size_t CollisionEdges::size() const {
 
 namespace Mlib {
     template void CollisionEdges::insert<3>(
-        const FixedArray<FixedArray<double, 3>, 3>& tri,
+        const FixedArray<FixedArray<ScenePos, 3>, 3>& tri,
         PhysicsMaterial physics_material);
     template void CollisionEdges::insert<4>(
-        const FixedArray<FixedArray<double, 3>, 4>& tri,
+        const FixedArray<FixedArray<ScenePos, 3>, 4>& tri,
         PhysicsMaterial physics_material);
 }

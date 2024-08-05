@@ -16,13 +16,13 @@ void Mlib::add_foliage_resource(
     SceneNodeResources& scene_node_resources,
     const std::vector<ParsedResourceName>& near_grass_resources,
     const std::vector<ParsedResourceName>& dirty_near_grass_resources,
-    double near_grass_distance,
+    ScenePos near_grass_distance,
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,
     UpAxis up_axis)
 {
-    UUList<FixedArray<ColoredVertex<double>, 3>> grass_triangles;
+    UUList<FixedArray<ColoredVertex<ScenePos>, 3>> grass_triangles;
     auto meshes = scene_node_resources.get_rendering_arrays(mesh_resource_name);
     for (const auto& mesh : meshes) {
         for (const auto& cva : mesh->dcvas) {

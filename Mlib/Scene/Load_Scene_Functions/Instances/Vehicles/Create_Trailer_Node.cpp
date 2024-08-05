@@ -44,9 +44,9 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         .asset_references["vehicles"]
         .at(trailer_asset_id)
         .rp;
-    auto pose0 = TranslationMatrix<double, 3>(
-        rb.trailer_hitches_.get_position_male().casted<double>() -
-        vars.database.at<UFixedArray<double, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
+    auto pose0 = TranslationMatrix<ScenePos, 3>(
+        rb.trailer_hitches_.get_position_male().casted<ScenePos>() -
+        vars.database.at<UFixedArray<ScenePos, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
     auto pose1 = rb.rbp_.abs_transformation() * pose0;
     auto node = make_dunique<SceneNode>(
         pose1.t(),

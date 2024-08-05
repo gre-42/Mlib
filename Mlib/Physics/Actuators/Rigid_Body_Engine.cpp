@@ -176,7 +176,7 @@ void RigidBodyEngine::set_surface_power(const EnginePowerIntent& engine_power_in
 
 void RigidBodyEngine::advance_time(
     float dt,
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& velocity)
 {
     float average_tire_w_;
@@ -200,7 +200,7 @@ void RigidBodyEngine::advance_time(
                 average_tire_w_,
                 engine_power_intent_,
                 engine_power.get_power());
-            audio_->set_position(AudioSourceState<double>{
+            audio_->set_position(AudioSourceState<ScenePos>{
                 .position = position,
                 .velocity = velocity
             });

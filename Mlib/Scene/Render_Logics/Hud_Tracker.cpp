@@ -39,7 +39,7 @@ bool HudTrackerTimeAdvancer::is_visible() const {
     return is_visible_;
 }
 
-void HudTrackerTimeAdvancer::advance_time(const FixedArray<double, 3>& point) {
+void HudTrackerTimeAdvancer::advance_time(const FixedArray<ScenePos, 3>& point) {
     if (!is_visible_) {
         verbose_abort("HudTrackerTimeAdvancer::advance_time on invisible tracker");
     }

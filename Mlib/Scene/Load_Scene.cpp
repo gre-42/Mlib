@@ -217,7 +217,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Gen_Triangle_Rays.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Import_Bone_Weights.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Load_Osm_Resource.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Make_Triangles_With_Opposing_Normals_Two_Sided.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Meshes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Merge_Textures.hpp>
@@ -432,7 +431,6 @@ LoadScene::LoadScene() {
     register_json_user_function(LoadKeyConfigurations::key, LoadKeyConfigurations::json_user_function);
 
     // Resources
-    register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
     register_json_user_function(AddCubemap::key, AddCubemap::json_user_function);
     register_json_user_function(AddAudio::key, AddAudio::json_user_function);
     register_json_user_function(AddAudioSequence::key, AddAudioSequence::json_user_function);
@@ -460,6 +458,7 @@ LoadScene::LoadScene() {
     register_json_user_function(GenInstances::key, GenInstances::json_user_function);
     register_json_user_function(GenCompoundResource::key, GenCompoundResource::json_user_function);
     register_json_user_function(ImportBoneWeights::key, ImportBoneWeights::json_user_function);
+    register_json_user_function(LoadOsmResource::key, LoadOsmResource::json_user_function);
     register_json_user_function(ObjResource::key, ObjResource::json_user_function);
     register_json_user_function(Repeat::key, Repeat::json_user_function);
     register_json_user_function(ReplaceTerrainMaterial::key, ReplaceTerrainMaterial::json_user_function);

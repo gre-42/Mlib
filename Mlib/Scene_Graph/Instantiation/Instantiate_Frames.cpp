@@ -18,8 +18,8 @@ static const auto r_to_world = FixedArray<float, 3, 3>::init(
 	1.f, 0.f, 0.f,
 	0.f, 0.f, 1.f,
 	0.f, -1.f, 0.f);
-static const auto t_to_world = fixed_zeros<double, 3>();
-static const TransformationMatrix<float, double, 3> trafo_to_world{ r_to_world, t_to_world };
+static const auto t_to_world = fixed_zeros<ScenePos, 3>();
+static const TransformationMatrix<float, ScenePos, 3> trafo_to_world{ r_to_world, t_to_world };
 
 void Mlib::instantiate(
 	Scene& scene,

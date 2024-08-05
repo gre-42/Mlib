@@ -17,7 +17,7 @@ bool IIntersectableMesh::intersects(const IIntersectableMesh& other) const {
     return intersects(other.bounding_sphere());
 }
 
-const std::set<OrderableFixedArray<double, 3>>& IIntersectableMesh::get_vertices() const {
+const std::set<OrderableFixedArray<ScenePos, 3>>& IIntersectableMesh::get_vertices() const {
     {
         std::shared_lock lock{ mutex_ };
         if (collision_vertices_ != nullptr) {

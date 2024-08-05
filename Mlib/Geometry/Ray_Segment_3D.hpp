@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 namespace Mlib {
 
@@ -125,12 +126,12 @@ public:
     FixedArray<TData, 3> center() const {
         return start + direction * (length / TData(2));
     }
-    RaySegment3D<double> transformed(
-        const TransformationMatrix<float, double, 3>& transformation_matrix) const
+    RaySegment3D<ScenePos> transformed(
+        const TransformationMatrix<float, ScenePos, 3>& transformation_matrix) const
     {
         return {
-            transformation_matrix.transform(start.template casted<double>()),
-            transformation_matrix.casted<double, double>().rotate(direction.template casted<double>()),
+            transformation_matrix.transform(start.template casted<ScenePos>()),
+            transformation_matrix.casted<ScenePos, ScenePos>().rotate(direction.template casted<ScenePos>()),
             length
         };
     }

@@ -40,11 +40,11 @@ float CameraStreamLogic::far_plane() const {
     return standard_render_logic_->far_plane();
 }
 
-const FixedArray<double, 4, 4>& CameraStreamLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& CameraStreamLogic::vp() const {
     return standard_render_logic_->vp();
 }
 
-const TransformationMatrix<float, double, 3>& CameraStreamLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& CameraStreamLogic::iv() const {
     return standard_render_logic_->iv();
 }
 

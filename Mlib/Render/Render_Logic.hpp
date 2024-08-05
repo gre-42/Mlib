@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Destruction_Notifier.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <iosfwd>
 
 namespace Mlib {
@@ -33,8 +34,8 @@ public:
     virtual FocusFilter focus_filter() const;
     virtual float near_plane() const;
     virtual float far_plane() const;
-    virtual const FixedArray<double, 4, 4>& vp() const;
-    virtual const TransformationMatrix<float, double, 3>& iv() const;
+    virtual const FixedArray<ScenePos, 4, 4>& vp() const;
+    virtual const TransformationMatrix<float, ScenePos, 3>& iv() const;
     virtual DanglingRef<const SceneNode> camera_node() const;
     virtual bool requires_postprocessing() const;
     virtual void reset();

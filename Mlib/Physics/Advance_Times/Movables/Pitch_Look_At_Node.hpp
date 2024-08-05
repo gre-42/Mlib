@@ -24,10 +24,10 @@ public:
         float dpitch_max,
         const std::function<float()>& increment_pitch_error);
     ~PitchLookAtNode();
-    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, double, 3>& relative_model_matrix) override;
-    virtual void set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) override;
-    virtual TransformationMatrix<float, double, 3> get_new_relative_model_matrix() const override;
+    virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
+    virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
+    virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     void increment_pitch(float dpitch, float relaxation);
@@ -45,7 +45,7 @@ private:
     float pitch_min_;
     float pitch_max_;
     float dpitch_max_;
-    FixedArray<double, 3> relative_position_;
+    FixedArray<ScenePos, 3> relative_position_;
     float dpitch_head_;
     DanglingPtr<SceneNode> head_node_;
     std::function<float()> increment_pitch_error_;

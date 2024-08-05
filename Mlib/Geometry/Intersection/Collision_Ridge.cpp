@@ -4,7 +4,7 @@
 
 using namespace Mlib;
 
-FixedArray<double, 3> CollisionRidgeSphere::tangent() const {
+FixedArray<ScenePos, 3> CollisionRidgeSphere::tangent() const {
     return cross(ray.direction, normal);
 }
 
@@ -30,7 +30,7 @@ bool CollisionRidgeSphere::is_oriented() const {
 
 void CollisionRidgeSphere::combine(
     const CollisionRidgeSphere& other,
-    double max_min_cos_ridge)
+    ScenePos max_min_cos_ridge)
 {
     if (other.min_cos != RIDGE_SINGLE_FACE) {
         THROW_OR_ABORT("Ridge to be inserted has invalid state");

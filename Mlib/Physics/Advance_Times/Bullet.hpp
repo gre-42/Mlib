@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Interfaces/Collision_Observer.hpp>
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Trail_Generator.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <mutex>
 #include <string>
 
@@ -55,7 +56,7 @@ public:
     ~Bullet();
     virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
     virtual void notify_collided(
-        const FixedArray<double, 3>& intersection_point,
+        const FixedArray<ScenePos, 3>& intersection_point,
         std::chrono::steady_clock::time_point time,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
@@ -63,7 +64,7 @@ public:
         bool& abort) override;
 private:
     void cause_damage(
-        const FixedArray<double, 3>& intersection_point,
+        const FixedArray<ScenePos, 3>& intersection_point,
         RigidBodyVehicle& rigid_body);
     void cause_damage(
         RigidBodyVehicle& rigid_body,

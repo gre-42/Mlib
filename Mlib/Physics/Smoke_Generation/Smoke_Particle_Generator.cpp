@@ -24,7 +24,7 @@ SmokeParticleGenerator::SmokeParticleGenerator(
 void SmokeParticleGenerator::generate_root(
     const std::string& resource_name,
     const std::string& node_name,
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float animation_duration,
     ParticleType particle_type)
@@ -51,7 +51,7 @@ void SmokeParticleGenerator::generate_root(
         scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::STATIC);
     } else if (particle_type == ParticleType::INSTANCE) {
         scene_.particle_instantiator(resource_name).add_particle(
-            TransformationMatrix<float, double, 3>{
+            TransformationMatrix<float, ScenePos, 3>{
                 tait_bryan_angles_2_matrix(rotation),
                 position});
     } else {
@@ -63,7 +63,7 @@ void SmokeParticleGenerator::generate_child(
     DanglingRef<SceneNode> parent,
     const std::string& resource_name,
     const std::string& child_node_name,
-    const FixedArray<double, 3>& relative_position,
+    const FixedArray<ScenePos, 3>& relative_position,
     float animation_duration)
 {
     auto child_node = make_dunique<SceneNode>(

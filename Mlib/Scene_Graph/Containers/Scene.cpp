@@ -400,35 +400,35 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
 }
 
 bool Scene::visit_all(const std::function<bool(
-    const TransformationMatrix<float, double, 3>& m,
+    const TransformationMatrix<float, ScenePos, 3>& m,
     const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
 {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     return
         root_nodes_.visit_all([&func](const auto& node) {
-            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         static_root_nodes_.visit_all([&func](const auto& node){
-            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_aggregate_once_nodes_.visit_all([&func](const auto& node){
-            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_aggregate_always_nodes_.visit_all([&func](const auto& node){
-            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_instances_once_nodes_.visit_all([&func](const auto& node){
-            return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+            return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             }) &&
         root_instances_always_nodes_.visit_all([&func](const auto& node){
-        return node->visit_all(TransformationMatrix<float, double, 3>::identity(), func);
+        return node->visit_all(TransformationMatrix<float, ScenePos, 3>::identity(), func);
             });
 }
 
 void Scene::render(
-    const FixedArray<double, 4, 4>& vp,
-    const TransformationMatrix<float, double, 3>& iv,
+    const FixedArray<ScenePos, 4, 4>& vp,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
     DanglingRef<const SceneNode> camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -438,8 +438,8 @@ void Scene::render(
     // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("Scene::render");
     delete_node_mutex_.notify_reading();
-    std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>> lights;
-    std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>> skidmarks;
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> lights;
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> skidmarks;
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
     {
@@ -457,7 +457,7 @@ void Scene::render(
             }
             return *res;
         }();
-        node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+        node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
         std::list<DanglingRef<const SceneNode>> nodes;
         {
@@ -465,7 +465,7 @@ void Scene::render(
             root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(node); return true; });
         }
         for (const auto& node : nodes) {
-            node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+            node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         }
     } else {
         if (!external_render_pass.black_node_name.empty()) {
@@ -485,11 +485,11 @@ void Scene::render(
             static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.push_back(node); return true; });
         }
         for (const auto& node : local_root_nodes) {
-            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
-            node->append_skidmarks_to_queue(TransformationMatrix<float, double, 3>::identity(), skidmarks);
+            node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
+            node->append_skidmarks_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), skidmarks);
         }
         for (const auto& node : local_static_root_nodes) {
-            node->append_lights_to_queue(TransformationMatrix<float, double, 3>::identity(), lights);
+            node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
         }
         if (any(external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
             if (external_render_pass.singular_node == nullptr) {
@@ -497,7 +497,7 @@ void Scene::render(
             }
             auto parent_m = external_render_pass.singular_node->has_parent()
                 ? external_render_pass.singular_node->parent()->absolute_model_matrix()
-                : TransformationMatrix<float, double, 3>::identity();
+                : TransformationMatrix<float, ScenePos, 3>::identity();
             auto parent_mvp = dot2d(vp, parent_m.affine());
             external_render_pass.singular_node->render(parent_mvp, parent_m, iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
         } else {
@@ -506,10 +506,10 @@ void Scene::render(
             }
             LOG_INFO("Scene::render non-blended");
             for (const auto& node : local_root_nodes) {
-                node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             for (const auto& node : local_static_root_nodes) {
-                node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             {
                 std::list<DanglingRef<const SceneNode>> cached_imposter_nodes;
@@ -520,7 +520,7 @@ void Scene::render(
                     }
                 }
                 for (const auto& node : cached_imposter_nodes) {
-                    node->render(vp, TransformationMatrix<float, double, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                    node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
                 }
             }
             {
@@ -543,7 +543,7 @@ void Scene::render(
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
-                                node->append_large_aggregates_to_queue(TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
+                                node->append_large_aggregates_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config);
                             }
                             large_aggregate_renderer->update_aggregates(iv.t(), aggregate_queue, external_render_pass, task_location);
                         });
@@ -575,7 +575,7 @@ void Scene::render(
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
                             for (const auto& node : nodes) {
-                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+                                node->append_large_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
                             }
                             large_instances_renderer->update_instances(iv.t(), instances_queue.queue(), task_location);
                         });
@@ -607,7 +607,7 @@ void Scene::render(
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
-                                node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
+                                node->append_sorted_aggregates_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv.t(), aggregate_queue, scene_graph_config, external_render_pass);
                             }
                             aggregate_queue.sort([](auto& a, auto& b){ return a.first < b.first; });
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> sorted_aggregate_queue;
@@ -660,7 +660,7 @@ void Scene::render(
                                     external_render_pass.pass,
                                     black_render_passes};
                                 for (const auto& node : nodes) {
-                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, double, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
+                                    node->append_small_instances_to_queue(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, iv.t(), PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queues, scene_graph_config);
                                 }
                                 auto sorted_instances = instances_queues.sorted_instances();
                                 small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->update_instances(
@@ -755,7 +755,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
         auto& drn = root_nodes_.default_nodes();
         for (auto it = drn.begin(); it != drn.end(); ) {
             it->second->move(
-                TransformationMatrix<float, double, 3>::identity(),
+                TransformationMatrix<float, ScenePos, 3>::identity(),
                 dt,
                 time,
                 scene_node_resources_,
@@ -775,8 +775,8 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
 }
 
 void Scene::append_static_filtered_to_queue(
-    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
     const ColoredVertexArrayFilter& filter) const
 {
     LOG_FUNCTION("Scene::append_static_filtered_to_queue");
@@ -784,7 +784,7 @@ void Scene::append_static_filtered_to_queue(
     std::shared_lock lock{ mutex_ };
     static_root_nodes_.visit_all([&](const auto& node) {
         node->append_static_filtered_to_queue(
-            TransformationMatrix<float, double, 3>::identity(),
+            TransformationMatrix<float, ScenePos, 3>::identity(),
             float_queue,
             double_queue,
             filter);

@@ -96,7 +96,7 @@ Player::Player(
     , supply_depots_waypoints_{ *this, single_waypoint_, supply_depots }
     , playback_waypoints_{ *this }
     , focuses_{ focuses }
-    , select_opponent_hysteresis_factor_{ 0.9 }
+    , select_opponent_hysteresis_factor_{ (ScenePos)0.9 }
     , destruction_observers_{ *this }
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
@@ -133,7 +133,7 @@ void Player::set_can_select_opponent(ControlSource control_source, bool value) {
     skills_.skills(control_source).can_select_opponent = value;
 }
 
-void Player::set_select_opponent_hysteresis_factor(double factor) {
+void Player::set_select_opponent_hysteresis_factor(ScenePos factor) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     select_opponent_hysteresis_factor_ = factor;
 }
@@ -314,7 +314,7 @@ bool Player::can_see(
 }
 
 bool Player::can_see(
-    const FixedArray<double, 3>& pos,
+    const FixedArray<ScenePos, 3>& pos,
     bool only_terrain,
     float height_offset,
     float time_offset) const
@@ -573,7 +573,7 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
         return std::nullopt;
     }
     const auto& inventy = inventory();
-    double distance_to_target = std::sqrt(sum(squared(
+    ScenePos distance_to_target = std::sqrt(sum(squared(
         target_rb_->rbp_.abs_position() - rigid_body().rbp_.abs_position())));
     float best_score = -INFINITY;
     std::optional<std::string> best_weapon_name;
@@ -715,27 +715,27 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
     auto opponent_score = [&](size_t i) {
         auto& p = *players_vec[i];
         if (p.team_ == team_) {
-            return -(double)INFINITY;
+            return -(ScenePos)INFINITY;
         }
         if (!p.has_scene_vehicle()) {
-            return -(double)INFINITY;
+            return -(ScenePos)INFINITY;
         }
         if (!can_see(p.rigid_body())) {
-            return -(double)INFINITY;
+            return -(ScenePos)INFINITY;
         }
         switch (strategy) {
         case OpponentSelectionStrategy::KEEP: {
             if (i == current_opponent_index) {
-                return (double)INFINITY;
+                return (ScenePos)INFINITY;
             } else {
-                return -(double)INFINITY;
+                return -(ScenePos)INFINITY;
             }
         }
         case OpponentSelectionStrategy::NEXT: {
             if (i == current_opponent_index) {
-                return -(double)INFINITY;
+                return -(ScenePos)INFINITY;
             } else {
-                return (double)INFINITY;
+                return (ScenePos)INFINITY;
             }
         }
         case OpponentSelectionStrategy::BEST: {
@@ -748,7 +748,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
         }
         THROW_OR_ABORT("Unknown opponent selection strategy");
         };
-    double best_score = -INFINITY;
+    ScenePos best_score = -INFINITY;
     const Player* best_opponent = nullptr;
     if (current_opponent_index != SIZE_MAX) {
         best_score = opponent_score(current_opponent_index);
@@ -776,7 +776,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
             if (!p.has_scene_vehicle()) {
                 continue;
             }
-            double candidate_score = opponent_score(i);
+            ScenePos candidate_score = opponent_score(i);
             if (candidate_score > best_score) {
                 best_score = candidate_score;
                 best_opponent = &p;
@@ -855,7 +855,7 @@ void Player::select_next_vehicle() {
     if (!has_scene_vehicle()) {
         return;
     }
-    double closest_distance2 = INFINITY;
+    ScenePos closest_distance2 = INFINITY;
     auto clear_next_scene_vehicle = [this](){
         if (next_scene_vehicle_ != nullptr) {
             next_scene_vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -885,7 +885,7 @@ void Player::select_next_vehicle() {
             set_next_scene_vehicle();
             break;
         }
-        double dist2 = sum(squared(v.rb().rbp_.abs_position() - vehicle_->rb().rbp_.abs_position()));
+        ScenePos dist2 = sum(squared(v.rb().rbp_.abs_position() - vehicle_->rb().rbp_.abs_position()));
         if (dist2 < closest_distance2) {
             set_next_scene_vehicle();
             closest_distance2 = dist2;

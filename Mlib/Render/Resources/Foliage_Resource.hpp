@@ -2,6 +2,7 @@
 #include <Mlib/Default_Uninitialized_List.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Styles.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <list>
 #include <vector>
 
@@ -19,10 +20,10 @@ class FoliageResource: public ISceneNodeResource {
 public:
     FoliageResource(
         SceneNodeResources& scene_node_resources,
-        const UUList<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
+        const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>& grass_triangles,
         const std::vector<ParsedResourceName>& near_grass_resources,
         const std::vector<ParsedResourceName>& dirty_near_grass_resources,
-        double near_grass_distance,
+        ScenePos near_grass_distance,
         const std::string& near_grass_foliagemap,
         float near_grass_foliagemap_scale,
         float scale,
@@ -38,7 +39,7 @@ public:
     // Output
     virtual void save_to_obj_file(
         const std::string& prefix,
-        const TransformationMatrix<float, double, 3>& model_matrix) const override;
+        const TransformationMatrix<float, ScenePos, 3>& model_matrix) const override;
 
     // Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
@@ -57,7 +58,7 @@ public:
 
 private:
     SceneNodeResources& scene_node_resources_;
-    UUList<FixedArray<ColoredVertex<double>, 3>> grass_triangles_;
+    UUList<FixedArray<ColoredVertex<ScenePos>, 3>> grass_triangles_;
     TerrainStyles terrain_styles_;
     float scale_;
     UpAxis up_axis_;

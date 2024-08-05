@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -8,12 +9,12 @@ class PlaneNd;
 class IIntersectableMesh;
 
 struct VertexDistances {
-    double min;
-    double max;
+    ScenePos min;
+    ScenePos max;
 };
 
 VertexDistances get_farthest_distances(
     const IIntersectableMesh& mesh,
-    const PlaneNd<double, 3>& plane);
+    const PlaneNd<ScenePos, 3>& plane);
 
 }

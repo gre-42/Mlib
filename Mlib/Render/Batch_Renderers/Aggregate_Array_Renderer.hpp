@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <atomic>
 
@@ -19,15 +20,15 @@ public:
     virtual bool is_initialized() const override;
     virtual void invalidate() override;
     virtual void update_aggregates(
-        const FixedArray<double, 3>& offset,
+        const FixedArray<ScenePos, 3>& offset,
         const std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
         const ExternalRenderPass& external_render_pass,
         TaskLocation task_location) override;
     virtual void render_aggregates(
-        const FixedArray<double, 4, 4>& vp,
-        const TransformationMatrix<float, double, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const FixedArray<ScenePos, 4, 4>& vp,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass,
@@ -37,8 +38,8 @@ private:
     mutable std::shared_ptr<ColoredVertexArrayResource> next_rcva_;
     mutable std::unique_ptr<RenderableColoredVertexArray> rcvai_;
     mutable std::unique_ptr<RenderableColoredVertexArray> next_rcvai_;
-    mutable FixedArray<double, 3> offset_;
-    FixedArray<double, 3> next_offset_;
+    mutable FixedArray<ScenePos, 3> offset_;
+    FixedArray<ScenePos, 3> next_offset_;
     mutable AtomicMutex mutex_;
     bool is_initialized_;
 };

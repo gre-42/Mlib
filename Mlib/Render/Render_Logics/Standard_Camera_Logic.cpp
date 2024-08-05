@@ -20,8 +20,8 @@ StandardCameraLogic::StandardCameraLogic(
     const SelectedCameras& cameras)
     : scene_{ scene }
     , cameras_{ cameras }
-    , vp_{ fixed_nans<double, 4, 4>() }
-    , iv_{ fixed_nans<double, 4, 4>() }
+    , vp_{ fixed_nans<ScenePos, 4, 4>() }
+    , iv_{ fixed_nans<ScenePos, 4, 4>() }
     , camera_node_{ nullptr }
 {}
 
@@ -67,7 +67,7 @@ void StandardCameraLogic::render(
     auto camera_object = camera_node_->get_camera().copy();
     camera_object->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
-        camera_object->projection_matrix().casted<double>(),
+        camera_object->projection_matrix().casted<ScenePos>(),
         camera_node_->absolute_view_matrix(frame_id.external_render_pass.time).affine());
     iv_ = camera_node_->absolute_model_matrix(frame_id.external_render_pass.time);
 }
@@ -80,14 +80,14 @@ float StandardCameraLogic::far_plane() const {
     return scene_.get_node(cameras_.camera_node_name(), DP_LOC)->get_camera().get_far_plane();
 }
 
-const FixedArray<double, 4, 4>& StandardCameraLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& StandardCameraLogic::vp() const {
     if (camera_node_ == nullptr) {
         THROW_OR_ABORT("camera node not set in StandardCameraLogic::vp");
     }
     return vp_;
 }
 
-const TransformationMatrix<float, double, 3>& StandardCameraLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& StandardCameraLogic::iv() const {
     if (camera_node_ == nullptr) {
         THROW_OR_ABORT("camera node not set in StandardCameraLogic::iv");
     }

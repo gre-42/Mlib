@@ -16,10 +16,10 @@ using namespace Mlib;
 
 FoliageResource::FoliageResource(
     SceneNodeResources& scene_node_resources,
-    const UUList<FixedArray<ColoredVertex<double>, 3>>& grass_triangles,
+    const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>& grass_triangles,
     const std::vector<ParsedResourceName>& near_grass_resources,
     const std::vector<ParsedResourceName>& dirty_near_grass_resources,
-    double near_grass_distance,
+    ScenePos near_grass_distance,
     const std::string& near_grass_foliagemap,
     float near_grass_foliagemap_scale,
     float scale,
@@ -47,7 +47,7 @@ void FoliageResource::preload(const RenderableResourceFilter& filter) const
 
 void FoliageResource::instantiate_renderable(const InstantiationOptions& options) const
 {
-    std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> no_grass;
+    std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*> no_grass;
     auto res = std::make_shared<RenderableTriangleSampler>(
         scene_node_resources_,
         terrain_styles_,
@@ -70,7 +70,7 @@ std::map<JoinedWayPointSandbox, FoliageResource::PointsAndAdjacencyResource> Fol
 // Output
 void FoliageResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, double, 3>& model_matrix) const
+    const TransformationMatrix<float, ScenePos, 3>& model_matrix) const
 {}
 
 // Animation

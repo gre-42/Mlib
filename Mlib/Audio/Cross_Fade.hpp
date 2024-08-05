@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
 #include <cmath>
@@ -36,7 +37,7 @@ public:
               float pitch = 1.f,
               float buffer_frequency = NAN);
     void stop();
-    void set_position(const AudioSourceState<double> &position);
+    void set_position(const AudioSourceState<ScenePos> &position);
 
 private:
     PositionRequirement position_requirement_;

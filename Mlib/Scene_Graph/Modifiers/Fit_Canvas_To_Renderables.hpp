@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -11,7 +12,7 @@ enum class ExternalRenderPassType;
 
 void fit_canvas_to_renderables(
     Scene& scene,
-    const TransformationMatrix<float, double, 3>& v,
+    const TransformationMatrix<float, ScenePos, 3>& v,
     OrthoCamera& camera,
     ExternalRenderPassType render_pass);
 

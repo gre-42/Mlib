@@ -103,8 +103,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     : rcva_{ rcva }
     , continuous_blending_z_order_{ CONTINUOUS_BLENDING_Z_ORDER_UNDEFINED }
     , secondary_rendering_resources_{ rendering_resources }
-    , aabb_{ AxisAlignedBoundingBox<double, 3>::empty() }
-    , bounding_sphere_(fixed_zeros<double, 3>(), 0.f)
+    , aabb_{ AxisAlignedBoundingBox<ScenePos, 3>::empty() }
+    , bounding_sphere_(fixed_zeros<ScenePos, 3>(), 0.f)
 {
 #ifdef DEBUG
     rcva_->triangles_res_->check_consistency();
@@ -124,13 +124,13 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
                         THROW_OR_ABORT("Instances and aggregate=off require single precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::ONCE) {
-                    if constexpr (std::is_same_v<TPos, double>) {
+                    if constexpr (std::is_same_v<TPos, ScenePos>) {
                         aggregate_once_.push_back(t);
                     } else {
                         THROW_OR_ABORT("Aggregate=once requires double precision (material: " + t->material.identifier() + ')');
                     }
                 } else if (t->material.aggregate_mode == AggregateMode::SORTED_CONTINUOUSLY) {
-                    if constexpr (std::is_same_v<TPos, double>) {
+                    if constexpr (std::is_same_v<TPos, ScenePos>) {
                         aggregate_sorted_continuously_.push_back(t);
                     } else {
                         THROW_OR_ABORT("Aggregate=sorted_continuously requires double precision (material: " + t->material.identifier() + ')');
@@ -174,8 +174,8 @@ RenderableColoredVertexArray::RenderableColoredVertexArray(
     add_cvas(rcva->triangles_res_->dcvas);
 
     for (auto& cva : aggregate_off_) {
-        aabb_.extend(cva->aabb().casted<double>());
-        bounding_sphere_.extend(cva->bounding_sphere().casted<double>());
+        aabb_.extend(cva->aabb().casted<ScenePos>());
+        bounding_sphere_.extend(cva->bounding_sphere().casted<ScenePos>());
     }
     for (auto& cva : aggregate_once_) {
         aabb_.extend(cva->aabb());
@@ -239,12 +239,12 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
 void RenderableColoredVertexArray::render_cva(
     const std::shared_ptr<ColoredVertexArray<float>>& cva,
     const UUVector<OffsetAndQuaternion<float, float>>& absolute_bone_transformations,
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const TransformationMatrix<float, double, 3>& iv,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
     const DynamicStyle* dynamic_style,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -294,12 +294,12 @@ void RenderableColoredVertexArray::render_cva(
     }
     // lerr();
 
-    std::vector<std::pair<TransformationMatrix<float, double, 3>, Light*>> filtered_lights;
+    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> filtered_lights;
     std::vector<size_t> lightmap_indices;
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
-    std::vector<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>> filtered_skidmarks;
+    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> filtered_skidmarks;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap &&
         (
@@ -1128,12 +1128,12 @@ void RenderableColoredVertexArray::render_cva(
 }
 
 void RenderableColoredVertexArray::render(
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const TransformationMatrix<float, double, 3>& iv,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
     const DynamicStyle* dynamic_style,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -1233,9 +1233,9 @@ void RenderableColoredVertexArray::append_filtered_to_queue(
 }
 
 void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const FixedArray<ScenePos, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue) const
@@ -1244,29 +1244,29 @@ void RenderableColoredVertexArray::append_sorted_aggregates_to_queue(
         VisibilityCheck vc{mvp};
         if (vc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, external_render_pass.pass))
         {
-            TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
+            TransformationMatrix<float, ScenePos, 3> mo{m.R(), m.t() - offset};
             aggregate_queue.push_back({ (float)vc.sorting_key(cva->material), cva->transformed<float>(mo, "_transformed_tm") });
         }
     }
 }
 
 void RenderableColoredVertexArray::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, double, 3>& m,
-    const FixedArray<double, 3>& offset,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const FixedArray<ScenePos, 3>& offset,
     const SceneGraphConfig& scene_graph_config,
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue) const
 {
     for (const auto& cva : aggregate_once_) {
-        TransformationMatrix<float, double, 3> mo{m.R(), m.t() - offset};
+        TransformationMatrix<float, ScenePos, 3> mo{m.R(), m.t() - offset};
         aggregate_queue.push_back(cva->transformed<float>(mo, "_transformed_tm"));
     }
 }
 
 void RenderableColoredVertexArray::append_sorted_instances_to_queue(
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const TransformationMatrix<float, double, 3>& iv,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
+    const FixedArray<ScenePos, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     SmallInstancesQueues& instances_queues) const
@@ -1281,9 +1281,9 @@ void RenderableColoredVertexArray::append_sorted_instances_to_queue(
 }
 
 void RenderableColoredVertexArray::append_large_instances_to_queue(
-    const FixedArray<double, 4, 4>& mvp,
-    const TransformationMatrix<float, double, 3>& m,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& mvp,
+    const TransformationMatrix<float, ScenePos, 3>& m,
+    const FixedArray<ScenePos, 3>& offset,
     uint32_t billboard_id,
     const SceneGraphConfig& scene_graph_config,
     LargeInstancesQueue& instances_queue) const
@@ -1309,9 +1309,9 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
 }
 
 void RenderableColoredVertexArray::extend_aabb(
-    const TransformationMatrix<float, double, 3>& mv,
+    const TransformationMatrix<float, ScenePos, 3>& mv,
     ExternalRenderPassType render_pass,
-    AxisAlignedBoundingBox<double, 3>& aabb) const
+    AxisAlignedBoundingBox<ScenePos, 3>& aabb) const
 {
     auto extend = [&](auto& cvas){
         for (const auto& cva : cvas) {
@@ -1320,7 +1320,7 @@ void RenderableColoredVertexArray::extend_aabb(
             }
             for (const auto& t : cva->triangles) {
                 for (const auto& v : t.flat_iterable()) {
-                    aabb.extend(mv.transform(v.position.template casted<double>()));
+                    aabb.extend(mv.transform(v.position.template casted<ScenePos>()));
                 }
             }
         }
@@ -1332,16 +1332,16 @@ void RenderableColoredVertexArray::extend_aabb(
     extend(instances_sorted_continuously_);
 }
 
-AxisAlignedBoundingBox<double, 3> RenderableColoredVertexArray::aabb() const {
+AxisAlignedBoundingBox<ScenePos, 3> RenderableColoredVertexArray::aabb() const {
     return aabb_;
 }
 
-BoundingSphere<double, 3> RenderableColoredVertexArray::bounding_sphere() const {
+BoundingSphere<ScenePos, 3> RenderableColoredVertexArray::bounding_sphere() const {
     return bounding_sphere_;
 }
 
-double RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {
-    double result = 0.;
+ScenePos RenderableColoredVertexArray::max_center_distance(uint32_t billboard_id) const {
+    ScenePos result = 0.;
     for (const auto& cva : aggregate_off_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : aggregate_once_) { result = std::max(result, cva->max_center_distance(billboard_id)); }
     for (const auto& cva : aggregate_sorted_continuously_) { result = std::max(result, cva->max_center_distance(billboard_id)); }

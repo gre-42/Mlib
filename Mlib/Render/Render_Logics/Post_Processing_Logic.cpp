@@ -270,11 +270,11 @@ float PostProcessingLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& PostProcessingLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& PostProcessingLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& PostProcessingLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& PostProcessingLogic::iv() const {
     return child_logic_.iv();
 }
 

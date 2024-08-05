@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Deallocation_Token.hpp>
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <string>
 
 namespace Mlib {
@@ -47,7 +48,7 @@ private:
     int texture_height_;
     size_t old_fbs_id_;
     std::shared_ptr<FillWithTextureLogic> old_render_texture_logic_;
-    FixedArray<double, 3> old_camera_position_;
+    FixedArray<ScenePos, 3> old_camera_position_;
     ColormapWithModifiers colormap_;
     DeallocationToken deallocation_token_;
 };

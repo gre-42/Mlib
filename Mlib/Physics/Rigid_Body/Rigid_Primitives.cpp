@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;
 
@@ -51,7 +52,7 @@ RigidBodyPulses Mlib::rigid_cuboid_pulses(
         com,                                        // com
         v,                                          // v
         w,                                          // w
-        fixed_nans<double, 3>(),                    // position
+        fixed_nans<ScenePos, 3>(),                  // position
         fixed_zeros<float, 3>(),                    // rotation (not NAN to pass rogridues angle assertion)
         true                                        // I_is_diagonal
     };
@@ -77,7 +78,7 @@ RigidBodyPulses Mlib::rigid_disk_pulses(
         com,                                        // com
         v,                                          // v
         w,                                          // w
-        fixed_nans<double, 3>(),                    // position
+        fixed_nans<ScenePos, 3>(),                  // position
         fixed_zeros<float, 3>(),                    // rotation (not NAN to pass rogridues angle assertion)
         true                                        // I_is_diagonal
     };

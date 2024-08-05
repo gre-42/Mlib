@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Geometry/Mesh/Point_And_Flags.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <list>
@@ -36,7 +37,7 @@ enum class SmoothnessTarget;
 
 class ISceneNodeResource {
 public:
-    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<double, 3>, WayPointLocation>>;
+    using PointsAndAdjacencyResource = PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>;
 
     ISceneNodeResource();
     virtual ~ISceneNodeResource();
@@ -51,7 +52,7 @@ public:
     // Output
     virtual void save_to_obj_file(
         const std::string& prefix,
-        const TransformationMatrix<float, double, 3>& model_matrix) const;
+        const TransformationMatrix<float, ScenePos, 3>& model_matrix) const;
     virtual void print(std::ostream& ostr) const;
 
     // Animation

@@ -23,8 +23,8 @@ using namespace Mlib;
 
 static void handle_standard_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& normal,
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<ScenePos, 3>& intersection_point,
     float overlap)
 {
     assert_true((c.o0.mass() != INFINITY) && (c.o1.mass() == INFINITY));
@@ -58,8 +58,8 @@ static void handle_standard_reflection(
 
 static void handle_extended_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& normal,
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& normal,
+    const FixedArray<ScenePos, 3>& intersection_point,
     float overlap,
     float surface_stiction_factor)
 {
@@ -190,7 +190,7 @@ static void handle_extended_reflection(
                 if (normal_impulse != nullptr) {
                     FixedArray<float, 3> vc = c.o1.rbp_.v_;
                     vc -= normal.casted<float>() * dot0d(normal.casted<float>(), vc);
-                    FixedArray<double, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
+                    FixedArray<ScenePos, 3> contact_position = c.o1.get_abs_tire_contact_position(c.tire_id1);
                     FixedArray<float, 3> v_street = c.o0.velocity_at_position(contact_position);
                     FixedArray<float, 3> vc_street = c.o0.velocity_at_position(c.o1.abs_com());
                     c.history.contact_infos.push_back(std::unique_ptr<IContactInfo>(new TireContactInfo1{
@@ -243,7 +243,7 @@ static void handle_extended_reflection(
 
 void Mlib::handle_reflection(
     const IntersectionScene& c,
-    const FixedArray<double, 3>& intersection_point,
+    const FixedArray<ScenePos, 3>& intersection_point,
     float surface_stiction_factor)
 {
     if ((c.q0 == nullptr) == (c.t0 == nullptr)) {
@@ -303,13 +303,13 @@ void Mlib::handle_reflection(
     // if (c.beacons != nullptr) {
     //     c.beacons->push_back(Beacon::create(intersection_point, "beacon"));
     // }
-    FixedArray<double, 3> normal = uninitialized;
-    double overlap = INFINITY;
+    FixedArray<ScenePos, 3> normal = uninitialized;
+    ScenePos overlap = INFINITY;
     if (!c.l1_is_normal) {
         assert_true(c.r1 != nullptr);
         IntersectionScene cf{ c };
-        std::optional<CollisionPolygonSphere<double, 4>> q0f;
-        std::optional<CollisionPolygonSphere<double, 3>> t0f;
+        std::optional<CollisionPolygonSphere<ScenePos, 4>> q0f;
+        std::optional<CollisionPolygonSphere<ScenePos, 3>> t0f;
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_TWO_SIDED)) {
             if (!any(c.mesh1_material & PhysicsMaterial::ATTR_CONVEX)) {
                 THROW_OR_ABORT("Two-sided materials require a convex collision partner (case 0). Consider using collision-normals.");
@@ -367,13 +367,13 @@ void Mlib::handle_reflection(
         if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) ||
             any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
         {
-            FixedArray<double, 3> round_normal = uninitialized;
+            FixedArray<ScenePos, 3> round_normal = uninitialized;
             assert_true(c.r1 != nullptr);
             if (any(c.mesh0_material & PhysicsMaterial::ATTR_ROUND) &&
                 any(c.mesh1_material & PhysicsMaterial::ATTR_ROUND))
             {
                 round_normal = N0.normal - c.r1->normal;
-                double nl2 = sum(squared(round_normal));
+                ScenePos nl2 = sum(squared(round_normal));
                 if (nl2 < 1e-12) {
                     THROW_OR_ABORT("Normal is too small in collision of round objects (objects might be unseparated)");
                 }

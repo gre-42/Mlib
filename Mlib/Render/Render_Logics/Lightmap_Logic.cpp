@@ -148,11 +148,11 @@ float LightmapLogic::far_plane() const {
     return child_logic_.far_plane();
 }
 
-const FixedArray<double, 4, 4>& LightmapLogic::vp() const {
+const FixedArray<ScenePos, 4, 4>& LightmapLogic::vp() const {
     return child_logic_.vp();
 }
 
-const TransformationMatrix<float, double, 3>& LightmapLogic::iv() const {
+const TransformationMatrix<float, ScenePos, 3>& LightmapLogic::iv() const {
     return child_logic_.iv();
 }
 

@@ -16,7 +16,7 @@ using namespace Mlib;
 
 ArrayInstancesRenderer::ArrayInstancesRenderer(RenderingResources& rendering_resources)
     : rendering_resources_{ rendering_resources }
-    , offset_((double)NAN)
+    , offset_((ScenePos)NAN)
     , next_offset_{ uninitialized }
     , is_initialized_{ false }
 {}
@@ -25,7 +25,7 @@ ArrayInstancesRenderer::~ArrayInstancesRenderer()
 {}
 
 void ArrayInstancesRenderer::update_instances(
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 3>& offset,
     const std::list<TransformedColoredVertexArray>& instances_queue,
     TaskLocation task_location)
 {
@@ -85,10 +85,10 @@ void ArrayInstancesRenderer::update_instances(
 }
 
 void ArrayInstancesRenderer::render_instances(
-    const FixedArray<double, 4, 4>& vp,
-    const TransformationMatrix<float, double, 3>& iv,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+    const FixedArray<ScenePos, 4, 4>& vp,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
@@ -106,7 +106,7 @@ void ArrayInstancesRenderer::render_instances(
         if (any(isnan(offset_))) {
             verbose_abort("Offset is NAN");
         }
-        TransformationMatrix<float, double, 3> m{fixed_identity_array<float, 3>(), offset_};
+        TransformationMatrix<float, ScenePos, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
             dot2d(vp, m.affine()),
             m,

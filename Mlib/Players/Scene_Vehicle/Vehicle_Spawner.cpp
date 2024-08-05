@@ -137,7 +137,7 @@ void VehicleSpawner::set_scene_vehicles(std::list<std::unique_ptr<SceneVehicle>>
     }
 }
 
-void VehicleSpawner::spawn(const SpawnPoint& spawn_point, double spawn_y_offset) {
+void VehicleSpawner::spawn(const SpawnPoint& spawn_point, ScenePos spawn_y_offset) {
     if (has_player() && player_->has_scene_vehicle()) {
         THROW_OR_ABORT("Player \"" + player_->name() + "\"already has a vehicle before spawning");
     }

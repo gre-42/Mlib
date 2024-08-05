@@ -15,8 +15,8 @@ void Mlib::collide_triangle_and_triangles(
     RigidBodyVehicle& o1,
     const IIntersectableMesh* msh0,
     const TypedMesh<std::shared_ptr<IIntersectableMesh>>& msh1,
-    const CollisionPolygonSphere<double, 4>* q0,
-    const CollisionPolygonSphere<double, 3>* t0,
+    const CollisionPolygonSphere<ScenePos, 4>* q0,
+    const CollisionPolygonSphere<ScenePos, 3>* t0,
     const CollisionHistory& history)
 {
     auto collide = [&](const auto& poly0){

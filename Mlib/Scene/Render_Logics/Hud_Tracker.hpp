@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Signal/Exponential_Smoother.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 
@@ -24,11 +25,11 @@ class HudTrackerTimeAdvancer {
 public:
 	explicit HudTrackerTimeAdvancer(HudTracker& tracker);
 	bool is_visible() const;
-	void advance_time(const FixedArray<double, 3>& point);
+	void advance_time(const FixedArray<ScenePos, 3>& point);
 private:
 	HudTracker& tracker_;
 	bool is_visible_;
-	FixedArray<double, 4, 4> vp_;
+	FixedArray<ScenePos, 4, 4> vp_;
 	float near_plane_;
 	float far_plane_;
 };
@@ -64,7 +65,7 @@ private:
 	mutable bool is_visible_;
 	RenderLogic& scene_logic_;
 	DanglingPtr<SceneNode> exclusive_node_;
-	mutable FixedArray<double, 4, 4> vp_;
+	mutable FixedArray<ScenePos, 4, 4> vp_;
 	mutable float near_plane_;
 	mutable float far_plane_;
 };

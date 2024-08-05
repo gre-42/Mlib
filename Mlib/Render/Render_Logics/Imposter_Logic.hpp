@@ -63,8 +63,8 @@ public:
         const RenderedSceneDescriptor& frame_id) override;
     virtual float near_plane() const override;
     virtual float far_plane() const override;
-    virtual const FixedArray<double, 4, 4>& vp() const override;
-    virtual const TransformationMatrix<float, double, 3>& iv() const override;
+    virtual const FixedArray<ScenePos, 4, 4>& vp() const override;
+    virtual const TransformationMatrix<float, ScenePos, 3>& iv() const override;
     virtual bool requires_postprocessing() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
@@ -73,8 +73,8 @@ private:
     void delete_imposter_if_exists();
     void add_imposter(
         const ImposterParameters& ips,
-        const FixedArray<double, 3>& orig_node_position,
-        double camera_y,
+        const FixedArray<ScenePos, 3>& orig_node_position,
+        ScenePos camera_y,
         float angle_y);
 
     RenderingResources& rendering_resources_;
@@ -83,7 +83,7 @@ private:
     DanglingRef<SceneNode> orig_node_;
     SelectedCameras& cameras_;
     std::unique_ptr<FrameBuffer> fbs_;
-    FixedArray<FixedArray<double, 3>, 8> old_projected_bbox_;
+    FixedArray<FixedArray<ScenePos, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
     std::string texture_id_;
@@ -93,7 +93,7 @@ private:
     float down_sampling_;
     float max_deviation_;
     float min_distance_;
-    AxisAlignedBoundingBox<double, 3> obj_relative_aabb_ = uninitialized;
+    AxisAlignedBoundingBox<ScenePos, 3> obj_relative_aabb_ = uninitialized;
 };
 
 }

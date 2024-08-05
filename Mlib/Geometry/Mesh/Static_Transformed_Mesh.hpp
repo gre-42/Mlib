@@ -22,32 +22,32 @@ class StaticTransformedMesh: public IIntersectableMesh {
 public:
     StaticTransformedMesh(
         std::string name,
-        const AxisAlignedBoundingBox<double, 3>& aabb,
-        const BoundingSphere<double, 3>& bounding_sphere,
-        std::vector<CollisionPolygonSphere<double, 4>>&& quads,
-        std::vector<CollisionPolygonSphere<double, 3>>&& triangles,
-        std::vector<CollisionLineSphere<double>>&& lines,
-        std::vector<CollisionLineSphere<double>>&& edges,
+        const AxisAlignedBoundingBox<ScenePos, 3>& aabb,
+        const BoundingSphere<ScenePos, 3>& bounding_sphere,
+        std::vector<CollisionPolygonSphere<ScenePos, 4>>&& quads,
+        std::vector<CollisionPolygonSphere<ScenePos, 3>>&& triangles,
+        std::vector<CollisionLineSphere<ScenePos>>&& lines,
+        std::vector<CollisionLineSphere<ScenePos>>&& edges,
         std::vector<CollisionRidgeSphere>&& ridges);
     ~StaticTransformedMesh();
     virtual std::string name() const override;
-    virtual bool intersects(const BoundingSphere<double, 3>& sphere) const override;
-    virtual bool intersects(const PlaneNd<double, 3>& plane) const override;
-    virtual const std::vector<CollisionPolygonSphere<double, 4>>& get_quads_sphere() const override;
-    virtual const std::vector<CollisionPolygonSphere<double, 3>>& get_triangles_sphere() const override;
-    virtual const std::vector<CollisionLineSphere<double>>& get_lines_sphere() const override;
-    virtual const std::vector<CollisionLineSphere<double>>& get_edges_sphere() const override;
+    virtual bool intersects(const BoundingSphere<ScenePos, 3>& sphere) const override;
+    virtual bool intersects(const PlaneNd<ScenePos, 3>& plane) const override;
+    virtual const std::vector<CollisionPolygonSphere<ScenePos, 4>>& get_quads_sphere() const override;
+    virtual const std::vector<CollisionPolygonSphere<ScenePos, 3>>& get_triangles_sphere() const override;
+    virtual const std::vector<CollisionLineSphere<ScenePos>>& get_lines_sphere() const override;
+    virtual const std::vector<CollisionLineSphere<ScenePos>>& get_edges_sphere() const override;
     virtual const std::vector<CollisionRidgeSphere>& get_ridges_sphere() const override;
-    virtual BoundingSphere<double, 3> bounding_sphere() const override;
-    virtual AxisAlignedBoundingBox<double, 3> aabb() const override;
+    virtual BoundingSphere<ScenePos, 3> bounding_sphere() const override;
+    virtual AxisAlignedBoundingBox<ScenePos, 3> aabb() const override;
 private:
     std::string name_;
-    AxisAlignedBoundingBox<double, 3> aabb_;
-    BoundingSphere<double, 3> bounding_sphere_;
-    std::vector<CollisionPolygonSphere<double, 4>> quads_;
-    std::vector<CollisionPolygonSphere<double, 3>> triangles_;
-    std::vector<CollisionLineSphere<double>> lines_;
-    std::vector<CollisionLineSphere<double>> edges_;
+    AxisAlignedBoundingBox<ScenePos, 3> aabb_;
+    BoundingSphere<ScenePos, 3> bounding_sphere_;
+    std::vector<CollisionPolygonSphere<ScenePos, 4>> quads_;
+    std::vector<CollisionPolygonSphere<ScenePos, 3>> triangles_;
+    std::vector<CollisionLineSphere<ScenePos>> lines_;
+    std::vector<CollisionLineSphere<ScenePos>> edges_;
     std::vector<CollisionRidgeSphere> ridges_;
 };
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/OpenAL_al.h>
+#include <Mlib/Scene_Pos.hpp>
 #include <cstddef>
 
 namespace Mlib {
@@ -26,7 +27,7 @@ public:
     void set_loop(bool value);
     void set_gain(float f);
     void set_pitch(float f);
-    void set_position(const AudioSourceState<double> &position);
+    void set_position(const AudioSourceState<ScenePos> &position);
     void play();
     void join();
     void mute();

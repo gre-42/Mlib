@@ -8,16 +8,16 @@ RidgeIntersectionPointsBvh::RidgeIntersectionPointsBvh(const PhysicsEngineConfig
   radius_{cfg.intersection_point_radius}
 {}
 
-void RidgeIntersectionPointsBvh::insert(const FixedArray<double, 3>& intersection_point) {
-    bvh_.insert(AxisAlignedBoundingBox<double, 3>::from_point(intersection_point), intersection_point);
+void RidgeIntersectionPointsBvh::insert(const FixedArray<ScenePos, 3>& intersection_point) {
+    bvh_.insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(intersection_point), intersection_point);
 }
 
-bool RidgeIntersectionPointsBvh::has_neighbor(const FixedArray<double, 3>& intersection_point)
+bool RidgeIntersectionPointsBvh::has_neighbor(const FixedArray<ScenePos, 3>& intersection_point)
 {
     return bvh_.has_neighbor2(
         intersection_point,
         radius_,
-        [&intersection_point](const FixedArray<double, 3>& candidate){
+        [&intersection_point](const FixedArray<ScenePos, 3>& candidate){
             return sum(squared(intersection_point - candidate));
         });
 }

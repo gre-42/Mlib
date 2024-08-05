@@ -158,7 +158,7 @@ void HeterogeneousResource::generate_instances() {
             }
             const auto& tri = *cva->triangles.begin();
             bri->add_parsed_resource_name(
-                tri(0).position.casted<double>(),
+                tri(0).position.casted<ScenePos>(),
                 ParsedResourceName{
                     .name = match[1].str(),
                     .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,

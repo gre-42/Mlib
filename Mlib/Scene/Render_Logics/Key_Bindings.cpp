@@ -406,19 +406,19 @@ void KeyBindings::increment_external_forces(
                 }
             };
 
-            auto translate = [&k=k, &rt](double dx){
+            auto translate = [&k=k, &rt](ScenePos dx){
                 if (dx == 0.) {
                     return;
                 }
                 if (rt != nullptr) {
-                    rt->transformation_matrix_.t() += dx * dot1d(rt->transformation_matrix_.R().casted<double>(), k.translation);
+                    rt->transformation_matrix_.t() += dx * dot1d(rt->transformation_matrix_.R().casted<ScenePos>(), k.translation);
                 }
             };
 
             // Apply key binding
             float alpha = k.button_press.keys_alpha();
             if (enable_controls && !std::isnan(alpha)) {
-                double v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
+                ScenePos v = ((1 - alpha) * k.velocity_press + alpha * k.velocity_repeat);
                 float w = ((1 - alpha) * k.angular_velocity_press + alpha * k.angular_velocity_repeat);
                 translate(v * cfg.dt_substeps());
                 rotate(w * cfg.dt_substeps());
@@ -444,7 +444,7 @@ void KeyBindings::increment_external_forces(
             if (k->geographic_mapping != nullptr) {
                 linfo() << "Position (lat, lon, height): " << k->geographic_mapping->transform(trafo.t());
             }
-            linfo() << "Position: " << trafo.t() / (double)meters;
+            linfo() << "Position: " << trafo.t() / (ScenePos)meters;
             linfo() << "Pitch: " << z_to_pitch(z) / degrees;
             linfo() << "Yaw: " << z_to_yaw(z) / degrees;
         }

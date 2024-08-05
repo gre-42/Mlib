@@ -46,7 +46,7 @@ PoseInterpolationMode Mlib::pose_interpolation_mode_from_string(const std::strin
 }
 
 SceneNode::SceneNode(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
     PoseInterpolationMode interpolation_mode)
@@ -58,7 +58,7 @@ SceneNode::SceneNode(
     , relative_movable_{ nullptr }
     , absolute_observer_{ nullptr }
     , sticky_absolute_observer_{ nullptr }
-    , trafo_{ OffsetAndQuaternion<float, double>::from_tait_bryan_angles({ rotation, position }) }
+    , trafo_{ OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
     , trafo_history_invalidated_{ false }
     , scale_{ scale }
@@ -70,7 +70,7 @@ SceneNode::SceneNode(
 
 SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
     : SceneNode{
-        fixed_zeros<double, 3>(),
+        fixed_zeros<ScenePos, 3>(),
         fixed_zeros<float, 3>(),
         1.f,
         interpolation_mode}
@@ -467,7 +467,7 @@ void SceneNode::add_instances_child(
         .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
         .scene_node = std::move(node),
         .max_center_distance = 0.,
-        .small_instances = Bvh<double, PositionAndYAngle, 3>({0.1, 0.1, 0.1}, 10),
+        .small_instances = Bvh<ScenePos, PositionAndYAngle, 3>(fixed_full<ScenePos, 3>(ScenePos(0.1)), 10),
         .large_instances = std::list<PositionAndYAngle>()}).second)
     {
         THROW_OR_ABORT("Instances node with name " + name + " already exists");
@@ -476,7 +476,7 @@ void SceneNode::add_instances_child(
 
 void SceneNode::add_instances_position(
     const std::string& name,
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     float yangle,
     uint32_t billboard_id)
 {
@@ -485,7 +485,7 @@ void SceneNode::add_instances_position(
     if (cit == instances_children_.end()) {
         THROW_OR_ABORT("Could not find instance node with name \"" + name + '"');
     }
-    double mcd = cit->second.scene_node->max_center_distance(billboard_id);
+    ScenePos mcd = cit->second.scene_node->max_center_distance(billboard_id);
     if (mcd == 0.) {
         THROW_OR_ABORT("Could not determine max_center_distance of node with name \"" + name + '"');
     }
@@ -502,7 +502,7 @@ void SceneNode::add_instances_position(
         }
         cit->second.max_center_distance = std::max(cit->second.max_center_distance, mcd);
         cit->second.small_instances.insert(
-            AxisAlignedBoundingBox<double, 3>::from_point(position),
+            AxisAlignedBoundingBox<ScenePos, 3>::from_point(position),
             PositionAndYAngle{
                 .position = position,
                 .yangle = yangle,
@@ -515,7 +515,7 @@ void SceneNode::optimize_instances_search_time(std::ostream& ostr) const {
     for (const auto& [name, i] : instances_children_) {
         ostr << name << std::endl;
         i.small_instances.optimize_search_time(BvhDataRadiusType::ZERO, ostr);
-        // i.small_instances.plot_svg<double>("/tmp/" + name + ".svg", 0, 1);
+        // i.small_instances.plot_svg<ScenePos>("/tmp/" + name + ".svg", 0, 1);
     }
 }
 
@@ -620,7 +620,7 @@ void SceneNode::set_animation_state_updater(std::unique_ptr<AnimationStateUpdate
 }
 
 void SceneNode::move(
-    const TransformationMatrix<float, double, 3>& v,
+    const TransformationMatrix<float, ScenePos, 3>& v,
     float dt,
     std::chrono::steady_clock::time_point time,
     SceneNodeResources* scene_node_resources,
@@ -657,7 +657,7 @@ void SceneNode::move(
             if (it == poses.end()) {
                 THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
             }
-            OffsetAndQuaternion<float, double> q1{it->second.offset().casted<double>(), it->second.quaternion()};
+            OffsetAndQuaternion<float, ScenePos> q1{it->second.offset().casted<ScenePos>(), it->second.quaternion()};
             auto res_pose = trafo_.slerp(q1, 1.f - bone_.smoothness);
             res_pose.quaternion() = res_pose.quaternion().slerp(Quaternion<float>::identity(), 1.f - bone_.rotation_strength);
             set_relative_pose(
@@ -690,7 +690,7 @@ void SceneNode::move(
             animation_state_updater_->update_animation_state(animation_state_.get());
         }
     }
-    TransformationMatrix<float, double, 3> v2 = uninitialized;
+    TransformationMatrix<float, ScenePos, 3> v2 = uninitialized;
     if ((absolute_movable_ != nullptr) && (relative_movable_ != nullptr)) {
         auto ma = absolute_movable_->get_new_absolute_model_matrix();
         auto mr = v * ma;
@@ -761,9 +761,9 @@ void SceneNode::set_aperiodic_animation(const std::string& name) {
 }
 
 bool SceneNode::visit_all(
-    const TransformationMatrix<float, double, 3>& parent_m,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const std::function<bool(
-        const TransformationMatrix<float, double, 3>& m,
+        const TransformationMatrix<float, ScenePos, 3>& m,
         const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
 {
     std::shared_lock lock{ mutex_ };
@@ -814,13 +814,13 @@ bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
 }
 
 void SceneNode::render(
-    const FixedArray<double, 4, 4>& parent_mvp,
-    const TransformationMatrix<float, double, 3>& parent_m,
-    const TransformationMatrix<float, double, 3>& iv,
+    const FixedArray<ScenePos, 4, 4>& parent_mvp,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
     DanglingRef<const SceneNode> camera_node,
     const IDynamicLights* dynamic_lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -846,7 +846,7 @@ void SceneNode::render(
     // produces the same result as pre-multiplying with
     // row-major matrices."
     auto cm = relative_model_matrix_unsafe(external_render_pass.time);
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
     auto m = parent_m * cm;
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
@@ -911,9 +911,9 @@ void SceneNode::render(
 }
 
 void SceneNode::append_sorted_aggregates_to_queue(
-    const FixedArray<double, 4, 4>& parent_mvp,
-    const TransformationMatrix<float, double, 3>& parent_m,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& parent_mvp,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const FixedArray<ScenePos, 3>& offset,
     std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
@@ -928,7 +928,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // produces the same result as pre-multiplying with
     // row-major matrices."
     auto cm = relative_model_matrix_unsafe(external_render_pass.time);
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
     auto m = parent_m * cm;
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
@@ -942,8 +942,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
 }
 
 void SceneNode::append_large_aggregates_to_queue(
-    const TransformationMatrix<float, double, 3>& parent_m,
-    const FixedArray<double, 3>& offset,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const FixedArray<ScenePos, 3>& offset,
     std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
     const SceneGraphConfig& scene_graph_config) const
 {
@@ -951,7 +951,7 @@ void SceneNode::append_large_aggregates_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large aggregates to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
@@ -964,10 +964,10 @@ void SceneNode::append_large_aggregates_to_queue(
 }
 
 void SceneNode::append_small_instances_to_queue(
-    const FixedArray<double, 4, 4>& parent_mvp,
-    const TransformationMatrix<float, double, 3>& parent_m,
-    const TransformationMatrix<float, double, 3>& iv,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& parent_mvp,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const TransformationMatrix<float, ScenePos, 3>& iv,
+    const FixedArray<ScenePos, 3>& offset,
     const PositionAndYAngle& delta_pose,
     SmallInstancesQueues& instances_queues,
     const SceneGraphConfig& scene_graph_config) const
@@ -976,18 +976,18 @@ void SceneNode::append_small_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append small instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
-    TransformationMatrix<float, double, 3> m = parent_m * rel;
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
         r->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{ fixed_zeros<double, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
+        c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{ fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
@@ -998,7 +998,7 @@ void SceneNode::append_small_instances_to_queue(
         if (!i.small_instances.empty()) {
             auto camera_position = m.inverted_scaled().transform(iv.t());
             i.small_instances.visit(
-                AxisAlignedBoundingBox<double, 3>::from_center_and_radius(camera_position, i.max_center_distance),
+                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(camera_position, i.max_center_distance),
                 [&, &i = i](const PositionAndYAngle& j) {
                     i.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, j, instances_queues, scene_graph_config);
                     return true;
@@ -1008,9 +1008,9 @@ void SceneNode::append_small_instances_to_queue(
 }
 
 void SceneNode::append_large_instances_to_queue(
-    const FixedArray<double, 4, 4>& parent_mvp,
-    const TransformationMatrix<float, double, 3>& parent_m,
-    const FixedArray<double, 3>& offset,
+    const FixedArray<ScenePos, 4, 4>& parent_mvp,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    const FixedArray<ScenePos, 3>& offset,
     const PositionAndYAngle& delta_pose,
     LargeInstancesQueue& instances_queue,
     const SceneGraphConfig& scene_graph_config) const
@@ -1019,18 +1019,18 @@ void SceneNode::append_large_instances_to_queue(
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append large instances to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> rel = relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> rel = relative_model_matrix_unsafe();
     rel.t() += delta_pose.position;
     if (delta_pose.yangle != 0) {
         rel.R() = dot2d(rel.R(), rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, delta_pose.yangle));
     }
-    FixedArray<double, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
-    TransformationMatrix<float, double, 3> m = parent_m * rel;
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
     for (const auto& [_, r] : renderables_) {
         r->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : children_) {
-        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<double, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
+        c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
     }
     for (const auto& [_, i] : instances_children_) {
         // The transformation is swapped, meaning
@@ -1046,16 +1046,16 @@ void SceneNode::append_large_instances_to_queue(
 }
 
 void SceneNode::append_static_filtered_to_queue(
-    const TransformationMatrix<float, double, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-    std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
     const ColoredVertexArrayFilter& filter) const
 {
     std::shared_lock lock{ mutex_ };
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append static filtered to queue for a non-static node");
     }
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& [_, r] : renderables_) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> float_q;
         std::list<std::shared_ptr<ColoredVertexArray<double>>> double_q;
@@ -1073,11 +1073,11 @@ void SceneNode::append_static_filtered_to_queue(
 }
 
 void SceneNode::append_lights_to_queue(
-    const TransformationMatrix<float, double, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights) const
 {
     std::shared_lock lock{ mutex_ };
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& l : lights_) {
         lights.push_back(std::make_pair(m, l.get()));
     }
@@ -1087,11 +1087,11 @@ void SceneNode::append_lights_to_queue(
 }
 
 void SceneNode::append_skidmarks_to_queue(
-    const TransformationMatrix<float, double, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks) const
+    const TransformationMatrix<float, ScenePos, 3>& parent_m,
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks) const
 {
     std::shared_lock lock{ mutex_ };
-    TransformationMatrix<float, double, 3> m = parent_m * relative_model_matrix_unsafe();
+    TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix_unsafe();
     for (const auto& s : skidmarks_) {
         skidmarks.push_back(std::make_pair(m, s.get()));
     }
@@ -1100,7 +1100,7 @@ void SceneNode::append_skidmarks_to_queue(
     }
 }
 
-const FixedArray<double, 3>& SceneNode::position() const {
+const FixedArray<ScenePos, 3>& SceneNode::position() const {
     std::shared_lock lock{ mutex_ };
     return trafo_.offset();
 }
@@ -1116,7 +1116,7 @@ float SceneNode::scale() const {
 }
 
 void SceneNode::set_position(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     std::optional<std::chrono::steady_clock::time_point> time)
 {
     std::scoped_lock lock{ mutex_ };
@@ -1164,7 +1164,7 @@ void SceneNode::set_scale(float scale)
 }
 
 void SceneNode::set_relative_pose(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
     std::optional<std::chrono::steady_clock::time_point> time)
@@ -1182,7 +1182,7 @@ void SceneNode::set_relative_pose(
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe(std::chrono::steady_clock::time_point time) const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix_unsafe(std::chrono::steady_clock::time_point time) const {
     if (time == std::chrono::steady_clock::time_point()) {
         return TransformationMatrix{rotation_matrix_ * scale_, trafo_.offset()};
     } else {
@@ -1191,16 +1191,16 @@ TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix_unsafe(s
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix() const {
     std::shared_lock lock{ mutex_ };
     return relative_model_matrix_unsafe();
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix(std::chrono::steady_clock::time_point time) const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(std::chrono::steady_clock::time_point time) const {
     return absolute_model_matrix(LockingStrategy::ACQUIRE_LOCK, time);
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix(
+TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
     LockingStrategy locking_strategy,
     std::chrono::steady_clock::time_point time) const
 {
@@ -1222,21 +1222,21 @@ TransformationMatrix<float, double, 3> SceneNode::absolute_model_matrix(
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix_unsafe(std::chrono::steady_clock::time_point time) const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix_unsafe(std::chrono::steady_clock::time_point time) const {
     if (time == std::chrono::steady_clock::time_point()) {
-        return TransformationMatrix<float, double, 3>::inverse(rotation_matrix_ / scale_, trafo_.offset());
+        return TransformationMatrix<float, ScenePos, 3>::inverse(rotation_matrix_ / scale_, trafo_.offset());
     } else {
         auto res = trafo_history_.get(time);
-        return TransformationMatrix<float, double, 3>::inverse(res.quaternion().to_rotation_matrix() / scale_, res.offset());
+        return TransformationMatrix<float, ScenePos, 3>::inverse(res.quaternion().to_rotation_matrix() / scale_, res.offset());
     }
 }
 
-TransformationMatrix<float, double, 3> SceneNode::relative_view_matrix() const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix() const {
     std::shared_lock lock{ mutex_ };
     return relative_view_matrix_unsafe();
 }
 
-TransformationMatrix<float, double, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
+TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ mutex_ };
     if (state_ != SceneNodeState::DETACHED) {
         scene_->delete_node_mutex().notify_reading();
@@ -1260,7 +1260,7 @@ FixedArray<float, 3> SceneNode::velocity(
 }
 
 void SceneNode::set_absolute_pose(
-    const FixedArray<double, 3>& position,
+    const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     float scale,
     std::optional<std::chrono::steady_clock::time_point> time)
@@ -1274,7 +1274,7 @@ void SceneNode::set_absolute_pose(
             time);
     } else {
         auto p_v = parent_->absolute_view_matrix();
-        auto m = TransformationMatrix<float, double, 3>{
+        auto m = TransformationMatrix<float, ScenePos, 3>{
             tait_bryan_angles_2_matrix(rotation) * scale,
             position};
         auto rel_trafo = p_v * m;
@@ -1287,11 +1287,11 @@ void SceneNode::set_absolute_pose(
     }
 }
 
-std::optional<AxisAlignedBoundingBox<double, 3>> SceneNode::relative_aabb() const {
+std::optional<AxisAlignedBoundingBox<ScenePos, 3>> SceneNode::relative_aabb() const {
     std::shared_lock lock{ mutex_ };
-    std::optional<AxisAlignedBoundingBox<double, 3>> result;
+    std::optional<AxisAlignedBoundingBox<ScenePos, 3>> result;
     if (!renderables_.empty()) {
-        result = AxisAlignedBoundingBox<double, 3>::empty();
+        result = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     }
     for (const auto& [_, r] : renderables_) {
         result.value().extend(r->aabb());
@@ -1310,9 +1310,9 @@ std::optional<AxisAlignedBoundingBox<double, 3>> SceneNode::relative_aabb() cons
     return result;
 }
 
-BoundingSphere<double, 3> SceneNode::relative_bounding_sphere() const {
+BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     std::shared_lock lock{ mutex_ };
-    BoundingSphere<double, 3> result(fixed_zeros<double, 3>(), 0.);
+    BoundingSphere<ScenePos, 3> result(fixed_zeros<ScenePos, 3>(), 0.);
     for (const auto& [_, r] : renderables_) {
         result.extend(r->bounding_sphere());
     }
@@ -1326,9 +1326,9 @@ BoundingSphere<double, 3> SceneNode::relative_bounding_sphere() const {
     return result;
 }
 
-double SceneNode::max_center_distance(uint32_t billboard_id) const {
+ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
     std::shared_lock lock{ mutex_ };
-    double result = 0.;
+    ScenePos result = 0.;
     for (const auto& [_, r] : renderables_) {
         result = std::max(result, r->max_center_distance(billboard_id));
     }
@@ -1336,7 +1336,7 @@ double SceneNode::max_center_distance(uint32_t billboard_id) const {
         auto cb = c.scene_node->max_center_distance(UINT32_MAX);
         if (cb != 0.f) {
             auto m = c.scene_node->relative_model_matrix();
-            if (any(m.t() != 0.)) {
+            if (any(m.t() != ScenePos(0))) {
                 THROW_OR_ABORT("Detected node translation in max_center_distance");
             }
             result = std::max(result, cb);

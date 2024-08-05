@@ -10,6 +10,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
+#include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
 #include <cstdint>
@@ -53,18 +54,18 @@ class LargeInstancesQueue;
 
 struct Blended {
     int z_order;
-    FixedArray<double, 4, 4> mvp;
-    TransformationMatrix<float, double, 3> m;
+    FixedArray<ScenePos, 4, 4> mvp;
+    TransformationMatrix<float, ScenePos, 3> m;
     const Renderable* renderable;
     const AnimationState* animation_state;
     ColorStyle color_style;
-    inline std::pair<int, double> sorting_key() const {
+    inline std::pair<int, ScenePos> sorting_key() const {
         return { z_order, mvp(2, 3) };
     }
 };
 
 struct PositionAndYAngle {
-    FixedArray<double, 3> position;
+    FixedArray<ScenePos, 3> position;
     float yangle;
     uint32_t billboard_id;
 };
@@ -72,8 +73,8 @@ struct PositionAndYAngle {
 struct SceneNodeInstances {
     bool is_registered;
     DanglingUniquePtr<SceneNode> scene_node;
-    double max_center_distance;
-    Bvh<double, PositionAndYAngle, 3> small_instances;
+    ScenePos max_center_distance;
+    Bvh<ScenePos, PositionAndYAngle, 3> small_instances;
     std::list<PositionAndYAngle> large_instances;
 };
 
@@ -135,7 +136,7 @@ public:
     explicit SceneNode(
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
     SceneNode(
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
@@ -199,7 +200,7 @@ public:
         ChildParentState child_parent_state =  ChildParentState::PARENT_NOT_SET);
     void add_instances_position(
         const std::string& name,
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         float yangle,
         uint32_t billboard_id);
     void optimize_instances_search_time(std::ostream& ostr) const;
@@ -209,12 +210,12 @@ public:
     void add_light(std::unique_ptr<Light>&& light);
     void add_skidmark(std::unique_ptr<Skidmark>&& skidmark);
     bool visit_all(
-        const TransformationMatrix<float, double, 3>& parent_m,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
-            const TransformationMatrix<float, double, 3>& m,
+            const TransformationMatrix<float, ScenePos, 3>& m,
             const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
     void move(
-        const TransformationMatrix<float, double, 3>& v,
+        const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
         std::chrono::steady_clock::time_point time,
         SceneNodeResources* scene_node_resources,
@@ -222,13 +223,13 @@ public:
     RenderingStrategies rendering_strategies() const;
     bool requires_render_pass(ExternalRenderPassType render_pass) const;
     void render(
-        const FixedArray<double, 4, 4>& parent_mvp,
-        const TransformationMatrix<float, double, 3>& parent_m,
-        const TransformationMatrix<float, double, 3>& iv,
+        const FixedArray<ScenePos, 4, 4>& parent_mvp,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
         DanglingRef<const SceneNode> camera_node,
         const IDynamicLights* dynamic_lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -237,73 +238,73 @@ public:
         const std::list<const ColorStyle*>& color_styles,
         SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;
     void append_sorted_aggregates_to_queue(
-        const FixedArray<double, 4, 4>& parent_mvp,
-        const TransformationMatrix<float, double, 3>& parent_m,
-        const FixedArray<double, 3>& offset,
+        const FixedArray<ScenePos, 4, 4>& parent_mvp,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const FixedArray<ScenePos, 3>& offset,
         std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass) const;
     void append_large_aggregates_to_queue(
-        const TransformationMatrix<float, double, 3>& parent_m,
-        const FixedArray<double, 3>& offset,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const FixedArray<ScenePos, 3>& offset,
         std::list<std::shared_ptr<ColoredVertexArray<float>>>& aggregate_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_small_instances_to_queue(
-        const FixedArray<double, 4, 4>& parent_mvp,
-        const TransformationMatrix<float, double, 3>& parent_m,
-        const TransformationMatrix<float, double, 3>& iv,
-        const FixedArray<double, 3>& offset,
+        const FixedArray<ScenePos, 4, 4>& parent_mvp,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const TransformationMatrix<float, ScenePos, 3>& iv,
+        const FixedArray<ScenePos, 3>& offset,
         const PositionAndYAngle& delta_pose,
         SmallInstancesQueues& instances_queues,
         const SceneGraphConfig& scene_graph_config) const;
     void append_large_instances_to_queue(
-        const FixedArray<double, 4, 4>& parent_mvp,
-        const TransformationMatrix<float, double, 3>& parent_m,
-        const FixedArray<double, 3>& offset,
+        const FixedArray<ScenePos, 4, 4>& parent_mvp,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        const FixedArray<ScenePos, 3>& offset,
         const PositionAndYAngle& delta_pose,
         LargeInstancesQueue& instances_queue,
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(
-        const TransformationMatrix<float, double, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, double, 3>, Light*>>& lights) const;
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights) const;
     void append_skidmarks_to_queue(
-        const TransformationMatrix<float, double, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, double, 3>, Skidmark*>>& skidmarks) const;
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks) const;
     void append_static_filtered_to_queue(
-        const TransformationMatrix<float, double, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
-        std::list<std::pair<TransformationMatrix<float, double, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
+        const TransformationMatrix<float, ScenePos, 3>& parent_m,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<double>>>>& double_queue,
         const ColoredVertexArrayFilter& filter) const;
-    const FixedArray<double, 3>& position() const;
+    const FixedArray<ScenePos, 3>& position() const;
     FixedArray<float, 3> rotation() const;
     float scale() const;
     void set_position(
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         std::optional<std::chrono::steady_clock::time_point> time);
     void set_rotation(
         const FixedArray<float, 3>& rotation,
         std::optional<std::chrono::steady_clock::time_point> time);
     void set_scale(float scale);
     void set_relative_pose(
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
         std::optional<std::chrono::steady_clock::time_point> time);
     void set_absolute_pose(
-        const FixedArray<double, 3>& position,
+        const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
         float scale,
         std::optional<std::chrono::steady_clock::time_point> time);
-    TransformationMatrix<float, double, 3> relative_model_matrix() const;
-    TransformationMatrix<float, double, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, double, 3> relative_view_matrix() const;
-    TransformationMatrix<float, double, 3> absolute_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, ScenePos, 3> relative_model_matrix() const;
+    TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    TransformationMatrix<float, ScenePos, 3> relative_view_matrix() const;
+    TransformationMatrix<float, ScenePos, 3> absolute_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
-    std::optional<AxisAlignedBoundingBox<double, 3>> relative_aabb() const;
-    BoundingSphere<double, 3> relative_bounding_sphere() const;
-    double max_center_distance(uint32_t billboard_id) const;
+    std::optional<AxisAlignedBoundingBox<ScenePos, 3>> relative_aabb() const;
+    BoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
+    ScenePos max_center_distance(uint32_t billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
     bool has_color_style(const std::string& name) const;
     ColorStyle& color_style(const std::string& name);
@@ -337,11 +338,11 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    TransformationMatrix<float, double, 3> relative_model_matrix_unsafe(
+    TransformationMatrix<float, ScenePos, 3> relative_model_matrix_unsafe(
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, double, 3> relative_view_matrix_unsafe(
+    TransformationMatrix<float, ScenePos, 3> relative_view_matrix_unsafe(
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, double, 3> absolute_model_matrix(
+    TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(
         LockingStrategy locking_strategy,
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     Scene* scene_;
@@ -359,8 +360,8 @@ private:
     std::map<std::string, SceneNodeInstances> instances_children_;
     std::list<std::unique_ptr<Light>> lights_;
     std::list<std::unique_ptr<Skidmark>> skidmarks_;
-    OffsetAndQuaternion<float, double> trafo_;
-    QuaternionSeries<float, double, NINTERPOLATED> trafo_history_;
+    OffsetAndQuaternion<float, ScenePos> trafo_;
+    QuaternionSeries<float, ScenePos, NINTERPOLATED> trafo_history_;
     bool trafo_history_invalidated_;
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;

@@ -21,7 +21,7 @@ LookAtMovable::LookAtMovable(
     , follower_node_{ follower_node.ptr() }
     , followed_node_{ followed_node.ptr() }
     , followed_{ &followed }
-    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<double, 3>() }
+    , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
 {}
 
 LookAtMovable::~LookAtMovable() {
@@ -40,11 +40,11 @@ void LookAtMovable::advance_time(float dt, std::chrono::steady_clock::time_point
     }
 }
 
-void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, double, 3>& absolute_model_matrix) {
+void LookAtMovable::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
     transformation_matrix_ = absolute_model_matrix;
 }
 
-TransformationMatrix<float, double, 3> LookAtMovable::get_new_absolute_model_matrix() const {
+TransformationMatrix<float, ScenePos, 3> LookAtMovable::get_new_absolute_model_matrix() const {
     return transformation_matrix_;
 }
 

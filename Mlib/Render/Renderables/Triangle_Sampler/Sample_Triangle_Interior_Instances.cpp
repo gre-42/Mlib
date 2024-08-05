@@ -13,9 +13,9 @@ using namespace Mlib;
 
 TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
     const TerrainStyle& terrain_style,
-    double scale,
+    ScenePos scale,
     UpAxis up_axis,
-    const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>* boundary_bvh,
+    const Bvh<ScenePos, FixedArray<FixedArray<ScenePos, 3>, 3>, 3>* boundary_bvh,
     const Array<float>& dirtmap,
     float dirtmap_scale,
     const Array<float>& mudmap)
@@ -43,10 +43,10 @@ TriangleInteriorInstancesSampler::TriangleInteriorInstancesSampler(
 }
 
 void TriangleInteriorInstancesSampler::sample_triangle(
-    const FixedArray<ColoredVertex<double>, 3>& t,
+    const FixedArray<ColoredVertex<ScenePos>, 3>& t,
     unsigned int seed,
     const std::function<void(
-        const FixedArray<double, 3>& p,
+        const FixedArray<ScenePos, 3>& p,
         const ParsedResourceName& prn)>& f)
 {
     ts_.seed(392743 + seed);
@@ -59,7 +59,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
         t(1).position,
         t(2).position,
         tsc_.much_near_distance * scale_,
-        [&](const double& a, const double& b, const double& c)
+        [&](const ScenePos& a, const ScenePos& b, const ScenePos& c)
         {
             if (mudmap_.initialized()) {
                 if ((mudmap_.shape(0) == 0) ||
@@ -113,7 +113,7 @@ void TriangleInteriorInstancesSampler::sample_triangle(
             if (!is_in_valley && !is_regular && tsc_.near_resource_names_mountain_dirt.empty()) {
                 return;
             }
-            FixedArray<double, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
+            FixedArray<ScenePos, 3> p = t(0).position * a + t(1).position * b + t(2).position * c;
             float min_dist2;
             if (distances_to_bdry_.is_active && (boundary_bvh_ != nullptr)) {
                 min_dist2 = (float)boundary_bvh_->min_distance(

@@ -98,7 +98,7 @@ static void add_reference_bone(
     SceneNodeResources& scene_node_resources)
 {
     auto bone_node = make_dunique<SceneNode>(
-        b.initial_absolute_transformation.offset().casted<double>(),
+        b.initial_absolute_transformation.offset().casted<ScenePos>(),
         b.initial_absolute_transformation.quaternion().to_tait_bryan_angles(),
         1.f);
     scene_node_resources.instantiate_renderable(
@@ -127,7 +127,7 @@ static void add_bone_frame(
         throw std::runtime_error("Frame index too large");
     }
     auto bone_node = make_dunique<SceneNode>(
-        frame.at(b.index).offset().casted<double>(),
+        frame.at(b.index).offset().casted<ScenePos>(),
         frame.at(b.index).quaternion().to_tait_bryan_angles(),
         1.f);
     scene_node_resources.instantiate_renderable(
@@ -557,10 +557,10 @@ int main(int argc, char** argv) {
         }};
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = make_dunique<SceneNode>(
-            FixedArray<double, 3>{
-                safe_stof(args.named_value("--x", "0")),
-                safe_stof(args.named_value("--y", "0")),
-                safe_stof(args.named_value("--z", "-40"))},
+            FixedArray<ScenePos, 3>{
+                safe_stox<ScenePos>(args.named_value("--x", "0")),
+                safe_stox<ScenePos>(args.named_value("--y", "0")),
+                safe_stox<ScenePos>(args.named_value("--z", "-40"))},
             FixedArray<float, 3>{
                 safe_stof(args.named_value("--angle_x", "0")) * degrees,
                 safe_stof(args.named_value("--angle_y", "0")) * degrees,
@@ -598,7 +598,7 @@ int main(int argc, char** argv) {
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_obj(
                             filename,
-                            cfg<double>(args, light_configuration),
+                            cfg<ScenePos>(args, light_configuration),
                             scene_node_resources));
                     }
                 } else if (filename.ends_with(".kn5") || filename.ends_with(".ini")) {
@@ -612,7 +612,7 @@ int main(int argc, char** argv) {
                     } else {
                         scene_node_resources.add_resource(name, load_renderable_kn5(
                             filename,
-                            cfg<double>(args, light_configuration),
+                            cfg<ScenePos>(args, light_configuration),
                             scene_node_resources,
                             &RenderingContextStack::primary_rendering_resources(),
                             nullptr)); // race_logic
@@ -876,7 +876,7 @@ int main(int argc, char** argv) {
             scene.add_root_node(
                 "light_node0",
                 make_dunique<SceneNode>(
-                    FixedArray<double, 3>{
+                    FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--light_x", "0")),
                         safe_stof(args.named_value("--light_y", "50")),
                         safe_stof(args.named_value("--light_z", "0"))},
@@ -918,7 +918,7 @@ int main(int argc, char** argv) {
                 scene.add_root_node(
                     name,
                     make_dunique<SceneNode>(
-                        FixedArray<double, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
+                        FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
                         1.f),
                     RenderingDynamics::STATIC,
@@ -946,7 +946,7 @@ int main(int argc, char** argv) {
                     scene.add_root_node(
                         name,
                         make_dunique<SceneNode>(
-                            FixedArray<double, 3>{r * cos(a) + center(0), center(1), r * sin(a) + center(2)},
+                            FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                             matrix_2_tait_bryan_angles(*R).casted<float>(),
                             1.f),
                         RenderingDynamics::STATIC,
@@ -1021,7 +1021,7 @@ int main(int argc, char** argv) {
             scene.add_root_node(
                 "follower_camera",
                 make_dunique<SceneNode>(
-                    FixedArray<double, 3>{
+                    FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--camera_x", "0")),
                         safe_stof(args.named_value("--camera_y", "0")),
                         safe_stof(args.named_value("--camera_z", "0"))},
