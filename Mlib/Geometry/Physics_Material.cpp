@@ -37,7 +37,8 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"surface_base_tire", PhysicsMaterial::SURFACE_BASE_TIRE},
         {"surface_base_stone", PhysicsMaterial::SURFACE_BASE_STONE},
         {"surface_base_foliage", PhysicsMaterial::SURFACE_BASE_FOLIAGE},
-        {"surface_modifier_wet", PhysicsMaterial::SURFACE_MODIFIER_WET}
+        {"surface_wet", PhysicsMaterial::SURFACE_WET},
+        {"surface_contains_skidmarks", PhysicsMaterial::SURFACE_CONTAINS_SKIDMARKS}
     };
     auto it = m.find(s);
     if (it == m.end()) {

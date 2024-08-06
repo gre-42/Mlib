@@ -107,7 +107,7 @@ void SkidmarkLogic::render(
         RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
         RenderToScreenGuard rsg;
         {
-            ViewportGuard vg{texture_width_, texture_height_ };
+            ViewportGuard vg{ texture_width_, texture_height_ };
             clear_color({ 1.f, 1.f, 1.f, 1.f });
         }
         if (fbs_(old_fbs_id_) != nullptr) {
@@ -123,7 +123,7 @@ void SkidmarkLogic::render(
             old_render_texture_logic_->render_wo_update_and_bind();
         }
         {
-            ViewportGuard vg{texture_width_, texture_height_ };
+            ViewportGuard vg{ texture_width_, texture_height_ };
             RenderConfigGuard rcg{ render_config, ExternalRenderPassType::STANDARD };
             particle_renderer_.render(
                 ParticleSubstrate::SKIDMARK,
