@@ -47,7 +47,7 @@ public:
         }
     }
     bool is_owner() const {
-        return owner_ == std::this_thread::get_id();
+        return (count_ != 0) && (owner_ == std::this_thread::get_id());
     }
 private:
     TMutex mutex_;
