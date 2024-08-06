@@ -79,8 +79,11 @@ DffArrays<TPosition> Mlib::load_dff(
             auto& tl = tls.emplace_back(
                 name + "_" + a.frame->name,
                 Material{
-                    .blend_mode = any(ide.flags & IdeFlags::ADDITIVE) ? BlendMode::CONTINUOUS_ADD : BlendMode::BINARY_05,
-                    .depth_test = !any(ide.flags & IdeFlags::NO_ZBUFFER_WRITE),
+                    .blend_mode = any(ide.flags & IdeFlags::ADDITIVE)
+                        ? BlendMode::CONTINUOUS_ADD
+                        : any(ide.flags & IdeFlags::NO_ZBUFFER_WRITE)
+                            ? BlendMode::CONTINUOUS
+                            : BlendMode::BINARY_05,
                     .textures_color = cfg.textures,
                     .period_world = cfg.period_world,
                     .reflection_map = cfg.reflection_map,
@@ -105,7 +108,7 @@ DffArrays<TPosition> Mlib::load_dff(
                         : (cfg.physics_material & ~PhysicsMaterial::ATTR_COLLIDE),
                     .center_distances = OrderableFixedArray{ center_distances },
                     .max_triangle_distance = cfg.max_triangle_distance });
-            if (material.texture != nullptr) {
+            if ((material.texture != nullptr) && cfg.textures.empty()) {
                 auto filename_lower = ide.texture_dictionary + ".txd_" + material.texture->name;
                 std::transform(filename_lower.begin(), filename_lower.end(), filename_lower.begin(), ::tolower);
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{

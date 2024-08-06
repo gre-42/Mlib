@@ -137,7 +137,8 @@ enum class TextureRole {
 enum class TextureType {
     TEXTURE_2D,
     TEXTURE_2D_ARRAY,
-    TEXTURE_3D
+    TEXTURE_3D,
+    TEXTURE_CUBE_MAP
 };
 
 struct TextureSize {

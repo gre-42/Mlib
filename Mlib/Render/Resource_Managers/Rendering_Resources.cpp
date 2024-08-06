@@ -720,6 +720,9 @@ TextureType RenderingResources::texture_type(
     if (preloaded_processed_texture_data_.contains(name)) {
         return TextureType::TEXTURE_2D;
     }
+    if (cubemap_descriptors_.contains(name.filename)) {
+        return TextureType::TEXTURE_CUBE_MAP;
+    }
     if (auto it = texture_types_.try_get(name); it != nullptr) {
         return *it;
     }

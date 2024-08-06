@@ -27,6 +27,7 @@ DECLARE_ARGUMENT(ide_files);
 DECLARE_ARGUMENT(double_precision);
 DECLARE_ARGUMENT(config);
 DECLARE_ARGUMENT(resource_variable);
+DECLARE_ARGUMENT(texture);
 }
 
 const std::string ResourceLocations::key = "resource_locations";
@@ -124,6 +125,10 @@ static void exec(
     std::list<std::string> added_scene_node_resources;
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
+    if (auto c = args.arguments.try_at<std::string>(KnownArgs::texture)) {
+        auto& rr = RenderingContextStack::primary_rendering_resources();
+        cfg->textures = { rr.get_blend_map_texture(*c) };
+    }
     for (const auto& s : args.arguments.pathes_or_variables(KnownArgs::resource_files)) {
         add_file_resource(s.path, cfg, dddb, added_scene_node_resources);
     }
