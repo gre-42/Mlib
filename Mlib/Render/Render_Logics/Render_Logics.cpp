@@ -80,7 +80,7 @@ void RenderLogics::append(const DanglingBaseClassRef<RenderLogic>& render_logic,
 }
 
 void RenderLogics::remove(const RenderLogic& render_logic) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     auto it = find_render_logic(render_logic, render_logics_);
     if (it == render_logics_.end()) {
         verbose_abort("Could not find render logic to be removed");
@@ -89,7 +89,7 @@ void RenderLogics::remove(const RenderLogic& render_logic) {
 }
 
 void RenderLogics::insert(const DanglingBaseClassRef<RenderLogic>& render_logic, bool prepend, int z_order, SourceLocation loc) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     ZorderAndId zi{
         .z = z_order,
         .id = prepend
