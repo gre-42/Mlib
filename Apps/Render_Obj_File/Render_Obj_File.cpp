@@ -293,7 +293,6 @@ int main(int argc, char** argv) {
         "    [--large_object_mode]\n"
         "    [--output <file.png>]\n"
         "    [--output_pass <pass>]\n"
-        "    [--output_light_node <node>]\n"
         "    [--apply_static_lighting]\n"
         "    [--laplace_ao_strength <value>]\n"
         "    [--min_num] <min_num>\n"
@@ -415,7 +414,6 @@ int main(int argc, char** argv) {
          "--output_height",
          "--output",
          "--output_pass",
-         "--output_light_node",
          "--min_num",
          "--include",
          "--exclude",
@@ -487,10 +485,7 @@ int main(int argc, char** argv) {
             .external_render_pass = ExternalRenderPass{
                 .pass = args.has_named_value("--output_pass")
                     ? external_render_pass_type_from_string(args.named_value("--output_pass"))
-                    : ExternalRenderPassType::STANDARD},
-            .light_resource_suffix = args.has_named_value("--output_light_node")
-                ? args.named_value("--output_light_node")
-                : ""};
+                    : ExternalRenderPassType::STANDARD} };
         if (args.has_named_value("--output")) {
             render_results.outputs[rsd] = RenderResult{
                 .width = safe_stoi(args.named_value("--output_width", "512")),
@@ -579,7 +574,9 @@ int main(int argc, char** argv) {
                     .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1")))});
             } else {
                 return std::unique_ptr<Light>(new Light{
-                    .resource_suffix = resource_suffix,
+                    .lightmap_depth = ColormapWithModifiers{
+                        .filename = resource_suffix,
+                        .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
         };
@@ -1094,7 +1091,8 @@ int main(int argc, char** argv) {
                     read_pixels_logic,
                     l.light.shadow_render_pass,
                     l.node,
-                    l.light.resource_suffix,
+                    l.light.lightmap_color,
+                    l.light.lightmap_depth,
                     "",                             // black_node_name
                     true,                           // with_depth_texture
                     2048,                           // lightmap_width

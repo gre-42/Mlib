@@ -334,20 +334,37 @@ void RenderableColoredVertexArray::render_cva(
                     if (light_casts_shadows) {
                         lightmap_indices.push_back(i);
                         light_shadow_indices.push_back(i++);
-                        if (l.resource_suffix.empty()) {
-                            THROW_OR_ABORT("Light with shadows has no resource suffix");
+                        if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
+                            l.lightmap_color.filename->empty())
+                        {
+                            THROW_OR_ABORT("Light with color shadows has no resource suffix");
+                        }
+                        if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
+                            l.lightmap_depth.filename->empty())
+                        {
+                            THROW_OR_ABORT("Light with depth shadows has no resource suffix");
                         }
                     } else {
                         light_noshadow_indices.push_back(i++);
-                        if (!l.resource_suffix.empty()) {
-                            THROW_OR_ABORT("Light without shadow has a resource suffix: \"" + l.resource_suffix + '"');
+                        if (!l.lightmap_color.filename->empty()) {
+                            THROW_OR_ABORT("Light without shadow has a color resource suffix: \"" + *l.lightmap_color.filename + '"');
+                        }
+                        if (!l.lightmap_depth.filename->empty()) {
+                            THROW_OR_ABORT("Light without shadow has a depth resource suffix: \"" + *l.lightmap_depth.filename + '"');
                         }
                     }
                 } else {
                     lightmap_indices.push_back(i);
                     black_shadow_indices.push_back(i++);
-                    if (l.resource_suffix.empty()) {
-                        THROW_OR_ABORT("Black shadow has no resource suffix");
+                    if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) &&
+                        l.lightmap_color.filename->empty())
+                    {
+                        THROW_OR_ABORT("Black shadow has no color resource suffix");
+                    }
+                    if (any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) &&
+                        l.lightmap_depth.filename->empty())
+                    {
+                        THROW_OR_ABORT("Black shadow has no depth resource suffix");
                     }
                 }
             }
@@ -917,14 +934,13 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light color textures");
     if (!lightmap_indices_color.empty()) {
         for (size_t i : lightmap_indices) {
-            std::string mname = "lightmap_color." + filtered_lights.at(i).second->resource_suffix;
-            const auto& light_vp = secondary_rendering_resources_.get_vp(mname);
+            const auto& mname = filtered_lights.at(i).second->lightmap_color;
+            const auto& light_vp = secondary_rendering_resources_.get_vp(mname.filename);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(
-                ColormapWithModifiers{.filename = mname, .color_mode = ColorMode::RGB}.compute_hash())));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(mname)));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));
@@ -938,14 +954,13 @@ void RenderableColoredVertexArray::render_cva(
     LOG_INFO("RenderableColoredVertexArray::render_cva bind light depth textures");
     if (!lightmap_indices_depth.empty()) {
         for (size_t i : lightmap_indices) {
-            std::string mname = "lightmap_depth." + filtered_lights.at(i).second->resource_suffix;
-            const auto& light_vp = secondary_rendering_resources_.get_vp(mname);
+            const auto& mname = filtered_lights.at(i).second->lightmap_depth;
+            const auto& light_vp = secondary_rendering_resources_.get_vp(mname.filename);
             auto mvp_light = dot2d(light_vp, m.affine());
             CHK(glUniformMatrix4fv(rp.mvp_light_locations.at(i), 1, GL_TRUE, mvp_light.casted<float>().flat_begin()));
 
             CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_light(i))));
-            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(
-                ColormapWithModifiers{.filename = mname, .color_mode = ColorMode::GRAYSCALE}.compute_hash())));
+            CHK(glBindTexture(GL_TEXTURE_2D, secondary_rendering_resources_.get_texture(mname)));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
             CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER));

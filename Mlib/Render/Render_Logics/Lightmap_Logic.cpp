@@ -23,7 +23,8 @@ LightmapLogic::LightmapLogic(
     RenderLogic& child_logic,
     ExternalRenderPassType render_pass_type,
     DanglingRef<SceneNode> light_node,
-    std::string resource_suffix,
+    ColormapWithModifiers colormap_color,
+    ColormapWithModifiers colormap_depth,
     std::string black_node_name,
     bool with_depth_texture,
     int lightmap_width,
@@ -34,20 +35,17 @@ LightmapLogic::LightmapLogic(
     , child_logic_{ child_logic }
     , render_pass_type_{ render_pass_type }
     , light_node_{ light_node }
-    , resource_suffix_{ std::move(resource_suffix) }
     , black_node_name_{ std::move(black_node_name) }
     , with_depth_texture_{ with_depth_texture }
     , lightmap_width_{ lightmap_width }
     , lightmap_height_{ lightmap_height }
-    , colormap_color_{ .filename = "lightmap_color." + resource_suffix_, .color_mode = ColorMode::RGB }
-    , colormap_depth_{ .filename = "lightmap_depth." + resource_suffix_, .color_mode = ColorMode::GRAYSCALE }
+    , colormap_color_{ std::move(colormap_color) }
+    , colormap_depth_{ std::move(colormap_depth) }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     if (!any(render_pass_type & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         THROW_OR_ABORT("LightmapLogic::LightmapLogic: unknown lightmap render pass type");
     }
-    colormap_color_.compute_hash();
-    colormap_depth_.compute_hash();
 }
 
 LightmapLogic::~LightmapLogic() {
@@ -59,10 +57,10 @@ void LightmapLogic::deallocate() {
     if (fbs_ != nullptr) {
         // Warning in case of exception during child_logic_.render.
         rendering_resources_.delete_texture(colormap_color_, DeletionFailureMode::WARN);
-        rendering_resources_.delete_vp("lightmap_color." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_vp(colormap_color_.filename, DeletionFailureMode::WARN);
         if (with_depth_texture_) {
             rendering_resources_.delete_texture(colormap_depth_, DeletionFailureMode::WARN);
-            rendering_resources_.delete_vp("lightmap_depth." + resource_suffix_, DeletionFailureMode::WARN);
+            rendering_resources_.delete_vp(colormap_depth_.filename, DeletionFailureMode::WARN);
         }
         fbs_ = nullptr;
     }
@@ -84,8 +82,7 @@ void LightmapLogic::render(
         ViewportGuard vg{ lightmap_width_, lightmap_height_ };
         RenderedSceneDescriptor light_rsd{
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
-            .time_id = 0,
-            .light_resource_suffix = resource_suffix_};
+            .time_id = 0};
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
@@ -132,10 +129,10 @@ void LightmapLogic::render(
         }
 
         rendering_resources_.set_texture(colormap_color_, fbs_->texture_color(), ResourceOwner::CALLER);
-        rendering_resources_.set_vp("lightmap_color." + resource_suffix_, vp());
+        rendering_resources_.set_vp(colormap_color_.filename, vp());
         if (with_depth_texture_) {
             rendering_resources_.set_texture(colormap_depth_, fbs_->texture_depth(), ResourceOwner::CALLER);
-            rendering_resources_.set_vp("lightmap_depth." + resource_suffix_, vp());
+            rendering_resources_.set_vp(colormap_depth_.filename, vp());
         }
     }
 }

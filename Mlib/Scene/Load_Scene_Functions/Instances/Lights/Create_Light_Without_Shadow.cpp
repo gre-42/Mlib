@@ -46,6 +46,5 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
         .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
         .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
         .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
-        .resource_suffix = "",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

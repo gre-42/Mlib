@@ -20,7 +20,8 @@ public:
         RenderLogic& child_logic,
         ExternalRenderPassType render_pass_type,
         DanglingRef<SceneNode> light_node,
-        std::string resource_suffix,
+        ColormapWithModifiers colormap_color,
+        ColormapWithModifiers colormap_depth,
         std::string black_node_name,
         bool with_depth_texture,
         int lightmap_width,
@@ -50,7 +51,6 @@ private:
     std::unique_ptr<FrameBuffer> fbs_;
     ExternalRenderPassType render_pass_type_;
     DanglingRef<SceneNode> light_node_;
-    std::string resource_suffix_;
     const std::string black_node_name_;
     bool with_depth_texture_;
     int lightmap_width_;

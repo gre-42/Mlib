@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <string>
 
 namespace Mlib {
@@ -12,7 +13,8 @@ struct Light {
     FixedArray<float, 3> specular{1.f, 1.f, 1.f};
     FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
     FixedArray<float, 3> fog_ambient{1.f, 1.f, 1.f};
-    std::string resource_suffix;
+    ColormapWithModifiers lightmap_color;
+    ColormapWithModifiers lightmap_depth;
     ExternalRenderPassType shadow_render_pass;
     bool emits_colors() const;
 };
