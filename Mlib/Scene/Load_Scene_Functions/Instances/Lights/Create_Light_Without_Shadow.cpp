@@ -20,6 +20,7 @@ DECLARE_ARGUMENT(ambient);
 DECLARE_ARGUMENT(diffuse);
 DECLARE_ARGUMENT(specular);
 DECLARE_ARGUMENT(fresnel_ambient);
+DECLARE_ARGUMENT(fog_ambient);
 }
 
 const std::string CreateLightWithoutShadow::key = "light_without_shadow";
@@ -44,6 +45,7 @@ void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args
         .diffuse = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse),
         .specular = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular),
         .fresnel_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fresnel_ambient),
+        .fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient),
         .resource_suffix = "",
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 }

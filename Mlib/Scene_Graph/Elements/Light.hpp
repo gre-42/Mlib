@@ -11,9 +11,10 @@ struct Light {
     FixedArray<float, 3> diffuse{1.f, 1.f, 1.f};
     FixedArray<float, 3> specular{1.f, 1.f, 1.f};
     FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
+    FixedArray<float, 3> fog_ambient{1.f, 1.f, 1.f};
     std::string resource_suffix;
     ExternalRenderPassType shadow_render_pass;
-    bool light_emits_colors() const;
+    bool emits_colors() const;
 };
 
 }

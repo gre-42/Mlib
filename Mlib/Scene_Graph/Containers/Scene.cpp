@@ -482,7 +482,9 @@ void Scene::render(
         {
             std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.push_back(node); return true; });
-            static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.push_back(node); return true; });
+            if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
+                static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.push_back(node); return true; });
+            }
         }
         for (const auto& node : local_root_nodes) {
             node->append_lights_to_queue(TransformationMatrix<float, ScenePos, 3>::identity(), lights);
@@ -524,7 +526,7 @@ void Scene::render(
                 }
             }
             {
-                bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+                bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
                 bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
                 if (is_foreground_task && is_background_task) {
                     THROW_OR_ABORT("Scene::render has both foreground and background task");
@@ -634,7 +636,7 @@ void Scene::render(
                 std::shared_ptr<IInstancesRenderers> small_sorted_instances_renderers = IInstancesRenderer::small_sorted_instances_renderers();
                 if (small_sorted_instances_renderers != nullptr) {
                     if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) ||
-                        any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK))
+                        any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK))
                     {
                         auto small_instances_renderer_update_func = [&](TaskLocation task_location){
                             std::set<ExternalRenderPassType> black_render_passes;

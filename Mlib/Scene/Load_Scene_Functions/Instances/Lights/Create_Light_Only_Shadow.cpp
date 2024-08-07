@@ -71,6 +71,7 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         .diffuse = {1.f, 1.f, 1.f},
         .specular = {1.f, 1.f, 1.f},
         .fresnel_ambient = {1.f, 1.f, 1.f},
+        .fog_ambient = {1.f, 1.f, 1.f},
         .resource_suffix = resource_suffix,
         .shadow_render_pass = render_pass}));
 }

@@ -323,7 +323,7 @@ void RenderableColoredVertexArray::render_cva(
                 if (cva->material.occluded_pass < l.shadow_render_pass) {
                     continue;
                 }
-                bool light_emits_colors = l.light_emits_colors();
+                bool light_emits_colors = l.emits_colors();
                 bool light_casts_shadows = any(l.shadow_render_pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
 
                 if (!light_emits_colors && !light_casts_shadows) {
@@ -417,11 +417,11 @@ void RenderableColoredVertexArray::render_cva(
     }
     if (!filtered_lights.empty() && !is_lightmap) {
         FixedArray<float, 3> sum_light_fresnel_ambient = fixed_zeros<float, 3>();
-        FixedArray<float, 3> sum_light_ambient = fixed_zeros<float, 3>();
+        FixedArray<float, 3> sum_light_fog_ambient = fixed_zeros<float, 3>();
         for (const auto& [_, light] : filtered_lights) {
-            if (light->light_emits_colors()) {
+            if (light->emits_colors()) {
                 sum_light_fresnel_ambient += light->fresnel_ambient;
-                sum_light_ambient += light->ambient;
+                sum_light_fog_ambient += light->fog_ambient;
             }
         }
         ambient = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
@@ -433,7 +433,7 @@ void RenderableColoredVertexArray::render_cva(
             : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;
         fresnel = color_style && (color_style->fresnel.exponent != -1.f) ? color_style->fresnel : cva->material.shading.fresnel.reflectance;
-        fog_emissive = sum_light_ambient * cva->material.shading.fog_ambient;
+        fog_emissive = sum_light_fog_ambient * cva->material.shading.fog_ambient;
     } else {
         ambient = 0.f;
         diffuse = 0.f;
@@ -1308,7 +1308,7 @@ void RenderableColoredVertexArray::append_large_instances_to_queue(
         billboard_id,
         scene_graph_config,
         InvisibilityHandling::RAISE);
-    if (any(instances_queue.render_pass() & ExternalRenderPassType::IS_STATIC_MASK)) {
+    if (any(instances_queue.render_pass() & ExternalRenderPassType::IS_GLOBAL_MASK)) {
         instances_queue.insert(
             instances_sorted_continuously_,
             mvp,

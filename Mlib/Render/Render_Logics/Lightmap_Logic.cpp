@@ -100,9 +100,9 @@ void LightmapLogic::render(
             RenderToFrameBufferGuard rfg{ *fbs_ };
             // Non-static lights are not aggregated at all due to the following lines
             // in Scene::render:
-            //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+            //   bool is_foreground_task = any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
             //   bool is_background_task = (external_render_pass.pass == ExternalRenderPassType::STANDARD);
-            bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+            bool create_render_guards = any(light_rsd.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
             std::optional<AggregateRendererGuard> arg;
             std::optional<InstancesRendererGuard> irg;
             if (create_render_guards) {

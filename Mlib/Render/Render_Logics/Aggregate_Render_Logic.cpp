@@ -36,7 +36,7 @@ void AggregateRenderLogic::render(
 
     std::shared_lock lock{ mutex_ };
 
-    bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK);
+    bool create_render_guards = !any(frame_id.external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK);
     std::optional<AggregateRendererGuard> arg;
     std::optional<InstancesRendererGuard> irg;
     if (create_render_guards) {
