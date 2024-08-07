@@ -60,7 +60,11 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_obj(
             .aggregate_mode = cfg.aggregate_mode,
             .transformation_mode = cfg.transformation_mode,
             .cull_faces = cfg.cull_faces_default,
-            .shading{.fresnel = cfg.fresnel},
+            .shading{
+                .fresnel = cfg.fresnel,
+                .fog_distances = OrderableFixedArray{ cfg.fog_distances },
+                .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
+            },
             .dynamically_lighted = cfg.dynamically_lighted},
         Morphology{
             .physics_material = cfg.physics_material,

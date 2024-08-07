@@ -23,6 +23,8 @@ DECLARE_ARGUMENT(center_distances);
 DECLARE_ARGUMENT(max_triangle_distance);
 DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(alpha_distances);
+DECLARE_ARGUMENT(fog_distances);
+DECLARE_ARGUMENT(fog_ambient);
 DECLARE_ARGUMENT(cull_faces_default);
 DECLARE_ARGUMENT(cull_faces_alpha);
 DECLARE_ARGUMENT(occluded_pass);
@@ -67,6 +69,8 @@ LoadMeshConfig<TPos> Mlib::load_mesh_config_from_json(const JsonMacroArguments& 
         .max_triangle_distance = j.at<float>(KnownArgs::max_triangle_distance, INFINITY) * meters,
         .blend_mode = blend_mode_from_string(j.at<std::string>(KnownArgs::blend_mode)),
         .alpha_distances = j.at<UOrderableFixedArray<float, 4>>(KnownArgs::alpha_distances),
+        .fog_distances = j.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+        .fog_ambient = j.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(-1.f)),
         .cull_faces_default = j.at<bool>(KnownArgs::cull_faces_default, true),
         .cull_faces_alpha = j.at<bool>(KnownArgs::cull_faces_alpha, true),
         .occluded_pass = external_render_pass_type_from_string(j.at<std::string>(KnownArgs::occluded_pass)),

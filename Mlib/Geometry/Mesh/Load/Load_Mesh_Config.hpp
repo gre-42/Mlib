@@ -26,6 +26,8 @@ struct LoadMeshConfig {
     float max_triangle_distance = INFINITY;
     BlendMode blend_mode;
     FixedArray<float, 4> alpha_distances = default_linear_distances;
+    FixedArray<float, 2> fog_distances = default_step_distances;
+    FixedArray<float, 3> fog_ambient = { -1.f, -1.f, -1.f };
     bool cull_faces_default;
     bool cull_faces_alpha;
     ExternalRenderPassType occluded_pass;

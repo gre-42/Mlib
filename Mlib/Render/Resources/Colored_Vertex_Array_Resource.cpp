@@ -479,6 +479,8 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     float alpha,
     float alpha_threshold,
     const OrderableFixedArray<float, 4>& alpha_distances,
+    const OrderableFixedArray<float, 2>& fog_distances,
+    const OrderableFixedArray<float, 3>& fog_emissive,
     ExternalRenderPassType render_pass,
     bool reorient_normals,
     bool reorient_uv0,
@@ -654,7 +656,7 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    rel_view_pos.xy *= interior_multiplier_fs;" << std::endl;
         sstr << "    rel_frag_pos *= interior_multiplier_fs;" << std::endl;
         sstr << "    vec3 rel_view_dir = vec3(rel_frag_pos, 0) - rel_view_pos;" << std::endl;
-        sstr << "    float best_alpha = 1. / 0.;" << std::endl;
+        sstr << "    float best_alpha = 1.0 / 0.0;" << std::endl;
         sstr << "    int best_axis;" << std::endl;
         sstr << "    bool best_sign;" << std::endl;
         sstr << "    vec2 best_uv;" << std::endl;
@@ -765,13 +767,19 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     } else {
         sstr << "    float alpha_fac = 1.0;" << std::endl;
     }
-    if (alpha_distances != default_linear_distances) {
-        if (orthographic) {
-            // THROW_OR_ABORT("Orthographic not supported with alpha distances");
-            sstr << "    float dist = 1. / 0.;" << std::endl;
-        } else {
-            sstr << "    float dist = distance(FragPos, viewPos);" << std::endl;
+    auto define_dist_if_necessary = [&, defined=false]() mutable {
+        if (!defined) {
+            if (orthographic) {
+                // THROW_OR_ABORT("Distances not supported by orthographic projection");
+                sstr << "    float dist = dot(viewDir, FragPos - viewPos);" << std::endl;
+            } else {
+                sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
+            }
+            defined = true;
         }
+        };
+    if (alpha_distances != default_linear_distances) {
+        define_dist_if_necessary();
     }
     if (alpha_distances(0) != 0) {
         sstr << "    if (dist < " << alpha_distances(0) << ") {" << std::endl;
@@ -865,15 +873,14 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
             sstr << "    texture_color_ambient_diffuse.a = 0.0;" << std::endl;
         }
         if (alpha_distances == default_linear_distances) {
-            for (const BlendMapTexture* t : textures) {
-                if (t->distances != default_linear_distances) {
-                    if (orthographic) {
-                        // THROW_OR_ABORT("Distances not supported by orthographic projection");
-                        sstr << "    float dist = 1.0 / 0.0;" << std::endl;
-                    } else {
-                        sstr << "    float dist = distance(viewPos, FragPos);" << std::endl;
+            if (fog_distances != default_step_distances) {
+                define_dist_if_necessary();
+            } else {
+                for (const BlendMapTexture* t : textures) {
+                    if (t->distances != default_linear_distances) {
+                        define_dist_if_necessary();
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -1261,6 +1268,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         sstr << "    frag_color.r = 0.5;" << std::endl;
         sstr << "    frag_color.g = 0.5;" << std::endl;
         sstr << "    frag_color.b = 0.5;" << std::endl;
+    } else if (fog_distances != default_step_distances) {
+        define_dist_if_necessary();
+        sstr << "    {" << std::endl;
+        sstr << "        vec3 fog_emissive = vec3(" << fog_emissive(0) << ", " << fog_emissive(1) << ", " << fog_emissive(2) << ");" << std::endl;
+        sstr << "        float t = clamp((dist - " << fog_distances(0) << ") / " << (fog_distances(1) - fog_distances(0)) << ", 0.0, 1.0);" << std::endl;
+        sstr << "        frag_color.rgb = mix(frag_color.rgb, fog_emissive, t);" << std::endl;
+        sstr << "    }" << std::endl;
     }
     if (has_interiormap && compute_interiormap_at_end) {
         sstr << "    is_in_interior(TBN, alpha_fac);" << std::endl;
@@ -1748,6 +1762,8 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
                         ? 0.8f
                         : NAN,
         id.alpha_distances,
+        id.fog_distances,
+        id.fog_emissive,
         id.render_pass,
         id.reorient_normals,
         id.reorient_uv0,

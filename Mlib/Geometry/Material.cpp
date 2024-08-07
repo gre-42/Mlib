@@ -25,6 +25,9 @@ bool Material::has_normalmap() const {
 }
 
 bool Material::fragments_depend_on_distance() const {
+    if (shading.fog_distances != default_step_distances) {
+        return true;
+    }
     if (alpha_distances != default_linear_distances) {
         return true;
     }

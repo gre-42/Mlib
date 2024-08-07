@@ -53,6 +53,8 @@ struct RenderProgramIdentifier {
     size_t nbones;
     BlendMode blend_mode;
     OrderableFixedArray<float, 4> alpha_distances;
+    OrderableFixedArray<float, 2> fog_distances;
+    OrderableFixedArray<float, 3> fog_emissive;
     size_t ntextures_color;
     size_t ntextures_alpha;
     size_t ntextures_normal;

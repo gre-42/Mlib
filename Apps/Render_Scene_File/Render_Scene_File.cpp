@@ -317,7 +317,7 @@ int main(int argc, char** argv) {
         "    [--no_avoid_burnout]\n"
         "    [--wheel_penetration_depth <x>]\n"
         "    [--no_vfx]\n"
-        "    [--no_depth_fog]\n"
+        "    [--depth_fog_vfx]\n"
         "    [--low_pass]\n"
         "    [--high_pass]\n"
         "    [--motion_interpolation]\n"
@@ -349,7 +349,7 @@ int main(int argc, char** argv) {
          "--print_render_residual_time",
          "--single_threaded",
          "--no_vfx",
-         "--no_depth_fog",
+         "--depth_fog_vfx",
          "--low_pass",
          "--high_pass",
          "--motion_interpolation",
@@ -554,7 +554,7 @@ int main(int argc, char** argv) {
                 nlohmann::json j{
                     {"PRIMARY_SCENE_FLY", args.has_named("--fly")},
                     {"PRIMARY_SCENE_ROTATE", args.has_named("--rotate")},
-                    {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
+                    {"PRIMARY_SCENE_DEPTH_FOG", args.has_named("--depth_fog_vfx")},
                     {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},

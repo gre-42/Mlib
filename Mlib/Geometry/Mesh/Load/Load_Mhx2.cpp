@@ -202,10 +202,12 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                         .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}
             },
             .shading {
-                .emissive = OrderableFixedArray{cfg.emissive_factor * material.at("emissive_color").get<UFixedArray<float, 3>>()},
-                .ambient = OrderableFixedArray{cfg.ambient_factor * material.at("ambient_color").get<UFixedArray<float, 3>>()},
-                .diffuse = OrderableFixedArray{cfg.diffuse_factor * material.at("diffuse_color").get<UFixedArray<float, 3>>()},
-                .specular = OrderableFixedArray{cfg.specular_factor * material.at("specular_color").get<UFixedArray<float, 3>>()}
+                .emissive = OrderableFixedArray{ cfg.emissive_factor * material.at("emissive_color").get<UFixedArray<float, 3>>() },
+                .ambient = OrderableFixedArray{ cfg.ambient_factor * material.at("ambient_color").get<UFixedArray<float, 3>>() },
+                .diffuse = OrderableFixedArray{ cfg.diffuse_factor * material.at("diffuse_color").get<UFixedArray<float, 3>>() },
+                .specular = OrderableFixedArray{ cfg.specular_factor * material.at("specular_color").get<UFixedArray<float, 3>>() },
+                .fog_distances = OrderableFixedArray{ cfg.fog_distances },
+                .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
             },
             .dynamically_lighted = cfg.dynamically_lighted
         }}).second) {
@@ -226,7 +228,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
                 .textures_color = m.textures_color,
                 .occluded_pass = cfg.occluded_pass,
                 .occluder_pass = cfg.occluder_pass,
-                .alpha_distances = OrderableFixedArray{cfg.alpha_distances},
+                .alpha_distances = OrderableFixedArray{ cfg.alpha_distances },
                 .magnifying_interpolation_mode = cfg.magnifying_interpolation_mode,
                 .aggregate_mode = cfg.aggregate_mode,
                 .transformation_mode = cfg.transformation_mode,

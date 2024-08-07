@@ -81,7 +81,7 @@ DffArrays<TPosition> Mlib::load_dff(
                 Material{
                     .blend_mode = any(ide.flags & IdeFlags::ADDITIVE)
                         ? BlendMode::CONTINUOUS_ADD
-                        : any(ide.flags & IdeFlags::NO_ZBUFFER_WRITE)
+                        : any(ide.flags & (IdeFlags::NO_ZBUFFER_WRITE | IdeFlags::DRAW_LAST))
                             ? BlendMode::CONTINUOUS
                             : BlendMode::BINARY_05,
                     .textures_color = cfg.textures,
@@ -98,7 +98,9 @@ DffArrays<TPosition> Mlib::load_dff(
                         .ambient = OrderableFixedArray<float, 3>((cfg.ambient_factor * col3) * material.surface_properties.ambient),
                         .diffuse = OrderableFixedArray<float, 3>((cfg.diffuse_factor * col3) * material.surface_properties.diffuse),
                         .specular = OrderableFixedArray<float, 3>(cfg.specular_factor * material.surface_properties.specular),
-                        .fresnel = cfg.fresnel
+                        .fresnel = cfg.fresnel,
+                        .fog_distances = OrderableFixedArray{ cfg.fog_distances },
+                        .fog_ambient = OrderableFixedArray{ cfg.fog_ambient }
                     },
                     .dynamically_lighted = cfg.dynamically_lighted
                 },

@@ -137,6 +137,8 @@ std::ostream& Mlib::operator << (std::ostream& ostr, TextureType texture_type) {
         return ostr << "texture_2d_array";
     case TextureType::TEXTURE_3D:
         return ostr << "texture_3d";
+    case TextureType::TEXTURE_CUBE_MAP:
+        return ostr << "texture_cube_map";
     }
     THROW_OR_ABORT("Unknown texture type: " + std::to_string((int)texture_type));
 }
@@ -943,26 +945,25 @@ GLuint RenderingResources::get_texture(
 
 GLuint RenderingResources::get_cubemap_unsafe(const std::string& name) const {
     LOG_FUNCTION("RenderingResources::get_cubemap " + name);
-    auto it = cubemap_descriptors_.get(name);
-    if (it.filenames.size() != 6) {
+    const auto& cd = cubemap_descriptors_.get(name);
+    if (cd.filenames.size() != 6) {
         THROW_OR_ABORT("Cubemap does not have 6 filenames");
     }
     GLuint textureID;
     CHK(glGenTextures(1, &textureID));
     CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, textureID));
 
-    for (GLuint i = 0; i < it.filenames.size(); i++) {
-        auto color = it.filenames[i];
+    for (const auto& [i, color] : enumerate(cd.filenames)) {
         auto dit = texture_descriptors_.try_get(color);
         ColormapWithModifiers desc = dit != nullptr
             ? dit->color
             : ColormapWithModifiers{
                 .filename = color,
-                .color_mode = ColorMode::RGB};
+                .color_mode = ColorMode::RGB}.compute_hash();
 
         auto info = get_texture_data(desc, TextureRole::COLOR, FlipMode::NONE);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // https://stackoverflow.com/a/49126350/2292832
-        CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        CHK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + integral_cast<GLuint>(i),
                             0,
                             GL_RGB,
                             info.width,
