@@ -28,10 +28,13 @@ public:
     explicit RootNodes(Scene& scene);
     ~RootNodes();
     DefaultNodesMap& default_nodes();
-    bool visit_all(const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const;
+    bool visit_all(
+        const std::function<bool(const DanglingRef<const SceneNode>&)>& op,
+        BvhParallel parallel = BvhParallel::DISABLED) const;
     bool visit(
         const FixedArray<ScenePos, 3>& position,
-        const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const;
+        const std::function<bool(const DanglingRef<const SceneNode>&)>& op,
+        BvhParallel parallel = BvhParallel::DISABLED) const;
     void clear();
     bool erase(const std::string& name);
     bool contains(const std::string& name) const;

@@ -22,19 +22,24 @@ RootNodes::DefaultNodesMap& RootNodes::default_nodes() {
     return default_nodes_map_;
 }
 
-bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
+bool RootNodes::visit_all(
+    const std::function<bool(const DanglingRef<const SceneNode>&)>& op,
+    BvhParallel parallel) const
 {
     for (auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
             return false;
         }
     }
-    return small_static_nodes_bvh_.visit_all([&op](const auto& a, const auto& n) { return op(n); });
+    return small_static_nodes_bvh_.visit_all(
+        [&op](const auto& a, const auto& n) { return op(n); },
+        parallel);
 }
 
 bool RootNodes::visit(
     const FixedArray<ScenePos, 3>& position,
-    const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
+    const std::function<bool(const DanglingRef<const SceneNode>&)>& op,
+    BvhParallel parallel) const
 {
     for (auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
@@ -43,7 +48,8 @@ bool RootNodes::visit(
     }
     return small_static_nodes_bvh_.visit(
         IntersectablePoint{ position },
-        op);
+        op,
+        parallel);
 }
 
 void RootNodes::clear() {
