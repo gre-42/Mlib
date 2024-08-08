@@ -354,12 +354,8 @@ public:
             // check_consistency<T>(*u_);
         }
     }
-    operator DanglingPtr<const T>() const {
-        if (u_ == nullptr) {
-            return DanglingPtr<const T>{nullptr};
-        } else {
-            return DanglingPtr<const T>{*const_cast<ReferenceCounter*>(u_), loc_};
-        }
+    operator const DanglingPtr<const T>&() const {
+        return *reinterpret_cast<const DanglingPtr<const T>*>(this);
     }
     DanglingRef<T> operator * () const {
         if (u_ == nullptr) {
@@ -429,8 +425,8 @@ public:
     //     T& res = data<T>(u_);
     //     return res;
     // }
-    operator DanglingRef<const T>() const {
-        return DanglingRef<const T>{u_, loc_};
+    operator const DanglingRef<const T>&() const {
+        return *reinterpret_cast<const DanglingRef<const T>*>(this);
     }
     DanglingPtr<T> ptr() const {
         return DanglingPtr<T>{u_, loc_};

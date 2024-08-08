@@ -24,7 +24,7 @@ RootNodes::DefaultNodesMap& RootNodes::default_nodes() {
 
 bool RootNodes::visit_all(const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
 {
-    for (auto& [_, node] : default_nodes_map_) {
+    for (const auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
             return false;
         }
@@ -36,7 +36,7 @@ bool RootNodes::visit(
     const FixedArray<ScenePos, 3>& position,
     const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const
 {
-    for (auto& [_, node] : default_nodes_map_) {
+    for (const auto& [_, node] : default_nodes_map_) {
         if (!op(node)) {
             return false;
         }

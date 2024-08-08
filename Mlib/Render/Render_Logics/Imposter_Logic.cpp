@@ -43,7 +43,7 @@ OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
-    DanglingRef<const SceneNode> camera_node,
+    const DanglingRef<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -56,7 +56,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
 }
 
 bool ImposterNodeHider::node_shall_be_hidden(
-    DanglingRef<const SceneNode> camera_node,
+    const DanglingRef<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {

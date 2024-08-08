@@ -25,7 +25,7 @@ class OriginalNodeHider: public INodeHider {
 public:
     explicit OriginalNodeHider(ImposterLogic& imposter_logic);
     virtual bool node_shall_be_hidden(
-        DanglingRef<const SceneNode> camera_node,
+        const DanglingRef<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 private:
     ImposterLogic& imposter_logic_;
@@ -34,7 +34,7 @@ private:
 class ImposterNodeHider: public INodeHider {
 public:
     virtual bool node_shall_be_hidden(
-        DanglingRef<const SceneNode> camera_node,
+        const DanglingRef<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 };
 

@@ -429,7 +429,7 @@ bool Scene::visit_all(const std::function<bool(
 void Scene::render(
     const FixedArray<ScenePos, 4, 4>& vp,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    DanglingRef<const SceneNode> camera_node,
+    const DanglingRef<const SceneNode>& camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,

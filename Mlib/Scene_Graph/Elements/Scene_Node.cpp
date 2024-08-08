@@ -817,7 +817,7 @@ void SceneNode::render(
     const FixedArray<ScenePos, 4, 4>& parent_mvp,
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    DanglingRef<const SceneNode> camera_node,
+    const DanglingRef<const SceneNode>& camera_node,
     const IDynamicLights* dynamic_lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,

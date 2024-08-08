@@ -86,7 +86,7 @@ public:
     }
 
     virtual bool node_shall_be_hidden(
-        DanglingRef<const SceneNode> camera_node,
+        const DanglingRef<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
         if (camera_node_ == nullptr) {
