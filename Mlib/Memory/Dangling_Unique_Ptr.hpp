@@ -370,6 +370,9 @@ public:
     T* operator -> () const {
         return &data<T>(*u_);
     }
+    T& obj() const {
+        return data<T>(*u_);
+    }
     template <typename T2>
     requires pointers_are_comparable<T, T2>
     bool operator == (const DanglingPtr<T2>& other) const {
@@ -443,6 +446,9 @@ public:
     }
     bool operator != (const T& p) const {
         return data<T>(u_) != p;
+    }
+    T& obj() const {
+        return data<T>(u_);
     }
 private:
     ReferenceCounter& u_;

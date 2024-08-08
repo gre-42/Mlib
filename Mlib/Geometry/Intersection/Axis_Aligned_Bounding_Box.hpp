@@ -69,10 +69,28 @@ public:
         return result;
     }
     bool intersects(const AxisAlignedBoundingBox& other) const {
-        return all(max_ >= other.min_) && all(min_ <= other.max_);
+        // return all(max_ >= other.min_) && all(min_ <= other.max_);
+        for (size_t i = 0; i < tndim; ++i) {
+            if (max_(i) < other.min_(i)) {
+                return false;
+            }
+            if (min_(i) > other.max_(i)) {
+                return false;
+            }
+        }
+        return true;
     }
     bool contains(const FixedArray<TData, tndim>& point) const {
-        return all(max_ >= point) && all(min_ <= point);
+        // return all(max_ >= point) && all(min_ <= point);
+        for (size_t i = 0; i < tndim; ++i) {
+            if (max_(i) < point(i)) {
+                return false;
+            }
+            if (min_(i) > point(i)) {
+                return false;
+            }
+        }
+        return true;
     }
     void extend(const AxisAlignedBoundingBox& other) {
         min_ = minimum(min_, other.min_);
