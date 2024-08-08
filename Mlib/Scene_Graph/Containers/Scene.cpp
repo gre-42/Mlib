@@ -482,16 +482,8 @@ void Scene::render(
         {
             std::shared_lock lock{ mutex_ };
             root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.push_back(node); return true; });
-            AtomicMutex insertion_mutex_;
             if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
-                static_root_nodes_.visit(
-                    iv.t(),
-                    [&](const auto& node) {
-                        std::scoped_lock lock2{ insertion_mutex_ };
-                        local_static_root_nodes.push_back(node);
-                        return true;
-                    },
-                    BvhParallel::ENABLED);
+                static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.push_back(node); return true; });
             }
         }
         for (const auto& node : local_root_nodes) {

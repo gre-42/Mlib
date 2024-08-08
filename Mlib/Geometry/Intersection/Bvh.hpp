@@ -3,7 +3,6 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
-#include <future>
 #include <iomanip>
 #include <list>
 #include <ostream>
@@ -29,11 +28,6 @@ struct BvhPrintingOptions {
 enum class BvhDataRadiusType {
     ZERO,
     NONZERO
-};
-
-enum class BvhParallel {
-    DISABLED,
-    ENABLED
 };
 
 /**
@@ -87,52 +81,22 @@ public:
     }
 
     template <class TAxisAlignedBoundingBox, class TVisitor>
-    bool visit(
-        const TAxisAlignedBoundingBox& aabb,
-        const TVisitor& visitor,
-        BvhParallel parallel = BvhParallel::DISABLED) const
-    {
-        if (parallel == BvhParallel::DISABLED) {
-            for (const auto& [data_aabb, d] : data_) {
-                if (aabb.intersects(data_aabb)) {
-                    if (!visitor(d)) {
-                        return false;
-                    }
+    bool visit(const TAxisAlignedBoundingBox& aabb, const TVisitor& visitor) const {
+        for (const auto& d : data_) {
+            if (aabb.intersects(d.first)) {
+                if (!visitor(d.second)) {
+                    return false;
                 }
             }
-            for (const auto& [child_aabb, c] : children_) {
-                if (aabb.intersects(child_aabb)) {
-                    if (!c.visit(aabb, visitor)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        } else {
-            std::vector<std::future<bool>> futures;
-            futures.reserve(data_.size() + children_.size());
-            for (const auto& [data_aabb, d] : data_) {
-                futures.push_back(std::async(std::launch::async, [&]() {
-                    if (!aabb.intersects(data_aabb)) {
-                        return true;
-                    }
-                    return visitor(d);
-                    }));
-            }
-            for (const auto& [child_aabb, c] : children_) {
-                futures.push_back(std::async(std::launch::async, [&]() {
-                    if (!aabb.intersects(child_aabb)) {
-                        return true;
-                    }
-                    return c.visit(aabb, visitor);
-                    }));
-            }
-            bool result = true;
-            for (auto& f : futures) {
-                result &= f.get();
-            }
-            return result;
         }
+        for (const auto& c : children_) {
+            if (aabb.intersects(c.first)) {
+                if (!c.second.visit(aabb, visitor)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     template <class TAxisAlignedBoundingBox, class TVisitor>
@@ -204,41 +168,18 @@ public:
     }
 
     template <class TVisitor>
-    bool visit_all(
-        const TVisitor& visitor,
-        BvhParallel parallel = BvhParallel::DISABLED) const
-    {
-        if (parallel == BvhParallel::DISABLED) {
-            for (const auto& [aabb, d] : data_) {
-                if (!visitor(aabb, d)) {
-                    return false;
-                }
+    bool visit_all(const TVisitor& visitor) const {
+        for (const auto& [aabb, d] : data_) {
+            if (!visitor(aabb, d)) {
+                return false;
             }
-            for (const auto& [_, c] : children_) {
-                if (!c.visit_all(visitor)) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            std::vector<std::future<bool>> futures;
-            futures.reserve(data_.size() + children_.size());
-            for (const auto& [aabb, d] : data_) {
-                futures.push_back(std::async(std::launch::async, [&]() {
-                    return visitor(aabb, d);
-                    }));
-            }
-            for (const auto& [_, c] : children_) {
-                futures.push_back(std::async(std::launch::async, [&]() {
-                    return c.visit_all(visitor);
-                    }));
-            }
-            bool result = true;
-            for (auto& f : futures) {
-                result &= f.get();
-            }
-            return result;
         }
+        for (const auto& c : children_) {
+            if (!c.second.visit_all(visitor)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     template <class TVisitor>
