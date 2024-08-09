@@ -1,3 +1,4 @@
+#include <Mlib/Array/Chunked_Array.hpp>
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Math.hpp>
@@ -217,9 +218,25 @@ void test_atomic_recursive_shared_mutex() {
     std::scoped_lock lock2{ m };
 }
 
+void test_chunked_array() {
+    ChunkedArray<std::list<std::vector<int>>> ar{ 3 };
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+    ar.emplace_back(5);
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+    ar.emplace_back(6);
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+    ar.emplace_back(7);
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+    ar.emplace_back(8);
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+    ar.emplace_back(9);
+    for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
+    test_chunked_array();
     test_resource_ptr();
     test_substitute();
     test_dangling_unique();

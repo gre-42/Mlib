@@ -1,4 +1,5 @@
 #include "Scene.hpp"
+#include <Mlib/Array/Chunked_Array.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Transformed_Colored_Vertex_Array.hpp>
@@ -30,6 +31,9 @@
 #include <mutex>
 
 using namespace Mlib;
+
+using NodePtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
+static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
     DeleteNodeMutex& delete_node_mutex,
@@ -459,10 +463,10 @@ void Scene::render(
         }();
         node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
-        std::list<const SceneNode*> nodes;
+        NodePtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(&node.obj()); return true; });
+            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
         }
         for (const auto& node : nodes) {
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
@@ -477,13 +481,13 @@ void Scene::render(
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
-        std::list<const SceneNode*> local_root_nodes;
-        std::list<const SceneNode*> local_static_root_nodes;
+        NodePtrs local_root_nodes{ CHUNK_SIZE };
+        NodePtrs local_static_root_nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.push_back(&node.obj()); return true; });
+            root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(&node.obj()); return true; });
             if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
-                static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.push_back(&node.obj()); return true; });
+                static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
             }
         }
         for (const auto& node : local_root_nodes) {
@@ -514,11 +518,11 @@ void Scene::render(
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             {
-                std::list<const SceneNode*> cached_imposter_nodes;
+                NodePtrs cached_imposter_nodes{ CHUNK_SIZE };
                 {
                     std::shared_lock lock{ mutex_ };
                     for (const auto& node : root_imposter_nodes_) {
-                        cached_imposter_nodes.push_back(&node.obj());
+                        cached_imposter_nodes.emplace_back(&node.obj());
                     }
                 }
                 for (const auto& node : cached_imposter_nodes) {
@@ -538,10 +542,10 @@ void Scene::render(
                     auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer, task_location](){
-                            std::list<const SceneNode*> nodes;
+                            NodePtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(&node.obj()); return true; });
+                                root_aggregate_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             std::list<std::shared_ptr<ColoredVertexArray<float>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -570,10 +574,10 @@ void Scene::render(
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
                                                   large_instances_renderer, task_location]()
                         {
-                            std::list<const SceneNode*> nodes;
+                            NodePtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_instances_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(&node.obj()); return true; });
+                                root_instances_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             LargeInstancesQueue instances_queue{external_render_pass.pass};
                             for (const auto& node : nodes) {
@@ -602,10 +606,10 @@ void Scene::render(
                     auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer, task_location](){
-                            std::list<const SceneNode*> nodes;
+                            NodePtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
-                                root_aggregate_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(&node.obj()); return true; });
+                                root_aggregate_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                             }
                             std::list<std::pair<float, std::shared_ptr<ColoredVertexArray<float>>>> aggregate_queue;
                             for (const auto& node : nodes) {
@@ -652,10 +656,10 @@ void Scene::render(
                                                       small_sorted_instances_renderers, task_location,
                                                       black_render_passes]()
                             {
-                                std::list<const SceneNode*> nodes;
+                                NodePtrs nodes{ CHUNK_SIZE };
                                 {
                                     std::shared_lock lock{ mutex_ };
-                                    root_instances_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.push_back(&node.obj()); return true; });
+                                    root_instances_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
                                 }
                                 // auto start_time = std::chrono::steady_clock::now();
                                 SmallInstancesQueues instances_queues{
