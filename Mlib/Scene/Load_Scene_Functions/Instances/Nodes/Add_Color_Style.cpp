@@ -38,8 +38,8 @@ AddColorStyle::AddColorStyle(RenderableScene& renderable_scene)
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::map<std::string, std::string> parsed_reflection_maps;
-    if (args.arguments.contains(KnownArgs::reflection_maps)) {
-        parsed_reflection_maps = args.arguments.at<std::map<std::string, std::string>>(KnownArgs::reflection_maps);
+    if (auto rm = args.arguments.try_at<std::map<std::string, std::string>>(KnownArgs::reflection_maps)) {
+        parsed_reflection_maps = *rm;
     }
     auto style = std::unique_ptr<ColorStyle>(new ColorStyle{
         .selector = args.arguments.contains(KnownArgs::selector)
@@ -56,8 +56,8 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
             : fixed_full<float, 3>(-1),
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
-    if (args.arguments.contains(KnownArgs::node)) {
-        DanglingRef<SceneNode> n = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    if (auto node = args.arguments.try_at<std::string>(KnownArgs::node); node.has_value()) {
+        DanglingRef<SceneNode> n = scene.get_node(*node, DP_LOC);
         n->add_color_style(std::move(style));
     } else {
         scene.add_color_style(std::move(style));
