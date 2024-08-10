@@ -10,16 +10,39 @@ namespace Mlib {
 template <class TBaseMap>
 class ThreadsafeGenericMap {
 public:
+    using value_type = TBaseMap::value_type;
     using key_type = TBaseMap::key_type;
     using mapped_type = TBaseMap::mapped_type;
     using node_type = TBaseMap::node_type;
 
-    ThreadsafeGenericMap(std::string value_name,
+    // Empty constructor
+    ThreadsafeGenericMap(
+        std::string value_name,
         std::function<std::string(const key_type& e)> element_to_string)
         : value_name_{ std::move(value_name) }
         , key_to_string_{ std::move(element_to_string) } {
     }
-    ~ThreadsafeGenericMap() = default;
+
+    // Initializer list
+    ThreadsafeGenericMap(
+        std::string value_name,
+        std::function<std::string(const key_type& e)> element_to_string,
+        std::initializer_list<value_type>&& l)
+        : elements_{ l }
+        , value_name_{ std::move(value_name) }
+        , key_to_string_{ std::move(element_to_string) } {
+    }
+
+    // Move constructor and move assignment operator
+    ThreadsafeGenericMap(ThreadsafeGenericMap&& other)
+        : value_name_{ std::move(other.value_name) }
+        , key_to_string_{ std::move(other.key_to_string) }
+    {
+        // No need to lock this->mutex_ here
+        // (in contrast to the move assignment operator below).
+        std::scoped_lock lock{ other.mutex_ };
+        elements_ = std::move(other.elements_);
+    }
 
     ThreadsafeGenericMap& operator = (ThreadsafeGenericMap&& other)
     {
@@ -29,6 +52,9 @@ public:
         key_to_string_ = std::move(other.key_to_string_);
         return *this;
     }
+    
+    // Destructor
+    ~ThreadsafeGenericMap() = default;
 
     template <class... Args>
     mapped_type& add(key_type key, Args &&...args) {

@@ -1667,7 +1667,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
     if (auto it = rps.try_get(id); it != nullptr) {
         return **it;
     }
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     if (auto it = rps.try_get(id); it != nullptr) {
         return **it;
     }
@@ -1976,21 +1976,21 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
         THROW_OR_ABORT("get_vertex_array called on aggregated object \"" + cva->name + '"');
     }
     {
-        std::shared_lock lock{mutex_};
-        if (auto it = vertex_arrays_.find(cva.get());
-            (it != vertex_arrays_.end()) && (it->second->initialized()))
+        std::shared_lock lock{ mutex_ };
+        if (auto* pva = vertex_arrays_.try_get(cva.get());
+            (pva != nullptr) && ((*pva)->initialized()))
         {
-            return *it->second;
+            return **pva;
         }
     }
     std::scoped_lock lock{ mutex_ };
-    auto it = vertex_arrays_.find(cva.get());
-    if ((it != vertex_arrays_.end()) && it->second->initialized()) {
-        return *it->second;
+    auto* pva = vertex_arrays_.try_get(cva.get());
+    if ((pva != nullptr) && (*pva)->initialized()) {
+        return **pva;
     }
     std::unique_ptr<IVertexData> si;
     auto& va = [&]() -> IVertexData& {
-        if (it == vertex_arrays_.end()) {
+        if (pva == nullptr) {
             if (cva->triangles.empty()) {
                 THROW_OR_ABORT("ColoredVertexArrayResource::get_vertex_array on empty array \"" + cva->name + '"');
             }
@@ -2003,7 +2003,7 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
             si = std::make_unique<DistantTriangleHider>(cva, cva->triangles.size(), inherited_vertices);
             return *si;
         } else {
-            return *it->second;
+            return **pva;
         }
         }();
     // https://stackoverflow.com/a/13405205/2292832
@@ -2151,14 +2151,10 @@ IVertexData& ColoredVertexArrayResource::get_vertex_array(
     }
 
     CHK(glBindVertexArray(0));
-    if (it == vertex_arrays_.end()) {
-        auto res = vertex_arrays_.try_emplace(cva.get(), std::move(si));
-        if (!res.second) {
-            verbose_abort("Could not add vertex array");
-        }
-        return *res.first->second;
+    if (pva == nullptr) {
+        return *vertex_arrays_.add(cva.get(), std::move(si));
     } else {
-        return *it->second;
+        return **pva;
     }
 }
 

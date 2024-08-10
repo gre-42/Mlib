@@ -32,7 +32,6 @@ public:
     void unlock() {
         --count_;
         if (count_ == 0) {
-            owner_ = std::thread::id();
             mutex_.unlock();
         }
     }

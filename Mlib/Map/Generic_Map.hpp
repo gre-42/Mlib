@@ -62,12 +62,12 @@ public:
     }
 
     template< class... Args >
-    auto add(const key_type& key, Args&&... args) {
+    mapped_type& add(const key_type& key, Args&&... args) {
         auto res = this->try_emplace(key, std::forward<Args>(args)...);
         if (!res.second) {
             THROW_OR_ABORT("Could not insert into map");
         }
-        return res.first;
+        return res.first->second;
     }
 
     std::vector<key_type> keys() const {
