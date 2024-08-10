@@ -405,7 +405,7 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
 
 bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, ScenePos, 3>& m,
-    const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
+    const std::map<std::string, RenderableWithStyle>& renderables)>& func) const
 {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
@@ -743,7 +743,7 @@ void Scene::render(
                         render_config,
                         { external_render_pass, InternalRenderPass::BLENDED },
                         b.animation_state,
-                        &b.color_style);
+                        b.color_style);
                 }
             }
         }
@@ -765,11 +765,10 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                 dt,
                 time,
                 scene_node_resources_,
-                nullptr);  // style
+                nullptr);  // animation_state
             if (it->second->to_be_deleted()) {
                 delete_root_node((it++)->first);
-            }
-            else {
+            } else {
                 ++it;
             }
         }

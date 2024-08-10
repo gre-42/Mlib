@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -16,7 +17,7 @@ void Mlib::fit_canvas_to_renderables(
     auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     scene.visit_all([&](
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)
+        const std::map<std::string, RenderableWithStyle>& renderables)
     {
         auto mv = v * m;
         for (const auto& [n, r] : renderables) {

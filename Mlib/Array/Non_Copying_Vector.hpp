@@ -1,10 +1,11 @@
 #pragma once
+#include <cstddef>
 
 namespace Mlib {
 
 template <class T>
 struct alignas(T) ObjectBlob {
-    char data[sizeof(T)];
+    std::byte data[sizeof(T)];
 };
 
 /*

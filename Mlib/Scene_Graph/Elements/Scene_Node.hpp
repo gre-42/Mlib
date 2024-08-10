@@ -58,7 +58,7 @@ struct Blended {
     TransformationMatrix<float, ScenePos, 3> m;
     const Renderable* renderable;
     const AnimationState* animation_state;
-    ColorStyle color_style;
+    const ColorStyle* color_style;
     inline std::pair<int, ScenePos> sorting_key() const {
         return { z_order, mvp(2, 3) };
     }
@@ -123,6 +123,8 @@ enum class LockingStrategy {
 enum class RenderingStrategies;
 
 PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
+
+class RenderableWithStyle;
 
 static const auto INITIAL_POSE = std::chrono::steady_clock::time_point();
 static const auto SUCCESSOR_POSE = std::nullopt;
@@ -213,7 +215,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
             const TransformationMatrix<float, ScenePos, 3>& m,
-            const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
+            const std::map<std::string, RenderableWithStyle>& renderables)>& func) const;
     void move(
         const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
@@ -354,7 +356,7 @@ private:
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
-    std::map<std::string, std::shared_ptr<const Renderable>> renderables_;
+    std::map<std::string, RenderableWithStyle> renderables_;
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;

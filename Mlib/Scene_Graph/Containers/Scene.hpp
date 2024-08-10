@@ -39,6 +39,7 @@ template <class TPos>
 class ColoredVertexArray;
 enum class RenderingDynamics;
 enum class RenderingStrategies;
+class RenderableWithStyle;
 
 class Scene {
     friend RootNodes;
@@ -103,7 +104,7 @@ public:
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const;
+        const std::map<std::string, RenderableWithStyle>& renderables)>& func) const;
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,

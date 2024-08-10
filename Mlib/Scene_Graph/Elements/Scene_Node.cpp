@@ -19,6 +19,7 @@
 #include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Renderable.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Skidmark.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Lights.hpp>
@@ -303,7 +304,7 @@ void SceneNode::add_renderable(
     if (name.empty()) {
         THROW_OR_ABORT("Renderable has no name");
     }
-    if (!renderables_.insert(std::make_pair(name, renderable)).second) {
+    if (!renderables_.try_emplace(name, renderable).second) {
         THROW_OR_ABORT("Renderable with name " + name + " already exists");
     }
 }
@@ -571,7 +572,7 @@ ColorStyle& SceneNode::color_style(const std::string& name) {
 
 const ColorStyle& SceneNode::color_style(const std::string& name) const {
     std::shared_lock lock{ mutex_ };
-    ColorStyle* result = nullptr;
+    const ColorStyle* result = nullptr;
     for (const auto& s : color_styles_) {
         if (!s->matches(name)) {
             continue;
@@ -764,7 +765,7 @@ bool SceneNode::visit_all(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<const Renderable>>& renderables)>& func) const
+        const std::map<std::string, RenderableWithStyle>& renderables)>& func) const
 {
     std::shared_lock lock{ mutex_ };
     scene_->delete_node_mutex().notify_reading();
@@ -860,12 +861,6 @@ void SceneNode::render(
             ? fixed_zeros<float, 3>()
             : dynamic_lights->get_color(m.t()) };
         for (const auto& [n, r] : renderables_) {
-            ColorStyle r_style;
-            for (const auto& style : ecolor_styles) {
-                if (style->matches(n)) {
-                    r_style.insert(*style);
-                }
-            }
             if (r->requires_render_pass(external_render_pass.pass)) {
                 r->render(
                     mvp,
@@ -878,16 +873,16 @@ void SceneNode::render(
                     render_config,
                     {external_render_pass, InternalRenderPass::INITIAL},
                     estate,
-                    &r_style);
+                    r.style(ecolor_styles, n));
             }
             if (r->requires_blending_pass(external_render_pass.pass)) {
                 blended.push_back(Blended{
                     .z_order = r->continuous_blending_z_order(),
                     .mvp = mvp,
                     .m = m,
-                    .renderable = r.get(),
+                    .renderable = r,
                     .animation_state = estate,
-                    .color_style = std::move(r_style)});
+                    .color_style = r.style(ecolor_styles, n)});
             }
         }
     }
@@ -1061,10 +1056,10 @@ void SceneNode::append_static_filtered_to_queue(
         std::list<std::shared_ptr<ColoredVertexArray<double>>> double_q;
         r->append_filtered_to_queue(float_q, double_q, filter);
         for (const auto& cva : float_q) {
-            float_queue.emplace_back(m, std::move(cva));
+            float_queue.emplace_back(m, cva);
         }
         for (const auto& cva : double_q) {
-            double_queue.emplace_back(m, std::move(cva));
+            double_queue.emplace_back(m, cva);
         }
     }
     for (const auto& [_, c] : children_) {
