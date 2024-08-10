@@ -229,3 +229,7 @@ void RenderableTriangleSampler::extend_aabb(
 {
     // Not yet implemented
 }
+
+ScenePos RenderableTriangleSampler::max_center_distance(uint32_t billboard_id) const {
+    return INFINITY;
+}

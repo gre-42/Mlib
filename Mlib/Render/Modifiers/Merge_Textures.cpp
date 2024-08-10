@@ -100,8 +100,7 @@ void Mlib::merge_textures(
             auto uv_tiles = rendering_resources.generate_auto_texture_atlas(
                 merged_materials_config.texture_name,
                 merged_filenames.keys(),
-                merged_materials_config.mip_level_count,
-                merged_materials_config.anisotropic_filtering_level);
+                merged_materials_config.mip_level_count);
             // rendering_resources.save_to_file("/tmp/atlas.png", TextureDescriptor{.color = merged_texture_name, .color_mode = ColorMode::RGBA});
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;

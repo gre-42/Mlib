@@ -91,6 +91,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Move_Node_To_Bvh.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Remove_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
@@ -340,6 +341,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateWing::key, CreateWing::json_user_function);
     register_json_user_function(CreateYawPitchLookatNodes::key, CreateYawPitchLookatNodes::json_user_function);
     register_json_user_function(DefineWinnerConditionals::key, DefineWinnerConditionals::json_user_function);
+    register_json_user_function(MoveNodeToBvh::key, MoveNodeToBvh::json_user_function);
     register_json_user_function(TryDeleteNode::key, TryDeleteNode::json_user_function);
     register_json_user_function(TryDeleteRootNode::key, TryDeleteRootNode::json_user_function);
     register_json_user_function(DeleteNode::key, DeleteNode::json_user_function);

@@ -17,7 +17,7 @@ class Scene;
 
 struct RootNodeInfo {
     DanglingUniquePtr<SceneNode> ptr;
-    ScenePos max_center_distance;
+    // ScenePos max_center_distance;
 };
 
 class RootNodes {
@@ -39,6 +39,7 @@ public:
         const std::string& name,
         SOURCE_LOCATION loc);
     void add_root_node(const std::string& name, DanglingUniquePtr<SceneNode>&& scene_node);
+    void move_node_to_bvh(const std::string& name);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
     bool no_root_nodes_scheduled_for_deletion() const;
@@ -48,6 +49,7 @@ public:
     void print(std::ostream& ostr) const;
 private:
     Scene& scene_;
+    DefaultNodesMap nodes_under_construction_;
     DefaultNodesMap default_nodes_map_;             // Contains nodes that are large or moving
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;

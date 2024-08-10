@@ -22,7 +22,6 @@ struct MergedTexturesConfig {
     float max_triangle_distance;
     bool cull_faces;
     int mip_level_count;
-    unsigned int anisotropic_filtering_level;
 };
 
 }

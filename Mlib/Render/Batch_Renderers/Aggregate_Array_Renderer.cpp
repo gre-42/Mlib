@@ -248,7 +248,7 @@ void AggregateArrayRenderer::update_aggregates(
         auto it = mat_lists.find(mat);
         if (it == mat_lists.end()) {
             auto l = construct_aggregate_triangles(*a, rng, external_render_pass);
-            if (!l->empty() && !mat_lists.insert({mat, std::move(l)}).second) {
+            if (!l->empty() && !mat_lists.try_emplace(mat, std::move(l)).second) {
                 verbose_abort("Internal error in AggregateArrayRenderer::update_aggregates");
             }
         } else {

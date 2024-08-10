@@ -188,6 +188,18 @@ void Scene::add_root_imposter_node(DanglingRef<SceneNode> scene_node)
     }
 }
 
+void Scene::move_root_node_to_bvh(const std::string& name) {
+    if (static_root_nodes_.contains(name)) {
+        static_root_nodes_.move_node_to_bvh(name);
+    } else if (root_aggregate_once_nodes_.contains(name)) {
+        root_aggregate_once_nodes_.move_node_to_bvh(name);
+    } else if (root_aggregate_always_nodes_.contains(name)) {
+        root_aggregate_always_nodes_.move_node_to_bvh(name);
+    } else {
+        root_instances_once_nodes_.move_node_to_bvh(name);
+    }
+}
+
 bool Scene::root_node_scheduled_for_deletion(
     const std::string& name,
     bool must_exist) const

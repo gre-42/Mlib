@@ -149,11 +149,10 @@ int main(int argc, char** argv)
                 ColormapWithModifiers{
                     .filename = "__texture__",
                     .color_mode = ColorMode::RGBA,
-                    .anisotropic_filtering_level = 8
+                    .anisotropic_filtering_level = safe_stou(parsed.named_value("--aniso", "0"))
                 }.compute_hash(),
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
-                safe_stou(parsed.named_value("--aniso", "0")),
                 safe_stoi(parsed.named_value("--size", "4096")),
                 &atlas);
             for (const auto& [i, t] : enumerate(atlas.tiles)) {

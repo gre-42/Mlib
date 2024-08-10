@@ -1293,7 +1293,6 @@ std::map<std::string, AutoUvTile> RenderingResources::generate_auto_texture_atla
     const ColormapWithModifiers& name,
     const std::vector<ColormapWithModifiers>& filenames,
     int mip_level_count,
-    unsigned int anisotropic_filtering_level,
     int size,
     AutoTextureAtlasDescriptor* atlas)
 {

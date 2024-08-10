@@ -48,7 +48,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .texture_name = ColormapWithModifiers{
                 .filename = args.arguments.at<std::string>(KnownArgs::merged_texture_name),
                 .color_mode = ColorMode::RGBA,
-                .anisotropic_filtering_level = 0
+                .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::merged_anisotropic_filtering_level)
             }.compute_hash(),
             .blend_mode = blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_blend_mode)),
             .continuous_blending_z_order = args.arguments.at<int>(KnownArgs::merged_continuous_blending_z_order),
@@ -57,8 +57,7 @@ LoadSceneJsonUserFunction MergeBlendedMaterials::json_user_function = [](const L
             .aggregate_mode = aggregate_mode_from_string(args.arguments.at<std::string>(KnownArgs::merged_aggregate_mode)),
             .max_triangle_distance = args.arguments.at<float>(KnownArgs::merged_max_triangle_distance),
             .cull_faces = args.arguments.at<bool>(KnownArgs::merged_cull_faces),
-            .mip_level_count = args.arguments.at<int>(KnownArgs::merged_mip_level_count),
-            .anisotropic_filtering_level = args.arguments.at<unsigned int>(KnownArgs::merged_anisotropic_filtering_level)
+            .mip_level_count = args.arguments.at<int>(KnownArgs::merged_mip_level_count)
          },
          &scene_node_resources = scene_node_resources,
          &rendering_resources = rendering_resources]

@@ -704,14 +704,17 @@ int main(int argc, char** argv) {
                 MergedTexturesConfig{
                     .resource_name = "merged_resource",
                     .array_name = "merged_array",
-                    .texture_name = "merged_texture",
+                    .texture_name = ColormapWithModifiers{
+                        .filename = "merged_texture",
+                        .color_mode = ColorMode::RGBA,
+                        .anisotropic_filtering_level = 0
+                    },
                     .blend_mode = BlendMode::SEMI_CONTINUOUS_02,
                     .continuous_blending_z_order = 1,
                     .aggregate_mode = AggregateMode::SORTED_CONTINUOUSLY,
                     .max_triangle_distance = INFINITY,
                     .cull_faces = false,
-                    .mip_level_count = 8,
-                    .anisotropic_filtering_level = 0
+                    .mip_level_count = 8
                 },
                 scene_node_resources,
                 RenderingContextStack::primary_rendering_resources());

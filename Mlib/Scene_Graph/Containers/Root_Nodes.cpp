@@ -48,6 +48,7 @@ bool RootNodes::visit(
 
 void RootNodes::clear() {
     small_static_nodes_bvh_.clear();
+    nodes_under_construction_.clear();
     default_nodes_map_.clear();
     clear_map_recursively(
         node_container_,
@@ -87,16 +88,39 @@ void RootNodes::add_root_node(
     auto ref = scene_node.ref(DP_LOC);
     scene_.register_node(name, ref);
     auto md = scene_node->max_center_distance(UINT32_MAX);
-    if (!node_container_.try_emplace(name, std::move(scene_node), md).second) {
+    if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
         verbose_abort("Could not insert into node container: \"" + name + '"');
     }
     if (is_static && (md != INFINITY)) {
-        small_static_nodes_bvh_.insert(
-            AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), md),
-            ref);
+        if (md != 0.f) {
+            small_static_nodes_bvh_.insert(
+                AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(ref->position(), md),
+                ref);
+        } else if (!nodes_under_construction_.try_emplace(name, ref).second) {
+            verbose_abort("add_root_node could not insert node \"" + name + '"');
+        }
     } else if (!default_nodes_map_.try_emplace(name, ref).second) {
         verbose_abort("add_root_node could not insert node \"" + name + '"');
     }
+}
+
+void RootNodes::move_node_to_bvh(const std::string& name) {
+    auto m = nodes_under_construction_.extract(name);
+    if (m.empty()) {
+        THROW_OR_ABORT("Could not find non-BVH node with name \"" + name + '"');
+    }
+    if (m.mapped()->state() != SceneNodeState::STATIC) {
+        nodes_under_construction_.insert(std::move(m));
+        THROW_OR_ABORT("Node \"" + name + "\" is not static");
+    }
+    auto md = m.mapped()->max_center_distance(UINT32_MAX);
+    if (md == 0.f) {
+        nodes_under_construction_.insert(std::move(m));
+        THROW_OR_ABORT("Node \"" + name + "\" has radius=0");
+    }
+    small_static_nodes_bvh_.insert(
+        AxisAlignedBoundingBox<ScenePos, 3>::from_center_and_radius(m.mapped()->position(), md),
+        m.mapped());
 }
 
 bool RootNodes::erase(const std::string& name) {

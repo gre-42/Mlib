@@ -83,6 +83,7 @@ public:
         RenderingDynamics rendering_dynamics,
         RenderingStrategies rendering_strategy);
     void add_root_imposter_node(DanglingRef<SceneNode> scene_node);
+    void move_root_node_to_bvh(const std::string& name);
     bool root_node_scheduled_for_deletion(
         const std::string& name,
         bool must_exist = true) const;

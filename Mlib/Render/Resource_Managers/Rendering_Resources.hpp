@@ -186,7 +186,6 @@ public:
         const ColormapWithModifiers& name,
         const std::vector<ColormapWithModifiers>& filenames,
         int mip_level_count,
-        unsigned int anisotropic_filtering_level,
         int size = 4096,
         AutoTextureAtlasDescriptor* atlas = nullptr);
     void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);
