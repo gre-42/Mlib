@@ -163,7 +163,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});
             node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
-            scene_.auto_add_root_node(beacon_info.beacon_node_name, std::move(node), RenderingDynamics::STATIC);
+            scene_.auto_add_root_node(beacon_info.beacon_node_name, std::move(node), RenderingDynamics::MOVING);
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
         }

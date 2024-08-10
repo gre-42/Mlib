@@ -5,7 +5,7 @@
 using namespace Mlib;
 
 RenderableScenes::RenderableScenes()
-    : state_{RenderableScenesState::RUNNING}
+    : state_{ RenderableScenesState::RUNNING }
 {}
 
 RenderableScenes::~RenderableScenes() {

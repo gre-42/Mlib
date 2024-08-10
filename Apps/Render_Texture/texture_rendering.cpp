@@ -91,7 +91,7 @@ int main(int argc, char** argv)
         auto unnamed = parsed.unnamed_values();
         if (unnamed.empty()) {
             static const DECLARE_REGEX(re, parsed.named_value("--filter"));
-            std::list<std::string> names;
+            std::list<ColormapWithModifiers> names;
             if (auto filename = parsed.try_named_value("--kn5"); filename != nullptr) {
                 auto kn5 = load_kn5(*filename);
                 for (auto& [name, data] : kn5.textures) {
@@ -99,9 +99,14 @@ int main(int argc, char** argv)
                         continue;
                     }
                     linfo() << "Matched: " << name;
-                    names.push_back(name);
+                    auto cm = ColormapWithModifiers{
+                        .filename = name,
+                        .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                    }.compute_hash();
+                    names.push_back(cm);
                     rendering_resources.add_texture(
-                        name,
+                        cm,
                         std::move(data.data),
                         TextureAlreadyExistsBehavior::RAISE);
                 }
@@ -121,17 +126,18 @@ int main(int argc, char** argv)
                         continue;
                     }
                     linfo() << "Matched: " << tx->name;
-                    names.push_back(tx->name);
+                    auto cm = ColormapWithModifiers{
+                            .filename = tx->name,
+                            .color_mode = ColorMode::RGBA,
+                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
+                        }.compute_hash();
+                    names.push_back(cm);
                     TextureSize size{
                         .width = integral_cast<int>(tx->raster->width()),
                         .height = integral_cast<int>(tx->raster->height())
                     };
                     rendering_resources.set_texture(
-                        {
-                            .filename = tx->name,
-                            .color_mode = ColorMode::RGBA,
-                            .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                        },
+                        cm,
                         std::move(tx->raster->texture_handle()),
                         &size);
                 }
@@ -140,7 +146,11 @@ int main(int argc, char** argv)
                 THROW_OR_ABORT("Could not find a single texture matching \"" + parsed.named_value("--filter") + '"');
             }
             rendering_resources.generate_auto_texture_atlas(
-                "__texture__",
+                ColormapWithModifiers{
+                    .filename = "__texture__",
+                    .color_mode = ColorMode::RGBA,
+                    .anisotropic_filtering_level = 8
+                }.compute_hash(),
                 std::vector(names.begin(), names.end()),
                 safe_stoi(parsed.named_value("--mip_level_count")),
                 safe_stou(parsed.named_value("--aniso", "0")),
@@ -149,7 +159,7 @@ int main(int argc, char** argv)
             for (const auto& [i, t] : enumerate(atlas.tiles)) {
                 linfo() << "Layer: " << i;
                 for (const auto& d : t) {
-                    linfo() << "  Filename: " << d.filename << ' ' << d.width << 'x' << d.height;
+                    linfo() << "  Filename: " << (const std::string&)d.name.filename << ' ' << d.width << 'x' << d.height;
                 }
             }
             if (auto filename = parsed.try_named_value("--texname"); filename != nullptr) {

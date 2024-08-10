@@ -2,6 +2,7 @@
 #include <Mlib/Activator_Function.hpp>
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Geometry/Interfaces/IDds_Resources.hpp>
+#include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers_Hash.hpp>
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
@@ -29,7 +30,6 @@ enum class FlipMode;
 
 namespace Mlib {
 
-struct ColormapWithModifiers;
 struct TextureDescriptor;
 struct RenderProgramIdentifier;
 struct ColoredRenderProgram;
@@ -81,7 +81,7 @@ struct AutoAtlasTileDescriptor {
     int bottom;
     int width;
     int height;
-    std::string filename;
+    ColormapWithModifiers name;
 };
 
 std::ostream& operator << (std::ostream& ostr, const AutoAtlasTileDescriptor& aatd);
@@ -99,8 +99,6 @@ struct AutoTextureAtlasDescriptor {
     int width;
     int height;
     int mip_level_count;
-    ColorMode color_mode;
-    unsigned int anisotropic_filtering_level;
     std::vector<std::vector<AutoAtlasTileDescriptor>> tiles;
 };
 
@@ -167,6 +165,7 @@ public:
         CallerType caller_type = CallerType::RENDER) const;
     bool contains_texture(const ColormapWithModifiers& name) const;
     TextureType texture_type(const ColormapWithModifiers& name, TextureRole role) const;
+    FixedArray<int, 2> texture_size(const ColormapWithModifiers& name) const;
     void set_texture(
         const ColormapWithModifiers& name,
         GLuint id,
@@ -184,8 +183,8 @@ public:
         const std::string& name,
         const std::vector<std::string>& filenames);
     std::map<std::string, AutoUvTile> generate_auto_texture_atlas(
-        const std::string& name,
-        const std::vector<std::string>& filenames,
+        const ColormapWithModifiers& name,
+        const std::vector<ColormapWithModifiers>& filenames,
         int mip_level_count,
         unsigned int anisotropic_filtering_level,
         int size = 4096,
@@ -240,7 +239,7 @@ public:
     void save_array_to_file(const std::string& filename_prefix, const ColormapWithModifiers& color, TextureRole role) const;
 
     virtual void add_texture(
-        const std::string& name,
+        const ColormapWithModifiers& color,
         std::vector<uint8_t>&& data,
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
@@ -251,19 +250,21 @@ private:
     void deallocate();
     std::pair<GLuint, TextureType> initialize_non_dds_texture(const ColormapWithModifiers& name, TextureRole role, float aniso) const;
     TextureSizeAndMipmaps initialize_dds_texture(const ColormapWithModifiers& name) const;
-    void add_auto_texture_atlas(const std::string& name, const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
+    void add_auto_texture_atlas(
+        const ColormapWithModifiers& name,
+        const AutoTextureAtlasDescriptor& texture_atlas_descriptor);
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable std::list<std::shared_ptr<ActivationState>> set_textures_lazy_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> preloaded_processed_texture_data_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<StbInfo<uint8_t>>> preloaded_processed_texture_array_data_;
-    mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_raw_texture_data_;
-    mutable ThreadsafeStringUnorderedMap<std::vector<uint8_t>> preloaded_texture_dds_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<uint8_t>> preloaded_raw_texture_data_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, std::vector<uint8_t>> preloaded_texture_dds_data_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
     mutable ThreadsafeStringUnorderedMap<TextureSize> texture_sizes_;
     mutable ThreadsafeStringUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
-    mutable ThreadsafeStringUnorderedMap<AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
+    mutable ThreadsafeUnorderedMap<ColormapWithModifiers, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
     mutable ThreadsafeStringUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
     ThreadsafeStringUnorderedMap<std::string> aliases_;

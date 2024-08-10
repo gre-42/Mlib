@@ -37,19 +37,19 @@ MinimapLogic::MinimapLogic(
     , node_{ node }
     , centered_texture_image_logic_{
           RenderingContextStack::primary_rendering_resources(),
-          {
+          ColormapWithModifiers{
               .filename = map_image_resource_name,
               .color_mode = ColorMode::RGBA,
               .mipmap_mode = MipmapMode::WITH_MIPMAPS
-          }
+          }.compute_hash()
     }
     , locator_logic_{
           RenderingContextStack::primary_rendering_resources(),
-          {
+          ColormapWithModifiers{
               .filename = locator_image_resource_name,
               .color_mode = ColorMode::RGBA,
               .mipmap_mode = MipmapMode::WITH_MIPMAPS
-          },
+          }.compute_hash(),
           ResourceUpdateCycle::ONCE,
     }
     , widget_{ std::move(widget) }

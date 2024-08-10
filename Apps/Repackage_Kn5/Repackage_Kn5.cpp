@@ -74,13 +74,14 @@ int main(int argc, char** argv) {
         std::map<std::string, kn5Texture> destination_textures;
         for (auto& [dds_name, t] : kn5.textures) {
             auto png_name = gen_png_name(dds_name);
-            rendering_resources.add_texture(dds_name, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
+            auto colormap = ColormapWithModifiers{
+                .filename = dds_name,
+                .color_mode = ColorMode::RGBA,
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS
+            }.compute_hash();
+            rendering_resources.add_texture(colormap, std::move(t.data), TextureAlreadyExistsBehavior::RAISE);
             auto tex = rendering_resources.get_texture_data(
-                {
-                    .filename = dds_name,
-                    .color_mode = ColorMode::RGBA,
-                    .mipmap_mode = MipmapMode::WITH_MIPMAPS
-                },
+                colormap,
                 TextureRole::COLOR,
                 FlipMode::NONE,
                 CopyBehavior::COPY);

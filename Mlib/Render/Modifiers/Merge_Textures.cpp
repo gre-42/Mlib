@@ -10,7 +10,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Geometry/Texture/Uv_Atlas_Tolerance.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
-#include <Mlib/Map/Map.hpp>
+#include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Math/Bool.hpp>
 #include <Mlib/Render/Modifiers/Merged_Textures_Config.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -36,7 +36,7 @@ void Mlib::merge_textures(
          mesh_resource_name,
          merged_materials_config]
         (ISceneNodeResource& scene_node_resource){
-            Map<std::string, std::list<ColoredVertexArray<double>*>> merged_filenames;
+            UnorderedMap<ColormapWithModifiers, std::list<ColoredVertexArray<double>*>> merged_filenames;
             auto meshes = scene_node_resource.get_rendering_arrays();
             for (const auto& mesh : meshes) {
                 for (const auto& cva : mesh->dcvas) {
@@ -77,7 +77,7 @@ void Mlib::merge_textures(
                     if (any(uv_out_of_bounds)) {
                         goto fallback;
                     }
-                    merged_filenames[MergedTextureName{cva->material}.name].push_back(cva.get());
+                    merged_filenames[MergedTextureName{cva->material}.colormap].push_back(cva.get());
                     continue;
                     fallback:;
                     // if (uv_out_of_bounds(0)) {
@@ -106,8 +106,8 @@ void Mlib::merge_textures(
             
             std::list<FixedArray<ColoredVertex<double>, 3>> merged_triangles;
             std::list<FixedArray<uint8_t, 3>> merged_discrete_triangle_texture_layers;
-            for (const auto& [filename, cvas] : merged_filenames) {
-                const auto& tile = uv_tiles.at(filename);
+            for (const auto& [colormap, cvas] : merged_filenames) {
+                const auto& tile = uv_tiles.at(colormap.filename);
                 for (const auto& cva : cvas) {
                     for (const auto& tri : cva->triangles) {
                         {
@@ -140,11 +140,7 @@ void Mlib::merge_textures(
                     Material{
                         .blend_mode = merged_materials_config.blend_mode,
                         .continuous_blending_z_order = merged_materials_config.continuous_blending_z_order,
-                        .textures_color = {{.texture_descriptor = {
-                            .color = {
-                                .filename = merged_materials_config.texture_name,
-                                .color_mode = ColorMode::RGBA,
-                                .mipmap_mode = MipmapMode::WITH_MIPMAPS}}}},
+                        .textures_color = {{.texture_descriptor = {.color = merged_materials_config.texture_name}}},
                         .occluded_pass = merged_materials_config.occluded_pass,
                         .occluder_pass = merged_materials_config.occluder_pass,
                         .magnifying_interpolation_mode = InterpolationMode::LINEAR,

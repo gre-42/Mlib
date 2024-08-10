@@ -85,7 +85,8 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 : nlohmann::json()},
             {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"MINIMAP_SIZE", minimap_size},
-            {"MINIMAP_OFFSET", minimap_offset}});
+            {"MINIMAP_OFFSET", minimap_offset},
+            {"aggregate_mode", "sorted"}});
         auto database = JsonMacroArguments(nlohmann::json{
             {"IF_RACEWAY_CIRCULAR", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });

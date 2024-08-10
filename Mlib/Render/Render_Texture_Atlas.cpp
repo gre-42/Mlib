@@ -25,10 +25,7 @@ void Mlib::render_texture_atlas(
             (float)tile.bottom * scale_height,
             (float)tile.width * scale_width,
             (float)tile.height * scale_height};
-        logic.set_image_resource_name({
-            .filename = tile.filename,
-            .color_mode = ColorMode::RGBA,
-            .mipmap_mode = MipmapMode::WITH_MIPMAPS});
+        logic.set_image_resource_name(tile.name);
         logic.render();
     }
 }

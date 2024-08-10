@@ -1,13 +1,13 @@
 #pragma once
-#include <string>
 
 namespace Mlib {
 
 struct Material;
+struct ColormapWithModifiers;
 
 struct MergedTextureName {
     explicit MergedTextureName(const Material& material);
-    const std::string& name;
+    const ColormapWithModifiers& colormap;
 };
 
 }
