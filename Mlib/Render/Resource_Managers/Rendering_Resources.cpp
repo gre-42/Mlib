@@ -14,6 +14,7 @@
 #include <Mlib/Images/StbImage4.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Map/Unordered_Map.hpp>
 #include <Mlib/Math/Is_Power_Of_Two.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
@@ -522,6 +523,10 @@ void RenderingResources::print(std::ostream& ostr, size_t indentation) const {
     }
     ostr << indent << "Texture wrap\n";
     for (const auto& [n, _] : texture_wrap_) {
+        ostr << indent << "  " << n << '\n';
+    }
+    ostr << indent << "DDS\n";
+    for (const auto& [n, _] : preloaded_texture_dds_data_) {
         ostr << indent << "  " << n << '\n';
     }
 }
@@ -1101,21 +1106,17 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
         for (size_t i = 0; i < it->nlayers; ++i) {
             sis.push_back(stb_create<uint8_t>(it->width, it->height, (int)it->color_mode));
         }
-        std::map<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
+        UnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
         std::vector<AtlasTile> atlas_tiles;
         atlas_tiles.reserve(it->tiles.size());
         for (const auto& [source, target] : it->tiles) {
-            auto dit = texture_descriptors_.try_get(source.filename);
-            ColormapWithModifiers desc = dit != nullptr
-                ? dit->color
-                : ColormapWithModifiers{
-                    .filename = source.filename,
-                    .color_mode = color.color_mode };
-            auto sit = source_images.find(desc);
-            if (sit == source_images.end()) {
-                if (!source_images.try_emplace(desc, get_texture_data(desc, role, flip_mode)).second) {
-                    verbose_abort("Could not cache \"" + *desc.filename + '"');
+            const auto* si = source_images.try_get(source.name);
+            if (si == nullptr) {
+                auto it = source_images.try_emplace(source.name, get_texture_data(source.name, role, flip_mode));
+                if (!it.second) {
+                    verbose_abort("Could not cache \"" + *source.name.filename + '"');
                 }
+                si = &it.first->second;
             }
             atlas_tiles.push_back(AtlasTile{
                 .source = {
@@ -1123,7 +1124,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
                     .bottom = source.bottom,
                     .width = source.width,
                     .height = source.height,
-                    .image = source_images.at(desc)
+                    .image = *si
                 },
                 .target = {
                     .left = target.left,
@@ -1201,20 +1202,20 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     return si;
 }
 
-std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_atlas(
+std::map<ColormapWithModifiers, ManualUvTile> RenderingResources::generate_manual_texture_atlas(
     const std::string& name,
-    const std::vector<std::string>& filenames)
+    const std::vector<ColormapWithModifiers>& filenames)
 {
-    std::map<std::string, FixedArray<int, 2>> texture_sizes;
+    std::map<ColormapWithModifiers, FixedArray<int, 2>> texture_sizes;
     for (const auto& filename : filenames) {
         int x;
         int y;
         int comp;
-        if (stbi_info(filename.c_str(), &x, &y, &comp) == 0) {
-            THROW_OR_ABORT("Could not read size information from file \"" + filename + '"');
+        if (stbi_info(filename.filename->c_str(), &x, &y, &comp) == 0) {
+            THROW_OR_ABORT("Could not read size information from file \"" + *filename.filename + '"');
         }
         if (!texture_sizes.try_emplace(filename, x, y).second) {
-            THROW_OR_ABORT("Detected duplicate texture: \"" + filename + '"');
+            THROW_OR_ABORT("Detected duplicate texture: \"" + *filename.filename + '"');
         }
     }
     ManualTextureAtlasDescriptor tad{
@@ -1231,19 +1232,18 @@ std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_
     if (tad.width * tad.height > 4096 * 4096 * 20) {
         THROW_OR_ABORT("Atlas too large");
     }
-    std::map<std::string, ManualUvTile> result;
+    std::map<ColormapWithModifiers, ManualUvTile> result;
     {
         int sum_width = 0;
-        for (const auto& [filename, texture_size] : texture_sizes) {
-            if (!result.insert({
-                filename, {
-                .position = {
-                    (float)sum_width / (float)tad.width,
-                    0.f},
-                .size = texture_size.casted<float>()
-                        / FixedArray<float, 2>{(float)tad.width, (float)tad.height}}}).second)
-            {
-                THROW_OR_ABORT("Detected duplicate atlas filename: \"" + filename + '"');
+        for (const auto& [name, texture_size] : texture_sizes) {
+            auto size = texture_size.casted<float>() /
+                FixedArray<int, 2>{tad.width, tad.height}.casted<float>();
+            auto position = FixedArray<float, 2>{
+                (float)sum_width / (float)tad.width,
+                0.f
+            };
+            if (!result.try_emplace(name, ManualUvTile{ .position = position, .size = size }).second) {
+                THROW_OR_ABORT("Detected duplicate atlas filename: \"" + *name.filename + '"');
             }
             tad.tiles.push_back(ManualAtlasTileDescriptor{
                 .source = {
@@ -1251,7 +1251,7 @@ std::map<std::string, ManualUvTile> RenderingResources::generate_manual_texture_
                     .bottom = 0,
                     .width = texture_size(0),
                     .height = texture_size(1),
-                    .filename = filename
+                    .name = name
                 },
                 .target = {
                     .left = sum_width,
@@ -1585,7 +1585,7 @@ void RenderingResources::add_texture(
 {
     const auto& filename = (const std::string&)name.filename;
     LOG_FUNCTION("RenderingResources::set_texture " + filename);
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
 
     if (preloaded_texture_dds_data_.contains(name)) {
         if (already_exists_behavior == TextureAlreadyExistsBehavior::WARN) {

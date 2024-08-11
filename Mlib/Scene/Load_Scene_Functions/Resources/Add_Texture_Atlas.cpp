@@ -43,7 +43,9 @@ LoadSceneJsonUserFunction AddTextureAtlas::json_user_function = [](const LoadSce
 
 void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto tiles = args.arguments.children(KnownArgs::images, [](const JsonMacroArguments& a){
+    auto& res = RenderingContextStack::primary_rendering_resources();
+    auto color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode));
+    auto tiles = args.arguments.children(KnownArgs::images, [&](const JsonMacroArguments& a){
         // This is not in a from_json function because of the usage of "path_or_variable".
         a.validate(AtlasTileArgs::options);
         auto source_position = a.at<UFixedArray<int, 2>>(AtlasTileArgs::source_position, fixed_zeros<int, 2>());
@@ -55,7 +57,10 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .bottom = source_position(1),
                 .width = texture_size(0),
                 .height = texture_size(1),
-                .filename = a.path_or_variable(AtlasTileArgs::texture).path
+                .name = res.colormap(ColormapWithModifiers{
+                    .filename = a.path_or_variable(AtlasTileArgs::texture).path,
+                    .color_mode = color_mode,
+                    .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())
             },
             .target = {
                 .left = target_position(0),
@@ -63,13 +68,13 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .layer = a.at<size_t>(AtlasTileArgs::target_layer, 0)
             } };
     });
-    RenderingContextStack::primary_rendering_resources().add_manual_texture_atlas(
+    res.add_manual_texture_atlas(
         args.arguments.at(KnownArgs::name),
         ManualTextureAtlasDescriptor{
             .width = args.arguments.at<int>(KnownArgs::width),
             .height = args.arguments.at<int>(KnownArgs::height),
             .nlayers = args.arguments.at<size_t>(KnownArgs::layers, 1),
             .depth_interpolation = interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::depth_interpolation, "nearest")),
-            .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
+            .color_mode = color_mode,
             .tiles = tiles});
 }

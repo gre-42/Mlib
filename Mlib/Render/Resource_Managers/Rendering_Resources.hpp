@@ -62,7 +62,7 @@ struct ManualAtlasTileSource {
     int bottom;
     int width;
     int height;
-    std::string filename;
+    ColormapWithModifiers name;
 };
 
 struct ManualAtlasTileTarget {
@@ -179,9 +179,9 @@ public:
     void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
     TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
     void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
-    std::map<std::string, ManualUvTile> generate_manual_texture_atlas(
+    std::map<ColormapWithModifiers, ManualUvTile> generate_manual_texture_atlas(
         const std::string& name,
-        const std::vector<std::string>& filenames);
+        const std::vector<ColormapWithModifiers>& filenames);
     std::map<std::string, AutoUvTile> generate_auto_texture_atlas(
         const ColormapWithModifiers& name,
         const std::vector<ColormapWithModifiers>& filenames,

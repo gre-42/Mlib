@@ -398,7 +398,7 @@ void RenderableColoredVertexArray::render_cva(
                 if ((cva->material.blend_mode == BlendMode::OFF) && (t.texture_descriptor.color.color_mode == ColorMode::RGBA)) {
                     THROW_OR_ABORT("Opaque material's color texture \"" + *t.texture_descriptor.color.filename + "\" was loaded as RGBA");
                 }
-                if ((cva->material.blend_mode != BlendMode::OFF) && (t.texture_descriptor.color.color_mode != ColorMode::RGBA)) {
+                if (any(cva->material.blend_mode) && (t.texture_descriptor.color.color_mode != ColorMode::RGBA)) {
                     THROW_OR_ABORT("Transparent material's color texture \"" + *t.texture_descriptor.color.filename + "\" was not loaded as RGBA");
                 }
             }

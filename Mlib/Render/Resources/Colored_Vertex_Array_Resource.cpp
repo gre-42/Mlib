@@ -1750,7 +1750,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         any(id.blend_mode & BlendMode::ANY_CONTINUOUS)
             ? id.alpha
             : 1.f,
-        (id.blend_mode == BlendMode::OFF) ||
+        !any(id.blend_mode) ||
         any(id.blend_mode & BlendMode::CONTINUOUS_MASK) ||
         (id.ntextures_color == 0)
             ? 0.f
