@@ -136,7 +136,8 @@ public:
                 }
             }
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
-            std::scoped_lock lock{rs->scene_.delete_node_mutex()};
+            execute_render_allocators();
+            std::scoped_lock lock{ rs->scene_.delete_node_mutex() };
             if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
                 rs->render(
                     lx,
