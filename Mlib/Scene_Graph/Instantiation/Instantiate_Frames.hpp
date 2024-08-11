@@ -14,6 +14,7 @@ void instantiate(
 	const std::list<InstanceInformation>& infos,
 	SceneNodeResources& scene_node_resources,
 	RenderingResources& rendering_resources,
-	const std::set<std::string>& exclude);
+	const std::set<std::string>& exclude,
+	std::set<std::string>* instantiated);
 
 }

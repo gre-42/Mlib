@@ -12,7 +12,6 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(resource_variable);
 DECLARE_ARGUMENT(resource_name);
 DECLARE_ARGUMENT(resource_names);
 DECLARE_ARGUMENT(add);
@@ -49,16 +48,6 @@ void ModifyPhysicsMaterialTags::execute(const LoadSceneJsonUserFunctionArgs& arg
     auto remove = args.arguments.contains(KnownArgs::remove)
         ? physics_material_from_string(args.arguments.at<std::string>(KnownArgs::remove))
         : PhysicsMaterial::NONE;
-    if (auto orv = args.arguments.try_at<std::string>(KnownArgs::resource_variable))
-    {
-        if (args.local_json_macro_arguments == nullptr) {
-            THROW_OR_ABORT("No local arguments provided");
-        }
-        for (const auto& resource_name : args.local_json_macro_arguments->at<std::vector<std::string>>(*orv)) {
-            RenderingContextStack::primary_scene_node_resources()
-                .modify_physics_material_tags(resource_name, filter, add, remove);
-        }
-    }
     if (auto orn = args.arguments.try_at<std::string>(KnownArgs::resource_name))
     {
         RenderingContextStack::primary_scene_node_resources()

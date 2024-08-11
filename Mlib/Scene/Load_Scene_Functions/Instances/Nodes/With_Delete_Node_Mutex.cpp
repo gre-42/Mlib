@@ -1,6 +1,5 @@
 #include "With_Delete_Node_Mutex.hpp"
 #include <Mlib/Argument_List.hpp>
-#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -10,7 +9,6 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(command);
-DECLARE_ARGUMENT(capture);
 }
 
 const std::string WithDeleteNodeMutex::key = "with_delete_node_mutex";
@@ -28,8 +26,5 @@ WithDeleteNodeMutex::WithDeleteNodeMutex(RenderableScene& renderable_scene)
 void WithDeleteNodeMutex::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::scoped_lock lock{delete_node_mutex};
-    auto a = args.arguments.contains(KnownArgs::capture)
-        ? args.arguments.child(KnownArgs::capture)
-        : JsonMacroArguments();
-    args.macro_line_executor(args.arguments.at(KnownArgs::command), &a, nullptr);
+    args.macro_line_executor(args.arguments.at(KnownArgs::command), nullptr, nullptr);
 }

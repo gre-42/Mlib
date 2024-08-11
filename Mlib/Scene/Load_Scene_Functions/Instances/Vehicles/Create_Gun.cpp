@@ -37,7 +37,6 @@ DECLARE_ARGUMENT(muzzle_flash_resource);
 DECLARE_ARGUMENT(muzzle_flash_position);
 DECLARE_ARGUMENT(muzzle_flash_animation_time);
 DECLARE_ARGUMENT(generate_muzzle_flash_hider);
-DECLARE_ARGUMENT(capture);
 }
 
 const std::string CreateGun::key = "gun";
@@ -121,8 +120,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
     if (auto g = args.arguments.try_at(KnownArgs::generate_smart_bullet); g.has_value()) {
         generate_smart_bullet =
             [mle = args.macro_line_executor,
-             l = *g,
-             capture = args.arguments.try_at_non_null(KnownArgs::capture)]
+             l = *g]
             (
                 const std::optional<std::string>& player,
                 const std::string& bullet_suffix,
@@ -131,9 +129,6 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 const FixedArray<float, 3>& angular_velocity)
             {
                 JsonMacroArguments local_args;
-                if (capture.has_value()) {
-                    local_args.insert_json(*capture);
-                }
                 if (player.has_value()) {
                     local_args.set("PLAYER_NAME", *player);
                 }
@@ -168,16 +163,12 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
         args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * seconds,
         [macro_line_executor = args.macro_line_executor,
-         macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash_hider),
-         capture = args.arguments.try_at_non_null(KnownArgs::capture)](const std::string& muzzle_flash_suffix)
+         macro = args.arguments.try_at_non_null(KnownArgs::generate_muzzle_flash_hider)](const std::string& muzzle_flash_suffix)
         {
             if (!macro.has_value()) {
                 return;
             }
             JsonMacroArguments local_substitutions;
-            if (capture.has_value()) {
-                local_substitutions.insert_json(*capture);
-            }
             local_substitutions.insert_json("MUZZLE_FLASH_SUFFIX", muzzle_flash_suffix);
             macro_line_executor(*macro, &local_substitutions, nullptr);
         },

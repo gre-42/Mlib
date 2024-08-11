@@ -26,7 +26,8 @@ void Mlib::instantiate(
 	const std::list<InstanceInformation>& infos,
 	SceneNodeResources& scene_node_resources,
 	RenderingResources& rendering_resources,
-	const std::set<std::string>& exclude)
+	const std::set<std::string>& exclude,
+	std::set<std::string>* instantiated)
 {
 	for (const auto& info : infos) {
 		if (exclude.contains(info.resource_name)) {
@@ -38,8 +39,12 @@ void Mlib::instantiate(
 			trafo.t(),
 			matrix_2_tait_bryan_angles(trafo.R()),
 			info.scale);
+		auto resource_name = info.resource_name + ".dff";
+		if (instantiated != nullptr) {
+			instantiated->insert(resource_name);
+		}
 		scene_node_resources.instantiate_renderable(
-			info.resource_name + ".dff",
+			resource_name,
 			InstantiationOptions{
 				.rendering_resources = &rendering_resources,
 				.imposters = nullptr,

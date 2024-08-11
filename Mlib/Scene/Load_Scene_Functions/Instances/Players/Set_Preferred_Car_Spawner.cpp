@@ -19,7 +19,6 @@ namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(macro);
-DECLARE_ARGUMENT(capture);
 }
 
 const std::string SetPreferredCarSpawner::key = "set_preferred_car_spawner";
@@ -38,15 +37,13 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     std::string spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     auto macro = args.arguments.at(KnownArgs::macro);
-    auto capture = args.arguments.at(KnownArgs::capture);
     vehicle_spawners.get(spawner_name).set_spawn_vehicle(
         [macro_line_executor = args.macro_line_executor,
          spawner_name,
          macro,
-         capture,
          &scene = scene](const SpawnPoint& p, const std::string& role){
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
-            JsonMacroArguments a{capture};
+            JsonMacroArguments a;
             a.insert_json(nlohmann::json{
                 {"HUMAN_NODE_POSITION", p.position / (ScenePos)meters},
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},

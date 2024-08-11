@@ -273,11 +273,14 @@ void MacroLineExecutor::operator () (
                 }
             } else if (jv.contains(MacroKeys::call)) {
                 auto name = j_subst.at<std::string>(MacroKeys::call);
+                auto mle2 = changed_context(
+                    context,
+                    let.json());
                 bool success;
                 try {
                     success = json_user_function_(
                         context,
-                        *this,
+                        mle2,
                         name,
                         args,
                         local_json_macro_arguments);

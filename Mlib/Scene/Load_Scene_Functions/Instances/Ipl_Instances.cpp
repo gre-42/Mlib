@@ -22,6 +22,7 @@ DECLARE_ARGUMENT(files);
 DECLARE_ARGUMENT(except);
 DECLARE_ARGUMENT(dynamics);
 DECLARE_ARGUMENT(min_vertex_distance);
+DECLARE_ARGUMENT(instantiated_resources);
 }
 
 const std::string IplInstances::key = "ipl_instances";
@@ -40,13 +41,22 @@ void IplInstances::execute(const LoadSceneJsonUserFunctionArgs &args) {
     auto empty_set = std::set<std::string>();
     auto exclude = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::except, empty_set);
     auto dynamics = rendering_dynamics_from_string(args.arguments.at<std::string>(KnownArgs::dynamics));
+    auto ir = args.arguments.try_at<std::string>(KnownArgs::instantiated_resources);
+    std::set<std::string> instantiated;
     for (const auto& file : args.arguments.pathes_or_variables(KnownArgs::files)) {
         instantiate(
             scene,
             read_ipl(file.path, dynamics),
             scene_node_resources,
             rendering_resources,
-            exclude);
+            exclude,
+            ir.has_value() ? &instantiated : nullptr);
+    }
+    if (ir.has_value()) {
+        if (args.local_json_macro_arguments == nullptr) {
+            THROW_OR_ABORT("instantiated_resources requires local arguments");
+        }
+        args.local_json_macro_arguments->set(*ir, instantiated);
     }
     {
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>> float_queue;

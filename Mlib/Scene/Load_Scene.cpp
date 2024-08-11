@@ -186,8 +186,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Layout/Create_Fractional_Screen_Constraint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Clear_Selection_Ids.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Main/Reload_Scene.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Render/Execute_In_Render_Thread.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Render/Set_Render_Fps.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Render/Set_Textures_Lazy.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Audio_Sequence.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Add_Blend_Map_Texture.hpp>
@@ -259,8 +259,8 @@ LoadScene::LoadScene() {
     register_json_user_function(UpdateGallery::key, UpdateGallery::json_user_function);
 
     // Render
-    register_json_user_function(ExecuteInRenderThread::key, ExecuteInRenderThread::json_user_function);
     register_json_user_function(SetRenderFps::key, SetRenderFps::json_user_function);
+    register_json_user_function(SetTexturesLazy::key, SetTexturesLazy::json_user_function);
 
     // Instances
     register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);

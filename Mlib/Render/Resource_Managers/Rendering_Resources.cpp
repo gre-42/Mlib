@@ -1030,7 +1030,7 @@ void RenderingResources::set_texture(
 
 void RenderingResources::set_textures_lazy(std::function<void()> func)
 {
-    auto state = std::make_shared<ActivationState>(func);
+    auto state = std::make_shared<ActivationState>(std::move(func));
     {
         std::scoped_lock lock{ mutex_ };
         set_textures_lazy_.push_back(state);

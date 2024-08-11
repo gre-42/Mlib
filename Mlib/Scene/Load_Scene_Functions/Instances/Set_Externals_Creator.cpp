@@ -20,7 +20,6 @@ BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(spawner);
 DECLARE_ARGUMENT(externals);
 DECLARE_ARGUMENT(internals);
-DECLARE_ARGUMENT(capture);
 }
 
 const std::string SetExternalsCreator::key = "set_externals_creator";
@@ -37,9 +36,6 @@ SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
 
 void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto capture = args.arguments.contains(KnownArgs::capture)
-        ? args.arguments.child(KnownArgs::capture)
-        : JsonMacroArguments();
     auto spawner_name = args.arguments.at<std::string>(KnownArgs::spawner);
     auto& spawner = vehicle_spawners.get(spawner_name);
     if (!spawner.has_scene_vehicle()) {
@@ -48,8 +44,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
     spawner.get_primary_scene_vehicle().set_create_vehicle_externals(
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::externals),
-         spawner_name,
-         capture](
+         spawner_name](
             const std::string& player_name,
             ExternalsMode externals_mode,
             const std::string& behavior)
@@ -57,7 +52,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
-            JsonMacroArguments local_args{capture};
+            JsonMacroArguments local_args;
             local_args.insert_json(nlohmann::json{
                 {"SPAWNER_NAME", spawner_name},
                 {"PLAYER_NAME", player_name},
@@ -70,8 +65,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
     spawner.get_primary_scene_vehicle().set_create_vehicle_internals(
         [macro_line_executor = args.macro_line_executor,
          macro = args.arguments.at(KnownArgs::internals),
-         spawner_name,
-         capture](
+         spawner_name](
             const std::string& player_name,
             ExternalsMode externals_mode,
             const SkillMap& skills,
@@ -81,7 +75,7 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
-            JsonMacroArguments local_args{capture};
+            JsonMacroArguments local_args;
             local_args.insert_json(nlohmann::json{
                 {"SPAWNER_NAME", spawner_name},
                 {"PLAYER_NAME", player_name},

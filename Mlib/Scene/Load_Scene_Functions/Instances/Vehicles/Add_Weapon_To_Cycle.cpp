@@ -24,7 +24,6 @@ DECLARE_ARGUMENT(cool_down);
 DECLARE_ARGUMENT(range_min);
 DECLARE_ARGUMENT(range_max);
 DECLARE_ARGUMENT(create);
-DECLARE_ARGUMENT(capture);
 }
 
 const std::string AddWeaponToInventory::key = "add_weapon_to_cycle";
@@ -44,7 +43,6 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> cycle_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::cycle_node), DP_LOC);
     std::string entry_name = args.arguments.at<std::string>(KnownArgs::entry_name);
     auto create = args.arguments.at(KnownArgs::create);
-    auto capture = args.arguments.try_at_non_null(KnownArgs::capture);
     WeaponCycle& wc = get_weapon_cycle(cycle_node);
     std::string ammo_type = args.arguments.at<std::string>(KnownArgs::ammo_type);
     std::string bullet_type = args.arguments.at<std::string>(KnownArgs::bullet_type);
@@ -55,15 +53,11 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
             .create_weapon = [
                 macro_line_executor = args.macro_line_executor,
                 create,
-                capture,
                 ammo_type,
                 bullet_type,
                 cool_down](const std::optional<std::string>& player_name)
             {
                 JsonMacroArguments subst;
-                if (capture.has_value()) {
-                    subst.insert_json(*capture);
-                }
                 if (player_name.has_value()) {
                     subst.insert_json("PLAYER_NAME", *player_name);
                 }
