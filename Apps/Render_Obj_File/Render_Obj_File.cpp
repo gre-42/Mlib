@@ -707,6 +707,7 @@ int main(int argc, char** argv) {
                     .texture_name = ColormapWithModifiers{
                         .filename = "merged_texture",
                         .color_mode = ColorMode::RGBA,
+                        .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = 0
                     },
                     .blend_mode = BlendMode::SEMI_CONTINUOUS_02,
