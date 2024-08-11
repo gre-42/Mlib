@@ -207,6 +207,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 {
     const bool show_only_collidables = false;
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
+    std::map<std::string, kn5Texture> textures;
     std::set<std::string> grass_materials;
     std::set<std::string> occluding_meshes;
     std::vector<unsigned int> texture_grid;
@@ -217,6 +218,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
         auto kn5 = load_kn5(kn5_filename);
+        while (!kn5.textures.empty()) {
+            textures.insert(kn5.textures.extract(kn5.textures.begin()));
+        }
         for (auto& [_, m] : kn5.materials) {
             if (settings_json.materials.contains(m.name)) {
                 const auto& ms = settings_json.materials.at(m.name);
@@ -692,43 +696,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 result.push_back(tl.triangle_array());
             }
         }
-        std::map<std::string, ColorMode> color_modes;
-        for (const auto& cva : result) {
-            cva->material.compute_color_mode();
-            for (const auto& t : cva->material.textures_color) {
-                auto& cm = color_modes[t.texture_descriptor.color.filename];
-                cm = std::max(cm, t.texture_descriptor.color.color_mode);
-            }
-        }
-        for (const auto& cva : result) {
-            for (auto& t : cva->material.textures_color) {
-                t.texture_descriptor.color.color_mode = color_modes[t.texture_descriptor.color.filename];
-            }
-        }
-        for (const auto& cva : result) {
-            auto register_colormap = [&](const ColormapWithModifiers& cm) {
-                if (dds_resources != nullptr) {
-                    auto n = kn5.textures.extract(cm.filename);
-                    if (!n.empty()) {
-                        dds_resources->add_texture(cm, std::move(n.mapped().data), TextureAlreadyExistsBehavior::WARN);
-                    }
-                }
-                };
-            for (auto& t : cva->material.textures_color) {
-                t.texture_descriptor.color.compute_hash();
-                t.texture_descriptor.specular.compute_hash();
-                t.texture_descriptor.normal.compute_hash();
-                if (!t.texture_descriptor.color.filename->empty()) {
-                    register_colormap(t.texture_descriptor.color);
-                }
-                if (!t.texture_descriptor.specular.filename->empty()) {
-                    register_colormap(t.texture_descriptor.specular);
-                }
-                if (!t.texture_descriptor.normal.filename->empty()) {
-                    register_colormap(t.texture_descriptor.normal);
-                }
-            }
-        }
     };
     {
         auto settings_json_filename =
@@ -795,6 +762,45 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         }
     } else {
         append_kn5(filename);
+    }
+    {
+        std::map<std::string, ColorMode> color_modes;
+        for (const auto& cva : result) {
+            cva->material.compute_color_mode();
+            for (const auto& t : cva->material.textures_color) {
+                auto& cm = color_modes[t.texture_descriptor.color.filename];
+                cm = std::max(cm, t.texture_descriptor.color.color_mode);
+            }
+        }
+        for (const auto& cva : result) {
+            for (auto& t : cva->material.textures_color) {
+                t.texture_descriptor.color.color_mode = color_modes[t.texture_descriptor.color.filename];
+            }
+        }
+        for (const auto& cva : result) {
+            auto register_colormap = [&](const ColormapWithModifiers& cm) {
+                if (dds_resources != nullptr) {
+                    auto n = textures.extract(cm.filename);
+                    if (!n.empty()) {
+                        dds_resources->add_texture(cm, std::move(n.mapped().data), TextureAlreadyExistsBehavior::WARN);
+                    }
+                }
+                };
+            for (auto& t : cva->material.textures_color) {
+                t.texture_descriptor.color.compute_hash();
+                t.texture_descriptor.specular.compute_hash();
+                t.texture_descriptor.normal.compute_hash();
+                if (!t.texture_descriptor.color.filename->empty()) {
+                    register_colormap(t.texture_descriptor.color);
+                }
+                if (!t.texture_descriptor.specular.filename->empty()) {
+                    register_colormap(t.texture_descriptor.specular);
+                }
+                if (!t.texture_descriptor.normal.filename->empty()) {
+                    register_colormap(t.texture_descriptor.normal);
+                }
+            }
+        }
     }
     if (race_logic != nullptr) {
         race_logic->set_circularity(raceway_is_circular);
