@@ -20,14 +20,8 @@ public:
 	{}
 	template <class Arg>
 		requires std::is_convertible_v<Arg, const T&>
-	VariableAndHash(const Arg& value)
-		: variable_{ value }
-		, hash_{ hash_combine(variable_) }
-	{}
-	template <class Arg>
-		requires std::is_convertible_v<Arg, const T&>
 	VariableAndHash(Arg&& value)
-		: variable_{ std::move(value) }
+		: variable_{ std::forward<Arg>(value) }
 		, hash_{ hash_combine(variable_) }
 	{}
 	const T& operator * () const {
