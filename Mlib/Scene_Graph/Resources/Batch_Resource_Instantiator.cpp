@@ -9,7 +9,8 @@
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IImposters.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ISupply_Depots.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
@@ -91,91 +92,97 @@ void BatchResourceInstantiator::preload(
     }
 }
 
-void BatchResourceInstantiator::instantiate_renderables(
+void BatchResourceInstantiator::instantiate_root_renderables(
     const SceneNodeResources& scene_node_resources,
-    const InstantiationOptions& options) const
+    const RootInstantiationOptions& options) const
 {
+    auto pm = options.absolute_model_matrix;
+    auto lr = tait_bryan_angles_2_matrix(rotation_);
+    auto cm = pm * TransformationMatrix<float, ScenePos, 3>{lr, fixed_zeros<ScenePos, 3>()};
     {
         size_t i = 0;
         for (const auto& p : object_resource_descriptors_) {
-            DanglingUniquePtr<SceneNode> node = make_dunique<SceneNode>();
-            scene_node_resources.instantiate_renderable(
+            if (!p.supplies.empty() && (options.supply_depots == nullptr)) {
+                THROW_OR_ABORT("Supplies requested, but no supply depots available");
+            }
+
+            auto cm = pm * TransformationMatrix<float, ScenePos, 3>{
+                rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle),
+                p.position};
+
+            auto node = make_dunique<SceneNode>(
+                cm.t(),
+                matrix_2_tait_bryan_angles(cm.R()),
+                p.scale);
+            scene_node_resources.instantiate_child_renderable(
                 p.name,
-                InstantiationOptions{
+                ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
-                    .supply_depots = options.supply_depots,
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
-                    .renderable_resource_filter = options.renderable_resource_filter});
-            std::string child_name = p.name + "-" + std::to_string(i++);
-            auto local_rotation = dot2d(
-                tait_bryan_angles_2_matrix(rotation_),
-                rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle));
+                    .renderable_resource_filter = options.renderable_resource_filter });
+            std::string node_name = p.name + "-" + std::to_string(i++);
             if (!p.supplies.empty()) {
-                if (options.supply_depots == nullptr) {
-                    THROW_OR_ABORT("Supplies requested, but no supply depots available");
-                }
-                auto pm = options.scene_node->absolute_model_matrix();
-                auto cm = pm * TransformationMatrix<float, ScenePos, 3>{local_rotation, p.position};
-                node->set_relative_pose(
-                    cm.t(),
-                    matrix_2_tait_bryan_angles(cm.R()),
-                    p.scale,
-                    INITIAL_POSE);
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
-                options.scene_node->scene().auto_add_root_node(child_name, std::move(node), RenderingDynamics::MOVING);
+                options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
             } else {
-                node->set_relative_pose(
-                    p.position,
-                    matrix_2_tait_bryan_angles(local_rotation),
-                    scale_ * p.scale,
-                    INITIAL_POSE);
                 if (p.aggregate_mode == AggregateMode::NONE) {
-                    node->set_parent(options.scene_node);
                     if (p.create_imposter) {
                         if (options.imposters == nullptr) {
                             THROW_OR_ABORT("Imposter requested, but no imposters available");
                         }
-                        options.imposters->create_imposter(node.ref(DP_LOC), child_name, p.max_imposter_texture_size);
+                        options.imposters->create_imposter(node.ref(DP_LOC), node_name, p.max_imposter_texture_size);
                     }
-                    options.scene_node->add_child(
-                        child_name,
+                    options.scene.auto_add_root_node(
+                        node_name,
                         std::move(node),
-                        ChildRegistrationState::NOT_REGISTERED,
-                        ChildParentState::PARENT_ALREADY_SET);
+                        RenderingDynamics::STATIC);
                 } else {
-                    if ((p.aggregate_mode | AggregateMode::OBJECT_MASK) != AggregateMode::OBJECT_MASK) {
+                    if (any(p.aggregate_mode & ~AggregateMode::OBJECT_MASK)) {
                         THROW_OR_ABORT("Unexpected aggregate mode");
                     }
                     if (p.create_imposter) {
                         THROW_OR_ABORT("Cannot create imposter for aggregate node");
                     }
                     lerr() << "Adding aggregate " << p.name;
-                    options.scene_node->add_aggregate_child(child_name, std::move(node));
+                    options.scene.auto_add_root_node(
+                        node_name,
+                        std::move(node),
+                        RenderingDynamics::STATIC);
                 }
             }
         }
     }
-    for (const auto& [name, ps] : resource_instance_positions_) {
-        auto node = make_dunique<SceneNode>(
-            fixed_zeros<ScenePos, 3>(),
-            rotation_,
+    if (!resource_instance_positions_.empty()) {
+        auto local_rotation = tait_bryan_angles_2_matrix(rotation_);
+        auto cm = pm * TransformationMatrix<float, ScenePos, 3>{local_rotation, fixed_zeros<ScenePos, 3>()};
+
+        auto world_node = make_dunique<SceneNode>(
+            pm.t(),
+            matrix_2_tait_bryan_angles(pm.R()),
             1.f);
-        scene_node_resources.instantiate_renderable(
-            name,
-            InstantiationOptions{
-                .rendering_resources = options.rendering_resources,
-                .supply_depots = options.supply_depots,
-                .instance_name = name,
-                .scene_node = node.ref(DP_LOC),
-                .renderable_resource_filter = options.renderable_resource_filter});
-        if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-            THROW_OR_ABORT("Object " + name + " requires render pass");
+
+        for (const auto& [name, ps] : resource_instance_positions_) {
+            auto node = make_dunique<SceneNode>();
+            scene_node_resources.instantiate_child_renderable(
+                name,
+                ChildInstantiationOptions{
+                    .rendering_resources = options.rendering_resources,
+                    .instance_name = name,
+                    .scene_node = node.ref(DP_LOC),
+                    .renderable_resource_filter = options.renderable_resource_filter});
+            if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
+                THROW_OR_ABORT("Object " + name + " requires render pass");
+            }
+            world_node->add_instances_child(name, std::move(node));
+            for (const auto& r : ps) {
+                world_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
+            }
         }
-        options.scene_node->add_instances_child(name, std::move(node));
-        for (const auto& r : ps) {
-            options.scene_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
-        }
+        options.scene.auto_add_root_node(
+            options.instance_name + "_inst_world",
+            std::move(world_node),
+            RenderingDynamics::STATIC);
     }
     // if (!resource_instance_positions_.empty()) {
     //     options.scene_node.optimize_instances_search_time(lraw());

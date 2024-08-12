@@ -32,7 +32,7 @@ public:
 
     // Misc
     virtual void preload(const RenderableResourceFilter& filter) const override;
-    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
+    virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual std::list<SpawnPoint> spawn_points() const override;
     virtual std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points() const override;
 

@@ -16,7 +16,7 @@ public:
         const FixedArray<Morphology, 2>& morphology);
     ~BlendingXResource();
     virtual void preload(const RenderableResourceFilter& filter) const override;
-    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
+    virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
 private:
     FixedArray<std::shared_ptr<ColoredVertexArrayResource>, 2> rva_;
     // Square is stored to facilitate creating depth-sorted nodes during instantiation.

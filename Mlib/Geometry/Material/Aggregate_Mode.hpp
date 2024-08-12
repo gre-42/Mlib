@@ -21,6 +21,10 @@ inline AggregateMode operator & (AggregateMode a, AggregateMode b) {
     return (AggregateMode)((unsigned int)a & (unsigned int)b);
 }
 
+inline AggregateMode operator ~ (AggregateMode a) {
+    return (AggregateMode)(~(int)a);
+}
+
 inline bool any(AggregateMode a) {
     return a != AggregateMode::NONE;
 }

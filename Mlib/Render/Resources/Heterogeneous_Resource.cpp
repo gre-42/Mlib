@@ -2,10 +2,16 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
+#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
+#include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Batch_Resource_Instantiator.hpp>
 #include <Mlib/Scene_Graph/Resources/Parsed_Resource_Name.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -50,10 +56,25 @@ void HeterogeneousResource::preload(const RenderableResourceFilter& filter) cons
     preload_textures(acvas->dcvas);
 }
 
-void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& options) const
+void HeterogeneousResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
-    bri->instantiate_renderables(scene_node_resources_, options);
+    bri->instantiate_root_renderables(scene_node_resources_, options);
 
+    if (!acvas->scvas.empty() || !acvas->dcvas.empty()) {
+        auto node = make_dunique<SceneNode>(
+            options.absolute_model_matrix.t(),
+            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+            options.absolute_model_matrix.get_scale());
+        instantiate_child_renderable(ChildInstantiationOptions{
+            .rendering_resources = options.rendering_resources,
+            .instance_name = options.instance_name + "_hri_arrays",
+            .scene_node = node.ref(DP_LOC),
+            .renderable_resource_filter = options.renderable_resource_filter});
+        options.scene.auto_add_root_node(options.instance_name + "_hri_world", std::move(node), RenderingDynamics::STATIC);
+    }
+}
+
+void HeterogeneousResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const {
     do {
         {
             std::shared_lock lock{ rcva_mutex_ };
@@ -66,7 +87,7 @@ void HeterogeneousResource::instantiate_renderable(const InstantiationOptions& o
             rcva_ = std::make_shared<ColoredVertexArrayResource>(acvas);
         }
     } while (false);
-    rcva_->instantiate_renderable(options);
+    rcva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeterogeneousResource::get_physics_arrays() const {

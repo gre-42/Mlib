@@ -71,9 +71,9 @@ void SquareResource::preload(const RenderableResourceFilter& filter) const {
     rva_->preload(filter);
 }
 
-void SquareResource::instantiate_renderable(const InstantiationOptions& options) const
+void SquareResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(options);
+    rva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> SquareResource::get_physics_arrays() const

@@ -5,7 +5,7 @@
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -41,9 +41,9 @@ void SmokeParticleGenerator::generate_root(
                     .end = animation_duration,
                     .time = 0.f}},
             .delete_node_when_aperiodic_animation_finished = true}));
-        scene_node_resources_.instantiate_renderable(
+        scene_node_resources_.instantiate_child_renderable(
             resource_name,
-            InstantiationOptions{
+            ChildInstantiationOptions{
                 .rendering_resources = rendering_resources_,
                 .instance_name = resource_name,
                 .scene_node = node.ref(DP_LOC),
@@ -77,9 +77,9 @@ void SmokeParticleGenerator::generate_child(
                 .end = animation_duration,
                 .time = 0.f}},
         .delete_node_when_aperiodic_animation_finished = true}));
-    scene_node_resources_.instantiate_renderable(
+    scene_node_resources_.instantiate_child_renderable(
         resource_name,
-        InstantiationOptions{
+        ChildInstantiationOptions{
             .rendering_resources = rendering_resources_,
             .instance_name = resource_name,
             .scene_node = child_node.ref(DP_LOC),

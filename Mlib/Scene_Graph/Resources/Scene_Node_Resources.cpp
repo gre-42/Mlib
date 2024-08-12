@@ -8,7 +8,8 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -101,29 +102,28 @@ void SceneNodeResources::add_resource_loader(
     }
 }
 
-void SceneNodeResources::instantiate_renderable(
+void SceneNodeResources::instantiate_child_renderable(
     const std::string& resource_name,
-    const InstantiationOptions& options,
+    const ChildInstantiationOptions& options,
     PreloadBehavior preload_behavior,
     unsigned int recursion_depth) const
 {
     if (recursion_depth > 10) {
-        THROW_OR_ABORT("instantiate_renderable exceeded its recursion depth");
+        THROW_OR_ABORT("instantiate_child_renderable exceeded its recursion depth");
     }
     auto resource = get_resource(resource_name);
     try {
         if (preload_behavior == PreloadBehavior::PRELOAD) {
             resource->preload(options.renderable_resource_filter);
         }
-        resource->instantiate_renderable(options);
+        resource->instantiate_child_renderable(options);
         auto cit = companions_.find(resource_name);
         if (cit != companions_.end()) {
             for (const auto& [resource_name, filter] : cit->second) {
-                instantiate_renderable(
+                instantiate_child_renderable(
                     resource_name,
-                    InstantiationOptions{
+                    ChildInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
-                        .supply_depots = options.supply_depots,
                         .instance_name = options.instance_name + "/" + resource_name,
                         .scene_node = options.scene_node,
                         .renderable_resource_filter = filter},
@@ -132,7 +132,44 @@ void SceneNodeResources::instantiate_renderable(
             }
         }
     } catch (const std::runtime_error& e) {
-        throw std::runtime_error("instantiate_renderable for resource \"" + resource_name + "\" failed: " + e.what());
+        throw std::runtime_error("instantiate_child_renderable for resource \"" + resource_name + "\" failed: " + e.what());
+    }
+}
+
+
+void SceneNodeResources::instantiate_root_renderables(
+    const std::string& resource_name,
+    const RootInstantiationOptions& options,
+    PreloadBehavior preload_behavior,
+    unsigned int recursion_depth) const
+{
+    if (recursion_depth > 10) {
+        THROW_OR_ABORT("instantiate_child_renderable exceeded its recursion depth");
+    }
+    auto resource = get_resource(resource_name);
+    try {
+        if (preload_behavior == PreloadBehavior::PRELOAD) {
+            resource->preload(options.renderable_resource_filter);
+        }
+        resource->instantiate_root_renderables(options);
+        auto cit = companions_.find(resource_name);
+        if (cit != companions_.end()) {
+            for (const auto& [resource_name, filter] : cit->second) {
+                instantiate_root_renderables(
+                    resource_name,
+                    RootInstantiationOptions{
+                        .rendering_resources = options.rendering_resources,
+                        .supply_depots = options.supply_depots,
+                        .instance_name = options.instance_name + "/" + resource_name,
+                        .absolute_model_matrix = options.absolute_model_matrix,
+                        .scene = options.scene,
+                        .renderable_resource_filter = filter},
+                        preload_behavior,
+                        recursion_depth + 1);
+            }
+        }
+    } catch (const std::runtime_error& e) {
+        throw std::runtime_error("instantiate_child_renderable for resource \"" + resource_name + "\" failed: " + e.what());
     }
 }
 

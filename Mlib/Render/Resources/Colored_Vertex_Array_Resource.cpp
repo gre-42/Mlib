@@ -34,7 +34,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/IInstantiation_Reference.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Stats/Mean.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -1462,13 +1463,13 @@ void ColoredVertexArrayResource::preload(const RenderableResourceFilter& filter)
     }
 }
 
-void ColoredVertexArrayResource::instantiate_renderable(const InstantiationOptions& options) const
+void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
 #ifdef DEBUG
     triangles_res_->check_consistency();
 #endif
     if (options.rendering_resources == nullptr) {
-        THROW_OR_ABORT("ColoredVertexArrayResource::instantiate_renderable: rendering-resources is null");
+        THROW_OR_ABORT("ColoredVertexArrayResource::instantiate_child_renderable: rendering-resources is null");
     }
     options.scene_node->add_renderable(options.instance_name, std::make_shared<RenderableColoredVertexArray>(
         *options.rendering_resources,

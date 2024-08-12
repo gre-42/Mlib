@@ -31,7 +31,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -147,7 +147,7 @@ void ImposterLogic::add_imposter(
         FixedArray<ScenePos, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
-    res.instantiate_renderable(InstantiationOptions{
+    res.instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = &rendering_resources_,
         .instance_name = "imposter",
         .scene_node = new_imposter_node.ref(DP_LOC),

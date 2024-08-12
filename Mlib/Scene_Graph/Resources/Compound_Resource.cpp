@@ -5,7 +5,8 @@
 #include <Mlib/Geometry/Mesh/Points_And_Adjacency_Impl.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Animated_Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -34,18 +35,34 @@ void CompoundResource::preload(const RenderableResourceFilter& filter) const {
     }
 }
 
-void CompoundResource::instantiate_renderable(const InstantiationOptions& options) const
+void CompoundResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     for (auto&& [i, resource_name] : enumerate(resource_names_)) {
         RecursionGuard rg{recursion_counter};
-        scene_node_resources_.instantiate_renderable(
+        scene_node_resources_.instantiate_child_renderable(
             resource_name,
-            InstantiationOptions{
+            ChildInstantiationOptions{
+                .rendering_resources = options.rendering_resources,
+                .instance_name = options.instance_name + "_compound_" + std::to_string(i),
+                .scene_node = options.scene_node,
+                .renderable_resource_filter = options.renderable_resource_filter});
+    }
+}
+
+void CompoundResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
+{
+    static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
+    for (auto&& [i, resource_name] : enumerate(resource_names_)) {
+        RecursionGuard rg{recursion_counter};
+        scene_node_resources_.instantiate_root_renderables(
+            resource_name,
+            RootInstantiationOptions{
                 .rendering_resources = options.rendering_resources,
                 .supply_depots = options.supply_depots,
                 .instance_name = options.instance_name + "_compound_" + std::to_string(i),
-                .scene_node = options.scene_node,
+                .absolute_model_matrix = options.absolute_model_matrix,
+                .scene = options.scene,
                 .renderable_resource_filter = options.renderable_resource_filter});
     }
 }

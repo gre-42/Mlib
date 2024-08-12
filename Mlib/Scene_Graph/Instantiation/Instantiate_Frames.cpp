@@ -3,8 +3,8 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Instance_Information.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 
@@ -40,15 +40,10 @@ void Mlib::instantiate(
 			matrix_2_tait_bryan_angles(trafo.R()),
 			info.scale);
 		auto resource_name = info.resource_name + ".dff";
-		if (instantiated != nullptr) {
-			instantiated->insert(resource_name);
-		}
-		scene_node_resources.instantiate_renderable(
+		scene_node_resources.instantiate_child_renderable(
 			resource_name,
-			InstantiationOptions{
+			ChildInstantiationOptions{
 				.rendering_resources = &rendering_resources,
-				.imposters = nullptr,
-				.supply_depots = nullptr,
 				.instance_name = name,
 				.scene_node = node.ref(DP_LOC),
 				.renderable_resource_filter = RenderableResourceFilter{}},
@@ -57,6 +52,9 @@ void Mlib::instantiate(
 			lwarn() << "Skipping invisible instance \"" << name << '"';
 		} else {
 			scene.auto_add_root_node(name, std::move(node), info.rendering_dynamics);
+			if (instantiated != nullptr) {
+				instantiated->insert(resource_name);
+			}
 		}
 	}
 }

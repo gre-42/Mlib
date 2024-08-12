@@ -27,7 +27,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Stats/Linspace.hpp>
@@ -145,9 +145,9 @@ int main(int argc, char** argv) {
                 FixedArray<float, 2>{0.f, 1.f} * safe_stof(args.named_value("--uv_scale", "1")));
             auto cva = std::make_shared<ColoredVertexArrayResource>(tl.triangle_array());
             scene_node_resources.add_resource("tl", cva);
-            scene_node_resources.instantiate_renderable(
+            scene_node_resources.instantiate_child_renderable(
                 "tl",
-                InstantiationOptions{
+                ChildInstantiationOptions{
                     .instance_name = "tl",
                     .scene_node = scene_node.ref(DP_LOC),
                     .renderable_resource_filter = RenderableResourceFilter{}});

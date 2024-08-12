@@ -134,9 +134,9 @@ void HeightMapResource::preload(const RenderableResourceFilter& filter) const {
     rva_->preload(filter);
 }
 
-void HeightMapResource::instantiate_renderable(const InstantiationOptions& options) const
+void HeightMapResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(options);
+    rva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> HeightMapResource::get_physics_arrays() const

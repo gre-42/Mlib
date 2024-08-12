@@ -8,7 +8,7 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -45,7 +45,7 @@ FoliageResource::~FoliageResource() = default;
 void FoliageResource::preload(const RenderableResourceFilter& filter) const
 {}
 
-void FoliageResource::instantiate_renderable(const InstantiationOptions& options) const
+void FoliageResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
     std::list<const UUList<FixedArray<ColoredVertex<ScenePos>, 3>>*> no_grass;
     auto res = std::make_shared<RenderableTriangleSampler>(

@@ -23,7 +23,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -141,22 +141,22 @@ void Mlib::create_scene_flat(
     auto scene_nodeR = make_dunique<SceneNode>();
     auto scene_nodeL = make_dunique<SceneNode>();
 
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj0", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj0", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj0",
         .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj1", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_0",
         .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj1", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_1",
         .scene_node = scene_node1_1.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj1", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_2",
         .scene_node = scene_node1_2.ref(DP_LOC),

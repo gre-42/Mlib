@@ -33,7 +33,8 @@ struct ColoredVertexArrayFilter;
 struct AnimatedColoredVertexArrays;
 struct SpawnPoint;
 struct RenderableResourceFilter;
-struct InstantiationOptions;
+struct ChildInstantiationOptions;
+struct RootInstantiationOptions;
 
 enum class AggregateMode;
 enum class WayPointLocation;
@@ -64,9 +65,14 @@ public:
     void add_resource_loader(
         const std::string& name,
         const std::function<std::shared_ptr<ISceneNodeResource>()>& resource);
-    void instantiate_renderable(
+    void instantiate_child_renderable(
         const std::string& resource_name,
-        const InstantiationOptions& options,
+        const ChildInstantiationOptions& options,
+        PreloadBehavior preload_behavior = PreloadBehavior::PRELOAD,
+        unsigned int recursion_depth = 0) const;
+    void instantiate_root_renderables(
+        const std::string& resource_name,
+        const RootInstantiationOptions& options,
         PreloadBehavior preload_behavior = PreloadBehavior::PRELOAD,
         unsigned int recursion_depth = 0) const;
     void register_geographic_mapping(

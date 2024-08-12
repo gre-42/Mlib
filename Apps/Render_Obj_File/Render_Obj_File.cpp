@@ -69,7 +69,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Modifiers/Add_Cleanup_Mesh_Modifier.hpp>
 #include <Mlib/Scene_Graph/Resources/Compound_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -101,9 +101,9 @@ static void add_reference_bone(
         b.initial_absolute_transformation.offset().casted<ScenePos>(),
         b.initial_absolute_transformation.quaternion().to_tait_bryan_angles(),
         1.f);
-    scene_node_resources.instantiate_renderable(
+    scene_node_resources.instantiate_child_renderable(
         "reference_bone",
-        InstantiationOptions{
+        ChildInstantiationOptions{
             .instance_name = "reference_bone",
             .scene_node = bone_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -130,9 +130,9 @@ static void add_bone_frame(
         frame.at(b.index).offset().casted<ScenePos>(),
         frame.at(b.index).quaternion().to_tait_bryan_angles(),
         1.f);
-    scene_node_resources.instantiate_renderable(
+    scene_node_resources.instantiate_child_renderable(
         "frame_bone",
-        InstantiationOptions{
+        ChildInstantiationOptions{
             .instance_name = "frame_bone",
             .scene_node = bone_node.ref(DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -721,9 +721,9 @@ int main(int argc, char** argv) {
                 RenderingContextStack::primary_rendering_resources());
             {
                 if (!args.has_named("--hide_object")) {
-                    scene_node_resources.instantiate_renderable(
+                    scene_node_resources.instantiate_child_renderable(
                         "objs",
-                        InstantiationOptions{
+                        ChildInstantiationOptions{
                             .rendering_resources = &rendering_resources,
                             .instance_name = "objs",
                             .scene_node = scene_node.ref(DP_LOC),
@@ -864,9 +864,9 @@ int main(int argc, char** argv) {
                 args.named_value("--light_beacon"),
                 cfg,
                 scene_node_resources));
-            scene_node_resources.instantiate_renderable(
+            scene_node_resources.instantiate_child_renderable(
                 name,
-                InstantiationOptions{
+                ChildInstantiationOptions{
                     .instance_name = name,
                     .scene_node = scene_node,
                     .renderable_resource_filter = RenderableResourceFilter{}});

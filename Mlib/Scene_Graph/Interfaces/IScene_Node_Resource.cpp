@@ -15,8 +15,12 @@ void ISceneNodeResource::preload(const RenderableResourceFilter& filter) const {
     THROW_OR_ABORT("preload not implemented");
 }
 
-void ISceneNodeResource::instantiate_renderable(const InstantiationOptions& options) const {
-    THROW_OR_ABORT("instantiate_renderable not implemented");
+void ISceneNodeResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const {
+    THROW_OR_ABORT("instantiate_child_renderable not implemented");
+}
+
+void ISceneNodeResource::instantiate_root_renderables(const RootInstantiationOptions& options) const {
+    THROW_OR_ABORT("instantiate_root_renderables not implemented");
 }
 
 TransformationMatrix<double, double, 3> ISceneNodeResource::get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const {

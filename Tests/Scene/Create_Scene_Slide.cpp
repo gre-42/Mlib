@@ -21,7 +21,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -110,12 +110,12 @@ void Mlib::create_scene_slide(
     auto scene_node_box = make_dunique<SceneNode>();
     auto scene_node_light = make_dunique<SceneNode>();
 
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj_slide", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_slide", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj0",
         .scene_node = scene_node_slide.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
-    RenderingContextStack::primary_scene_node_resources().instantiate_renderable("obj_box", InstantiationOptions{
+    RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_box", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
         .instance_name = "obj1_0",
         .scene_node = scene_node_box.ref(DP_LOC),

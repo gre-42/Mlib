@@ -10,7 +10,7 @@
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -88,16 +88,16 @@ void BinaryXResource::preload(const RenderableResourceFilter& filter) const {
     rva_90_->preload(filter);
 }
 
-void BinaryXResource::instantiate_renderable(const InstantiationOptions& options) const
+void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_0_->instantiate_renderable(options);
+    rva_0_->instantiate_child_renderable(options);
 
     auto node90 = make_dunique<SceneNode>(
         fixed_zeros<ScenePos, 3>(),
         FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
         1.f);
-    rva_90_->instantiate_renderable(
-        InstantiationOptions{
+    rva_90_->instantiate_child_renderable(
+        ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = options.instance_name,
             .scene_node = node90.ref(DP_LOC),

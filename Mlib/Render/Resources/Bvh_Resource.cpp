@@ -6,7 +6,7 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Pos.hpp>
 
 using namespace Mlib;
@@ -73,7 +73,7 @@ static void instantiate_bvh(
         std::make_shared<ColoredVertexArrayResource>(
                 lcvas,
                 std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
-            instantiate_renderable(InstantiationOptions{
+            instantiate_child_renderable(ChildInstantiationOptions{
                 .instance_name = "renderable_bvh",
                 .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = renderable_resource_filter});
@@ -96,7 +96,7 @@ static void instantiate_bvh(
     }
 }
 
-void BvhResource::instantiate_renderable(const InstantiationOptions& options) const
+void BvhResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
     instantiate_bvh(options.instance_name, options.scene_node, fixed_zeros<float, 3>(), options.renderable_resource_filter, bvh_);
 }

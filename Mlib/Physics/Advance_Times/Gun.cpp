@@ -21,7 +21,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
@@ -205,9 +205,9 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
         {
             AbsoluteMovableSetter ams{ node.ref(DP_LOC), std::move(rcu) };
             if (!bullet_properties_.renderable_resource_name.empty()) {
-                scene_node_resources_.instantiate_renderable(
+                scene_node_resources_.instantiate_child_renderable(
                     bullet_properties_.renderable_resource_name,
-                    InstantiationOptions{
+                    ChildInstantiationOptions{
                         .rendering_resources = rendering_resources_,
                         .instance_name = "bullet",
                         .scene_node = node.ref(DP_LOC),

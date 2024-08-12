@@ -19,7 +19,7 @@ public:
         const Material& material,
         const Morphology& morphology);
     virtual void preload(const RenderableResourceFilter& filter) const override;
-    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
+    virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;
     virtual void generate_triangle_rays(size_t npoints, const FixedArray<float, 3>& lengths, bool delete_triangles = false) override;
     virtual AggregateMode aggregate_mode() const override;

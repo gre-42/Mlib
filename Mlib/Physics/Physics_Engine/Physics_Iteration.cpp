@@ -8,7 +8,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -73,9 +73,9 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),
                     beacon.location.get_scale());
-                scene_node_resources_.instantiate_renderable(
+                scene_node_resources_.instantiate_child_renderable(
                     beacon.resource_name,
-                    InstantiationOptions{
+                    ChildInstantiationOptions{
                         .rendering_resources = &rendering_resources_,
                         .instance_name = "beacon",
                         .scene_node = node.ref(DP_LOC),

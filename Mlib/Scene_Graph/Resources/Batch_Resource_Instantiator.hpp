@@ -18,7 +18,7 @@ class SceneNodeResources;
 class ISupplyDepots;
 template <class TPos>
 class ColoredVertexArray;
-struct InstantiationOptions;
+struct RootInstantiationOptions;
 
 class BatchResourceInstantiator {
 public:
@@ -48,9 +48,9 @@ public:
         const SceneNodeResources& scene_node_resources,
         const RenderableResourceFilter& filter) const;
     
-    void instantiate_renderables(
+    void instantiate_root_renderables(
         const SceneNodeResources& scene_node_resources,
-        const InstantiationOptions& options) const;
+        const RootInstantiationOptions& options) const;
     
     void instantiate_hitboxes(
         std::list<std::shared_ptr<ColoredVertexArray<ScenePos>>>& cvas,

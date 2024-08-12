@@ -32,7 +32,8 @@ struct ColoredVertexArrayFilter;
 struct RenderableResourceFilter;
 enum class PhysicsMaterial: uint32_t;
 class ISupplyDepots;
-struct InstantiationOptions;
+struct ChildInstantiationOptions;
+struct RootInstantiationOptions;
 enum class SmoothnessTarget;
 
 class ISceneNodeResource {
@@ -43,7 +44,8 @@ public:
     virtual ~ISceneNodeResource();
     // Misc
     virtual void preload(const RenderableResourceFilter& filter) const;
-    virtual void instantiate_renderable(const InstantiationOptions& options) const;
+    virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const;
+    virtual void instantiate_root_renderables(const RootInstantiationOptions& options) const;
     virtual TransformationMatrix<double, double, 3> get_geographic_mapping(const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     virtual AggregateMode aggregate_mode() const;
     virtual std::list<SpawnPoint> spawn_points() const;

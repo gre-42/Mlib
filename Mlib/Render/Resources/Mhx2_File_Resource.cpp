@@ -25,9 +25,9 @@ void Mhx2FileResource::preload(const RenderableResourceFilter& filter) const {
     rva_->preload(filter);
 }
 
-void Mhx2FileResource::instantiate_renderable(const InstantiationOptions& options) const
+void Mhx2FileResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    rva_->instantiate_renderable(options);
+    rva_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> Mhx2FileResource::get_physics_arrays() const {

@@ -4,12 +4,12 @@
 
 namespace Mlib {
 
-class RenderableInstance: public LoadSceneInstanceFunction {
+class RootRenderableInstances: public LoadSceneInstanceFunction {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;
 private:
-    explicit RenderableInstance(RenderableScene& renderable_scene);
+    explicit RootRenderableInstances(RenderableScene& renderable_scene);
     void execute(const LoadSceneJsonUserFunctionArgs& args);
 };
 

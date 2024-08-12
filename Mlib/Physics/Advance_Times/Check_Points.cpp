@@ -13,7 +13,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -155,9 +155,9 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),
                 .beacon_node = node.get(DP_LOC)});
-            scene_node_resources_.instantiate_renderable(
+            scene_node_resources_.instantiate_child_renderable(
                 resource_name_,
-                InstantiationOptions{
+                ChildInstantiationOptions{
                     .rendering_resources = rendering_resources_,
                     .instance_name = "beacon",
                     .scene_node = node.ref(DP_LOC),

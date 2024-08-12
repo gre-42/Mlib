@@ -18,7 +18,7 @@ public:
         const Morphology& morphology_90);
     ~BinaryXResource();
     virtual void preload(const RenderableResourceFilter& filter) const override;
-    virtual void instantiate_renderable(const InstantiationOptions& options) const override;
+    virtual void instantiate_child_renderable(const ChildInstantiationOptions& options) const override;
     virtual AggregateMode aggregate_mode() const override;
 private:
     std::shared_ptr<ColoredVertexArrayResource> rva_0_;

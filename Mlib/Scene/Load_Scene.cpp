@@ -124,8 +124,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Start_Race.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Team_Set_Waypoint.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Preload.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Child_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Clear_Skybox.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Renderable_Instance.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Root_Renderable_Instances.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Background_Color.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Dirtmap.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Render/Set_Skybox.hpp>
@@ -162,6 +163,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Gun.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Cuboid.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Disk.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rigid_Statics.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Rotor.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Trailer_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Vehicles/Create_Weapon_Cycle.hpp>
@@ -325,6 +327,7 @@ LoadScene::LoadScene() {
     register_json_user_function(CreateRelKeyBindingTripod::key, CreateRelKeyBindingTripod::json_user_function);
     register_json_user_function(CreateRigidCuboid::key, CreateRigidCuboid::json_user_function);
     register_json_user_function(CreateRigidDisk::key, CreateRigidDisk::json_user_function);
+    register_json_user_function(CreateRigidStatics::key, CreateRigidStatics::json_user_function);
     register_json_user_function(CreateRotor::key, CreateRotor::json_user_function);
     register_json_user_function(CreateSceneSelectorLogic::key, CreateSceneSelectorLogic::json_user_function);
     register_json_user_function(CreateSpawner::key, CreateSpawner::json_user_function);
@@ -380,7 +383,8 @@ LoadScene::LoadScene() {
     register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
     register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
     register_json_user_function(RemoveNodeNotAllowedToBeUnregistered::key, RemoveNodeNotAllowedToBeUnregistered::json_user_function);
-    register_json_user_function(RenderableInstance::key, RenderableInstance::json_user_function);
+    register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
+    register_json_user_function(ChildRenderableInstance::key, ChildRenderableInstance::json_user_function);
     register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);
     register_json_user_function(RootNodeInstance::key, RootNodeInstance::json_user_function);
     register_json_user_function(SaveToObjFile::key, SaveToObjFile::json_user_function);

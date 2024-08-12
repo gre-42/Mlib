@@ -106,8 +106,8 @@ public:
                 std::this_thread::yield();
             }
             const auto& c = a.triangles[i];
-            auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
-            // auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
+            // auto triangle_sphere = welzl_from_fixed(FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position }, rng);
+            auto triangle_sphere = BoundingSphere<float, 3>{ FixedArray<FixedArray<float, 3>, 3>{ c(0).position, c(1).position, c(2).position } };
             if (!any(external_render_pass.pass & ExternalRenderPassType::IS_GLOBAL_MASK) &&
                 (a.morphology.max_triangle_distance != INFINITY) &&
                 !camera_sphere.intersects(triangle_sphere))

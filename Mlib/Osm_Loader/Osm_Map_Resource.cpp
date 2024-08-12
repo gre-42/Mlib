@@ -91,10 +91,13 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Joined_Way_Point_Sandbox.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
@@ -1662,11 +1665,15 @@ std::list<const UUList<FixedArray<ColoredVertex<double>, 3>>*> OsmMapResource::n
     return result;
 }
 
-void OsmMapResource::instantiate_renderable(const InstantiationOptions& options) const
+void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
 {
-    hri_.instantiate_renderable(options);
+    hri_.instantiate_root_renderables(options);
     if (terrain_styles_.requires_renderer()) {
-        options.scene_node->add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
+        auto node = make_dunique<SceneNode>(
+            options.absolute_model_matrix.t(),
+            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+            options.absolute_model_matrix.get_scale());
+        node->add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
             scene_node_resources_,
             terrain_styles_,
             terrain_triangles(),
@@ -1674,11 +1681,15 @@ void OsmMapResource::instantiate_renderable(const InstantiationOptions& options)
             &street_bvh(),
             scale_,
             UpAxis::Z));
+        options.scene.auto_add_root_node(
+            options.instance_name + "_osm_near_world",
+            std::move(node),
+            RenderingDynamics::STATIC);
     }
     // if (rbvh_ == nullptr) {
     //     rbvh_ = std::make_shared<BvhResource>(cvas_);
     // }
-    // rbvh_->instantiate_renderable(options);
+    // rbvh_->instantiate_child_renderable(options);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> OsmMapResource::get_physics_arrays() const {

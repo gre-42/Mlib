@@ -12,6 +12,7 @@ struct Morphology {
 	float max_triangle_distance = INFINITY;
 	template <class Archive>
 	void serialize(Archive& archive) {
+		archive(physics_material);
 		archive(center_distances);
 		archive(max_triangle_distance);
 	}
