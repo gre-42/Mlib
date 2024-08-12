@@ -1324,6 +1324,9 @@ BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
 
 ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
     std::shared_lock lock{ mutex_ };
+    if (!instances_children_.empty()) {
+        return INFINITY;
+    }
     ScenePos result = 0.;
     for (const auto& [_, r] : renderables_) {
         result = std::max(result, r->max_center_distance(billboard_id));

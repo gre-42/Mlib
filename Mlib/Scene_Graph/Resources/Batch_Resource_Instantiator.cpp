@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Aggregate_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -96,24 +97,19 @@ void BatchResourceInstantiator::instantiate_root_renderables(
     const SceneNodeResources& scene_node_resources,
     const RootInstantiationOptions& options) const
 {
-    auto pm = options.absolute_model_matrix;
-    auto lr = tait_bryan_angles_2_matrix(rotation_);
-    auto cm = pm * TransformationMatrix<float, ScenePos, 3>{lr, fixed_zeros<ScenePos, 3>()};
     {
-        size_t i = 0;
-        for (const auto& p : object_resource_descriptors_) {
+        auto lr = tait_bryan_angles_2_matrix(rotation_);
+        for (const auto&& [i, p] : enumerate(object_resource_descriptors_)) {
             if (!p.supplies.empty() && (options.supply_depots == nullptr)) {
                 THROW_OR_ABORT("Supplies requested, but no supply depots available");
             }
 
-            auto cm = pm * TransformationMatrix<float, ScenePos, 3>{
-                rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle),
-                p.position};
-
+            auto cm = options.absolute_model_matrix * TransformationMatrix<float, ScenePos, 3>{lr, p.position};
             auto node = make_dunique<SceneNode>(
                 cm.t(),
                 matrix_2_tait_bryan_angles(cm.R()),
                 p.scale);
+
             scene_node_resources.instantiate_child_renderable(
                 p.name,
                 ChildInstantiationOptions{
@@ -121,7 +117,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = options.renderable_resource_filter });
-            std::string node_name = p.name + "-" + std::to_string(i++);
+            std::string node_name = p.name + "-" + std::to_string(i);
             if (!p.supplies.empty()) {
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
                 options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
@@ -154,16 +150,16 @@ void BatchResourceInstantiator::instantiate_root_renderables(
         }
     }
     if (!resource_instance_positions_.empty()) {
-        auto local_rotation = tait_bryan_angles_2_matrix(rotation_);
-        auto cm = pm * TransformationMatrix<float, ScenePos, 3>{local_rotation, fixed_zeros<ScenePos, 3>()};
-
         auto world_node = make_dunique<SceneNode>(
-            pm.t(),
-            matrix_2_tait_bryan_angles(pm.R()),
-            1.f);
+            options.absolute_model_matrix.t(),
+            matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+            options.absolute_model_matrix.get_scale());
 
         for (const auto& [name, ps] : resource_instance_positions_) {
-            auto node = make_dunique<SceneNode>();
+            auto node = make_dunique<SceneNode>(
+                fixed_zeros<ScenePos, 3>(),
+                rotation_,
+                1.f);
             scene_node_resources.instantiate_child_renderable(
                 name,
                 ChildInstantiationOptions{
