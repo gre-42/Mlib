@@ -18,7 +18,7 @@ const ColorStyle* RenderableWithStyle::style(
     Hasher hasher{ SEED };
     for (const auto* style : color_styles) {
         if (style->matches(name)) {
-            hasher.combine(style);
+            hasher.combine(style->hash.get());
         }
     }
     if (hasher == SEED) {

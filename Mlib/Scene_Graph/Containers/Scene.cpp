@@ -858,6 +858,7 @@ void Scene::clear_nodes_not_allowed_to_be_unregistered() {
 
 void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
     std::scoped_lock lock{ mutex_ };
+    color_style->compute_hash();
     color_styles_.push_back(std::move(color_style));
 }
 

@@ -29,3 +29,31 @@ struct FresnelAndAmbient {
 };
 
 }
+
+namespace std {
+
+template <class Key>
+struct hash;
+
+}
+
+template <>
+struct std::hash<Mlib::FresnelReflectance>
+{
+    std::size_t operator() (const Mlib::FresnelReflectance& a) const {
+        return Mlib::hash_combine(
+            a.min,
+            a.max,
+            a.exponent);
+    }
+};
+
+template <>
+struct std::hash<Mlib::FresnelAndAmbient>
+{
+    std::size_t operator() (const Mlib::FresnelAndAmbient& a) const {
+        return Mlib::hash_combine(
+            a.reflectance,
+            a.ambient);
+    }
+};

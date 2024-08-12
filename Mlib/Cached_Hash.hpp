@@ -21,6 +21,9 @@ public:
 		}
 		return *value_;
 	}
+	inline void reset() {
+		value_.reset();
+	}
 	bool operator < (const CachedHash&) const {
 		return false;
 	}

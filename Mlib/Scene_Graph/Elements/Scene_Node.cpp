@@ -595,6 +595,7 @@ void SceneNode::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
             "Color style was set after renderables on a non-detached node. "
             "This leads to a race condition.");
     }
+    color_style->compute_hash();
     color_styles_.push_back(std::move(color_style));
 }
 

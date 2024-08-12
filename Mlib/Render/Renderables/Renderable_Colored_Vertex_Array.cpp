@@ -428,7 +428,9 @@ void RenderableColoredVertexArray::render_cva(
     FresnelReflectance fresnel;
     FixedArray<float, 3> fog_emissive = uninitialized;
     if (!is_lightmap) {
-        emissive = color_style && !all(color_style->emissive == -1.f) ? color_style->emissive : cva->material.shading.emissive;
+        emissive = color_style && !color_style->emissive.all_equal(-1.f)
+            ? color_style->emissive
+            : cva->material.shading.emissive;
     } else {
         emissive = 1.f;
     }
@@ -441,11 +443,11 @@ void RenderableColoredVertexArray::render_cva(
                 sum_light_fog_ambient += light->fog_ambient;
             }
         }
-        ambient = color_style && !all(color_style->ambient == -1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
-        diffuse = color_style && !all(color_style->diffuse == -1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
-        specular = color_style && !all(color_style->specular == -1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
+        ambient = color_style && !color_style->ambient.all_equal(-1.f) ? color_style->ambient * cva->material.shading.ambient : cva->material.shading.ambient;
+        diffuse = color_style && !color_style->diffuse.all_equal(-1.f) ? color_style->diffuse * cva->material.shading.diffuse : cva->material.shading.diffuse;
+        specular = color_style && !color_style->specular.all_equal(-1.f) ? color_style->specular * cva->material.shading.specular : cva->material.shading.specular;
         specular_exponent = color_style && (color_style->specular_exponent != -1.f) ? color_style->specular_exponent : cva->material.shading.specular_exponent;
-        FixedArray<float, 3> fresnel_ambient = color_style && !all(color_style->fresnel_ambient == -1.f)
+        FixedArray<float, 3> fresnel_ambient = color_style && !color_style->fresnel_ambient.all_equal(-1.f)
             ? color_style->fresnel_ambient * cva->material.shading.fresnel.ambient
             : cva->material.shading.fresnel.ambient;
         fresnel_emissive = sum_light_fresnel_ambient * fresnel_ambient;

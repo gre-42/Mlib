@@ -46,14 +46,14 @@ void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
             ? std::optional{ Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::selector)) }
             : std::nullopt,
         .ambient = args.arguments.contains(KnownArgs::ambient)
-            ? args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient)
-            : fixed_full<float, 3>(-1),
+            ? args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient)
+            : OrderableFixedArray{ fixed_full<float, 3>(-1) },
         .diffuse = args.arguments.contains(KnownArgs::diffuse)
-            ? args.arguments.at<UFixedArray<float, 3>>(KnownArgs::diffuse)
-            : fixed_full<float, 3>(-1),
+            ? args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::diffuse)
+            : OrderableFixedArray{ fixed_full<float, 3>(-1) },
         .specular = args.arguments.contains(KnownArgs::specular)
-            ? args.arguments.at<UFixedArray<float, 3>>(KnownArgs::specular)
-            : fixed_full<float, 3>(-1),
+            ? args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::specular)
+            : OrderableFixedArray{ fixed_full<float, 3>(-1) },
         .reflection_maps = std::move(parsed_reflection_maps),
         .reflection_strength = args.arguments.at<float>(KnownArgs::reflection_strength, -1.f)});
     if (auto node = args.arguments.try_at<std::string>(KnownArgs::node); node.has_value()) {

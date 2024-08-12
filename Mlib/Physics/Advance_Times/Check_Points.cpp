@@ -167,7 +167,11 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
         } else if (beacon_nodes_[i01_].check_point_pose != nullptr) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
         }
-        beacon_nodes_[i01_].beacon_node->color_style("").emissive = selection_emissive_;
+        {
+            auto& style = beacon_nodes_[i01_].beacon_node->color_style("");
+            style.emissive = selection_emissive_;
+            style.update_hash();
+        }
         checkpoints_ahead_.back().beacon_node = &beacon_nodes_[i01_];
         beacon_nodes_[i01_].check_point_pose = &checkpoints_ahead_.back();
         const auto& t = track_reader_.track_element().transformation();
@@ -195,7 +199,9 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
         if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
-                checkpoints_ahead_.front().beacon_node->beacon_node->color_style("").emissive = deselection_emissive_;
+                auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style("");
+                style.emissive = deselection_emissive_;
+                style.update_hash();
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
             }
             checkpoints_ahead_.pop_front();
@@ -214,7 +220,7 @@ void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point t
                         continue;
                     }
                     const auto& style = n->color_style(chassis);
-                    if (!all(style.ambient == style.diffuse)) {
+                    if (style.ambient != style.diffuse) {
                         THROW_OR_ABORT("Could not determine unique vehicle color");
                     }
                     vehicle_colors.push_back(style.ambient);

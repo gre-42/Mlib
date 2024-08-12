@@ -1,21 +1,22 @@
 #include "Color_Style.hpp"
+#include <Mlib/Hash.hpp>
 
 using namespace Mlib;
 
 void ColorStyle::insert(const ColorStyle& other) {
-    if (!all(other.emissive == -1.f)) {
+    if (!other.emissive.all_equal(-1.f)) {
         this->emissive = other.emissive;
     }
-    if (!all(other.ambient == -1.f)) {
+    if (!other.ambient.all_equal(-1.f)) {
         this->ambient = other.ambient;
     }
-    if (!all(other.diffuse == -1.f)) {
+    if (!other.diffuse.all_equal(-1.f)) {
         this->diffuse = other.diffuse;
     }
-    if (!all(other.specular == -1.f)) {
+    if (!other.specular.all_equal(-1.f)) {
         this->specular = other.specular;
     }
-    if (!all(other.fresnel_ambient == -1.f)) {
+    if (!other.fresnel_ambient.all_equal(-1.f)) {
         this->fresnel_ambient = other.fresnel_ambient;
     }
     if (other.fresnel.exponent != -1.f) {
@@ -33,4 +34,28 @@ bool ColorStyle::matches(const std::string& name) const {
     return
         !selector.has_value() ||
         Mlib::re::regex_search(name, *selector);
+}
+
+void ColorStyle::update_hash() {
+    hash.reset();
+    compute_hash();
+}
+
+ColorStyle& ColorStyle::compute_hash() {
+    Hasher hasher{ 0xc0febabe };
+    hasher.combine(
+        emissive,
+        ambient,
+        diffuse,
+        specular,
+        specular_exponent,
+        fresnel_ambient,
+        fresnel,
+        reflection_strength);
+    hasher.combine(reflection_maps.size());
+    for (const auto& [k, v] : reflection_maps) {
+        hasher.combine(k, v);
+    }
+    hash = hasher;
+    return *this;
 }
