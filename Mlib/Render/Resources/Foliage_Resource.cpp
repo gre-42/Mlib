@@ -7,8 +7,11 @@
 #include <Mlib/Render/Renderables/Triangle_Sampler/Terrain_Triangles.hpp>
 #include <Mlib/Render/Renderables/Triangle_Sampler/Triangle_Sampler_Resource_Config.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Spawn_Point.hpp>
 
@@ -57,6 +60,22 @@ void FoliageResource::instantiate_child_renderable(const ChildInstantiationOptio
         scale_,                 // scale
         up_axis_);              // up
     options.scene_node->add_renderable(options.instance_name, res);
+}
+
+void FoliageResource::instantiate_root_renderables(const RootInstantiationOptions& options) const {
+    auto node = make_dunique<SceneNode>(
+        options.absolute_model_matrix.t(),
+        matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
+        options.absolute_model_matrix.get_scale());
+    instantiate_child_renderable(ChildInstantiationOptions{
+        .rendering_resources = options.rendering_resources,
+        .instance_name = options.instance_name,
+        .scene_node = node.ref(DP_LOC),
+        .renderable_resource_filter = options.renderable_resource_filter});
+    options.scene.auto_add_root_node(
+        options.instance_name + "_foliage_world",
+        std::move(node),
+        RenderingDynamics::STATIC);
 }
 
 std::list<SpawnPoint> FoliageResource::spawn_points() const {
