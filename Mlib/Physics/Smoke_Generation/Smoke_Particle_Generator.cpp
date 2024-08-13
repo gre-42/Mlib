@@ -48,7 +48,7 @@ void SmokeParticleGenerator::generate_root(
                 .instance_name = resource_name,
                 .scene_node = node.ref(DP_LOC),
                 .renderable_resource_filter = RenderableResourceFilter{}});
-        scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::STATIC);
+        scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
     } else if (particle_type == ParticleType::INSTANCE) {
         scene_.particle_instantiator(resource_name).add_particle(
             TransformationMatrix<float, ScenePos, 3>{
