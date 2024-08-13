@@ -543,25 +543,24 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
-                            .color = {
+                            .color = ColormapWithModifiers{
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
-                            .specular = ColormapWithModifiers{},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash(),
                             .normal = ColormapWithModifiers{
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     tl.material.textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = {
-                            .color = {
+                            .color = ColormapWithModifiers{
                                 .filename = material->txVariation,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                         .scale = 0.5f,
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::HORIZONTAL});
@@ -573,24 +572,24 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
-                            .color = {
+                            .color = ColormapWithModifiers{
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
-                            .normal = {
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash(),
+                            .normal = ColormapWithModifiers{
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     tl.material.textures_color.push_back(BlendMapTexture{
                         .texture_descriptor = {
-                            .color = {
+                            .color = ColormapWithModifiers{
                                 .filename = material->txDetail1,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                         .scale = material->detailUVMultiplier.value_or_default(),
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL});
@@ -605,15 +604,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
-                            .color = {
+                            .color = ColormapWithModifiers{
                                 .filename = material->txDiffuse,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
-                            .normal = {
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash(),
+                            .normal = ColormapWithModifiers{
                                 .filename = material->txNormal,
                                 .color_mode = ColorMode::RGB,
                                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                         .weight = material->magicMult.value_or_default(),
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
@@ -625,21 +624,21 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         }
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
-                                .color = {
+                                .color = ColormapWithModifiers{
                                     .filename = material->txMask,
                                     .color_mode = ColorMode::RGBA,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                             .min_detail_weight = 0.01f,
                             .role = BlendMapRole::DETAIL_MASK_R + i,
                             .reduction = BlendMapReductionOperation::TIMES});
                         tl.material.textures_color.push_back(BlendMapTexture{
                             .texture_descriptor = {
-                                .color = {
+                                .color = ColormapWithModifiers{
                                     .filename = material->txDetail4(i),
                                     .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}},
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()},
                             .scale = material->mult(i).value_or_default(),
                             .weight = 0.f,
                             .role = BlendMapRole::DETAIL_COLOR,
@@ -651,15 +650,15 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     if (!material->txDiffuse.empty()) {
                         tl.material.textures_color = {BlendMapTexture{
                             .texture_descriptor = {
-                                .color = {
+                                .color = ColormapWithModifiers{
                                     .filename = material->txDiffuse,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level},
-                                .normal = {
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash(),
+                                .normal = ColormapWithModifiers{
                                     .filename = material->txNormal,
                                     .color_mode = ColorMode::RGB,
                                     .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}}}};
+                                    .anisotropic_filtering_level = cfg.anisotropic_filtering_level}.compute_hash()}}};
                     }
                 }
             }
@@ -787,9 +786,6 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 };
             for (auto& t : cva->material.textures_color) {
-                t.texture_descriptor.color.compute_hash();
-                t.texture_descriptor.specular.compute_hash();
-                t.texture_descriptor.normal.compute_hash();
                 if (!t.texture_descriptor.color.filename->empty()) {
                     register_colormap(t.texture_descriptor.color);
                 }
