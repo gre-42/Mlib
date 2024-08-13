@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Scene_Pos.hpp>
+#include <cstddef>
 #include <functional>
 #include <list>
 #include <map>
@@ -24,6 +25,8 @@ class TeamDeathmatch;
 class DeleteNodeMutex;
 template <class TData, class TPayload, size_t tndim>
 class Bvh;
+template <class TDir, class TPos, size_t n>
+class TransformationMatrix;
 
 class Spawn {
     friend Bystanders;
@@ -38,7 +41,7 @@ public:
         Scene& scene);
     ~Spawn();
     void set_spawn_points(
-        DanglingRef<const SceneNode> node,
+        const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
         const std::list<SpawnPoint>& spawn_points);
     void respawn_all_players();
     void spawn_player_during_match(VehicleSpawner& spawner);

@@ -1333,6 +1333,9 @@ ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->max_center_distance(UINT32_MAX);
+        if (cb == INFINITY) {
+            return INFINITY;
+        }
         if (cb != 0.f) {
             auto m = c.scene_node->relative_model_matrix();
             if (any(m.t() != ScenePos(0))) {

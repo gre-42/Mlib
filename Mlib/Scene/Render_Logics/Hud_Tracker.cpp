@@ -71,10 +71,10 @@ HudTracker::HudTracker(
     ResourceUpdateCycle update_cycle)
     : FillWithTextureLogic{
         RenderingContextStack::primary_rendering_resources(),
-        {
+        ColormapWithModifiers{
             .filename = image_resource_name,
             .color_mode = ColorMode::RGBA
-        },
+        }.compute_hash(),
         update_cycle,
         CullFaceMode::CULL,
         AlphaChannelRole::BLEND,

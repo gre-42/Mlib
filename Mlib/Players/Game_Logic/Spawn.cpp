@@ -39,11 +39,13 @@ Spawn::Spawn(
 
 Spawn::~Spawn() = default;
 
-void Spawn::set_spawn_points(DanglingRef<const SceneNode> node, const std::list<SpawnPoint>& spawn_points) {
+void Spawn::set_spawn_points(
+    const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix,
+    const std::list<SpawnPoint>& spawn_points)
+{
     spawn_points_.clear();
     spawn_points_.reserve(spawn_points.size());
-    TransformationMatrix tm{node->absolute_model_matrix()};
-    FixedArray<float, 3, 3> R = tm.R() / node->scale();
+    FixedArray<float, 3, 3> R = absolute_model_matrix.R() / absolute_model_matrix.get_scale();
     size_t nsubs = cfg_.spawn_points_nsubdivisions;
     spawn_points_bvh_split_.resize(nsubs);
     for (size_t i = 0; i < nsubs; ++i) {
@@ -54,7 +56,7 @@ void Spawn::set_spawn_points(DanglingRef<const SceneNode> node, const std::list<
         size_t i = 0;
         for (const auto& sp : spawn_points) {
             SpawnPoint sp2 = sp;
-            sp2.position = tm.transform(sp.position);
+            sp2.position = absolute_model_matrix.transform(sp.position);
             sp2.rotation = matrix_2_tait_bryan_angles(dot2d(dot2d(R, tait_bryan_angles_2_matrix(sp.rotation)), R.T()));
             spawn_points_.push_back(sp2);
             spawn_points_bvh_split_[i]->insert(AxisAlignedBoundingBox<ScenePos, 3>::from_point(sp2.position), &spawn_points_.back());
