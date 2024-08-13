@@ -15,6 +15,12 @@ DECLARE_MATCH_COUNTER(asset_id);
 DECLARE_MATCH_COUNTER(value);
 };
 
+namespace DictQueryGroups {
+BEGIN_MATCH_COUNTER;
+DECLARE_MATCH_COUNTER(dict);
+DECLARE_MATCH_COUNTER(key);
+};
+
 using namespace Mlib;
 
 template <class T>
@@ -36,7 +42,7 @@ static T get(
     }
 }
 
-static nlohmann::json at(
+static const nlohmann::json& at(
     const std::string& s,
     const nlohmann::json& globals,
     const nlohmann::json& locals)
@@ -81,7 +87,7 @@ static nlohmann::json eval_recursion(
                 .database
                 .at<std::string>(match[DbQueryGroups::value].str());
         }
-        auto v = at(s, globals.json(), locals.json());
+        const auto& v = at(s, globals.json(), locals.json());
         if (v.type() != nlohmann::detail::value_t::string) {
             std::stringstream sstr;
             sstr << "Variable \"" << s << "\" is not of type string. Value: \"" << v << '"';
@@ -188,6 +194,19 @@ static nlohmann::json eval_recursion(
                 .rp
                 .database
                 .at(match[DbQueryGroups::value].str());
+        } else if ((expression.length() > 1) && (expression[1] == '/')) {
+            static const DECLARE_REGEX(query_re, "^..([^/]+)/([^/]+)$");
+            Mlib::re::smatch match;
+            if (!Mlib::re::regex_match(expression, match, query_re)) {
+                THROW_OR_ABORT("Could not parse asset path: \"" + expression + '"');
+            }
+            auto dict_name = subst(match[DictQueryGroups::dict].str());
+            const auto& dict = at(dict_name, globals.json(), locals.json());
+            if (dict.type() != nlohmann::detail::value_t::object) {
+                THROW_OR_ABORT("Variable \"" + dict_name + "\" is not a dictionary");
+            }
+            auto key_name = subst(match[DictQueryGroups::key].str());
+            var = JsonView{ dict }.at(key_name);
         } else {
             var = at(expression.substr(1), globals.json(), locals.json());
         }

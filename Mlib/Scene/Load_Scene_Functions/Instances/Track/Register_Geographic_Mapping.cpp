@@ -3,6 +3,7 @@
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
@@ -12,9 +13,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
-DECLARE_ARGUMENT(position);
-DECLARE_ARGUMENT(rotation);
-DECLARE_ARGUMENT(scale);
+DECLARE_ARGUMENT(transformation);
 DECLARE_ARGUMENT(resource);
 }
 
@@ -32,10 +31,8 @@ RegisterGeographicMapping::RegisterGeographicMapping(RenderableScene& renderable
 
 void RegisterGeographicMapping::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    TransformationMatrix<float, ScenePos, 3> absolute_model_matrix{
-        tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees) *
-        args.arguments.at<float>(KnownArgs::scale),
-        args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters};
+    auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
+        args.arguments.at(KnownArgs::transformation));
 
     scene_node_resources.register_geographic_mapping(
         args.arguments.at<std::string>(KnownArgs::resource),

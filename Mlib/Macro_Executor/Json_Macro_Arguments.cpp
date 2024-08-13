@@ -50,8 +50,14 @@ void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
 }
 
 void JsonMacroArguments::merge(const JsonMacroArguments& other, const std::string& prefix) {
-    for (const auto& [key, value] : other.j_.items()) {
-        j_[prefix + key] = value;
+    if (prefix.empty()) {
+        for (const auto& [key, value] : other.j_.items()) {
+            j_[key] = value;
+        }
+    } else {
+        for (const auto& [key, value] : other.j_.items()) {
+            j_[prefix + key] = value;
+        }
     }
 }
 
@@ -101,9 +107,6 @@ nlohmann::json JsonMacroArguments::subst_and_replace(
 }
 
 void JsonMacroArguments::insert_json(const nlohmann::json& j) {
-    if (j.type() == nlohmann::detail::value_t::null) {
-        return;
-    }
     if (j.type() != nlohmann::detail::value_t::object) {
         THROW_OR_ABORT("Cannot insert non-object type");
     }

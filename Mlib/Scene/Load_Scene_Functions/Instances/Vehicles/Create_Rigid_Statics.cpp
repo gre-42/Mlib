@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Geometry/Mesh/Save_Polygon_To_Obj.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -24,9 +25,7 @@ using namespace Mlib;
 
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
-DECLARE_ARGUMENT(position);
-DECLARE_ARGUMENT(rotation);
-DECLARE_ARGUMENT(scale);
+DECLARE_ARGUMENT(transformation);
 DECLARE_ARGUMENT(hitboxes);
 DECLARE_ARGUMENT(v);
 DECLARE_ARGUMENT(w);
@@ -51,10 +50,8 @@ CreateRigidStatics::CreateRigidStatics(RenderableScene& renderable_scene)
 
 void CreateRigidStatics::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto absolute_model_matrix = TransformationMatrix<float, ScenePos, 3>{
-        tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees) *
-        args.arguments.at<float>(KnownArgs::scale),
-        args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters};
+    auto absolute_model_matrix = transformation_matrix_from_json<float, ScenePos, 3>(
+        args.arguments.at(KnownArgs::transformation));
 
     auto rb = rigid_cuboid(
         object_pool,

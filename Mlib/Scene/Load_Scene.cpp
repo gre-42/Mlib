@@ -3,7 +3,6 @@
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Constant_Parameter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_Ac_Loader.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Add_To_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Create_Scene.hpp>
@@ -12,6 +11,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Containers/Update_Gallery.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Create_Tap_Button.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Echo.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Globals.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Destination_Reached_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Drive_Or_Walk_Ai.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ai/Create_Missile_Ai.hpp>
@@ -498,7 +498,7 @@ LoadScene::LoadScene() {
 
     // Misc
     register_json_user_function(Sleep::key, Sleep::json_user_function);
-    register_json_user_function(ConstantParameter::key, ConstantParameter::json_user_function);
+    register_json_user_function(Globals::key, Globals::json_user_function);
 }
 
 LoadScene::~LoadScene() = default;

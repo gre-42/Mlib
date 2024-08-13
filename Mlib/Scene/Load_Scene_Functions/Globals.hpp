@@ -4,7 +4,7 @@
 
 namespace Mlib {
 
-class ConstantParameter {
+class Globals {
 public:
     static LoadSceneJsonUserFunction json_user_function;
     static const std::string key;

@@ -92,7 +92,9 @@ void SupplyDepots::handle_supply_depots(float dt) {
                     rb.inventory_.add(item_type, std::min(free, navail));
                 }
                 supply_depot.time_since_last_visit = 0.f;
-                supply_depot.node->color_style("").emissive = 2.f;
+                auto& style = supply_depot.node->color_style("");
+                style.emissive = 2.f;
+                style.update_hash();
                 return true;
             });
     }
@@ -117,7 +119,7 @@ void SupplyDepots::add_supply_depot(
         CURRENT_SOURCE_LOCATION,
         fixed_zeros<float, 3>(),
         FixedArray<float, 3>{0.f, 2.f * rpm, 0.f});
-    scene_node->add_color_style(std::unique_ptr<ColorStyle>());
+    scene_node->add_color_style(std::make_unique<ColorStyle>());
     scene_node->set_relative_movable({ rt, CURRENT_SOURCE_LOCATION });
     payload->node_on_clear->add([this](){ bvh_.clear(); }, CURRENT_SOURCE_LOCATION);
     advance_times_.add_advance_time({ rt, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
