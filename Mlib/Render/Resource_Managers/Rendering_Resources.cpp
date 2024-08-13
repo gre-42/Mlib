@@ -1371,22 +1371,18 @@ BlendMapTexture RenderingResources::get_blend_map_texture(const std::string &nam
         return BlendMapTexture{.texture_descriptor = *tit};
     }
     if (auto mit = manual_atlas_tile_descriptors_.try_get(name); mit != nullptr) {
-        auto res = BlendMapTexture{
-            .texture_descriptor = {.color = {
+        return BlendMapTexture{
+            .texture_descriptor = {.color = ColormapWithModifiers{
                 .filename = name,
                 .color_mode = mit->color_mode,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS,
-                .depth_interpolation = mit->depth_interpolation}}};
-        res.texture_descriptor.color.compute_hash();
-        return res;
+                .depth_interpolation = mit->depth_interpolation}.compute_hash()}};
     }
     {
-        auto res = BlendMapTexture{
-            .texture_descriptor = {.color = {
+        return BlendMapTexture{
+            .texture_descriptor = {.color = ColormapWithModifiers{
                 .filename = name,
-                .mipmap_mode = MipmapMode::WITH_MIPMAPS}} };
-        res.texture_descriptor.color.compute_hash();
-        return res;
+                .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash()} };
     }
 }
 

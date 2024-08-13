@@ -7,9 +7,9 @@
 namespace Mlib {
 
 struct TextureDescriptor {
-    ColormapWithModifiers color;
-    ColormapWithModifiers specular;
-    ColormapWithModifiers normal;
+    ColormapWithModifiers color = ColormapWithModifiers{}.compute_hash();
+    ColormapWithModifiers specular = ColormapWithModifiers{}.compute_hash();
+    ColormapWithModifiers normal = ColormapWithModifiers{}.compute_hash();
     std::partial_ordering operator <=> (const TextureDescriptor&) const = default;
     template <class Archive>
     void serialize(Archive& archive) {

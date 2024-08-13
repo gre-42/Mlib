@@ -4,6 +4,26 @@
 
 using namespace Mlib;
 
+std::partial_ordering ColormapWithModifiers::operator <=> (const ColormapWithModifiers& other) const {
+    if (!hash.has_value()) {
+        THROW_OR_ABORT("Hash not computed for colormap \"" + *filename + '"');
+    }
+    if (!other.hash.has_value()) {
+        THROW_OR_ABORT("Hash not computed for colormap \"" + *other.filename + '"');
+    }
+    return *hash <=> *other.hash;
+}
+
+bool ColormapWithModifiers::operator == (const ColormapWithModifiers& other) const {
+    if (!hash.has_value()) {
+        THROW_OR_ABORT("Hash not computed for colormap \"" + *filename + '"');
+    }
+    if (!other.hash.has_value()) {
+        THROW_OR_ABORT("Hash not computed for colormap \"" + *other.filename + '"');
+    }
+    return *hash == *other.hash;
+}
+
 ColormapWithModifiers& ColormapWithModifiers::compute_hash() {
     hash = Mlib::hash_combine(
         filename,

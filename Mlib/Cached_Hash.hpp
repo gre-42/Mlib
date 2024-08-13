@@ -15,6 +15,9 @@ public:
 		value_ = value;
 		return *this;
 	}
+	inline size_t operator * () const {
+		return *value_;
+	}
 	inline size_t get() const {
 		if (!value_.has_value()) {
 			THROW_OR_ABORT("Hash not computed");
@@ -23,6 +26,9 @@ public:
 	}
 	inline void reset() {
 		value_.reset();
+	}
+	inline bool has_value() const {
+		return value_.has_value();
 	}
 	bool operator < (const CachedHash&) const {
 		return false;
