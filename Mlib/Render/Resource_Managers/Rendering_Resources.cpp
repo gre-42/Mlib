@@ -205,12 +205,12 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + *color.filename + '"');
         }
         si0 = stb_load_texture(
-            color.filename, max(ColorMode::RGB), flip_mode);
+            color.filename, (int)max(ColorMode::RGB), flip_mode);
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("#channels not 3: \"" + *color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
-            color.alpha, max(ColorMode::GRAYSCALE), flip_mode);
+            color.alpha, (int)max(ColorMode::GRAYSCALE), flip_mode);
         if (si_alpha.nrChannels != 1) {
             THROW_OR_ABORT("#channels not 1: \"" + color.alpha + '"');
         }
@@ -226,11 +226,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            color.filename, max(source_color_mode), flip_mode);
+            color.filename, (int)max(source_color_mode), flip_mode);
     }
     if (!color.average.empty()) {
         auto si1 = stb_load_texture(
-            color.average, max(source_color_mode), flip_mode);
+            color.average, (int)max(source_color_mode), flip_mode);
         stb_average(
             si0.data.get(),
             si1.data.get(),
@@ -245,7 +245,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.multiply.empty()) {
         auto si1 = stb_load_texture(
-            color.multiply, max(source_color_mode), flip_mode);
+            color.multiply, (int)max(source_color_mode), flip_mode);
         stb_multiply_color(
             si0.data.get(),
             si1.data.get(),
@@ -1104,7 +1104,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
         std::vector<StbInfo<uint8_t>> sis;
         sis.reserve(it->nlayers);
         for (size_t i = 0; i < it->nlayers; ++i) {
-            sis.push_back(stb_create<uint8_t>(it->width, it->height, max(it->color_mode)));
+            sis.push_back(stb_create<uint8_t>(it->width, it->height, (int)max(it->color_mode)));
         }
         UnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
         std::vector<AtlasTile> atlas_tiles;
