@@ -4,11 +4,31 @@
 namespace Mlib {
 
 enum class ColorMode {
-    UNDEFINED = 0,
-    GRAYSCALE = 1,
-    RGB = 3,
-    RGBA = 4
+    NONE = 0,
+    UNDEFINED = 1 << 0,
+    GRAYSCALE = 1 << 1,
+    RGB = 1 << 2,
+    RGBA = 1 << 3
 };
+
+inline ColorMode operator & (ColorMode a, ColorMode b) {
+    return (ColorMode)((int)a & (int)b);
+}
+
+inline ColorMode operator | (ColorMode a, ColorMode b) {
+    return (ColorMode)((int)a | (int)b);
+}
+
+inline ColorMode& operator |= (ColorMode& a, ColorMode b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
+inline bool any(ColorMode a) {
+    return a != ColorMode::NONE;
+}
+
+size_t max(ColorMode mode);
 
 ColorMode color_mode_from_string(const std::string& str);
 

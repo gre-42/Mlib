@@ -106,7 +106,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
     }
     bool enable_blend =
         (alpha_channel_role_ == AlphaChannelRole::BLEND) &&
-        (image_resource_name_.color_mode == ColorMode::RGBA);
+        any(image_resource_name_.color_mode & ColorMode::RGBA);
     if (enable_blend) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));

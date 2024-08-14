@@ -73,7 +73,7 @@ void RenderConfig::apply_material(
             CHK(glEnable(GL_DEPTH_TEST));
         }
         if (!any(external_render_pass_type & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK)) {
-            switch(material.blend_mode & ~BlendMode::OFF_IGNORE_ALPHA_MASK) {
+            switch(material.blend_mode) {
                 case BlendMode::OFF:
                 case BlendMode::BINARY_05:
                 case BlendMode::BINARY_08:

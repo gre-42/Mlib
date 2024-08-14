@@ -969,13 +969,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
                 if (t->min_detail_weight != 0.f) {
                     sstr << "            weight = max(weight, " << t->min_detail_weight << ");" << std::endl;
                 }
-            } else if ((t->texture_descriptor.color.color_mode == ColorMode::RGBA) && (t->discreteness != 0)) {
+            } else if (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness != 0)) {
                 sstr << "            vec4 bcolor = texture(textures_color[" << i << "], " << tex_coords(*t) << ").rgba;" << std::endl;
                 sstr << "            float final_weight = weight * clamp(0.5 + " << t->discreteness << " * (bcolor.a - 0.5), 0, 1);" << std::endl;
                 // sstr << "            weight *= bcolor.a;" << std::endl;
             } else if (
-                (t->texture_descriptor.color.color_mode == ColorMode::RGB) ||
-                ((t->texture_descriptor.color.color_mode == ColorMode::RGBA) && (t->discreteness == 0)))
+                any(t->texture_descriptor.color.color_mode & ColorMode::RGB) ||
+                (any(t->texture_descriptor.color.color_mode & ColorMode::RGBA) && (t->discreteness == 0)))
             {
                 sstr << "            vec3 bcolor = texture(textures_color[" << i << "], " << tex_coords(*t) << ").rgb;" << std::endl;
                 sstr << "            float final_weight = weight;" << std::endl;
@@ -1235,9 +1235,9 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     if (has_dirtmap) {
         sstr << "    float dirtiness = texture(texture_dirtmap, tex_coord_dirtmap).r;" << std::endl;
         sstr << "    vec4 dirt_color = texture(texture_dirt, tex_coord_flipped * " << dirt_scale << " );" << std::endl;
-        if (dirt_color_mode == ColorMode::RGBA) {
+        if (any(dirt_color_mode & ColorMode::RGBA)) {
             sstr << "    dirtiness *= dirt_color.a;" << std::endl;
-        } else if (dirt_color_mode != ColorMode::RGB) {
+        } else if (!any(dirt_color_mode & ColorMode::RGB)) {
             THROW_OR_ABORT("Unsupported dirt color mode: " + color_mode_to_string(dirt_color_mode));
         }
         sstr << "    dirtiness += " << dirtmap_offset << ';' << std::endl;
@@ -1769,7 +1769,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         any(id.blend_mode & BlendMode::ANY_CONTINUOUS)
             ? id.alpha
             : 1.f,
-        !any(id.blend_mode) ||
+        (id.blend_mode == BlendMode::OFF) ||
         any(id.blend_mode & BlendMode::CONTINUOUS_MASK) ||
         (id.ntextures_color == 0)
             ? 0.f

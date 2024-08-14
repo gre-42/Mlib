@@ -1,17 +1,33 @@
 #include "Color_Mode.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <map>
 
 using namespace Mlib;
 
-ColorMode Mlib::color_mode_from_string(const std::string& str) {
-    if (str == "grayscale") {
-        return ColorMode::GRAYSCALE;
-    } else if (str == "rgb") {
-        return ColorMode::RGB;
-    } else if (str == "rgba") {
-        return ColorMode::RGBA;
+size_t Mlib::max(ColorMode mode) {
+    if (any(mode & ColorMode::RGBA)) {
+        return 4;
     }
-    THROW_OR_ABORT("Unknown color mode: \"" + str + '"');
+    if (any(mode & ColorMode::RGB)) {
+        return 3;
+    }
+    if (any(mode & ColorMode::GRAYSCALE)) {
+        return 1;
+    }
+    THROW_OR_ABORT("Unknown color mode: " + std::to_string((int)mode));
+}
+
+ColorMode Mlib::color_mode_from_string(const std::string& str) {
+    const std::map<std::string, ColorMode> m{
+        {"grayscale", ColorMode::GRAYSCALE},
+        {"rgb", ColorMode::RGB},
+        {"rgba", ColorMode::RGBA}
+    };
+    auto it = m.find(str);
+    if (it == m.end()) {
+        THROW_OR_ABORT("Unknown color mode: \"" + str + '"');
+    }
+    return it->second;
 }
 
 std::string Mlib::color_mode_to_string(const ColorMode& mode) {

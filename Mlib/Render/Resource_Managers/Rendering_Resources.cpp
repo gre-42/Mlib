@@ -181,7 +181,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     if (has_color_selector && (color.color_mode != ColorMode::GRAYSCALE)) {
         THROW_OR_ABORT("Color-selector requires grayscale");
     }
-    if ((source_color_mode == ColorMode::RGBA) &&
+    if (any(source_color_mode & ColorMode::RGBA) &&
         color.alpha.empty() &&
         getenv_default_bool("EXTRAPOLATE_COLORS", false) &&
         !path_exists(touch_file))
@@ -201,16 +201,16 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     StbInfo<uint8_t> si0;
     if (!color.alpha.empty()) {
-        if (source_color_mode != ColorMode::RGBA) {
+        if (!any(source_color_mode & ColorMode::RGBA)) {
             THROW_OR_ABORT("Color mode not RGBA despite alpha texture: \"" + *color.filename + '"');
         }
         si0 = stb_load_texture(
-            color.filename, (int)ColorMode::RGB, flip_mode);
+            color.filename, max(ColorMode::RGB), flip_mode);
         if (si0.nrChannels != 3) {
             THROW_OR_ABORT("#channels not 3: \"" + *color.filename + '"');
         }
         auto si_alpha = stb_load_texture(
-            color.alpha, (int)ColorMode::GRAYSCALE, flip_mode);
+            color.alpha, max(ColorMode::GRAYSCALE), flip_mode);
         if (si_alpha.nrChannels != 1) {
             THROW_OR_ABORT("#channels not 1: \"" + color.alpha + '"');
         }
@@ -226,11 +226,11 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si_alpha.height);
     } else {
         si0 = stb_load_texture(
-            color.filename, (int)source_color_mode, flip_mode);
+            color.filename, max(source_color_mode), flip_mode);
     }
     if (!color.average.empty()) {
         auto si1 = stb_load_texture(
-            color.average, (int)source_color_mode, flip_mode);
+            color.average, max(source_color_mode), flip_mode);
         stb_average(
             si0.data.get(),
             si1.data.get(),
@@ -245,7 +245,7 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     }
     if (!color.multiply.empty()) {
         auto si1 = stb_load_texture(
-            color.multiply, (int)source_color_mode, flip_mode);
+            color.multiply, max(source_color_mode), flip_mode);
         stb_multiply_color(
             si0.data.get(),
             si1.data.get(),
@@ -463,11 +463,11 @@ static void check_color_mode(
             THROW_OR_ABORT("Colormode undefined in color texture \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::SPECULAR) {
-        if (color.color_mode != ColorMode::RGB) {
+        if (!any(color.color_mode & ColorMode::RGB)) {
             THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::NORMAL) {
-        if (color.color_mode != ColorMode::RGB) {
+        if (!any(color.color_mode & ColorMode::RGB)) {
             THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *color.filename + '"');
         }
     } else if (role == TextureRole::TRUSTED) {
@@ -886,7 +886,7 @@ GLuint RenderingResources::get_texture(
             integral_cast<GLsizei>(aptr->tiles.size()),
             aptr->mip_level_count,
             aniso,
-            nchannels2sized_internal_format(integral_cast<size_t>((int)color.color_mode)),
+            nchannels2sized_internal_format(max(color.color_mode)),
             [this, &aptr](GLsizei width, GLsizei height, GLsizei layer)
             {
                 render_texture_atlas(
@@ -1049,10 +1049,10 @@ void RenderingResources::add_texture_descriptor(const std::string& name, const T
     if (descriptor.color.color_mode == ColorMode::UNDEFINED) {
         THROW_OR_ABORT("Colormode undefined color texture: \"" + *descriptor.color.filename + '"');
     }
-    if (!descriptor.specular.filename->empty() && (descriptor.specular.color_mode != ColorMode::RGB)) {
+    if (!descriptor.specular.filename->empty() && !any(descriptor.specular.color_mode & ColorMode::RGB)) {
         THROW_OR_ABORT("Colormode not RGB in specularmap: \"" + *descriptor.specular.filename + '"');
     }
-    if (!descriptor.normal.filename->empty() && (descriptor.normal.color_mode != ColorMode::RGB)) {
+    if (!descriptor.normal.filename->empty() && !any(descriptor.normal.color_mode & ColorMode::RGB)) {
         THROW_OR_ABORT("Colormode not RGB in normalmap: \"" + *descriptor.normal.filename + '"');
     }
     texture_descriptors_.add(name, descriptor);
@@ -1104,7 +1104,7 @@ std::vector<StbInfo<uint8_t>> RenderingResources::get_texture_array_data(
         std::vector<StbInfo<uint8_t>> sis;
         sis.reserve(it->nlayers);
         for (size_t i = 0; i < it->nlayers; ++i) {
-            sis.push_back(stb_create<uint8_t>(it->width, it->height, (int)it->color_mode));
+            sis.push_back(stb_create<uint8_t>(it->width, it->height, max(it->color_mode)));
         }
         UnorderedMap<ColormapWithModifiers, StbInfo<uint8_t>> source_images;
         std::vector<AtlasTile> atlas_tiles;
@@ -1190,7 +1190,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
         return stb_load8(color.filename, FlipMode::NONE, it, IncorrectDatasizeBehavior::CONVERT);
     }
     auto si = stb_load_and_transform_texture(color, flip_mode);
-    if ((color.color_mode == ColorMode::RGB) &&
+    if (any(color.color_mode & ColorMode::RGB) &&
         (si.nrChannels == 4) &&
         getenv_default_bool("CHECK_OPACITY", false))
     {
@@ -1673,7 +1673,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
 #ifdef __ANDROID__
             auto nchannels = (size_t)nrChannels;
 #else
-            auto nchannels = (size_t)color.color_mode;
+            auto nchannels = max(color.color_mode);
 #endif
             CHK(glTexImage2D(
                 GL_TEXTURE_2D,
@@ -1727,7 +1727,7 @@ std::pair<GLuint, TextureType> RenderingResources::initialize_non_dds_texture(co
 #ifdef __ANDROID__
             auto nchannels = (size_t)data[0].nrChannels;
 #else
-            auto nchannels = (size_t)color.color_mode;
+            auto nchannels = max(color.color_mode);
 #endif
             CHK(glTexImage3D(
                 target,

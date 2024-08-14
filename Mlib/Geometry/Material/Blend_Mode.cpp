@@ -9,8 +9,6 @@ BlendMode Mlib::blend_mode_from_string(const std::string& str) {
         return BlendMode::OFF;
     } else if (str == "invisible") {
         return BlendMode::INVISIBLE;
-    } else if (str == "off_ignore_alpha") {
-        return BlendMode::OFF_IGNORE_ALPHA;
     } else if (str == "binary_05") {
         return BlendMode::BINARY_05;
     } else if (str == "binary_08") {
