@@ -61,6 +61,11 @@ void GridResource::instantiate_child_renderable(const ChildInstantiationOptions&
     rva_->instantiate_child_renderable(options);
 }
 
+void GridResource::instantiate_root_renderables(const RootInstantiationOptions& options) const
+{
+    rva_->instantiate_root_renderables(options);
+}
+
 std::shared_ptr<AnimatedColoredVertexArrays> GridResource::get_physics_arrays() const
 {
     return rva_->get_physics_arrays();

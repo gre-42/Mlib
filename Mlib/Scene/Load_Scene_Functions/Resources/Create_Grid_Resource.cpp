@@ -5,8 +5,8 @@
 #include <Mlib/Geometry/Morphology.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
-#include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Math/Transformation/Transformation_Matrix_Json.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -33,8 +33,7 @@ DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(depth_func);
 DECLARE_ARGUMENT(alpha_distances);
 DECLARE_ARGUMENT(cull_faces);
-DECLARE_ARGUMENT(rotation);
-DECLARE_ARGUMENT(translation);
+DECLARE_ARGUMENT(location);
 DECLARE_ARGUMENT(tile_length);
 DECLARE_ARGUMENT(scale);
 DECLARE_ARGUMENT(uv_scale);
@@ -67,13 +66,7 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
     
     RenderingContextStack::primary_scene_node_resources().add_resource(args.arguments.at<std::string>(KnownArgs::name), std::make_shared<GridResource>(
         args.arguments.at<UFixedArray<size_t, 2>>(KnownArgs::size),
-        TransformationMatrix<float, double, 3>(
-            tait_bryan_angles_2_matrix(args.arguments.at<UFixedArray<float, 3>>(
-                KnownArgs::rotation,
-                fixed_zeros<float, 3>()) * degrees),
-            args.arguments.at<UFixedArray<double, 3>>(
-                KnownArgs::translation,
-                fixed_zeros<double, 3>()) * (double)meters),
+        transformation_matrix_from_json<float, double, 3>(args.arguments.at(KnownArgs::location)),
         args.arguments.at<double>(KnownArgs::tile_length),
         args.arguments.at<double>(KnownArgs::scale),
         args.arguments.at<double>(KnownArgs::uv_scale),
