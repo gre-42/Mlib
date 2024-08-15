@@ -1,5 +1,5 @@
 #pragma once
-#include <Mlib/Macro_Executor/Json_Macro_Arguments.hpp>
+#include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Regex/Misc.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Ui/IList_View_Contents.hpp>
@@ -13,11 +13,8 @@ namespace Mlib {
 
 class ButtonStates;
 class ThreadSafeString;
-class JsonMacroArguments;
 class IWidget;
 class ILayoutPixels;
-class NotifyingJsonMacroArguments;
-class AssetReferences;
 struct ReplacementParameterAndFilename;
 
 class SceneEntry {
@@ -26,7 +23,7 @@ public:
     const std::string& id() const;
     const std::string& name() const;
     const std::string& filename() const;
-    const JsonMacroArguments& globals() const;
+    const nlohmann::json& on_before_select() const;
     const std::vector<std::string>& required() const;
     JsonView locals() const;
     bool operator < (const SceneEntry& other) const;
@@ -39,31 +36,27 @@ class SceneEntryContents: public IListViewContents {
 public:
     explicit SceneEntryContents(
         const std::vector<SceneEntry>& scene_entries,
-        const NotifyingJsonMacroArguments& substitutions,
-        const AssetReferences& asset_references);
+        const MacroLineExecutor& mle);
 
     // IListViewContents
     virtual size_t num_entries() const override;
     virtual bool is_visible(size_t index) const override;
 private:
     const std::vector<SceneEntry>& scene_entries_;
-    const NotifyingJsonMacroArguments& substitutions_;
-    const AssetReferences& asset_references_;
+    const MacroLineExecutor& mle_;
 };
 
 class SceneSelectorLogic: public RenderLogic {
 public:
     SceneSelectorLogic(
         std::string debug_hint,
-        std::string globals_prefix,
         std::vector<SceneEntry> scene_files,
         const std::string& ttf_filename,
         std::unique_ptr<IWidget>&& widget,
         const ILayoutPixels& font_height,
         const ILayoutPixels& line_distance,
         FocusFilter focus_filter,
-        NotifyingJsonMacroArguments& substitutions,
-        const AssetReferences& asset_references,
+        MacroLineExecutor mle,
         ThreadSafeString& next_scene_filename,
         ButtonStates& button_states,
         std::atomic_size_t& selection_index,
@@ -83,6 +76,7 @@ public:
 
 private:
     void merge_substitutions() const;
+    MacroLineExecutor mle_;
     std::string globals_prefix_;
     std::unique_ptr<TextResource> renderable_text_;
     std::vector<SceneEntry> scene_files_;
@@ -91,7 +85,6 @@ private:
     const ILayoutPixels& font_height_;
     const ILayoutPixels& line_distance_;
     FocusFilter focus_filter_;
-    NotifyingJsonMacroArguments& substitutions_;
     ThreadSafeString& next_scene_filename_;
     ListView list_view_;
 };

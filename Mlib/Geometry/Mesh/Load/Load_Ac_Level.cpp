@@ -77,7 +77,8 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         } else {
             THROW_OR_ABORT("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
         }
-        auto globals = JsonMacroArguments({
+        auto globals = nlohmann::json{
+            {"SELECTED_LEVEL_ID", level_id},
             {"LEVEL_ICON_FILE", preview_filename.string()},
             {"STAGE_INI_FILENAME", stage_filename.string()},
             {"MINIMAP_FILE", any(minimap_size != 20.f) || any(minimap_offset != 20.f)
@@ -85,9 +86,10 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 : nlohmann::json()},
             {"MINIMAP_SCALE", ini_parser.get<float>("PARAMETERS", "SCALE_FACTOR")},
             {"MINIMAP_SIZE", minimap_size},
-            {"MINIMAP_OFFSET", minimap_offset},
-            {"aggregate_mode", "sorted"},
-            {"rendering_strategy", "mesh_sorted_continuously"} });
+            {"MINIMAP_OFFSET", minimap_offset} };
+        auto on_before_select = nlohmann::json{
+            {"call", "globals"},
+            {"arguments", globals}};
         auto database = JsonMacroArguments(nlohmann::json{
             {"IF_RACEWAY_CIRCULAR", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });
@@ -96,9 +98,9 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             .rp = ReplacementParameter{
                 .id = level_id,
                 .title = jv.at<std::string>("name"),
-                .globals = std::move(globals),
+                .required = std::move(required),
                 .database = std::move(database),
-                .required = std::move(required)
+                .on_before_select = std::move(on_before_select)
             },
             .filename = script_filename_});
     };

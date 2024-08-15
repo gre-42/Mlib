@@ -233,14 +233,24 @@ nlohmann::json Mlib::eval(
 
 nlohmann::json Mlib::eval(
     const std::string& expression,
-    const JsonView& variables)
+    const JsonView& variables,
+    const AssetReferences& asset_references)
 {
-    AssetReferences asset_references;
     return eval(
         expression,
         variables,
         JsonView{ nlohmann::json::object() },
         asset_references);
+}
+
+nlohmann::json Mlib::eval(
+    const std::string& expression,
+    const JsonView& variables)
+{
+    return eval(
+        expression,
+        variables,
+        AssetReferences{});
 }
 
 template <>
@@ -268,4 +278,16 @@ bool Mlib::eval<bool>(
         variables,
         JsonView{ nlohmann::json::object() },
         asset_references);
+}
+
+template <>
+bool Mlib::eval<bool>(
+    const std::string& expression,
+    const JsonView& variables)
+{
+    return eval<bool>(
+        expression,
+        variables,
+        AssetReferences{});
+
 }

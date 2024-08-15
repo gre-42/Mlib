@@ -49,7 +49,6 @@ DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(deflt);
 DECLARE_ARGUMENT(on_change);
 DECLARE_ARGUMENT(assets);
-DECLARE_ARGUMENT(asset_prefix);
 DECLARE_ARGUMENT(database_filter);
 DECLARE_ARGUMENT(hide_if_trivial);
 DECLARE_ARGUMENT(parameters);
@@ -77,12 +76,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
     if (args.arguments.contains(KnownArgs::assets)) {
         auto& assets = args.asset_references[args.arguments.at<std::string>(KnownArgs::assets)];
         for (const auto& [_, a] : assets) {
-            auto& rp = rps.emplace_back(ReplacementParameter{
-                .title = a.rp.title,
-                .required = a.rp.required});
-            auto prefix = args.arguments.at<std::string>(KnownArgs::asset_prefix, "");
-            rp.globals.merge(a.rp.globals, prefix);
-            rp.globals.set(prefix + "ID", a.rp.id);
+            rps.push_back(a.rp);
         }
     }
     if (args.arguments.contains(KnownArgs::database_filter)) {
@@ -105,7 +99,10 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
             return;
         }
         if (rps.size() == 1) {
-            args.external_json_macro_arguments.merge_and_notify(rps.front().globals);
+            const auto& rp = rps.front();
+            if (!rp.on_before_select.is_null()) {
+                args.macro_line_executor(rp.on_before_select, nullptr, nullptr);
+            }
             return;
         }
     }
@@ -132,8 +129,7 @@ void CreateParameterSetterLogic::execute(const LoadSceneJsonUserFunctionArgs& ar
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
-        args.external_json_macro_arguments,
-        args.asset_references,
+        args.macro_line_executor,
         args.button_states,
         args.ui_focus.selection_ids.at(id),
         [mle=args.macro_line_executor, on_change=args.arguments.try_at<nlohmann::json>(KnownArgs::on_change)]() {

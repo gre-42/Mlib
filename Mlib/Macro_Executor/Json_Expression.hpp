@@ -15,6 +15,11 @@ nlohmann::json eval(
 
 nlohmann::json eval(
     const std::string& expression,
+    const JsonView& variables,
+    const AssetReferences& asset_references);
+
+nlohmann::json eval(
+    const std::string& expression,
     const JsonView& variables);
 
 template <class T>
@@ -29,5 +34,10 @@ T eval(
     const std::string& expression,
     const JsonView& variables,
     const AssetReferences& asset_references);
+
+template <class T>
+T eval(
+    const std::string& expression,
+    const JsonView& variables);
 
 }

@@ -34,7 +34,6 @@ DECLARE_ARGUMENT(font_height);
 DECLARE_ARGUMENT(line_distance);
 DECLARE_ARGUMENT(on_change);
 DECLARE_ARGUMENT(assets);
-DECLARE_ARGUMENT(asset_prefix);
 }
 
 const std::string CreateSceneSelectorLogic::key = "scene_selector";
@@ -69,7 +68,6 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
     auto& scene_selector_logic = object_pool.create<SceneSelectorLogic>(
         CURRENT_SOURCE_LOCATION,
         "id = " + id,
-        args.arguments.at<std::string>(KnownArgs::asset_prefix, ""),
         std::vector<SceneEntry>{scene_entries.begin(), scene_entries.end()},
         args.arguments.path(KnownArgs::ttf_file),
         std::make_unique<Widget>(
@@ -82,8 +80,7 @@ void CreateSceneSelectorLogic::execute(const LoadSceneJsonUserFunctionArgs& args
         FocusFilter{
             .focus_mask = Focus::MENU,
             .submenu_ids = { id } },
-        args.external_json_macro_arguments,
-        args.asset_references,
+        args.macro_line_executor,
         args.next_scene_filename,
         args.button_states,
         args.ui_focus.selection_ids.at(id),

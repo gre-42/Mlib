@@ -14,11 +14,9 @@ using namespace Mlib;
 
 ReplacementParameterContents::ReplacementParameterContents(
     const std::vector<ReplacementParameter>& options,
-    const NotifyingJsonMacroArguments& substitutions,
-    const AssetReferences& asset_references)
-: options_{options},
-  substitutions_{substitutions},
-  asset_references_{asset_references}
+    const MacroLineExecutor& mle)
+    : options_{ options }
+    , mle_{ mle }
 {}
 
 size_t ReplacementParameterContents::num_entries() const {
@@ -26,9 +24,8 @@ size_t ReplacementParameterContents::num_entries() const {
 }
 
 bool ReplacementParameterContents::is_visible(size_t index) const {
-    auto variables = substitutions_.json_macro_arguments();
     for (const auto& r : options_[index].required) {
-        if (!eval<bool>(r, variables, asset_references_)) {
+        if (!mle_.eval<bool>(r)) {
             return false;
         }
     }
@@ -43,13 +40,13 @@ ParameterSetterLogic::ParameterSetterLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     FocusFilter focus_filter,
-    NotifyingJsonMacroArguments& substitutions,
-    const AssetReferences& asset_references,
+    MacroLineExecutor mle,
     ButtonStates& button_states,
     std::atomic_size_t& selection_index,
     const std::function<void()>& on_change)
-    : options_{ std::move(options) }
-    , contents_{options_, substitutions, asset_references}
+    : mle_{ std::move(mle) }
+    , options_{ std::move(options) }
+    , contents_{options_, mle_}
     , renderable_text_{std::make_unique<TextResource>(
         ttf_filename,
         FixedArray<float, 3>{1.f, 1.f, 1.f})}
@@ -57,7 +54,6 @@ ParameterSetterLogic::ParameterSetterLogic(
     , font_height_{font_height}
     , line_distance_{line_distance}
     , focus_filter_{ std::move(focus_filter) }
-    , substitutions_{ substitutions }
     , list_view_{
         std::move(debug_hint),
         button_states,
@@ -69,7 +65,7 @@ ParameterSetterLogic::ParameterSetterLogic(
             on_change();
         }}
 {
-    substitutions_.add_observer([this](){
+    mle_.add_observer([this](){
         list_view_.notify_change_visibility();
     });
 }
@@ -105,7 +101,10 @@ FocusFilter ParameterSetterLogic::focus_filter() const {
 }
 
 void ParameterSetterLogic::merge_substitutions() const {
-    substitutions_.merge_and_notify(options_.at(list_view_.selected_element()).globals);
+    const auto& f = options_.at(list_view_.selected_element()).on_before_select;
+    if (!f.is_null()) {
+        mle_(f, nullptr, nullptr);
+    }
 }
 
 void ParameterSetterLogic::print(std::ostream& ostr, size_t depth) const {

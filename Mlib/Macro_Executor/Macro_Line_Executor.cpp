@@ -104,7 +104,7 @@ MacroLineExecutor::MacroLineExecutor(
     JsonUserFunction json_user_function,
     std::string context,
     nlohmann::json block_arguments,
-    const NotifyingJsonMacroArguments& global_json_macro_arguments,
+    NotifyingJsonMacroArguments& global_json_macro_arguments,
     const AssetReferences& asset_references,
     bool verbose)
     : macro_recorder_{ macro_recorder }
@@ -202,7 +202,7 @@ void MacroLineExecutor::operator () (
         try {
             if (jv.contains(MacroKeys::required)) {
                 for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::required)) {
-                    if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
+                    if (!Mlib::eval<bool>(e, global_args, merged_args, asset_references_)) {
                         include = false;
                         break;
                     }
@@ -211,7 +211,7 @@ void MacroLineExecutor::operator () (
             if (include && jv.contains(MacroKeys::exclude)) {
                 include = false;
                 for (const auto& e : jv.at<std::vector<std::string>>(MacroKeys::exclude)) {
-                    if (!eval<bool>(e, global_args, merged_args, asset_references_)) {
+                    if (!Mlib::eval<bool>(e, global_args, merged_args, asset_references_)) {
                         include = true;
                         break;
                     }
@@ -348,3 +348,32 @@ void MacroLineExecutor::operator () (
         THROW_OR_ABORT("Not object or array: \"" + msg.str() + '"');
     }
 }
+
+nlohmann::json MacroLineExecutor::eval(const std::string& expression, const JsonView& variables) const {
+    auto global_args = global_json_macro_arguments_.json_macro_arguments();
+    return Mlib::eval(expression, global_args, variables, asset_references_);
+}
+
+nlohmann::json MacroLineExecutor::eval(const std::string& expression) const {
+    auto global_args = global_json_macro_arguments_.json_macro_arguments();
+    return Mlib::eval(expression, global_args, asset_references_);
+}
+
+template <class T>
+T MacroLineExecutor::eval(const std::string& expression, const JsonView& variables) const {
+    auto global_args = global_json_macro_arguments_.json_macro_arguments();
+    return Mlib::eval<T>(expression, global_args, variables, asset_references_);
+}
+
+template <class T>
+T MacroLineExecutor::eval(const std::string& expression) const {
+    auto global_args = global_json_macro_arguments_.json_macro_arguments();
+    return Mlib::eval<T>(expression, global_args, asset_references_);
+}
+
+void MacroLineExecutor::add_observer(std::function<void()> func) {
+    global_json_macro_arguments_.add_observer(std::move(func));
+}
+
+template bool MacroLineExecutor::eval<bool>(const std::string& expression, const JsonView& variables) const;
+template bool MacroLineExecutor::eval<bool>(const std::string& expression) const;

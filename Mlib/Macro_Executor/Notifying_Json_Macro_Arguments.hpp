@@ -25,7 +25,7 @@ public:
         return json_macro_arguments_.at<TResult>(key, default_);
     }
     JsonMacroArgumentsAndLock json_macro_arguments() const;
-    void add_observer(const std::function<void()>& func);
+    void add_observer(std::function<void()> func);
     void clear_observers();
 private:
     mutable SafeAtomicRecursiveSharedMutex mutex_;

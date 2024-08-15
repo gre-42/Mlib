@@ -13,12 +13,12 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(id);
-DECLARE_ARGUMENT(on_init);
-DECLARE_ARGUMENT(on_execute);
 DECLARE_ARGUMENT(title);
-DECLARE_ARGUMENT(globals);
 DECLARE_ARGUMENT(database);
 DECLARE_ARGUMENT(required);
+DECLARE_ARGUMENT(on_init);
+DECLARE_ARGUMENT(on_before_select);
+DECLARE_ARGUMENT(on_execute);
 }
 
 ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const std::string& filename) {
@@ -43,19 +43,19 @@ ReplacementParameterAndFilename ReplacementParameterAndFilename::from_json(const
 
 void Mlib::from_json(const nlohmann::json& j, ReplacementParameter& rp) {
     validate(j, KnownArgs::options);
+    j.at(KnownArgs::id).get_to(rp.id);
     j.at(KnownArgs::title).get_to(rp.title);
-    if (j.contains(KnownArgs::globals)) {
-        rp.globals.merge(JsonMacroArguments{j.at(KnownArgs::globals)});
+    if (j.contains(KnownArgs::required)) {
+        j.at(KnownArgs::required).get_to(rp.required);
     }
     if (j.contains(KnownArgs::database)) {
         rp.database.merge(JsonMacroArguments{j.at(KnownArgs::database)});
     }
-    if (j.contains(KnownArgs::required)) {
-        j.at(KnownArgs::required).get_to(rp.required);
-    }
-    j.at(KnownArgs::id).get_to(rp.id);
     if (j.contains(KnownArgs::on_init)) {
         j.at(KnownArgs::on_init).get_to(rp.on_init);
+    }
+    if (j.contains(KnownArgs::on_before_select)) {
+        j.at(KnownArgs::on_before_select).get_to(rp.on_before_select);
     }
     if (j.contains(KnownArgs::on_execute)) {
         j.at(KnownArgs::on_execute).get_to(rp.on_execute);

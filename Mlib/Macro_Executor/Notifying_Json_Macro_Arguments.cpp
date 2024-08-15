@@ -25,9 +25,9 @@ JsonMacroArgumentsAndLock NotifyingJsonMacroArguments::json_macro_arguments() co
     return JsonMacroArgumentsAndLock{*this};
 }
 
-void NotifyingJsonMacroArguments::add_observer(const std::function<void()>& func) {
+void NotifyingJsonMacroArguments::add_observer(std::function<void()> func) {
     std::scoped_lock lock{ mutex_ };
-    observers_.push_back(func);
+    observers_.emplace_back(std::move(func));
 }
 
 void NotifyingJsonMacroArguments::clear_observers() {

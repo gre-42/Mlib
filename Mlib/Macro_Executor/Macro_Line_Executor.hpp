@@ -14,6 +14,7 @@ class SubstitutionMap;
 class NotifyingJsonMacroArguments;
 class AssetReferences;
 struct FPath;
+class JsonView;
 
 class MacroLineExecutor {
     friend MacroRecorder;
@@ -31,7 +32,7 @@ public:
         JsonUserFunction json_user_function,
         std::string context,
         nlohmann::json block_arguments,
-        const NotifyingJsonMacroArguments& global_json_macro_arguments,
+        NotifyingJsonMacroArguments& global_json_macro_arguments,
         const AssetReferences& asset_references,
         bool verbose);
     MacroLineExecutor changed_script_filename(
@@ -47,6 +48,13 @@ public:
         const nlohmann::json& j,
         const JsonMacroArguments* caller_args,
         JsonMacroArguments* local_json_macro_arguments) const;
+    nlohmann::json eval(const std::string& expression) const;
+    nlohmann::json eval(const std::string& expression, const JsonView& variables) const;
+    template <class T>
+    T eval(const std::string& expression) const;
+    template <class T>
+    T eval(const std::string& expression, const JsonView& variables) const;
+    void add_observer(std::function<void()> func);
 private:
     MacroRecorder& macro_recorder_;
     std::string script_filename_;
@@ -54,7 +62,7 @@ private:
     JsonUserFunction json_user_function_;
     std::string context_;
     nlohmann::json block_arguments_;
-    const NotifyingJsonMacroArguments& global_json_macro_arguments_;
+    NotifyingJsonMacroArguments& global_json_macro_arguments_;
     const AssetReferences& asset_references_;
     bool verbose_;
 };
