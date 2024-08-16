@@ -8,6 +8,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace Mlib {
@@ -54,25 +55,25 @@ public:
     auto get_vector(const TOperation& op) const {
         return Mlib::get_vector<TData>(j_, op);
     }
-    nlohmann::json at(const std::string& name) const;
+    nlohmann::json at(const std::string_view& name) const;
     template <class T>
-    T at(const std::string& name) const {
+    T at(const std::string_view& name) const {
         if (j_.type() == nlohmann::detail::value_t::null) {
-            THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + name + '"');
+            THROW_OR_ABORT("Attempt to retrieve value for key on null object: \"" + std::string{ name } + '"');
         }
         auto o = at(name);
         try {
             return json_get<T>(o);
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Runtime error interpreting key \"" + name + "\": " + e.what());
+            throw std::runtime_error("Runtime error interpreting key \"" + std::string{ name } + "\": " + e.what());
         } catch (const nlohmann::json::type_error& e) {
-            throw std::runtime_error("Incorrect type for key \"" + name + "\": " + e.what());
+            throw std::runtime_error("Incorrect type for key \"" + std::string{ name } + "\": " + e.what());
         } catch (const std::out_of_range& e) {
-            throw std::runtime_error("Error retrieving key \"" + name + "\": " + e.what());
+            throw std::runtime_error("Error retrieving key \"" + std::string{ name } + "\": " + e.what());
         }
     }
     template <class T>
-    T at(const std::string& name, const T& default_) const {
+    T at(const std::string_view& name, const T& default_) const {
         return j_.contains(name)
             ? at<T>(name)
             : default_;

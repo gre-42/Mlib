@@ -71,48 +71,46 @@ void DrawDistanceDb::add_ide(const std::string& filename) {
         if (section == "objs") {
             // From: https://gtamods.com/wiki/OBJS
             // Type 1
-            static const auto reg1 = seq(n, c, n, c, n, c, n, c, n, c, n, eof);
-            static const auto reg2 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
-            static const auto reg3 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg6 = seq(n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg7 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
 
-            SMatch match;
-            if (regex_match(line, match, reg1)) {
-                if (match[4].str() != "1") {
+            if (SMatch<7> match6; regex_match(line, match6, reg6)) {
+                if (match6[4].str() != "1") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
-                float distances[] = { safe_stof(match[5].str()) };
-                auto flags = (IdeFlags)safe_stoi(match[6].str());
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1, flags);
-            } else if (regex_match(line, match, reg2)) {
-                if (match[4].str() != "2") {
+                float distances[] = { safe_stof(match6[5].str()) };
+                auto flags = (IdeFlags)safe_stoi(match6[6].str());
+                set_distances(std::string{ match6[2].str() }, std::string{ match6[3].str() }, distances, 1, flags);
+            } else if (SMatch<8> match7; regex_match(line, match7, reg7)) {
+                if (match7[4].str() != "2") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
-                float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()) };
-                auto flags = (IdeFlags)safe_stoi(match[7].str());
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 2, flags);
-            } else if (regex_match(line, match, reg3)) {
-                if (match[4].str() != "3") {
+                float distances[] = { safe_stof(match7[5].str()), safe_stof(match7[6].str()) };
+                auto flags = (IdeFlags)safe_stoi(match7[7].str());
+                set_distances(std::string{ match7[2].str() }, std::string{ match7[3].str() }, distances, 2, flags);
+            } else if (SMatch<9> match8; regex_match(line, match8, reg8)) {
+                if (match8[4].str() != "3") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
-                float distances[] = { safe_stof(match[5].str()), safe_stof(match[6].str()), safe_stof(match[7].str()) };
-                auto flags = (IdeFlags)safe_stoi(match[8].str());
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 3, flags);
+                float distances[] = { safe_stof(match8[5].str()), safe_stof(match8[6].str()), safe_stof(match8[7].str()) };
+                auto flags = (IdeFlags)safe_stoi(match8[8].str());
+                set_distances(std::string{ match8[2].str() }, std::string{ match8[3].str() }, distances, 3, flags);
             } else {
                 THROW_OR_ABORT("Could not parse line \"" + line + '"');
             }
         } else if (section == "tobj") {
             // From: https://gtamods.com/wiki/OBJS
             // Type 1
-            static const auto reg1 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
+            static const auto reg8 = seq(n, c, n, c, n, c, n, c, n, c, n, c, n, c, n, eof);
 
-            SMatch match;
-            if (regex_match(line, match, reg1)) {
-                if (match[4].str() != "1") {
+            if (SMatch<9> match8; regex_match(line, match8, reg8)) {
+                if (match8[4].str() != "1") {
                     THROW_OR_ABORT("Unexpected LOD count in line \"" + line + '"');
                 }
-                float distances[] = { safe_stof(match[5].str()) };
-                auto flags = (IdeFlags)safe_stoi(match[6].str());
-                set_distances(std::string{ match[2].str() }, std::string{ match[3].str() }, distances, 1, flags);
+                float distances[] = { safe_stof(match8[5].str()) };
+                auto flags = (IdeFlags)safe_stoi(match8[6].str());
+                set_distances(std::string{ match8[2].str() }, std::string{ match8[3].str() }, distances, 1, flags);
             } else {
                 THROW_OR_ABORT("Could not parse line \"" + line + '"');
             }

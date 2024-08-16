@@ -27,10 +27,16 @@ static void iterate_replacements(
     }
 }
 
-std::string Mlib::substitute_dollar(const std::string& str, const std::function<std::string(std::string)>& replacements) {
+std::string Mlib::substitute_dollar(const std::string_view& str, const std::function<std::string(std::string_view)>& replacements) {
+    using namespace TemplateRegex;
     std::string new_line;
-    static const DECLARE_REGEX(s0, "(?:\\$(\\$[$\\w/]+|\\w+)-?|([^$]+))");
-    find_all(str, s0, [&new_line, &replacements](const Mlib::re::smatch& v) {
+    // "(?:\\$(\\$[$\\w/]+|\\w+)-?|([^$]+))");
+    auto ddw = seq(chr('$'), plus(par(chr('$'), word, chr('/')))); // \\$[$\\w/]+
+    auto left = seq(group(par(ddw, plus(word))), opt(chr('-')));
+    auto nd = CharPredicate{[](char c){ return (c != '$'); }};
+    auto right = group(plus(nd));
+    static const auto s0 = par(seq(chr('$'), left), right);
+    find_all_templated(str, s0, [&new_line, &replacements](const TemplateRegex::SMatch<3>& v) {
         if (v[1].matched) {
             new_line += replacements(v[1].str());
         } else {

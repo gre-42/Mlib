@@ -1,5 +1,6 @@
 #include <Mlib/Env.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
+#include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Macro_Recorder.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
@@ -36,12 +37,19 @@ void test_json() {
     mr(mle, nullptr);
 }
 
+void test_eval() {
+    linfo() << "eval " << eval<bool>("'hello' == 'world'", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<bool>("'hello' != 'world'", JsonView{ nlohmann::json::object() });
+    linfo() << "eval " << eval<bool>("%%levels/aircraft_carrier0/game_modes == 'hello'", JsonView{ nlohmann::json::object() });
+}
+
 int main(int argc, char** argv) {
 #ifndef __ANDROID__
     set_app_reldir("macro_executor_test");
 #endif
     try {
         test_json();
+        test_eval();
     } catch (const std::runtime_error& e) {
         lerr() << e.what();
         return 1;
