@@ -67,7 +67,10 @@ public:
         FixedArray<TData, tshape0, tshape...> result = uninitialized;
         assert(nelements == result.nelements());
         std::copy(data, data + nelements, result.flat_begin());
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         return result;
+#pragma GCC diagnostic pop
     }
     template<std::convertible_to<FixedArray<TData, tshape...>>... Values>
         requires (sizeof...(Values) == tshape0)
