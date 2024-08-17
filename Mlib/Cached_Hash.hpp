@@ -45,6 +45,10 @@ public:
 	inline std::strong_ordering operator <=> (const CachedHash&) const {
 		return std::strong_ordering::equal;
 	}
+	template <class Archive>
+    void serialize(Archive& archive) {
+		archive(value_);
+	}
 private:
 	std::optional<size_t> value_;
 };

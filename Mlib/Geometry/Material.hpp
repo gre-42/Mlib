@@ -13,6 +13,9 @@
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <compare>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace Mlib {
 

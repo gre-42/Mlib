@@ -72,6 +72,7 @@ struct ColormapWithModifiers {
         archive(depth_interpolation);
         archive(anisotropic_filtering_level);
         archive(wrap_modes);
+        archive(hash);
     }
 };
 
