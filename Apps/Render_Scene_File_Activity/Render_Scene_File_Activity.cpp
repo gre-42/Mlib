@@ -45,6 +45,7 @@
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
+#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
@@ -368,6 +369,7 @@ void android_main(android_app* app) {
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
+        "    [--check_gl_errors]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -398,6 +400,7 @@ void android_main(android_app* app) {
          "--no_control_physics_fps",
          "--control_render_fps",
          "--fxaa",
+         "--check_gl_errors",
          "--verbose"},
         {"--swap_interval",
          "--nsamples_msaa",
@@ -446,6 +449,9 @@ void android_main(android_app* app) {
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
+        if (args.has_named("--check_gl_errors")) {
+            check_gl_errors(CheckErrors::ENABLED);
+        }
 #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};

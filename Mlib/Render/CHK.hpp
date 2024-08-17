@@ -10,11 +10,18 @@ enum class FailureBehavior {
     ABORT
 };
 
+enum class CheckErrors {
+    DISABLED = 0,
+    ENABLED = 1
+};
+
 }
 
 #ifndef __ANDROID__
 
 namespace Mlib {
+
+void check_glfw_errors(CheckErrors check);
 
 void assert_no_glfw_error(const char* position, FailureBehavior failure_behavior);
 
@@ -27,6 +34,8 @@ void assert_no_glfw_error(const char* position, FailureBehavior failure_behavior
 #endif
 
 namespace Mlib {
+
+void check_gl_errors(CheckErrors check);
 
 void assert_no_opengl_error(const char* position, FailureBehavior failure_behavior);
 

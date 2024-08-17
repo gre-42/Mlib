@@ -6,7 +6,18 @@
 #include <string>
 #include <vector>
 
+using namespace Mlib;
+
+static bool CHECK_GL_ERRORS = false;
+
+void Mlib::check_gl_errors(CheckErrors check) {
+    CHECK_GL_ERRORS = (check == CheckErrors::ENABLED);
+}
+
 void Mlib::assert_no_opengl_error(const char* position, FailureBehavior failure_behavior) {
+    if (!CHECK_GL_ERRORS) {
+        return;
+    }
     GLenum code = glGetError();
     if (code != GL_NO_ERROR) {
         std::string descr = std::to_string(code);
@@ -31,7 +42,17 @@ void Mlib::assert_no_opengl_error(const char* position, FailureBehavior failure_
 }
 
 #ifndef __ANDROID__
+
+static bool CHECK_GLFW_ERRORS = true;
+
+void Mlib::check_glfw_errors(CheckErrors check) {
+    CHECK_GLFW_ERRORS = (check == CheckErrors::ENABLED);
+}
+
 void Mlib::assert_no_glfw_error(const char* position, FailureBehavior failure_behavior) {
+    if (!CHECK_GLFW_ERRORS) {
+        return;
+    }
     const char* description;
     int code = glfwGetError(&description);
     if (code != GLFW_NO_ERROR) {

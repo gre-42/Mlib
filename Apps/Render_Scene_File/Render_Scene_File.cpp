@@ -31,6 +31,7 @@
 #include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
+#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
@@ -337,6 +338,7 @@ int main(int argc, char** argv) {
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
         "    [--with_hider]\n"
+        "    [--check_gl_errors]\n"
         "    [--verbose]",
         {"--wire_frame",
          "--cull_faces",
@@ -367,6 +369,7 @@ int main(int argc, char** argv) {
          "--no_control_physics_fps",
          "--fxaa",
          "--with_hider",
+         "--check_gl_errors",
          "--verbose"},
         {"--app_reldir",
          "--swap_interval",
@@ -421,6 +424,9 @@ int main(int argc, char** argv) {
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
         std::string main_scene_filename = fs::absolute(args.unnamed_value(1)).string();
 
+        if (args.has_named("--check_gl_errors")) {
+            check_gl_errors(CheckErrors::ENABLED);
+        }
 #ifndef WITHOUT_ALUT
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
