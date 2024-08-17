@@ -703,8 +703,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.waysides = args.arguments.children(KnownArgs::wayside_resource_names, [&parse_resource_name_func](const JsonMacroArguments& a){
                 a.validate(WaysideKnownArgs::options, "wayside: ");
                 return WaysideResourceNames{
-                    .min_dist = a.at<float>(WaysideKnownArgs::min_dist),
-                    .max_dist = a.at<float>(WaysideKnownArgs::max_dist),
+                    .min_dist = a.at<float>(WaysideKnownArgs::min_dist) * meters,
+                    .max_dist = a.at<float>(WaysideKnownArgs::max_dist) * meters,
                     .resource_names = a.at_vector<std::string>(WaysideKnownArgs::resource_names, parse_resource_name_func)
                 };
             });
