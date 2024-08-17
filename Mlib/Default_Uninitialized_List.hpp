@@ -12,8 +12,8 @@ using UUList = std::list<DefaultUnitialized<T>>;
 
 template <class TIterable>
 inline auto uulist(const TIterable& begin, const TIterable& end) {
-	using T = typename TIterable::value_type;
-	return UUList<T>(begin, end);
+    using T = typename TIterable::value_type;
+    return UUList<T>(begin, end);
 }
 
 }

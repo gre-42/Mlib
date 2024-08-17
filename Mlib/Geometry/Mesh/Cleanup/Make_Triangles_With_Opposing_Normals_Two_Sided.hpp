@@ -9,7 +9,7 @@ class ColoredVertexArray;
 
 template <class TPos>
 void make_triangles_with_opposing_normals_two_sided(
-	ColoredVertexArray<TPos>& cva,
-	std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& result);
+    ColoredVertexArray<TPos>& cva,
+    std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& result);
 
 }

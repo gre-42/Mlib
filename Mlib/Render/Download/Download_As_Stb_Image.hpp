@@ -8,9 +8,9 @@ struct StbInfo;
 namespace Mlib {
 
 StbInfo<uint8_t> download_as_stb_image(
-	GLuint frame_buffer,
-	GLsizei width,
-	GLsizei height,
-	int nchannels);
+    GLuint frame_buffer,
+    GLsizei width,
+    GLsizei height,
+    int nchannels);
 
 }

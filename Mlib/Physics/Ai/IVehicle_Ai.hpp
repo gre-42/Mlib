@@ -13,41 +13,41 @@ class SkillMap;
 class AiWaypoint;
 
 enum class VehicleAiMoveToStatus {
-	NONE = 0,
-	SCENE_VEHICLE_IS_NULL = (1 << 0),
-	AUTOPILOT_IS_NULL = (1 << 1),
-	SKILL_IS_MISSING = (1 << 2),
-	WAYPOINT_IS_NAN = (1 << 3),
-	POWER_IS_NAN = (1 << 4),
-	WAYPOINT_REACHED = (1 << 5),
-	RESTING_POSITION_REACHED = (1 << 6),
-	STOPPED_TO_AVOID_COLLISION = (1 << 7)
+    NONE = 0,
+    SCENE_VEHICLE_IS_NULL = (1 << 0),
+    AUTOPILOT_IS_NULL = (1 << 1),
+    SKILL_IS_MISSING = (1 << 2),
+    WAYPOINT_IS_NAN = (1 << 3),
+    POWER_IS_NAN = (1 << 4),
+    WAYPOINT_REACHED = (1 << 5),
+    RESTING_POSITION_REACHED = (1 << 6),
+    STOPPED_TO_AVOID_COLLISION = (1 << 7)
 };
 
 inline VehicleAiMoveToStatus& operator |= (VehicleAiMoveToStatus& a, VehicleAiMoveToStatus b) {
-	(int&)a |= (int)b;
-	return a;
+    (int&)a |= (int)b;
+    return a;
 }
 
 inline VehicleAiMoveToStatus operator | (VehicleAiMoveToStatus a, VehicleAiMoveToStatus b) {
-	return (VehicleAiMoveToStatus)((int)a | (int)b);
+    return (VehicleAiMoveToStatus)((int)a | (int)b);
 }
 
 inline VehicleAiMoveToStatus operator & (VehicleAiMoveToStatus a, VehicleAiMoveToStatus b) {
-	return (VehicleAiMoveToStatus)((int)a & (int)b);
+    return (VehicleAiMoveToStatus)((int)a & (int)b);
 }
 
 inline bool any(VehicleAiMoveToStatus a) {
-	return a != VehicleAiMoveToStatus::NONE;
+    return a != VehicleAiMoveToStatus::NONE;
 }
 
 class IVehicleAi: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
-	virtual ~IVehicleAi() = default;
-	virtual VehicleAiMoveToStatus move_to(
-		const AiWaypoint& ai_waypoint,
-		const SkillMap* skills) = 0;
-	virtual std::vector<SkillFactor> skills() const = 0;
+    virtual ~IVehicleAi() = default;
+    virtual VehicleAiMoveToStatus move_to(
+        const AiWaypoint& ai_waypoint,
+        const SkillMap* skills) = 0;
+    virtual std::vector<SkillFactor> skills() const = 0;
 };
 
 }

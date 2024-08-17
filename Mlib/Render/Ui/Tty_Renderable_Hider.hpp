@@ -9,19 +9,19 @@ namespace Mlib {
 
 class TtyRenderableHider: public IRenderableHider {
 public:
-	explicit TtyRenderableHider(const ButtonStates& button_states);
-	virtual void process_input() override;
-	virtual bool is_visible(const std::string& name) override;
+    explicit TtyRenderableHider(const ButtonStates& button_states);
+    virtual void process_input() override;
+    virtual bool is_visible(const std::string& name) override;
 
 private:
-	std::string first_visible_name_;
-	std::set<std::string> available_names_;
-	KeyConfigurations key_configurations_;
-	ButtonPress decrease_;
-	ButtonPress increase_;
-	ButtonPress decrease_much_;
-	ButtonPress increase_much_;
-	SafeAtomicSharedMutex mutex_;
+    std::string first_visible_name_;
+    std::set<std::string> available_names_;
+    KeyConfigurations key_configurations_;
+    ButtonPress decrease_;
+    ButtonPress increase_;
+    ButtonPress decrease_much_;
+    ButtonPress increase_much_;
+    SafeAtomicSharedMutex mutex_;
 };
 
 }

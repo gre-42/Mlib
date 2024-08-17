@@ -21,7 +21,7 @@ public:
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-		std::ignore = e_();
+        std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
@@ -37,7 +37,7 @@ private:
 //     : e_(seed),
 //       d_(low, high)
 //     {
-// 		std::ignore = e_();
+//         std::ignore = e_();
 //     }
 //     TData operator () () {
 //         return d_(e_);
@@ -80,14 +80,14 @@ public:
     : e_(seed),
       d_(mean, stddev)
     {
-		std::ignore = e_();
+        std::ignore = e_();
     }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-		std::ignore = e_();
+        std::ignore = e_();
     }
 private:
     std::minstd_rand e_;
@@ -102,14 +102,14 @@ public:
     : e_(seed),
       d_(alpha, beta)
     {
-		std::ignore = e_();
-	}
+        std::ignore = e_();
+    }
     TData operator () () {
         return d_(e_);
     }
     void seed(unsigned int seed) {
         e_.seed(seed);
-		std::ignore = e_();
+        std::ignore = e_();
     }
 private:
     std::minstd_rand e_;

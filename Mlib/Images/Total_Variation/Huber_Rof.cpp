@@ -368,32 +368,32 @@ void compute_sigmas_anuranbaka(float& sigma_d, float& sigma_q, float theta, floa
 void compute_sigmas_ravich2(float& sigma_d, float& sigma_q, float theta, float epsilon)
 {
 /*
-	The DTAM paper only provides a reference [3] for setting sigma_q & sigma_d
+    The DTAM paper only provides a reference [3] for setting sigma_q & sigma_d
 
-	[3] A. Chambolle and T. Pock. A first-order primal-dual
-	algorithm for convex problems with applications to imaging.
-	Journal of Mathematical Imaging and Vision, 40(1):120-
-	145, 2011.
+    [3] A. Chambolle and T. Pock. A first-order primal-dual
+    algorithm for convex problems with applications to imaging.
+    Journal of Mathematical Imaging and Vision, 40(1):120-
+    145, 2011.
 
-	The relevant section of this (equation) dense paper is:
-	Sec. 6.2.3 The Huber-ROF Model, ALG3
-	\gamma = \lambda = \theta in DTAM paper
-	\delta = \alpha = \epsilon i.e., Huber epsilon in DTAM paper
+    The relevant section of this (equation) dense paper is:
+    Sec. 6.2.3 The Huber-ROF Model, ALG3
+    \gamma = \lambda = \theta in DTAM paper
+    \delta = \alpha = \epsilon i.e., Huber epsilon in DTAM paper
 
-	L is defined in Theorem 1 as L = ||K||, and ||K|| is defined in Sec. 2., Eqn. 1 as:
-	||K|| = max {Kx : x in X with ||x|| <= 1}.
-	In our case, working from eqn. 3 (see also Sec. 6.2.1 on how eqn. 3 is mapped to the ROF model),
-	K is the forward differentiation matrix with G weighting, (AG in the paper), so ||K|| = 2,
-	obtained for x = (0.5, -0.5, 0.5, -0.5, 0, 0, ..., 0).
+    L is defined in Theorem 1 as L = ||K||, and ||K|| is defined in Sec. 2., Eqn. 1 as:
+    ||K|| = max {Kx : x in X with ||x|| <= 1}.
+    In our case, working from eqn. 3 (see also Sec. 6.2.1 on how eqn. 3 is mapped to the ROF model),
+    K is the forward differentiation matrix with G weighting, (AG in the paper), so ||K|| = 2,
+    obtained for x = (0.5, -0.5, 0.5, -0.5, 0, 0, ..., 0).
 */
 
-	float L = 2.f;
+    float L = 2.f;
 
-	float mu = 2.f * std::sqrt(epsilon / theta) / L;
+    float mu = 2.f * std::sqrt(epsilon / theta) / L;
 
-	// TODO: check the original paper for correctness of these settings
-	sigma_d = mu / (2.f / theta);
-	sigma_q = mu / (2.f * epsilon);
+    // TODO: check the original paper for correctness of these settings
+    sigma_d = mu / (2.f / theta);
+    sigma_q = mu / (2.f * epsilon);
 }
 
 Array<float> update_q(const Array<float>& g, const Array<float>& q, const Array<float>& d, float epsilon, float sigma_q) {

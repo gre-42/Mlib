@@ -33,7 +33,7 @@ DriveOrWalkAi::DriveOrWalkAi(
     float collision_avoidance_intersect_cos,
     float collision_avoidance_step_aside_cos,
     float collision_avoidance_step_aside_distance)
-	: on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
+    : on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , player_{ player }
     , waypoint_reached_radius_{ waypoint_reached_radius }
     , rest_radius_{ rest_radius }

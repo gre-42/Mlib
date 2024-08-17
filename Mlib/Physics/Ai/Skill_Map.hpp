@@ -7,11 +7,11 @@ enum class ControlSource;
 
 class SkillMap {
 public:
-	Skills& skills(ControlSource source);
-	const Skills& skills(ControlSource source) const;
+    Skills& skills(ControlSource source);
+    const Skills& skills(ControlSource source) const;
 private:
-	Skills ai_skills_;
-	Skills user_skills_;
+    Skills ai_skills_;
+    Skills user_skills_;
 };
 
 }

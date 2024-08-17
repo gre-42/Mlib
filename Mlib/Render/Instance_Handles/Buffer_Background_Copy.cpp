@@ -29,12 +29,12 @@ std::string Mlib::background_copy_state_to_string(BackgroundCopyState s) {
 
 static bool buffer_data_supported() {
 #ifdef __ANDROID__
-	return false;
+    return false;
 #else
-	GLint major, minor;
-	CHK(glGetIntegerv(GL_MAJOR_VERSION, &major));
-	CHK(glGetIntegerv(GL_MINOR_VERSION, &minor));
-	return std::make_pair(major, minor) >= std::make_pair(4, 4);
+    GLint major, minor;
+    CHK(glGetIntegerv(GL_MAJOR_VERSION, &major));
+    CHK(glGetIntegerv(GL_MINOR_VERSION, &minor));
+    return std::make_pair(major, minor) >= std::make_pair(4, 4);
 #endif
 }
 
@@ -68,15 +68,15 @@ void BufferBackgroundCopy::set_type_erased(
 
     // Do not unbind so that attributes can be set.
     // CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-	if ((begin == nullptr) ||
+    if ((begin == nullptr) ||
         (integral_cast<size_t>(end - begin) < min_bytes_) ||
         (task_location == TaskLocation::FOREGROUND) ||
         !buffer_data_supported())
     {
-		CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
-		is_mapped_ = false;
+        CHK(glBufferData(GL_ARRAY_BUFFER, integral_cast<GLsizeiptr>(end - begin), begin, GL_STATIC_DRAW));
+        is_mapped_ = false;
         state_ = BackgroundCopyState::AWAITED;
-	} else {
+    } else {
 #ifdef __ANDROID__
         verbose_abort("Internal error: buffer-data not supported on Android");
 #else

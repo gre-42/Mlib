@@ -6,14 +6,14 @@ namespace Mlib {
 
 class Gl3TextureHandle: public ITextureHandle {
 public:
-	Gl3TextureHandle();
-	virtual ~Gl3TextureHandle() override;
-	virtual uint32_t handle32() const override;
-	virtual uint64_t handle64() const override;
-	virtual uint32_t& handle32() override;
-	virtual uint64_t& handle64() override;
+    Gl3TextureHandle();
+    virtual ~Gl3TextureHandle() override;
+    virtual uint32_t handle32() const override;
+    virtual uint64_t handle64() const override;
+    virtual uint32_t& handle32() override;
+    virtual uint64_t& handle64() override;
 private:
-	GLuint handle_;
+    GLuint handle_;
 };
 
 }

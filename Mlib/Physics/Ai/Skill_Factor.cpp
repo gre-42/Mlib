@@ -5,6 +5,6 @@
 using namespace Mlib;
 
 std::string Mlib::skill_scenario_to_string(const SkillScenario& scenario) {
-	return '(' + actor_type_to_string(scenario.actor_type) + ", " +
-		actor_task_to_string(scenario.actor_task) + ')';
+    return '(' + actor_type_to_string(scenario.actor_type) + ", " +
+        actor_task_to_string(scenario.actor_task) + ')';
 }

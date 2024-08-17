@@ -4,12 +4,12 @@
 using namespace Mlib;
 
 TrailSource::TrailSource(
-	std::unique_ptr<ITrailExtender> extender,
-	const FixedArray<float, 3> position,
-	float minimum_velocity)
-	: extender{ std::move(extender) }
-	, position{ position }
-	, minimum_velocity{ minimum_velocity }
+    std::unique_ptr<ITrailExtender> extender,
+    const FixedArray<float, 3> position,
+    float minimum_velocity)
+    : extender{ std::move(extender) }
+    , position{ position }
+    , minimum_velocity{ minimum_velocity }
 {}
 
 TrailSource::~TrailSource() = default;

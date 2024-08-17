@@ -13,7 +13,7 @@ class IArrayBuffer;
 
 class IVertexData {
 public:
-	virtual ~IVertexData() = default;
+    virtual ~IVertexData() = default;
     virtual void update(std::chrono::steady_clock::time_point time) = 0;
     virtual void bind() const = 0;
     virtual bool copy_in_progress() const = 0;

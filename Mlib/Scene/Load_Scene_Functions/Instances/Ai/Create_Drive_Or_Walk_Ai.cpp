@@ -48,19 +48,19 @@ void CreateDriveOrWalkAi::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto player = players.get_player(args.arguments.at<std::string>(KnownArgs::player), CURRENT_SOURCE_LOCATION);
     auto ai = std::make_unique<DriveOrWalkAi>(
         player,
-		args.arguments.at<ScenePos>(KnownArgs::waypoint_reached_radius) * meters,
-		args.arguments.at<float>(KnownArgs::rest_radius) * meters,
-		args.arguments.at<float>(KnownArgs::lookahead_velocity) * kph,
-		args.arguments.at<float>(KnownArgs::takeoff_velocity) * kph,
-		args.arguments.at<float>(KnownArgs::takeoff_velocity_delta) * kph,
-		args.arguments.at<float>(KnownArgs::max_velocity) * kph,
-		args.arguments.at<float>(KnownArgs::max_delta_velocity_brake) * kph,
-		args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_brake) * meters,
-		args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_wait) * meters,
-		args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_correct) * meters,
-		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_intersect_angle) * degrees),
-		std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_angle) * degrees),
-		args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_distance) * meters);
+        args.arguments.at<ScenePos>(KnownArgs::waypoint_reached_radius) * meters,
+        args.arguments.at<float>(KnownArgs::rest_radius) * meters,
+        args.arguments.at<float>(KnownArgs::lookahead_velocity) * kph,
+        args.arguments.at<float>(KnownArgs::takeoff_velocity) * kph,
+        args.arguments.at<float>(KnownArgs::takeoff_velocity_delta) * kph,
+        args.arguments.at<float>(KnownArgs::max_velocity) * kph,
+        args.arguments.at<float>(KnownArgs::max_delta_velocity_brake) * kph,
+        args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_brake) * meters,
+        args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_wait) * meters,
+        args.arguments.at<ScenePos>(KnownArgs::collision_avoidance_radius_correct) * meters,
+        std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_intersect_angle) * degrees),
+        std::cos(args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_angle) * degrees),
+        args.arguments.at<float>(KnownArgs::collision_avoidance_step_aside_distance) * meters);
     player->rigid_body().add_autopilot({ *ai, CURRENT_SOURCE_LOCATION });
     global_object_pool.add(std::move(ai), CURRENT_SOURCE_LOCATION);
 }

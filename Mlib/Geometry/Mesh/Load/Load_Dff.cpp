@@ -1140,8 +1140,8 @@ static void find_raster_format(const Image& img, uint32_t type, uint32_t *depth,
         THROW_OR_ABORT("Raster is not a texture");
     }
 
-    //	for(width = 1; width < img->width; width <<= 1);
-    //	for(height = 1; height < img->height; height <<= 1);
+    //    for(width = 1; width < img->width; width <<= 1);
+    //    for(height = 1; height < img->height; height <<= 1);
     // Perhaps non-power-of-2 textures are acceptable?
     *depth = img.depth;
 

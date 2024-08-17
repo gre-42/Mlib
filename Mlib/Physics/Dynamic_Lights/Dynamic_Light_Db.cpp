@@ -5,15 +5,15 @@
 using namespace Mlib;
 
 DynamicLightDb::DynamicLightDb()
-	: configurations_{ "Light configuration" }
+    : configurations_{ "Light configuration" }
 {}
 
 DynamicLightDb::~DynamicLightDb() = default;
 
 void DynamicLightDb::add(const std::string& name, const TLightConfiguration& config) {
-	configurations_.add(name, config);
+    configurations_.add(name, config);
 }
 
 const DynamicLightDb::TLightConfiguration& DynamicLightDb::get(const std::string& name) const {
-	return configurations_.get(name);
+    return configurations_.get(name);
 }

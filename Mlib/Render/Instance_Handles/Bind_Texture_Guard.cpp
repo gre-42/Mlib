@@ -4,11 +4,11 @@
 using namespace Mlib;
 
 BindTextureGuard::BindTextureGuard(GLenum target, GLuint texture)
-	: target_{ target }
+    : target_{ target }
 {
-	CHK(glBindTexture(target_, texture));
+    CHK(glBindTexture(target_, texture));
 }
 
 BindTextureGuard::~BindTextureGuard() {
-	ABORT(glBindTexture(target_, 0));
+    ABORT(glBindTexture(target_, 0));
 }

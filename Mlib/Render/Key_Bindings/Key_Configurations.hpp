@@ -20,7 +20,7 @@ public:
 
     const KeyConfiguration& get(const std::string& name) const;
 private:
-	Map<std::string, KeyConfiguration> key_configurations_;
+    Map<std::string, KeyConfiguration> key_configurations_;
 };
 
 }

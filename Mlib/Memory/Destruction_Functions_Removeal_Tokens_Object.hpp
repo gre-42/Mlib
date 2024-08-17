@@ -8,47 +8,47 @@ namespace Mlib {
 
 template <class T>
 class DestructionFunctionsTokensObject {
-	DestructionFunctionsTokensObject(const DestructionFunctionsTokensObject&) = delete;
-	DestructionFunctionsTokensObject& operator = (const DestructionFunctionsTokensObject&) = delete;
+    DestructionFunctionsTokensObject(const DestructionFunctionsTokensObject&) = delete;
+    DestructionFunctionsTokensObject& operator = (const DestructionFunctionsTokensObject&) = delete;
 public:
-	template <class TDerived>
-		requires std::is_convertible_v<TDerived&, T&>
-	inline DestructionFunctionsTokensObject(
-		const DanglingBaseClassRef<TDerived>& o,
-		DestructionFunctions& on_destroy,
-		SourceLocation loc)
-		: object_{ o.ptr() }
-		, on_object_destroy_{ on_destroy, loc }
-	{}
-	template <class TDerived>
-		requires std::is_convertible_v<TDerived&, T&>
-	inline DestructionFunctionsTokensObject(const DanglingBaseClassRef<TDerived>& o, SourceLocation loc)
-		: DestructionFunctionsTokensObject{ o, o->on_destroy, loc }
-	{}
-	inline T* operator -> () const {
-		return object_.get();
-	}
-	inline T* get() const {
-		return object_.get();
-	}
-	inline DanglingBaseClassRef<T> object() const {
-		return *object_;
-	}
-	inline void on_destroy(std::function<void()> func, SourceLocation loc) {
-		on_object_destroy_.add(std::move(func), std::move(loc));
-	}
-	inline std::strong_ordering operator <=> (const DanglingBaseClassPtr<T>& other) const {
-		return object_ <=> other;
-	}
-	inline bool operator == (const DanglingBaseClassPtr<T>& other) const {
-		return object_ != other;
-	}
-	inline bool operator = (const DanglingBaseClassPtr<T>& other) const {
-		return object_ == other;
-	}
+    template <class TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    inline DestructionFunctionsTokensObject(
+        const DanglingBaseClassRef<TDerived>& o,
+        DestructionFunctions& on_destroy,
+        SourceLocation loc)
+        : object_{ o.ptr() }
+        , on_object_destroy_{ on_destroy, loc }
+    {}
+    template <class TDerived>
+        requires std::is_convertible_v<TDerived&, T&>
+    inline DestructionFunctionsTokensObject(const DanglingBaseClassRef<TDerived>& o, SourceLocation loc)
+        : DestructionFunctionsTokensObject{ o, o->on_destroy, loc }
+    {}
+    inline T* operator -> () const {
+        return object_.get();
+    }
+    inline T* get() const {
+        return object_.get();
+    }
+    inline DanglingBaseClassRef<T> object() const {
+        return *object_;
+    }
+    inline void on_destroy(std::function<void()> func, SourceLocation loc) {
+        on_object_destroy_.add(std::move(func), std::move(loc));
+    }
+    inline std::strong_ordering operator <=> (const DanglingBaseClassPtr<T>& other) const {
+        return object_ <=> other;
+    }
+    inline bool operator == (const DanglingBaseClassPtr<T>& other) const {
+        return object_ != other;
+    }
+    inline bool operator = (const DanglingBaseClassPtr<T>& other) const {
+        return object_ == other;
+    }
 private:
-	DanglingBaseClassPtr<T> object_;
-	DestructionFunctionsRemovalTokens on_object_destroy_;
+    DanglingBaseClassPtr<T> object_;
+    DestructionFunctionsRemovalTokens on_object_destroy_;
 };
 
 }

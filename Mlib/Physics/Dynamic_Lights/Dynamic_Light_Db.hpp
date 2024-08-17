@@ -9,17 +9,17 @@ struct ConstantDynamicLightConfiguration;
 class IDynamicLight;
 
 class DynamicLightDb {
-	DynamicLightDb(const DynamicLightDb&) = delete;
-	DynamicLightDb& operator = (const DynamicLightDb&) = delete;
+    DynamicLightDb(const DynamicLightDb&) = delete;
+    DynamicLightDb& operator = (const DynamicLightDb&) = delete;
 public:
-	using TLightConfiguration = std::variant<AnimatedDynamicLightConfiguration, ConstantDynamicLightConfiguration>;
+    using TLightConfiguration = std::variant<AnimatedDynamicLightConfiguration, ConstantDynamicLightConfiguration>;
 
-	DynamicLightDb();
-	~DynamicLightDb();
-	void add(const std::string& name, const TLightConfiguration& config);
-	const TLightConfiguration& get(const std::string& name) const;
+    DynamicLightDb();
+    ~DynamicLightDb();
+    void add(const std::string& name, const TLightConfiguration& config);
+    const TLightConfiguration& get(const std::string& name) const;
 private:
-	ThreadsafeStringMap<TLightConfiguration> configurations_;
+    ThreadsafeStringMap<TLightConfiguration> configurations_;
 };
 
 }

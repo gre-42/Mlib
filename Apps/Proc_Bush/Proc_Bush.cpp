@@ -42,11 +42,11 @@ void draw_arrays(
     }
     for (const FixedArray<size_t, 4>& f : faces) {
         int res = fprintf(
-			pFile,
-			"f %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu\n",
-			f(0) + 1 + faceOffset, f(0) + 1 + faceOffset, f(0) + 1 + faceOffset,
-			f(1) + 1 + faceOffset, f(1) + 1 + faceOffset, f(1) + 1 + faceOffset,
-			f(2) + 1 + faceOffset, f(2) + 1 + faceOffset, f(2) + 1 + faceOffset,
+            pFile,
+            "f %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu %zu/%zu/%zu\n",
+            f(0) + 1 + faceOffset, f(0) + 1 + faceOffset, f(0) + 1 + faceOffset,
+            f(1) + 1 + faceOffset, f(1) + 1 + faceOffset, f(1) + 1 + faceOffset,
+            f(2) + 1 + faceOffset, f(2) + 1 + faceOffset, f(2) + 1 + faceOffset,
             f(3) + 1 + faceOffset, f(3) + 1 + faceOffset, f(3) + 1 + faceOffset);
         if (res < 0) {
             std::runtime_error(strerror(errno));

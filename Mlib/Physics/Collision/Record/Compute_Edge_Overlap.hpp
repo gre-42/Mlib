@@ -12,10 +12,10 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 
 bool compute_edge_overlap(
-	const IntersectionScene& c,
-	const FixedArray<ScenePos, 3>& intersection_point,
-	bool& sat_used,
-	ScenePos& overlap,
-	FixedArray<ScenePos, 3>& normal);
+    const IntersectionScene& c,
+    const FixedArray<ScenePos, 3>& intersection_point,
+    bool& sat_used,
+    ScenePos& overlap,
+    FixedArray<ScenePos, 3>& normal);
 
 }

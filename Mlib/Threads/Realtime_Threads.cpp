@@ -92,89 +92,89 @@ std::unordered_map<uint32_t, HANDLE> cpu_2_thread_;
 static //Returns the last Win32 error, in string format. Returns an empty string if there is no error.
 std::string GetLastErrorAsString()
 {
-	//Get the error message ID, if any.
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0) {
-		return std::string(); //No error message has been recorded
-	}
+    //Get the error message ID, if any.
+    DWORD errorMessageID = ::GetLastError();
+    if (errorMessageID == 0) {
+        return std::string(); //No error message has been recorded
+    }
 
-	LPSTR messageBuffer = nullptr;
+    LPSTR messageBuffer = nullptr;
 
-	//Ask Win32 to give us the string version of that message ID.
-	//The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    //Ask Win32 to give us the string version of that message ID.
+    //The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
 
-	//Copy the error message into a std::string.
-	std::string message(messageBuffer, size);
+    //Copy the error message into a std::string.
+    std::string message(messageBuffer, size);
 
-	//Free the Win32's string's buffer.
-	LocalFree(messageBuffer);
+    //Free the Win32's string's buffer.
+    LocalFree(messageBuffer);
 
-	return message;
+    return message;
 }
 
 static void pin_current_thread_to_cpu_range(uint32_t min, uint32_t max) {
-	DWORD_PTR affinity_mask = 0;
-	for (uint32_t i = min; i < max; ++i) {
-		affinity_mask |= (DWORD_PTR(1) << i);
-	}
-	if (DWORD_PTR rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
-		THROW_OR_ABORT("Could not set thread affinity mask: " + GetLastErrorAsString());
-	}
+    DWORD_PTR affinity_mask = 0;
+    for (uint32_t i = min; i < max; ++i) {
+        affinity_mask |= (DWORD_PTR(1) << i);
+    }
+    if (DWORD_PTR rc = SetThreadAffinityMask(GetCurrentThread(), affinity_mask); rc == 0) {
+        THROW_OR_ABORT("Could not set thread affinity mask: " + GetLastErrorAsString());
+    }
 }
 
 void Mlib::register_realtime_thread() {
-	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ == UINT32_MAX) {
-		THROW_OR_ABORT("Number of realtime-threads not set");
-	}
-	if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
-		THROW_OR_ABORT("Not enough real-time threads reserved");
-	}
-	for (unsigned int i = 0; i < std::thread::hardware_concurrency(); ++i) {
-		if (!cpu_2_thread_.contains(i)) {
-			pin_current_thread_to_cpu_range(i, i + 1);
-			if (!cpu_2_thread_.try_emplace(i, GetCurrentThread()).second) {
-				verbose_abort("Internal error: Could not register real-time thread (1)");
-			}
-			return;
-		}
-	}
-	verbose_abort("Internal error: Could not register real-time thread (2)");
+    std::scoped_lock lock{ mutex_ };
+    if (nreserved_realtime_threads_ == UINT32_MAX) {
+        THROW_OR_ABORT("Number of realtime-threads not set");
+    }
+    if (cpu_2_thread_.size() >= nreserved_realtime_threads_) {
+        THROW_OR_ABORT("Not enough real-time threads reserved");
+    }
+    for (unsigned int i = 0; i < std::thread::hardware_concurrency(); ++i) {
+        if (!cpu_2_thread_.contains(i)) {
+            pin_current_thread_to_cpu_range(i, i + 1);
+            if (!cpu_2_thread_.try_emplace(i, GetCurrentThread()).second) {
+                verbose_abort("Internal error: Could not register real-time thread (1)");
+            }
+            return;
+        }
+    }
+    verbose_abort("Internal error: Could not register real-time thread (2)");
 }
 
 void Mlib::unregister_realtime_thread() {
-	std::scoped_lock lock{ mutex_ };
-	for (const auto& [c, t] : cpu_2_thread_) {
-		if (t == GetCurrentThread()) {
-			cpu_2_thread_.erase(c);
-			return;
-		}
-	}
-	verbose_abort("Could not unregister real-time thread");
+    std::scoped_lock lock{ mutex_ };
+    for (const auto& [c, t] : cpu_2_thread_) {
+        if (t == GetCurrentThread()) {
+            cpu_2_thread_.erase(c);
+            return;
+        }
+    }
+    verbose_abort("Could not unregister real-time thread");
 }
 
 #endif
 
 void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {
-	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ != UINT32_MAX) {
-		THROW_OR_ABORT("Number of realtime-threads already set");
-	}
-	if (nreserved_realtime_threads == UINT32_MAX) {
-		THROW_OR_ABORT("Invalid argument for nrealtime_threads");
-	}
-	if (std::thread::hardware_concurrency() < nreserved_realtime_threads) {
-		THROW_OR_ABORT("Not enough CPUs available for number of real-time threads");
-	}
-	nreserved_realtime_threads_ = nreserved_realtime_threads;
+    std::scoped_lock lock{ mutex_ };
+    if (nreserved_realtime_threads_ != UINT32_MAX) {
+        THROW_OR_ABORT("Number of realtime-threads already set");
+    }
+    if (nreserved_realtime_threads == UINT32_MAX) {
+        THROW_OR_ABORT("Invalid argument for nrealtime_threads");
+    }
+    if (std::thread::hardware_concurrency() < nreserved_realtime_threads) {
+        THROW_OR_ABORT("Not enough CPUs available for number of real-time threads");
+    }
+    nreserved_realtime_threads_ = nreserved_realtime_threads;
 }
 
 void Mlib::pin_background_thread() {
-	std::scoped_lock lock{ mutex_ };
-	if (nreserved_realtime_threads_ == UINT32_MAX) {
-		THROW_OR_ABORT("Number of realtime-threads not set");
-	}
-	pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());
+    std::scoped_lock lock{ mutex_ };
+    if (nreserved_realtime_threads_ == UINT32_MAX) {
+        THROW_OR_ABORT("Number of realtime-threads not set");
+    }
+    pin_current_thread_to_cpu_range(nreserved_realtime_threads_, std::thread::hardware_concurrency());
 }

@@ -33,7 +33,7 @@ public:
     }
     virtual ~IArrayBuffer() = default;
     virtual bool copy_in_progress() const = 0;
-	virtual void wait() const = 0;
+    virtual void wait() const = 0;
     virtual void update() = 0;
     virtual void bind() const = 0;
     virtual bool is_awaited() const = 0;

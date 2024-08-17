@@ -94,7 +94,7 @@ struct Image
     uint32_t flags;
     uint32_t width, height;
     uint32_t depth;
-    uint32_t bpp;	// bytes per pixel
+    uint32_t bpp;    // bytes per pixel
     uint32_t stride;
     std::vector<uint8_t> pixels;
     Palette palette = uninitialized;
@@ -310,7 +310,7 @@ public:
     enum Type {
         DIRECTIONAL = 1,
         AMBIENT,
-        POINT = 0x80,	// positioned
+        POINT = 0x80,    // positioned
         SPOT,
         SOFTSPOT
     };

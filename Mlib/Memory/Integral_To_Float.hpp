@@ -7,11 +7,11 @@ namespace Mlib {
 
 template <std::floating_point TDest, std::integral TSource>
 TDest integral_to_float(TSource source) {
-	auto result = (TDest)source;
-	if ((TSource)result != source) {
-		THROW_OR_ABORT("integral_to_float: Could not cast integral to floating-point number: " + std::to_string(source));
-	}
-	return result;
+    auto result = (TDest)source;
+    if ((TSource)result != source) {
+        THROW_OR_ABORT("integral_to_float: Could not cast integral to floating-point number: " + std::to_string(source));
+    }
+    return result;
 }
 
 }

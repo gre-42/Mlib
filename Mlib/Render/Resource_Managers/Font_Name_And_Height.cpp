@@ -4,7 +4,7 @@
 using namespace Mlib;
 
 FontNameAndHeight& FontNameAndHeight::compute_hash() {
-	hash = Mlib::hash_combine(
+    hash = Mlib::hash_combine(
         ttf_filename,
         height_pixels);
     return *this;

@@ -4,13 +4,13 @@
 namespace Mlib {
 
 class BindTextureGuard {
-	BindTextureGuard(const BindTextureGuard&) = delete;
-	BindTextureGuard& operator = (const BindTextureGuard&) = delete;
+    BindTextureGuard(const BindTextureGuard&) = delete;
+    BindTextureGuard& operator = (const BindTextureGuard&) = delete;
 public:
-	explicit BindTextureGuard(GLenum target, GLuint texture);
-	~BindTextureGuard();
+    explicit BindTextureGuard(GLenum target, GLuint texture);
+    ~BindTextureGuard();
 private:
-	GLenum target_;
+    GLenum target_;
 };
 
 }

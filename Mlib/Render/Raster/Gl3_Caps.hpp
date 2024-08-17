@@ -16,11 +16,11 @@ namespace Dff {
 
 struct Gl3Caps
 {
-	int gles;
-	int glversion;
-	bool dxtSupported;
-	bool astcSupported;	// not used yet
-	float maxAnisotropy;
+    int gles;
+    int glversion;
+    bool dxtSupported;
+    bool astcSupported;    // not used yet
+    float maxAnisotropy;
 };
 MLIB_RENDER_API extern Gl3Caps gl3Caps;
 

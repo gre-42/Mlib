@@ -12,18 +12,18 @@ class AdvanceTimes;
 
 class FollowerAi: public IAdvanceTime, public virtual DanglingBaseClass {
 public:
-	explicit FollowerAi(
-		AdvanceTimes& advance_times,
-		const DanglingBaseClassRef<RigidBodyVehicle>& follower,
-		const DanglingBaseClassRef<RigidBodyVehicle>& followed);
-	virtual ~FollowerAi();
-	virtual void advance_time(float dt, std::chrono::steady_clock::time_point time);
+    explicit FollowerAi(
+        AdvanceTimes& advance_times,
+        const DanglingBaseClassRef<RigidBodyVehicle>& follower,
+        const DanglingBaseClassRef<RigidBodyVehicle>& followed);
+    virtual ~FollowerAi();
+    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time);
 private:
-	AdvanceTimes& advance_times_;
-	DanglingBaseClassRef<RigidBodyVehicle> follower_;
-	DanglingBaseClassPtr<RigidBodyVehicle> followed_;
-	DestructionFunctionsRemovalTokens follower_on_destroy_;
-	DestructionFunctionsRemovalTokens followed_on_destroy_;
+    AdvanceTimes& advance_times_;
+    DanglingBaseClassRef<RigidBodyVehicle> follower_;
+    DanglingBaseClassPtr<RigidBodyVehicle> followed_;
+    DestructionFunctionsRemovalTokens follower_on_destroy_;
+    DestructionFunctionsRemovalTokens followed_on_destroy_;
 };
 
 }

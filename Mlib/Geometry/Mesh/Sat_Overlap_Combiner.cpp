@@ -8,9 +8,9 @@ using namespace Mlib;
 SatOverlapCombiner::SatOverlapCombiner(
     const std::set<OrderableFixedArray<ScenePos, 3>>& vertices0,
     const std::set<OrderableFixedArray<ScenePos, 3>>& vertices1)
-	: keep_normal_{ false }
+    : keep_normal_{ false }
     , best_normal_{ uninitialized }
-	, best_min_overlap_{ (ScenePos)INFINITY }
+    , best_min_overlap_{ (ScenePos)INFINITY }
     , vertices0_{ vertices0 }
     , vertices1_{ vertices1 }
 {}

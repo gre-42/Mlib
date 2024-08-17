@@ -7,12 +7,12 @@ namespace Mlib {
 
 class DestructionFunctionsTokensList {
 public:
-	DestructionFunctionsTokensList();
-	~DestructionFunctionsTokensList();
-	void add(DestructionFunctions& funcs, std::function<void()> f, SourceLocation loc);
-	void clear();
+    DestructionFunctionsTokensList();
+    ~DestructionFunctionsTokensList();
+    void add(DestructionFunctions& funcs, std::function<void()> f, SourceLocation loc);
+    void clear();
 private:
-	std::list<DestructionFunctionsRemovalTokens> removal_tokens_;
+    std::list<DestructionFunctionsRemovalTokens> removal_tokens_;
 };
 
 }

@@ -8,10 +8,10 @@ namespace Mlib {
 enum class RenderingDynamics;
 
 struct InstanceInformation {
-	std::string resource_name;
-	TransformationMatrix<float, ScenePos, 3> trafo;
-	float scale;
-	RenderingDynamics rendering_dynamics;
+    std::string resource_name;
+    TransformationMatrix<float, ScenePos, 3> trafo;
+    float scale;
+    RenderingDynamics rendering_dynamics;
 };
 
 }

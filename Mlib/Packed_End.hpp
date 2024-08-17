@@ -1,6 +1,6 @@
 #ifdef _MSC_VER
-	#pragma pack(pop)
-	#undef PACKED
+    #pragma pack(pop)
+    #undef PACKED
 #else
-	#undef PACKED
+    #undef PACKED
 #endif

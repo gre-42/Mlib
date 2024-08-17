@@ -216,9 +216,9 @@ void Bgr565Bitmap::save_to_stream(std::ostream& ostream) const {
     header.yPelsPerMeter = 0xb13;
     header.clrUsed = 0;
     header.clrImportant = 0;
-	assert_true(sizeof(header) == 54);
+    assert_true(sizeof(header) == 54);
     assert_true(sizeof(off_bitmap_header_565) == 84);
-	ostream.write(
+    ostream.write(
         reinterpret_cast<const char*>(&header),
         sizeof(header));
     if (ostream.fail()) {

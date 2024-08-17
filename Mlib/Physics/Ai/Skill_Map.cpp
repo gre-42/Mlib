@@ -5,15 +5,15 @@
 using namespace Mlib;
 
 Skills& SkillMap::skills(ControlSource source) {
-	switch (source) {
-	case ControlSource::AI:
-		return ai_skills_;
-	case ControlSource::USER:
-		return user_skills_;
-	}
-	THROW_OR_ABORT("Unknown control source");
+    switch (source) {
+    case ControlSource::AI:
+        return ai_skills_;
+    case ControlSource::USER:
+        return user_skills_;
+    }
+    THROW_OR_ABORT("Unknown control source");
 }
 
 const Skills& SkillMap::skills(ControlSource source) const {
-	return const_cast<SkillMap*>(this)->skills(source);
+    return const_cast<SkillMap*>(this)->skills(source);
 }

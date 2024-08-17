@@ -8,8 +8,8 @@ class Palette;
 
 class IRasterD3d8 : public IRaster {
 public:
-	virtual uint32_t type() const = 0;
-	virtual uint8_t* palette() = 0;
+    virtual uint32_t type() const = 0;
+    virtual uint8_t* palette() = 0;
 };
 }
 }

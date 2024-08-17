@@ -77,11 +77,11 @@ void draw_arrays(FILE * pFile, int vertCount, fvec3 * vert, fvec3 * normal, fvec
     }
     for (int i = 0; i < faceCount; ++i) {
         int res = fprintf(
-			pFile,
-			"f %d/%d/%d %d/%d/%d %d/%d/%d\n",
-			face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset,
-			face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset,
-			face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset);
+            pFile,
+            "f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+            face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset, face[i].x + 1 + faceOffset,
+            face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset, face[i].y + 1 + faceOffset,
+            face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset, face[i].z + 1 + faceOffset);
         if (res < 0) {
             std::runtime_error(strerror(errno));
         }

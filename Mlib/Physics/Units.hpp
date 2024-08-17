@@ -6,7 +6,7 @@ namespace Mlib {
 static const float milli = 1.f / 1000.f;
 static const float centi = 1.f / 100.f;
 static const float kilo = 1000.f;
-	
+    
 static const float seconds = float{1e3};
 static const float meters = 1.f;
 static const float kg = float(1e-3);

@@ -8,23 +8,23 @@ class RigidBodyVehicle;
 enum class ControlSource;
 
 class DestinationReachedAi final: public IVehicleAi {
-	DestinationReachedAi(const DestinationReachedAi&) = delete;
-	DestinationReachedAi& operator = (const DestinationReachedAi&) = delete;
+    DestinationReachedAi(const DestinationReachedAi&) = delete;
+    DestinationReachedAi& operator = (const DestinationReachedAi&) = delete;
 public:
-	explicit DestinationReachedAi(
-		RigidBodyVehicle& rigid_body,
-		ControlSource control_source,
-		float destination_reached_radius);
-	virtual ~DestinationReachedAi() override;
-	virtual VehicleAiMoveToStatus move_to(
-		const AiWaypoint& ai_waypoint,
-		const SkillMap* skills) override;
-	virtual std::vector<SkillFactor> skills() const override;
+    explicit DestinationReachedAi(
+        RigidBodyVehicle& rigid_body,
+        ControlSource control_source,
+        float destination_reached_radius);
+    virtual ~DestinationReachedAi() override;
+    virtual VehicleAiMoveToStatus move_to(
+        const AiWaypoint& ai_waypoint,
+        const SkillMap* skills) override;
+    virtual std::vector<SkillFactor> skills() const override;
 private:
-	DestructionFunctionsRemovalTokens on_destroy_rigid_body_;
-	RigidBodyVehicle& rigid_body_;
-	ControlSource control_source_;
-	float destination_reached_radius_squared_;
+    DestructionFunctionsRemovalTokens on_destroy_rigid_body_;
+    RigidBodyVehicle& rigid_body_;
+    ControlSource control_source_;
+    float destination_reached_radius_squared_;
 };
 
 }

@@ -19,7 +19,7 @@ TrailStorage::TrailStorage(
 {}
 
 std::unique_ptr<ITrailExtender> TrailStorage::add_trail_extender() {
-	return std::unique_ptr<ITrailExtender>(new TrailExtender(
+    return std::unique_ptr<ITrailExtender>(new TrailExtender(
         trails_instance_,
         trail_sequence_,
         segment_,

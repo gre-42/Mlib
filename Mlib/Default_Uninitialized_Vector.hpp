@@ -12,8 +12,8 @@ using UUVector = std::vector<DefaultUnitialized<T>>;
 
 template <class TIterable>
 inline auto uuvector(const TIterable& begin, const TIterable& end) {
-	using T = typename TIterable::value_type;
-	return UUVector<T>(begin, end);
+    using T = typename TIterable::value_type;
+    return UUVector<T>(begin, end);
 }
 
 }
