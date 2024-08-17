@@ -14,7 +14,7 @@ public:
         // Do nothing
     }
     template <typename T, typename... Rest>
-    inline void combine(const T& v, Rest... rest) {
+    inline void combine(const T& v, const Rest&... rest) {
         std::hash<T> hasher;
         seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
         combine(rest...);
@@ -27,7 +27,7 @@ private:
 };
 
 template <typename... Args>
-inline std::size_t hash_combine(Args... args) {
+inline std::size_t hash_combine(const Args&... args) {
     Hasher hasher{ 0xc0febabe };
     hasher.combine(args...);
     return hasher;

@@ -2,13 +2,6 @@
 #include <Mlib/Hash.hpp>
 #include <compare>
 
-namespace cereal {
-
-template <class T>
-class construct;
-
-}
-
 namespace Mlib {
 
 template <class T>
@@ -45,15 +38,7 @@ public:
     template <class Archive>
     void serialize(Archive& archive) {
         archive(variable_);
-    }
-    template<typename Archive>
-    static void load_and_construct(
-        Archive &archive,
-        cereal::construct<VariableAndHash> &construct)
-    {
-        T variable;
-        archive(variable);
-        construct(variable);
+        archive(hash_);
     }
 private:
     T variable_;
