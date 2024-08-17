@@ -24,6 +24,9 @@ public:
     }
     Quaternion()
     {}
+    Quaternion(Uninitialized)
+        : v_{ uninitialized }
+    {}
     Quaternion(const TData& s, const FixedArray<TData, 3>& v)
         : v_{ v }
         , s_{ s }

@@ -51,7 +51,7 @@ AimAt::~AimAt() {
 }
 
 void AimAt::set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) {
-    if (followed_ != nullptr) {
+    if ((followed_ != nullptr) && !std::isnan(bullet_velocity_)) {
         {
             auto bullet_launch_position =
                 gun_node_->absolute_model_matrix().t() -
