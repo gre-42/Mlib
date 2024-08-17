@@ -8,7 +8,7 @@ StderrContext::StderrContext() = default;
 StderrContext::~StderrContext() = default;
 
 void StderrContext::doLog(const rcLogCategory category, const char* msg, const int len) {
-    lerr() << std::string(msg, (size_t)len);
+    linfo() << std::string(msg, (size_t)len);
 }
 
 void StderrContext::doResetTimers() {

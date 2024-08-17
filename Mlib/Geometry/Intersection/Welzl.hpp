@@ -12,7 +12,7 @@
 
 namespace Mlib {
 
-static float WELZL_DUPLICATE_THRESHOLD = WELZL_DUPLICATE_THRESHOLD;
+static float WELZL_DUPLICATE_THRESHOLD = 1e-10f;
 static float WELZL_INTERIOR_THRESHOLD = 1e-7f;
 
 inline std::minstd_rand welzl_rng() {
