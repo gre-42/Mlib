@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Actuators/Tire_Power_Intent.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <algorithm>
 #include <iosfwd>
 #include <list>
 

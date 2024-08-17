@@ -33,10 +33,11 @@ _Unwind_Reason_Code android_unwind_callback(struct _Unwind_Context* context,
     return _URC_NO_REASON;
 }
 
-void Mlib::print_stacktrace(unsigned int max_frames)
+void Mlib::print_stacktrace()
 {
     LOGE("Android stack dump");
 
+    static const size_t max_frames = 300;
     void* buffer[max_frames];
 
     android_backtrace_state state{
@@ -90,7 +91,7 @@ void Mlib::print_stacktrace()
     lerr() << "stack trace:";
 
     // storage array for stack trace address data
-    static const size_t max_frames = 100;
+    static const size_t max_frames = 300;
     void* addrlist[max_frames+1];
 
     if (max_frames >= INT_MAX) {

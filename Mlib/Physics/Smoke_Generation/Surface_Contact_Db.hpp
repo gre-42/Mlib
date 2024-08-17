@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <compare>
 #include <cstdint>
 #include <map>
@@ -16,8 +17,8 @@ public:
     CommutativeMaterialPair(
         PhysicsMaterial a,
         PhysicsMaterial b)
-    : material0_{std::min(a, b)},
-      material1_{std::max(a, b)}
+        : material0_{ std::min(a, b) }
+        , material1_{ std::max(a, b) }
     {}
     std::strong_ordering operator<=>(const CommutativeMaterialPair &) const = default;
 

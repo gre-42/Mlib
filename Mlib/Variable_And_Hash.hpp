@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Hash.hpp>
+#include <Mlib/Std_Hash.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -44,13 +45,6 @@ private:
     T variable_;
     size_t hash_;
 };
-
-}
-
-namespace std {
-
-template <class Key>
-struct hash;
 
 }
 

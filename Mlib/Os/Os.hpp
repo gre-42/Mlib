@@ -36,7 +36,7 @@ class LLog: public std::ostream {
     LLog(const LLog&) = delete;
     LLog& operator = (const LLog&) = delete;
 public:
-    LLog(LogLevel log_level, const char* prefix);
+    explicit LLog(std::function<void(const std::string&)> write);
     ~LLog() override;
     void destroy();
     std::ostream& ref() const;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Std_Hash.hpp>
 #include <compare>
 
 namespace Mlib {
@@ -27,13 +28,6 @@ struct FresnelAndAmbient {
     }
     std::partial_ordering operator <=> (const FresnelAndAmbient&) const = default;
 };
-
-}
-
-namespace std {
-
-template <class Key>
-struct hash;
 
 }
 

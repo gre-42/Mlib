@@ -6,7 +6,8 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Strings/String.hpp>
 #include <Mlib/Strings/To_Number.hpp>
-#include <fstream>
+#include <algorithm>
+#include <istream>
 
 using namespace Mlib;
 

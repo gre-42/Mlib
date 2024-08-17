@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Load/Load_Dff.hpp>
 #include <Mlib/Geometry/Mesh/Load/Raster_Config.hpp>
 #include <Mlib/Io/Cleanup.hpp>
+#include <algorithm>
 
 using namespace Mlib::Dff;
 

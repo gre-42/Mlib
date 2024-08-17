@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 namespace Mlib {

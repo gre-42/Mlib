@@ -6,6 +6,7 @@
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Text/Text_And_Position.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 

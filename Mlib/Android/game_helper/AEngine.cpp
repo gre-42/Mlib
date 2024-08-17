@@ -5,7 +5,6 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Render/IRenderer.hpp>
 #include <Mlib/Render/Ui/Tap_Buttons_States.hpp>
-#include <Mlib/Try_Get_Value.hpp>
 
 //-------------------------------------------------------------------------
 // Ctor
@@ -136,14 +135,14 @@ int32_t AEngine::HandleInput(android_app* app, AInputEvent* event) {
                             (x >= ew->left()) && (x <= ew->right()) &&
                             (y >= ew->bottom()) && (y <= ew->top()))
                         {
-                            if (auto k = Mlib::try_get_value(tb.key); k != nullptr) {
+                            if (const auto& k = tb.key) {
                                 eng->tap_buttons_states_.button_down[*k] = true;
                             }
-                            if (auto v = Mlib::try_get_value(tb.joystick_xaxis); v != nullptr) {
+                            if (const auto& v = tb.joystick_xaxis) {
                                 eng->tap_buttons_states_.joystick_axis_position[*v] =
                                     std::clamp((2.f * x - (ew->left() + ew->right())) / ew->width(), -1.f, 1.f);
                             }
-                            if (auto v = Mlib::try_get_value(tb.joystick_yaxis); v != nullptr) {
+                            if (const auto& v = tb.joystick_yaxis) {
                                 eng->tap_buttons_states_.joystick_axis_position[*v] =
                                     std::clamp((2.f * y - (ew->bottom() + ew->top())) / ew->height(), -1.f, 1.f);
                             }

@@ -1,16 +1,10 @@
 #pragma once
+#include <Mlib/Std_Hash.hpp>
 #include <cstddef>
 
 namespace Mlib {
 
 struct ColormapWithModifiers;
-
-}
-
-namespace std {
-
-template <class Key>
-struct hash;
 
 }
 

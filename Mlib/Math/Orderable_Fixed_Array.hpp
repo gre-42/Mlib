@@ -3,6 +3,7 @@
 #include <Mlib/Default_Uninitialized.hpp>
 #include <Mlib/Hash.hpp>
 #include <Mlib/Math/Math.hpp>
+#include <Mlib/Std_Hash.hpp>
 #include <compare>
 #include <concepts>
 
@@ -69,13 +70,6 @@ public:
 
 template <class TData, size_t... tshape>
 using UOrderableFixedArray = DefaultUnitialized<OrderableFixedArray<TData, tshape...>>;
-
-}
-
-namespace std {
-
-template <class Key>
-struct hash;
 
 }
 

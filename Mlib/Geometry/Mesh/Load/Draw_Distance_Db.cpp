@@ -4,6 +4,7 @@
 #include <Mlib/Regex/Template_Regex.hpp>
 #include <Mlib/Stats/Min_Max.hpp>
 #include <Mlib/Strings/String_View_To_Number.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 using namespace Mlib::TemplateRegex;

@@ -3,6 +3,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <algorithm>
 #include <optional>
 #include <random>
 #include <set>

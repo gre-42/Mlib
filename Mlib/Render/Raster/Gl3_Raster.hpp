@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Mesh/Load/Mipmap_Level.hpp>
 #include <Mlib/Render/Any_Gl.hpp>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace Mlib {

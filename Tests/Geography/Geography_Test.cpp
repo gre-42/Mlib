@@ -4,6 +4,7 @@
 #include <Mlib/Geography/Sun_Direction.hpp>
 #include <Mlib/Images/StbImage1.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 

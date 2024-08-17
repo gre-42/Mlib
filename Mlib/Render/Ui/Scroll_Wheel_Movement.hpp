@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Ui/Incremental_Movement.hpp>
+#include <string>
 
 namespace Mlib {
 

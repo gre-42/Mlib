@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <algorithm>
 #include <iomanip>
 #include <list>
 #include <sstream>

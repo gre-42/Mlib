@@ -36,20 +36,46 @@ void Mlib::set_log_level(LogLevel log_level) {
     g_log_level = log_level;
 }
 
-LLog Mlib::linfo() {
-    return { LogLevel::INFO, "Info: " };
+LogBuf::LogBuf(std::function<void(const std::string&)> write)
+    : write_{ std::move(write) }
+{}
+
+int LogBuf::sync() {
+    // From: https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
+    std::string delimiter = "\n";
+    std::string s = str();
+    size_t last = 0;
+    size_t next = 0;
+    while ((next = s.find(delimiter, last)) != std::string::npos) {
+        write_(s.substr(last, next-last));
+        last = next + 1;
+    }
+    str(s.substr(last));
+    return 0;
 }
 
-LLog Mlib::lwarn() {
-    return { LogLevel::WARNING, "Warning: " };
+LLog::LLog(std::function<void(const std::string&)> write)
+    : std::ostream{ &buf_ }
+    , write_{ std::move(write) }
+    , buf_{ write_ }
+    , destroyed_{ false }
+{}
+
+LLog::~LLog() {
+    if (destroyed_ && !buf_.str().empty()) {
+        verbose_abort("Destroyed log is not empty");
+    }
+    destroy();
 }
 
-LLog Mlib::lerr() {
-    return { LogLevel::ERROR, "Error: " };
+void LLog::destroy() {
+    flush();
+    write_(buf_.str());
+    destroyed_ = true;
 }
 
-LLog Mlib::lraw() {
-    return { LogLevel::ALWAYS, "" };
+std::ostream& LLog::ref() const {
+    return *const_cast<LLog*>(this);
 }
 
 #ifdef __ANDROID__
@@ -62,22 +88,35 @@ static std::string get_path_in_external_files_dir(const std::initializer_list<st
     return std::filesystem::weakly_canonical(res);
 }
 
-LInfo::~LInfo() {
-    if (g_log_level >= LogLevel::INFO) {
-        LOGI("%s", str().c_str());
-    }
+LLog Mlib::linfo() {
+    return LLog{
+        [](const std::string& s) {
+            if (g_log_level >= LogLevel::INFO) {
+                LOGI("%s", s.c_str());
+            }}};
 }
 
-LWarn::~LWarn() {
-    if (g_log_level >= LogLevel::WARNING) {
-        LOGW("%s", str().c_str());
-    }
+LLog Mlib::lwarn() {
+    return LLog{
+        [](const std::string& s) {
+            if (g_log_level >= LogLevel::WARNING) {
+                LOGW("%s", s.c_str());
+            }}};
 }
 
-LErr::~LErr() {
-    if (g_log_level >= LogLevel::ERROR) {
-        LOGE("%s", str().c_str());
-    }
+LLog Mlib::lerr() {
+    return LLog{
+        [](const std::string& s) {
+            if (g_log_level >= LogLevel::ERROR) {
+                LOGE("%s", s.c_str());
+            }}};
+}
+
+LLog Mlib::lraw() {
+    return LLog{
+        [](const std::string& s) {
+            LOGI("%s", s.c_str());
+        }};
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(
@@ -139,50 +178,35 @@ bool Mlib::is_listable(const ndk_helper::DirectoryEntry& entry) {
 
 #else
 
-LogBuf::LogBuf(std::function<void(const std::string&)> write)
-    : write_{ std::move(write) }
-{}
-
-int LogBuf::sync() {
-    // From: https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
-    std::string delimiter = "\n";
-    std::string s = str();
-    size_t last = 0;
-    size_t next = 0;
-    while ((next = s.find(delimiter, last)) != std::string::npos) {
-        write_(s.substr(last, next-last));
-        last = next + 1;
-    }
-    str(s.substr(last));
-    return 0;
+LLog Mlib::linfo() {
+    return LLog{
+        [](const std::string& s) {
+        if (g_log_level >= LogLevel::INFO) {
+            std::cerr << "Info: " << s << std::endl;
+        }}};
 }
 
-LLog::LLog(LogLevel log_level, const char* prefix)
-    : std::ostream{ &buf_ }
-    , write_{ [log_level, prefix](const std::string& s) {
-        if (g_log_level >= log_level) {
-            std::cerr << prefix << s << std::endl;
-        }
-    } }
-    , buf_{ write_ }
-    , destroyed_{ false }
-{}
-
-LLog::~LLog() {
-    if (destroyed_ && !buf_.str().empty()) {
-        verbose_abort("Destroyed log is not empty");
-    }
-    destroy();
+LLog Mlib::lwarn() {
+    return LLog{
+        [](const std::string& s) {
+            if (g_log_level >= LogLevel::WARNING) {
+                std::cerr << "Warning: " << s << std::endl;
+            }}};
 }
 
-void LLog::destroy() {
-    flush();
-    write_(buf_.str());
-    destroyed_ = true;
+LLog Mlib::lerr() {
+    return LLog{
+        [](const std::string& s) {
+            if (g_log_level >= LogLevel::ERROR) {
+                std::cerr << "Error: " << s << std::endl;
+            }}};
 }
 
-std::ostream& LLog::ref() const {
-    return *const_cast<LLog*>(this);
+LLog Mlib::lraw() {
+    return LLog{
+        [](const std::string& s) {
+            std::cerr << s << std::endl;
+            }};
 }
 
 std::unique_ptr<std::istream> Mlib::create_ifstream(

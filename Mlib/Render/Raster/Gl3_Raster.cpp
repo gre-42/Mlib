@@ -240,8 +240,12 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                     std::memcpy(pixels_.data(), levels_[level].data.data(), alloc_sz);
                 } else {
                     // GLES is losing here
+#ifdef __ANDROID__
+                    THROW_OR_ABORT("glGetCompressedTexImage not supported on Android. Alternative: https://stackoverflow.com/a/53993894/2292832");
+#else
                     BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
                     CHK(glGetCompressedTexImage(GL_TEXTURE_2D, integral_cast<GLint>(level), pixels_.data()));
+#endif
                 }
             } else if (gl3Caps.gles) {
                 if (native_format_ != GL_RGBA) {
@@ -251,9 +255,13 @@ uint8_t* Gl3Raster::lock(uint32_t level, uint32_t lock_mode)
                 CHK(glReadPixels(0, 0, integral_cast<GLsizei>(level_meta_data.width), integral_cast<GLsizei>(level_meta_data.height), native_format_, native_type_, pixels_.data()));
                 //e = glGetError(); printf("GL err4 %x (%x)\n", e, native_format);
             } else {
+#ifdef __ANDROID__
+                THROW_OR_ABORT("glGetTexImage not supported on Android. Alternative: https://stackoverflow.com/a/53993894/2292832");
+#else
                 BindTextureGuard btg{ GL_TEXTURE_2D, native_texture_id_->handle<GLuint>() };
                 CHK(glPixelStorei(GL_PACK_ALIGNMENT, 1));
                 CHK(glGetTexImage(GL_TEXTURE_2D, integral_cast<GLint>(level), native_format_, native_type_, pixels_.data()));
+#endif
             }
         }
 

@@ -8,6 +8,7 @@
 #include <Mlib/Geometry/Mesh/Triangle_List.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <algorithm>
 
 using namespace Mlib;
 

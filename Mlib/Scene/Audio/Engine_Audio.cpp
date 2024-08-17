@@ -6,6 +6,7 @@
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Physics/Actuators/Engine_Power_Intent.hpp>
 #include <Mlib/Physics/Units.hpp>
+#include <algorithm>
 #endif
 
 using namespace Mlib;

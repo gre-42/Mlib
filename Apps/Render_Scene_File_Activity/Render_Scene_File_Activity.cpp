@@ -188,7 +188,8 @@ void print_debug_info(
             }
             r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
-                r.physics_engine_.rigid_bodies_.optimize_search_time(lraw());
+                auto log = lraw();
+                r.physics_engine_.rigid_bodies_.optimize_search_time(log);
             }
             if (args.has_named("--plot_triangle_bvh")) {
                 r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
