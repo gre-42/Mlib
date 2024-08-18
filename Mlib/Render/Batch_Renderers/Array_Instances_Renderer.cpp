@@ -94,33 +94,34 @@ void ArrayInstancesRenderer::render_instances(
     const ExternalRenderPass& external_render_pass) const
 {
     std::unique_lock lock_guard{ mutex_ };
-    if (is_initialized_) {
-        if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
-            rcva_ = std::move(next_rcva_);
-            rcvai_ = std::move(next_rcvai_);
-            offset_ = next_offset_;
-        }
-        if (rcvai_ == nullptr) {
-            return;
-        }
-        if (any(isnan(offset_))) {
-            verbose_abort("Offset is NAN");
-        }
-        lock_guard.unlock();
-        TransformationMatrix<float, ScenePos, 3> m{fixed_identity_array<float, 3>(), offset_};
-        rcvai_->render(
-            dot2d(vp, m.affine()),
-            m,
-            iv,
-            nullptr,    // dynamic style
-            lights,
-            skidmarks,
-            scene_graph_config,
-            render_config,
-            { external_render_pass, InternalRenderPass::AGGREGATE },
-            nullptr,    // animation_state
-            {});        // color_style
+    if (!is_initialized_) {
+        return;
     }
+    if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
+        rcva_ = std::move(next_rcva_);
+        rcvai_ = std::move(next_rcvai_);
+        offset_ = next_offset_;
+    }
+    if (rcvai_ == nullptr) {
+        return;
+    }
+    if (any(isnan(offset_))) {
+        verbose_abort("Offset is NAN");
+    }
+    lock_guard.unlock();
+    TransformationMatrix<float, ScenePos, 3> m{fixed_identity_array<float, 3>(), offset_};
+    rcvai_->render(
+        dot2d(vp, m.affine()),
+        m,
+        iv,
+        nullptr,    // dynamic style
+        lights,
+        skidmarks,
+        scene_graph_config,
+        render_config,
+        { external_render_pass, InternalRenderPass::AGGREGATE },
+        nullptr,    // animation_state
+        {});        // color_style
 }
 
 bool ArrayInstancesRenderer::is_initialized() const {
