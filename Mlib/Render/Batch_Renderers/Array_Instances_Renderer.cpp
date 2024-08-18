@@ -93,7 +93,7 @@ void ArrayInstancesRenderer::render_instances(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::scoped_lock lock_guard{ mutex_ };
+    std::unique_lock lock_guard{ mutex_ };
     if (is_initialized_) {
         if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
             rcva_ = std::move(next_rcva_);
@@ -106,6 +106,7 @@ void ArrayInstancesRenderer::render_instances(
         if (any(isnan(offset_))) {
             verbose_abort("Offset is NAN");
         }
+        lock_guard.unlock();
         TransformationMatrix<float, ScenePos, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
             dot2d(vp, m.affine()),

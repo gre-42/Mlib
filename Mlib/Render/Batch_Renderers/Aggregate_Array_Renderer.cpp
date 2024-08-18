@@ -312,7 +312,7 @@ void AggregateArrayRenderer::render_aggregates(
     const ExternalRenderPass& external_render_pass,
     const std::list<const ColorStyle*>& color_styles) const
 {
-    std::scoped_lock lock_guard{ mutex_ };
+    std::unique_lock lock_guard{ mutex_ };
     if (is_initialized_) {
         if ((next_rcva_ != nullptr) && !next_rcva_->copy_in_progress()) {
             next_rcva_ = nullptr;
@@ -322,15 +322,15 @@ void AggregateArrayRenderer::render_aggregates(
         if (rcvai_ == nullptr) {
             return;
         }
-
+        if (any(isnan(offset_))) {
+            verbose_abort("Offset is NAN");
+        }
+        lock_guard.unlock();
         ColorStyle r_style;
         for (const auto& style : color_styles) {
             if (style->matches(AAR_NAME)) {
                 r_style.insert(*style);
             }
-        }
-        if (any(isnan(offset_))) {
-            verbose_abort("Offset is NAN");
         }
         TransformationMatrix<float, ScenePos, 3> m{fixed_identity_array<float, 3>(), offset_};
         rcvai_->render(
