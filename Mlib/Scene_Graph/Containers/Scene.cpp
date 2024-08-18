@@ -28,6 +28,7 @@
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -574,7 +575,7 @@ void Scene::render(
                             large_aggregate_bg_worker_.run(large_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // AperiodicLagFinder lag_finder{"Large aggregates: ", std::chrono::milliseconds{5}};
+                    // AperiodicLagFinder lag_finder{ "Large aggregates: ", std::chrono::milliseconds{5} };
                     large_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -607,7 +608,7 @@ void Scene::render(
                                 large_instances_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // AperiodicLagFinder lag_finder{"large instances: ", std::chrono::milliseconds{5}};
+                    // AperiodicLagFinder lag_finder{ "large instances: ", std::chrono::milliseconds{5} };
                     large_instances_renderer->render_instances(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
 
@@ -643,7 +644,7 @@ void Scene::render(
                             small_aggregate_bg_worker_.run(small_sorted_aggregate_renderer_update_func(TaskLocation::BACKGROUND));
                         }
                     }
-                    // AperiodicLagFinder lag_finder{"Small sorted aggregates: ", std::chrono::milliseconds{5}};
+                    // AperiodicLagFinder lag_finder{ "Small sorted aggregates: ", std::chrono::milliseconds{5} };
                     small_sorted_aggregate_renderer->render_aggregates(vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass, color_styles);
                 }
 
@@ -704,7 +705,7 @@ void Scene::render(
                             }
                         }
                     }
-                    // AperiodicLagFinder lag_finder{"Small sorted instances: ", std::chrono::milliseconds{5}};
+                    // AperiodicLagFinder lag_finder{ "Small sorted instances: ", std::chrono::milliseconds{5} };
                     small_sorted_instances_renderers->get_instances_renderer(external_render_pass.pass)->render_instances(
                         vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
@@ -713,7 +714,7 @@ void Scene::render(
                 auto xp = external_render_pass;
                 xp.time = times_.clamped(xp.time);
                 if (particle_renderer_ != nullptr) {
-                    // AperiodicLagFinder lag_finder{"particles: ", std::chrono::milliseconds{5}};
+                    // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
                     particle_renderer_->render(
                         ParticleSubstrate::AIR,
                         vp,
@@ -736,7 +737,7 @@ void Scene::render(
                 }
             }
             {
-                // AperiodicLagFinder lag_finder{"blended: ", std::chrono::milliseconds{5}};
+                // AperiodicLagFinder lag_finder{ "blended: ", std::chrono::milliseconds{5} };
                 // Contains continuous alpha and must therefore be rendered late.
                 LOG_INFO("Scene::render blended");
                 blended.sort([](Blended& a, Blended& b){ return a.sorting_key() > b.sorting_key(); });
