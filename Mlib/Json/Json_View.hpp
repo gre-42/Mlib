@@ -25,7 +25,7 @@ public:
         const nlohmann::json& j,
         CheckIsObjectBehavior check = CheckIsObjectBehavior::CHECK);
     nlohmann::json try_resolve() const;
-    std::optional<nlohmann::json> try_resolve(const std::string& key) const;
+    std::optional<nlohmann::json> try_resolve(std::string_view key) const;
     template <class TKey0, class... TKeys1>
     std::optional<nlohmann::json> try_resolve(const TKey0& key0, TKeys1... path) const {
         auto res0 = try_at(key0);
@@ -35,18 +35,18 @@ public:
             return std::nullopt;
         }
     }
-    std::optional<nlohmann::json> try_at(const std::string& name) const;
-    std::optional<nlohmann::json> try_at_non_null(const std::string& name) const;
+    std::optional<nlohmann::json> try_at(std::string_view name) const;
+    std::optional<nlohmann::json> try_at_non_null(std::string_view name) const;
     template <class T>
-    std::optional<T> try_at(const std::string& name) const {
+    std::optional<T> try_at(std::string_view name) const {
         return contains(name) ? at<T>(name) : std::optional<T>();
     }
     template <class T>
-    std::optional<T> try_at_non_null(const std::string& name) const {
+    std::optional<T> try_at_non_null(std::string_view name) const {
         return contains_non_null(name) ? at<T>(name) : std::optional<T>();
     }
-    bool contains(const std::string& name) const;
-    bool contains_non_null(const std::string& name) const;
+    bool contains(std::string_view name) const;
+    bool contains_non_null(std::string_view name) const;
     template <class T>
     T get() const {
         return j_.get<T>();
@@ -73,44 +73,47 @@ public:
         }
     }
     template <class T>
-    T at(const std::string_view& name, const T& default_) const {
+    T at(std::string_view name, const T& default_) const {
         return j_.contains(name)
             ? at<T>(name)
             : default_;
     }
     template <class T>
-    T at_non_null(const std::string& name, const T& default_) const {
+    T at_non_null(std::string_view name, const T& default_) const {
         return (j_.at(name).type() != nlohmann::detail::value_t::null)
             ? at<T>(name)
             : default_;
     }
     template <class TData, class TOperation>
-    auto at_vector(const std::string& name, const TOperation& op) const {
+    auto at_vector(std::string_view name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if (val.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Type is not array for key \"" + name + '"');
+            THROW_OR_ABORT("Type is not array for key \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector<TData>(val, op);
     }
     template <class TData, class TOperation>
-    auto at_vector_non_null(const std::string& name, const TOperation& op) const {
+    auto at_vector_non_null(std::string_view name, const TOperation& op) const {
         const auto& val = j_.at(name);
         if ((val.type() != nlohmann::detail::value_t::array) &&
             (val.type() != nlohmann::detail::value_t::null))
         {
-            THROW_OR_ABORT("Type is not array or null for key \"" + name + '"');
+            THROW_OR_ABORT("Type is not array or null for key \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector_non_null<TData>(val, op);
     }
     template <class TData, class TOperation>
-    auto at_vector_non_null_optional(const std::string& name, const TOperation& op) const {
+    auto at_vector_non_null_optional(std::string_view name, const TOperation& op) const {
         if (!j_.contains(name)) {
             return decltype(at_vector_non_null<TData>(name, op))();
         }
         return at_vector_non_null<TData>(name, op);
     }
-    inline void validate(const std::set<std::string>& known_keys, const std::string& prefix = "") const {
+    inline void validate(const std::set<std::string_view>& known_keys, std::string_view prefix = "") const {
         Mlib::validate(j_, known_keys, prefix);
+    }
+    inline void validate_complement(const std::set<std::string_view>& known_keys, std::string_view prefix = "") const {
+        Mlib::validate_complement(j_, known_keys, prefix);
     }
     inline const nlohmann::json& json() const {
         return j_;

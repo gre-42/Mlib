@@ -45,18 +45,19 @@ JsonMacroArguments::JsonMacroArguments(nlohmann::json j)
 
 JsonMacroArguments::~JsonMacroArguments() = default;
 
-void JsonMacroArguments::set(const std::string& key, nlohmann::json value) {
+void JsonMacroArguments::set(std::string_view key, nlohmann::json value) {
     j_[key] = std::move(value);
 }
 
-void JsonMacroArguments::merge(const JsonMacroArguments& other, const std::string& prefix) {
+void JsonMacroArguments::merge(const JsonMacroArguments& other, std::string_view prefix) {
     if (prefix.empty()) {
         for (const auto& [key, value] : other.j_.items()) {
             j_[key] = value;
         }
     } else {
+        auto sp = std::string{ prefix };
         for (const auto& [key, value] : other.j_.items()) {
-            j_[prefix + key] = value;
+            j_[sp + key] = value;
         }
     }
 }
@@ -115,9 +116,9 @@ void JsonMacroArguments::insert_json(const nlohmann::json& j) {
     }
 }
 
-void JsonMacroArguments::insert_json(const std::string& key, nlohmann::json j) {
+void JsonMacroArguments::insert_json(std::string_view key, nlohmann::json j) {
     if (j_.contains(key)) {
-        THROW_OR_ABORT("Multiple definitions of key \"" + key + '"');
+        THROW_OR_ABORT("Multiple definitions of key \"" + std::string{ key } + '"');
     }
     j_[key] = std::move(j);
 }
@@ -143,25 +144,25 @@ void JsonMacroArguments::set_spath(const std::function<std::string(const std::fi
     spath_ = spath;
 }
 
-std::string JsonMacroArguments::path(const std::string& name) const {
+std::string JsonMacroArguments::path(std::string_view name) const {
     auto res = fpath_(at<std::string>(name));
     if (res.is_variable) {
-        THROW_OR_ABORT('"' + name + "\" is a variable, not a path");
+        THROW_OR_ABORT('"' + std::string{ name } + "\" is a variable, not a path");
     }
     return res.path;
 }
 
-std::string JsonMacroArguments::path(const std::string& name, const std::string& deflt) const {
+std::string JsonMacroArguments::path(std::string_view name, std::string_view deflt) const {
     return contains_non_null(name)
-        ? path(name)
-        : deflt;
+        ? std::string{ path(name) }
+        : std::string{ deflt };
 }
 
-FPath JsonMacroArguments::path_or_variable(const std::string& name) const {
+FPath JsonMacroArguments::path_or_variable(std::string_view name) const {
     return fpath_(at<std::string>(name));
 }
 
-FPath JsonMacroArguments::try_path_or_variable(const std::string& name) const {
+FPath JsonMacroArguments::try_path_or_variable(std::string_view name) const {
     if (!contains(name)) {
         return FPath{
             .is_variable = false,
@@ -170,35 +171,35 @@ FPath JsonMacroArguments::try_path_or_variable(const std::string& name) const {
     return fpath_(at<std::string>(name));
 }
 
-std::list<std::string> JsonMacroArguments::path_list(const std::string& name) const {
+std::list<std::string> JsonMacroArguments::path_list(std::string_view name) const {
     return fpathes_(at<std::string>(name));
 }
 
-std::vector<FPath> JsonMacroArguments::pathes_or_variables(const std::string& name) const {
+std::vector<FPath> JsonMacroArguments::pathes_or_variables(std::string_view name) const {
     return at_vector<std::string>(name, fpath_);
 }
 
-std::string JsonMacroArguments::spath(const std::string& name) const {
+std::string JsonMacroArguments::spath(std::string_view name) const {
     return spath_(at<std::string>(name));
 }
 
-std::vector<JsonMacroArguments> JsonMacroArguments::children(const std::string& name) const {
+std::vector<JsonMacroArguments> JsonMacroArguments::children(std::string_view name) const {
     auto el = at(name);
     if (el.type() != nlohmann::detail::value_t::array) {
-        THROW_OR_ABORT("Not an array: \"" + name + '"');
+        THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
     }
     return Mlib::get_vector<nlohmann::json>(el, [this](const nlohmann::json& c){return as_child(c);});
 }
 
-JsonMacroArguments JsonMacroArguments::child(const std::string& name) const {
+JsonMacroArguments JsonMacroArguments::child(std::string_view name) const {
     auto it = j_.find(name);
     if (it == j_.end()) {
-        THROW_OR_ABORT("Could not find child arguments with name \"" + name + '"');
+        THROW_OR_ABORT("Could not find child arguments with name \"" + std::string{ name } + '"');
     }
     return as_child(*it);
 }
 
-std::optional<JsonMacroArguments> JsonMacroArguments::try_get_child(const std::string& name) const {
+std::optional<JsonMacroArguments> JsonMacroArguments::try_get_child(std::string_view name) const {
     auto it = j_.find(name);
     if (it == j_.end()) {
         return std::nullopt;
@@ -218,17 +219,17 @@ std::string JsonMacroArguments::get_multiline_string() const {
     return Mlib::get_multiline_string(j_);
 }
 
-std::string JsonMacroArguments::at_multiline_string(const std::string& name) const {
+std::string JsonMacroArguments::at_multiline_string(std::string_view name) const {
     try {
         return Mlib::get_multiline_string(at(name));
     } catch (const nlohmann::json::type_error& e) {
-        throw std::runtime_error("Could not interpret \"" + name + "\" as a multiline string: " + e.what());
+        throw std::runtime_error("Could not interpret \"" + std::string{ name } + "\" as a multiline string: " + e.what());
     }
 }
 
-std::string JsonMacroArguments::at_multiline_string(const std::string& name, const std::string& default_) const {
+std::string JsonMacroArguments::at_multiline_string(std::string_view name, std::string_view default_) const {
     if (!contains(name)) {
-        return default_;
+        return std::string{ default_ };
     }
     return at_multiline_string(name);
 }

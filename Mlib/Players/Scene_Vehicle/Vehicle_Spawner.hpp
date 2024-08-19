@@ -22,7 +22,7 @@ class VehicleSpawner final : public ISpawner, public DestructionObserver<const R
     VehicleSpawner(const VehicleSpawner&) = delete;
     VehicleSpawner& operator = (const VehicleSpawner&) = delete;
 public:
-    using SpawnVehicle = std::function<void(const SpawnPoint& spawn_point, const std::string& role)>;
+    using SpawnVehicle = std::function<void(const SpawnPoint& spawn_point)>;
 
     VehicleSpawner(Scene& scene, const std::string& team_name);
     ~VehicleSpawner();

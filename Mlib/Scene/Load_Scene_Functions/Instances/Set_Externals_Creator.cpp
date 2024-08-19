@@ -22,16 +22,28 @@ DECLARE_ARGUMENT(externals);
 DECLARE_ARGUMENT(internals);
 }
 
+namespace LetKeys {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(PLAYER_NAME);
+DECLARE_ARGUMENT(IF_PC);
+DECLARE_ARGUMENT(IF_MANUAL_AIM);
+DECLARE_ARGUMENT(IF_MANUAL_SHOOT);
+DECLARE_ARGUMENT(IF_MANUAL_DRIVE);
+DECLARE_ARGUMENT(BEHAVIOR);
+DECLARE_ARGUMENT(ROLE);
+}
+
 const std::string SetExternalsCreator::key = "set_externals_creator";
 
 LoadSceneJsonUserFunction SetExternalsCreator::json_user_function = [](const LoadSceneJsonUserFunctionArgs& args)
 {
     args.arguments.validate(KnownArgs::options);
+    args.macro_line_executor.block_arguments().validate_complement(LetKeys::options);
     SetExternalsCreator(args.renderable_scene()).execute(args);
 };
 
-SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+SetExternalsCreator::SetExternalsCreator(RenderableScene& renderable_scene)
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
@@ -52,14 +64,12 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
-            JsonMacroArguments local_args;
-            local_args.insert_json(nlohmann::json{
-                {"SPAWNER_NAME", spawner_name},
-                {"PLAYER_NAME", player_name},
-                {"IF_PC", (externals_mode == ExternalsMode::PC)},
-                {"behavior", behavior}
-            });
-            macro_line_executor(macro, &local_args, nullptr);
+            nlohmann::json let{
+                {LetKeys::PLAYER_NAME, player_name},
+                {LetKeys::IF_PC, (externals_mode == ExternalsMode::PC)},
+                {LetKeys::BEHAVIOR, behavior}
+            };
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
     );
     spawner.get_primary_scene_vehicle().set_create_vehicle_internals(
@@ -75,18 +85,16 @@ void SetExternalsCreator::execute(const LoadSceneJsonUserFunctionArgs& args)
             if (externals_mode == ExternalsMode::NONE) {
                 THROW_OR_ABORT("Invalid externals mode");
             }
-            JsonMacroArguments local_args;
-            local_args.insert_json(nlohmann::json{
-                {"SPAWNER_NAME", spawner_name},
-                {"PLAYER_NAME", player_name},
-                {"IF_PC", (externals_mode == ExternalsMode::PC)},
-                {"IF_MANUAL_AIM", skills.skills(ControlSource::USER).can_aim},
-                {"IF_MANUAL_SHOOT", skills.skills(ControlSource::USER).can_shoot},
-                {"IF_MANUAL_DRIVE", skills.skills(ControlSource::USER).can_drive},
-                {"behavior", behavior},
-                {"role", internals_mode.role}
-            });
-            macro_line_executor(macro, &local_args, nullptr);
+            nlohmann::json let{
+                {LetKeys::PLAYER_NAME, player_name},
+                {LetKeys::IF_PC, (externals_mode == ExternalsMode::PC)},
+                {LetKeys::IF_MANUAL_AIM, skills.skills(ControlSource::USER).can_aim},
+                {LetKeys::IF_MANUAL_SHOOT, skills.skills(ControlSource::USER).can_shoot},
+                {LetKeys::IF_MANUAL_DRIVE, skills.skills(ControlSource::USER).can_drive},
+                {LetKeys::BEHAVIOR, behavior},
+                {LetKeys::ROLE, internals_mode.role}
+            };
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
     );
 }

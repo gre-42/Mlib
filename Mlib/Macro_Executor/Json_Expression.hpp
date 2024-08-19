@@ -8,36 +8,36 @@ class AssetReferences;
 class JsonView;
 
 nlohmann::json eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
     const AssetReferences& asset_references);
 
 nlohmann::json eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables,
     const AssetReferences& asset_references);
 
 nlohmann::json eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables);
 
 template <class T>
 T eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
     const AssetReferences& asset_references);
 
 template <class T>
 T eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables,
     const AssetReferences& asset_references);
 
 template <class T>
 T eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables);
 
 }

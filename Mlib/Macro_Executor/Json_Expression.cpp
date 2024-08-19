@@ -65,7 +65,7 @@ static const auto W = group(plus(CharPredicate(is_word)));
 static const auto NC = group(plus(CharPredicate([](char c){ return c != ','; })));
 
 static nlohmann::json eval_recursion(
-    const std::string_view& expression,
+    std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
     const AssetReferences& asset_references,
@@ -242,7 +242,7 @@ static nlohmann::json eval_recursion(
 }
 
 nlohmann::json Mlib::eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
     const AssetReferences& asset_references)
@@ -251,7 +251,7 @@ nlohmann::json Mlib::eval(
 }
 
 nlohmann::json Mlib::eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables,
     const AssetReferences& asset_references)
 {
@@ -263,7 +263,7 @@ nlohmann::json Mlib::eval(
 }
 
 nlohmann::json Mlib::eval(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables)
 {
     return eval(
@@ -274,21 +274,21 @@ nlohmann::json Mlib::eval(
 
 template <>
 bool Mlib::eval<bool>(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& globals,
     const JsonView& locals,
     const AssetReferences& asset_references)
 {
     auto result = eval(expression, globals, locals, asset_references);
     if (result.type() != nlohmann::detail::value_t::boolean) {
-        THROW_OR_ABORT("Expression is not of type bool: \"" + expression + '"');
+        THROW_OR_ABORT("Expression is not of type bool: \"" + std::string{ expression } + '"');
     }
     return result;
 }
 
 template <>
 bool Mlib::eval<bool>(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables,
     const AssetReferences& asset_references)
 {
@@ -301,7 +301,7 @@ bool Mlib::eval<bool>(
 
 template <>
 bool Mlib::eval<bool>(
-    const std::string& expression,
+    std::string_view expression,
     const JsonView& variables)
 {
     return eval<bool>(

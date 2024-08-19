@@ -37,6 +37,8 @@ public:
         bool verbose);
     MacroLineExecutor changed_script_filename(
         std::string script_filename) const;
+    MacroLineExecutor inserted_block_arguments(
+        nlohmann::json block_arguments) const;
     MacroLineExecutor changed_context(
         std::string context,
         nlohmann::json block_arguments) const;
@@ -55,6 +57,7 @@ public:
     template <class T>
     T eval(const std::string& expression, const JsonView& variables) const;
     void add_observer(std::function<void()> func);
+    JsonView block_arguments() const;
 private:
     MacroRecorder& macro_recorder_;
     std::string script_filename_;

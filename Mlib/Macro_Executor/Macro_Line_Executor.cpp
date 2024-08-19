@@ -133,6 +133,23 @@ MacroLineExecutor MacroLineExecutor::changed_script_filename(
         verbose_};
 }
 
+MacroLineExecutor MacroLineExecutor::inserted_block_arguments(
+    nlohmann::json block_arguments) const
+{
+    JsonMacroArguments let{ block_arguments_ };
+    let.insert_json(block_arguments);
+    return MacroLineExecutor{
+        macro_recorder_,
+        script_filename_,
+        search_path_,
+        json_user_function_,
+        context_,
+        let.move_json(),
+        global_json_macro_arguments_,
+        asset_references_,
+        verbose_};
+}
+
 MacroLineExecutor MacroLineExecutor::changed_context(
     std::string context,
     nlohmann::json block_arguments) const
@@ -177,10 +194,12 @@ void MacroLineExecutor::operator () (
 
     JsonMacroArguments merged_args{ block_arguments_ };
     if (caller_args != nullptr) {
-        merged_args.merge(*caller_args);
+        // merged_args.merge(*caller_args);
+        merged_args.insert_json(caller_args->json());
     }
     if (local_json_macro_arguments != nullptr) {
-        merged_args.merge(*local_json_macro_arguments);
+        // merged_args.merge(*local_json_macro_arguments);
+        merged_args.insert_json(local_json_macro_arguments->json());
     }
     if (j.type() == nlohmann::detail::value_t::object) {
         JsonView jv{ j };
@@ -243,7 +262,7 @@ void MacroLineExecutor::operator () (
                 }
             } catch (const std::exception& e) {
                 std::stringstream msg;
-                msg << "Exception while substituting variables for " << j << "\n\n" << e.what();
+                msg << "Exception while substituting variables for " << std::setw(2) << j << "\n\n" << e.what();
                 throw std::runtime_error(msg.str());
             }
             // Note that "JsonMacroArguments::subst_and_replace" does not substitute "literals" and "content".
@@ -265,7 +284,7 @@ void MacroLineExecutor::operator () (
                     mle2(macro_it->second.content, &args, nullptr);
                 } catch (const std::runtime_error& e) {
                     std::stringstream msg;
-                    msg << "Exception while executing macro \"" << name << "\". Line: " << macro_it->second.content << "\n\n" << e.what();
+                    msg << "Exception while executing macro \"" << name << "\". Line: " << std::setw(2) << macro_it->second.content << "\n\n" << e.what();
                     if (verbose_) {
                         linfo() << msg.str();
                     }
@@ -373,6 +392,10 @@ T MacroLineExecutor::eval(const std::string& expression) const {
 
 void MacroLineExecutor::add_observer(std::function<void()> func) {
     global_json_macro_arguments_.add_observer(std::move(func));
+}
+
+JsonView MacroLineExecutor::block_arguments() const {
+    return JsonView{ block_arguments_ };
 }
 
 template bool MacroLineExecutor::eval<bool>(const std::string& expression, const JsonView& variables) const;

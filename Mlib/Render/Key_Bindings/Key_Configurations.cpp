@@ -117,18 +117,18 @@ void KeyConfigurations::load(
     }
     for (const auto& e : j) {
         validate(e, KeyConfigurationArgs::options);
-        auto str = [&e](const std::string& key){
+        auto str = [&e](std::string_view key){
             return e.contains(key)
                 ? e[key]
                 : "";
         };
-        auto digital_axes = [&e](const std::string& key){
+        auto digital_axes = [&e](std::string_view key){
             if (e.contains(key)) {
                 return e[key].get<std::map<std::string, AnalogDigitalAxes>>();
             }
             return std::map<std::string, AnalogDigitalAxes>{};
         };
-        auto analog_axes = [&e](const std::string& key){
+        auto analog_axes = [&e](std::string_view key){
             std::map<std::string, BaseAnalogAxesBinding> result;
             if (e.contains(key)) {
                 return e[key].get<std::map<std::string, BaseAnalogAxesBinding>>();

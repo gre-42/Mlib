@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <string_view>
 
 namespace Mlib {
 
@@ -76,6 +77,7 @@ auto get_vector_non_null(const nlohmann::json& j, const TOperation& op) {
 }
 
 std::string get_multiline_string(const nlohmann::json& j);
-void validate(const nlohmann::json& j, const std::set<std::string>& known_keys, const std::string& prefix = "");
+void validate(const nlohmann::json& j, const std::set<std::string_view>& known_keys, std::string_view prefix = "");
+void validate_complement(const nlohmann::json& j, const std::set<std::string_view>& known_keys, std::string_view prefix = "");
 
 }

@@ -46,7 +46,7 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto le = args.arguments.at(KnownArgs::animation_loop_end);
         if (le.type() == nlohmann::json::value_t::string) {
             if (le.get<std::string>() != "full") {
-                THROW_OR_ABORT("Unsupported value for \"" + KnownArgs::animation_loop_end + "\": " + le.get<std::string>());
+                THROW_OR_ABORT("Unsupported value for \"" + std::string{ KnownArgs::animation_loop_end } + "\": " + le.get<std::string>());
             }
             if (!args.arguments.contains(KnownArgs::animation_loop_name)) {
                 THROW_OR_ABORT("Periodic animation end set to \"full\", but animation is not set");

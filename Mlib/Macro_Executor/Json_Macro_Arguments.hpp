@@ -9,6 +9,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace Mlib {
@@ -23,46 +24,49 @@ public:
     JsonMacroArguments(JsonMacroArguments&& other) noexcept;
     explicit JsonMacroArguments(nlohmann::json j);
     ~JsonMacroArguments();
-    void set(const std::string& key, nlohmann::json value);
-    void merge(const JsonMacroArguments& other, const std::string& prefix="");
+    void set(std::string_view key, nlohmann::json value);
+    void merge(const JsonMacroArguments& other, std::string_view prefix="");
     void insert_json(const nlohmann::json& j);
-    void insert_json(const std::string& key, nlohmann::json j);
+    void insert_json(std::string_view key, nlohmann::json j);
     void set_fpathes(const std::function<std::list<std::string>(const std::filesystem::path& f)>& fpathes);
     void set_fpath(const std::function<FPath(const std::filesystem::path& f)>& fpath);
     void set_spath(const std::function<std::string(const std::filesystem::path& f)>& spath);
     std::string get_multiline_string() const;
-    std::string at_multiline_string(const std::string& name) const;
-    std::string at_multiline_string(const std::string& name, const std::string& default_) const;
-    std::string path(const std::string& name) const;
-    std::string path(const std::string& name, const std::string& deflt) const;
-    FPath path_or_variable(const std::string& name) const;
-    FPath try_path_or_variable(const std::string& name) const;
-    std::vector<FPath> pathes_or_variables(const std::string& name) const;
+    std::string at_multiline_string(std::string_view name) const;
+    std::string at_multiline_string(std::string_view name, std::string_view default_) const;
+    std::string path(std::string_view name) const;
+    std::string path(std::string_view name, std::string_view deflt) const;
+    FPath path_or_variable(std::string_view name) const;
+    FPath try_path_or_variable(std::string_view name) const;
+    std::vector<FPath> pathes_or_variables(std::string_view name) const;
     template <class TOperation>
-    auto pathes_or_variables(const std::string& name, const TOperation& op) const {
+    auto pathes_or_variables(std::string_view name, const TOperation& op) const {
         auto el = at(name);
         if (el.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Not an array: \"" + name + '"');
+            THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
         }
-        return Mlib::get_vector<std::string>(el, [this, &op](const std::string& s){return op(fpath_(s));});
+        return Mlib::get_vector<std::string>(el, [this, &op](std::string_view s){return op(fpath_(s));});
     }
-    std::list<std::string> path_list(const std::string& name) const;
-    std::string spath(const std::string& name) const;
-    std::vector<JsonMacroArguments> children(const std::string& name) const;
+    std::list<std::string> path_list(std::string_view name) const;
+    std::string spath(std::string_view name) const;
+    std::vector<JsonMacroArguments> children(std::string_view name) const;
     template <class TOperation>
-    auto children(const std::string& name, const TOperation& op) const {
+    auto children(std::string_view name, const TOperation& op) const {
         auto el = at(name);
         if (el.type() != nlohmann::detail::value_t::array) {
-            THROW_OR_ABORT("Not an array: \"" + name + '"');
+            THROW_OR_ABORT("Not an array: \"" + std::string{ name } + '"');
         }
         return Mlib::get_vector<nlohmann::json>(el, [this, &op](const nlohmann::json& c){return op(as_child(c));});
     }
-    JsonMacroArguments child(const std::string& name) const;
-    std::optional<JsonMacroArguments> try_get_child(const std::string& name) const;
+    JsonMacroArguments child(std::string_view name) const;
+    std::optional<JsonMacroArguments> try_get_child(std::string_view name) const;
     nlohmann::json subst_and_replace(
         const nlohmann::json& j,
         const nlohmann::json& globals,
         const AssetReferences& asset_references) const;
+    inline nlohmann::json&& move_json() {
+        return std::move(j_);
+    }
 private:
     nlohmann::json j_;
     JsonMacroArguments as_child(const nlohmann::json& j) const;

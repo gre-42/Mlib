@@ -41,10 +41,9 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
         [macro_line_executor = args.macro_line_executor,
          spawner_name,
          macro,
-         &scene = scene](const SpawnPoint& p, const std::string& role){
+         &scene = scene](const SpawnPoint& p){
             auto z = z3_from_3x3(tait_bryan_angles_2_matrix(p.rotation));
-            JsonMacroArguments a;
-            a.insert_json(nlohmann::json{
+            nlohmann::json let{
                 {"HUMAN_NODE_POSITION", p.position / (ScenePos)meters},
                 {"HUMAN_NODE_ANGLE_Y", std::atan2(z(0), z(2)) / degrees},
                 {"CAR_NODE_POSITION", p.position / (ScenePos)meters},
@@ -56,10 +55,8 @@ void SetPreferredCarSpawner::execute(const LoadSceneJsonUserFunctionArgs& args)
                 {"ANGULAR_VELOCITY", fixed_zeros<float, 3>() / rpm},  // this is not yet used in the scripts
                 {"SUFFIX", "_" + spawner_name + scene.get_temporary_instance_suffix()},
                 {"IF_WITH_GRAPHICS", true},
-                {"IF_WITH_PHYSICS", true},
-                {"SPAWNER_NAME", spawner_name},
-                {"role", role} });
-            macro_line_executor(macro, &a, nullptr);
+                {"IF_WITH_PHYSICS", true} };
+            macro_line_executor.inserted_block_arguments(let)(macro, nullptr, nullptr);
         }
     );
 }

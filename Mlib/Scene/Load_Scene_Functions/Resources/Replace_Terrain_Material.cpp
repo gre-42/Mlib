@@ -31,7 +31,7 @@ LoadSceneJsonUserFunction ReplaceTerrainMaterial::json_user_function = [](const 
 
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     auto& rendering_resources = RenderingContextStack::primary_rendering_resources();
-    auto fpathps = [&args](const std::string& name){
+    auto fpathps = [&args](std::string_view name){
         return args.arguments.pathes_or_variables(name, [](const FPath& v){return v.path;});
     };
     scene_node_resources.add_modifier(

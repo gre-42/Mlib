@@ -140,16 +140,16 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
         for (const auto& jplayer : jv.at(ToplevelKeys::players)) {
             JsonView player{jplayer};
             player.validate(PlayerKeys::options);
-            auto get = [&defaults, &player](const std::string& name){
+            auto get = [&defaults, &player](std::string_view name){
                 if (player.contains(name)) {
                     return player.at(name);
                 }
                 if (defaults.contains(name)) {
                     return defaults.at(name);
                 }
-                THROW_OR_ABORT("Could not find key \"" + name + "\" in player or defaults");
+                THROW_OR_ABORT("Could not find key \"" + std::string{ name } + "\" in player or defaults");
             };
-            auto get_skill = [&default_skills, &player](const std::string& source, const std::string& name){
+            auto get_skill = [&default_skills, &player](std::string_view source, std::string_view name){
                 auto player_skill = player.try_resolve(PlayerKeys::skills, source, name);
                 return player_skill.has_value()
                     ? *player_skill
@@ -168,17 +168,16 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             "_for_" + *controller)
                     },
                     {
-                        MacroKeys::arguments,
+                        MacroKeys::let,
                         {
-                            {"DECIMATE", ""},
                             {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
                             {"PLAYER_NAME", player.at<std::string>(PlayerKeys::name)},
                             {"HUMAN_NAME", vehicle_name},
                             {"CAR_NAME", vehicle_name},
                             {"TEAM", team},
                             {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
-                            {"behavior", get(PlayerKeys::behavior).get<std::string>()},
-                            {"role", get(PlayerKeys::role).get<std::string>()},
+                            {"BEHAVIOR", get(PlayerKeys::behavior).get<std::string>()},
+                            {"ROLE", get(PlayerKeys::role).get<std::string>()},
                             {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
                             {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},
                             {"IF_HUMAN_STYLE", true},
@@ -211,9 +210,8 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             vars.database.at<std::string>("CLASS"))
                     },
                     {
-                        MacroKeys::arguments,
+                        MacroKeys::let,
                         {
-                            {"DECIMATE", ""},
                             {"SPAWNER_NAME", player.at<std::string>(PlayerKeys::name)},
                             {"HUMAN_NAME", vehicle_name},
                             {"CAR_NAME", vehicle_name},
