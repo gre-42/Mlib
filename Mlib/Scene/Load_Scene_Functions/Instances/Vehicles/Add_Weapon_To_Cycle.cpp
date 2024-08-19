@@ -57,14 +57,14 @@ void AddWeaponToInventory::execute(const LoadSceneJsonUserFunctionArgs& args)
                 bullet_type,
                 cool_down](const std::optional<std::string>& player_name)
             {
-                JsonMacroArguments subst;
+                nlohmann::json let{
+                    { "AMMO_TYPE", ammo_type },
+                    { "BULLET_TYPE", bullet_type },
+                    { "COOL_DOWN", cool_down }};
                 if (player_name.has_value()) {
-                    subst.insert_json("PLAYER_NAME", *player_name);
+                    let["PLAYER_NAME"] = *player_name;
                 }
-                subst.insert_json("AMMO_TYPE", ammo_type);
-                subst.insert_json("BULLET_TYPE", bullet_type);
-                subst.insert_json("COOL_DOWN", cool_down);
-                macro_line_executor(create, &subst, nullptr);
+                macro_line_executor.inserted_block_arguments(let)(create, nullptr, nullptr);
             },
             .ammo_type = ammo_type,
             .bullet_properties = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type)),

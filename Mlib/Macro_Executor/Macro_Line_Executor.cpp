@@ -305,7 +305,7 @@ void MacroLineExecutor::operator () (
                         local_json_macro_arguments);
                 } catch (const std::exception& e) {
                     std::stringstream msg;
-                    msg << "Exception while executing function \"" << name << "\". Line: " << j << "\n\n" << e.what();
+                    msg << "Exception while executing function \"" << name << "\". Line: " << std::setw(2) << j << "\n\n" << e.what();
                     if (verbose_) {
                         linfo() << msg.str();
                     }
@@ -313,7 +313,7 @@ void MacroLineExecutor::operator () (
                 }
                 if (!success) {
                     std::stringstream msg;
-                    msg << "Could not find function with name \"" << name << "\". Line: " << j;
+                    msg << "Could not find function with name \"" << name << "\". Line: " << std::setw(2) << j;
                     if (verbose_) {
                         linfo() << msg.str();
                     }

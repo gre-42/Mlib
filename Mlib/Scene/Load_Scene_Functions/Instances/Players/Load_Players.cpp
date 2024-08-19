@@ -176,7 +176,7 @@ void LoadPlayers::execute(const LoadSceneJsonUserFunctionArgs& args)
                             {"CAR_NAME", vehicle_name},
                             {"TEAM", team},
                             {"GAME_MODE", get(PlayerKeys::game_mode).get<std::string>()},
-                            {"BEHAVIOR", get(PlayerKeys::behavior).get<std::string>()},
+                            {"INITIAL_BEHAVIOR", get(PlayerKeys::behavior).get<std::string>()},
                             {"ROLE", get(PlayerKeys::role).get<std::string>()},
                             {"UNSTUCK_MODE", get(PlayerKeys::unstuck_mode).get<std::string>()},
                             {"IF_SET_WAY_POINTS", get(PlayerKeys::set_way_points)},

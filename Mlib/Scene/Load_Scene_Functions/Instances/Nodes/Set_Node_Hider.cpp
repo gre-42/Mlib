@@ -128,24 +128,30 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingPtr<SceneNode> punch_angle_node = args.arguments.contains(KnownArgs::punch_angle_node)
         ? scene.get_node(args.arguments.at<std::string>(KnownArgs::punch_angle_node), DP_LOC).ptr()
         : nullptr;
+    auto on_hide_or_update = [
+        punch_angle_node,
+        macro_line_executor = args.macro_line_executor]
+        (const nlohmann::json& func)
+    {
+        nlohmann::json let = nlohmann::json::object();
+        if (punch_angle_node != nullptr) {
+            auto rotation = punch_angle_node->rotation();
+            let["PUNCH_ANGLE_PITCH"] = rotation(0) / degrees;
+            let["PUNCH_ANGLE_YAW"] = rotation(1) / degrees;
+        }
+        macro_line_executor.inserted_block_arguments(let)(func, nullptr, nullptr);
+    };
     auto node_hider = std::make_unique<NodeHiderWithEvent>(
         node_to_hide,
         camera_node,
         [
-            punch_angle_node,
-            macro_line_executor = args.macro_line_executor,
+            on_hide_or_update,
             on_hide = args.arguments.try_at(KnownArgs::on_hide)]()
         {
             if (!on_hide.has_value()) {
                 return;
             }
-            JsonMacroArguments local_args;
-            if (punch_angle_node != nullptr) {
-                auto rotation = punch_angle_node->rotation();
-                local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
-                local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-            }
-            macro_line_executor(*on_hide, &local_args, nullptr);
+            on_hide_or_update(*on_hide);
         },
         [
             macro_line_executor = args.macro_line_executor,
@@ -157,20 +163,13 @@ void SetNodeHider::execute(const LoadSceneJsonUserFunctionArgs& args)
             macro_line_executor(*on_destroy, nullptr, nullptr);
         },
         [
-            punch_angle_node,
-            macro_line_executor = args.macro_line_executor,
+            on_hide_or_update,
             on_update = args.arguments.try_at(KnownArgs::on_update)]()
         {
             if (!on_update.has_value()) {
                 return;
             }
-            JsonMacroArguments local_args;
-            if (punch_angle_node != nullptr) {
-                auto rotation = punch_angle_node->rotation();
-                local_args.insert_json("PUNCH_ANGLE_PITCH", rotation(0) / degrees);
-                local_args.insert_json("PUNCH_ANGLE_YAW", rotation(1) / degrees);
-            }
-            macro_line_executor(*on_update, &local_args, nullptr);
+            on_hide_or_update(*on_update);
         });
     auto& nh = global_object_pool.add(std::move(node_hider), CURRENT_SOURCE_LOCATION);
     node_to_hide->clearing_observers.add({ nh, CURRENT_SOURCE_LOCATION });
