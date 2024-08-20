@@ -920,7 +920,7 @@ GLuint RenderingResources::get_texture(
                 original_key,
                 ResourceUpdateCycle::ONCE,
                 CullFaceMode::CULL,
-                AlphaChannelRole::NO_BLEND,
+                ContinuousBlendMode::NONE,
                 vertically_flipped_quad_vertices };
             texture = render_to_texture_2d(
                 sinfo.width,
@@ -1168,7 +1168,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             color,
             ResourceUpdateCycle::ONCE,
             CullFaceMode::CULL,
-            AlphaChannelRole::NO_BLEND};
+            ContinuousBlendMode::NONE};
         {
             RenderToFrameBufferGuard rfg{fb};
             logic.render();

@@ -10,13 +10,14 @@ using namespace Mlib;
 
 CenteredTextureImageLogic::CenteredTextureImageLogic(
     RenderingResources& rendering_resources,
-    ColormapWithModifiers image_resource_name)
+    ColormapWithModifiers image_resource_name,
+    ContinuousBlendMode blend_mode)
     : FillWithTextureLogic{
         rendering_resources,
         std::move(image_resource_name),
         ResourceUpdateCycle::ONCE,
         CullFaceMode::CULL,
-        AlphaChannelRole::BLEND,
+        blend_mode,
         nullptr }
 {}
 

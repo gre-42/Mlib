@@ -39,9 +39,10 @@ MinimapLogic::MinimapLogic(
           RenderingContextStack::primary_rendering_resources(),
           ColormapWithModifiers{
               .filename = map_image_resource_name,
-              .color_mode = ColorMode::RGBA,
+              .color_mode = ColorMode::RGB,
               .mipmap_mode = MipmapMode::WITH_MIPMAPS
-          }.compute_hash()
+          }.compute_hash(),
+          ContinuousBlendMode::ADD
     }
     , locator_logic_{
           RenderingContextStack::primary_rendering_resources(),

@@ -56,7 +56,7 @@ FillWithTextureLogic::FillWithTextureLogic(
     const ColormapWithModifiers& image_resource_name,
     ResourceUpdateCycle update_cycle,
     CullFaceMode cull_face_mode,
-    AlphaChannelRole alpha_channel_role,
+    ContinuousBlendMode blend_mode,
     const float* quad_vertices,
     std::optional<size_t> layer)
     : GenericPostProcessingLogic{ quad_vertices }
@@ -64,7 +64,7 @@ FillWithTextureLogic::FillWithTextureLogic(
     , image_resource_name_{ rendering_resources_.colormap(image_resource_name) }
     , update_cycle_{ update_cycle }
     , cull_face_mode_{ cull_face_mode }
-    , alpha_channel_role_{ alpha_channel_role }
+    , blend_mode_{ blend_mode }
     , layer_{ layer }
 {}
 
@@ -104,12 +104,16 @@ void FillWithTextureLogic::render_wo_update_and_bind()
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glEnable(GL_CULL_FACE));
     }
-    bool enable_blend =
-        (alpha_channel_role_ == AlphaChannelRole::BLEND) &&
+    bool enable_alpha_blend =
+        (blend_mode_ == ContinuousBlendMode::ALPHA) &&
         any(image_resource_name_.color_mode & ColorMode::RGBA);
-    if (enable_blend) {
+    if (enable_alpha_blend) {
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    }
+    if (blend_mode_ == ContinuousBlendMode::ADD) {
+        CHK(glEnable(GL_BLEND));
+        CHK(glBlendFunc(GL_ONE, GL_ONE));
     }
     CHK(glUseProgram(rp_.program));
 
@@ -142,7 +146,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
     if (cull_face_mode_ == CullFaceMode::CULL) {
         CHK(glDisable(GL_CULL_FACE));
     }
-    if (enable_blend) {
+    if (enable_alpha_blend || (blend_mode_ == ContinuousBlendMode::ADD)) {
         CHK(glDisable(GL_BLEND));
         CHK(glBlendFunc(GL_ONE, GL_ZERO));
     }

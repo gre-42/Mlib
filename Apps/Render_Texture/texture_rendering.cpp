@@ -183,7 +183,7 @@ int main(int argc, char** argv)
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                     ResourceUpdateCycle::ONCE,
                     CullFaceMode::CULL,
-                    AlphaChannelRole::BLEND,
+                    ContinuousBlendMode::ALPHA,
                     standard_quad_vertices,
                     layer);
                 rendering_resources.preload({

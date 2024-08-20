@@ -16,7 +16,7 @@ PointerImageLogic::PointerImageLogic(
     std::move(image_resource_name),
     ResourceUpdateCycle::ONCE,
     CullFaceMode::CULL,
-    AlphaChannelRole::BLEND,
+    ContinuousBlendMode::ALPHA,
     nullptr }
 {}
 

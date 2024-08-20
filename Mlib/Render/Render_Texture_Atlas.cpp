@@ -18,7 +18,7 @@ void Mlib::render_texture_atlas(
         { .filename = "" },
         ResourceUpdateCycle::ONCE,
         CullFaceMode::CULL,
-        AlphaChannelRole::NO_BLEND };
+        ContinuousBlendMode::NONE };
     for (const auto& tile : tiles) {
         ViewportGuard vg{
             (float)tile.left * scale_width,

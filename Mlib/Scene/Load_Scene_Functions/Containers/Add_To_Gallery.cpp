@@ -34,7 +34,7 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
             }.compute_hash(),
             ResourceUpdateCycle::ONCE,
             CullFaceMode::CULL,
-            AlphaChannelRole::BLEND,
+            ContinuousBlendMode::ALPHA,
             args.arguments.at<bool>(KnownArgs::flip_horizontally, false)
                 ? horizontally_flipped_quad_vertices
                 : standard_quad_vertices));

@@ -77,7 +77,7 @@ HudTracker::HudTracker(
         }.compute_hash(),
         update_cycle,
         CullFaceMode::CULL,
-        AlphaChannelRole::BLEND,
+        ContinuousBlendMode::ALPHA,
         nullptr }
     , center_{ center }
     , size_{ size }

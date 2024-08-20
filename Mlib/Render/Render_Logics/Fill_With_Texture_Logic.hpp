@@ -15,9 +15,10 @@ struct LayoutConstraintParameters;
 enum class ColorMode;
 enum class MipmapMode;
 
-enum class AlphaChannelRole {
-    BLEND,
-    NO_BLEND
+enum class ContinuousBlendMode {
+    NONE,
+    ALPHA,
+    ADD
 };
 
 class FillWithTextureRenderProgram: public RenderProgram {
@@ -40,7 +41,7 @@ public:
         const ColormapWithModifiers& image_resource_name,
         ResourceUpdateCycle update_cycle,
         CullFaceMode cull_face_mode = CullFaceMode::CULL,
-        AlphaChannelRole alpha_channel_role = AlphaChannelRole::BLEND,
+        ContinuousBlendMode blend_mode = ContinuousBlendMode::ALPHA,
         const float* quad_vertices = standard_quad_vertices,
         std::optional<size_t> layer = std::nullopt);
     ~FillWithTextureLogic();
@@ -59,7 +60,7 @@ private:
     ColormapWithModifiers image_resource_name_;
     ResourceUpdateCycle update_cycle_;
     CullFaceMode cull_face_mode_;
-    AlphaChannelRole alpha_channel_role_;
+    ContinuousBlendMode blend_mode_;
     std::optional<size_t> layer_;
 };
 

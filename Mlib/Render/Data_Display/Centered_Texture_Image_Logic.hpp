@@ -11,7 +11,8 @@ class CenteredTextureImageLogic: public FillWithTextureLogic {
 public:
     explicit CenteredTextureImageLogic(
         RenderingResources& rendering_resources,
-        ColormapWithModifiers image_resource_name);
+        ColormapWithModifiers image_resource_name,
+        ContinuousBlendMode blend_mode);
     ~CenteredTextureImageLogic();
 
     void render(
