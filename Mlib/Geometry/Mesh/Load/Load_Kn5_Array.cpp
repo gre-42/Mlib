@@ -213,7 +213,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
     std::vector<unsigned int> texture_grid;
     float lit_mult = 1.f;
     float specular_mult = 1.f;
-    bool raceway_is_circular = true;
+    // bool raceway_is_circular = true;
     SettingsJson settings_json;
 
     auto append_kn5 = [&](const std::string& kn5_filename) {
@@ -221,6 +221,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         while (!kn5.textures.empty()) {
             textures.insert(kn5.textures.extract(kn5.textures.begin()));
         }
+        bool is_physics_file = fs::path{ kn5_filename }.filename().string().starts_with("physics_");
         for (auto& [_, m] : kn5.materials) {
             if (settings_json.materials.contains(m.name)) {
                 const auto& ms = settings_json.materials.at(m.name);
@@ -293,7 +294,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                             finish_l->second->hmatrix.casted<float, ScenePos>(),
                             finish_r->second->hmatrix.casted<float, ScenePos>()));
                     }
-                    raceway_is_circular = false;
+                    // raceway_is_circular = false;
                 }
             };
             find_ab(
@@ -323,6 +324,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             // AC_PIT_(\\d+)
         }
         for (const auto& [_, node] : kn5.nodes) {
+            if (node.name.starts_with("AC_")) {
+                continue;
+            }
             auto material = node.materialID.has_value()
                 ? &kn5.materials.at(*node.materialID)
                 : nullptr;
@@ -364,7 +368,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                     ? std::optional{ safe_stou(match[NUMBER].str()) }
                     : std::nullopt;
                 if (match[NAME].str().starts_with("WALL_col") ||
-                    match[NAME].str().starts_with("INVISIBLE"))
+                    match[NAME].str().starts_with("INVISIBLE") ||
+                    is_physics_file)
                 {
                     attrs &= ~MetaAttributes::ATTR_VISIBLE;
                 }
@@ -476,9 +481,10 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         tl.material.occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE;
                         tl.material.occluder_pass = ExternalRenderPassType::NONE;
                     }
-                    if ((material->shader == "ksPerPixel") ||                    // required for Akina track
-                        (material->shader == "ksPerPixelAT") ||                  // required for Hondarribia and Akagi tracks
-                        (material->shader == "ksPerPixelAT_NM") ||               // required for Semetin track
+                    if ((material->shader == "ksPerPixel") ||                       // required for Akina track
+                        (material->shader == "ksPerPixelAT") ||                     // required for Hondarribia and Akagi tracks
+                        (material->shader == "ksPerPixelAT_NM") ||                  // required for Semetin track
+                        (material->shader == "ksPerPixelAT_NS") ||                  // required for Gunsai Touge (Enhanced)
                         (material->shader == "ksPerPixelMultiMap_AT") ||
                         (material->shader == "ksPerPixelMultiMap_AT_NMDetail"))
                     {
@@ -819,9 +825,9 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
             }
         }
     }
-    if (race_logic != nullptr) {
-        race_logic->set_circularity(raceway_is_circular);
-    }
+    // if (race_logic != nullptr) {
+    //     race_logic->set_circularity(raceway_is_circular);
+    // }
     FixedArray<float, 3, 3> rotation_matrix_p{tait_bryan_angles_2_matrix(cfg.rotation)};
     auto rotation_matrix_n = inv(rotation_matrix_p).value().T();
     for (auto& l : result) {

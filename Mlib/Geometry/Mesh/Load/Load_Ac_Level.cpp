@@ -38,10 +38,10 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 THROW_OR_ABORT("Could not read from file \"" + ui_track_filename.string() + '"');
             }
         }
-        IniParser ini_parser{minimap_ini_filename.string()};
+        IniParser ini_parser{ minimap_ini_filename.string() };
         // Storing fields in temporary variables to
         // work around a bug in MSVC.
-        auto jv = JsonView{j};
+        auto jv = JsonView{ j };
         // int minimap_x;
         // int minimap_y;
         // int minimap_comp;
@@ -52,10 +52,10 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
         // }
         FixedArray<float, 2> minimap_size{
             ini_parser.get<float>("PARAMETERS", "WIDTH"),
-            ini_parser.get<float>("PARAMETERS", "HEIGHT")};
+            ini_parser.get<float>("PARAMETERS", "HEIGHT") };
         FixedArray<float, 2> minimap_offset{
             ini_parser.get<float>("PARAMETERS", "X_OFFSET"),
-            ini_parser.get<float>("PARAMETERS", "Z_OFFSET")};
+            ini_parser.get<float>("PARAMETERS", "Z_OFFSET") };
         bool circular;
         auto tags = jv.at<std::set<std::string>>("tags");
         auto run = jv.at<std::string>("run");
@@ -72,7 +72,10 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             tags.contains("hill climb"))
         {
             circular = false;
-        } else if (run == "clockwise") {
+        } else if (
+            (run == "clockwise") ||
+            tags.contains("circuit"))
+        {
             circular = true;
         } else {
             THROW_OR_ABORT("Unknown \"run\" parameter in file \"" + preview_filename.string() + "\": " + run);
@@ -89,11 +92,11 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
             {"MINIMAP_OFFSET", minimap_offset} };
         auto on_before_select = nlohmann::json{
             {"call", "globals"},
-            {"arguments", globals}};
+            {"arguments", globals} };
         auto database = JsonMacroArguments(nlohmann::json{
             {"IF_RACEWAY_CIRCULAR", circular},
             {"game_modes", std::vector<std::string>{"rally"}} });
-        auto required = std::vector<std::string>({"%GAME_MODE == 'rally'"});
+        auto required = std::vector<std::string>({ "%GAME_MODE == 'rally'" });
         result.push_back(ReplacementParameterAndFilename{
             .rp = ReplacementParameter{
                 .id = level_id,
@@ -102,31 +105,44 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 .database = std::move(database),
                 .on_before_select = std::move(on_before_select)
             },
-            .filename = script_filename_});
+            .filename = script_filename_ });
     };
     for (const auto& level_dir : list_dir(path)) {
-        auto ui_dir = level_dir / fs::path{"ui"};
+        auto ui_dir = level_dir / fs::path{ "ui" };
         if (!path_exists(ui_dir)) {
             continue;
         }
-        if (auto ui_track_filename = ui_dir / fs::path{"ui_track.json"}; path_exists(ui_track_filename))
+        // Single stage vs. multi stage
+        if (auto ui_track_filename = ui_dir / fs::path{ "ui_track.json" }; path_exists(ui_track_filename))
         {
-            std::list<fs::path> kn5_candidates;
-            for (const auto& kn5_file : list_dir(level_dir)) {
-                if (kn5_file.path().extension() == ".kn5") {
-                    kn5_candidates.push_back(kn5_file);
+            // .ini file vs. single .kn5 file
+            if (auto models_filename = level_dir / fs::path{ "models.ini" }; path_exists(models_filename)) {
+                auto level_id = level_dir.path().filename();
+                add_level(
+                    models_filename,
+                    ui_dir / fs::path{ "preview.png" },
+                    ui_track_filename,
+                    level_dir / fs::path{ "map.png" },
+                    level_dir / fs::path{ "data" } / fs::path{ "map.ini" },
+                    level_id.string());
+            } else {
+                std::list<fs::path> kn5_candidates;
+                for (const auto& kn5_file : list_dir(level_dir)) {
+                    if (kn5_file.path().extension() == ".kn5") {
+                        kn5_candidates.push_back(kn5_file);
+                    }
                 }
+                if (kn5_candidates.size() != 1) {
+                    THROW_OR_ABORT("Did not find exactly one .kn5-file in \"" + level_dir.path().string() + '"');
+                }
+                add_level(
+                    kn5_candidates.front(),
+                    ui_dir / fs::path{ "preview.png" },
+                    ui_track_filename,
+                    level_dir / fs::path{ "map.png" },
+                    level_dir / fs::path{ "data" } / fs::path{ "map.ini" },
+                    kn5_candidates.front().stem().string());
             }
-            if (kn5_candidates.size() != 1) {
-                THROW_OR_ABORT("Did not find exactly on .kn5-file in \"" + level_dir.path().string() + '"');
-            }
-            add_level(
-                kn5_candidates.front(),
-                ui_dir / fs::path{"preview.png"},
-                ui_track_filename,
-                level_dir / fs::path{"map.png"},
-                level_dir / fs::path{"data"} / fs::path{"map.ini"},
-                kn5_candidates.front().stem().string());
         } else {
             for (const auto& stage_dir : list_dir(ui_dir)) {
                 if (!is_listable(stage_dir)) {
@@ -134,11 +150,11 @@ std::list<ReplacementParameterAndFilename> LoadAcLevel::try_load(const std::stri
                 }
                 auto level_id = stage_dir.path().filename();
                 add_level(
-                    (level_dir / fs::path{"models_" + level_id.string()}).string() + ".ini",
-                    stage_dir / fs::path{"preview.png"},
-                    stage_dir / fs::path{"ui_track.json"},
-                    level_dir / level_id / fs::path{"map.png"},
-                    level_dir / level_id / fs::path{"data"} / fs::path{"map.ini"},
+                    (level_dir / fs::path{ "models_" + level_id.string() }).string() + ".ini",
+                    stage_dir / fs::path{ "preview.png" },
+                    stage_dir / fs::path{ "ui_track.json" },
+                    level_dir / level_id / fs::path{ "map.png" },
+                    level_dir / level_id / fs::path{ "data" } / fs::path{ "map.ini" },
                     level_id.string());
             }
         }

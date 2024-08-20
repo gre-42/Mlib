@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
         const auto args = parser.parsed(argc, argv);
         args.assert_num_unnamed_atleast(1);
         for (const auto& file : args.unnamed_values()) {
+            linfo() << "Processing file " << file;
             auto kn5 = load_kn5(file, true /* verbose */);
             if (args.has_named_value("--export")) {
                 DECLARE_REGEX(re, args.named_value("--export"));
