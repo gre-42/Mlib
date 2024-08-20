@@ -12,18 +12,22 @@ class RigidBodyVehicle;
 class SkillMap;
 enum class ExternalsMode;
 enum class ControlSource;
+struct InternalsMode;
 
 class SceneVehicle {
     SceneVehicle(const SceneVehicle&) = delete;
     SceneVehicle& operator = (const SceneVehicle&) = delete;
 public:
     using CreateVehicleExternals = std::function<void(
+        const std::string& player_name,
         ExternalsMode externals_mode,
         const std::string& behavior)>;
     using CreateRoleExternals = std::function<void(
+        const std::string& player_name,
         ExternalsMode externals_mode,
         const SkillMap& skills,
-        const std::string& behavior)>;
+        const std::string& behavior,
+        const InternalsMode& internals_mode)>;
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         std::string scene_node_name,
@@ -31,12 +35,15 @@ public:
         RigidBodyVehicle& rb);
     ~SceneVehicle();
     void create_vehicle_externals(
+        const std::string& player_name,
         ExternalsMode externals_mode,
         const std::string& behavior) const;
     void create_vehicle_internals(
+        const std::string& player_name,
         ExternalsMode externals_mode,
         const SkillMap& skills,
-        const std::string& behavior) const;
+        const std::string& behavior,
+        const InternalsMode& internals_mode) const;
     void set_create_vehicle_externals(
         const CreateVehicleExternals& create_vehicle_externals);
     void set_create_vehicle_internals(

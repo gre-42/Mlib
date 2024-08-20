@@ -21,24 +21,27 @@ SceneVehicle::~SceneVehicle() {
 }
 
 void SceneVehicle::create_vehicle_externals(
+    const std::string& player_name,
     ExternalsMode externals_mode,
     const std::string& behavior) const
 {
     if (!create_vehicle_externals_) {
         THROW_OR_ABORT("create_vehicle_externals not set");
     }
-    create_vehicle_externals_(externals_mode, behavior);
+    create_vehicle_externals_(player_name, externals_mode, behavior);
 }
 
 void SceneVehicle::create_vehicle_internals(
+    const std::string& player_name,
     ExternalsMode externals_mode,
     const SkillMap& skills,
-    const std::string& behavior) const
+    const std::string& behavior,
+    const InternalsMode& internals_mode) const
 {
     if (!create_vehicle_internals_) {
         THROW_OR_ABORT("create_vehicle_internals not set");
     }
-    create_vehicle_internals_(externals_mode, skills, behavior);
+    create_vehicle_internals_(player_name, externals_mode, skills, behavior, internals_mode);
 }
 
 void SceneVehicle::set_create_vehicle_externals(
