@@ -7,10 +7,8 @@
 
 using namespace Mlib;
 
-static const float EPS = 1e-4f;
-
 void AudioSourceAndGain::apply_gain() {
-    source->set_gain(gain_factor * gain);
+    source->set_gain(gain_factor * static_cast<float>(gain));
 }
 
 CrossFade::CrossFade(
@@ -112,26 +110,33 @@ void CrossFade::update_gain_unsafe(float dgain) {
         return;
     }
     auto &sg_back = sources_.back();
-    float dgain1 = std::min(sg_back.gain + dgain, 1.f) - sg_back.gain;
+    auto dgain1 = std::min(sg_back.gain + Gain{ dgain }, Gain{ 1.f }) - sg_back.gain;
     sg_back.gain += dgain1;
     total_gain_ += dgain1;
     sources_.remove_if([&](AudioSourceAndGain &sg) {
-        auto excess_gain = total_gain_ - 1.f;
-        if (excess_gain <= 0.f) {
+        auto excess_gain = total_gain_ - Gain{ 1.f };
+        if (excess_gain == 0.f) {
             return false;
         }
         auto sg_gain_old = sg.gain;
         sg.gain -= std::min({ sg.gain, dgain1, excess_gain });
         total_gain_ -= sg_gain_old - sg.gain;
-        if (sg.gain < EPS) {
+        if (sg.gain == 0.f) {
             return true;
         }
         sg.apply_gain();
         return false;
     });
-    if (total_gain_ > 1.f + EPS) {
+    if (total_gain_ > 1.f) {
         verbose_abort("Cross-fade internal error");
     }
+    // static size_t i = 0;
+    // i = (i + 1) % 100;
+    // if (i == 0) {
+    //     auto log = linfo();
+    //     log << total_gain_ << " - ";
+    //     print_unsafe(log);
+    // }
 }
 
 void CrossFade::update_pitch_unsafe(float pitch) {

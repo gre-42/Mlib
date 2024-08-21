@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Audio/Audio_Source.hpp>
+#include <Mlib/Scaled_Integer.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/J_Thread.hpp>
@@ -14,9 +15,11 @@ class AudioBuffer;
 template <class TPosition>
 struct AudioSourceState;
 
+using Gain = ScaledInteger<int32_t, 1, 10'000>;
+
 struct AudioSourceAndGain {
     const AudioBuffer* audio_buffer;
-    float gain;
+    Gain gain;
     float gain_factor;
     float buffer_frequency;
     std::unique_ptr<AudioSource> source;
@@ -26,7 +29,6 @@ struct AudioSourceAndGain {
 class CrossFade {
     CrossFade(const CrossFade &) = delete;
     CrossFade &operator=(const CrossFade &) = delete;
-
 public:
     explicit CrossFade(PositionRequirement position_requirement,
                        std::function<bool()> paused,
@@ -47,7 +49,7 @@ private:
     void print_unsafe(std::ostream& ostr) const;
 
     PositionRequirement position_requirement_;
-    float total_gain_;
+    Gain total_gain_;
     std::list<AudioSourceAndGain> sources_;
     mutable AtomicMutex mutex_;
     std::function<bool()> paused_;
