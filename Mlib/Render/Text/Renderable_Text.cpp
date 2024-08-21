@@ -64,6 +64,7 @@ TextResource::TextResource(
 
 void TextResource::deallocate() {
     loaded_font_ = nullptr;
+    font_descriptor_.hash.reset();
 }
 
 void TextResource::ensure_initialized(float font_height) const

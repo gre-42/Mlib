@@ -171,6 +171,17 @@ void Mlib::reserve_realtime_threads(uint32_t nreserved_realtime_threads) {
     nreserved_realtime_threads_ = nreserved_realtime_threads;
 }
 
+void Mlib::unreserve_realtime_threads() {
+    std::scoped_lock lock{ mutex_ };
+    if (nreserved_realtime_threads_ == UINT32_MAX) {
+        verbose_abort("Number of realtime-threads not set");
+    }
+    if (!cpu_2_thread_.empty()) {
+        verbose_abort("CPU-to-thread mapping not empty");
+    }
+    nreserved_realtime_threads_ = UINT32_MAX;
+}
+
 void Mlib::pin_background_thread() {
     std::scoped_lock lock{ mutex_ };
     if (nreserved_realtime_threads_ == UINT32_MAX) {

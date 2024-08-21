@@ -60,9 +60,9 @@ int AEngine::InitDisplay(android_app* app) {
     } else if (app->window != gl_context_->GetANativeWindow()) {
         // Re-initialize ANativeWindow.
         // On some devices, ANativeWindow is re-created when the app is resumed
-        if (gl_context_->GetANativeWindow() == nullptr) {
-            Mlib::verbose_abort("AEngine::InitDisplay: old window is null");
-        }
+        // if (gl_context_->GetANativeWindow() == nullptr) {
+        //     Mlib::verbose_abort("AEngine::InitDisplay: old window is null");
+        // }
         UnloadResources();
         gl_context_->Invalidate();
         app_ = app;
@@ -229,6 +229,7 @@ void AEngine::HandleCmd(struct android_app* app, int32_t cmd) {
             // The window is being hidden or closed, clean it up.
             eng->UnloadResources();
             eng->SuspendContext();
+            eng->InvalidateContext();
             eng->has_focus_ = false;
             break;
         case APP_CMD_GAINED_FOCUS:
