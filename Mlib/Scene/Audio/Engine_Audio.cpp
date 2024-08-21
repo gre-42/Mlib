@@ -18,8 +18,8 @@ EngineAudio::EngineAudio(
     float p_idle)
 #ifndef WITHOUT_ALUT
     : cross_fade_{ PositionRequirement::WAITING_FOR_POSITION, paused }
-    , p_reference_{p_reference}
-    , p_idle_{p_idle}
+    , p_reference_{ p_reference }
+    , p_idle_{ p_idle }
 {
     driving_buffer_sequence_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence(resource_name + ".driving");
     driving_gain_ = AudioResourceContextStack::primary_audio_resources()->get_buffer_sequence_gain(resource_name + ".driving");

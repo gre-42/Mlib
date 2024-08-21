@@ -5,6 +5,7 @@
 #include <Mlib/Threads/J_Thread.hpp>
 #include <cmath>
 #include <functional>
+#include <iosfwd>
 #include <list>
 
 namespace Mlib {
@@ -38,11 +39,17 @@ public:
               float buffer_frequency = NAN);
     void stop();
     void set_position(const AudioSourceState<ScenePos> &position);
+    void print(std::ostream& ostr) const;
 
 private:
+    void update_gain_unsafe(float dgain);
+    void update_pitch_unsafe(float pitch);
+    void print_unsafe(std::ostream& ostr) const;
+
     PositionRequirement position_requirement_;
+    float total_gain_;
     std::list<AudioSourceAndGain> sources_;
-    AtomicMutex mutex_;
+    mutable AtomicMutex mutex_;
     std::function<bool()> paused_;
     JThread fader_;
 };
