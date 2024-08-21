@@ -128,17 +128,14 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
                 const FixedArray<float, 3>& velocity,
                 const FixedArray<float, 3>& angular_velocity)
             {
-                JsonMacroArguments local_args;
-                if (player.has_value()) {
-                    local_args.set("PLAYER_NAME", *player);
-                }
-                if (target.has_value()) {
-                    local_args.set("TARGET", *target);
-                }
-                local_args.set("BULLET_SUFFIX", bullet_suffix);
-                local_args.set("BULLET_VELOCITY", velocity / kph);
-                local_args.set("BULLET_ANGULAR_VELOCITY", angular_velocity / rpm);
-                mle(l, &local_args, nullptr);
+                nlohmann::json let{
+                    {"BULLET_PLAYER_NAME", player.has_value() ? nlohmann::json(*player) : nlohmann::json()},
+                    {"BULLET_TARGET", target.has_value() ? nlohmann::json(*target) : nlohmann::json()},
+                    {"BULLET_SUFFIX", bullet_suffix},
+                    {"BULLET_VELOCITY", velocity / kph},
+                    {"BULLET_ANGULAR_VELOCITY", angular_velocity / rpm},
+                };
+                mle.inserted_block_arguments(let)(l, nullptr, nullptr);
             };
     }
     global_object_pool.create<Gun>(
