@@ -86,8 +86,7 @@ Render::Render(
     }
     {
         GlContextGuard gcg{ *window_ };
-        CHK(int version = gladLoadGL(glfwGetProcAddress));
-        if (version == 0) {
+        if (int version = gladLoadGL(glfwGetProcAddress); version == 0) {
             THROW_OR_ABORT("gladLoadGL failed");
         }
     }

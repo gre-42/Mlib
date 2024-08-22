@@ -55,8 +55,7 @@ int main(int argc, char** argv)
             1,          // swap_interval
             0};         // fullscreen_refresh_rate
         GlContextGuard gcg{ window };
-        CHK(int version = gladLoadGL(glfwGetProcAddress));
-        if (version == 0) {
+        if (int version = gladLoadGL(glfwGetProcAddress); version == 0) {
             throw std::runtime_error("gladLoadGL failed");
         }
 

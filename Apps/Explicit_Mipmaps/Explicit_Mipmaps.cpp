@@ -45,12 +45,14 @@ int main() {
     GLFW_CHK(glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE));
     GLFW_CHK(GLFWwindow* window = glfwCreateWindow(size, size, "", nullptr, nullptr));
     GLFW_CHK(glfwMakeContextCurrent(window));
-    gladLoadGL(glfwGetProcAddress);
-    glViewport(0, 0, size, size);
+    if (int version = gladLoadGL(glfwGetProcAddress); version == 0) {
+        THROW_OR_ABORT("gladLoadGL failed");
+    }
+    CHK(glViewport(0, 0, size, size));
 
     GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    CHK(glGenTextures(1, &texture));
+    CHK(glBindTexture(GL_TEXTURE_2D, texture));
 
     // Our image for the mipmap with odd level and green color
     // The dimensions are 256 x 256 and is multiplied by 3 because I defined R,G and B colors
