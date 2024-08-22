@@ -17,17 +17,7 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<TriangleList<double>>>& tri
 {
     for (const auto& l : triangles) {
         for (const auto& t : l->triangles) {
-            Triangle2d tri2{
-                FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
-                FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
-                FixedArray<double, 2>{t(2).position(0), t(2).position(1)} };
-            if (triangle_area(tri2(0), tri2(1), tri2(2)) > 0) {
-                Triangle3d tri3{
-                    t(0).position,
-                    t(1).position,
-                    t(2).position};
-                bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri2), tri3);
-            }
+            maybe_add_triangle(t);
         }
     }
 }
@@ -37,19 +27,26 @@ GroundBvh::GroundBvh(const std::list<std::shared_ptr<ColoredVertexArray<double>>
 {
     for (const auto& l : cvas) {
         for (const auto& t : l->triangles) {
-            Triangle2d tri2{
-                FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
-                FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
-                FixedArray<double, 2>{t(2).position(0), t(2).position(1)}};
-            if (triangle_area(tri2(0), tri2(1), tri2(2)) > 0) {
-                Triangle3d tri3{
-                    t(0).position,
-                    t(1).position,
-                    t(2).position};
-                bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri2), tri3);
-            }
+            maybe_add_triangle(t);
         }
     }
+}
+
+void GroundBvh::maybe_add_triangle(const FixedArray<ColoredVertex<double>, 3>& t) {
+    Triangle2d tri2{
+            FixedArray<double, 2>{t(0).position(0), t(0).position(1)},
+            FixedArray<double, 2>{t(1).position(0), t(1).position(1)},
+            FixedArray<double, 2>{t(2).position(0), t(2).position(1)}};
+    if (triangle_area(tri2(0), tri2(1), tri2(2)) < 1e-12) {
+        // lwarn() << "Found backfacing or steep triangle: " << std::scientific
+        //         << tri2(0) << " - " << tri2(1) << " - " << tri2(2);
+        return;
+    }
+    Triangle3d tri3{
+            t(0).position,
+            t(1).position,
+            t(2).position};
+    bvh_.insert(AxisAlignedBoundingBox<double, 2>::from_points(tri2), tri3);
 }
 
 bool GroundBvh::height(double& height, const FixedArray<double, 2>& pt) const

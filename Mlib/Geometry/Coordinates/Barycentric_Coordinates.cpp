@@ -3,6 +3,8 @@
 #include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Throw_Or_Abort.hpp>
+#include <sstream>
 
 using namespace Mlib;
 
@@ -39,7 +41,8 @@ void Mlib::barycentric(
     // FixedArray<TData, 2, 2> M = dot2d(v0.columns_as_1D(), v1.rows_as_1D());
     // TData denom = dot0d(v0, dot1d(M - M.T(), v1));
     if (std::abs(denom) < 1e-14) {
-        throw TriangleException(a, b, c, "barycentric coordinates encountered zero denominator");
+        auto sd = (std::stringstream() << denom).str();
+        THROW_OR_ABORT2(TriangleException(a, b, c, "barycentric coordinates encountered zero denominator: " + sd));
     }
     FixedArray<double, 2> pn = m.transform(p);
     FixedArray<double, 2> v2 = (pn - an);

@@ -22,6 +22,8 @@ public:
     bool gradient(FixedArray<double, 2>& grad, const FixedArray<double, 2>& pt, double dx) const;
     void print(std::ostream& ostr, const BvhPrintingOptions& opts, size_t rec = 0) const;
 private:
+    void maybe_add_triangle(const FixedArray<ColoredVertex<double>, 3>& t);
+
     GroundBvh();
     Bvh<double, Triangle3d, 2> bvh_;
 };
