@@ -41,7 +41,7 @@ void VertexArray::initialize() {
     CHK(glGenVertexArrays(1, &vertex_array_));
     CHK(glBindVertexArray(vertex_array_));
     if (!initialized()) {
-        THROW_OR_ABORT("Unexpected vertex-array index");
+        verbose_abort("Unexpected vertex-array index");
     }
 }
 
