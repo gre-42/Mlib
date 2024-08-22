@@ -1,3 +1,6 @@
+/**
+ * SPDX-License-Identifier: (WTFPL OR CC0-1.0) AND Apache-2.0
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -602,7 +605,7 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
     if (!glad_vk_get_extensions(physical_device, &extension_count, &extensions)) return 0;
 
 
-    (void) glad_vk_has_extension;
+    GLAD_UNUSED(glad_vk_has_extension);
 
     glad_vk_free_extensions(extension_count, extensions);
 
