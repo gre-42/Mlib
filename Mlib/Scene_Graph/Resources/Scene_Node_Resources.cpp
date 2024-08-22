@@ -8,6 +8,7 @@
 #include <Mlib/Math/Fixed_Cholesky.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Root_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -136,7 +137,6 @@ void SceneNodeResources::instantiate_child_renderable(
         throw std::runtime_error("instantiate_child_renderable for resource \"" + resource_name + "\" failed: " + e.what());
     }
 }
-
 
 void SceneNodeResources::instantiate_root_renderables(
     const std::string& resource_name,
@@ -511,13 +511,13 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::
     auto resource = lit->second();
     auto mit = modifiers_.find(name);
     if (mit != modifiers_.end()) {
-        for (const auto& modifier : mit->second) {
+        clear_list_recursively(mit->second, [&](const auto& modifier){
             try {
                 modifier(*resource);
             } catch (const std::runtime_error& e) {
                 throw std::runtime_error("Could not apply modifier for resource \"" + name + "\": " + e.what());
             }
-        }
+            });
         modifiers_.erase(mit);
     }
     auto iit = resources_.try_emplace(name, std::move(resource));

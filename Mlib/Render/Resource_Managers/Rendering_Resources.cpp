@@ -629,6 +629,7 @@ void RenderingResources::preload(const ColormapWithModifiers& color, TextureRole
     if (color.filename->empty()) {
         THROW_OR_ABORT("Attempt to preload empty texture");
     }
+    std::scoped_lock lock{ mutex_ };
     if (textures_.contains(color)) {
         return;
     }
@@ -858,6 +859,7 @@ GLuint RenderingResources::get_texture(
     if (auto it = textures_.try_get(color); it != nullptr) {
         return it->handle;
     }
+    std::scoped_lock lock{ mutex_ };
     static THREAD_LOCAL(RecursionCounter) recursion_counter = RecursionCounter{};
     RecursionGuard rg{recursion_counter};
     if (getenv_default_bool("PRINT_TEXTURE_FILENAMES", false)) {
