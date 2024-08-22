@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Map/Threadsafe_String_Map.hpp>
 #include <Mlib/Scene_Graph/Preload_Behavior.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
@@ -149,8 +150,8 @@ public:
         const std::string& dest_name);
 private:
     std::shared_ptr<ISceneNodeResource> get_resource(const std::string& name) const;
-    mutable std::map<std::string, std::shared_ptr<ISceneNodeResource>> resources_;
-    std::map<std::string, TransformationMatrix<double, double, 3>> geographic_mappings_;
+    mutable ThreadsafeStringMap<std::shared_ptr<ISceneNodeResource>> resources_;
+    ThreadsafeStringMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;

@@ -9,8 +9,11 @@ static std::list<std::function<void()>> funcs;
 static std::mutex mutex;
 
 void Mlib::execute_render_allocators() {
-    std::scoped_lock lock{ mutex };
-    clear_list_recursively(funcs, [](const auto& f){f();});
+    std::unique_lock lock{ mutex };
+    clear_list_recursively_with_lock(
+        funcs,
+        lock,
+        [](const auto& f){f();});
 }
 
 void Mlib::append_render_allocator(std::function<void()> func) {

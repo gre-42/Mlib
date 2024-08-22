@@ -17,7 +17,10 @@
 
 using namespace Mlib;
 
-SceneNodeResources::SceneNodeResources() = default;
+SceneNodeResources::SceneNodeResources()
+    : resources_{ "Resources" }
+    , geographic_mappings_{ "Geographic mapping" }
+{}
 
 SceneNodeResources::~SceneNodeResources() = default;
 
@@ -84,9 +87,7 @@ void SceneNodeResources::add_resource(
     if (resource_loaders_.contains(name)) {
         THROW_OR_ABORT("Resource loader with name \"" + name + "\" already exists");
     }
-    if (!resources_.insert(std::make_pair(name, resource)).second) {
-        THROW_OR_ABORT("ISceneNodeResource with name \"" + name + "\" already exists\"");
-    }
+    resources_.add(name, resource);
 }
 
 void SceneNodeResources::add_resource_loader(
@@ -197,21 +198,13 @@ void SceneNodeResources::register_geographic_mapping(
     } catch (const std::runtime_error& e) {
         throw std::runtime_error("register_geographic_mapping for resource \"" + resource_name + "\" failed: " + e.what());
     }
-    if (!geographic_mappings_.insert({ instance_name, m }).second) {
-        THROW_OR_ABORT("Geographic mapping with name \"" + instance_name + "\" already exists");
-    }
-    if (!geographic_mappings_.insert({ instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()).value() } }).second) {
-        THROW_OR_ABORT("Geographic mapping with name \"" + instance_name + ".inverse\" already exists");
-    }
+    geographic_mappings_.add(instance_name, m);
+    geographic_mappings_.add(instance_name + ".inverse", TransformationMatrix<double, double, 3>{ inv(m.affine()).value() });
 }
 
 const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographic_mapping(const std::string& name) const
 {
-    auto it = geographic_mappings_.find(name);
-    if (it == geographic_mappings_.end()) {
-        return nullptr;
-    }
-    return &it->second;
+    return geographic_mappings_.try_get(name);
 }
 
 std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_physics_arrays(const std::string& name) const {
@@ -495,8 +488,8 @@ void SceneNodeResources::add_companion(
     const RenderableResourceFilter& renderable_resource_filter)
 {
     std::scoped_lock lock_guard{ mutex_ };
-    if ((resources_.find(resource_name) == resources_.end()) &&
-        (resource_loaders_.find(resource_name) == resource_loaders_.end()))
+    if (!resources_.contains(resource_name) &&
+        !resource_loaders_.contains(resource_name))
     {
         THROW_OR_ABORT("Could not find resource or loader with name \"" + resource_name + '"');
     }
@@ -504,15 +497,12 @@ void SceneNodeResources::add_companion(
 }
 
 std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::string& name) const {
-    {
-        std::shared_lock lock{ mutex_ };
-        if (auto rit = resources_.find(name); rit != resources_.end()) {
-            return rit->second;
-        }
+    if (auto* r = resources_.try_get(name); r != nullptr) {
+        return *r;
     }
     std::scoped_lock lock_guard{ mutex_ };
-    if (auto rit = resources_.find(name); rit != resources_.end()) {
-        return rit->second;
+    if (auto* r = resources_.try_get(name); r != nullptr) {
+        return *r;
     }
     auto lit = resource_loaders_.find(name);
     if (lit == resource_loaders_.end()) {
@@ -530,9 +520,9 @@ std::shared_ptr<ISceneNodeResource> SceneNodeResources::get_resource(const std::
         }
         modifiers_.erase(mit);
     }
-    auto iit = resources_.insert({ name, std::move(resource) });
+    auto iit = resources_.try_emplace(name, std::move(resource));
     if (!iit.second) {
-        THROW_OR_ABORT("Could not insert loaded resource with name \"" + name + '"');
+        verbose_abort("Could not insert loaded resource with name \"" + name + '"');
     }
     return iit.first->second;
 }
@@ -542,9 +532,9 @@ void SceneNodeResources::add_modifier(
     const std::function<void(ISceneNodeResource&)>& modifier)
 {
     std::scoped_lock lock_guard{ mutex_ };
-    auto rit = resources_.find(resource_name);
-    if (rit != resources_.end()) {
-        modifier(*rit->second);
+    auto* r = resources_.try_get(resource_name);
+    if (r != nullptr) {
+        modifier(**r);
     } else if (resource_loaders_.contains(resource_name)) {
         modifiers_[resource_name].push_back(modifier);
     } else {

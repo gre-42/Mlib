@@ -1076,9 +1076,8 @@ void RenderingResources::add_auto_texture_atlas(
     const AutoTextureAtlasDescriptor& texture_atlas_descriptor)
 {
     LOG_FUNCTION("RenderingResources::add_auto_texture_atlas " + name);
-    std::scoped_lock lock{ mutex_ };
-    append_render_allocator([this, name]() { preload(name, TextureRole::COLOR); });
     auto_atlas_tile_descriptors_.add(name, texture_atlas_descriptor);
+    append_render_allocator([this, name]() { preload(name, TextureRole::COLOR); });
 }
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
