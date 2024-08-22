@@ -1165,6 +1165,7 @@ void SceneNode::set_relative_pose(
     float scale,
     std::optional<std::chrono::steady_clock::time_point> time)
 {
+    std::scoped_lock lock{ mutex_ };
     set_position(position, SUCCESSOR_POSE);
     set_rotation(rotation, SUCCESSOR_POSE);
     set_scale(scale);
