@@ -2,6 +2,7 @@
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <exception>
 
 using namespace Mlib;
 
