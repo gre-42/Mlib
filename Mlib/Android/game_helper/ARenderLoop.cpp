@@ -39,13 +39,17 @@ void ARenderLoop::render_loop(const std::function<bool()>& exit_loop) {
         // If not animating, we will block forever waiting for events.
         // If animating, we loop until all events are read, then continue
         // to draw the next frame of animation.
-        while ((id = ALooper_pollAll(aengine_.IsReady() ? 0 : -1, nullptr, &events,
+        while ((id = ALooper_pollOnce(aengine_.IsReady() ? 0 : -1, nullptr, &events,
                                      (void**)&source)) >= 0) {
+            // Inspired by: https://stackoverflow.com/a/34961306/2292832
+            if (id == ALOOPER_POLL_CALLBACK) {
+                continue;
+            }
             // Process this event.
-            if (source != nullptr) source->process(&app_, source);
-
+            if (source != nullptr) {
+                source->process(&app_, source);
+            }
             aengine_.ProcessSensors(id);
-
             // Check if we are exiting.
             if (app_.destroyRequested != 0) {
                 aengine_.SuspendContext();
