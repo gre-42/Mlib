@@ -128,7 +128,9 @@ DECLARE_ARGUMENT(trashcan_distances);
 DECLARE_ARGUMENT(tree_resource_names);
 DECLARE_ARGUMENT(grass_resource_names);
 DECLARE_ARGUMENT(street_mud_grass_resource_names);
+DECLARE_ARGUMENT(street_dirty_mud_grass_resource_names);
 DECLARE_ARGUMENT(path_mud_grass_resource_names);
+DECLARE_ARGUMENT(path_mud_dirty_grass_resource_names);
 DECLARE_ARGUMENT(near_grass_resource_names);
 DECLARE_ARGUMENT(near_dirty_grass_resource_names);
 DECLARE_ARGUMENT(far_grass_resource_names);
@@ -376,6 +378,8 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config.heightmap_extension = args.arguments.at<size_t>(KnownArgs::heightmap_extension);
         }
         if (args.arguments.contains(KnownArgs::grass_foliagemap)) {
+            tconfig.street_mud_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
+            tconfig.path_mud_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
             tconfig.near_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
             tconfig.far_grass_terrain_style_config.foliagemap_filename = args.arguments.path(KnownArgs::grass_foliagemap);
         }
@@ -654,8 +658,14 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         if (args.arguments.contains_non_null(KnownArgs::street_mud_grass_resource_names)) {
             tconfig.street_mud_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::street_mud_grass_resource_names, parse_resource_name_func);
         }
+        if (args.arguments.contains_non_null(KnownArgs::street_dirty_mud_grass_resource_names)) {
+            tconfig.street_mud_config.near_resource_names_valley_dirt = args.arguments.at_vector<std::string>(KnownArgs::street_dirty_mud_grass_resource_names, parse_resource_name_func);
+        }
         if (args.arguments.contains_non_null(KnownArgs::path_mud_grass_resource_names)) {
             tconfig.path_mud_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::path_mud_grass_resource_names, parse_resource_name_func);
+        }
+        if (args.arguments.contains_non_null(KnownArgs::path_mud_dirty_grass_resource_names)) {
+            tconfig.path_mud_config.near_resource_names_valley_dirt = args.arguments.at_vector<std::string>(KnownArgs::path_mud_dirty_grass_resource_names, parse_resource_name_func);
         }
         if (args.arguments.contains_non_null(KnownArgs::near_grass_resource_names)) {
             tconfig.near_grass_terrain_style_config.near_resource_names_valley_regular = args.arguments.at_vector<std::string>(KnownArgs::near_grass_resource_names, parse_resource_name_func);

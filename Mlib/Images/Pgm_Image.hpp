@@ -38,7 +38,7 @@ public:
     void draw_streamline(const FixedArray<size_t, 2>& center, const Array<float>& velocity, size_t size, size_t length, uint16_t color);
 
     static PgmImage load_from_file(const std::string& filename);
-    static PgmImage load_from_stream(std::istream& istream);
+    static PgmImage load_from_stream(std::istream& istream, const std::string& name);
 
     void save_to_file(const std::string &filename) const;
     void save_to_stream(std::ostream& ostream) const;

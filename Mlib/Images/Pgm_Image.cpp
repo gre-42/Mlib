@@ -90,7 +90,7 @@ void PgmImage::draw_streamline(
 PgmImage PgmImage::load_from_file(const std::string& filename) {
     auto istream = create_ifstream(filename, std::ios_base::binary);
     try {
-        return load_from_stream(*istream);
+        return load_from_stream(*istream, '"' + filename + ": ");
     } catch (const std::runtime_error& e) {
         THROW_OR_ABORT(e.what() + std::string(": ") + filename);
     }
@@ -106,39 +106,42 @@ static void skip_comments(std::istream& istr) {
     }
 }
 
-PgmImage PgmImage::load_from_stream(std::istream& istream) {
+PgmImage PgmImage::load_from_stream(std::istream& istream, const std::string& name) {
+    if (istream.fail()) {
+        THROW_OR_ABORT(name + "Could not open");
+    }
     PgmImage result;
     std::string header;
     istream >> header;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read header");
+        THROW_OR_ABORT(name + "Could not read header");
     }
     if (header != "P5") {
-        THROW_OR_ABORT("Header does not equal P5");
+        THROW_OR_ABORT(name + "Header does not equal P5");
     }
     skip_comments(istream);
     size_t width;
     istream >> width;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read width");
+        THROW_OR_ABORT(name + "Could not read width");
     }
     size_t height;
     istream >> height;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read height");
+        THROW_OR_ABORT(name + "Could not read height");
     }
     size_t nUINT16_MAX;
     istream >> nUINT16_MAX;
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read maximum value");
+        THROW_OR_ABORT(name + "Could not read maximum value");
     }
     if (nUINT16_MAX != UINT16_MAX) {
-        THROW_OR_ABORT("Maximum value does not equal 65535");
+        THROW_OR_ABORT(name + "Maximum value does not equal 65535");
     }
     char c;
     istream.read(&c, 1);
     if (istream.fail() || (c != '\n')) {
-        THROW_OR_ABORT("Could not read newline");
+        THROW_OR_ABORT(name + "Could not read newline");
     }
     result.do_resize(ArrayShape{height, width});
     istream.read(reinterpret_cast<char*>(&result(0, 0)), integral_cast<std::streamsize>(result.nbytes()));
@@ -146,7 +149,7 @@ PgmImage PgmImage::load_from_stream(std::istream& istream) {
         v = ((v & 0xFF00) >> 8) | ((v & 0xFF) << 8);
     }
     if (istream.fail()) {
-        THROW_OR_ABORT("Could not read pgm image");
+        THROW_OR_ABORT(name + "Could not read pgm image");
     }
     return result;
 }
