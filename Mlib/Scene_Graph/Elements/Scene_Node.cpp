@@ -393,9 +393,10 @@ void SceneNode::add_child(
 {
     std::scoped_lock lock{ mutex_ };
     setup_child_unsafe(name, node.ref(DP_LOC), child_registration_state, child_parent_state);
-    if (!children_.insert(std::make_pair(name, SceneNodeChild{
-        .is_registered = (child_registration_state == ChildRegistrationState::REGISTERED),
-        .scene_node = std::move(node)})).second)
+    if (!children_.try_emplace(
+        name,
+        (child_registration_state == ChildRegistrationState::REGISTERED),
+        std::move(node)).second)
     {
         THROW_OR_ABORT("Child node with name " + name + " already exists");
     }
