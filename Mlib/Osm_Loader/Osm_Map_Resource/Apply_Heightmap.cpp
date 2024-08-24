@@ -185,7 +185,7 @@ void Mlib::apply_heightmap(
             }
         }
     }
-    if (false) {
+    if (auto filename = getenv("TUNNEL_ENTRANCES_OBJ"); filename != nullptr) {
         std::list<FixedArray<ColoredVertex<double>, 3>> tcp;
         for (const auto& [_, tt] : tl_terrain.map()) {
             for (const auto& t : tt->triangles) {
@@ -202,7 +202,7 @@ void Mlib::apply_heightmap(
             }
         }
         save_obj(
-            "/tmp/terrain_tunnel_entraces.obj",
+            filename,
             IndexedFaceSet<float, double, size_t>{ tcp },
             nullptr);  // material
     }
