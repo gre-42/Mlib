@@ -36,7 +36,7 @@ def remix(args):
     TIME1 = 1
     LABEL = 2
 
-    with open(args.source_labels, 'r') as f:
+    with open(args.source_labels_after_engine_start, 'r') as f:
         labels = list(csv.reader(f, delimiter='\t'))
     with open(args.source_wav, 'rb') as f:
         samplerate, data = wavfile.read(f)
@@ -97,8 +97,8 @@ def remix(args):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(help='Note: You need to manually delete the labels before engine start')
-    parser.add_argument("--source_labels", required=True)
+    parser = ArgumentParser()
+    parser.add_argument("--source_labels_after_engine_start", required=True)
     parser.add_argument("--source_wav", required=True)
     parser.add_argument("--out_dir", required=True)
     parser.add_argument("--frequency_multiplier", type=float, required=True, help='Four-stroke engine: 2')
