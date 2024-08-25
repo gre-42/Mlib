@@ -13,6 +13,11 @@
 
 namespace Mlib {
 
+enum class FileStorageType {
+    EXTERNAL,
+    CACHE
+};
+
 enum class LogLevel {
     ALWAYS,
     ERROR,
@@ -57,17 +62,25 @@ std::unique_ptr<std::istream> create_ifstream(
 
 std::unique_ptr<std::ostream> create_ofstream(
     const std::filesystem::path& filename,
-    std::ios_base::openmode mode = std::ios_base::out);
+    std::ios_base::openmode mode = std::ios_base::out,
+    FileStorageType storage_type = FileStorageType::EXTERNAL);
 
 std::vector<uint8_t> read_file_bytes(const std::filesystem::path& filename);
 
 bool path_exists(const std::filesystem::path& filename);
 
-void remove_path(const std::filesystem::path& path);
+void remove_path(
+    const std::filesystem::path& path,
+    FileStorageType storage_type = FileStorageType::EXTERNAL);
 
-void rename_path(const std::filesystem::path& from, const std::filesystem::path& to);
+void rename_path(
+    const std::filesystem::path& from,
+    const std::filesystem::path& to,
+    FileStorageType storage_type = FileStorageType::EXTERNAL);
 
-void create_directories(const std::filesystem::path& dirname);
+void create_directories(
+    const std::filesystem::path& dirname,
+    FileStorageType storage_type = FileStorageType::EXTERNAL);
 
 #ifdef __ANDROID__
 ndk_helper::DirectoryIterator list_dir(const std::filesystem::path& path);

@@ -24,7 +24,7 @@ public:
     static std::vector<uint8_t> ReadFile(const std::filesystem::path& filename);
     static bool PathExists(const std::filesystem::path& path);
     static ndk_helper::DirectoryIterator ListDir(const std::filesystem::path& dirname);
-    static std::string GetExternalFilesDir();
+    static std::string GetFilesDir(ndk_helper::StorageType storage_type);
     static std::string GetFlavor();
     static void SetRequestedScreenOrientation(ScreenOrientation orientation);
     static void RequestReadExternalStoragePermission();

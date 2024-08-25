@@ -1542,8 +1542,11 @@ const Bvh<double, FixedArray<FixedArray<double, 3>, 3>, 3>& OsmMapResource::stre
     return *street_bvh_;
 }
 
-void OsmMapResource::save_to_file(const std::string& filename) const {
-    auto ofstr = create_ofstream(filename, std::ios::binary);
+void OsmMapResource::save_to_file(
+    const std::string& filename,
+    FileStorageType file_storage_type) const
+{
+    auto ofstr = create_ofstream(filename, std::ios::binary, file_storage_type);
     if (ofstr->fail()) {
         THROW_OR_ABORT("Could not open output OSM-map binary file \"" + filename + '"');
     }

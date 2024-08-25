@@ -161,24 +161,26 @@ bool JNIHelper::ReadFile(const char* fileName,
         "helper");
   }
 
-  if (any(storage_types & StorageType::EXTERNAL)) {
-    // First, try reading from externalFileDir;
-    std::string s = GetExternalFilesDir();
-    if (fileName[0] != '/') {
-      s.append("/");
-    }
-    s.append(fileName);
-    {
-      std::ifstream f(s.c_str(), std::ios::binary);
-      if (f) {
-        f.seekg(0, std::ifstream::end);
-        std::streamoff file_size = f.tellg();
-        f.seekg(0, std::ifstream::beg);
-        buffer_ref->reserve(stream_off_cast(file_size));
-        buffer_ref->assign(std::istreambuf_iterator<char>(f),
-                           std::istreambuf_iterator<char>());
-        f.close();
-        return true;
+  for (const auto candidateFileStorage : FILE_STORAGES) {
+    if (any(storage_types & candidateFileStorage)) {
+      // First, try reading from externalFileDir;
+      std::string s = GetFilesDir(candidateFileStorage);
+      if (fileName[0] != '/') {
+        s.append("/");
+      }
+      s.append(fileName);
+      {
+        std::ifstream f(s.c_str(), std::ios::binary);
+        if (f) {
+          f.seekg(0, std::ifstream::end);
+          std::streamoff file_size = f.tellg();
+          f.seekg(0, std::ifstream::beg);
+          buffer_ref->reserve(stream_off_cast(file_size));
+          buffer_ref->assign(std::istreambuf_iterator<char>(f),
+                            std::istreambuf_iterator<char>());
+          f.close();
+          return true;
+        }
       }
     }
   }
@@ -221,15 +223,17 @@ bool JNIHelper::PathExists(
         "helper");
   }
 
-  if (any(storage_types & StorageType::EXTERNAL)) {
-    // First, try reading from externalFileDir;
-    std::string s = GetExternalFilesDir();
-    if (fileName[0] != '/') {
-      s.append("/");
-    }
-    s.append(fileName);
-    if (fs::exists(s)) {
-      return true;
+  for (const auto candidateFileStorage : FILE_STORAGES) {
+    if (any(storage_types & candidateFileStorage)) {
+      // First, try reading from externalFileDir;
+      std::string s = GetFilesDir(candidateFileStorage);
+      if (fileName[0] != '/') {
+        s.append("/");
+      }
+      s.append(fileName);
+      if (fs::exists(s)) {
+        return true;
+      }
     }
   }
   if (any(storage_types & StorageType::RESOURCES)) {
@@ -291,21 +295,29 @@ DirectoryIterator::DirectoryIterator(
   asset_dir_{ AAssetManager_openDir(mgr, dir_name + AssetNameStart(dir_name)), AAssetDir_close },
   current_asset_filename_{ AAssetDir_getNextFileName(asset_dir_.get()) }
 {
-  if (JNIHelper::GetInstance()->PathExists(dir_name, StorageType::EXTERNAL)) {
-    std::string s = JNIHelper::GetInstance()->GetExternalFilesDir();
-    if (dir_name[0] != '/') {
-      s.append("/");
-    }
-    s.append(dir_name);
-    std::error_code ec;
-    filesystem_directory_iterator_ = fs::directory_iterator(s, ec);
-    if (ec) {
-      Mlib::verbose_abort(
+  for (const auto candidateFileStorage : FILE_STORAGES) {
+    if (JNIHelper::GetInstance()->PathExists(dir_name, candidateFileStorage)) {
+      std::string s = JNIHelper::GetInstance()->GetFilesDir(candidateFileStorage);
+      if (dir_name[0] != '/') {
+        s.append("/");
+      }
+      s.append(dir_name);
+      std::error_code ec;
+      filesystem_directory_iterators_.emplace_back(fs::directory_iterator(s, ec), candidateFileStorage);
+      if (ec) {
+        Mlib::verbose_abort(
           std::string("Could not create directory iterator for \"") +
           dir_name +
           "\". " +
           ec.message());
+      }
     }
+  }
+  if (!filesystem_directory_iterators_.empty()) {
+    filesystem_directory_iterators_it_ = filesystem_directory_iterators_.begin();
+    filesystem_directory_iterator_ = filesystem_directory_iterators_it_->first;
+  } else {
+    filesystem_directory_iterators_it_ = filesystem_directory_iterators_.end();
   }
   auto dirs_file = fs::path{dir_name} / "directories.txt";
   if (JNIHelper::GetInstance()->PathExists(dirs_file.c_str(), StorageType::RESOURCES)) {
@@ -330,12 +342,23 @@ DirectoryIterator::~DirectoryIterator() = default;
 DirectoryIterator& DirectoryIterator::operator ++() {
   if (subdir_iterator_not_at_end()) {
     ++subdir_it_;
-  } else if (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)){
+  }
+  if (!subdir_iterator_not_at_end() &&
+      (filesystem_directory_iterator_ != fs::end(filesystem_directory_iterator_)))
+  {
     ++filesystem_directory_iterator_;
-  } else if (current_asset_filename_ != nullptr) {
+    if (filesystem_directory_iterator_ == fs::end(filesystem_directory_iterator_)) {
+      ++filesystem_directory_iterators_it_;
+      if (filesystem_directory_iterators_it_ != filesystem_directory_iterators_.end()) {
+        filesystem_directory_iterator_ = filesystem_directory_iterators_it_->first;
+      }
+    }
+  }
+  if (!subdir_iterator_not_at_end() &&
+      (filesystem_directory_iterator_ == fs::end(filesystem_directory_iterator_)) &&
+      (current_asset_filename_ != nullptr))
+  {
     current_asset_filename_ = AAssetDir_getNextFileName(asset_dir_.get());
-  } else {
-    Mlib::verbose_abort("Increment on end iterator");
   }
   return *this;
 }
@@ -364,7 +387,7 @@ DirectoryEntry DirectoryIterator::operator *() const {
     if (ec) {
         THROW_OR_ABORT("Could not check if path \"" + filesystem_directory_iterator_->path().string() + "\" is a directory. " + ec.message());
     }
-    return {fs::relative(*filesystem_directory_iterator_, JNIHelper::GetInstance()->GetExternalFilesDir()), is_directory};
+    return {fs::relative(*filesystem_directory_iterator_, JNIHelper::GetInstance()->GetFilesDir(filesystem_directory_iterators_it_->second)), is_directory};
   } else if (current_asset_filename_ != nullptr) {
     return {fs::path{dir_name_} / current_asset_filename_, false};
   } else {
@@ -374,11 +397,15 @@ DirectoryEntry DirectoryIterator::operator *() const {
 
 bool DirectoryIterator::subdir_iterator_not_at_end() const {
   // https://stackoverflow.com/questions/41384793/does-stdmove-invalidate-iterators
-  // After std::move, iterators (other than the end iterator) to other remain valid
+  // After std::move, iterators (other than the end iterator) remain valid.
+  // The "begin(...)" function for the DirectoryIterator looks as follows:
+  // inline ndk_helper::DirectoryIterator begin(ndk_helper::DirectoryIterator& it) {
+  //  return std::move(it);
+  //}
   return !subdirs_.empty() && (subdir_it_ != subdirs_.end());
 }
 
-std::string JNIHelper::GetExternalFilesDir() {
+std::string JNIHelper::GetFilesDir(StorageType fileStorageType) {
   if (activity_ == nullptr) {
     Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
@@ -394,7 +421,7 @@ std::string JNIHelper::GetExternalFilesDir() {
   // First, try reading from externalFileDir;
   JNIEnv* env = AttachCurrentThread();
 
-  jstring strPath = GetExternalFilesDirJString(env);
+  jstring strPath = GetFilesDirJString(env, fileStorageType);
   const char* path = env->GetStringUTFChars(strPath, nullptr);
   if (!path) {
     Mlib::verbose_abort("Could not get external files dir UTF chars");
@@ -531,7 +558,7 @@ jclass JNIHelper::RetrieveClass(JNIEnv* jni, const char* class_name) {
   return class_retrieved;
 }
 
-jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
+jstring JNIHelper::GetFilesDirJString(JNIEnv* env, StorageType storageType) {
   if (activity_ == nullptr) {
     Mlib::verbose_abort(
         "JNIHelper has not been initialized. Call init() to initialize the "
@@ -540,11 +567,29 @@ jstring JNIHelper::GetExternalFilesDirJString(JNIEnv* env) {
 
   // Invoking getExternalFilesDir() java API
   jclass cls_Env = env->FindClass(NATIVEACTIVITY_CLASS_NAME);
-  jmethodID mid = env->GetMethodID(cls_Env, "getExternalFilesDir",
-                                   "(Ljava/lang/String;)Ljava/io/File;");
-  jobject obj_File = env->CallObjectMethod(activity_->clazz, mid, nullptr);
-  if (obj_File == nullptr) {
-    Mlib::verbose_abort("Could not get \"getExternalFilesDir\" method");
+  jobject obj_File;
+  if (storageType == StorageType::EXTERNAL) {
+    jmethodID mid = env->GetMethodID(cls_Env, "getExternalFilesDir",
+                                     "(Ljava/lang/String;)Ljava/io/File;");
+    if (mid == nullptr) {
+      Mlib::verbose_abort("Could not get \"getExternalFilesDir\" method ID");
+    }
+    obj_File = env->CallObjectMethod(activity_->clazz, mid, nullptr);
+    if (obj_File == nullptr) {
+      Mlib::verbose_abort("Could not call \"getExternalFilesDir\" method");
+    }
+  } else if (storageType == StorageType::CACHE) {
+    jmethodID mid = env->GetMethodID(cls_Env, "getCacheDir",
+                                     "()Ljava/io/File;");
+    if (mid == nullptr) {
+      Mlib::verbose_abort("Could not get \"getCacheDir\" method ID");
+    }
+    obj_File = env->CallObjectMethod(activity_->clazz, mid);
+    if (obj_File == nullptr) {
+      Mlib::verbose_abort("Could not call \"getCacheDir\" method");
+    }
+  } else {
+    Mlib::verbose_abort("Unknown file storage type: " + std::to_string((int)storageType));
   }
   jclass cls_File = env->FindClass("java/io/File");
   jmethodID mid_getPath =

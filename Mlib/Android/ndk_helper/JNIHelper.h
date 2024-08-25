@@ -44,9 +44,15 @@
 namespace ndk_helper {
 
 enum class StorageType {
-    NONE = 0,
-    RESOURCES = 1,
-    EXTERNAL = 2
+  NONE = 0,
+  RESOURCES = 1 << 0,
+  EXTERNAL = 1 << 1,
+  CACHE = 1 << 2
+};
+
+static const StorageType FILE_STORAGES[] = {
+  StorageType::EXTERNAL,
+  StorageType::CACHE
 };
 
 inline StorageType operator & (StorageType a, StorageType b) {
@@ -92,6 +98,8 @@ private:
   bool subdir_iterator_not_at_end() const;
   std::unique_ptr<AAssetDir, decltype(&AAssetDir_close)> asset_dir_;
   const char* current_asset_filename_;
+  std::list<std::pair<std::filesystem::directory_iterator, StorageType>> filesystem_directory_iterators_;
+  std::list<std::pair<std::filesystem::directory_iterator, StorageType>>::iterator filesystem_directory_iterators_it_;
   std::filesystem::directory_iterator filesystem_directory_iterator_;
   std::list<std::string> subdirs_;
   std::list<std::string>::iterator subdir_it_;
@@ -125,7 +133,7 @@ class JNIHelper {
   jobject jni_helper_java_ref_;
   jclass jni_helper_java_class_;
 
-  jstring GetExternalFilesDirJString(JNIEnv* env);
+  jstring GetFilesDirJString(JNIEnv* env, StorageType storageType);
   jclass RetrieveClass(JNIEnv* jni, const char* class_name);
 
   JNIHelper();
@@ -204,13 +212,13 @@ class JNIHelper {
    * false when it failed to read the file
    */
   bool ReadFile(
-      const char* file_name,
-      std::vector<uint8_t>* buffer_ref,
-      StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL);
+    const char* file_name,
+    std::vector<uint8_t>* buffer_ref,
+    StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL | StorageType::CACHE);
 
   bool PathExists(
-      const char* file_name,
-      StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL);
+    const char* file_name,
+    StorageType storage_types = StorageType::RESOURCES | StorageType::EXTERNAL | StorageType::CACHE);
   DirectoryIterator ListDir(const char* dir_name);
 
   /*
@@ -229,7 +237,7 @@ class JNIHelper {
    *
    * return: std::string containing external file diretory
    */
-  std::string GetExternalFilesDir();
+  std::string GetFilesDir(StorageType storageType);
 
   /*
    * Retrieve string resource with a given name

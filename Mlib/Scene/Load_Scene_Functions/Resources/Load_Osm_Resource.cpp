@@ -1124,10 +1124,13 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             config,
             resource_name);
         if (enable_cache) {
-            osm_map_resource->save_to_file(cache_filename);
+            osm_map_resource->save_to_file(cache_filename, FileStorageType::CACHE);
             if (old_cache_file_version != CACHE_FILE_VERSION) {
                 std::scoped_lock lock{cache_file_mutex};
-                auto ofstr = create_ofstream(cache_version_filename);
+                auto ofstr = create_ofstream(
+                    cache_version_filename,
+                    std::ios::out,
+                    FileStorageType::CACHE);
                 if (ofstr->fail()) {
                     THROW_OR_ABORT("Could not open cache version file \"" + cache_version_filename + "\" for writing");
                 }

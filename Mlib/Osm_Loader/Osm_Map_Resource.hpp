@@ -105,7 +105,7 @@ public:
         archive(tl_mud_path_visuals_);
         archive(terrain_styles_);
     }
-    void save_to_file(const std::string& filename) const;
+    void save_to_file(const std::string& filename, FileStorageType file_storage_type) const;
     void save_bad_triangles_to_obj_file(const std::string& filename) const;
 private:
     void print_waypoints_if_requested(const std::string& debug_prefix) const;

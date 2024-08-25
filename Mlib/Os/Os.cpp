@@ -80,8 +80,20 @@ std::ostream& LLog::ref() const {
 
 #ifdef __ANDROID__
 
-static std::string get_path_in_external_files_dir(const std::initializer_list<std::string>& child_path) {
-    std::string res = AUi::GetExternalFilesDir();
+static std::string get_path_in_files_dir(
+    const std::initializer_list<std::string>& child_path,
+    FileStorageType storage_type)
+{
+    ndk_helper::StorageType st = [&](){
+        switch (storage_type) {
+        case FileStorageType::EXTERNAL:
+            return ndk_helper::StorageType::EXTERNAL;
+        case FileStorageType::CACHE:
+            return ndk_helper::StorageType::CACHE;
+        }
+        THROW_OR_ABORT("Unknown storage type");
+    }();
+    std::string res = AUi::GetFilesDir(st);
     for (const auto& s : child_path) {
         res += '/' + s;
     }
@@ -132,9 +144,10 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
     const std::filesystem::path& filename,
-    std::ios_base::openmode mode)
+    std::ios_base::openmode mode,
+    FileStorageType storage_type)
 {
-    auto fn = get_path_in_external_files_dir({filename});
+    auto fn = get_path_in_files_dir({filename}, storage_type);
     return std::make_unique<std::ofstream>(fn, mode);
 }
 
@@ -142,27 +155,37 @@ bool Mlib::path_exists(const std::filesystem::path& filename) {
     return AUi::PathExists(filename);
 }
 
-void Mlib::remove_path(const std::filesystem::path& path) {
+void Mlib::remove_path(
+    const std::filesystem::path& path,
+    FileStorageType storage_type)
+ {
     std::error_code ec;
-    if (!fs::remove(get_path_in_external_files_dir({path}), ec)) {
+    if (!fs::remove(get_path_in_files_dir({path}, storage_type), ec)) {
         THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
-void Mlib::rename_path(const std::filesystem::path& from, const std::filesystem::path& to) {
+void Mlib::rename_path(
+    const std::filesystem::path& from,
+    const std::filesystem::path& to,
+    FileStorageType storage_type)
+{
     std::error_code ec;
     fs::rename(
-        get_path_in_external_files_dir({from}),
-        get_path_in_external_files_dir({to}),
+        get_path_in_files_dir({from}, storage_type),
+        get_path_in_files_dir({to}, storage_type),
         ec);
     if (ec) {
         THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
-void Mlib::create_directories(const std::filesystem::path& dirname) {
+void Mlib::create_directories(
+    const std::filesystem::path& dirname,
+    FileStorageType storage_type)
+{
     std::error_code ec;
-    fs::create_directories(get_path_in_external_files_dir({dirname}), ec);
+    fs::create_directories(get_path_in_files_dir({dirname}, storage_type), ec);
     if (ec) {
         THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
