@@ -1,6 +1,6 @@
 #include "Audio_Listener_Updater.hpp"
 #ifndef WITHOUT_ALUT
-#include <Mlib/Audio/Audio_Listener.hpp>
+#include <Mlib/Audio/Audio_Scene.hpp>
 #endif
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -25,9 +25,6 @@ void AudioListenerUpdater::advance_time(float dt, std::chrono::steady_clock::tim
 #ifndef WITHOUT_ALUT
     DanglingRef<SceneNode> node = scene_.get_node(selected_cameras_.camera_node_name(), DP_LOC);
     auto corrected_time = std::chrono::steady_clock::now() - delay_;
-    AudioListener::set_transformation(AudioListenerState{
-        .pose = node->absolute_model_matrix(corrected_time),
-        .velocity = node->velocity(corrected_time, velocity_dt_)
-    });
+    AudioScene::set_listener(node, corrected_time, velocity_dt_);
 #endif
 }

@@ -3,6 +3,7 @@
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
+#include <Mlib/Audio/Audio_Scene.hpp>
 #endif
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
@@ -337,6 +338,7 @@ int main(int argc, char** argv) {
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
+        "    [--audio_alpha <value>]\n"
         "    [--with_hider]\n"
         "    [--check_gl_errors]\n"
         "    [--verbose]",
@@ -412,7 +414,8 @@ int main(int argc, char** argv) {
          "--audio_gain",
          "--show_debug_wheels",
          "--write_loaded_resources",
-         "--audio_frequency"});
+         "--audio_frequency",
+         "--audio_alpha"});
     try {
         const auto args = parser.parsed(argc, argv);
         if (args.has_named_value("--app_reldir")) {
@@ -431,6 +434,7 @@ int main(int argc, char** argv) {
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
+        AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
 #endif
 
         std::atomic_size_t num_renderings;

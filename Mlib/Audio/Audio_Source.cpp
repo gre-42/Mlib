@@ -1,27 +1,32 @@
 #include "Audio_Source.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Audio/Audio_Buffer.hpp>
-#include <Mlib/Audio/Audio_Listener.hpp>
+#include <Mlib/Audio/Audio_Entity_State.hpp>
+#include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Audio/CHK.hpp>
 #include <Mlib/Physics/Units.hpp>
 
 using namespace Mlib;
 
-AudioSource::AudioSource(PositionRequirement position_requirement)
-: position_requirement_{position_requirement},
-  muted_{false},
-  gain_{1.f}
+AudioSource::AudioSource(
+    PositionRequirement position_requirement,
+    float alpha)
+    : position_requirement_{ position_requirement }
+    , muted_{ false }
+    , gain_{ 1.f }
 {
     AL_CHK(alGenSources(1, &source_));
     if (position_requirement == PositionRequirement::WAITING_FOR_POSITION) {
         AL_CHK(alSourcef(source_, AL_GAIN, 0.f));
     }
+    AudioScene::add_source(*this, alpha);
 }
 
 AudioSource::AudioSource(
     const AudioBuffer& buffer,
-    PositionRequirement position_requirement)
-: AudioSource{position_requirement}
+    PositionRequirement position_requirement,
+    float alpha)
+    : AudioSource{ position_requirement, alpha }
 {
     if (!buffer.buffer_.has_value()) {
         THROW_OR_ABORT("Cannot attach null audio buffer");
@@ -30,6 +35,7 @@ AudioSource::AudioSource(
 }
 
 AudioSource::~AudioSource() {
+    AudioScene::remove_source(*this);
     AL_ABORT(alDeleteSources(1, &source_));
 }
 
@@ -50,13 +56,9 @@ void AudioSource::set_pitch(float value) {
     AL_CHK(alSourcef(source_, AL_PITCH, value));
 }
 
-void AudioSource::set_position(const AudioSourceState<ScenePos>& position) {
-    auto relpos = AudioListener::get_relative_position(position);
-    if (!relpos.has_value()) {
-        return;
-    }
-    AL_CHK(alSourcefv(source_, AL_POSITION, (relpos->position / meters).flat_begin()));
-    AL_CHK(alSourcefv(source_, AL_VELOCITY, (relpos->velocity / (meters / seconds)).flat_begin()));
+void AudioSource::set_position(const AudioSourceState<float>& position) {
+    AL_CHK(alSourcefv(source_, AL_POSITION, (position.position / meters).flat_begin()));
+    AL_CHK(alSourcefv(source_, AL_VELOCITY, (position.velocity / (meters / seconds)).flat_begin()));
     if (position_requirement_ == PositionRequirement::WAITING_FOR_POSITION) {
         if (!muted_) {
             AL_CHK(alSourcef(source_, AL_GAIN, gain_));

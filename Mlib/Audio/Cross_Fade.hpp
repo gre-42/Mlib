@@ -38,7 +38,8 @@ public:
     void play(const AudioBuffer &audio_buffer,
               float gain_factor = 1.f,
               float pitch = 1.f,
-              float buffer_frequency = NAN);
+              float buffer_frequency = NAN,
+              float alpha = NAN);
     void stop();
     void set_position(const AudioSourceState<ScenePos> &position);
     void print(std::ostream& ostr) const;

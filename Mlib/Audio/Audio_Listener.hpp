@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Audio/Audio_Entity_State.hpp>
 #include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -18,6 +19,7 @@ public:
     static void unmute();
 
 private:
+    static AtomicMutex mutex_;
     static bool muted_;
     static float gain_;
     static std::optional<AudioListenerState> listener_inverse_state_;

@@ -1,4 +1,5 @@
 #include "Cross_Fade.hpp"
+#include <Mlib/Audio/Audio_Scene.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Thread_Initializer.hpp>
@@ -58,7 +59,8 @@ void CrossFade::play(
     const AudioBuffer& audio_buffer,
     float gain_factor,
     float pitch,
-    float buffer_frequency)
+    float buffer_frequency,
+    float alpha)
 {
     std::scoped_lock lock{ mutex_ };
     auto sg_it = std::find_if(
@@ -81,7 +83,7 @@ void CrossFade::play(
             .gain = 0.f,
             .gain_factor = gain_factor,
             .buffer_frequency = buffer_frequency,
-            .source = std::make_unique<AudioSource>(audio_buffer, position_requirement_)});
+            .source = std::make_unique<AudioSource>(audio_buffer, position_requirement_, alpha)});
         sg.source->set_loop(true);
         sg.apply_gain();
         if (std::isnan(buffer_frequency)) {
@@ -101,7 +103,7 @@ void CrossFade::stop() {
 void CrossFade::set_position(const AudioSourceState<ScenePos>& position) {
     std::scoped_lock lock{ mutex_ };
     for (auto& s : sources_) {
-        s.source->set_position(position);
+        AudioScene::set_source_transformation(*s.source, position);
     }
 }
 
