@@ -48,7 +48,9 @@ static GenShaderText fragment_shader_text{[](
         sstr << "uniform sampler2D softLightTexture;" << std::endl;
     }
     sstr << std::endl;
-    sstr << "const float offset = 1.0 / 1000.0;" << std::endl;
+    if (high_pass) {
+        sstr << "const float offset = 1.0 / 1000.0;" << std::endl;
+    }
     sstr << std::endl;
     sstr << "void main()" << std::endl;
     sstr << "{" << std::endl;
@@ -59,7 +61,13 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    float z_n = 2.0 * z_b - 1.0;" << std::endl;
         sstr << "    float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));" << std::endl;
         // sstr << "    col.b = (z_e - zNear) / (zFar - zNear);" << std::endl;
+    }
+    if (depth_fog) {
         sstr << "    float distance_fac = clamp((z_e - 200.0) / 800.0, 0.0, 0.5);" << std::endl;
+    }
+    if (low_pass) {
+        // https://en.wikipedia.org/wiki/Circle_of_confusion#Determining_a_circle_of_confusion_diameter_from_the_object_field
+        sstr << "    float offset = max(0.0, abs(z_e - 8.0) / z_e - 0.3) / 2000.0;" << std::endl;
     }
     // sstr << "    if (-z_e > 100) col.b = 1;" << std::endl;
     // sstr << "    if (-z_e <= 100) col.b = 0;" << std::endl;
@@ -79,8 +87,8 @@ static GenShaderText fragment_shader_text{[](
         sstr << "    );" << std::endl;
         sstr << std::endl;
         if (low_pass) {
-            sstr << "    float c = 1.0 / 9.0 * distance_fac + 1.0 * (1.0 - distance_fac);" << std::endl;
-            sstr << "    float o = 1.0 / 9.0 * distance_fac + 0.0 * (1.0 - distance_fac);" << std::endl;
+            sstr << "    float c = 1.0 / 9.0;" << std::endl;
+            sstr << "    float o = 1.0 / 9.0;" << std::endl;
         }
         if (high_pass) {
             sstr << "    float c =  9.0 * 0.2 + 1.0 / 9.0 * 0.8;" << std::endl;
