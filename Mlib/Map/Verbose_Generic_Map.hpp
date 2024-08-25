@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <vector>
 
@@ -66,8 +67,8 @@ public:
     }
 
     mapped_type& get(const key_type& key) {
-        auto it = this->find(key);
-        if (it == this->end()) {
+        auto it = elements_.find(key);
+        if (it == elements_.end()) {
             THROW_OR_ABORT(value_name_ + " with key \"" + key_to_string_(key) +
                 "\" does not exist");
         }
@@ -75,8 +76,8 @@ public:
     }
 
     mapped_type get(const key_type& key, const mapped_type& deflt) const {
-        auto it = this->find(key);
-        if (it == this->end()) {
+        auto it = elements_.find(key);
+        if (it == elements_.end()) {
             return deflt;
         }
         return it->second;
@@ -114,6 +115,12 @@ public:
     template <class TPredicate>
     void erase_if(const TPredicate& predicate) {
         std::erase_if(elements_, predicate);
+    }
+
+    void remove(const key_type& key) {
+        if (erase(key) != 1) {
+            verbose_abort(value_name_ + " with key \"" + key_to_string_(key) + "\" could not be removed");
+        }
     }
 
     std::vector<key_type> keys() const {

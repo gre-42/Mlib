@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Os/Os.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
 #include <stdexcept>
@@ -68,6 +69,12 @@ public:
             THROW_OR_ABORT("Could not insert into map");
         }
         return res.first->second;
+    }
+
+    void remove(const key_type& key) {
+        if (this->erase(key) != 1) {
+            verbose_abort("Could not remove element");
+        }
     }
 
     std::vector<key_type> keys() const {
