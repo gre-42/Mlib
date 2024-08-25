@@ -259,7 +259,8 @@ std::vector<uint8_t> Mlib::read_file_bytes(const std::filesystem::path& filename
 
 std::unique_ptr<std::ostream> Mlib::create_ofstream(
     const std::filesystem::path& filename,
-    std::ios_base::openmode mode)
+    std::ios_base::openmode mode,
+    FileStorageType storage_type)
 {
     return std::make_unique<std::ofstream>(filename, mode);
 }
@@ -273,14 +274,21 @@ bool Mlib::path_exists(const std::filesystem::path& path) {
     return exists;
 }
 
-void Mlib::remove_path(const std::filesystem::path& path) {
+void Mlib::remove_path(
+    const std::filesystem::path& path,
+    FileStorageType storage_type)
+{
     std::error_code ec;
     if (!fs::remove(path, ec)) {
         THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
-void Mlib::rename_path(const std::filesystem::path& from, const std::filesystem::path& to) {
+void Mlib::rename_path(
+    const std::filesystem::path& from,
+    const std::filesystem::path& to,
+    FileStorageType storage_type)
+{
     std::error_code ec;
     fs::rename(from, to, ec);
     if (ec) {
@@ -288,7 +296,10 @@ void Mlib::rename_path(const std::filesystem::path& from, const std::filesystem:
     }
 }
 
-void Mlib::create_directories(const std::filesystem::path& dirname) {
+void Mlib::create_directories(
+    const std::filesystem::path& dirname,
+    FileStorageType storage_type)
+{
     std::error_code ec;
     fs::create_directories(dirname, ec);
     if (ec) {
