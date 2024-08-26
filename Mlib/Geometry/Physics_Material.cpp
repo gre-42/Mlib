@@ -56,8 +56,48 @@ PhysicsMaterial Mlib::physics_material_from_string(const std::string& s) {
     return result;
 }
 
-std::string Mlib::physics_material_to_string(PhysicsMaterial p) {
-    switch (p) {
+static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
+    static const std::map<PhysicsMaterial, std::string> m{
+        { PhysicsMaterial::ATTR_VISIBLE, "attr_visible" },
+        { PhysicsMaterial::ATTR_COLLIDE, "attr_collide" },
+        { PhysicsMaterial::ATTR_TWO_SIDED, "attr_two_sided" },
+        { PhysicsMaterial::ATTR_ALIGN_STRICT, "attr_align_strict" },
+        { PhysicsMaterial::ATTR_CONVEX, "attr_convex" },
+        { PhysicsMaterial::ATTR_CONCAVE, "attr_concave" },
+        { PhysicsMaterial::ATTR_ROUND, "attr_round" },
+        { PhysicsMaterial::OBJ_ALIGNMENT_PLANE, "obj_alignment_plane" },
+        { PhysicsMaterial::OBJ_CHASSIS, "obj_chassis" },
+        { PhysicsMaterial::OBJ_TIRE_LINE, "obj_tire_line" },
+        { PhysicsMaterial::OBJ_GRIND_CONTACT, "obj_grind_contact" },
+        { PhysicsMaterial::OBJ_GRIND_LINE, "obj_grind_line" },
+        { PhysicsMaterial::OBJ_ALIGNMENT_CONTACT, "obj_alignment_contact" },
+        { PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT, "obj_bullet_line_segment" },
+        { PhysicsMaterial::OBJ_BULLET_MESH, "obj_bullet_mesh" },
+        { PhysicsMaterial::OBJ_HITBOX, "obj_hitbox" },
+        { PhysicsMaterial::OBJ_DISTANCEBOX, "obj_distancebox" },
+        { PhysicsMaterial::OBJ_GRASS, "obj_grass" },
+        { PhysicsMaterial::SURFACE_WET, "surface_wet" },
+        { PhysicsMaterial::SURFACE_CONTAINS_SKIDMARKS, "surface_contains_skidmarks" }
+    };
+    std::string result;
+    for (auto& [modifier, str] : m) {
+        if (any(modifier & p)) {
+            if (!result.empty()) {
+                result += '|';
+            }
+            result += str;
+            p &= ~modifier;
+        }
+    }
+    p &= ~PhysicsMaterial::SURFACE_BASE_MASK;
+    if (any(p)) {
+        THROW_OR_ABORT("Unknown modifiers in physics material: " + std::to_string((int)p));
+    }
+    return result;
+}
+
+static std::string physics_material_base_to_string(PhysicsMaterial p) {
+    switch (p & PhysicsMaterial::SURFACE_BASE_MASK) {
         case PhysicsMaterial::NONE: return "none";
         case PhysicsMaterial::SURFACE_BASE_TARMAC: return "surface_base_tarmac";
         case PhysicsMaterial::SURFACE_BASE_GRAVEL: return "surface_base_gravel";
@@ -71,6 +111,16 @@ std::string Mlib::physics_material_to_string(PhysicsMaterial p) {
         case PhysicsMaterial::SURFACE_BASE_FOLIAGE: return "surface_base_foliage";
         default: return "PhysicsMaterial(" + std::to_string((uint32_t)p) + ')';
     };
+}
+
+std::string Mlib::physics_material_to_string(PhysicsMaterial p) {
+    auto modifiers = physics_material_modifiers_to_string(p);
+    auto base = physics_material_base_to_string(p);
+    if (!modifiers.empty() && !base.empty()) {
+        return modifiers + '|' + base;
+    } else {
+        return modifiers + base;
+    }
 }
 
 void Mlib::from_json(const nlohmann::json& j, PhysicsMaterial& p) {
