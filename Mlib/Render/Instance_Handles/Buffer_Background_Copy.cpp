@@ -141,8 +141,13 @@ bool BufferBackgroundCopy::is_awaited() const {
 }
 
 std::shared_ptr<IArrayBuffer> BufferBackgroundCopy::fork() {
-    if (state_ != BackgroundCopyState::AWAITED) {
-        THROW_OR_ABORT("BufferBackgroundCopy: attempt to fork a non-awaited object");
+    if ((state_ != BackgroundCopyState::AWAITED) &&
+        (state_ != BackgroundCopyState::UNINITIALIZED))
+    {
+        // Objects are uninitialized after "BufferBackgroundCopy::deallocate".
+        THROW_OR_ABORT(
+            "BufferBackgroundCopy: attempt to fork an object that is neither "
+            "awaited nor uninitialized. State: " + std::to_string((int)state_));
     }
     return shared_from_this();
 }
