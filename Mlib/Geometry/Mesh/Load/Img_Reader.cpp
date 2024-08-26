@@ -23,7 +23,7 @@ ImgReader::ImgReader(std::istream& directory, std::unique_ptr<std::istream>&& da
         directory_.add(
             entry_name,
             std::streamoff{ h.offset } << 11,
-            std::streamsize{ h.size } << 11);
+            integral_cast<std::streamsize>(h.size) << 11);
     }
     data_ = std::move(data);
 }
