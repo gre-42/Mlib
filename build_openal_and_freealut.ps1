@@ -18,7 +18,7 @@ git clone https://github.com/vancegroup/freealut
 mkdir freealut/build
 cd freealut/build
 $env:OPENALDIR="C:\Program Files (x86)\OpenAL 1.1 SDK"
-& "C:\Program Files\CMake\bin\cmake" ..
-& "C:\Program Files\CMake\bin\cmake" --build . --config Release
+cmake ..
+cmake --build . --config Release
 
 Pop-Location
