@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Uninitialized.hpp>
 #include <cmath>
 
 namespace Mlib {
@@ -10,10 +11,15 @@ public:
         : alpha_{ alpha }
         , s_is_initialized_{ false }
     {}
+    ExponentialSmoother(const TFloat& alpha, Uninitialized)
+        : alpha_{ alpha }
+        , s_{ uninitialized }
+        , s_is_initialized_{ false }
+    {}
     ExponentialSmoother(const TFloat& alpha, const TData& x0)
         : alpha_{ alpha }
         , s_{ x0 }
-        , s_is_initialized_(true)
+        , s_is_initialized_{ true }
     {}
     const TData& operator () (const TData& x) {
         if (!s_is_initialized_) {
