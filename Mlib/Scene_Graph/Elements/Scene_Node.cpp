@@ -1252,8 +1252,9 @@ FixedArray<float, 3> SceneNode::velocity(
     std::chrono::steady_clock::time_point time,
     std::chrono::steady_clock::duration dt) const
 {
-    auto p0 = absolute_model_matrix(time - dt);
-    auto p1 = absolute_model_matrix(time + dt);
+    std::shared_lock lock{ mutex_ };
+    auto p0 = absolute_model_matrix(LockingStrategy::NO_LOCK, time - dt);
+    auto p1 = absolute_model_matrix(LockingStrategy::NO_LOCK, time + dt);
     return (p1.t() - p0.t()).casted<float>() / (2.f * std::chrono::duration<float>{dt}.count() * seconds);
 }
 
