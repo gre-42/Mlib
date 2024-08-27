@@ -1,6 +1,7 @@
 #include "Rendering_Resources.hpp"
 #include <Mlib/Assert.hpp>
 #include <Mlib/Env.hpp>
+#include <Mlib/Geography/Heightmaps/Heightmap_To_Normalmap.hpp>
 #include <Mlib/Geometry/Material/Blend_Map_Texture.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Geometry/Texture/ITexture_Handle.hpp>
@@ -61,6 +62,7 @@
 #include <stb_cpp/stb_invert.hpp>
 #include <stb_cpp/stb_lighten.hpp>
 #include <stb_cpp/stb_mipmaps.hpp>
+#include <stb_cpp/stb_saturate.hpp>
 #include <stb_cpp/stb_set_alpha.hpp>
 #include <stb_cpp/stb_transform.hpp>
 #include <stb_cpp/stb_truetype_aligned.hpp>
@@ -172,14 +174,34 @@ static StbInfo<uint8_t> stb_load_texture(
 
 static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifiers& color, FlipMode flip_mode) {
     std::string touch_file = *color.filename + ".xpltd";
+    auto source_color_mode = color.color_mode;
+    // Color-selector
     bool has_color_selector =
         (color.selected_color_near != 0.f) ||
         (color.selected_color_far != INFINITY);
-    auto source_color_mode = has_color_selector
-        ? ColorMode::RGB
-        : color.color_mode;
-    if (has_color_selector && (color.color_mode != ColorMode::GRAYSCALE)) {
-        THROW_OR_ABORT("Color-selector requires grayscale");
+    if (has_color_selector) {
+        if (color.color_mode != ColorMode::GRAYSCALE) {
+            THROW_OR_ABORT("Color-selector requires grayscale");
+        }
+        source_color_mode = ColorMode::RGB;
+    }
+    // Height-to-normals
+    if (color.height_to_normals) {
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("height_to_normals requires RGB");
+        }
+        source_color_mode = ColorMode::GRAYSCALE;
+    }
+    // Saturate
+    if (color.saturate) {
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("saturate requires RGB");
+        }
+        source_color_mode = ColorMode::GRAYSCALE;
+    }
+    // "Color-selector" vs. "height-to-normals"
+    if ((int)has_color_selector + (int)color.height_to_normals + (int)color.saturate > 1) {
+        THROW_OR_ABORT("Only one out of \"color_selector\", \"height_to_normals\" and \"saturate\" may be specified");
     }
     if (any(source_color_mode & ColorMode::RGBA) &&
         color.alpha.empty() &&
@@ -227,6 +249,22 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
     } else {
         si0 = stb_load_texture(
             color.filename, (int)max(source_color_mode), flip_mode);
+    }
+    if (color.saturate) {
+        if (si0.nrChannels != 1) {
+            THROW_OR_ABORT("Saturate requires grayscale input");
+        }
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("Saturate requires RGB output");
+        }
+        auto si1 = stb_create<uint8_t>(si0.width, si0.height, 3);
+        stb_saturate(
+            si0.data.get(),
+            si1.data.get(),
+            si0.width,
+            si0.height,
+            si1.nrChannels);
+        si0 = std::move(si1);
     }
     if (!color.average.empty()) {
         auto si1 = stb_load_texture(
@@ -438,6 +476,26 @@ static StbInfo<uint8_t> stb_load_and_transform_texture(const ColormapWithModifie
             si0.height,
             si0.nrChannels);
     }
+    if (color.height_to_normals) {
+        if (si0.nrChannels != 1) {
+            THROW_OR_ABORT("Height-to-normals requires grayscale input");
+        }
+        if (color.color_mode != ColorMode::RGB) {
+            THROW_OR_ABORT("Height-to-normals requires RGB output");
+        }
+        // Number of intensity differences between neighboring pixels that will kind of
+        // saturate the normal (kind of: the differences are compared to "1" during normal
+        // computation, so the normals will not really saturate).
+        const auto intensity_range = 10.f;
+        auto heightmap = stb_image_2_array(si0)[0];
+        si0 = stb_create<uint8_t>(si0.width, si0.height, 3);
+        auto nm_transposed = clipped(heightmap_to_normalmap(heightmap.casted<float>(), intensity_range) * 127.5f + 127.5f, 0.f, 255.f).casted<uint8_t>();
+        auto nm = Array<uint8_t>{ nm_transposed.shape() };
+        nm[0] = nm_transposed[1];
+        nm[1] = nm_transposed[0];
+        nm[2] = nm_transposed[2];
+        array_2_stb_image(nm, si0.data.get());
+    }
     return si0;
 }
 
@@ -621,6 +679,12 @@ void RenderingResources::preload(const TextureDescriptor& descriptor) const {
     }
     if (!desc.normal.filename->empty()) {
         preload(desc.normal, TextureRole::NORMAL);
+        // auto ditn = texture_descriptors_.try_get(desc.normal.filename);
+        // if (ditn != nullptr) {
+        //     preload(ditn->color, TextureRole::NORMAL);
+        // } else {
+        //     preload(desc.normal, TextureRole::NORMAL);
+        // }
     }
 }
 

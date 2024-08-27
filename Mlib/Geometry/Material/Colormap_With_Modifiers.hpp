@@ -33,6 +33,8 @@ struct ColormapWithModifiers {
     float plus = 0.f;
     bool abs = false;
     bool invert = false;
+    bool height_to_normals = false;
+    bool saturate = false;
     ColorMode color_mode = ColorMode::UNDEFINED;
     float alpha_fac = 1.f;
     MipmapMode mipmap_mode = MipmapMode::NO_MIPMAPS;
@@ -66,6 +68,8 @@ struct ColormapWithModifiers {
         archive(plus);
         archive(abs);
         archive(invert);
+        archive(height_to_normals);
+        archive(saturate);
         archive(color_mode);
         archive(alpha_fac);
         archive(mipmap_mode);

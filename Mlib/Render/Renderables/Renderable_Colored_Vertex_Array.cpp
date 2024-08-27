@@ -509,7 +509,7 @@ void RenderableColoredVertexArray::render_cva(
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::string reflection_map;
     float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty() && any(specular != 0.f)) {
+    if (!is_lightmap && !cva->material.reflection_map.empty()) {
         if (color_style == nullptr) {
             THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
         }

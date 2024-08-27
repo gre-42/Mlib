@@ -37,6 +37,8 @@ DECLARE_ARGUMENT(times);
 DECLARE_ARGUMENT(plus);
 DECLARE_ARGUMENT(abs);
 DECLARE_ARGUMENT(invert);
+DECLARE_ARGUMENT(height_to_normals);
+DECLARE_ARGUMENT(saturate);
 DECLARE_ARGUMENT(mipmap_mode);
 DECLARE_ARGUMENT(depth_interpolation);
 DECLARE_ARGUMENT(anisotropic_filtering_level);
@@ -60,6 +62,19 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto wrap_modes = OrderableFixedArray<WrapMode, 2>{
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
+    auto normal = ColormapWithModifiers{
+        .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
+        .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
+        .color_mode = ColorMode::RGB,
+        .mipmap_mode = mipmap_mode,
+        .anisotropic_filtering_level = anisotropic_filtering_level,
+        .wrap_modes = wrap_modes}.compute_hash();
+    {
+        auto filename = args.arguments.try_path_or_variable(KnownArgs::normal);
+        if (filename.is_variable) {
+            normal = RenderingContextStack::primary_rendering_resources().colormap(normal);
+        }
+    }
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
         args.arguments.at<std::string>(KnownArgs::name),
         TextureDescriptor{
@@ -85,6 +100,8 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
                 .abs = args.arguments.at<bool>(KnownArgs::abs, false),
                 .invert = args.arguments.at<bool>(KnownArgs::invert, false),
+                .height_to_normals = args.arguments.at<bool>(KnownArgs::height_to_normals, false),
+                .saturate = args.arguments.at<bool>(KnownArgs::saturate, false),
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .alpha_fac = args.arguments.at<float>(KnownArgs::alpha_fac, 1.f),
                 .mipmap_mode = mipmap_mode,
@@ -97,12 +114,6 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .mipmap_mode = mipmap_mode,
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes}.compute_hash(),
-            .normal = ColormapWithModifiers{
-                .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
-                .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
-                .color_mode = ColorMode::RGB,
-                .mipmap_mode = mipmap_mode,
-                .anisotropic_filtering_level = anisotropic_filtering_level,
-                .wrap_modes = wrap_modes}.compute_hash() });
+            .normal = normal });
 
 }
