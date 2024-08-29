@@ -5,6 +5,8 @@
 
 namespace Mlib {
 
+struct StaticWorld;
+
 enum class StatusComponents {
     NONE = 0,
     TIME = 1 << 0,
@@ -29,7 +31,10 @@ inline bool operator |= (StatusComponents& a, StatusComponents b) {
 
 class StatusWriter {
 public:
-    virtual void write_status(std::ostream& ostr, StatusComponents status_components) const = 0;
+    virtual void write_status(
+        std::ostream& ostr,
+        StatusComponents status_components,
+        const StaticWorld& world) const = 0;
     virtual float get_value(StatusComponents status_components) const = 0;
     virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) = 0;
 };

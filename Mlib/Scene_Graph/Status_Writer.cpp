@@ -5,7 +5,7 @@
 
 using namespace Mlib;
 
-void StatusWriter::write_status(std::ostream& ostr, StatusComponents status_components) const {
+void StatusWriter::write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const {
     THROW_OR_ABORT("StatusWriter::write_status not implemented");
 }
 

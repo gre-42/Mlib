@@ -29,7 +29,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
                 return;
             }
             set_absolute_model_matrix(follower_node_->absolute_model_matrix());
-            advance_time(NAN, std::chrono::steady_clock::time_point());
+            advance_time(NAN);
             auto trafo = get_new_absolute_model_matrix();
             follower_node_->set_absolute_pose(
                 trafo.t(),
@@ -45,7 +45,11 @@ KeepOffsetFromCamera::~KeepOffsetFromCamera() {
     on_destroy.clear();
 }
 
-void KeepOffsetFromCamera::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {
+    advance_time(dt);
+}
+
+void KeepOffsetFromCamera::advance_time(float dt) {
     auto new_position_abs = scene_.get_node(cameras_.camera_node_name(), DP_LOC)->absolute_model_matrix().t() + offset_.casted<ScenePos>();
     if (all(grid_ == 0.f)) {
         transformation_matrix_.t() = new_position_abs;

@@ -28,7 +28,7 @@ FollowerAi::~FollowerAi() {
     on_destroy.clear();
 }
 
-void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void FollowerAi::advance_time(float dt, const StaticWorld& world) {
     if (followed_ != nullptr) {
         follower_->move_to(
             AiWaypoint{
@@ -40,6 +40,7 @@ void FollowerAi::advance_time(float dt, std::chrono::steady_clock::time_point ti
                 std::nullopt,                    // velocity_at_destination 
                 nullptr                            // waypoint_history
             },
-            nullptr);
+            nullptr,
+            world);
     }
 }

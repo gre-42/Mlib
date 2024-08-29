@@ -17,7 +17,7 @@ public:
         const DanglingBaseClassRef<RigidBodyVehicle>& follower,
         const DanglingBaseClassRef<RigidBodyVehicle>& followed);
     virtual ~FollowerAi();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time);
+    virtual void advance_time(float dt, const StaticWorld& world);
 private:
     AdvanceTimes& advance_times_;
     DanglingBaseClassRef<RigidBodyVehicle> follower_;

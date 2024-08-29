@@ -28,6 +28,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Time/Fps/Dependent_Sleeper.hpp>
 #include <Mlib/Time/Fps/Realtime_Sleeper.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
@@ -82,6 +83,7 @@ struct SceneConfigResource {
 class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
+        std::string world,
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
         SceneNodeResources& scene_node_resources,
@@ -133,6 +135,7 @@ public:
     ObjectPool object_pool_;
     DeleteNodeMutex delete_node_mutex_;
 
+    DynamicWorld dynamic_world_;
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;
     RenderingResources rendering_resources_;

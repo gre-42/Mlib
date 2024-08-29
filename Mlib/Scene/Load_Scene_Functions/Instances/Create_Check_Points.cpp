@@ -133,7 +133,7 @@ void CreateCheckPoints::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<bool>(KnownArgs::height_changed),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::selection_emissivity, fixed_full<float, 3>(-1.f)),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::deselection_emissivity, fixed_full<float, 3>(-1.f)),
-        [on_finish, mle=args.macro_line_executor](){
+        [on_finish, mle = args.macro_line_executor]() {
             mle(on_finish, nullptr, nullptr);
         });
     auto pacenotes_filename = args.arguments.path(KnownArgs::pacenotes_filename, "");

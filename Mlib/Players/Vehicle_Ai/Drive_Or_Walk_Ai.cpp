@@ -72,7 +72,8 @@ static ActorTask get_initial_actor_task(const RigidBodyVehicle& rb) {
 
 VehicleAiMoveToStatus DriveOrWalkAi::move_to(
     const AiWaypoint& ai_waypoint,
-    const SkillMap* skills)
+    const SkillMap* skills,
+    const StaticWorld& world)
 {
     // if (waypoint_defined()) {
     //     g_beacons.push_back(Beacon::create(waypoint_.value(), "flag"));

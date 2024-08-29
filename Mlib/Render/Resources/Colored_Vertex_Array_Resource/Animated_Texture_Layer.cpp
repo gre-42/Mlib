@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Colored_Vertex.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Trail_Sequence.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -109,7 +110,7 @@ void AnimatedTextureLayer::append(
     ++tmp_num_triangles_;
 }
 
-void AnimatedTextureLayer::move(float dt, std::chrono::steady_clock::time_point time) {
+void AnimatedTextureLayer::move(float dt, const StaticWorld& world) {
     std::scoped_lock lock{ mutex_ };
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
@@ -127,7 +128,7 @@ void AnimatedTextureLayer::move(float dt, std::chrono::steady_clock::time_point 
             }
         }
     }
-    time_ = time;
+    time_ = world.time;
 }
 
 std::chrono::steady_clock::time_point AnimatedTextureLayer::time() const {

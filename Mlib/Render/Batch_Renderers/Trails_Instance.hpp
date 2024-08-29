@@ -23,6 +23,7 @@ struct RenderConfig;
 struct ExternalRenderPass;
 struct TrailSequence;
 struct Shading;
+struct StaticWorld;
 
 class TrailsInstance {
     TrailsInstance(const TrailsInstance&) = delete;
@@ -42,7 +43,7 @@ public:
         const FixedArray<ColoredVertex<ScenePos>, 3>& triangle,
         const FixedArray<float, 3>& time,
         const TrailSequence& trail_sequence);
-    void move(float dt, std::chrono::steady_clock::time_point time);
+    void move(float dt, const StaticWorld& world);
     std::chrono::steady_clock::time_point time() const;
     void preload() const;
     void render(

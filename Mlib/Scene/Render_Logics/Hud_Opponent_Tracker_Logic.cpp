@@ -52,7 +52,7 @@ HudOpponentTrackerLogic::~HudOpponentTrackerLogic() {
     on_destroy.clear();
 }
 
-void HudOpponentTrackerLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void HudOpponentTrackerLogic::advance_time(float dt, const StaticWorld& world) {
     auto target_rb = player_->target_rb();
     if (target_rb == nullptr) {
         hud_tracker_.invalidate();

@@ -42,7 +42,7 @@ void RecordTrack::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.path(KnownArgs::filename),
         scene_node_resources.get_geographic_mapping("world"),
         recorder_node,
-        &rb.rbp_,
+        rb.rbp_,
         args.ui_focus.focuses);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }

@@ -38,7 +38,7 @@ TransformationMatrix<float, ScenePos, 3> CopyRotation::get_new_relative_model_ma
     return transformation_matrix_;
 }
 
-void CopyRotation::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void CopyRotation::advance_time(float dt, const StaticWorld& world) {
     // Do nothing
 }
 

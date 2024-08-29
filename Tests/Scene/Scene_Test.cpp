@@ -16,7 +16,6 @@
 #include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
 #include <Mlib/Physics/Collision/Collidable_Mode.hpp>
 #include <Mlib/Physics/Collision/Power_To_Force.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Gravity_Efp.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Iteration.hpp>
@@ -54,6 +53,7 @@
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Physics_Resource_Filter.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -167,7 +167,7 @@ void test_physics_engine(unsigned int seed) {
         THROW_OR_ABORT("Unknown scene name");
     }
 
-    GravityEfp gefp{ gravity_vector };
+    GravityEfp gefp;
     pe.add_external_force_provider(gefp);
 
     RealtimeSleeper physics_sleeper{
@@ -182,10 +182,12 @@ void test_physics_engine(unsigned int seed) {
         [&]() { return physics_sleeper.simulated_time(); }, // simulated_time
         []() { return false; }                              // paused
     };
+    DynamicWorld dynamic_world{ scene_node_resources, "world" };
     PhysicsIteration pi{
         scene_node_resources,
         rendering_resources,
         scene,
+        dynamic_world,
         pe,
         delete_node_mutex,
         physics_cfg };

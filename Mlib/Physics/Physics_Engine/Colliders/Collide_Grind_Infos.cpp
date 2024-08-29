@@ -1,16 +1,18 @@
 #include "Collide_Grind_Infos.hpp"
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Physics/Collision/Grind_Info.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Colliders/Jump.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
 void Mlib::collide_grind_infos(
     const PhysicsEngineConfig& cfg,
+    const StaticWorld& world,
     std::list<std::unique_ptr<IContactInfo>>& contact_infos,
     const std::unordered_map<RigidBodyVehicle*, GrindInfo>& grind_infos)
 {
@@ -27,7 +29,7 @@ void Mlib::collide_grind_infos(
             auto point_dir = o1.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
             point_dir *= sign(dot0d(point_dir, o1.rbp_.v_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
-            auto n = -gravity_direction + point_dir * 2.f;
+            auto n = -world.gravity.direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
             jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {

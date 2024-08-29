@@ -7,12 +7,13 @@ struct RenderConfig;
 struct SceneGraphConfig;
 struct RenderResults;
 struct RenderedSceneDescriptor;
+struct StaticWorld;
 
 class VisualMovableLoggerView {
 public:
     virtual ~VisualMovableLoggerView() = default;
 
-    virtual void advance_time(float dt) = 0;
+    virtual void advance_time(float dt, const StaticWorld& world) = 0;
 
     virtual void render(
         const LayoutConstraintParameters& lx,

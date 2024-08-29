@@ -2,7 +2,6 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
 #include <Mlib/Players/Advance_Times/Game_Logic.hpp>
 #include <Mlib/Render/Batch_Renderers/Particle_Renderer.hpp>
@@ -26,6 +25,7 @@
 using namespace Mlib;
 
 RenderableScene::RenderableScene(
+    std::string world,
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
     SceneNodeResources& scene_node_resources,
@@ -48,6 +48,7 @@ RenderableScene::RenderableScene(
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
+    , dynamic_world_{ scene_node_resources, std::move(world) }
     , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
     , rendering_resources_{
@@ -97,11 +98,11 @@ RenderableScene::RenderableScene(
               : std::function<std::chrono::steady_clock::time_point()>(),
           paused_}
     , busy_state_provider_guard_{ dependent_sleeper, physics_set_fps_ }
-    , gefp_{ gravity_vector }
     , physics_iteration_{
           scene_node_resources,
           rendering_resources_,
           scene_,
+          dynamic_world_,
           physics_engine_,
           delete_node_mutex_,
           scene_config_.physics_engine_config,

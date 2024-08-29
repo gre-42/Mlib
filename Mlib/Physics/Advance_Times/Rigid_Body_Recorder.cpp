@@ -13,11 +13,11 @@ RigidBodyRecorder::RigidBodyRecorder(
     const std::string& filename,
     const TransformationMatrix<double, double, 3>* geographic_mapping,
     DanglingRef<SceneNode> recorded_node,
-    RigidBodyPulses* rbp,
+    RigidBodyPulses& rbp,
     const Focuses& focuses)
     : focuses_{ focuses }
     , recorded_node_{ recorded_node.ptr() }
-    , rbp_{ rbp }
+    , rbp_{ &rbp }
     , track_writer_{ filename, geographic_mapping }
     , start_time_{ std::chrono::steady_clock::now() }
 {
@@ -28,7 +28,7 @@ RigidBodyRecorder::~RigidBodyRecorder() {
     on_destroy.clear();
 }
 
-void RigidBodyRecorder::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void RigidBodyRecorder::advance_time(float dt, const StaticWorld& world) {
     if (recorded_node_ == nullptr) {
         return;
     }

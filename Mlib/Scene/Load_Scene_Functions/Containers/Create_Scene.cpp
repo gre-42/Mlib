@@ -21,6 +21,7 @@ using namespace Mlib;
 namespace KnownArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(name);
+DECLARE_ARGUMENT(world);
 DECLARE_ARGUMENT(focus_mask);
 DECLARE_ARGUMENT(submenus);
 DECLARE_ARGUMENT(fly);
@@ -44,6 +45,7 @@ LoadSceneJsonUserFunction CreateScene::json_user_function = [](const LoadSceneJs
     auto name = args.arguments.at<std::string>(KnownArgs::name);
     auto [_, state] = args.renderable_scenes.try_emplace(
         name,
+        args.arguments.at<std::string>(KnownArgs::world),
         name + ".rendering_resources",
         args.scene_config.render_config.anisotropic_filtering_level,
         RenderingContextStack::primary_scene_node_resources(),

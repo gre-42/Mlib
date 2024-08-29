@@ -252,12 +252,13 @@ public:
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
     virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
     // IAdvanceTime
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     // IExternalForceProvider
     virtual void increment_external_forces(
         const std::list<RigidBodyVehicle*>& olist,
         bool burn_in,
-        const PhysicsEngineConfig& cfg) override;
+        const PhysicsEngineConfig& cfg,
+        const StaticWorld& world) override;
     
     DestructionFunctions delete_vehicle_externals;
     DestructionFunctions delete_vehicle_internals;

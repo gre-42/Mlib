@@ -7,6 +7,8 @@
 
 namespace Mlib {
 
+struct StaticWorld;
+
 enum class GravityCorrection {
     NONE,
     GIMBAL,
@@ -40,7 +42,8 @@ public:
     ~Rotor();
     TransformationMatrix<float, ScenePos, 3> rotated_location(
         const TransformationMatrix<float, ScenePos, 3>& parent_location,
-        const FixedArray<float, 3>& parent_velocity);
+        const FixedArray<float, 3>& parent_velocity,
+        const StaticWorld& static_world);
     FixedArray<float, 3> rotation_axis() const;
     TransformationMatrix<float, ScenePos, 3> rest_location;
     FixedArray<float, 3> angles;

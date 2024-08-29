@@ -40,7 +40,7 @@ public:
     ~CheckPointsPacenotes();
 
     // IAdvanceTime
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     // RenderLogic
     virtual void render(
         const LayoutConstraintParameters& lx,

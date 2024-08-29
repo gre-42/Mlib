@@ -12,6 +12,7 @@ template <class T>
 class DestructionFunctionsTokensObject;
 template <class T>
 class DanglingBaseClassRef;
+struct StaticWorld;
 
 class AdvanceTimes {
 public:
@@ -19,7 +20,7 @@ public:
     ~AdvanceTimes();
     void add_advance_time(const DanglingBaseClassRef<IAdvanceTime>& advance_time, SourceLocation loc);
     void delete_advance_time(const IAdvanceTime& advance_time, SourceLocation loc);
-    void advance_time(float dt, std::chrono::steady_clock::time_point time);
+    void advance_time(float dt, const StaticWorld& world);
     bool empty() const;
 private:
     bool advancing_time_;

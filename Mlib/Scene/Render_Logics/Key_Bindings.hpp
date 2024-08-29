@@ -39,7 +39,11 @@ public:
     ~KeyBindings();
 
     // IExternalForceProvider
-    virtual void increment_external_forces(const std::list<RigidBodyVehicle*>& olist, bool burn_in, const PhysicsEngineConfig& cfg) override;
+    virtual void increment_external_forces(
+        const std::list<RigidBodyVehicle*>& olist,
+        bool burn_in,
+        const PhysicsEngineConfig& cfg,
+        const StaticWorld& world) override;
 
     // RenderLogic
     virtual void render(

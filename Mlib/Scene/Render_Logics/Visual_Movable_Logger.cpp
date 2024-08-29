@@ -45,9 +45,9 @@ void VisualMovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_obje
     global_object_pool.remove(this);
 }
 
-void VisualMovableLogger::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void VisualMovableLogger::advance_time(float dt, const StaticWorld& world) {
     for (auto& l : loggers_) {
-        l->advance_time(dt);
+        l->advance_time(dt, world);
     }
 }
 

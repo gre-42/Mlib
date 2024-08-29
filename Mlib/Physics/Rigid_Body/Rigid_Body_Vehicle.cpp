@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -22,7 +23,6 @@
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Resolve/Constraints.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Interfaces/IDamageable.hpp>
 #include <Mlib/Physics/Interfaces/IPlayer.hpp>
 #include <Mlib/Physics/Interfaces/ISpawner.hpp>
@@ -36,6 +36,7 @@
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Plane_Controllers/Rigid_Body_Plane_Controller.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
@@ -192,7 +193,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     for (auto& [rotor_id, rotor] : rotors_) {
         TirePowerIntent P = consume_rotor_surface_power(rotor_id);
         if (P.type == TirePowerIntentType::ACCELERATE) {
-            auto abs_location = rotor->rotated_location(rbp_.abs_transformation(), rbp_.v_);
+            auto abs_location = rotor->rotated_location(rbp_.abs_transformation(), rbp_.v_, c.world);
             // g_beacons.push_back(Beacon{ .location = abs_location, .resource_name = "flag_z" });
             integrate_force(
                 VectorAtPosition<float, ScenePos, 3>{
@@ -253,7 +254,7 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     }
     if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
         auto dir = rbp_.rotation_.column(1);
-        dir -= dot0d(dir, gravity_direction) * gravity_direction;
+        dir -= dot0d(dir, c.world.gravity.direction) * c.world.gravity.direction;
         float l2 = sum(squared(dir));
         if (l2 > 1e-6) {
             integrate_force(
@@ -344,7 +345,10 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     }
 }
 
-void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
+void RigidBodyVehicle::advance_time_skate(
+    const PhysicsEngineConfig& cfg,
+    const StaticWorld& world)
+{
     // Revert surface power
     if ((revert_surface_power_state_.revert_surface_power_threshold_ != INFINITY) &&
         (!grind_state_.grinding_ || (grind_state_.grind_axis_ == 2)))
@@ -361,13 +365,13 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
     if (grind_state_.grinding_) {
         if (grind_state_.grind_axis_ == 0) {
             if (std::abs(grind_state_.grind_pv_(0)) > 1e-12) {
-                auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, gravity_direction);
+                auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, world.gravity.direction);
                 x /= std::sqrt(sum(squared(x)));
-                auto z = cross(x, gravity_direction);
+                auto z = cross(x, world.gravity.direction);
                 auto r1 = FixedArray<float, 3, 3>::init(
-                    -z(0), -gravity_direction(0), -x(0),
-                    -z(1), -gravity_direction(1), -x(1),
-                    -z(2), -gravity_direction(2), -x(2));
+                    -z(0), -world.gravity.direction(0), -x(0),
+                    -z(1), -world.gravity.direction(1), -x(1),
+                    -z(2), -world.gravity.direction(2), -x(2));
                 rbp_.rotation_ =
                     Quaternion<float>{ rbp_.rotation_ }
                     .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)
@@ -375,7 +379,7 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
             }
         } else if (grind_state_.grind_axis_ == 2) {
             if (std::abs(grind_state_.grind_pv_(2)) > 1e-12) {
-                auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -gravity_direction);
+                auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -world.gravity.direction);
                 if (!r1.has_value()) {
                     THROW_OR_ABORT("Could not compute grind rotation");
                 }
@@ -405,10 +409,11 @@ void RigidBodyVehicle::advance_time_skate(const PhysicsEngineConfig& cfg) {
 
 void RigidBodyVehicle::advance_time(
     const PhysicsEngineConfig& cfg,
+    const StaticWorld& world,
     std::list<Beacon>* beacons)
 {
     auto dt_substeps = cfg.dt_substeps();
-    advance_time_skate(cfg);
+    advance_time_skate(cfg, world);
     rbp_.advance_time(dt_substeps);
     for (auto& [_, t] : tires_) {
         t.advance_time(dt_substeps);
@@ -783,7 +788,11 @@ const std::string& RigidBodyVehicle::asset_id() const {
 //     return false;
 // }
 
-void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_components) const {
+void RigidBodyVehicle::write_status(
+    std::ostream& ostr,
+    StatusComponents log_components,
+    const StaticWorld& world) const
+{
     if (log_components & StatusComponents::TIME) {
         static const std::chrono::steady_clock::time_point epoch_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
@@ -832,7 +841,7 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
         // r / r2 = v * a / (w * v^2) = a / (w * v)
         if (float w2 = sum(squared(rbp_.w_)); w2 > squared(0.001f * rpm)) {
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbp_.v_)) / w2) << " m" << std::endl;
-            ostr << "d / d2(g): " << gravity_magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
+            ostr << "d / d2(g): " << world.gravity.magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
         } else {
             ostr << "d: undefined" << std::endl;
             ostr << "d / d2(g): undefined" << std::endl;
@@ -878,13 +887,13 @@ void RigidBodyVehicle::write_status(std::ostream& ostr, StatusComponents log_com
     for (const auto& o : collision_observers_) {
         auto c = dynamic_cast<StatusWriter*>(o.get());
         if (c != nullptr) {
-            c->write_status(ostr, log_components);
+            c->write_status(ostr, log_components, world);
         }
     }
     {
         auto c = dynamic_cast<StatusWriter*>(damageable_);
         if (c != nullptr) {
-            c->write_status(ostr, log_components);
+            c->write_status(ostr, log_components, world);
         }
     }
 }
@@ -1063,7 +1072,8 @@ void RigidBodyVehicle::remove_autopilot(const SkillScenario& scenario) {
 
 VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     const AiWaypoint& ai_waypoint,
-    const SkillMap* skills)
+    const SkillMap* skills,
+    const StaticWorld& world)
 {
     auto it = autopilots_.find(actor_task_);
     if (it == autopilots_.end()) {
@@ -1071,7 +1081,7 @@ VehicleAiMoveToStatus RigidBodyVehicle::move_to(
     }
     auto status = VehicleAiMoveToStatus::NONE;
     for (auto& ai : it->second) {
-        status |= ai.second.ai->move_to(ai_waypoint, skills);
+        status |= ai.second.ai->move_to(ai_waypoint, skills, world);
     }
     return status;
 }

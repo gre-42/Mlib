@@ -89,10 +89,10 @@ CheckPoints::CheckPoints(
         movings_.push_back(&n->get_absolute_movable());
     }
     beacon_nodes_.reserve(nbeacons);
-    advance_time(0.f, std::chrono::steady_clock::time_point());
+    advance_time(0.f);
     // "moving_node_->clearing_observers.add" must be at the end of the constructor
-    // in case the ctor throws an exception, because in this case CheckPoints object is not
-    // added to the "advance_times" list.
+    // in case the ctor throws an exception, because in this case the CheckPoints
+    // object is not added to the "advance_times" list.
     for (auto& n : moving_nodes_) {
         n->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
     }
@@ -102,7 +102,11 @@ CheckPoints::~CheckPoints() {
     on_destroy.clear();
 }
 
-void CheckPoints::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void CheckPoints::advance_time(float dt, const StaticWorld& world) {
+    advance_time(dt);
+}
+
+void CheckPoints::advance_time(float dt) {
     if (moving_nodes_.size() != movings_.size()) {
         verbose_abort("Inconsistent movings size");
     }

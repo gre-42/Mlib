@@ -41,7 +41,7 @@ void RecordTrackGpx::execute(const LoadSceneJsonUserFunctionArgs& args)
         CURRENT_SOURCE_LOCATION,
         args.arguments.path(KnownArgs::filename),
         recorder_node,
-        &rb.rbp_,
+        rb.rbp_,
         scene_node_resources.get_geographic_mapping("world"),
         args.ui_focus.focuses);
     physics_engine.advance_times_.add_advance_time({ at, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);

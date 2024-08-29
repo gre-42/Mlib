@@ -6,6 +6,7 @@
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Json/Misc.hpp>
 #include <Mlib/Math/Fixed_Cholesky.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
@@ -21,6 +22,8 @@ using namespace Mlib;
 SceneNodeResources::SceneNodeResources()
     : resources_{ "Resources" }
     , geographic_mappings_{ "Geographic mapping" }
+    , wind_{ "Wind" }
+    , gravity_{ "Gravity" }
 {}
 
 SceneNodeResources::~SceneNodeResources() = default;
@@ -206,6 +209,29 @@ const TransformationMatrix<double, double, 3>* SceneNodeResources::get_geographi
 {
     return geographic_mappings_.try_get(name);
 }
+
+void SceneNodeResources::register_wind(
+    std::string name,
+    const FixedArray<float, 3>& wind)
+{
+    wind_.add(std::move(name), FixedScaledUnitVector{ wind });
+}
+
+const FixedScaledUnitVector<float, 3>* SceneNodeResources::get_wind(const std::string& name) const {
+    return wind_.try_get(name);
+}
+
+void SceneNodeResources::register_gravity(
+    std::string name,
+    const FixedArray<float, 3>& gravity)
+{
+    gravity_.add(std::move(name), FixedScaledUnitVector{ gravity });
+}
+
+const FixedScaledUnitVector<float, 3>* SceneNodeResources::get_gravity(const std::string& name) const {
+    return gravity_.try_get(name);
+}
+
 
 std::shared_ptr<AnimatedColoredVertexArrays> SceneNodeResources::get_physics_arrays(const std::string& name) const {
     auto resource = get_resource(name);

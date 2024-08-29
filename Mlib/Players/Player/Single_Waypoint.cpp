@@ -62,7 +62,10 @@ void SingleWaypoint::clear_waypoint() {
     set_waypoint_internal(std::nullopt, SIZE_MAX);
 }
 
-void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
+void SingleWaypoint::move_to_waypoint(
+    const SkillMap& skills,
+    const StaticWorld& world)
+{
     if (getenv_default_bool("DRAW_WAYPOINT_HISTORY", false)) {
         if (waypoint_.has_value()) {
             add_beacon(Beacon::create(waypoint_->position, "beacon"));
@@ -83,7 +86,8 @@ void SingleWaypoint::move_to_waypoint(const SkillMap& skills) {
             std::nullopt,               // velocity_at_destination
             &waypoint_history_          // waypoint_history
         },
-        &skills) & VehicleAiMoveToStatus::WAYPOINT_REACHED))
+        &skills,
+        world) & VehicleAiMoveToStatus::WAYPOINT_REACHED))
     {
         if (waypoint_id_ != SIZE_MAX) {
             last_visited_.at(waypoint_id_) = std::chrono::steady_clock::now();

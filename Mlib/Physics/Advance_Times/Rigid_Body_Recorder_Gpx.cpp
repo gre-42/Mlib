@@ -12,12 +12,12 @@ using namespace Mlib;
 RigidBodyRecorderGpx::RigidBodyRecorderGpx(
     const std::string& filename,
     DanglingRef<SceneNode> recorded_node,
-    RigidBodyPulses* rbp,
+    RigidBodyPulses& rbp,
     const TransformationMatrix<double, double, 3>* geographic_coordinates,
     const Focuses& focuses)
     : focuses_{ focuses }
     , recorded_node_{ recorded_node.ptr() }
-    , rbp_{ rbp }
+    , rbp_{ &rbp }
     , geographic_coordinates_{ geographic_coordinates }
     , track_writer_{ filename }
     , start_time_{ std::chrono::steady_clock::now() }
@@ -29,7 +29,7 @@ RigidBodyRecorderGpx::~RigidBodyRecorderGpx() {
     on_destroy.clear();
 }
 
-void RigidBodyRecorderGpx::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void RigidBodyRecorderGpx::advance_time(float dt, const StaticWorld& world) {
     if (recorded_node_ == nullptr) {
         return;
     }

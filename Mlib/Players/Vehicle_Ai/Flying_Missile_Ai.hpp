@@ -27,7 +27,8 @@ public:
     virtual ~FlyingMissileAi() override;
     virtual VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
-        const SkillMap* skills) override;
+        const SkillMap* skills,
+        const StaticWorld& world) override;
     virtual std::vector<SkillFactor> skills() const override;
 private:
     DestructionFunctionsRemovalTokens on_destroy_rigid_body_;

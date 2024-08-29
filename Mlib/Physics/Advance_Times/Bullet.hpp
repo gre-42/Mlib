@@ -51,13 +51,13 @@ public:
         std::unique_ptr<ITrailExtender> trace_extender,
         DynamicLights& dynamic_lights,
         DeleteNodeMutex& delete_node_mutex,
-        std::chrono::steady_clock::time_point time,
+        const StaticWorld& world,
         RotateBullet rotate_bullet);
     ~Bullet();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_collided(
         const FixedArray<ScenePos, 3>& intersection_point,
-        std::chrono::steady_clock::time_point time,
+        const StaticWorld& world,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,

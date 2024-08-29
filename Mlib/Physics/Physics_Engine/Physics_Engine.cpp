@@ -37,11 +37,11 @@ PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
 PhysicsEngine::~PhysicsEngine() = default;
 
 void PhysicsEngine::collide(
+    const StaticWorld& world,
     std::list<Beacon>* beacons,
     bool burn_in,
     size_t oversampling_iteration,
-    BaseLog* base_log,
-    std::chrono::steady_clock::time_point time)
+    BaseLog* base_log)
 {
     rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
         return (rbtm.rigid_body->mass() != INFINITY);
@@ -60,7 +60,7 @@ void PhysicsEngine::collide(
             co->notify_reset(burn_in, cfg_);
         }
         for (const auto& efp : external_force_providers_) {
-            efp->increment_external_forces(olist, burn_in, cfg_);
+            efp->increment_external_forces(olist, burn_in, cfg_, world);
         }
     }
     std::list<std::unique_ptr<IContactInfo>> contact_infos;
@@ -79,6 +79,7 @@ void PhysicsEngine::collide(
     CollisionHistory history{
         .burn_in = burn_in,
         .cfg = cfg_,
+        .world = world,
         .st = st,
         .csg = *contact_smoke_generator_,
         .tr = *trail_renderer_,
@@ -89,8 +90,7 @@ void PhysicsEngine::collide(
         .grind_infos = grind_infos,
         .ridge_intersection_points = ridge_intersection_points,
         .ridge_map = rigid_bodies_.ridge_map(),
-        .base_log = base_log,
-        .time = time
+        .base_log = base_log
     };
     for (const auto& o : rigid_bodies_.objects_) {
         if ((o.rigid_body->mass() == INFINITY) || o.rigid_body->is_deactivated_avatar())
@@ -115,23 +115,27 @@ void PhysicsEngine::collide(
     // Handling rays before grind_infos so new grind_infos can be created
     // by rays also.
     collide_raycast_intersections(raycast_intersections);
-    collide_grind_infos(cfg_, contact_infos, grind_infos);
+    collide_grind_infos(cfg_, world, contact_infos, grind_infos);
     collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
     solve_contacts(contact_infos, cfg_.dt_substeps());
 }
 
-void PhysicsEngine::move_rigid_bodies(std::list<Beacon>* beacons) {
+void PhysicsEngine::move_rigid_bodies(
+    const StaticWorld& world,
+    std::list<Beacon>* beacons)
+{
     for (const auto& rbm : rigid_bodies_.objects_) {
         if (rbm.rigid_body->is_deactivated_avatar()) {
             continue;
         }
         auto& rb = rbm.rigid_body;
         assert_true(rb->mass() != INFINITY);
-        rb->advance_time(cfg_, beacons);
+        rb->advance_time(cfg_, world, beacons);
     }
 }
 
-void PhysicsEngine::move_particles(std::chrono::steady_clock::time_point time) {
+void PhysicsEngine::move_particles(const StaticWorld& world)
+{
     if (contact_smoke_generator_ == nullptr) {
         THROW_OR_ABORT("contact_smoke_generator not set");
     }
@@ -140,15 +144,18 @@ void PhysicsEngine::move_particles(std::chrono::steady_clock::time_point time) {
         particle_renderer_->move(cfg_.dt_substeps());
     }
     if (trail_renderer_ != nullptr) {
-        trail_renderer_->move(cfg_.dt_substeps(), time);
+        trail_renderer_->move(cfg_.dt_substeps(), world);
     }
 }
 
-void PhysicsEngine::move_advance_times(std::chrono::steady_clock::time_point time) {
-    advance_times_.advance_time(cfg_.dt, time);
+void PhysicsEngine::move_advance_times(const StaticWorld& world) {
+    advance_times_.advance_time(cfg_.dt, world);
 }
 
-void PhysicsEngine::burn_in(float duration) {
+void PhysicsEngine::burn_in(
+    const StaticWorld& world,
+    float duration)
+{
     for (const auto& o : rigid_bodies_.objects_) {
         if (o.rigid_body->is_deactivated_avatar()) {
             continue;
@@ -161,11 +168,11 @@ void PhysicsEngine::burn_in(float duration) {
     }
     for (float time = 0; time < duration; time += cfg_.dt_substeps()) {
         collide(
+            world,
             nullptr,                            // beacons
             true,                               // true = burn_in
             SIZE_MAX,                           // oversampling_iteration
-            nullptr,                            // base_log
-            std::chrono::steady_clock::now());
+            nullptr);                           // base_log
         if (time < duration / 2) {
             for (const auto& o : rigid_bodies_.objects_) {
                 if (o.rigid_body->is_deactivated_avatar()) {
@@ -174,7 +181,7 @@ void PhysicsEngine::burn_in(float duration) {
                 o.rigid_body->rbp_.w_ = 0;
             }
         }
-        move_rigid_bodies(nullptr);  // nullptr=beacons
+        move_rigid_bodies(world, nullptr);  // nullptr=beacons
     }
 }
 

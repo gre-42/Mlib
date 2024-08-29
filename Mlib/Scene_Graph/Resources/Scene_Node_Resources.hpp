@@ -24,6 +24,8 @@ template <class TPoint>
 struct PointsAndAdjacency;
 template <class TPoint, class TFlags>
 struct PointAndFlags;
+template <class TData, size_t n>
+struct FixedScaledUnitVector;
 
 class ISceneNodeResource;
 class SceneNode;
@@ -76,6 +78,7 @@ public:
         const RootInstantiationOptions& options,
         PreloadBehavior preload_behavior = PreloadBehavior::PRELOAD,
         unsigned int recursion_depth = 0) const;
+    // Geographic mapping
     void register_geographic_mapping(
         const std::string& resource_name,
         const std::string& instance_name,
@@ -84,6 +87,17 @@ public:
         const std::string& name,
         const TransformationMatrix<double, double, 3>& absolute_model_matrix) const;
     const TransformationMatrix<double, double, 3>* get_geographic_mapping(const std::string& name) const;
+    // Wind
+    void register_wind(
+        std::string name,
+        const FixedArray<float, 3>& wind);
+    const FixedScaledUnitVector<float, 3>* get_wind(const std::string& name) const;
+    // Gravity
+    void register_gravity(
+        std::string name,
+        const FixedArray<float, 3>& gravity);
+    const FixedScaledUnitVector<float, 3>* get_gravity(const std::string& name) const;
+    // Other
     AggregateMode aggregate_mode(const std::string& name) const;
     std::list<SpawnPoint> spawn_points(const std::string& name) const;
     std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource> way_points(const std::string& name) const;
@@ -152,6 +166,8 @@ private:
     std::shared_ptr<ISceneNodeResource> get_resource(const std::string& name) const;
     mutable ThreadsafeStringMap<std::shared_ptr<ISceneNodeResource>> resources_;
     ThreadsafeStringMap<TransformationMatrix<double, double, 3>> geographic_mappings_;
+    ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> wind_;
+    ThreadsafeStringMap<FixedScaledUnitVector<float, 3>> gravity_;
     std::map<std::string, std::list<std::pair<std::string, RenderableResourceFilter>>> companions_;
     std::map<std::string, std::function<std::shared_ptr<ISceneNodeResource>()>> resource_loaders_;
     mutable std::map<std::string, std::list<std::function<void(ISceneNodeResource&)>>> modifiers_;

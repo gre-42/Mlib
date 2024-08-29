@@ -8,6 +8,8 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -19,6 +21,7 @@ PhysicsIteration::PhysicsIteration(
     SceneNodeResources& scene_node_resources,
     RenderingResources& rendering_resources,
     Scene& scene,
+    DynamicWorld& dynamic_world,
     PhysicsEngine& physics_engine,
     DeleteNodeMutex& delete_node_mutex,
     const PhysicsEngineConfig& physics_cfg,
@@ -26,6 +29,7 @@ PhysicsIteration::PhysicsIteration(
     : scene_node_resources_{ scene_node_resources }
     , rendering_resources_{ rendering_resources }
     , scene_{ scene }
+    , dynamic_world_{ dynamic_world }
     , physics_engine_{ physics_engine }
     , delete_node_mutex_{ delete_node_mutex }
     , physics_cfg_{ physics_cfg }
@@ -35,6 +39,12 @@ PhysicsIteration::PhysicsIteration(
 PhysicsIteration::~PhysicsIteration() = default;
 
 void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
+    StaticWorld world{
+        .geographic_mapping = dynamic_world_.get_geographic_mapping(),
+        .inverse_geographic_mapping = dynamic_world_.get_inverse_geographic_mapping(),
+        .gravity = dynamic_world_.get_gravity(),
+        .wind = dynamic_world_.get_wind()
+    };
     // Note that g_beacons is delayed by one frame.
     std::list<Beacon> beacons = std::move(get_beacons());
     {
@@ -46,15 +56,15 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             std::list<Beacon>* bcns = (i == physics_cfg_.nsubsteps - 1)
                 ? &beacons
                 : nullptr;
-            auto time_substep = time - (physics_cfg_.nsubsteps - 1 - i) * idt;
+            world.time = time - (physics_cfg_.nsubsteps - 1 - i) * idt;
             physics_engine_.collide(
+                world,
                 bcns,
                 false,          // false=burn_in
                 i,
-                base_log_,
-                time_substep);
-            physics_engine_.move_rigid_bodies(bcns);
-            physics_engine_.move_particles(time_substep);
+                base_log_);
+            physics_engine_.move_rigid_bodies(world, bcns);
+            physics_engine_.move_particles(world);
         }
     }
     {
@@ -90,5 +100,5 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         scene_.delete_scheduled_root_nodes();
         scene_.move(physics_cfg_.dt, time);
     }
-    physics_engine_.move_advance_times(time);
+    physics_engine_.move_advance_times(world);
 }

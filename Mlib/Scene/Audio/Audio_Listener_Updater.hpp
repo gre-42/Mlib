@@ -16,7 +16,7 @@ public:
         const Scene& scene,
         std::chrono::steady_clock::duration delay,
         std::chrono::steady_clock::duration velocity_dt);
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
 private:
 #ifndef WITHOUT_ALUT
     const SelectedCameras& selected_cameras_;

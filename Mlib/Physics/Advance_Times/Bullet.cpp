@@ -13,6 +13,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IDynamic_Light.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
@@ -35,7 +36,7 @@ Bullet::Bullet(
     std::unique_ptr<ITrailExtender> trace_extender,
     DynamicLights& dynamic_lights,
     DeleteNodeMutex& delete_node_mutex,
-    std::chrono::steady_clock::time_point time,
+    const StaticWorld& world,
     RotateBullet rotate_bullet)
     : scene_{ scene }
     , smoke_generator_{ smoke_generator }
@@ -58,7 +59,7 @@ Bullet::Bullet(
 {
     if (!props_.dynamic_light_configuration_before_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
-        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, time);
+        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, world.time);
     }
     if (!gunner_on_destroy_.is_null()) {
         gunner_on_destroy_.add([this](){ gunner_ = nullptr; }, CURRENT_SOURCE_LOCATION);
@@ -73,7 +74,7 @@ Bullet::~Bullet() {
     on_destroy.clear();
 }
 
-void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void Bullet::advance_time(float dt, const StaticWorld& world) {
     lifetime_ += dt;
     if (lifetime_ > props_.max_lifetime) {
         std::scoped_lock lock{ delete_node_mutex_ };
@@ -110,7 +111,7 @@ void Bullet::advance_time(float dt, std::chrono::steady_clock::time_point time) 
 
 void Bullet::notify_collided(
     const FixedArray<ScenePos, 3>& intersection_point,
-    std::chrono::steady_clock::time_point time,
+    const StaticWorld& world,
     RigidBodyVehicle& rigid_body,
     CollisionRole collision_role,
     CollisionType& collision_type,
@@ -125,7 +126,7 @@ void Bullet::notify_collided(
     cause_damage(intersection_point, rigid_body);
     if (!props_.dynamic_light_configuration_after_impact.empty()) {
         auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
-        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, time);
+        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, world.time);
     }
     if (light_before_impact_ != nullptr) {
         light_before_impact_ = nullptr;

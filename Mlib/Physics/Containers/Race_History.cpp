@@ -222,7 +222,9 @@ RaceState RaceHistory::notify_lap_finished(
         max_id = max_element->id + 1;
     }
     if (save_playback_) {
-        TrackWriter track_writer{track_m_filename(max_id), scene_node_resources_.get_geographic_mapping("world")};
+        TrackWriter track_writer{
+            track_m_filename(max_id),
+            scene_node_resources_.get_geographic_mapping("world") };
         for (const auto& e : track) {
             track_writer.write(e);
         }

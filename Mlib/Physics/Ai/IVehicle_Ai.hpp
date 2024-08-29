@@ -11,6 +11,7 @@ namespace Mlib {
 struct SkillFactor;
 class SkillMap;
 class AiWaypoint;
+struct StaticWorld;
 
 enum class VehicleAiMoveToStatus {
     NONE = 0,
@@ -46,7 +47,8 @@ public:
     virtual ~IVehicleAi() = default;
     virtual VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
-        const SkillMap* skills) = 0;
+        const SkillMap* skills,
+        const StaticWorld& world) = 0;
     virtual std::vector<SkillFactor> skills() const = 0;
 };
 

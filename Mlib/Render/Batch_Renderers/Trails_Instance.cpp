@@ -80,8 +80,8 @@ void TrailsInstance::add_triangle(
     }
 }
 
-void TrailsInstance::move(float dt, std::chrono::steady_clock::time_point time) {
-    dynamic_vertex_buffers_->move(dt, time);
+void TrailsInstance::move(float dt, const StaticWorld& world) {
+    dynamic_vertex_buffers_->move(dt, world);
 }
 
 std::chrono::steady_clock::time_point TrailsInstance::time() const {

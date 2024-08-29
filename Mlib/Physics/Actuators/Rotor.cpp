@@ -1,8 +1,9 @@
 #include "Rotor.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Signed_Min.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -60,7 +61,8 @@ Rotor::~Rotor() = default;
 
 TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
     const TransformationMatrix<float, ScenePos, 3>& parent_location,
-    const FixedArray<float, 3>& parent_velocity)
+    const FixedArray<float, 3>& parent_velocity,
+    const StaticWorld& static_world)
 {
     auto scaled_movement = [this](const FixedArray<ScenePos, 3>& pos) {
         if (all(pos == ScenePos(0))) {
@@ -100,7 +102,10 @@ TransformationMatrix<float, ScenePos, 3> Rotor::rotated_location(
         // dg is added to compensate for drift.
         // Without adding dg the rotor would gimbal to be
         // exactly parallel to the gravity vector.
-        FixedArray<float, 3> g = abs_rest_location.inverted().rotate(gravity_direction + dg);
+        if ((static_world.gravity == nullptr) || (static_world.gravity->magnitude == 0.f)) {
+            THROW_OR_ABORT("Rotor gravity correction requires gravity");
+        }
+        FixedArray<float, 3> g = abs_rest_location.inverted().rotate(static_world.gravity->direction + dg);
         float g_len2 = sum(squared(g));
         if (g_len2 > 1e-12) {
             g /= std::sqrt(g_len2);

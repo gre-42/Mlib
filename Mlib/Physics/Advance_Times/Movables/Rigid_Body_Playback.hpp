@@ -38,7 +38,7 @@ public:
         float speedup,
         size_t ntransformations);
     ~RigidBodyPlayback();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     DanglingBaseClassRef<IAbsoluteMovable> get_playback_object(size_t i);
 private:
     const Focuses& focuses_;

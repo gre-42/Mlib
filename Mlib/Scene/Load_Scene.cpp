@@ -142,7 +142,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Playback_Winner_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Record_Track_Gpx.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Track/Register_Geographic_Mapping.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Clear_Parameters.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Controls.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Ui/Countdown.hpp>
@@ -240,6 +239,9 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/World/Register_Geographic_Mapping.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/World/Register_Gravity.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/World/Register_Wind.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 
@@ -382,6 +384,8 @@ LoadScene::LoadScene() {
     register_json_user_function(RecordTrackGpx::key, RecordTrackGpx::json_user_function);
     register_json_user_function(RecordTrack::key, RecordTrack::json_user_function);
     register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
+    register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
+    register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
     register_json_user_function(RemoveNodeNotAllowedToBeUnregistered::key, RemoveNodeNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
     register_json_user_function(ChildRenderableInstance::key, ChildRenderableInstance::json_user_function);

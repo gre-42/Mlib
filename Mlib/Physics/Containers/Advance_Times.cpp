@@ -47,16 +47,16 @@ void AdvanceTimes::delete_advance_time(const IAdvanceTime& advance_time, SourceL
     }
 }
 
-void AdvanceTimes::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void AdvanceTimes::advance_time(float dt, const StaticWorld& world) {
     if (advancing_time_) {
         verbose_abort("AdvanceTimes::advance_time already called");
     }
     advancing_time_ = true;
-    advance_times_.remove_if([&dt, &time](const auto& a){
+    advance_times_.remove_if([&dt, &world](const auto& a){
         if (a.first == nullptr) {
             return true;
         }
-        a.first->object()->advance_time(dt, time);
+        a.first->object()->advance_time(dt, world);
         return false;
     });
     advancing_time_ = false;

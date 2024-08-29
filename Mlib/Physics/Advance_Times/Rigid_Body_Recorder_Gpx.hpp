@@ -22,11 +22,11 @@ public:
     RigidBodyRecorderGpx(
         const std::string& filename,
         DanglingRef<SceneNode> recorded_node,
-        RigidBodyPulses* rbp,
+        RigidBodyPulses& rbp,
         const TransformationMatrix<double, double, 3>* geographic_coordinates,
         const Focuses& focuses);
     ~RigidBodyRecorderGpx();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:

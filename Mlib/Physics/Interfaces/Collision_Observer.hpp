@@ -2,7 +2,6 @@
 #include <Mlib/Array/Array_Forward.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Scene_Pos.hpp>
-#include <chrono>
 #include <list>
 #include <memory>
 
@@ -10,6 +9,7 @@ namespace Mlib {
 
 class RigidBodyVehicle;
 class BaseLog;
+struct StaticWorld;
 
 enum class CollisionRole {
     PRIMARY,
@@ -22,7 +22,7 @@ public:
     virtual ~CollisionObserver() = default;
     virtual void notify_collided(
         const FixedArray<ScenePos, 3>& intersection_point,
-        std::chrono::steady_clock::time_point time,
+        const StaticWorld& world,
         RigidBodyVehicle& rigid_body,
         CollisionRole collision_role,
         CollisionType& collision_type,

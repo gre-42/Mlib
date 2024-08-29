@@ -69,7 +69,7 @@ void CountDownLogic::render(
     }
 }
 
-void CountDownLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{focuses_.mutex};
     if (auto it = focuses_.find(pending_focus_); it != focuses_.end()) {
         elapsed_time_ = 0.f;

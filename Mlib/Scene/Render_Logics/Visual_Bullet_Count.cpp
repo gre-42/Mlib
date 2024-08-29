@@ -39,7 +39,7 @@ VisualBulletCount::~VisualBulletCount() {
     on_destroy.clear();
 }
 
-void VisualBulletCount::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void VisualBulletCount::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{mutex_};
     if (!player_->has_gun_node()) {
         text_.clear();

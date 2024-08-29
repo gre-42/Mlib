@@ -30,7 +30,7 @@ public:
         const std::vector<DisplayTick>& ticks);
     virtual ~VisualMovableCircularLogger();
 
-    virtual void advance_time(float dt) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
 
     virtual void render(
         const LayoutConstraintParameters& lx,

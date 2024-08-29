@@ -24,10 +24,12 @@ class RigidBodyVehicle;
 struct GrindInfo;
 class BaseLog;
 struct CollisionRidgeSphere;
+struct StaticWorld;
 
 struct CollisionHistory {
     bool burn_in;
     const PhysicsEngineConfig& cfg;
+    const StaticWorld& world;
     const SatTracker& st;
     ContactSmokeGenerator& csg;
     ITrailRenderer& tr;
@@ -39,7 +41,6 @@ struct CollisionHistory {
     std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>>& ridge_intersection_points;
     const std::map<std::pair<OrderableFixedArray<ScenePos, 3>, OrderableFixedArray<ScenePos, 3>>, const CollisionRidgeSphere*>& ridge_map;
     BaseLog* base_log;
-    std::chrono::steady_clock::time_point time;
 };
 
 }

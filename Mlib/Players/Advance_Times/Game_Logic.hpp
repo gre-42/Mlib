@@ -32,7 +32,7 @@ public:
         DeleteNodeMutex& delete_node_mutex,
         std::function<void()> setup_new_round);
     ~GameLogic();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     Spawn spawn;
     Bystanders bystanders;
     TeamDeathmatch team_deathmatch;

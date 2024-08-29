@@ -34,7 +34,7 @@ public:
 
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
 
     virtual void render(
         const LayoutConstraintParameters& lx,

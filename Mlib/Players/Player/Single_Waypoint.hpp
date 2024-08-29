@@ -13,6 +13,7 @@ class Player;
 class PathfindingWaypoints;
 enum class WayPointLocation;
 class SkillMap;
+struct StaticWorld;
 
 class SingleWaypoint {
     SingleWaypoint(const SingleWaypoint&) = delete;
@@ -22,7 +23,7 @@ public:
 
     explicit SingleWaypoint(const DanglingBaseClassRef<Player>& player);
     ~SingleWaypoint();
-    void move_to_waypoint(const SkillMap& skills);
+    void move_to_waypoint(const SkillMap& skills, const StaticWorld& world);
     void draw_waypoint_history(const std::string& filename) const;
     void set_waypoint(const WayPoint& waypoint, size_t waypoint_id);
     void set_waypoint(const WayPoint& waypoint);

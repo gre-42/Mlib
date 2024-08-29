@@ -16,6 +16,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
     , vehicle_spawners{ renderable_scene.vehicle_spawners_ }
     , players{ renderable_scene.players_ }
     , scene{ renderable_scene.scene_ }
+    , dynamic_world{ renderable_scene.dynamic_world_ }
     , physics_engine{ renderable_scene.physics_engine_ }
     , imposters{ renderable_scene.imposters_ }
     , supply_depots{ renderable_scene.supply_depots_ }

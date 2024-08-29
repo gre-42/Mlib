@@ -30,7 +30,7 @@ RigidBodyEngine::RigidBodyEngine(
 
 RigidBodyEngine::~RigidBodyEngine() = default;
 
-void RigidBodyEngine::write_status(std::ostream& ostr, StatusComponents status_components) const {
+void RigidBodyEngine::write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const {
     THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 

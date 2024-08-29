@@ -1,5 +1,6 @@
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Math/Fixed_Test.hpp>
 #include <Mlib/Math/Pi.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
@@ -12,6 +13,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Primitives.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
 #include <Mlib/Stats/Linspace.hpp>
 
@@ -133,6 +135,15 @@ void test_power_to_force_stiction_normal() {
 
 void test_com() {
     PhysicsEngineConfig cfg;
+    const auto identity = TransformationMatrix<double, double, 3>::identity();
+    const auto gravity = FixedScaledUnitVector<float, 3>{ { 0.f, -9.8f, 0.f } };
+    StaticWorld world{
+        .geographic_mapping = &identity,
+        .inverse_geographic_mapping = &identity,
+        .gravity = &gravity,
+        .wind = nullptr,
+        .time = std::chrono::steady_clock::now()
+    };
 
     RigidBodies rbs{ cfg };
     float mass = 123.f * kg;
@@ -175,10 +186,10 @@ void test_com() {
         r0->velocity_at_position(com0.casted<ScenePos>()),
         r1->velocity_at_position(com1.casted<ScenePos>()));
     {
-        r0->advance_time(cfg, nullptr);
+        r0->advance_time(cfg, world, nullptr);
     }
     {
-        r1->advance_time(cfg, nullptr);
+        r1->advance_time(cfg, world, nullptr);
     }
     assert_allclose(
         r0->velocity_at_position(com0.casted<ScenePos>()),

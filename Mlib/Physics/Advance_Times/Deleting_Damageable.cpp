@@ -37,13 +37,13 @@ DeletingDamageable::~DeletingDamageable() {
     on_destroy.clear();
 }
 
-void DeletingDamageable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void DeletingDamageable::advance_time(float dt, const StaticWorld& world) {
     if (delete_node_when_health_leq_zero_ && (health() <= 0)) {
         scene_.schedule_delete_root_node(root_node_name_);
     }
 }
 
-void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_components) const {
+void DeletingDamageable::write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const {
     if (log_components & StatusComponents::HEALTH) {
         ostr << "HP: " << health() << std::endl;
     }

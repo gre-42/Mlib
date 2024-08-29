@@ -9,6 +9,7 @@
 namespace Mlib {
 
 struct TrailSequence;
+struct StaticWorld;
 
 class AnimatedTextureLayer: public IVertexData {
 public:
@@ -41,7 +42,7 @@ public:
         const FixedArray<float, 3>& time,
         const TrailSequence& sequence);
 
-    void move(float dt, std::chrono::steady_clock::time_point time);
+    void move(float dt, const StaticWorld& world);
     std::chrono::steady_clock::time_point time() const;
 
     size_t tmp_length() const;

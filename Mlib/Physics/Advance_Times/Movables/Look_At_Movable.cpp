@@ -28,7 +28,7 @@ LookAtMovable::~LookAtMovable() {
     on_destroy.clear();
 }
 
-void LookAtMovable::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void LookAtMovable::advance_time(float dt, const StaticWorld& world) {
     if (followed_ == nullptr) {
         return;
     }

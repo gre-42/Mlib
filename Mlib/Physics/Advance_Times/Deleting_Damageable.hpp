@@ -31,9 +31,9 @@ public:
         bool delete_node_when_health_leq_zero);
     virtual ~DeletingDamageable() override;
     // IAdvanceTime
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     // StatusWriter
-    virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
+    virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents log_components) const override;
     virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
     // IDamageable

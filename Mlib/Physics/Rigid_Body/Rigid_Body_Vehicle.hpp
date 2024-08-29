@@ -52,6 +52,7 @@ enum class ActorType;
 enum class ActorTask;
 enum class VehicleAiMoveToStatus;
 class ObjectPool;
+struct StaticWorld;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -134,6 +135,7 @@ public:
     void collide_with_air(CollisionHistory& c);
     void advance_time(
         const PhysicsEngineConfig& cfg,
+        const StaticWorld& world,
         std::list<Beacon>* beacons);
     float mass() const;
     FixedArray<ScenePos, 3> abs_com() const;
@@ -212,7 +214,8 @@ public:
     void remove_autopilot(const SkillScenario& scenario);
     VehicleAiMoveToStatus move_to(
         const AiWaypoint& ai_waypoint,
-        const SkillMap* skills);
+        const SkillMap* skills,
+        const StaticWorld& world);
     void set_actor_task(ActorTask actor_task);
     void set_waypoint_ofs(float dy);
 
@@ -224,7 +227,7 @@ public:
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
     // StatusWriter
-    virtual void write_status(std::ostream& ostr, StatusComponents log_components) const override;
+    virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents status_components) const override;
     virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
 
@@ -298,7 +301,9 @@ public:
     float waypoint_ofs_;
     ObjectPool& object_pool_;
 private:
-    void advance_time_skate(const PhysicsEngineConfig& cfg);
+    void advance_time_skate(
+        const PhysicsEngineConfig& cfg,
+        const StaticWorld& world);
 };
 
 }

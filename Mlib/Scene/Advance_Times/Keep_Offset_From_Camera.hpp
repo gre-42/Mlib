@@ -28,12 +28,14 @@ public:
         const FixedArray<float, 3>& grid,
         DanglingRef<SceneNode> follower_node);
     ~KeepOffsetFromCamera();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
+    void advance_time(float dt);
+
     AdvanceTimes& advance_times_;
     Scene& scene_;
     const SelectedCameras& cameras_;

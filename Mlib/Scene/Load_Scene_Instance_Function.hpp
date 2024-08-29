@@ -18,6 +18,7 @@ class DynamicLights;
 class VehicleSpawners;
 class Players;
 class Scene;
+class DynamicWorld;
 class PhysicsEngine;
 class CursorStates;
 class KeyBindings;
@@ -58,6 +59,7 @@ protected:
     VehicleSpawners& vehicle_spawners;
     Players& players;
     Scene& scene;
+    DynamicWorld& dynamic_world;
     PhysicsEngine& physics_engine;
     Imposters& imposters;
     SupplyDepots& supply_depots;

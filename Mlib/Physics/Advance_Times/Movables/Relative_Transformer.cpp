@@ -42,7 +42,7 @@ TransformationMatrix<float, ScenePos, 3> RelativeTransformer::get_new_relative_m
     return transformation_matrix_;
 }
 
-void RelativeTransformer::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void RelativeTransformer::advance_time(float dt, const StaticWorld& world) {
     transformation_matrix_.t() += (dt * v_).casted<ScenePos>();
     transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }

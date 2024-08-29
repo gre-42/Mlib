@@ -15,21 +15,21 @@ VisualMovableTextLogger::VisualMovableTextLogger(
     std::unique_ptr<IWidget>&& widget,
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance)
-: RenderTextLogic{
-    ttf_filename,
-    {1.f, 1.f, 1.f},
-    font_height,
-    line_distance},
-  status_writer_{status_writer},
-  log_components_{log_components},
-  widget_{std::move(widget)}
+    : RenderTextLogic{
+        ttf_filename,
+        {1.f, 1.f, 1.f},
+        font_height,
+        line_distance }
+        , status_writer_{ status_writer }
+    , log_components_{ log_components }
+    , widget_{ std::move(widget) }
 {}
 
 VisualMovableTextLogger::~VisualMovableTextLogger() = default;
 
-void VisualMovableTextLogger::advance_time(float dt) {
+void VisualMovableTextLogger::advance_time(float dt, const StaticWorld& world) {
     std::stringstream sstr;
-    status_writer_.write_status(sstr, log_components_);
+    status_writer_.write_status(sstr, log_components_, world);
     text_ = sstr.str();
 }
 

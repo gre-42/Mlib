@@ -34,7 +34,7 @@ GameLogic::~GameLogic() {
     on_destroy.clear();
 }
 
-void GameLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void GameLogic::advance_time(float dt, const StaticWorld& world) {
     // TimeGuard tg{"GameLogic::advance_time"};
     spawn.nspawns_ = 0;
     spawn.ndelete_ = 0;

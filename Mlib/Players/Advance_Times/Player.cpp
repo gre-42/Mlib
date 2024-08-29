@@ -408,7 +408,7 @@ void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
     reset_node();
 }
 
-void Player::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void Player::advance_time(float dt, const StaticWorld& world) {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
     select_best_weapon_in_inventory();
@@ -417,7 +417,8 @@ void Player::advance_time(float dt, std::chrono::steady_clock::time_point time) 
 void Player::increment_external_forces(
     const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
-    const PhysicsEngineConfig& cfg)
+    const PhysicsEngineConfig& cfg,
+    const StaticWorld& world)
 {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (burn_in) {
@@ -458,7 +459,7 @@ void Player::increment_external_forces(
         }
     }
     if (!unstucking) {
-        single_waypoint_.move_to_waypoint(skills_);
+        single_waypoint_.move_to_waypoint(skills_, world);
     }
 }
 

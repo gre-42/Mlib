@@ -21,6 +21,7 @@
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Extender.hpp>
@@ -105,10 +106,10 @@ Gun::~Gun() {
     on_destroy.clear();
 }
 
-void Gun::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void Gun::advance_time(float dt, const StaticWorld& world) {
     time_since_last_shot_ += dt;
     time_since_last_shot_ = std::min(time_since_last_shot_, cool_down_);
-    punch_angle_ = punch_angle_rng_(maybe_generate_bullet(time));
+    punch_angle_ = punch_angle_rng_(maybe_generate_bullet(world));
     if (punch_angle_node_ != nullptr) {
         punch_angle_node_->set_rotation(punch_angle_, SUCCESSOR_POSE);
     }
@@ -119,7 +120,7 @@ size_t Gun::nbullets_available() const {
     return parent_rb_.inventory_.navailable(ammo_type_);
 }
 
-bool Gun::maybe_generate_bullet(std::chrono::steady_clock::time_point time) {
+bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     if (is_none_gun()) {
         return false;
     }
@@ -140,14 +141,14 @@ bool Gun::maybe_generate_bullet(std::chrono::steady_clock::time_point time) {
     }
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
-    generate_bullet(time);
+    generate_bullet(world);
     if (!muzzle_flash_resource_.empty()) {
         generate_muzzle_flash_hider();
     }
     return true;
 }
 
-void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
+void Gun::generate_bullet(const StaticWorld& world) {
     auto node = make_dunique<SceneNode>(
         absolute_model_matrix_.t(),
         matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),
@@ -186,7 +187,7 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
             : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
             delete_node_mutex_,
-            time,
+            world,
             RotateBullet::NO);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);
@@ -235,7 +236,7 @@ void Gun::generate_bullet(std::chrono::steady_clock::time_point time) {
                 : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
             delete_node_mutex_,
-            time,
+            world,
             RotateBullet::YES);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
         // node->clearing_observers.add(*bullet);

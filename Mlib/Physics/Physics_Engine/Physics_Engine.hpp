@@ -18,6 +18,7 @@ enum class CollisionDirection;
 class ContactSmokeGenerator;
 class IParticleRenderer;
 class ITrailRenderer;
+struct StaticWorld;
 
 class PhysicsEngine {
 public:
@@ -27,15 +28,19 @@ public:
     void add_controllable(IControllable& co);
     void remove_controllable(IControllable& co);
     void collide(
+        const StaticWorld& world,
         std::list<Beacon>* beacons,
         bool burn_in,
         size_t oversampling_iteration,
-        BaseLog* base_log,
-        std::chrono::steady_clock::time_point time);
-    void move_rigid_bodies(std::list<Beacon>* beacons);
-    void move_particles(std::chrono::steady_clock::time_point time);
-    void move_advance_times(std::chrono::steady_clock::time_point time);
-    void burn_in(float duration);
+        BaseLog* base_log);
+    void move_rigid_bodies(
+        const StaticWorld& world,
+        std::list<Beacon>* beacons);
+    void move_particles(const StaticWorld& world);
+    void move_advance_times(const StaticWorld& world);
+    void burn_in(
+        const StaticWorld& world,
+        float duration);
     void set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator);
     void set_particle_renderer(IParticleRenderer& particle_renderer);
     void set_trail_renderer(ITrailRenderer& trail_renderer);

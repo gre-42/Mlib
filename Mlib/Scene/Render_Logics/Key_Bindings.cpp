@@ -11,7 +11,6 @@
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Relative_Transformer.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Yaw_Pitch_Look_At_Nodes.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Misc/Weapon_Cycle.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
@@ -245,7 +244,8 @@ static float get_alpha(
 void KeyBindings::increment_external_forces(
     const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
-    const PhysicsEngineConfig& cfg)
+    const PhysicsEngineConfig& cfg,
+    const StaticWorld& world)
 {
     bool enable_controls = [&]() {
         if (burn_in) {

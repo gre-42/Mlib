@@ -23,6 +23,6 @@ void MovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     global_object_pool.remove(this);
 }
 
-void MovableLogger::advance_time(float dt, std::chrono::steady_clock::time_point time) {
-    status_writer_.write_status(lraw().ref(), log_components_);
+void MovableLogger::advance_time(float dt, const StaticWorld& world) {
+    status_writer_.write_status(lraw().ref(), log_components_, world);
 }

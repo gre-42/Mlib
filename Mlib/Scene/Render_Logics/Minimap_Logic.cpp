@@ -72,7 +72,7 @@ MinimapLogic::~MinimapLogic() {
     on_destroy.clear();
 }
 
-void MinimapLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void MinimapLogic::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{pose_mutex_};
     auto t = node_->absolute_model_matrix();
     position_ = {t.t(0), t.t(2)};

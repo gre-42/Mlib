@@ -16,13 +16,14 @@ struct RenderConfig;
 struct SceneGraphConfig;
 struct ExternalRenderPass;
 class ITrailStorage;
+struct StaticWorld;
 
 class ITrailRenderer {
 public:
     virtual ~ITrailRenderer() = default;
     virtual void preload(const std::string& resource_name) = 0;
     virtual ITrailStorage& get_storage(const std::string& resource_name) = 0;
-    virtual void move(float dt, std::chrono::steady_clock::time_point time) = 0;
+    virtual void move(float dt, const StaticWorld& world) = 0;
     virtual void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,

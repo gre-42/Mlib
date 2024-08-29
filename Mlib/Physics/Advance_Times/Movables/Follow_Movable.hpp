@@ -32,12 +32,13 @@ public:
         float dt_ref = 1.f / 60.f * seconds);
     ~FollowMovable();
     void initialize(DanglingRef<SceneNode> follower_node);
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
     virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
 
 private:
+    void advance_time(float dt);
     AdvanceTimes& advance_times_;
     DanglingPtr<const SceneNode> followed_node_;
     IAbsoluteMovable* followed_;

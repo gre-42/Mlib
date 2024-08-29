@@ -58,7 +58,7 @@ HudTargetPointLogic::~HudTargetPointLogic() {
     on_destroy.clear();
 }
 
-void HudTargetPointLogic::advance_time(float dt, std::chrono::steady_clock::time_point time) {
+void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     if (ypln_ != nullptr) {
         float dpitch_head = ypln_->pitch_look_at_node().get_dpitch_head();
         if (!std::isnan(dpitch_head) && (dpitch_head != 0.f)) {

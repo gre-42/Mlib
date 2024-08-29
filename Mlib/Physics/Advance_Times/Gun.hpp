@@ -30,6 +30,7 @@ class IPlayer;
 class ITeam;
 struct BulletProperties;
 enum class RigidBodyVehicleFlags;
+struct StaticWorld;
 
 class Gun final: public IAbsoluteObserver, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
@@ -60,7 +61,7 @@ public:
         const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
         DeleteNodeMutex& delete_node_mutex);
     ~Gun();
-    virtual void advance_time(float dt, std::chrono::steady_clock::time_point time) override;
+    virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     void trigger(
         IPlayer* player = nullptr,
@@ -72,8 +73,8 @@ public:
     float cool_down() const;
     float bullet_damage() const;
 private:
-    bool maybe_generate_bullet(std::chrono::steady_clock::time_point time);
-    void generate_bullet(std::chrono::steady_clock::time_point time);
+    bool maybe_generate_bullet(const StaticWorld& world);
+    void generate_bullet(const StaticWorld& world);
     void generate_muzzle_flash_hider();
     RenderingResources* rendering_resources_;
     Scene& scene_;

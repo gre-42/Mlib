@@ -1,17 +1,18 @@
 #include "Flying_Missile_Ai.hpp"
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Ai/Ai_Waypoint.hpp>
 #include <Mlib/Physics/Ai/Control_Source.hpp>
 #include <Mlib/Physics/Ai/Skill_Factor.hpp>
 #include <Mlib/Physics/Ai/Skill_Map.hpp>
-#include <Mlib/Physics/Gravity.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Task.hpp>
 #include <Mlib/Physics/Rigid_Body/Actor_Type.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Pulses.hpp>
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Rigid_Body/Vehicle_Domain.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Missile_Controllers/Rigid_Body_Missile_Controller.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Scene_Graph/Way_Point_Location.hpp>
 
 using namespace Mlib;
@@ -44,7 +45,8 @@ FlyingMissileAi::~FlyingMissileAi() {
 
 VehicleAiMoveToStatus FlyingMissileAi::move_to(
     const AiWaypoint& ai_waypoint,
-    const SkillMap* skills)
+    const SkillMap* skills,
+    const StaticWorld& world)
 {
     controller_.reset_parameters();
     controller_.reset_relaxation();
@@ -85,7 +87,10 @@ VehicleAiMoveToStatus FlyingMissileAi::move_to(
 
     auto vz = dot0d(rigid_body_.rbp_.v_, rigid_body_.rbp_.rotation_.column(2));
     if (vz <= 0.f) {
-        dir -= gravity_direction * dy_(-vz);
+        if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
+            THROW_OR_ABORT("Flying missile AI requires nonzero gravity");
+        }
+        dir -= world.gravity->direction * dy_(-vz);
         auto l = std::sqrt(sum(squared(dir)));
         if (l < 1e-12) {
             THROW_OR_ABORT("Direction length too small, please choose a smaller dy value");

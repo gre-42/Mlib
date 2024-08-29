@@ -23,22 +23,22 @@ VisualMovableCircularLogger::VisualMovableCircularLogger(
     float maximum_value,
     float blank_angle,
     const std::vector<DisplayTick>& ticks)
-: status_writer_{status_writer},
-  log_components_{log_components},
-  tick_text_{ttf_filename, {1.f, 1.f, 1.f}},
-  pointer_image_logic_{ RenderingContextStack::primary_rendering_resources(), std::move(pointer_texture_name) },
-  display_{ tick_text_, pointer_image_logic_, minimum_value, maximum_value, blank_angle, ticks },
-  font_height_{font_height},
-  tick_radius_{tick_radius},
-  pointer_width_{pointer_width},
-  pointer_length_{pointer_length},
-  widget_{std::move(widget)},
-  value_{NAN}
+    : status_writer_{ status_writer }
+    , log_components_{ log_components }
+    , tick_text_{ ttf_filename, {1.f, 1.f, 1.f} }
+    , pointer_image_logic_{ RenderingContextStack::primary_rendering_resources(), std::move(pointer_texture_name) }
+    , display_{ tick_text_, pointer_image_logic_, minimum_value, maximum_value, blank_angle, ticks }
+    , font_height_{ font_height }
+    , tick_radius_{ tick_radius }
+    , pointer_width_{ pointer_width }
+    , pointer_length_{ pointer_length }
+    , widget_{ std::move(widget) }
+    , value_{ NAN }
 {}
 
 VisualMovableCircularLogger::~VisualMovableCircularLogger() = default;
 
-void VisualMovableCircularLogger::advance_time(float dt) {
+void VisualMovableCircularLogger::advance_time(float dt, const StaticWorld& world) {
     value_ = status_writer_.get_value(log_components_);
 }
 
