@@ -7,6 +7,7 @@ namespace Mlib {
 
 static const size_t SURFACE_BASE_OFFSET = 18;
 static const size_t SURFACE_BASE_NBITS = 4;
+static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 2;
 
 enum class PhysicsMaterial: uint32_t {
     NONE                        = 0,
@@ -44,7 +45,8 @@ enum class PhysicsMaterial: uint32_t {
     OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,
     OBJ_BULLET_COLLIDABLE_MASK = OBJ_CHASSIS | OBJ_HITBOX,
 
-    SURFACE_BASE_MASK = ((1 << SURFACE_BASE_NBITS) - 1) << SURFACE_BASE_OFFSET
+    SURFACE_BASE_MASK = ((1 << SURFACE_BASE_NBITS) - 1) << SURFACE_BASE_OFFSET,
+    SURFACE_MASK = ((1 << SURFACE_NBITS) - 1) << SURFACE_BASE_OFFSET
 };
 
 inline bool any(PhysicsMaterial a) {

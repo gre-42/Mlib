@@ -19,6 +19,8 @@ public:
     void maybe_generate(
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance,
         const std::string& resource_name,
         const std::string& instance_prefix,
         float animation_duration,

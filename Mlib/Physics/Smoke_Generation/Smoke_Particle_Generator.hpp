@@ -30,6 +30,8 @@ public:
         const std::string& node_name,
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance,
         float animation_duration,
         ParticleType particle_type);
     void generate_child(

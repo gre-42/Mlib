@@ -17,6 +17,8 @@ void SmokeTrailGenerator::advance_time(float dt) {
 void SmokeTrailGenerator::maybe_generate(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance,
     const std::string& resource_name,
     const std::string& instance_prefix,
     float animation_duration,
@@ -30,6 +32,8 @@ void SmokeTrailGenerator::maybe_generate(
             instance_prefix + smoke_generator_.generate_suffix(),
             position,
             rotation,
+            velocity,
+            air_resistance,
             animation_duration,
             particle_type);
     }

@@ -28,10 +28,10 @@ void ParticleRenderer::preload(const std::string& name) {
     instances_.get(resources_.get_instance_for_creator(name))->preload();
 }
 
-void ParticleRenderer::move(float dt) {
+void ParticleRenderer::move(float dt, const StaticWorld& world) {
     std::shared_lock lock{ mutex_ };
     for (auto& [_, instance] : instances_) {
-        instance->move(dt);
+        instance->move(dt, world);
     }
 }
 

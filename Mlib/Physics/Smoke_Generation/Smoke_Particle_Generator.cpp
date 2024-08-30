@@ -26,6 +26,8 @@ void SmokeParticleGenerator::generate_root(
     const std::string& node_name,
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance,
     float animation_duration,
     ParticleType particle_type)
 {
@@ -53,7 +55,9 @@ void SmokeParticleGenerator::generate_root(
         scene_.particle_instantiator(resource_name).add_particle(
             TransformationMatrix<float, ScenePos, 3>{
                 tait_bryan_angles_2_matrix(rotation),
-                position});
+                position},
+            velocity,
+            air_resistance);
     } else {
         THROW_OR_ABORT("Unknown particle type");
     }

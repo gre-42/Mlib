@@ -1,11 +1,13 @@
 #include "Dynamic_Instance_Buffers.hpp"
 #include <Mlib/Geometry/Material/Transformation_Mode.hpp>
 #include <Mlib/Geometry/Mesh/Transformation_And_Billboard_Id.hpp>
+#include <Mlib/Math/Fixed_Scaled_Unit_Vector.hpp>
 #include <Mlib/Memory/Integral_Cast.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Frame_Index_From_Animation_Time.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Clear_On_Update.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
+#include <Mlib/Scene_Graph/Instances/Static_World.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
 
@@ -20,6 +22,7 @@ DynamicInstanceBuffers::DynamicInstanceBuffers(
     : position_yangles_{ max_num_instances }
     , position_{ max_num_instances }
     , rotation_quaternion_{ max_num_instances }
+    , particle_properties_{ max_num_instances }
     , billboard_ids_{ max_num_instances, num_billboard_atlas_components }
     , max_num_instances_{ max_num_instances }
     , num_billboard_atlas_components_{ num_billboard_atlas_components }
@@ -49,7 +52,9 @@ size_t DynamicInstanceBuffers::num_billboard_atlas_components() const {
 
 void DynamicInstanceBuffers::append(
     const TransformationMatrix<float, float, 3>& transformation_matrix,
-    const BillboardSequence& sequence)
+    const BillboardSequence& sequence,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance)
 {
     if (sequence.billboard_ids.empty()) {
         THROW_OR_ABORT("Billboard sequence is empty");
@@ -74,6 +79,7 @@ void DynamicInstanceBuffers::append(
     if (transformation_mode_ == TransformationMode::ALL) {
         rotation_quaternion_.append(m);
     }
+    particle_properties_[tmp_num_instances_] = { velocity, air_resistance };
     if (num_billboard_atlas_components_ != 0) {
         billboard_ids_.append(m);
         if (has_per_instance_continuous_texture_layer_) {
@@ -85,7 +91,7 @@ void DynamicInstanceBuffers::append(
     ++tmp_num_instances_;
 }
 
-void DynamicInstanceBuffers::move(float dt) {
+void DynamicInstanceBuffers::move(float dt, const StaticWorld& world) {
     std::scoped_lock lock{ mutex_ };
     if (num_billboard_atlas_components_ == 0) {
         return;
@@ -93,6 +99,23 @@ void DynamicInstanceBuffers::move(float dt) {
     for (size_t i = 0; i < tmp_length();) {
         auto& ai = animation_times_[i];
         auto& bi = billboard_sequences_[i];
+        auto& props = particle_properties_[i];
+        auto advance_position = [&](FixedArray<float, 3>& position) {
+            position += props.velocity * dt;
+            props.velocity =
+                (1 - props.air_resistance) * props.velocity +
+                world.wind->vector * props.air_resistance;
+        };
+        if (transformation_mode_ == TransformationMode::POSITION_YANGLE) {
+            advance_position(position_yangles_[i].row_range<0, 3>());
+        } else if ((transformation_mode_ == TransformationMode::POSITION) ||
+                   (transformation_mode_ == TransformationMode::POSITION_LOOKAT) ||
+                   (transformation_mode_ == TransformationMode::ALL))
+        {
+            advance_position(position_[i]);
+        } else {
+            THROW_OR_ABORT("Unknown transformation mode: " +  std::to_string((int)transformation_mode_));
+        }
         if (bi->duration == INFINITY) {
             ++i;
             continue;
@@ -133,6 +156,7 @@ void DynamicInstanceBuffers::move(float dt) {
             if (tmp_num_instances_ != 0) {
                 ai = animation_times_[tmp_num_instances_];
                 bi = billboard_sequences_[tmp_num_instances_];
+                props = particle_properties_[tmp_num_instances_];
             }
         }
     }

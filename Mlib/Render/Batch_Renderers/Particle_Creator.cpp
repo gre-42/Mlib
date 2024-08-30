@@ -18,7 +18,14 @@ ParticleCreator::ParticleCreator(
 
 ParticleCreator::~ParticleCreator() = default;
 
-void ParticleCreator::add_particle(const TransformationMatrix<float, ScenePos, 3>& transformation_matrix)
+void ParticleCreator::add_particle(
+    const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance)
 {
-    particles_instance_.add_particle(transformation_matrix, billboard_sequence_);
+    particles_instance_.add_particle(
+        transformation_matrix,
+        billboard_sequence_,
+        velocity,
+        air_resistance);
 }

@@ -141,7 +141,7 @@ void PhysicsEngine::move_particles(const StaticWorld& world)
     }
     contact_smoke_generator_->advance_time(cfg_.dt_substeps());
     if (particle_renderer_ != nullptr) {
-        particle_renderer_->move(cfg_.dt_substeps());
+        particle_renderer_->move(cfg_.dt_substeps(), world);
     }
     if (trail_renderer_ != nullptr) {
         trail_renderer_->move(cfg_.dt_substeps(), world);

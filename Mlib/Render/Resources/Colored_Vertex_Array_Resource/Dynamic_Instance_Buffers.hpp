@@ -12,11 +12,19 @@
 
 namespace Mlib {
 
+template <typename TData, size_t... tshape>
+class FixedArray;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 struct TransformationAndBillboardId;
 enum class TransformationMode;
 enum class ClearOnUpdate;
+struct StaticWorld;
+
+struct InternalParticleProperties {
+    FixedArray<float, 3> velocity = uninitialized;
+    float air_resistance;
+};
 
 class DynamicInstanceBuffers: public IInstanceBuffers {
     DynamicInstanceBuffers(const DynamicInstanceBuffers&) = delete;
@@ -33,8 +41,10 @@ public:
     size_t num_billboard_atlas_components() const;
     void append(
         const TransformationMatrix<float, float, 3>& transformation_matrix,
-        const BillboardSequence& sequence);
-    void move(float dt);
+        const BillboardSequence& sequence,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance);
+    void move(float dt, const StaticWorld& world);
     size_t capacity() const;
     size_t tmp_length() const;
     bool tmp_empty() const;
@@ -56,6 +66,7 @@ private:
     DynamicPositionYAngles position_yangles_;
     DynamicPosition position_;
     DynamicRotationQuaternion rotation_quaternion_;
+    std::vector<InternalParticleProperties> particle_properties_;
     DynamicBillboardIds billboard_ids_;
     std::optional<DynamicInstanceContinuousTextureLayer> texture_layers_;
     size_t max_num_instances_;

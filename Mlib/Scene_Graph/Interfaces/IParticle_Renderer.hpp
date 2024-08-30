@@ -17,13 +17,14 @@ struct SceneGraphConfig;
 struct ExternalRenderPass;
 class IParticleCreator;
 enum class ParticleSubstrate;
+struct StaticWorld;
 
 class IParticleRenderer {
 public:
     virtual ~IParticleRenderer() = default;
     virtual void preload(const std::string& resource_name) = 0;
     virtual IParticleCreator& get_instantiator(const std::string& resource_name) = 0;
-    virtual void move(float dt) = 0;
+    virtual void move(float dt, const StaticWorld& world) = 0;
     virtual void render(
         ParticleSubstrate substrate,
         const FixedArray<ScenePos, 4, 4>& vp,

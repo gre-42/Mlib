@@ -17,7 +17,7 @@ public:
     // IParticleRenderer
     virtual IParticleCreator& get_instantiator(const std::string& name) override;
     virtual void preload(const std::string& name) override;
-    virtual void move(float dt) override;
+    virtual void move(float dt, const StaticWorld& world) override;
     virtual void render(
         ParticleSubstrate substrate,
         const FixedArray<ScenePos, 4, 4>& vp,

@@ -15,10 +15,10 @@ void SurfaceContactDb::store_contact_info(
     PhysicsMaterial material0,
     PhysicsMaterial material1)
 {
-    if ((material0 & PhysicsMaterial::SURFACE_BASE_MASK) != material0) {
+    if ((material0 & PhysicsMaterial::SURFACE_MASK) != material0) {
         THROW_OR_ABORT("Material 0 has modifiers");
     }
-    if ((material1 & PhysicsMaterial::SURFACE_BASE_MASK) != material1) {
+    if ((material1 & PhysicsMaterial::SURFACE_MASK) != material1) {
         THROW_OR_ABORT("Material 1 has modifiers");
     }
     if (!surface_contact_infos_.try_emplace(CommutativeMaterialPair{material0, material1}, std::move(info)).second) {
@@ -31,8 +31,8 @@ SurfaceContactInfo* SurfaceContactDb::get_contact_info(
     PhysicsMaterial material1)
 {
     auto sit = surface_contact_infos_.find(CommutativeMaterialPair{
-        material0 & PhysicsMaterial::SURFACE_BASE_MASK,
-        material1 & PhysicsMaterial::SURFACE_BASE_MASK});
+        material0 & PhysicsMaterial::SURFACE_MASK,
+        material1 & PhysicsMaterial::SURFACE_MASK});
     if (sit == surface_contact_infos_.end()) {
         return nullptr;
     }

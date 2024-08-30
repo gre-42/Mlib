@@ -22,6 +22,7 @@ struct SceneGraphConfig;
 struct RenderConfig;
 struct ExternalRenderPass;
 enum class ParticleSubstrate;
+struct StaticWorld;
 
 class ParticlesInstance {
     ParticlesInstance(const ParticlesInstance&) = delete;
@@ -41,9 +42,11 @@ public:
 
     void add_particle(
         const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
-        const BillboardSequence& sequence);
+        const BillboardSequence& sequence,
+        const FixedArray<float, 3>& velocity,
+        float air_resistance);
 
-    void move(float dt);
+    void move(float dt, const StaticWorld& world);
 
     void preload() const;
 

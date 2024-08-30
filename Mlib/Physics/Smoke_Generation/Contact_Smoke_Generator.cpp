@@ -56,8 +56,8 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
     auto dvel_a = std::sqrt(sum(squared(v0 - v1_a)));
     auto dvel_s = std::sqrt(sum(squared(v0 - v1_s)));
     for (const auto& [i, smoke_info] : enumerate(surface_contact_info->smoke_infos)) {
-        const auto& af = smoke_info.vehicle_velocity_to_smoke_particle_frequency;
-        const auto& sf = smoke_info.tire_velocity_to_smoke_particle_frequency;
+        const auto& af = smoke_info.vehicle_velocity.smoke_particle_frequency;
+        const auto& sf = smoke_info.tire_velocity.smoke_particle_frequency;
         auto f =
             (af.empty() ? 0.f : af(dvel_a)) +
             (sf.empty() ? 0.f : sf(dvel_s));
@@ -75,9 +75,21 @@ SurfaceContactInfo* ContactSmokeGenerator::notify_contact(
                 THROW_OR_ABORT("Could not insert smoke trail generator");
             }
         }
+        const auto& av = smoke_info.vehicle_velocity.smoke_particle_velocity;
+        const auto& sv = smoke_info.tire_velocity.smoke_particle_velocity;
+        auto pvel =
+            (av.empty() ? 0.f : av(dvel_a)) +
+            (sv.empty() ? 0.f : sv(dvel_s));
+        auto dirx = c.o1.rbp_.rotation_.column(0);
+        if (dot0d(dirx, (intersection_point - c.o1.rbp_.abs_position()).casted<float>()) < 0.f) {
+            dirx = -dirx;
+        }
+        dirx -= surface_normal.casted<float>() * dot0d(surface_normal.casted<float>(), dirx);
         tstg.at(key).maybe_generate(
             intersection_point,
             rotation,
+            dirx * pvel,
+            smoke_info.air_resistance,
             smoke_info.smoke_particle_resource_name,
             smoke_info.smoke_particle_instance_prefix,
             smoke_info.smoke_particle_animation_duration,

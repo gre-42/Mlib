@@ -7,14 +7,20 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 
+namespace KnownRuleArgs {
+BEGIN_ARGUMENT_LIST;
+DECLARE_ARGUMENT(vehicle_velocities);
+DECLARE_ARGUMENT(particle_frequencies);
+DECLARE_ARGUMENT(particle_velocities);
+}
+
 namespace KnownSmokeArgs {
 BEGIN_ARGUMENT_LIST;
 DECLARE_ARGUMENT(resource_name);
 DECLARE_ARGUMENT(instance_prefix);
-DECLARE_ARGUMENT(vehicle_velocities);
-DECLARE_ARGUMENT(vehicle_frequencies);
-DECLARE_ARGUMENT(tire_velocities);
-DECLARE_ARGUMENT(tire_frequencies);
+DECLARE_ARGUMENT(vehicle);
+DECLARE_ARGUMENT(tire);
+DECLARE_ARGUMENT(air_resistance);
 DECLARE_ARGUMENT(animation_duration);
 }
 
@@ -28,24 +34,37 @@ static float parse_frequency(float v) {
     return v * Hz;
 }
 
-void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
+static void rules_from_json(
+    const nlohmann::json& j,
+    SurfaceSmokeRule& rule)
+{
+    JsonView jv{ j };
+    jv.validate(KnownRuleArgs::options);
+    rule.smoke_particle_frequency = Interp<float>{
+        jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),
+        jv.at_vector<float>(KnownRuleArgs::particle_frequencies, parse_frequency),
+        OutOfRangeBehavior::CLAMP};
+    if (jv.contains(KnownRuleArgs::particle_velocities)) {
+        rule.smoke_particle_velocity = Interp<float>{
+            jv.at_vector<float>(KnownRuleArgs::vehicle_velocities, parse_velocity),
+            jv.at_vector<float>(KnownRuleArgs::particle_velocities, parse_velocity),
+            OutOfRangeBehavior::CLAMP};
+    }
+}
+
+static void from_json(const nlohmann::json& j, SurfaceSmokeInfo& item) {
     JsonView jv{ j };
     jv.validate(KnownSmokeArgs::options);
 
-    if (jv.contains(KnownSmokeArgs::vehicle_velocities)) {
-        item.vehicle_velocity_to_smoke_particle_frequency = Interp<float>{
-            jv.at_vector<float>(KnownSmokeArgs::vehicle_velocities, parse_velocity),
-            jv.at_vector<float>(KnownSmokeArgs::vehicle_frequencies, parse_frequency),
-            OutOfRangeBehavior::CLAMP};
+    if (auto vehicle = jv.try_at(KnownSmokeArgs::vehicle)) {
+        rules_from_json(*vehicle, item.vehicle_velocity);
     }
-    if (jv.contains(KnownSmokeArgs::tire_velocities)) {
-        item.tire_velocity_to_smoke_particle_frequency = Interp<float>{
-            jv.at_vector<float>(KnownSmokeArgs::tire_velocities, parse_velocity),
-            jv.at_vector<float>(KnownSmokeArgs::tire_frequencies, parse_frequency),
-            OutOfRangeBehavior::CLAMP};
+    if (auto tire = jv.try_at(KnownSmokeArgs::tire)) {
+        rules_from_json(*tire, item.tire_velocity);
     }
     item.smoke_particle_resource_name = jv.at<std::string>(KnownSmokeArgs::resource_name);
     item.smoke_particle_instance_prefix = jv.at<std::string>(KnownSmokeArgs::instance_prefix);
+    item.air_resistance = jv.at<float>(KnownSmokeArgs::air_resistance, 1.f);
     item.smoke_particle_animation_duration = jv.at<float>(KnownSmokeArgs::animation_duration) * seconds;
 }
 

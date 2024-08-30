@@ -50,7 +50,9 @@ size_t ParticlesInstance::num_billboard_atlas_components() const {
 
 void ParticlesInstance::add_particle(
     const TransformationMatrix<float, ScenePos, 3>& transformation_matrix,
-    const BillboardSequence& sequence)
+    const BillboardSequence& sequence,
+    const FixedArray<float, 3>& velocity,
+    float air_resistance)
 {
     if (dynamic_instance_buffers_->tmp_length() < dynamic_instance_buffers_->capacity()) {
         if (dynamic_instance_buffers_->tmp_empty()) {
@@ -59,12 +61,12 @@ void ParticlesInstance::add_particle(
         auto trafo = TransformationMatrix<float, float, 3>{
             transformation_matrix.R(),
             (transformation_matrix.t() - offset_).casted<float>()};
-        dynamic_instance_buffers_->append(trafo, sequence);
+        dynamic_instance_buffers_->append(trafo, sequence, velocity, air_resistance);
     }
 }
 
-void ParticlesInstance::move(float dt) {
-    dynamic_instance_buffers_->move(dt);
+void ParticlesInstance::move(float dt, const StaticWorld& world) {
+    dynamic_instance_buffers_->move(dt, world);
 }
 
 void ParticlesInstance::preload() const {

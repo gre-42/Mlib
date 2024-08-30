@@ -96,6 +96,8 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
         trail_generator_.maybe_generate(
             rigid_body_pulses_.abs_position(),
             fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>(),
+            1.f,
             props_.trail_resource_name,
             "trail",
             props_.trail_animation_duration,
@@ -136,6 +138,8 @@ void Bullet::notify_collided(
         "explosion" + smoke_generator_.generate_suffix(),
         intersection_point,
         fixed_zeros<float, 3>(),
+        fixed_zeros<float, 3>(),
+        0.f,
         props_.explosion_animation_time,
         ParticleType::NODE);
     if (trace_extender_ != nullptr) {
