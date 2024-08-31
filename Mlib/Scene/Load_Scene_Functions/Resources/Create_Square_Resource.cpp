@@ -41,6 +41,8 @@ DECLARE_ARGUMENT(aggregate_mode);
 DECLARE_ARGUMENT(transformation_mode);
 DECLARE_ARGUMENT(number_of_frames);
 DECLARE_ARGUMENT(billboards);
+DECLARE_ARGUMENT(fog_distances);
+DECLARE_ARGUMENT(fog_ambient);
 }
 
 namespace BB {
@@ -109,7 +111,9 @@ LoadSceneJsonUserFunction CreateSquareResource::json_user_function = [](const Lo
             .emissive = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::emissive, OrderableFixedArray<float, 3>(0.f)),
             .ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::ambient),
             .diffuse = {0.f, 0.f, 0.f},
-            .specular = {0.f, 0.f, 0.f}}};
+            .specular = {0.f, 0.f, 0.f},
+            .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+            .fog_ambient= args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, UOrderableFixedArray<float, 3>(0.f))}};
     material.compute_color_mode();
     Morphology morphology{
         .physics_material = PhysicsMaterial::NONE,

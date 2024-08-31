@@ -21,6 +21,8 @@ static Shading material_specularity(Shading res, const OsmResourceConfig& config
     res.diffuse *= config.diffuse_factor;
     res.specular *= config.specular_factor;
     res.fresnel.ambient *= config.fresnel_ambient_factor;
+    res.fog_distances = config.fog_distances;
+    res.fog_ambient = config.fog_ambient;
     return res;
 }
 

@@ -202,6 +202,8 @@ struct OsmResourceConfig {
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> specular_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> fresnel_ambient_factor = FixedArray<float, 3>(1.f);
+    FixedArray<float, 2> fog_distances = default_step_distances;
+    FixedArray<float, 3> fog_ambient = FixedArray<float, 3>(0.f);
     DrivingDirection driving_direction = DrivingDirection::CENTER;
     std::map<RoadType, bool> blend_street;
     Interp<double> layer_heights{ std::vector<double>{}, std::vector<double>{} };

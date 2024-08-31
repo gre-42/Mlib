@@ -267,6 +267,8 @@ DECLARE_ARGUMENT(displacementmap_min);
 DECLARE_ARGUMENT(displacementmap_uv_scale);
 DECLARE_ARGUMENT(displacementmap_distances);
 DECLARE_ARGUMENT(displacementmap_heights);
+DECLARE_ARGUMENT(fog_distances);
+DECLARE_ARGUMENT(fog_ambient);
 }
 
 namespace ST {
@@ -1085,6 +1087,12 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::refine_explicit_waypoints)) {
             config.refine_explicit_waypoints = args.arguments.at<bool>(KnownArgs::refine_explicit_waypoints);
+        }
+        if (args.arguments.contains(KnownArgs::fog_distances)) {
+            config.fog_distances = args.arguments.at<UFixedArray<float, 2>>(KnownArgs::fog_distances);
+        }
+        if (args.arguments.contains(KnownArgs::fog_ambient)) {
+            config.fog_ambient = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::fog_ambient);
         }
     };
     if (resource_name.empty()) {

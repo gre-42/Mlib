@@ -143,6 +143,7 @@ static GenShaderText vertex_shader_text_gen{[](
     bool has_discrete_atlas_texture_layer,
     bool reorient_normals,
     bool reorient_uv0,
+    bool has_depth_fog,
     bool orthographic,
     bool fragments_depend_on_distance,
     bool fragments_depend_on_normal)
@@ -237,7 +238,7 @@ static GenShaderText vertex_shader_text_gen{[](
         sstr << "out vec3 interior_bottom_left_fs;" << std::endl;
         sstr << "out vec2 interior_multiplier_fs;" << std::endl;
     }
-    if (reorient_uv0 || reorient_normals || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
+    if (reorient_uv0 || reorient_normals || has_depth_fog || has_nontrivial_specularity || ((fragments_depend_on_distance || has_fresnel_exponent) && !orthographic) || has_interiormap || has_horizontal_detailmap || has_reflection_map) {
         sstr << "out vec3 FragPos;" << std::endl;
     }
     if (reorient_uv0 || has_diffusivity || has_nontrivial_specularity || has_fresnel_exponent || fragments_depend_on_normal) {
@@ -617,12 +618,13 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
     {
         bool pred0 = (!specular.all_equal(0) && (specular_exponent != 0.f)) || (fragments_depend_on_distance && !orthographic);
         bool pred1 = (fresnel.exponent != 0.f);
-        if (pred0 || pred1 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
+        bool pred2 = (fog_distances != default_step_distances);
+        if (pred0 || pred1 || pred2 || reorient_uv0 || has_interiormap || has_horizontal_detailmap || reorient_normals) {
             sstr << "in vec3 FragPos;" << std::endl;
-            if ((pred0 || pred1 || reorient_uv0 || reorient_normals) && orthographic) {
+            if ((pred0 || pred1 || pred2 || reorient_uv0 || reorient_normals) && orthographic) {
                 sstr << "uniform vec3 viewDir;" << std::endl;
             }
-            if (((pred0 || pred1) && !orthographic) || has_interiormap) {
+            if (((pred0 || pred1) && !orthographic) || has_interiormap || pred2) {
                 sstr << "uniform highp vec3 viewPos;" << std::endl;
             }
         }
@@ -1726,6 +1728,7 @@ const ColoredRenderProgram& ColoredVertexArrayResource::get_render_program(
         id.has_discrete_atlas_texture_layer,
         id.reorient_normals,
         id.reorient_uv0,
+        id.fog_distances != default_step_distances,
         id.orthographic,
         id.fragments_depend_on_distance,
         id.fragments_depend_on_normal);
