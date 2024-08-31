@@ -44,6 +44,8 @@ DECLARE_ARGUMENT(emissive_factor);
 DECLARE_ARGUMENT(ambient_factor);
 DECLARE_ARGUMENT(diffuse_factor);
 DECLARE_ARGUMENT(specular_factor);
+DECLARE_ARGUMENT(fog_distances);
+DECLARE_ARGUMENT(fog_ambient);
 }
 
 const std::string CreateGridResource::key = "grid_resource";
@@ -89,8 +91,10 @@ LoadSceneJsonUserFunction CreateGridResource::json_user_function = [](const Load
                 .emissive = OrderableFixedArray{emissive * emissive_factor},
                 .ambient = OrderableFixedArray{ambient * ambient_factor},
                 .diffuse = OrderableFixedArray{diffuse * diffuse_factor},
-                .specular = OrderableFixedArray{specular * specular_factor}}
-            }.compute_color_mode(),
+                .specular = OrderableFixedArray{specular * specular_factor},
+                .fog_distances = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::fog_distances, default_step_distances),
+                .fog_ambient = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::fog_ambient, OrderableFixedArray<float, 3>(1.f)),
+            }}.compute_color_mode(),
         Morphology{
             .physics_material = PhysicsMaterial::NONE,
             .center_distances = OrderableFixedArray<float, 2>{
