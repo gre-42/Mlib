@@ -6,6 +6,13 @@ namespace Mlib {
 
 enum class RigidBodyVehicleFlags;
 
+struct BulletTrail {
+    std::string resource_name;
+    float dt;
+    float air_resistance;
+    float animation_duration;
+};
+
 struct BulletProperties {
     std::string renderable_resource_name;
     std::string hitbox_resource_name;
@@ -18,9 +25,7 @@ struct BulletProperties {
     float damage;
     float damage_radius;
     FixedArray<float, 3> size = uninitialized;
-    std::string trail_resource_name;
-    float trail_dt;
-    float trail_animation_duration;
+    BulletTrail trail;
     std::string trace_storage;
     std::string dynamic_light_configuration_before_impact;
     std::string dynamic_light_configuration_after_impact;

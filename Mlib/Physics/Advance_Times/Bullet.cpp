@@ -49,7 +49,7 @@ Bullet::Bullet(
     , props_{ props }
     , lifetime_{ 0.f }
     , trail_generator_{ smoke_generator }
-    , has_trail_{ !props.trail_resource_name.empty() }
+    , has_trail_{ !props.trail.resource_name.empty() }
     , trace_extender_{ std::move(trace_extender) }
     , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
     , dynamic_lights_{ dynamic_lights }
@@ -97,11 +97,11 @@ void Bullet::advance_time(float dt, const StaticWorld& world) {
             rigid_body_pulses_.abs_position(),
             fixed_zeros<float, 3>(),
             fixed_zeros<float, 3>(),
-            1.f,
-            props_.trail_resource_name,
+            props_.trail.air_resistance,
+            props_.trail.resource_name,
             "trail",
-            props_.trail_animation_duration,
-            props_.trail_dt,
+            props_.trail.animation_duration,
+            props_.trail.dt,
             ParticleType::INSTANCE);
     }
     if (trace_extender_ != nullptr) {
