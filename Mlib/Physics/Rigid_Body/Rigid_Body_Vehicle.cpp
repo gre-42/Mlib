@@ -254,7 +254,10 @@ void RigidBodyVehicle::collide_with_air(CollisionHistory& c)
     }
     if (!std::isnan(fly_forward_state_.wants_to_fly_forward_factor_)) {
         auto dir = rbp_.rotation_.column(1);
-        dir -= dot0d(dir, c.world.gravity.direction) * c.world.gravity.direction;
+        if ((c.world.gravity == nullptr) || (c.world.gravity->magnitude == 0.f)) {
+            THROW_OR_ABORT("collide_with_air without gravity");
+        }
+        dir -= dot0d(dir, c.world.gravity->direction) * c.world.gravity->direction;
         float l2 = sum(squared(dir));
         if (l2 > 1e-6) {
             integrate_force(
@@ -363,15 +366,18 @@ void RigidBodyVehicle::advance_time_skate(
     }
     // Align to surface
     if (grind_state_.grinding_) {
+        if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
+            THROW_OR_ABORT("advance_time_skate without gravity");
+        }
         if (grind_state_.grind_axis_ == 0) {
             if (std::abs(grind_state_.grind_pv_(0)) > 1e-12) {
-                auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, world.gravity.direction);
+                auto x = cross(sign(grind_state_.grind_pv_(0)) * grind_state_.grind_direction_, world.gravity->direction);
                 x /= std::sqrt(sum(squared(x)));
-                auto z = cross(x, world.gravity.direction);
+                auto z = cross(x, world.gravity->direction);
                 auto r1 = FixedArray<float, 3, 3>::init(
-                    -z(0), -world.gravity.direction(0), -x(0),
-                    -z(1), -world.gravity.direction(1), -x(1),
-                    -z(2), -world.gravity.direction(2), -x(2));
+                    -z(0), -world.gravity->direction(0), -x(0),
+                    -z(1), -world.gravity->direction(1), -x(1),
+                    -z(2), -world.gravity->direction(2), -x(2));
                 rbp_.rotation_ =
                     Quaternion<float>{ rbp_.rotation_ }
                     .slerp(Quaternion<float>{ r1 }, cfg.alignment_slerp)
@@ -379,7 +385,7 @@ void RigidBodyVehicle::advance_time_skate(
             }
         } else if (grind_state_.grind_axis_ == 2) {
             if (std::abs(grind_state_.grind_pv_(2)) > 1e-12) {
-                auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -world.gravity.direction);
+                auto r1 = gl_lookat_relative(-sign(grind_state_.grind_pv_(2)) * grind_state_.grind_direction_, -world.gravity->direction);
                 if (!r1.has_value()) {
                     THROW_OR_ABORT("Could not compute grind rotation");
                 }
@@ -836,12 +842,15 @@ void RigidBodyVehicle::write_status(
         ostr << "wt: " << std::sqrt(sum(squared(rbp_.v_))) / WHEEL_RADIUS / rpm << " rpm" << std::endl;
     }
     if (log_components & StatusComponents::DIAMETER) {
+        if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
+            THROW_OR_ABORT("StatusComponents::DIAMETER without gravity");
+        }
         // T = 2 PI r / v, T = 2 PI / w
         // r = v / w
         // r / r2 = v * a / (w * v^2) = a / (w * v)
         if (float w2 = sum(squared(rbp_.w_)); w2 > squared(0.001f * rpm)) {
             ostr << "d: " << 2 * std::sqrt(sum(squared(rbp_.v_)) / w2) << " m" << std::endl;
-            ostr << "d / d2(g): " << world.gravity.magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
+            ostr << "d / d2(g): " << world.gravity->magnitude / std::sqrt(w2 * sum(squared(rbp_.v_))) << std::endl;
         } else {
             ostr << "d: undefined" << std::endl;
             ostr << "d / d2(g): undefined" << std::endl;

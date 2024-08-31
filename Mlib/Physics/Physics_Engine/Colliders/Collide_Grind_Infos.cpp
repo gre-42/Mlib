@@ -29,7 +29,10 @@ void Mlib::collide_grind_infos(
             auto point_dir = o1.rbp_.rotation_.column(rb->grind_state_.grind_axis_);
             point_dir *= sign(dot0d(point_dir, o1.rbp_.v_));
             point_dir -= dot0d(point_dir, p.rail_direction.casted<float>()) * p.rail_direction.casted<float>();
-            auto n = -world.gravity.direction + point_dir * 2.f;
+            if ((world.gravity == nullptr) || (world.gravity->magnitude == 0.f)) {
+                THROW_OR_ABORT("Collide grind infos without gravity");
+            }
+            auto n = -world.gravity->direction + point_dir * 2.f;
             n /= std::sqrt(sum(squared(n)));
             jump(o0.rbp_, o1.rbp_, cfg.grind_jump_dv, { .vector = n, .position = p.intersection_point });
         } else if (rb->jump_state_.jumping_counter_ > 30 * cfg.nsubsteps) {
