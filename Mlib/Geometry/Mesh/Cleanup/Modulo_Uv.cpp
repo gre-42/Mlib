@@ -28,14 +28,18 @@ void Mlib::modulo_uv(ColoredVertexArray<TPos>& cva) {
     lcm_local_args(1).reserve(textures.size());
     for (const auto& t : textures) {
         if (t->uv_source == BlendMapUvSource::HORIZONTAL) {
-            if (t->scale != 0.f) {
-                lcm_world_args.push_back(1.f / t->scale);
+            if (t->scale(0) != t->scale(1)) {
+                THROW_OR_ABORT("Horizontal UV-coordinates require isotropic scaling. Material: " + cva.material.identifier());
+            }
+            float scale = t->scale(0);
+            if (scale != 0.f) {
+                lcm_world_args.push_back(1.f / scale);
             }
         } else {
             for (size_t i = 0; i < 2; ++i) {
                 if (t->texture_descriptor.color.wrap_modes(i) == WrapMode::REPEAT) {
-                    if (t->scale != 0.f) {
-                        lcm_local_args(i).push_back(1.f / t->scale);
+                    if (t->scale(i) != 0.f) {
+                        lcm_local_args(i).push_back(1.f / t->scale(i));
                     }
                 } else {
                     detected_non_repeat(i) = true;

@@ -70,7 +70,7 @@ struct BlendMapTexture {
     OrderableFixedArray<float, 3> normal = { 0.f, 0.f, 0.f };
     OrderableFixedArray<float, 4> cosines{ default_linear_cosines };
     float discreteness = 2.f;
-    float scale = 1.f;
+    OrderableFixedArray<float, 2> scale = { 1.f, 1.f };
     float weight = 1.f;
     float plus = 0.f;
     float min_detail_weight = 0.f;

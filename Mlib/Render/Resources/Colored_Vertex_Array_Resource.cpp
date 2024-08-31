@@ -760,7 +760,11 @@ static GenShaderText fragment_shader_text_textured_rgb_gen{[](
         } else {
             sstr << "tex_coord_flipped";
         }
-        sstr << " * " << t.scale << ")";
+        if (t.scale(0) == t.scale(1)) {
+            sstr << " * " << t.scale(0) << ")";
+        } else {
+            sstr << " * vec2(" << t.scale(0) << ", " << t.scale(1) << "))";
+        }
         return sstr.str();
     };
     sstr << "void main()" << std::endl;

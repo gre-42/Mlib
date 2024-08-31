@@ -53,7 +53,7 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
             .normal = args.arguments.at<UOrderableFixedArray<float, 3>>(KnownArgs::normal),
             .cosines = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::cosine),
             .discreteness = args.arguments.at<float>(KnownArgs::discreteness, 2.f),
-            .scale = args.arguments.at<float>(KnownArgs::scale),
+            .scale = args.arguments.at<UOrderableFixedArray<float, 2>>(KnownArgs::scale),
             .weight = args.arguments.at<float>(KnownArgs::weight),
             .plus = args.arguments.at<float>(KnownArgs::plus, 0.f),
             .min_detail_weight = args.arguments.at<float>(KnownArgs::min_detail_weight, 0.f),

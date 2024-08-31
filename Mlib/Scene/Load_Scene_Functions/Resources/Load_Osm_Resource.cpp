@@ -23,7 +23,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <filesystem>
 
-static uint32_t CACHE_FILE_VERSION = 48;
+static uint32_t CACHE_FILE_VERSION = 49;
 
 namespace fs = std::filesystem;
 
@@ -78,6 +78,7 @@ DECLARE_ARGUMENT(runway_alpha_textures);
 DECLARE_ARGUMENT(runway_displacement_threshold_alpha_textures);
 DECLARE_ARGUMENT(path_mud_textures);
 DECLARE_ARGUMENT(path_mud_alpha_textures);
+DECLARE_ARGUMENT(street_mud_textures);
 DECLARE_ARGUMENT(street_texture);
 DECLARE_ARGUMENT(street_textures);
 DECLARE_ARGUMENT(path_crossing_textures);
@@ -503,6 +504,9 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::path_mud_alpha_textures)) {
             config.street_mud_alpha_textures[RoadType::PATH] = fpathps(KnownArgs::path_mud_alpha_textures);
+        }
+        if (args.arguments.contains(KnownArgs::street_mud_textures)) {
+            config.street_mud_textures[RoadType::STREET] = fpathps(KnownArgs::street_mud_textures);
         }
         if (args.arguments.contains(KnownArgs::street_texture)) {
             RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
