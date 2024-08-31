@@ -651,7 +651,7 @@ RenderingResources::~RenderingResources() {
 }
 
 void RenderingResources::deallocate() {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     render_programs_.clear();
     textures_.erase_if([](auto &item) {
         auto &[_, texture] = item;
@@ -1148,7 +1148,7 @@ void RenderingResources::add_auto_texture_atlas(
 
 void RenderingResources::add_cubemap(const std::string& name, const std::vector<std::string>& filenames) {
     LOG_FUNCTION("RenderingResources::add_cubemap " + name);
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     if (texture_descriptors_.contains(name)) {
         THROW_OR_ABORT("Texture descriptor with name \"" + name + "\" already exists");
     }

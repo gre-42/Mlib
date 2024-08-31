@@ -522,11 +522,11 @@ void android_main(android_app* app) {
             args,
             render_set_fps,
             menu_logic};
-        AEngine a_engine{scene_renderer, button_states.tap_buttons_};
+        AEngine a_engine{ scene_renderer, button_states.tap_buttons_ };
         AContext context;
-        ContextQueryGuard context_query_guard{context};
+        ContextQueryGuard context_query_guard{ context };
         ClearWrapperGuard clear_wrapper_guard;
-        ARenderLoop render_loop{*app, a_engine};
+        ARenderLoop render_loop{ *app, a_engine };
         // AUi::RequestReadExternalStoragePermission();
 
         NotifyingJsonMacroArguments external_json_macro_arguments;
@@ -534,7 +534,7 @@ void android_main(android_app* app) {
 
         size_t args_num_renderings = safe_stoz(args.named_value("--num_renderings", "-1"));
         while (!render_loop.destroy_requested() && !unhandled_exceptions_occured()) {
-            JsonMacroArgumentsObserverGuard smog{external_json_macro_arguments};
+            JsonMacroArgumentsObserverGuard smog{ external_json_macro_arguments };
             num_renderings = args_num_renderings;
             ui_focus.submenu_numbers.clear();
             ui_focus.submenu_headers.clear();
@@ -623,7 +623,7 @@ void android_main(android_app* app) {
 
                 std::atomic_bool load_scene_finished = false;
                 scene_renderer.set_scene(&renderable_scenes, &load_scene_finished);
-                DestructionGuard dg{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
+                DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
 
                 FutureGuard loader_future_guard{loader_thread(
                     args,
@@ -649,6 +649,7 @@ void android_main(android_app* app) {
                     load_scene_finished,
                     render_delay,
                     velocity_dt)};
+                DestructionGuard dg1{[](){discard_render_allocators();}};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));

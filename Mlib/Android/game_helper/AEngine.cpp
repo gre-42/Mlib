@@ -12,16 +12,16 @@
 AEngine::AEngine(
     Mlib::IRenderer& renderer,
     Mlib::TapButtonsStates& tap_buttons_states)
-: renderer_{renderer},
-  tap_buttons_states_{tap_buttons_states},
-  initialized_resources_(false),
-  has_focus_(false),
-  xdpi_{0},
-  ydpi_{0},
-  app_(nullptr),
-  sensor_manager_(nullptr),
-  accelerometer_sensor_(nullptr),
-  sensor_event_queue_(nullptr)
+    : renderer_{ renderer }
+    , tap_buttons_states_{ tap_buttons_states }
+    , initialized_resources_{ false }
+    , has_focus_{ false }
+    , xdpi_{ 0 }
+    , ydpi_{ 0 }
+    , app_{ nullptr }
+    , sensor_manager_{ nullptr }
+    , accelerometer_sensor_{ nullptr }
+    , sensor_event_queue_{ nullptr }
 {
     gl_context_ = ndk_helper::GLContext::GetInstance();
 }
