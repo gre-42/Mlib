@@ -24,7 +24,7 @@ enum class InterpolationType {
     OPTICAL_FLOW
 };
 
-class MotionInterpolationLogic: public RenderLogic, public GenericPostProcessingLogic {
+class MotionInterpolationLogic final: public RenderLogic, public GenericPostProcessingLogic {
 public:
     MotionInterpolationLogic(RenderLogic& child_logic, InterpolationType interpolation_type);
     ~MotionInterpolationLogic();

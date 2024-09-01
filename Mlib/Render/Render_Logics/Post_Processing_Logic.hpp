@@ -19,7 +19,7 @@ struct PPRenderProgram: public RenderProgram {
     GLint soft_light_texture_location = -1;
 };
 
-class PostProcessingLogic: public RenderLogic, public GenericPostProcessingLogic {
+class PostProcessingLogic final: public RenderLogic, public GenericPostProcessingLogic {
 public:
     PostProcessingLogic(
         RenderLogic& child_logic,
