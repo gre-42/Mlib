@@ -73,6 +73,8 @@ void FrameBufferStorage::allocate(const FrameBufferConfig& config)
     }
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, config.color_filter_type));
     CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, config.color_filter_type));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, config.wrap_s));
+    CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, config.wrap_t));
     if (config.nsamples_msaa == 1) {
         CHK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_, 0));
     } else {
@@ -240,6 +242,8 @@ void FrameBuffer::configure(const FrameBufferConfig& config) {
             .color_internal_format = config.color_internal_format,
             .color_format = config.color_format,
             .depth_kind = config_.depth_kind,
+            .wrap_s = config_.wrap_s,
+            .wrap_t = config_.wrap_t,
             .nsamples_msaa = config_.nsamples_msaa});
     }
 }

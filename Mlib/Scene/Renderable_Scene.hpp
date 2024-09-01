@@ -53,6 +53,7 @@ class GameLogic;
 class DirtmapLogic;
 class PostProcessingLogic;
 class FxaaLogic;
+class BloomLogic;
 class MotionInterpolationLogic;
 class FlyingCameraUserClass;
 class StandardRenderLogic;
@@ -74,6 +75,7 @@ struct SceneConfigResource {
     bool depth_fog;
     bool low_pass;
     bool high_pass;
+    FixedArray<unsigned int, 2> bloom;
     bool with_skybox;
     bool with_flying_logic;
     FixedArray<float, 3> background_color;
@@ -171,6 +173,7 @@ public:
     std::unique_ptr<KeyBindings> key_bindings_;
     ReadPixelsLogic read_pixels_logic_;
     std::unique_ptr<DirtmapLogic> dirtmap_logic_;
+    std::unique_ptr<BloomLogic> bloom_logic_;
     std::unique_ptr<MotionInterpolationLogic> motion_interp_logic_;
     std::unique_ptr<PostProcessingLogic> post_processing_logic_;
     std::unique_ptr<FxaaLogic> fxaa_logic_;

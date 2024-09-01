@@ -8,6 +8,7 @@
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Aggregate_Render_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Bloom_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Dirtmap_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Flying_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fxaa_Logic.hpp>
@@ -135,7 +136,11 @@ RenderableScene::RenderableScene(
           players_)}
     , read_pixels_logic_{ *aggregate_render_logic_ }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
-    , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
+    , bloom_logic_{ std::make_unique<BloomLogic>(
+        read_pixels_logic_,
+        1.2f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
+        config.bloom) }
+    , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(*bloom_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(
           *motion_interp_logic_,
           config.background_color,

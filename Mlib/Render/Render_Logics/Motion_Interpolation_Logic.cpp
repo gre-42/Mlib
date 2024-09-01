@@ -286,7 +286,7 @@ void MotionInterpolationLogic::render(
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
                 CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color()));
 
-                va().vertex_buffer.bind();
+                va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
                 CHK(glBindVertexArray(0));
                 // save_movie.save("/tmp/mov-", "-n", width, height);
@@ -309,7 +309,7 @@ void MotionInterpolationLogic::render(
                     CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
                     CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()));
 
-                    va().vertex_buffer.bind();
+                    va().bind();
                     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
                     CHK(glBindVertexArray(0));
 
@@ -339,7 +339,7 @@ void MotionInterpolationLogic::render(
                             CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
                             CHK(glBindTexture(GL_TEXTURE_2D, it1->second.texture_color()));
 
-                            va().vertex_buffer.bind();
+                            va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
                             CHK(glBindVertexArray(0));
 
@@ -358,7 +358,7 @@ void MotionInterpolationLogic::render(
                             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
                             CHK(glBindTexture(GL_TEXTURE_2D, fb_diff.texture_color()));
 
-                            va().vertex_buffer.bind();
+                            va().bind();
                             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
                             CHK(glBindVertexArray(0));
 
@@ -385,7 +385,7 @@ void MotionInterpolationLogic::render(
                         CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
                         CHK(glBindTexture(GL_TEXTURE_2D, fb_flow.texture_color()));
 
-                        va().vertex_buffer.bind();
+                        va().bind();
                         CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
                         CHK(glBindVertexArray(0));
 

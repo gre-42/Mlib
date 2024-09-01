@@ -354,6 +354,8 @@ void android_main(android_app* app) {
         "    [--no_depth_fog]\n"
         "    [--low_pass]\n"
         "    [--high_pass]\n"
+        "    [--bloom_x <niterations>]\n"
+        "    [--bloom_y <niterations>]\n"
         "    [--motion_interpolation]\n"
         "    [--no_render]\n"
         "    [--save_playback]\n"
@@ -440,7 +442,9 @@ void android_main(android_app* app) {
          "--audio_gain",
          "--show_debug_wheels",
          "--write_loaded_resources",
-         "--audio_frequency"});
+         "--audio_frequency",
+         "--bloom_x",
+         "--bloom_y"});
     try {
         const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
         const auto args = parser.parsed(3, argv);
@@ -580,6 +584,9 @@ void android_main(android_app* app) {
                     {"PRIMARY_SCENE_DEPTH_FOG", !args.has_named("--no_depth_fog")},
                     {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
+                    {"PRIMARY_SCENE_BLOOM", FixedArray<unsigned int, 2>{
+                        safe_stou(args.named_value("--bloom_x", "20")),
+                        safe_stou(args.named_value("--bloom_y", "10"))}},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
                     {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},

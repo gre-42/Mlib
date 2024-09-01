@@ -23,6 +23,8 @@ struct FrameBufferConfig {
     GLenum color_type = GL_UNSIGNED_BYTE;
     GLint color_filter_type = GL_LINEAR;
     FrameBufferChannelKind depth_kind = FrameBufferChannelKind::ATTACHMENT;
+    GLint wrap_s = GL_REPEAT;
+    GLint wrap_t = GL_REPEAT;
     bool with_mipmaps = false;
     int nsamples_msaa = 1;
     auto operator <=> (const FrameBufferConfig&) const = default;
