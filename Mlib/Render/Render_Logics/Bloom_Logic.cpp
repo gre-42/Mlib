@@ -86,7 +86,7 @@ static GenShaderText blend_fragment_shader_text{[]()
     sstr << "{" << std::endl;
     sstr << "    vec3 screen_color = texture(screen_texture_color, TexCoords.st).rgb;" << std::endl;
     sstr << "    vec3 bloom_color = texture(bloom_texture_color, TexCoords.st).rgb;" << std::endl;
-    sstr << "    FragColor = vec4(screen_color + bloom_color, 1.0);" << std::endl;
+    sstr << "    FragColor = vec4(max(screen_color, bloom_color), 1.0);" << std::endl;
     sstr << "}" << std::endl;
     return sstr.str();
 }};
