@@ -11,7 +11,7 @@ SHADER_VER
 "void main()\n"
 "{\n"
 "    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-"}";
+"}\n";
 
 static const char* clear_color_only_fragment_shader_text =
 SHADER_VER FRAGMENT_PRECISION
@@ -74,7 +74,7 @@ void ClearLogic::ensure_va_initialized() {
 }
 
 void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_only_.allocated()) {
         rp_color_only_.allocate(plain_vertex_shader_text, clear_color_only_fragment_shader_text);
@@ -88,7 +88,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
 }
 
 void ClearLogic::clear_depth() {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_depth_only_.allocated()) {
         rp_depth_only_.allocate(plain_vertex_shader_text, clear_depth_only_fragment_shader_text);
@@ -109,7 +109,7 @@ void ClearLogic::clear_depth() {
 }
 
 void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
-    std::scoped_lock lock{mutex_};
+    std::scoped_lock lock{ mutex_ };
     ensure_va_initialized();
     if (!rp_color_and_depth_.allocated()) {
         rp_color_and_depth_.allocate(plain_vertex_shader_text, clear_color_and_depth_fragment_shader_text);
