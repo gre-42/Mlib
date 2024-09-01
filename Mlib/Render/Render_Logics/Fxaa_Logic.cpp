@@ -129,9 +129,9 @@ void FxaaLogic::ensure_initialized() {
         rp_.allocate(vertex_shader_text, fragment_shader_text);
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "tex0");
-        rp_.rt_w_location = checked_glGetUniformLocation(rp_.program, "rt_w");
-        rp_.rt_h_location = checked_glGetUniformLocation(rp_.program, "rt_h");
+        rp_.screen_texture_color_location = rp_.get_uniform_location("tex0");
+        rp_.rt_w_location = rp_.get_uniform_location("rt_w");
+        rp_.rt_h_location = rp_.get_uniform_location("rt_h");
         initialized_ = true;
     }
 }
@@ -182,7 +182,7 @@ void FxaaLogic::render(
 
         {
             RenderToScreenGuard rsg;
-            CHK(glUseProgram(rp_.program));
+            rp_.use();
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));
             CHK(glUniform1f(rp_.rt_w_location, (float)width));

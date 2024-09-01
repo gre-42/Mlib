@@ -9,11 +9,10 @@
 using namespace Mlib;
 
 RenderProgram::RenderProgram()
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {}
 
 RenderProgram::~RenderProgram() {
-    // TODO: Suppress warning "Error: The GLFW library is not initialized"
     if (ContextQuery::is_initialized()) {
         deallocate();
     } else {
@@ -22,56 +21,64 @@ RenderProgram::~RenderProgram() {
 }
 
 bool RenderProgram::allocated() const {
-    return vertex_shader != (GLuint)-1;
+    return vertex_shader_ != 0;
 }
 
 void RenderProgram::allocate(const char* vertex_shader_text, const char* fragment_shader_text) {
     if (allocated()) {
         THROW_OR_ABORT("Multiple calls to RenderProgram::allocate");
     }
-    CHK(vertex_shader = glCreateShader(GL_VERTEX_SHADER));
-    if (vertex_shader == 0) {
+    CHK(vertex_shader_ = glCreateShader(GL_VERTEX_SHADER));
+    if (vertex_shader_ == 0) {
         THROW_OR_ABORT("glCreateShader(GL_VERTEX_SHADER) returned 0");
     }
-    CHK(glShaderSource(vertex_shader, 1, &vertex_shader_text, nullptr));
-    checked_glCompileShader(vertex_shader);
+    CHK(glShaderSource(vertex_shader_, 1, &vertex_shader_text, nullptr));
+    checked_glCompileShader(vertex_shader_);
 
-    CHK(fragment_shader = glCreateShader(GL_FRAGMENT_SHADER));
-    if (fragment_shader == 0) {
+    CHK(fragment_shader_ = glCreateShader(GL_FRAGMENT_SHADER));
+    if (fragment_shader_ == 0) {
         THROW_OR_ABORT("glCreateShader(GL_FRAGMENT_SHADER) returned 0");
     }
-    CHK(glShaderSource(fragment_shader, 1, &fragment_shader_text, nullptr));
-    checked_glCompileShader(fragment_shader);
+    CHK(glShaderSource(fragment_shader_, 1, &fragment_shader_text, nullptr));
+    checked_glCompileShader(fragment_shader_);
 
-    CHK(program = glCreateProgram());
-    CHK(glAttachShader(program, vertex_shader));
-    CHK(glAttachShader(program, fragment_shader));
-    checked_glLinkProgram(program);
+    CHK(program_ = glCreateProgram());
+    CHK(glAttachShader(program_, vertex_shader_));
+    CHK(glAttachShader(program_, fragment_shader_));
+    checked_glLinkProgram(program_);
 }
 
 void RenderProgram::deallocate() {
-    if (vertex_shader != (GLuint)-1) {
-        ABORT(glDeleteShader(vertex_shader));
-        vertex_shader = (GLuint)-1;
+    if (vertex_shader_ != 0) {
+        ABORT(glDeleteShader(vertex_shader_));
+        vertex_shader_ = 0;
     }
-    if (fragment_shader != (GLuint)-1) {
-        ABORT(glDeleteShader(fragment_shader));
-        fragment_shader = (GLuint)-1;
+    if (fragment_shader_ != 0) {
+        ABORT(glDeleteShader(fragment_shader_));
+        fragment_shader_ = 0;
     }
-    if (program != (GLuint)-1) {
-        ABORT(glDeleteProgram(program));
-        program = (GLuint)-1;
+    if (program_ != 0) {
+        ABORT(glDeleteProgram(program_));
+        program_ = 0;
     }
 }
 
 void RenderProgram::gc_deallocate() {
-    if (vertex_shader != (GLuint)-1) {
-        render_gc_append_to_shaders(vertex_shader);
+    if (vertex_shader_ != 0) {
+        render_gc_append_to_shaders(vertex_shader_);
     }
-    if (fragment_shader != (GLuint)-1) {
-        render_gc_append_to_shaders(fragment_shader);
+    if (fragment_shader_ != 0) {
+        render_gc_append_to_shaders(fragment_shader_);
     }
-    if (program != (GLuint)-1) {
-        render_gc_append_to_programs(program);
+    if (program_ != 0) {
+        render_gc_append_to_programs(program_);
     }
+}
+
+void RenderProgram::use() const {
+    CHK(glUseProgram(program_));
+}
+
+GLint RenderProgram::get_uniform_location(const char* name) const {
+    return checked_glGetUniformLocation(program_, name);
 }

@@ -82,7 +82,7 @@ void FillWithTextureLogic::update_texture_id() {
         } else {
             rp_.allocate(simple_vertex_shader_text_, fragment_shader_text);
         }
-        rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
+        rp_.texture_location = rp_.get_uniform_location("texture1");
     }
     if ((rp_.texture_id_ == (GLuint)-1) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
             rp_.texture_id_ = rendering_resources_.get_texture(
@@ -115,7 +115,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
         CHK(glEnable(GL_BLEND));
         CHK(glBlendFunc(GL_ONE, GL_ONE));
     }
-    CHK(glUseProgram(rp_.program));
+    rp_.use();
 
     CHK(glUniform1i(rp_.texture_location, 0));
     if (layer_.has_value()) {

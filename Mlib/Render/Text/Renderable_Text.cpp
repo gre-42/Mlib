@@ -80,9 +80,9 @@ void TextResource::ensure_initialized(float font_height) const
     }
     loaded_font_ = &RenderingContextStack::primary_rendering_resources().get_font_texture(font_descriptor_);
     rp_.allocate(vertex_shader_text, fragment_shader_text);
-    rp_.color_location = checked_glGetUniformLocation(rp_.program, "color3");
-    rp_.texture_location = checked_glGetUniformLocation(rp_.program, "texture1");
-    rp_.projection_location = checked_glGetUniformLocation(rp_.program, "projection");
+    rp_.color_location = rp_.get_uniform_location("color3");
+    rp_.texture_location = rp_.get_uniform_location("texture1");
+    rp_.projection_location = rp_.get_uniform_location("projection");
     {
         // configure VAO/VBO for texture quads
         // -----------------------------------
@@ -169,7 +169,7 @@ void TextResource::render() const
     CHK(glEnable(GL_BLEND));
     CHK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-    CHK(glUseProgram(rp_.program));
+    rp_.use();
     CHK(glUniform3fv(rp_.color_location, 1, color_.flat_begin()));
     CHK(glUniform1i(rp_.texture_location, 0));
     mat4x4 projection;

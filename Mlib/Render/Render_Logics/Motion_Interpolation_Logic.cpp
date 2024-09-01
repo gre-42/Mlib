@@ -196,7 +196,7 @@ void MotionInterpolationLogic::ensure_initialized() {
         // --------------------
         rp_no_interpolate_.allocate(simple_vertex_shader_text_, fragment_shader_text(/* interpolate = */false));
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-        rp_no_interpolate_.screen_texture_color0_location = checked_glGetUniformLocation(rp_no_interpolate_.program, "screenTextureColor0");
+        rp_no_interpolate_.screen_texture_color0_location = rp_no_interpolate_.get_uniform_location("screenTextureColor0");
         rp_no_interpolate_.screen_texture_color1_location = 0;
         rp_no_interpolate_.screen_texture_of_diff_location = 0;
         rp_no_interpolate_.screen_texture_of_location = 0;
@@ -204,8 +204,8 @@ void MotionInterpolationLogic::ensure_initialized() {
         rp_no_interpolate_.height_location = 0;
         if (interpolation_type_ == InterpolationType::MEAN) {
             rp_interpolate_mean_.allocate(simple_vertex_shader_text_, fragment_shader_text(/* interpolate = */true));
-            rp_interpolate_mean_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_mean_.program, "screenTextureColor0");
-            rp_interpolate_mean_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_mean_.program, "screenTextureColor1");
+            rp_interpolate_mean_.screen_texture_color0_location = rp_interpolate_mean_.get_uniform_location("screenTextureColor0");
+            rp_interpolate_mean_.screen_texture_color1_location = rp_interpolate_mean_.get_uniform_location("screenTextureColor1");
             rp_interpolate_mean_.screen_texture_of_diff_location = 0;
             rp_interpolate_mean_.screen_texture_of_location = 0;
             rp_interpolate_mean_.width_location = 0;
@@ -213,26 +213,26 @@ void MotionInterpolationLogic::ensure_initialized() {
         }
         if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
             rp_interpolate_of_diff_.allocate(simple_vertex_shader_text_, optical_flow_diff1_fragment_shader_text());
-            rp_interpolate_of_diff_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "screenTextureColor0");
-            rp_interpolate_of_diff_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "screenTextureColor1");
+            rp_interpolate_of_diff_.screen_texture_color0_location = rp_interpolate_of_diff_.get_uniform_location("screenTextureColor0");
+            rp_interpolate_of_diff_.screen_texture_color1_location = rp_interpolate_of_diff_.get_uniform_location("screenTextureColor1");
             rp_interpolate_of_diff_.screen_texture_of_diff_location = 0;
             rp_interpolate_of_diff_.screen_texture_of_location = 0;
-            rp_interpolate_of_diff_.width_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "width");
-            rp_interpolate_of_diff_.height_location = checked_glGetUniformLocation(rp_interpolate_of_diff_.program, "height");
+            rp_interpolate_of_diff_.width_location = rp_interpolate_of_diff_.get_uniform_location("width");
+            rp_interpolate_of_diff_.height_location = rp_interpolate_of_diff_.get_uniform_location("height");
 
             rp_interpolate_of_finalize_.allocate(simple_vertex_shader_text_, optical_flow_fragment_shader_text());
             rp_interpolate_of_finalize_.screen_texture_color0_location = 0;
             rp_interpolate_of_finalize_.screen_texture_color1_location = 0;
-            rp_interpolate_of_finalize_.screen_texture_of_diff_location = checked_glGetUniformLocation(rp_interpolate_of_finalize_.program, "screenTextureDiff");
+            rp_interpolate_of_finalize_.screen_texture_of_diff_location = rp_interpolate_of_finalize_.get_uniform_location("screenTextureDiff");
             rp_interpolate_of_finalize_.screen_texture_of_location = 0;
             rp_interpolate_of_finalize_.width_location = 0;
             rp_interpolate_of_finalize_.height_location = 0;
 
             rp_interpolate_of_apply_.allocate(simple_vertex_shader_text_, optical_flow_apply_fragment_shader_text());
-            rp_interpolate_of_apply_.screen_texture_color0_location = checked_glGetUniformLocation(rp_interpolate_of_apply_.program, "screenTextureColor0");
-            rp_interpolate_of_apply_.screen_texture_color1_location = checked_glGetUniformLocation(rp_interpolate_of_apply_.program, "screenTextureColor1");
+            rp_interpolate_of_apply_.screen_texture_color0_location = rp_interpolate_of_apply_.get_uniform_location("screenTextureColor0");
+            rp_interpolate_of_apply_.screen_texture_color1_location = rp_interpolate_of_apply_.get_uniform_location("screenTextureColor1");
             rp_interpolate_of_apply_.screen_texture_of_diff_location = 0;
-            rp_interpolate_of_apply_.screen_texture_of_location = checked_glGetUniformLocation(rp_interpolate_of_apply_.program, "screenTextureOpticalFlow");
+            rp_interpolate_of_apply_.screen_texture_of_location = rp_interpolate_of_apply_.get_uniform_location("screenTextureOpticalFlow");
             rp_interpolate_of_apply_.width_location = 0;
             rp_interpolate_of_apply_.height_location = 0;
         }
@@ -281,7 +281,7 @@ void MotionInterpolationLogic::render(
             RenderedSceneDescriptor rsd_r{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = (frame_id.time_id + 2) % 4 };
             auto it = frame_buffers_.find(rsd_r);
             if (it != frame_buffers_.end()) {
-                CHK(glUseProgram(rp_no_interpolate_.program));
+                rp_no_interpolate_.use();
 
                 CHK(glUniform1i(rp_no_interpolate_.screen_texture_color0_location, 0));
                 CHK(glBindTexture(GL_TEXTURE_2D, it->second.texture_color()));
@@ -298,7 +298,7 @@ void MotionInterpolationLogic::render(
             auto it1 = frame_buffers_.find(rsd_r1);
             if ((it0 != frame_buffers_.end()) && (it1 != frame_buffers_.end())) {
                 if (interpolation_type_ == InterpolationType::MEAN) {
-                    CHK(glUseProgram(rp_interpolate_mean_.program));
+                    rp_interpolate_mean_.use();
 
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color0_location, 0));
                     CHK(glUniform1i(rp_interpolate_mean_.screen_texture_color1_location, 1));
@@ -326,7 +326,7 @@ void MotionInterpolationLogic::render(
                         fb_diff.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {
                             RenderToFrameBufferGuard rfg{fb_diff};
-                            CHK(glUseProgram(rp_interpolate_of_diff_.program));
+                            rp_interpolate_of_diff_.use();
 
                             CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color0_location, 0));
                             CHK(glUniform1i(rp_interpolate_of_diff_.screen_texture_color1_location, 1));
@@ -351,7 +351,7 @@ void MotionInterpolationLogic::render(
                         {
                             RenderToFrameBufferGuard rfg{fb_flow};
 
-                            CHK(glUseProgram(rp_interpolate_of_finalize_.program));
+                            rp_interpolate_of_finalize_.use();
 
                             CHK(glUniform1i(rp_interpolate_of_finalize_.screen_texture_of_diff_location, 0));
 
@@ -370,7 +370,7 @@ void MotionInterpolationLogic::render(
                         fb_diff.deallocate();
                     }
                     {
-                        CHK(glUseProgram(rp_interpolate_of_apply_.program));
+                        rp_interpolate_of_apply_.use();
 
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_color0_location, 0));
                         CHK(glUniform1i(rp_interpolate_of_apply_.screen_texture_color1_location, 1));

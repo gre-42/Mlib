@@ -152,23 +152,23 @@ void PostProcessingLogic::ensure_initialized() {
         rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
-        rp_.screen_texture_color_location = checked_glGetUniformLocation(rp_.program, "screenTextureColor");
+        rp_.screen_texture_color_location = rp_.get_uniform_location("screenTextureColor");
         if (low_pass_ || depth_fog_) {
-            rp_.screen_texture_depth_location = checked_glGetUniformLocation(rp_.program, "screenTextureDepth");
-            rp_.z_near_location = checked_glGetUniformLocation(rp_.program, "zNear");
-            rp_.z_far_location = checked_glGetUniformLocation(rp_.program, "zFar");
+            rp_.screen_texture_depth_location = rp_.get_uniform_location("screenTextureDepth");
+            rp_.z_near_location = rp_.get_uniform_location("zNear");
+            rp_.z_far_location = rp_.get_uniform_location("zFar");
         } else {
             rp_.screen_texture_depth_location = 0;
             rp_.z_near_location = 0;
             rp_.z_far_location = 0;
         }
         if (depth_fog_) {
-            rp_.background_color_location = checked_glGetUniformLocation(rp_.program, "backgroundColor");
+            rp_.background_color_location = rp_.get_uniform_location("backgroundColor");
         } else {
             rp_.background_color_location = 0;
         }
         if (!soft_light_filename_.empty()) {
-            rp_.soft_light_texture_location = checked_glGetUniformLocation(rp_.program, "softLightTexture");
+            rp_.soft_light_texture_location = rp_.get_uniform_location("softLightTexture");
         } else {
             rp_.soft_light_texture_location = 0;
         }
@@ -227,7 +227,7 @@ void PostProcessingLogic::render(
 
         {
             RenderToScreenGuard rsg;
-            CHK(glUseProgram(rp_.program));
+            rp_.use();
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));
             if (depth_fog_ || low_pass_) {

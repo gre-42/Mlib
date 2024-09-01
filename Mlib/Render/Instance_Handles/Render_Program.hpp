@@ -10,14 +10,16 @@ class RenderProgram {
 public:
     RenderProgram();
     ~RenderProgram();
-    GLuint vertex_shader = (GLuint)-1;
-    GLuint fragment_shader = (GLuint)-1;
-    GLuint program = (GLuint)-1;
     bool allocated() const;
     void allocate(const char* vertex_shader_text, const char* fragment_shader_text);
     void deallocate();
     void gc_deallocate();
+    void use() const;
+    GLint get_uniform_location(const char* name) const;
 private:
+    GLuint vertex_shader_ = 0;
+    GLuint fragment_shader_ = 0;
+    GLuint program_ = 0;
     DeallocationToken deallocation_token_;
 };
 

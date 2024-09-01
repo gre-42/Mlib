@@ -76,11 +76,11 @@ void ClearLogic::ensure_va_initialized() {
 void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
     std::scoped_lock lock{mutex_};
     ensure_va_initialized();
-    if (rp_color_only_.program == (GLuint)-1) {
+    if (!rp_color_only_.allocated()) {
         rp_color_only_.allocate(plain_vertex_shader_text, clear_color_only_fragment_shader_text);
-        rp_color_only_.clear_color_location = checked_glGetUniformLocation(rp_color_only_.program, "clearColor");
+        rp_color_only_.clear_color_location = rp_color_only_.get_uniform_location("clearColor");
     }
-    CHK(glUseProgram(rp_color_only_.program));
+    rp_color_only_.use();
     CHK(glUniform4fv(rp_color_only_.clear_color_location, 1, color.flat_begin()));
     va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -90,7 +90,7 @@ void ClearLogic::clear_color(const FixedArray<float, 4>& color) {
 void ClearLogic::clear_depth() {
     std::scoped_lock lock{mutex_};
     ensure_va_initialized();
-    if (rp_depth_only_.program == (GLuint)-1) {
+    if (!rp_depth_only_.allocated()) {
         rp_depth_only_.allocate(plain_vertex_shader_text, clear_depth_only_fragment_shader_text);
     }
     CHK(glDepthFunc(GL_ALWAYS));
@@ -99,7 +99,7 @@ void ClearLogic::clear_depth() {
     // you must also enable depth testing ...
     CHK(glEnable(GL_DEPTH_TEST));
 
-    CHK(glUseProgram(rp_depth_only_.program));
+    rp_depth_only_.use();
     va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
     CHK(glBindVertexArray(0));
@@ -111,9 +111,9 @@ void ClearLogic::clear_depth() {
 void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
     std::scoped_lock lock{mutex_};
     ensure_va_initialized();
-    if (rp_color_and_depth_.program == (GLuint)-1) {
+    if (!rp_color_and_depth_.allocated()) {
         rp_color_and_depth_.allocate(plain_vertex_shader_text, clear_color_and_depth_fragment_shader_text);
-        rp_color_and_depth_.clear_color_location = checked_glGetUniformLocation(rp_color_and_depth_.program, "clearColor");
+        rp_color_and_depth_.clear_color_location = rp_color_and_depth_.get_uniform_location("clearColor");
     }
     CHK(glDepthFunc(GL_ALWAYS));
     // From: https://forum.babylonjs.com/t/modifying-the-depth-buffer-during-the-post-processing-pipeline/24832
@@ -121,7 +121,7 @@ void ClearLogic::clear_color_and_depth(const FixedArray<float, 4>& color) {
     // you must also enable depth testing ...
     CHK(glEnable(GL_DEPTH_TEST));
 
-    CHK(glUseProgram(rp_color_and_depth_.program));
+    rp_color_and_depth_.use();
     CHK(glUniform4fv(rp_color_and_depth_.clear_color_location, 1, color.flat_begin()));
     va_.bind();
     CHK(glDrawArrays(GL_TRIANGLES, 0, 6));

@@ -685,7 +685,7 @@ void RenderableColoredVertexArray::render_cva(
         blended_textures_color,
         blended_textures_alpha);
     LOG_INFO("RenderableColoredVertexArray::render_cva glUseProgram");
-    CHK(glUseProgram(rp.program));
+    rp.use();
     LOG_INFO("RenderableColoredVertexArray::render_cva mvp");
     CHK(glUniformMatrix4fv(rp.mvp_location, 1, GL_TRUE, mvp.casted<float>().flat_begin()));
     if (cva->material.number_of_frames != 1) {

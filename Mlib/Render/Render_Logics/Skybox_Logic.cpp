@@ -119,8 +119,8 @@ void SkyboxLogic::render(
         loaded_ = true;
         if (!alias_.empty()) {
             rp_.allocate(vertex_shader_text, fragment_shader_text);
-            rp_.skybox_location = checked_glGetUniformLocation(rp_.program, "skybox");
-            rp_.vp_location = checked_glGetUniformLocation(rp_.program, "vp");
+            rp_.skybox_location = rp_.get_uniform_location("skybox");
+            rp_.vp_location = rp_.get_uniform_location("vp");
 
             va_.initialize();
             va_.vertex_buffer.set(skybox_vertices, TaskLocation::FOREGROUND);
@@ -139,7 +139,7 @@ void SkyboxLogic::render(
     if (!alias_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
-        CHK(glUseProgram(rp_.program));
+        rp_.use();
 
         FixedArray<float, 4, 4> vp = child_logic_.vp().casted<float>();
         vp(0, 3) = 0;
