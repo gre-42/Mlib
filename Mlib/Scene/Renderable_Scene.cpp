@@ -138,7 +138,7 @@ RenderableScene::RenderableScene(
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
     , bloom_logic_{ std::make_unique<BloomLogic>(
         read_pixels_logic_,
-        1.2f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
+        1.05f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
         config.bloom) }
     , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(*bloom_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(
