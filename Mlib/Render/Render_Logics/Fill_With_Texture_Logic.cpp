@@ -154,7 +154,7 @@ void FillWithTextureLogic::render_wo_update_and_bind()
 
 void FillWithTextureLogic::render() {
     update_texture_id();
-    RenderToScreenGuard rsg;
+    RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     render_wo_update_and_bind();
 }
 

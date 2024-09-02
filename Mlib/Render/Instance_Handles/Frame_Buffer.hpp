@@ -43,13 +43,13 @@ class FrameBufferStorage {
     FrameBufferStorage(const FrameBufferStorage&) = delete;
     FrameBufferStorage& operator = (const FrameBufferStorage&) = delete;
 public:
-    FrameBufferStorage();
+    explicit FrameBufferStorage(SourceLocation loc);
     ~FrameBufferStorage();
     void configure(const FrameBufferConfig& config);
     bool is_configured() const;
     void deallocate();
-    void bind_draw() const;
-    void bind() const;
+    void bind_draw(SourceLocation loc) const;
+    void bind(SourceLocation loc) const;
     void unbind() const;
     GLuint texture_color() const;
     GLuint texture_depth() const;
@@ -62,6 +62,8 @@ private:
     GLuint texture_depth_ = (GLuint)-1;
     GLuint depth_buffer_ = (GLuint)-1;
     mutable FrameBufferStatus status_ = FrameBufferStatus::UNINITIALIZED;
+    mutable SourceLocation create_loc_;
+    mutable SourceLocation bind_loc_;
     DeallocationToken deallocation_token_;
 };
 
@@ -69,12 +71,12 @@ class FrameBuffer: public IFrameBuffer {
     FrameBuffer(const FrameBuffer&) = delete;
     FrameBuffer& operator = (const FrameBuffer&) = delete;
 public:
-    FrameBuffer() = default;
-    virtual ~FrameBuffer();
+    explicit FrameBuffer(SourceLocation loc);
+    virtual ~FrameBuffer() override;
     void configure(const FrameBufferConfig& config);
-    bool is_configured() const override;
-    void bind() override;
-    void unbind() override;
+    virtual bool is_configured() const override;
+    virtual void bind(SourceLocation loc) override;
+    virtual void unbind(SourceLocation loc) override;
     void deallocate();
     GLuint texture_color() const;
     GLuint texture_depth() const;

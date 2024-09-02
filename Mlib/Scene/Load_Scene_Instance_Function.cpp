@@ -25,6 +25,7 @@ LoadSceneInstanceFunction::LoadSceneInstanceFunction(RenderableScene& renderable
     , selected_cameras{ renderable_scene.selected_cameras_ }
     , scene_config{ renderable_scene.scene_config_ }
     , render_logics{ renderable_scene.render_logics_ }
+    , scene_render_logics{ renderable_scene.scene_render_logics_ }
     , paused{ renderable_scene.paused_ }
     , physics_set_fps{ renderable_scene.physics_set_fps_ }
     , scene_logic{ renderable_scene.standard_camera_logic_ }

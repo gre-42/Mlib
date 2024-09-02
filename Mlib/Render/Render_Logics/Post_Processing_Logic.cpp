@@ -13,6 +13,7 @@
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -141,6 +142,7 @@ PostProcessingLogic::PostProcessingLogic(
     , depth_fog_{ depth_fog }
     , low_pass_{ low_pass }
     , high_pass_{ high_pass }
+    , fbs_{ CURRENT_SOURCE_LOCATION }
 {}
 
 PostProcessingLogic::~PostProcessingLogic() {
@@ -208,7 +210,9 @@ void PostProcessingLogic::render(
             .depth_kind = FrameBufferChannelKind::TEXTURE,
             .nsamples_msaa = render_config.nsamples_msaa});
         {
-            RenderToFrameBufferGuard rfg{fbs_};
+            RenderToFrameBufferGuard rfg{ fbs_ };
+            ViewportGuard vg{ lx.ilength(), ly.ilength() };
+
             child_logic_.render(
                 lx,
                 ly,
@@ -226,7 +230,7 @@ void PostProcessingLogic::render(
         // CHK(glClear(GL_COLOR_BUFFER_BIT));
 
         {
-            RenderToScreenGuard rsg;
+            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
             rp_.use();
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));

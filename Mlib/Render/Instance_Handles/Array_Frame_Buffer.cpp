@@ -42,10 +42,10 @@ bool ArrayFrameBufferStorage::is_configured() const {
     return true;
 }
 
-void ArrayFrameBufferStorage::bind() {
+void ArrayFrameBufferStorage::bind(SourceLocation loc) {
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void ArrayFrameBufferStorage::unbind() {
+void ArrayFrameBufferStorage::unbind(SourceLocation loc) {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }

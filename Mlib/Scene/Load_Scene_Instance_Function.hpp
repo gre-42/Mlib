@@ -68,6 +68,7 @@ protected:
     SelectedCameras& selected_cameras;
     const SceneConfig& scene_config;
     RenderLogics& render_logics;
+    RenderLogics& scene_render_logics;
     std::function<bool()>& paused;
     SetFps& physics_set_fps;
     RenderLogic& scene_logic;

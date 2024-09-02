@@ -116,8 +116,9 @@ SHADER_VER FRAGMENT_PRECISION
 "}\n";
 
 FxaaLogic::FxaaLogic(RenderLogic& child_logic)
-: child_logic_{child_logic},
-  initialized_{false}
+    : child_logic_{child_logic}
+    , initialized_{false}
+    , fbs_{ CURRENT_SOURCE_LOCATION }
 {}
 
 FxaaLogic::~FxaaLogic() {
@@ -181,7 +182,7 @@ void FxaaLogic::render(
         // CHK(glClear(GL_COLOR_BUFFER_BIT));
 
         {
-            RenderToScreenGuard rsg;
+            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
             rp_.use();
 
             CHK(glUniform1i(rp_.screen_texture_color_location, 0));

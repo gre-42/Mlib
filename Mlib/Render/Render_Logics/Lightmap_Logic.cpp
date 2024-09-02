@@ -84,7 +84,7 @@ void LightmapLogic::render(
             .external_render_pass = {render_pass_type_, frame_id.external_render_pass.time, black_node_name_, nullptr, light_node_.ptr()},
             .time_id = 0};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBuffer>();
+            fbs_ = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         }
         fbs_->configure({
             .width = lightmap_width_,

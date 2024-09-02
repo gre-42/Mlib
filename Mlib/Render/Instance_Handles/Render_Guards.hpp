@@ -14,17 +14,16 @@ public:
     ~RenderToFrameBufferGuard();
 private:
     IFrameBuffer* previous_frame_buffer_;
-    static IFrameBuffer* last_frame_buffer_;
 };
 
 class RenderToScreenGuard {
     RenderToScreenGuard(const RenderToScreenGuard&) = delete;
     RenderToScreenGuard& operator = (const RenderToScreenGuard&) = delete;
 public:
-    RenderToScreenGuard();
+    RenderToScreenGuard(SourceLocation loc);
     ~RenderToScreenGuard();
 private:
-    static bool is_active_;
+    bool is_active_;
 };
 
 }

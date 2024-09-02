@@ -6,8 +6,8 @@
 
 using namespace Mlib;
 
-IFrameBuffer* RenderToFrameBufferGuard::last_frame_buffer_ = nullptr;
-bool RenderToScreenGuard::is_active_ = false;
+static IFrameBuffer* last_frame_buffer = nullptr;
+static IFrameBuffer* bound_frame_buffer = nullptr;
 
 // use cases:
 // 1.
@@ -37,30 +37,38 @@ bool RenderToScreenGuard::is_active_ = false;
 // }
 
 RenderToFrameBufferGuard::RenderToFrameBufferGuard(IFrameBuffer& fb)
-    : previous_frame_buffer_{ last_frame_buffer_ }
+    : previous_frame_buffer_{ last_frame_buffer }
 {
     if (!fb.is_configured()) {
         THROW_OR_ABORT("Frame buffer has not been configured");
     }
-    last_frame_buffer_ = &fb;
+    last_frame_buffer = &fb;
 }
 
 RenderToFrameBufferGuard::~RenderToFrameBufferGuard() {
-    last_frame_buffer_->unbind();
-    last_frame_buffer_ = previous_frame_buffer_;
+    last_frame_buffer = previous_frame_buffer_;
 }
 
-RenderToScreenGuard::RenderToScreenGuard() {
-    if (is_active_) {
-        THROW_OR_ABORT("RenderToScreenGuard already active");
+RenderToScreenGuard::RenderToScreenGuard(SourceLocation loc) {
+    is_active_ = (bound_frame_buffer != last_frame_buffer);
+    if (!is_active_) {
+        return;
     }
-    is_active_ = true;
-    if (RenderToFrameBufferGuard::last_frame_buffer_ != nullptr) {
-        RenderToFrameBufferGuard::last_frame_buffer_->bind();
+    if (last_frame_buffer != nullptr) {
+        if (bound_frame_buffer != nullptr) {
+            THROW_OR_ABORT("Another frame buffer is already bound");
+        }
+        last_frame_buffer->bind(loc);
+        bound_frame_buffer = last_frame_buffer;
     }
 }
 
-RenderToScreenGuard::~RenderToScreenGuard()
-{
-    is_active_ = false;
+RenderToScreenGuard::~RenderToScreenGuard() {
+    if (!is_active_) {
+        return;
+    }
+    if (last_frame_buffer != nullptr) {
+        last_frame_buffer->unbind(CURRENT_SOURCE_LOCATION);
+        bound_frame_buffer = nullptr;
+    }
 }

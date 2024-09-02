@@ -1215,7 +1215,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
     check_color_mode(color, role);
     if (auto it = preloaded_texture_dds_data_.try_get(color); it != nullptr) {
         auto info = ImageInfo::load(color.filename, it);
-        FrameBuffer fb;
+        FrameBuffer fb{ CURRENT_SOURCE_LOCATION };
         fb.configure(FrameBufferConfig{
             .width = integral_cast<int>(info.size(0)),
             .height = integral_cast<int>(info.size(1)),

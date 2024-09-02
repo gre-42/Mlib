@@ -53,7 +53,7 @@ private:
     UFixedArray<BloomFilterRenderProgram, 2> rp_filter_;
     BloomBlendRenderProgram rp_blend_;
     FrameBuffer screen_fbs_;
-    UFixedArray<FrameBuffer, 2> bloom_fbs_;
+    FrameBuffer bloom_fbs_[2];
 };
 
 }

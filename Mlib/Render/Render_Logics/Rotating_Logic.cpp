@@ -146,7 +146,7 @@ void RotatingLogic::render(
 
     std::scoped_lock lock{ scene_.delete_node_mutex() };
 
-    RenderToScreenGuard rsg;
+    RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     float aspect_ratio = lx.flength() / ly.flength();
 
     DanglingRef<SceneNode> cn = scene_.get_node("camera", DP_LOC);

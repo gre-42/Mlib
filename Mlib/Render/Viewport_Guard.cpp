@@ -120,8 +120,8 @@ ViewportGuard::ViewportGuard(
     float y,
     float width,
     float height)
-: viewport_{x, y, width, height},
-  prev_guard_{current_guard_}
+    : viewport_{ x, y, width, height }
+    , prev_guard_{ current_guard_ }
 {
     current_guard_ = this;
     apply();

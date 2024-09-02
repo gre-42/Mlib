@@ -38,7 +38,7 @@ void ReadPixelsLogic::render(
                 THROW_OR_ABORT("ReadPixelsLogic::render detected multiple rendering calls");
             }
             ViewportGuard vg{ o.width, o.height };
-            FrameBuffer fbs;
+            FrameBuffer fbs{ CURRENT_SOURCE_LOCATION };
             // Not setting MSAA
             fbs.configure({
                 .width = o.width,
@@ -63,7 +63,7 @@ void ReadPixelsLogic::render(
                     frame_id);
             }
             {
-                fbs.bind();
+                fbs.bind(CURRENT_SOURCE_LOCATION);
                 VectorialPixels<float, 3> vp{ArrayShape{size_t(o.height), size_t(o.width)}};
                 CHK(glReadPixels(0, 0, o.width, o.height, GL_RGB, GL_FLOAT, vp->flat_begin()->flat_begin()));
                 o.rgb = o.flip_y ? reverted_axis(vp.to_array(), 1) : vp.to_array();

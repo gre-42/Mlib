@@ -77,7 +77,7 @@ void SkidmarkLogic::render(
     }
     size_t new_fbs_id = 1 - old_fbs_id_;
     if (fbs_(new_fbs_id) == nullptr) {
-        fbs_(new_fbs_id) = std::make_unique<FrameBuffer>();
+        fbs_(new_fbs_id) = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
     }
     const auto* skidmark_camera = dynamic_cast<OrthoCamera*>(&skidmark_node_->get_camera());
     if (skidmark_camera == nullptr) {
@@ -105,7 +105,7 @@ void SkidmarkLogic::render(
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> lights;
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> skidmarks;
         RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
-        RenderToScreenGuard rsg;
+        RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
         {
             ViewportGuard vg{ texture_width_, texture_height_ };
             clear_color({ 1.f, 1.f, 1.f, 1.f });

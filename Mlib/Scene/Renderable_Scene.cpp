@@ -109,6 +109,7 @@ RenderableScene::RenderableScene(
           scene_config_.physics_engine_config,
           &fifo_log_}
     , render_logics_{ ui_focus }
+    , scene_render_logics_{ ui_focus }
     , standard_camera_logic_{
           scene_,
           selected_cameras_}
@@ -136,11 +137,7 @@ RenderableScene::RenderableScene(
           players_)}
     , read_pixels_logic_{ *aggregate_render_logic_ }
     , dirtmap_logic_{ std::make_unique<DirtmapLogic>(rendering_resources_, read_pixels_logic_) }
-    , bloom_logic_{ std::make_unique<BloomLogic>(
-        read_pixels_logic_,
-        1.05f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
-        config.bloom) }
-    , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(*bloom_logic_, InterpolationType::OPTICAL_FLOW) }
+    , motion_interp_logic_{ std::make_unique<MotionInterpolationLogic>(read_pixels_logic_, InterpolationType::OPTICAL_FLOW) }
     , post_processing_logic_{std::make_unique<PostProcessingLogic>(
           *motion_interp_logic_,
           config.background_color,
@@ -148,6 +145,12 @@ RenderableScene::RenderableScene(
           config.low_pass,
           config.high_pass)}
     , fxaa_logic_{ std::make_unique<FxaaLogic>(*post_processing_logic_) }
+    , bloom_logic_{ std::make_unique<BloomLogic>(
+        scene_render_logics_,
+        // The weights sum up to one. Multiply with 1.05 to
+        // circumvent floating point issues.
+        1.05f * FixedArray<float, 3>{0.2126f, 0.7152f, 0.0722f},
+        config.bloom) }
     , imposter_render_logics_{ std::make_unique<RenderLogics>(ui_focus) }
     , imposters_{ rendering_resources_, *imposter_render_logics_, read_pixels_logic_, scene_, selected_cameras_ }
     , players_{ max_tracks, save_playback, scene_node_resources, race_identfier }
@@ -165,7 +168,8 @@ RenderableScene::RenderableScene(
     render_logics_.append({ *key_bindings_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *dirtmap_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     render_logics_.append({ *imposter_render_logics_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
-    render_logics_.append({ *fxaa_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    render_logics_.append({ *bloom_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    scene_render_logics_.append({ *fxaa_logic_, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     physics_engine_.add_external_force_provider(gefp_);
     physics_engine_.add_external_force_provider(*key_bindings_);
 }

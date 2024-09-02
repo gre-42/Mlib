@@ -12,6 +12,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
+#include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -98,6 +99,8 @@ BloomLogic::BloomLogic(
     : child_logic_{ child_logic }
     , brightness_threshold_{ brightness_threshold }
     , niterations_{ niterations }
+    , screen_fbs_{ CURRENT_SOURCE_LOCATION }
+    , bloom_fbs_{ FrameBuffer{CURRENT_SOURCE_LOCATION}, FrameBuffer{CURRENT_SOURCE_LOCATION} }
 {}
 
 BloomLogic::~BloomLogic() {
@@ -117,7 +120,7 @@ void BloomLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("BloomLogic did not receive standard rendering");
     }
-    if (all(niterations_ == 0u) || !child_logic_.requires_postprocessing()) {
+    if (all(niterations_ == 0u)) {
         child_logic_.render(
             lx,
             ly,
@@ -156,6 +159,8 @@ void BloomLogic::render(
             .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{ screen_fbs_ };
+            ViewportGuard vg{ width, height };
+
             child_logic_.render(
                 lx,
                 ly,
@@ -165,7 +170,7 @@ void BloomLogic::render(
                 frame_id);
         }
 
-        for (auto& fbs : bloom_fbs_.flat_iterable()) {
+        for (auto& fbs : bloom_fbs_) {
             fbs.configure({
                 .width = width,
                 .height = height,
@@ -177,8 +182,9 @@ void BloomLogic::render(
         }
         size_t bloom_target_id = 0;
         {
-            RenderToFrameBufferGuard rfg{ bloom_fbs_(bloom_target_id) };
-            RenderToScreenGuard rsg;
+            RenderToFrameBufferGuard rfg{ bloom_fbs_[bloom_target_id] };
+            ViewportGuard vg{ width, height };
+            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
 
             rp_threshold_.use();
 
@@ -207,14 +213,15 @@ void BloomLogic::render(
             for (size_t i = 0; i < niterations_(axis); ++i) {
                 size_t bloom_source_id = bloom_target_id;
                 bloom_target_id = (bloom_source_id + 1) % 2;
-                RenderToFrameBufferGuard rfg{ bloom_fbs_(bloom_target_id) };
-                RenderToScreenGuard rsg;
+                RenderToFrameBufferGuard rfg{ bloom_fbs_[bloom_target_id] };
+                ViewportGuard vg{ width, height };
+                RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
 
                 CHK(glUniform1i(rp.texture_color_location, 0));
                 CHK(glUniform1f(rp.lowpass_offset_location, offset * integral_to_float<float>(i + 1)));
 
                 CHK(glActiveTexture(GL_TEXTURE0 + 0));
-                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_(bloom_source_id).texture_color()));
+                CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_source_id].texture_color()));
 
                 va().bind();
                 CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -225,7 +232,7 @@ void BloomLogic::render(
         }
 
         {
-            RenderToScreenGuard rsg;
+            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
             rp_blend_.use();
 
             CHK(glUniform1i(rp_blend_.screen_texture_color_location, 0));
@@ -235,13 +242,12 @@ void BloomLogic::render(
             CHK(glBindTexture(GL_TEXTURE_2D, screen_fbs_.texture_color()));
 
             CHK(glActiveTexture(GL_TEXTURE0 + 1));
-            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_(bloom_target_id).texture_color()));
+            CHK(glBindTexture(GL_TEXTURE_2D, bloom_fbs_[bloom_target_id].texture_color()));
 
             va().bind();
             CHK(glDrawArrays(GL_TRIANGLES, 0, 6));
             CHK(glBindVertexArray(0));
 
-            // Reset to defaults
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }

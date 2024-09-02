@@ -14,12 +14,12 @@ class FrameBufferStorage2D: public IFrameBuffer {
 public:
     explicit FrameBufferStorage2D(GLuint texture_color, GLint level);
     ~FrameBufferStorage2D();
+    virtual bool is_configured() const override;
+    virtual void bind(SourceLocation loc) override;
+    virtual void unbind(SourceLocation loc) override;
 private:
     void allocate(GLuint texture_color, GLint level);
     void deallocate();
-    bool is_configured() const override;
-    void bind() override;
-    void unbind() override;
     GLuint frame_buffer_ = (GLuint)-1;
     DeallocationToken deallocation_token_;
 };

@@ -6,7 +6,7 @@
 using namespace Mlib;
 
 FrameBufferStorage2D::FrameBufferStorage2D(GLuint texture_color, GLint level)
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+    : deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     allocate(texture_color, level);
 }
@@ -42,10 +42,10 @@ bool FrameBufferStorage2D::is_configured() const {
     return true;
 }
 
-void FrameBufferStorage2D::bind() {
+void FrameBufferStorage2D::bind(SourceLocation loc) {
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void FrameBufferStorage2D::unbind() {
+void FrameBufferStorage2D::unbind(SourceLocation loc) {
     CHK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }

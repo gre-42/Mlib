@@ -288,7 +288,7 @@ void ImposterLogic::render(
             },
             .time_id = 0};
         if (fbs_ == nullptr) {
-            fbs_ = std::make_unique<FrameBuffer>();
+            fbs_ = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
         }
         ViewportGuard vg{ npixels->width, npixels->height };
         fbs_->configure({

@@ -23,8 +23,9 @@ void FrameBufferConfig::print() const {
     linfo() << "  nsamples_msaa: " << (int)nsamples_msaa;
 }
 
-FrameBufferStorage::FrameBufferStorage()
-: deallocation_token_{render_deallocator.insert([this](){deallocate();})}
+FrameBufferStorage::FrameBufferStorage(SourceLocation loc)
+    : create_loc_{ loc }
+    , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 
 FrameBufferStorage::~FrameBufferStorage() {
@@ -190,24 +191,32 @@ void FrameBufferStorage::gc_deallocate() {
     status_ = FrameBufferStatus::UNINITIALIZED;
 }
 
-void FrameBufferStorage::bind_draw() const {
+void FrameBufferStorage::bind_draw(SourceLocation loc) const {
     if (status_ == FrameBufferStatus::BOUND) {
+        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
+        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
+    bind_loc_ = loc;
     CHK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frame_buffer_));
 }
 
-void FrameBufferStorage::bind() const {
+void FrameBufferStorage::bind(SourceLocation loc) const {
     if (status_ == FrameBufferStatus::BOUND) {
+        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
+        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
         THROW_OR_ABORT("Frame buffer has already been bound");
     }
     status_ = FrameBufferStatus::BOUND;
+    bind_loc_ = loc;
     CHK(glBindFramebuffer(config_.target, frame_buffer_));
 }
 
 void FrameBufferStorage::unbind() const {
     if (status_ != FrameBufferStatus::BOUND) {
+        lerr() << create_loc_.file_name() << ':' << create_loc_.line();
+        lerr() << bind_loc_.file_name() << ':' << bind_loc_.line();
         verbose_abort("Frame buffer has not been bound");
     }
     status_ = FrameBufferStatus::WRITTEN;
@@ -227,6 +236,11 @@ GLuint FrameBufferStorage::texture_depth() const {
     }
     return texture_depth_;
 }
+
+FrameBuffer::FrameBuffer(SourceLocation loc)
+    : fb_{ loc }
+    , ms_fb_{ loc }
+{}
 
 FrameBuffer::~FrameBuffer() = default;
 
@@ -252,21 +266,21 @@ bool FrameBuffer::is_configured() const {
     return fb_.is_configured();
 }
 
-void FrameBuffer::bind() {
+void FrameBuffer::bind(SourceLocation loc) {
     if (config_.nsamples_msaa == 1) {
-        fb_.bind();
+        fb_.bind(loc);
     } else {
-        ms_fb_.bind_draw();
+        ms_fb_.bind_draw(loc);
     }
 }
 
-void FrameBuffer::unbind() {
+void FrameBuffer::unbind(SourceLocation loc) {
     if (config_.nsamples_msaa == 1) {
         fb_.unbind();
     } else {
         ms_fb_.unbind();
         CHK(glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fb_.frame_buffer_));
-        fb_.bind_draw();
+        fb_.bind_draw(loc);
         CHK(glBlitFramebuffer(0, 0, config_.width, config_.height, 0, 0, config_.width, config_.height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST));
         fb_.unbind();
     }

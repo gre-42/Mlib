@@ -54,8 +54,8 @@ enum class ExternalRenderPassType {
     IMPOSTER_NODE                           = IMPOSTER_NODE_MASK,
     ZOOM_NODE                               = ZOOM_NODE_MASK,
 
-    STANDARD_OR_IMPOSTER_OR_ZOOM_NODE       = STANDARD | IMPOSTER_NODE | ZOOM_NODE_MASK,
-    IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE | ZOOM_NODE_MASK
+    STANDARD_OR_IMPOSTER_OR_ZOOM_NODE       = STANDARD_MASK | IMPOSTER_NODE_MASK | ZOOM_NODE_MASK,
+    IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE_MASK | ZOOM_NODE_MASK
 };
 
 inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {

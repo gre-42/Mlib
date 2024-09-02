@@ -181,9 +181,9 @@ static GenShaderText optical_flow_apply_fragment_shader_text{[]()
 }};
 
 MotionInterpolationLogic::MotionInterpolationLogic(RenderLogic& child_logic, InterpolationType interpolation_type)
-: initialized_{false},
-  child_logic_{child_logic},
-  interpolation_type_{interpolation_type}
+    : initialized_{ false }
+    , child_logic_{ child_logic }
+    , interpolation_type_{ interpolation_type }
 {}
 
 MotionInterpolationLogic::~MotionInterpolationLogic() {
@@ -266,8 +266,12 @@ void MotionInterpolationLogic::render(
         bool render_texture = ((frame_id.time_id % 2) == 0);
         if (render_texture) {
             RenderedSceneDescriptor rsd{.external_render_pass = {ExternalRenderPassType::STANDARD, frame_id.external_render_pass.time}, .time_id = frame_id.time_id };
-            frame_buffers_[rsd].configure({.width = lx.ilength(), .height = ly.ilength()});
-            RenderToFrameBufferGuard rfg{frame_buffers_[rsd]};
+            auto it = frame_buffers_.find(rsd);
+            if (it == frame_buffers_.end()) {
+                it = frame_buffers_.try_emplace(rsd, CURRENT_SOURCE_LOCATION).first;
+            }
+            it->second.configure({.width = lx.ilength(), .height = ly.ilength()});
+            RenderToFrameBufferGuard rfg{ it->second };
             child_logic_.render(
                 lx,
                 ly,
@@ -318,10 +322,10 @@ void MotionInterpolationLogic::render(
                 } else if (interpolation_type_ == InterpolationType::OPTICAL_FLOW) {
                     GLint of_width = 640;
                     GLint of_height = 480;
-                    FrameBuffer fb_flow;
+                    FrameBuffer fb_flow{ CURRENT_SOURCE_LOCATION };
                     {
                         ViewportGuard vg{of_width, of_height};
-                        FrameBuffer fb_diff;
+                        FrameBuffer fb_diff{ CURRENT_SOURCE_LOCATION };
                         // https://community.khronos.org/t/texture-can-not-keep-negative-value/66018/3
                         fb_diff.configure(FrameBufferConfig{.width = of_width, .height = of_height, .color_internal_format = GL_RGBA32F, .color_type = GL_FLOAT});
                         {

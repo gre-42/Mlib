@@ -11,12 +11,12 @@ class ArrayFrameBufferStorage: public IFrameBuffer {
 public:
     explicit ArrayFrameBufferStorage(GLuint texture_color, GLint level, GLint layer);
     ~ArrayFrameBufferStorage();
+    virtual bool is_configured() const override;
+    virtual void bind(SourceLocation loc) override;
+    virtual void unbind(SourceLocation loc) override;
 private:
     void allocate(GLuint texture_color, GLint level, GLint layer);
     void deallocate();
-    bool is_configured() const override;
-    void bind() override;
-    void unbind() override;
     GLuint frame_buffer_ = (GLuint)-1;
     DeallocationToken deallocation_token_;
 };

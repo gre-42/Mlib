@@ -55,7 +55,7 @@ void SceneToPixelRegion::execute(const LoadSceneJsonUserFunctionArgs& args)
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});
     render_scene_to_pixel_region_logic.on_render_logic_destroy.add(
         [&rsp=rs.object_pool_, &l=render_scene_to_pixel_region_logic]() { rsp.remove(l); }, CURRENT_SOURCE_LOCATION);
-    rs.render_logics_.append(
+    rs.scene_render_logics_.append(
         { render_scene_to_pixel_region_logic, CURRENT_SOURCE_LOCATION },
         args.arguments.at<int>(KnownArgs::z_order),
         CURRENT_SOURCE_LOCATION);

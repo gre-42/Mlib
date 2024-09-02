@@ -38,7 +38,7 @@ void StandardRenderLogic::render(
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
-    RenderToScreenGuard rg;
+    RenderToScreenGuard rg{ CURRENT_SOURCE_LOCATION };
 
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_BLOBS_MASK)) {
         clear_color_and_depth({0.f, 0.f, 0.f, 1.f});
@@ -71,11 +71,14 @@ void StandardRenderLogic::render(
         } else if (clear_mode_ == ClearMode::DEPTH) {
             clear_depth();
         } else if (clear_mode_ == ClearMode::COLOR_AND_DEPTH) {
-            clear_color_and_depth({
-                background_color_(0),
-                background_color_(1),
-                background_color_(2),
-                1.f});
+            clear_color_and_depth(
+                {
+                    background_color_(0),
+                    background_color_(1),
+                    background_color_(2),
+                    1.f
+                },
+                ClearBackend::SHADER);
         } else if (clear_mode_ == ClearMode::OFF) {
             // Do nothing
         } else {

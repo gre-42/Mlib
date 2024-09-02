@@ -33,10 +33,10 @@ GLuint Mlib::render_to_texture_2d(
         FrameBufferStorage2D afbs{ texture, level };
         RenderToFrameBufferGuard rfg{ afbs };
         {
-            RenderToScreenGuard rsg;
+            RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
             clear_color({ 0.f, 0.f, 0.f, 0.f });
+            render(width, height);
         }
-        render(width, height);
         width = std::max(1, width / 2);
         height = std::max(1, height / 2);
         // // Disable the ArrayFrameBufferStorage above for the following code to work.
