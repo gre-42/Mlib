@@ -25,14 +25,14 @@ RenderToTextureLogic::RenderToTextureLogic(
     std::string depth_texture_name,
     const FixedArray<int, 2>& texture_size,
     FocusFilter focus_filter)
-: child_logic_{child_logic},
-  rendering_resources_{rendering_resources},
-  update_cycle_{update_cycle},
-  depth_kind_{depth_kind},
-  color_texture_name_{std::move(color_texture_name)},
-  depth_texture_name_{std::move(depth_texture_name)},
-  texture_size_{texture_size},
-  focus_filter_{std::move(focus_filter)}
+    : child_logic_{ child_logic }
+    , rendering_resources_{ rendering_resources }
+    , update_cycle_{ update_cycle }
+    , depth_kind_{ depth_kind }
+    , color_texture_name_{ std::move(color_texture_name) }
+    , depth_texture_name_{ std::move(depth_texture_name) }
+    , texture_size_{ texture_size }
+    , focus_filter_{ std::move(focus_filter) }
 {}
 
 RenderToTextureLogic::~RenderToTextureLogic() {
@@ -55,7 +55,7 @@ void RenderToTextureLogic::render(
 {
     LOG_FUNCTION("RenderToTextureLogic::render");
     if ((fbs_ == nullptr) || (update_cycle_ == ResourceUpdateCycle::ALWAYS)) {
-        ViewportGuard vg{texture_size_(0), texture_size_(1)};
+        ViewportGuard vg{ texture_size_(0), texture_size_(1) };
         if (fbs_ == nullptr) {
             fbs_ = std::make_unique<FrameBuffer>();
         }
