@@ -25,6 +25,7 @@ void FrameBufferConfig::print() const {
 
 FrameBufferStorage::FrameBufferStorage(SourceLocation loc)
     : create_loc_{ loc }
+    , bind_loc_{ loc }
     , deallocation_token_{ render_deallocator.insert([this]() {deallocate(); }) }
 {}
 

@@ -154,8 +154,6 @@ void BloomLogic::render(
         screen_fbs_.configure({
             .width = width,
             .height = height,
-            .color_internal_format = GL_RGB32F,
-            .color_type = GL_FLOAT,
             .nsamples_msaa = render_config.nsamples_msaa});
         {
             RenderToFrameBufferGuard rfg{ screen_fbs_ };
@@ -174,8 +172,6 @@ void BloomLogic::render(
             fbs.configure({
                 .width = width,
                 .height = height,
-                .color_internal_format = GL_RGB32F,
-                .color_type = GL_FLOAT,
                 .depth_kind = FrameBufferChannelKind::NONE,
                 .wrap_s = GL_CLAMP_TO_EDGE,
                 .wrap_t = GL_CLAMP_TO_EDGE});
