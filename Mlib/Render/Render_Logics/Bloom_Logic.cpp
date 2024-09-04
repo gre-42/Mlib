@@ -120,7 +120,7 @@ void BloomLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("BloomLogic did not receive standard rendering");
     }
-    if (all(niterations_ == 0u)) {
+    if (any(niterations_ == 0u)) {
         child_logic_.render(
             lx,
             ly,

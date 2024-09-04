@@ -585,8 +585,8 @@ void android_main(android_app* app) {
                     {"PRIMARY_SCENE_LOW_PASS", args.has_named("--low_pass")},
                     {"PRIMARY_SCENE_HIGH_PASS", args.has_named("--high_pass")},
                     {"PRIMARY_SCENE_BLOOM", FixedArray<unsigned int, 2>{
-                        safe_stou(args.named_value("--bloom_x", "10")),
-                        safe_stou(args.named_value("--bloom_y", "5"))}},
+                        safe_stou(args.named_value("--bloom_x", "0")),
+                        safe_stou(args.named_value("--bloom_y", "0"))}},
                     {"PRIMARY_SCENE_WITH_SKYBOX", true},
                     {"PRIMARY_SCENE_WITH_FLYING_LOGIC", true},
                     {"PRIMARY_SCENE_SAVE_PLAYBACK", args.has_named("--save_playback")},
