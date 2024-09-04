@@ -275,7 +275,7 @@ void RenderableColoredVertexArray::render_cva(
     // }
     std::shared_ptr<IInstanceBuffers> instances;
     auto mvp_f = mvp.casted<float>();
-    VisibilityCheck vc{mvp_f};
+    VisibilityCheck vc{ mvp_f };
     if (rcva_->instances_ == nullptr) {
         FrustumVisibilityCheck fvc{vc};
         if (!fvc.is_visible(cva->name, cva->material, cva->morphology, UINT32_MAX, scene_graph_config, render_pass.external.pass, cva->aabb()))

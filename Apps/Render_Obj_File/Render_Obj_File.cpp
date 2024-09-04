@@ -30,6 +30,7 @@
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Modifiers/Merge_Textures.hpp>
@@ -524,6 +525,7 @@ int main(int argc, char** argv) {
             &render_results };
 
         render.print_hardware_info();
+        ClearWrapperGuard clear_wrapper_guard;
 
         SceneNodeResources scene_node_resources;
         ParticleResources particle_resources;
@@ -571,7 +573,8 @@ int main(int argc, char** argv) {
                 return std::unique_ptr<Light>(new Light{
                     .ambient = fixed_full<float, 3>(safe_stof(args.named_value("--ambient", "1"))),
                     .diffuse = fixed_full<float, 3>(safe_stof(args.named_value("--diffuse", "1"))),
-                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1")))});
+                    .specular = fixed_full<float, 3>(safe_stof(args.named_value("--specular", "1"))),
+                    .shadow_render_pass = ExternalRenderPassType::NONE});
             } else {
                 return std::unique_ptr<Light>(new Light{
                     .lightmap_depth = ColormapWithModifiers{
@@ -886,7 +889,7 @@ int main(int argc, char** argv) {
                         safe_stof(args.named_value("--light_angle_y", "0")) * degrees,
                         safe_stof(args.named_value("--light_angle_z", "0")) * degrees},
                     1.f),
-                RenderingDynamics::STATIC,
+                RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light("light_node0");
             lights.push_back({.light = *light, .node = scene.get_node("light_node0", DP_LOC)});
@@ -922,7 +925,7 @@ int main(int argc, char** argv) {
                         FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
                         1.f),
-                    RenderingDynamics::STATIC,
+                    RenderingDynamics::MOVING,
                     RenderingStrategies::OBJECT);
                 auto light = create_light(name);
                 lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});
@@ -950,7 +953,7 @@ int main(int argc, char** argv) {
                             FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                             matrix_2_tait_bryan_angles(*R).casted<float>(),
                             1.f),
-                        RenderingDynamics::STATIC,
+                        RenderingDynamics::MOVING,
                         RenderingStrategies::OBJECT);
                     auto light = create_light(name);
                     lights.push_back({.light = *light, .node = scene.get_node(name, DP_LOC)});

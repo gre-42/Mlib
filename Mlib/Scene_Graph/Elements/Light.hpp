@@ -13,8 +13,8 @@ struct Light {
     FixedArray<float, 3> specular{1.f, 1.f, 1.f};
     FixedArray<float, 3> fresnel_ambient{1.f, 1.f, 1.f};
     FixedArray<float, 3> fog_ambient{1.f, 1.f, 1.f};
-    ColormapWithModifiers lightmap_color;
-    ColormapWithModifiers lightmap_depth;
+    ColormapWithModifiers lightmap_color = ColormapWithModifiers{}.compute_hash();
+    ColormapWithModifiers lightmap_depth = ColormapWithModifiers{}.compute_hash();
     ExternalRenderPassType shadow_render_pass;
     bool emits_colors() const;
 };
