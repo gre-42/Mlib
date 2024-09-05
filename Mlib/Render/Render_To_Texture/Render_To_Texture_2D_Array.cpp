@@ -38,11 +38,7 @@ GLuint Mlib::render_to_texture_2d_array(
         for (auto level = 0; level <= mip_level_count; ++level) {
             ArrayFrameBufferStorage afbs{ texture, level, integral_cast<int>(layer) };
             RenderToFrameBufferGuard rfg{ afbs };
-            {
-                RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
-                clear_color({ 0.f, 0.f, 0.f, 0.f });
-                render(w, h, layer);
-            }
+            render(w, h, layer);
             w = std::max(1, w / 2);
             h = std::max(1, h / 2);
             // // Disable the ArrayFrameBufferStorage above for the following code to work.

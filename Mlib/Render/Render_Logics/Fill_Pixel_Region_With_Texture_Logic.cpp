@@ -1,6 +1,7 @@
 #include "Fill_Pixel_Region_With_Texture_Logic.hpp"
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -40,7 +41,7 @@ void FillPixelRegionWithTextureLogic::render(
     }
     auto vg = ViewportGuard::from_widget(*widget_->evaluate(lx, ly, YOrientation::AS_IS));
     if (vg.has_value()) {
-        fill_with_texture_logic_->render();
+        fill_with_texture_logic_->render(ClearMode::OFF);
     }
 }
 

@@ -13,6 +13,7 @@
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/Raster/Raster_Factory.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Render_Texture_Atlas.hpp>
@@ -227,7 +228,7 @@ int main(int argc, char** argv)
 
             if (ftl.has_value()) {
                 // CHK(glViewport(0, 0, 1024, 1024));
-                ftl->render();
+                ftl->render(ClearMode::OFF);
             } else if (!atlas.tiles.empty()) {
                 auto layer = safe_stoz(parsed.named_value("--atlas_layer"));
                 if (layer >= atlas.tiles.size()) {

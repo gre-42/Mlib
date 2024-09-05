@@ -8,6 +8,7 @@ using namespace Mlib;
 
 static IFrameBuffer* last_frame_buffer = nullptr;
 static IFrameBuffer* bound_frame_buffer = nullptr;
+static SourceLocation bound_source_location = CURRENT_SOURCE_LOCATION;
 
 // use cases:
 // 1.
@@ -56,10 +57,12 @@ RenderToScreenGuard::RenderToScreenGuard(SourceLocation loc) {
     }
     if (last_frame_buffer != nullptr) {
         if (bound_frame_buffer != nullptr) {
+            lerr() << bound_source_location.file_name() << ':' << bound_source_location.line();
             THROW_OR_ABORT("Another frame buffer is already bound");
         }
         last_frame_buffer->bind(loc);
         bound_frame_buffer = last_frame_buffer;
+        bound_source_location = loc;
     }
 }
 

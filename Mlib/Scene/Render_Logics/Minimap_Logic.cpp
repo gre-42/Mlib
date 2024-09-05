@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
@@ -134,7 +135,7 @@ void MinimapLogic::render(
             center(1) + locator_size_.to_pixels(ly) / 2.f};
         auto vg = ViewportGuard::from_widget(locator_pixel_region);
         if (vg.has_value()) {
-            locator_logic_.render();
+            locator_logic_.render(ClearMode::OFF);
         }
     }
 }

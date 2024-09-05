@@ -3,8 +3,10 @@
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -152,9 +154,18 @@ void FillWithTextureLogic::render_wo_update_and_bind()
     }
 }
 
-void FillWithTextureLogic::render() {
+void FillWithTextureLogic::render(ClearMode clear_mode) {
     update_texture_id();
     RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
+    switch (clear_mode) {
+    case ClearMode::OFF:
+        break;
+    case ClearMode::COLOR:
+        clear_color({ 0.f, 0.f, 0.f, 0.f });
+        break;
+    default:
+        THROW_OR_ABORT("Unsupported clear mode in FillWithTextureLogic");
+    }
     render_wo_update_and_bind();
 }
 
@@ -165,6 +176,6 @@ void FillWithTextureLogic::render(
     LOG_FUNCTION("FillPixelRegionWithTextureLogic::render");
     auto vg = ViewportGuard::from_widget(PixelRegion{ lx, ly });
     if (vg.has_value()) {
-        render();
+        render(ClearMode::OFF);
     }
 }

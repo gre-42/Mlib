@@ -4,6 +4,7 @@
 #include <Mlib/Math/Fixed_Rotation_2D.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/IArray_Buffer.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 
 using namespace Mlib;
@@ -46,5 +47,5 @@ void CenteredTextureImageLogic::render(
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-    FillWithTextureLogic::render();
+    FillWithTextureLogic::render(ClearMode::OFF);
 }

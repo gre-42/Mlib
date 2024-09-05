@@ -1,5 +1,6 @@
 #include "Render_Texture_Atlas.hpp"
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -26,6 +27,6 @@ void Mlib::render_texture_atlas(
             (float)tile.width * scale_width,
             (float)tile.height * scale_height};
         logic.set_image_resource_name(tile.name);
-        logic.render();
+        logic.render(ClearMode::OFF);
     }
 }

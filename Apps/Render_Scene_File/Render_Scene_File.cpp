@@ -60,7 +60,7 @@ std::future<void> render_thread(
 {
     return std::async(std::launch::async, [&](){
         try {
-            ThreadInitializer ti{"render", ThreadAffinity::POOL};
+            ThreadInitializer ti{ "render", ThreadAffinity::POOL };
             bool last_load_scene_finished = false;
             LambdaRenderLogic lrl{
                 [&](const LayoutConstraintParameters& lx,
@@ -116,6 +116,7 @@ std::future<void> render_thread(
                         }
                     }
                 }};
+            ClearWrapperGuard clear_wrapper_guard;
             renderer.render(lrl, scene_config.scene_graph_config);
         } catch (...) {
             add_unhandled_exception(std::current_exception());
@@ -493,7 +494,6 @@ int main(int argc, char** argv) {
             render_set_fps.set_fps,
             [&render_set_fps]() { return render_set_fps.ft.frame_time(); } };
         render.print_hardware_info();
-        ClearWrapperGuard clear_wrapper_guard;
 
         ButtonStates button_states;
         CursorStates cursor_states;

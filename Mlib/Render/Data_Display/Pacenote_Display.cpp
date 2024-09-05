@@ -2,6 +2,7 @@
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Physics/Misc/Pacenote.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
@@ -37,7 +38,7 @@ void PacenoteDisplay::render(
             ? pictures_left_
             : pictures_right_;
         if (pacenote.gear < exhibits.size()) {
-            gallery_[exhibits[pacenote.gear]]->render();
+            gallery_[exhibits[pacenote.gear]]->render(ClearMode::OFF);
         }
     }
     // Render text

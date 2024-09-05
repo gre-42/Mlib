@@ -4,6 +4,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 
 using namespace Mlib;
@@ -153,5 +154,5 @@ void HudTracker::render(
     CHK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
     CHK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-    FillWithTextureLogic::render();
+    FillWithTextureLogic::render(ClearMode::OFF);
 }

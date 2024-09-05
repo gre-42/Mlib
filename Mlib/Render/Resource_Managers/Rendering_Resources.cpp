@@ -32,6 +32,7 @@
 #include <Mlib/Render/Instance_Handles/Colored_Render_Program.hpp>
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
+#include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Fill_Pixel_Region_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
@@ -1004,7 +1005,7 @@ GLuint RenderingResources::get_texture(
                         0.f,
                         integral_to_float<float>(width),
                         integral_to_float<float>(height)};
-                    logic.render();
+                    logic.render(ClearMode::COLOR);
                 });
         } else if (cubemap_descriptors_.contains(color.filename)) {
             texture = get_cubemap_unsafe(color.filename);
@@ -1236,7 +1237,7 @@ StbInfo<uint8_t> RenderingResources::get_texture_data(
             ContinuousBlendMode::NONE};
         {
             RenderToFrameBufferGuard rfg{fb};
-            logic.render();
+            logic.render(ClearMode::COLOR);
         }
         return fb.color_to_stb_image();
     }

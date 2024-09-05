@@ -14,6 +14,7 @@ enum class ResourceUpdateCycle;
 struct LayoutConstraintParameters;
 enum class ColorMode;
 enum class MipmapMode;
+enum class ClearMode;
 
 enum class ContinuousBlendMode {
     NONE,
@@ -49,7 +50,7 @@ public:
     void update_texture_id();
     bool texture_is_loaded_and_try_preload() const;
     void render_wo_update_and_bind();
-    void render();
+    void render(ClearMode clear_mode);
     void render(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly);
