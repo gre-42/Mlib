@@ -11,7 +11,10 @@ void Mlib::shade_auto(ColoredVertexArray<TPos>& cva, float seam_angle)
 {
     if (seam_angle == 0.f) {
         for (auto& t : cva.triangles) {
-            auto normal = triangle_normal<TPos>({t(0).position, t(1).position, t(2).position}).casted<float>();
+            auto normal = triangle_normal<TPos>({
+                t(0).position,
+                t(1).position,
+                t(2).position}).template casted<float>();
             t(0).normal = normal;
             t(1).normal = normal;
             t(2).normal = normal;
