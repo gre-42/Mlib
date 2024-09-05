@@ -237,7 +237,7 @@
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Constant_Dynamic_Light_Properties.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Focuses.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Set_Surface_Contact_Info.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Flat.hpp>
+#include <Mlib/Scene/Load_Scene_Functions/Resources/Shade_Auto.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Resources/Smoothen_Edges.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Sleep.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/World/Register_Geographic_Mapping.hpp>
@@ -496,7 +496,7 @@ LoadScene::LoadScene() {
     register_json_user_function(SetBulletProperties::key, SetBulletProperties::json_user_function);
     register_json_user_function(SetSurfaceContactInfo::key, SetSurfaceContactInfo::json_user_function);
     register_json_user_function(SmoothenEdges::key, SmoothenEdges::json_user_function);
-    register_json_user_function(ShadeFlat::key, ShadeFlat::json_user_function);
+    register_json_user_function(ShadeAuto::key, ShadeAuto::json_user_function);
 
     // Main
     register_json_user_function(ReloadScene::key, ReloadScene::json_user_function);

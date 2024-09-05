@@ -6,6 +6,6 @@ template <class TPos>
 class ColoredVertexArray;
 
 template <class TPos>
-void shade_flat(ColoredVertexArray<TPos>& cvas);
+void shade_auto(ColoredVertexArray<TPos>& cvas, float seam_angle);
 
 }
