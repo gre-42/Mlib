@@ -27,7 +27,13 @@ void save_obj(
         THROW_OR_ABORT("OBJ filename does not have \".obj\" extension: " + filename);
     }
     std::ofstream ostr{ filename };
-    ostr.precision(15);
+    if constexpr (std::is_same_v<TPos, double>) {
+        ostr.precision(15);
+    } else if constexpr (std::is_same_v<TPos, float>) {
+        ostr.precision(7);
+    } else {
+        THROW_OR_ABORT("Unsupported floating point type");
+    }
     ostr << std::scientific;
     if (materials != nullptr) {
         std::string mtl_filename = match[1].str() + ".mtl";
@@ -72,9 +78,11 @@ void save_obj(
     }
 }
 
+template <class TPos>
 void save_obj(
     const std::string& filename,
-    const std::list<std::shared_ptr<ColoredVertexArray<double>>>& cvas,
-    const std::function<ObjMaterial(const Material&)>& convert_material);
+    const std::list<std::shared_ptr<ColoredVertexArray<TPos>>>& cvas,
+    const std::function<std::string(const ColoredVertexArray<TPos>&)>& material_name = {},
+    const std::function<ObjMaterial(const Material&)>& convert_material = {});
 
 }

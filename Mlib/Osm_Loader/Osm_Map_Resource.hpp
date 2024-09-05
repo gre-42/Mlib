@@ -66,7 +66,7 @@ public:
     // ISceneNodeResource, Output
     void save_to_obj_file(
         const std::string& prefix,
-        const TransformationMatrix<float, double, 3>& tm) const override;
+        const TransformationMatrix<float, double, 3>* tm) const override;
 
     // ISceneNodeResource, Animation
     virtual std::shared_ptr<AnimatedColoredVertexArrays> get_physics_arrays() const override;

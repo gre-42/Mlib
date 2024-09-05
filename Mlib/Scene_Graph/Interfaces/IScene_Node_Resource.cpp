@@ -1,5 +1,8 @@
 #include "IScene_Node_Resource.hpp"
+#include <Mlib/Geometry/Mesh/Animated_Colored_Vertex_Arrays.hpp>
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
+#include <Mlib/Geometry/Mesh/Save_Obj.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -99,9 +102,21 @@ std::map<JoinedWayPointSandbox, ISceneNodeResource::PointsAndAdjacencyResource> 
 
 void ISceneNodeResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, ScenePos, 3>& model_matrix) const
+    const TransformationMatrix<float, ScenePos, 3>* model_matrix) const
 {
-    THROW_OR_ABORT("\"save_to_obj_file\" not implemented");
+    if (model_matrix != nullptr) {
+        THROW_OR_ABORT("ISceneNodeResource::save_to_obj_file does not support model matrices");
+    }
+    auto acvas = get_rendering_arrays();
+
+    for (const auto& [i, acva] : enumerate(acvas)) {
+        if (!acva->scvas.empty()) {
+            save_obj(prefix + "_s_" + std::to_string(i) + ".obj", acva->scvas);
+        }
+        if (!acva->dcvas.empty()) {
+            save_obj(prefix + "_d_" + std::to_string(i) + ".obj", acva->dcvas);
+        }
+    }
 }
     
 void ISceneNodeResource::print(std::ostream& ostr) const {

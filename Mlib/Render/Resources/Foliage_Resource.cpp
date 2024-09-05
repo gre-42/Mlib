@@ -89,7 +89,7 @@ std::map<JoinedWayPointSandbox, FoliageResource::PointsAndAdjacencyResource> Fol
 // Output
 void FoliageResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, ScenePos, 3>& model_matrix) const
+    const TransformationMatrix<float, ScenePos, 3>* model_matrix) const
 {}
 
 // Animation

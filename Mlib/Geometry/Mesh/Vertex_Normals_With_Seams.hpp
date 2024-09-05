@@ -1,9 +1,9 @@
 #pragma once
 #include <Mlib/Geometry/Colored_Vertex.hpp>
+#include <Mlib/Geometry/Triangle_Normal.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
 #include <list>
 #include <map>
-#include <Mlib/Geometry/Triangle_Normal.hpp>
 
 namespace Mlib {
 

@@ -110,7 +110,7 @@ public:
     void save_to_obj_file(
         const std::string& resource_name,
         const std::string& prefix,
-        const TransformationMatrix<float, ScenePos, 3>& model_matrix) const;
+        const TransformationMatrix<float, ScenePos, 3>* model_matrix) const;
     void print(const std::string& name, std::ostream& ostr) const;
 
     // Animation

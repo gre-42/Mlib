@@ -1560,7 +1560,7 @@ void OsmMapResource::save_to_file(
 
 void OsmMapResource::save_to_obj_file(
     const std::string& prefix,
-    const TransformationMatrix<float, double, 3>& tm) const
+    const TransformationMatrix<float, double, 3>* tm) const
 {
     auto filename = prefix + "_osm_map.obj";
     auto& primary_rendering_resources = RenderingContextStack::primary_rendering_resources();
@@ -1582,12 +1582,17 @@ void OsmMapResource::save_to_obj_file(
         }
     };
     std::list<std::shared_ptr<ColoredVertexArray<double>>> mdcvas;
-    for (const auto& l : hri_.acvas->dcvas) {
-        mdcvas.push_back(l->transformed<double>(tm, ""));
+    if (tm == nullptr) {
+        mdcvas = hri_.acvas->dcvas;
+    } else {
+        for (const auto& l : hri_.acvas->dcvas) {
+            mdcvas.push_back(l->transformed<double>(*tm, ""));
+        }
     }
     save_obj(
         filename,
-        mdcvas,  // get_physics_arrays()->cvas
+        mdcvas,     // get_physics_arrays()->cvas
+        {},         // material_name
         [&](const Material& m){
             ObjMaterial result{
                 .ambient = m.shading.ambient,
@@ -1624,15 +1629,7 @@ void OsmMapResource::save_bad_triangles_to_obj_file(const std::string& filename)
             }
         }
     }
-    save_obj(
-        filename,
-        {bad_triangles.triangle_array()},
-        [&](const Material& m){
-            return ObjMaterial{
-                .ambient = m.shading.ambient,
-                .diffuse = m.shading.diffuse,
-                .specular = m.shading.specular};
-        });
+    save_obj<double>(filename, { bad_triangles.triangle_array() });
 }
 
 OsmMapResource::~OsmMapResource()
@@ -1822,7 +1819,7 @@ void OsmMapResource::print_waypoints_if_requested(const std::string& debug_prefi
 void OsmMapResource::save_to_obj_file_if_requested(const std::string& debug_prefix) const
 {
     if (auto wp = try_getenv("OSM_OBJ_PREFIX"); wp.has_value()) {
-        save_to_obj_file(*wp + debug_prefix + ".obj", TransformationMatrix<float, double, 3>::identity());
+        save_to_obj_file(*wp + debug_prefix + ".obj", nullptr);
     }
 }
 
