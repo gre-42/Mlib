@@ -17,6 +17,7 @@ void modify_rendering_material(
     std::optional<BlendMode> blend_mode,
     std::optional<ExternalRenderPassType> occluded_pass,
     std::optional<ExternalRenderPassType> occluder_pass,
-    std::optional<InterpolationMode> magnifying_interpolation_mode);
+    std::optional<InterpolationMode> magnifying_interpolation_mode,
+    std::optional<std::string> histogram);
 
 }

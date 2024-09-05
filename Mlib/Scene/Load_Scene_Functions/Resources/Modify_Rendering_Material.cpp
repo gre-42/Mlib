@@ -19,6 +19,7 @@ DECLARE_ARGUMENT(blend_mode);
 DECLARE_ARGUMENT(occluded_pass);
 DECLARE_ARGUMENT(occluder_pass);
 DECLARE_ARGUMENT(magnifying_interpolation_mode);
+DECLARE_ARGUMENT(histogram);
 
 DECLARE_ARGUMENT(included_names);
 DECLARE_ARGUMENT(excluded_names);
@@ -35,7 +36,7 @@ LoadSceneJsonUserFunction ModifyRenderingMaterial::json_user_function = [](const
         RenderingContextStack::primary_scene_node_resources(),
         ColoredVertexArrayFilter{
             .included_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "")),
-            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::included_names, "$ ^"))
+            .excluded_names = Mlib::compile_regex(args.arguments.at<std::string>(KnownArgs::excluded_names, "$ ^"))
         },
         args.arguments.contains(KnownArgs::blend_mode)
             ? std::optional{ blend_mode_from_string(args.arguments.at<std::string>(KnownArgs::blend_mode)) }
@@ -48,5 +49,8 @@ LoadSceneJsonUserFunction ModifyRenderingMaterial::json_user_function = [](const
             : std::nullopt,
         args.arguments.contains(KnownArgs::magnifying_interpolation_mode)
             ? std::optional{ interpolation_mode_from_string(args.arguments.at<std::string>(KnownArgs::magnifying_interpolation_mode)) }
+            : std::nullopt,
+        args.arguments.contains(KnownArgs::histogram)
+            ? std::optional{ args.arguments.path_or_variable(KnownArgs::histogram).path }
             : std::nullopt);
 };

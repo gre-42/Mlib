@@ -16,15 +16,17 @@ void Mlib::modify_rendering_material(
     std::optional<BlendMode> blend_mode,
     std::optional<ExternalRenderPassType> occluded_pass,
     std::optional<ExternalRenderPassType> occluder_pass,
-    std::optional<InterpolationMode> magnifying_interpolation_mode)
+    std::optional<InterpolationMode> magnifying_interpolation_mode,
+    std::optional<std::string> histogram)
 {
     scene_node_resources.add_modifier(
         resource_name,
         [filter,
          blend_mode,
-         magnifying_interpolation_mode,
          occluded_pass,
-         occluder_pass]
+         occluder_pass,
+         magnifying_interpolation_mode,
+         histogram]
         (ISceneNodeResource& resource)
         {
             for (auto& meshes : resource.get_rendering_arrays()) {
@@ -44,6 +46,13 @@ void Mlib::modify_rendering_material(
                         }
                         if (magnifying_interpolation_mode.has_value()) {
                             cva->material.magnifying_interpolation_mode = *magnifying_interpolation_mode;
+                        }
+                        if (histogram.has_value()) {
+                            for (auto& texture : cva->material.textures_color) {
+                                texture.texture_descriptor.color.histogram = *histogram;
+                                texture.texture_descriptor.color.hash.reset();
+                                texture.texture_descriptor.color.compute_hash();
+                            }
                         }
                     }
                 };
