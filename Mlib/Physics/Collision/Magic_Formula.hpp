@@ -1,8 +1,11 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Images/Linear_Interpolation.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Optimize/Find_Right_Boundary_Of_Maximum.hpp>
 #include <Mlib/Math/Optimize/Newton_1D.hpp>
 #include <Mlib/Math/Optimize/Numerical_Differentiation.hpp>
+#include <Mlib/Stats/Linspace.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <cmath>
 
@@ -33,32 +36,48 @@ struct MagicFormula {
 };
 
 template <class TData>
-struct MagicFormulaArgmax {
-    MagicFormulaArgmax() = default;
+class MagicFormulaArgmax {
+public:
+    MagicFormulaArgmax() {}
     explicit MagicFormulaArgmax(const MagicFormula<TData>& magic_formula)
-    : mf{magic_formula}
+        : mf{ magic_formula }
     {
         MagicFormula<double> mf2 = magic_formula.template casted<double>();
         double h = 1e-3;
-        auto f = [&mf2](const double& x){return (double)mf2(x);};
-        auto df = [&f, &h](const double& x){return (f(x + h) - f(x - h)) / (2 * h);};
-        auto df2 = [&df, &h](const double& x){return (df(x + h) - df(x - h)) / (2 * h);};
+        auto f = [&mf2](const double& x) { return (double)mf2(x); };
+        auto df = [&f, &h](const double& x) { return (f(x + h) - f(x - h)) / (2 * h); };
+        auto df2 = [&df, &h](const double& x) { return (df(x + h) - df(x - h)) / (2 * h); };
         double x0 = find_right_boundary_of_maximum<double>(f, 0, 1e-2);
         argmax = (TData)newton_1d(df, df2, x0);
         // return 1 / (B * std::sqrt(E - 1));
+        TData xmin = 0.;
+        TData xmax = TData(10) * argmax;
+        ys = Array<TData>{ ArrayShape{ 1000 } };
+        for (auto&& [i, x] : enumerate(Linspace(xmin, xmax, ys.length()))) {
+            ys(i) = magic_formula(x);
+        }
+        li = { xmin, xmax, ys };
     }
     TData operator () (const TData& x, MagicFormulaMode mode = MagicFormulaMode::STANDARD) const {
         switch (mode) {
         case MagicFormulaMode::STANDARD:
-            return mf(x);
+            // return mf(x);
+            TData y;
+            if (!li(std::abs(x), y)) {
+                return ys(ys.length() - 1);
+            }
+            return sign(x) * y;
         case MagicFormulaMode::NO_SLIP:
             return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
         default:
             THROW_OR_ABORT("Unknown magic formula mode");
         }
     }
-    MagicFormula<TData> mf;
     TData argmax;
+private:
+    MagicFormula<TData> mf;
+    Array<TData> ys;
+    LinearInterpolationDomain<TData> li;
 };
 
 /**

@@ -19,16 +19,19 @@ RigidBodyPulses::RigidBodyPulses(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
     bool I_is_diagonal)
-    : mass_{mass}
-    , I_{I}
-    , com_{com}
-    , v_{v}
-    , w_{w}
-    , rotation_{tait_bryan_angles_2_matrix(rotation)}
-    , abs_com_{dot1d(rotation_, com_).casted<ScenePos>() + position}
-    , I_is_diagonal_{I_is_diagonal}
+    : mass_{ mass }
+    , I_{ I }
+    , com_{ com }
+    , v_{ v }
+    , w_{ w }
+    , rotation_{ tait_bryan_angles_2_matrix(rotation) }
+    , abs_com_{ dot1d(rotation_, com_).casted<ScenePos>() + position }
+    , I_is_diagonal_{ I_is_diagonal }
     , abs_I_{ fixed_nans<float, 3, 3>() }
     , abs_I_inv_{ fixed_nans<float, 3, 3>() }
+#ifndef NDEBUG
+    , abs_I_rotation_{ fixed_nans<float, 3, 3>() }
+#endif
 {}
 
 void RigidBodyPulses::advance_time(float dt)
