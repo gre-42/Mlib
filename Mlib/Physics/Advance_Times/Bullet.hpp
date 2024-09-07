@@ -18,7 +18,6 @@ class Scene;
 class SceneNode;
 class AdvanceTimes;
 class SceneNodeResources;
-class DeleteNodeMutex;
 class IPlayer;
 class ITeam;
 class SmokeParticleGenerator;
@@ -50,7 +49,6 @@ public:
         const BulletProperties& props,
         std::unique_ptr<ITrailExtender> trace_extender,
         DynamicLights& dynamic_lights,
-        DeleteNodeMutex& delete_node_mutex,
         const StaticWorld& world,
         RotateBullet rotate_bullet);
     ~Bullet();
@@ -87,7 +85,6 @@ private:
     std::unique_ptr<IDynamicLight> light_after_impact_;
     bool rotate_bullet_;
     DynamicLights& dynamic_lights_;
-    DeleteNodeMutex& delete_node_mutex_;
     DestructionFunctionsRemovalTokens gunner_on_destroy_;
     DestructionFunctionsRemovalTokens team_on_destroy_;
 };

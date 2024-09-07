@@ -24,7 +24,6 @@ class RigidBodyVehicle;
 class Scene;
 class RigidBodies;
 class AdvanceTimes;
-class DeleteNodeMutex;
 class SceneNode;
 class IPlayer;
 class ITeam;
@@ -43,8 +42,8 @@ public:
         AdvanceTimes& advance_times,
         float cool_down,
         RigidBodyVehicle& parent_rb,
-        DanglingRef<SceneNode> node,
-        DanglingPtr<SceneNode> punch_angle_node,
+        const DanglingRef<SceneNode>& node,
+        const DanglingPtr<SceneNode>& punch_angle_node,
         const BulletProperties& bullet_properties,
         std::function<void(
             const std::optional<std::string>& player,
@@ -53,13 +52,12 @@ public:
             const FixedArray<float, 3>& velocity,
             const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
         ITrailStorage* bullet_trace_storage,
-        const std::string& ammo_type,
+        std::string ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
-        const std::string& muzzle_flash_resource,
+        std::string muzzle_flash_resource,
         const FixedArray<float, 3>& muzzle_flash_position,
         float muzzle_flash_animation_time,
-        const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
-        DeleteNodeMutex& delete_node_mutex);
+        const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider);
     ~Gun();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
@@ -107,7 +105,6 @@ private:
     FixedArray<float, 3> muzzle_flash_position_;
     float muzzle_flash_animation_time_;
     std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;
-    DeleteNodeMutex& delete_node_mutex_;
     DestructionGuards dgs_;
     DestructionFunctionsRemovalTokens node_on_clear_;
     std::optional<DestructionFunctionsRemovalTokens> punch_angle_node_on_clear_;

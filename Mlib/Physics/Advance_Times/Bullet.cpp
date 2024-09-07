@@ -10,7 +10,6 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Static_World.hpp>
@@ -35,7 +34,6 @@ Bullet::Bullet(
     const BulletProperties& props,
     std::unique_ptr<ITrailExtender> trace_extender,
     DynamicLights& dynamic_lights,
-    DeleteNodeMutex& delete_node_mutex,
     const StaticWorld& world,
     RotateBullet rotate_bullet)
     : scene_{ scene }
@@ -53,7 +51,6 @@ Bullet::Bullet(
     , trace_extender_{ std::move(trace_extender) }
     , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
     , dynamic_lights_{ dynamic_lights }
-    , delete_node_mutex_{ delete_node_mutex }
     , gunner_on_destroy_{ (gunner_ != nullptr) ? &gunner_->on_destroy_player() : nullptr, CURRENT_SOURCE_LOCATION }
     , team_on_destroy_{ (team_ != nullptr) ? &team_->on_destroy_team() : nullptr, CURRENT_SOURCE_LOCATION }
 {

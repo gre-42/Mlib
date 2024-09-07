@@ -179,7 +179,7 @@ void Scene::add_root_node(
         rendering_strategies_to_string(rendering_strategy) + '"');
 }
 
-void Scene::add_root_imposter_node(DanglingRef<SceneNode> scene_node)
+void Scene::add_root_imposter_node(const DanglingRef<SceneNode>& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
@@ -227,7 +227,7 @@ void Scene::try_delete_root_node(const std::string& name) {
     }
 }
 
-void Scene::delete_root_imposter_node(DanglingRef<SceneNode> scene_node) {
+void Scene::delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node) {
     std::scoped_lock lock{ mutex_ };
     if (root_imposter_nodes_.erase(scene_node.ptr()) != 1) {
         verbose_abort("Could not delete root imposter node");
@@ -335,7 +335,7 @@ bool Scene::contains_node(const std::string& name) const {
 
 void Scene::register_node(
     const std::string& name,
-    DanglingRef<SceneNode> scene_node)
+    const DanglingRef<SceneNode>& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
     if (name.empty()) {
@@ -401,7 +401,7 @@ std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const
             if (morn_.root_node_scheduled_for_deletion(name, false)) {
                 THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
             }
-            result.push_back({name, *node});
+            result.emplace_back(name, *node);
         }
     }
     return result;

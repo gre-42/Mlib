@@ -42,8 +42,8 @@ Gun::Gun(
     AdvanceTimes& advance_times,
     float cool_down,
     RigidBodyVehicle& parent_rb,
-    DanglingRef<SceneNode> node,
-    DanglingPtr<SceneNode> punch_angle_node,
+    const DanglingRef<SceneNode>& node,
+    const DanglingPtr<SceneNode>& punch_angle_node,
     const BulletProperties& bullet_properties,
     std::function<void(
         const std::optional<std::string>& player,
@@ -52,13 +52,12 @@ Gun::Gun(
         const FixedArray<float, 3>& velocity,
         const FixedArray<float, 3>& angular_velocity)> generate_smart_bullet,
     ITrailStorage* bullet_trace_storage,
-    const std::string& ammo_type,
+    std::string ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
-    const std::string& muzzle_flash_resource,
+    std::string muzzle_flash_resource,
     const FixedArray<float, 3>& muzzle_flash_position,
     float muzzle_flash_animation_time,
-    const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider,
-    DeleteNodeMutex& delete_node_mutex)
+    const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider)
     : rendering_resources_{ rendering_resources }
     , scene_{ scene }
     , scene_node_resources_{ scene_node_resources }
@@ -72,7 +71,7 @@ Gun::Gun(
     , bullet_properties_{ bullet_properties }
     , generate_smart_bullet_{ std::move(generate_smart_bullet) }
     , bullet_trace_storage_{ bullet_trace_storage }
-    , ammo_type_{ ammo_type }
+    , ammo_type_{ std::move(ammo_type) }
     , triggered_{ false }
     , player_{ nullptr }
     , team_{ nullptr }
@@ -81,11 +80,10 @@ Gun::Gun(
     , absolute_model_matrix_{ fixed_nans<ScenePos, 4, 4 >() }
     , punch_angle_{ 0.f, 0.f, 0.f }
     , punch_angle_rng_{ punch_angle_rng }
-    , muzzle_flash_resource_{ muzzle_flash_resource }
+    , muzzle_flash_resource_{ std::move(muzzle_flash_resource) }
     , muzzle_flash_position_{ muzzle_flash_position }
     , muzzle_flash_animation_time_{ muzzle_flash_animation_time }
     , generate_muzzle_flash_hider_{ generate_muzzle_flash_hider }
-    , delete_node_mutex_{ delete_node_mutex }
     , node_on_clear_{ node->on_clear, CURRENT_SOURCE_LOCATION }
 {
     if (punch_angle_node != nullptr) {
@@ -186,7 +184,6 @@ void Gun::generate_bullet(const StaticWorld& world) {
             ? nullptr
             : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
-            delete_node_mutex_,
             world,
             RotateBullet::NO);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet
@@ -235,7 +232,6 @@ void Gun::generate_bullet(const StaticWorld& world) {
                 ? nullptr
                 : bullet_trace_storage_->add_trail_extender(),
             dynamic_lights_,
-            delete_node_mutex_,
             world,
             RotateBullet::YES);
         // Destruction order: Node -> Rigid body (collision observers) -> Bullet

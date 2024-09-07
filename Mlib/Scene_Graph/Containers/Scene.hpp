@@ -82,7 +82,7 @@ public:
         DanglingUniquePtr<SceneNode>&& scene_node,
         RenderingDynamics rendering_dynamics,
         RenderingStrategies rendering_strategy);
-    void add_root_imposter_node(DanglingRef<SceneNode> scene_node);
+    void add_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
     void move_root_node_to_bvh(const std::string& name);
     bool root_node_scheduled_for_deletion(
         const std::string& name,
@@ -90,7 +90,7 @@ public:
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
     void try_delete_root_node(const std::string& name);
-    void delete_root_imposter_node(DanglingRef<SceneNode> scene_node);
+    void delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);
     void try_delete_node(const std::string& name);
@@ -98,7 +98,7 @@ public:
     void delete_nodes(const Mlib::regex& regex);
     void register_node(
         const std::string& name,
-        DanglingRef<SceneNode> scene_node);
+        const DanglingRef<SceneNode>& scene_node);
     void unregister_node(const std::string& name);
     void unregister_nodes(const Mlib::regex& regex);
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
