@@ -9,7 +9,8 @@ template <class TMutex>
 class GenericRecursiveSharedMutex {
 public:
     GenericRecursiveSharedMutex()
-        : count_{ 0 }
+        : owner_{ std::thread::id() }
+        , count_{ 0 }
     {}
     ~GenericRecursiveSharedMutex() = default;
     void lock() {
@@ -32,6 +33,7 @@ public:
     void unlock() {
         --count_;
         if (count_ == 0) {
+            owner_ = std::thread::id();
             mutex_.unlock();
         }
     }
@@ -46,7 +48,7 @@ public:
         }
     }
     bool is_owner() const {
-        return (count_ != 0) && (owner_ == std::this_thread::get_id());
+        return (owner_ == std::this_thread::get_id());
     }
 private:
     TMutex mutex_;

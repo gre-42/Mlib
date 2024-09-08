@@ -17,12 +17,8 @@ public:
       deletion_lock_holder_{ std::thread::id() }
     {}
     void lock() {
-        mutex_.lock();
-        if (deletion_lock_holder_ != std::thread::id()) {
-            if (deletion_lock_holder_ != std::this_thread::get_id()) {
-                THROW_OR_ABORT("Deletion lock already held by another thread");
-            }
-        } else {
+        if (deletion_lock_holder_ != std::this_thread::get_id()) {
+            mutex_.lock();
             deletion_lock_holder_ = std::this_thread::get_id();
         }
         ++nlocked_;
@@ -34,8 +30,8 @@ public:
         --nlocked_;
         if (nlocked_ == 0) {
             deletion_lock_holder_ = std::thread::id();
+            mutex_.unlock();
         }
-        mutex_.unlock();
     }
     bool is_locked_by_this_thread() const {
         return (deletion_lock_holder_ == std::this_thread::get_id());
@@ -71,8 +67,8 @@ public:
         deleter_thread_id_ = std::thread::id();
     }
 private:
-    std::recursive_mutex mutex_;
-    unsigned int nlocked_;
+    std::mutex mutex_;
+    std::atomic_uint32_t nlocked_;
     std::atomic<std::thread::id> deleter_thread_id_;
     std::atomic<std::thread::id> deletion_lock_holder_;
 };
