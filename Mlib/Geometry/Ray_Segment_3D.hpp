@@ -94,32 +94,6 @@ public:
             interscts(0, 1, 2, false) || interscts(1, 2, 0, false) || interscts(2, 0, 1, false) ||
             interscts(0, 1, 2, true) || interscts(1, 2, 0, true) || interscts(2, 0, 1, true);
     }
-    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
-        if (aabb.contains(start) || aabb.contains(stop())) {
-            return true;
-        }
-        auto contains1d = [&](const TData& t, size_t i) {
-            auto x = start(i) + direction(i) * t;
-            return (x >= aabb.min(i)) && (x <= aabb.max(i));
-            };
-        auto contains2d = [&](const TData& t, size_t i1, size_t i2) {
-            if ((t < 0) || (t > length)) {
-                return false;
-            }
-            return contains1d(t, i1) && contains1d(t, i2);
-            };
-        auto intersects0 = [&](size_t i0, size_t i1, size_t i2) {
-            auto c = direction(i0);
-            if (std::abs(c) < 1e-12) {
-                return false;
-            }
-            auto inv_c = 1 / c;
-            return
-                contains2d((aabb.min(i0) - start(i0)) * inv_c, i1, i2) ||
-                contains2d((aabb.max(i0) - start(i0)) * inv_c, i1, i2);
-            };
-        return intersects0(0, 1, 2) || intersects0(1, 2, 0) || intersects0(2, 0, 1);
-    }
     FixedArray<TData, 3> stop() const {
         return start + direction * length;
     }
@@ -138,6 +112,47 @@ public:
     FixedArray<TData, 3> start;
     FixedArray<TData, 3> direction;
     TData length;
+};
+
+template <class TData>
+class RaySegment3DForAabb: public RaySegment3D<TData> {
+public:
+    using RaySegment3D<TData>::start;
+    using RaySegment3D<TData>::direction;
+    using RaySegment3D<TData>::length;
+    using RaySegment3D<TData>::stop;
+    using RaySegment3D<TData>::intersects;
+    explicit RaySegment3DForAabb(const RaySegment3D<TData>& rs3)
+        : RaySegment3D<TData>{ rs3 }
+        , inv_direction{ TData(1) / rs3.direction }
+    {}
+    bool intersects(const AxisAlignedBoundingBox<TData, 3>& aabb) const {
+        if (aabb.contains(start) || aabb.contains(stop())) {
+            return true;
+        }
+        auto contains1d = [&](const TData& t, size_t i) {
+            auto x = start(i) + direction(i) * t;
+            return (x >= aabb.min(i)) && (x <= aabb.max(i));
+        };
+        auto contains2d = [&](const TData& t, size_t i1, size_t i2) {
+            if ((t < 0) || (t > length)) {
+                return false;
+            }
+            return contains1d(t, i1) && contains1d(t, i2);
+        };
+        auto intersects0 = [&](size_t i0, size_t i1, size_t i2) {
+            auto inv_c = inv_direction(i0);
+            if (std::abs(inv_c) > 1e12) {
+                return false;
+            }
+            return
+                contains2d((aabb.min(i0) - start(i0)) * inv_c, i1, i2) ||
+                contains2d((aabb.max(i0) - start(i0)) * inv_c, i1, i2);
+        };
+        return intersects0(0, 1, 2) || intersects0(1, 2, 0) || intersects0(2, 0, 1);
+    }
+private:
+    FixedArray<TData, 3> inv_direction;
 };
 
 }

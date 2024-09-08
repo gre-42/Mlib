@@ -299,7 +299,7 @@ void test_ray_segment_intersects_aabb() {
     FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
     FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
 
-    RaySegment3D<float> ray{ start, end };
+    RaySegment3DForAabb<float> ray{ {start, end} };
     ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
 }
 
