@@ -50,7 +50,7 @@ GuardedIterable<RenderableScenes::map_type::iterator, std::shared_lock<SafeAtomi
     if (shutting_down()) {
         verbose_abort("RenderableScenes shutting down");
     }
-    return {mutex_, unsafe_begin(), unsafe_end()};
+    return { mutex_, unsafe_begin(), unsafe_end() };
 }
 
 RenderableScenes::map_type::iterator RenderableScenes::unsafe_begin() {

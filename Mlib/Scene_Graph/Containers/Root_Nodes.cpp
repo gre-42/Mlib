@@ -160,7 +160,7 @@ bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const 
         THROW_OR_ABORT("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
     }
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
-    if (node_container_.find(name) == node_container_.end()) {
+    if (!node_container_.contains(name)) {
         THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
     }
     return root_nodes_to_delete_.contains(name);
@@ -169,7 +169,7 @@ bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const 
 void RootNodes::schedule_delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
-    if (node_container_.find(name) == node_container_.end()) {
+    if (!node_container_.contains(name)) {
         verbose_abort("No root node with name \"" + name + "\" exists");
     }
     if (!root_nodes_to_delete_.insert(name).second) {

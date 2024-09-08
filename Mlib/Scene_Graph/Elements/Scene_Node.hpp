@@ -76,6 +76,7 @@ struct SceneNodeInstances {
     ScenePos max_center_distance;
     Bvh<ScenePos, PositionAndYAngle, 3> small_instances;
     std::list<PositionAndYAngle> large_instances;
+    mutable SafeAtomicSharedMutex mutex;
 };
 
 struct SceneNodeChild {
@@ -297,9 +298,9 @@ public:
         const FixedArray<float, 3>& rotation,
         float scale,
         std::optional<std::chrono::steady_clock::time_point> time);
-    TransformationMatrix<float, ScenePos, 3> relative_model_matrix() const;
+    TransformationMatrix<float, ScenePos, 3> relative_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, ScenePos, 3> relative_view_matrix() const;
+    TransformationMatrix<float, ScenePos, 3> relative_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> absolute_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
@@ -340,10 +341,6 @@ private:
         ChildRegistrationState child_registration_state,
         ChildParentState child_parent_state);
     void clear_unsafe();
-    TransformationMatrix<float, ScenePos, 3> relative_model_matrix_unsafe(
-        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
-    TransformationMatrix<float, ScenePos, 3> relative_view_matrix_unsafe(
-        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(
         LockingStrategy locking_strategy,
         std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
@@ -376,6 +373,7 @@ private:
     std::string aperiodic_animation_;
     SceneNodeState state_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
+    mutable SafeAtomicRecursiveSharedMutex pose_mutex_;
     std::atomic_bool shutting_down_;
     std::string debug_message_;
 };

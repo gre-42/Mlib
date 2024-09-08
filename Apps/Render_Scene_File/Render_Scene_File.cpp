@@ -76,6 +76,7 @@ std::future<void> render_thread(
                     menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
+                        renderable_scenes["primary_scene"].scene_.wait_for_cleanup();
                         if (!last_load_scene_finished && 
                             !args.has_named("--no_physics") &&
                             !args.has_named("--single_threaded"))
@@ -104,6 +105,7 @@ std::future<void> render_thread(
                         }
                     } else if (auto rs = renderable_scenes.try_get("loading"); rs != nullptr) {
                         execute_render_allocators();
+                        rs->scene_.wait_for_cleanup();
                         std::scoped_lock lock{ rs->scene_.delete_node_mutex() };
                         if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
                             rs->render(

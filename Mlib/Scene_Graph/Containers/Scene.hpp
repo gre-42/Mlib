@@ -130,6 +130,9 @@ public:
     void remove_node_not_allowed_to_be_unregistered(const std::string& name);
     void clear_nodes_not_allowed_to_be_unregistered();
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
+    void wait_for_cleanup() const;
+    void notify_cleanup_required();
+    void notify_cleanup_done();
     DeleteNodeMutex& delete_node_mutex() const;
     IParticleCreator& particle_instantiator(const std::string& resource_name) const;
 private:
@@ -168,6 +171,7 @@ private:
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
     TimePointSeries<NINTERPOLATED> times_;
+    mutable std::atomic_uint32_t ncleanups_required_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

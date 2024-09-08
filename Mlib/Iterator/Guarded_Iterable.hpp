@@ -9,9 +9,9 @@ class GuardedIterable {
 public:
     template <class TMutex>
     GuardedIterable(TMutex& mutex, const TIterator& begin, const TIterator& end)
-    : lock_{mutex},
-      begin_{begin},
-      end_{end}
+        : lock_{ mutex }
+        , begin_{ begin }
+        , end_{ end }
     {}
     TIterator begin() {
         return begin_;

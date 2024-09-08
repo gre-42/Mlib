@@ -1134,7 +1134,7 @@ int main(int argc, char** argv) {
                 const RenderedSceneDescriptor& frame_id)
             {
                 execute_render_allocators();
-                std::scoped_lock lock{delete_node_mutex};
+                std::scoped_lock lock{ delete_node_mutex };
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };

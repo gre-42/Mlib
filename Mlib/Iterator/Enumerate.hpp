@@ -14,6 +14,7 @@ private:
     decltype(std::end(container())) end_;
 
 public:
+    struct end_type {};
     enumerate_named_object(Iterable& iter)
         : size_(0)
         , begin_(std::begin(iter))
@@ -21,9 +22,9 @@ public:
     {}
 
     const enumerate_named_object& begin() const { return *this; }
-    const enumerate_named_object& end()   const { return *this; }
+    end_type end() const { return {}; }
 
-    bool operator != (const enumerate_named_object&) const
+    bool operator != (const end_type&) const
     {
         return begin_ != end_;
     }
@@ -50,7 +51,7 @@ private:
 
 public:
     struct end_type {};
-    enumerate_temporary_object(enumerate_temporary_object&& other)
+    enumerate_temporary_object(enumerate_temporary_object&& other) noexcept
         : enumerate_temporary_object{ std::move(other.container_) }
     {}
     enumerate_temporary_object(Iterable&& iter)
@@ -61,7 +62,7 @@ public:
     {}
 
     enumerate_temporary_object begin() { return std::move(*this); }
-    end_type end()   const { return {}; }
+    end_type end() const { return {}; }
 
     bool operator != (const end_type&) const
     {

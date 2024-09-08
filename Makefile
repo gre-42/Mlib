@@ -29,6 +29,10 @@ build_clang:
 	CC=clang CXX=clang++ BUILD_PREFIX=L${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 
+build_clang_libcpp:
+	CXXFLAGS=-stdlib=libc++ CC=clang CXX=clang++ BUILD_PREFIX=C${BUILD_PREFIX} \
+		 make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+
 build_asan:
 	CFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address BUILD_PREFIX=A${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -189,7 +189,7 @@ void RenderableScene::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::scoped_lock lock{delete_node_mutex_};
+    std::scoped_lock lock{ delete_node_mutex_ };
     DestructionGuard dg{ [this]() { standard_camera_logic_.reset(); } };
     render_logics_.render(
         lx,

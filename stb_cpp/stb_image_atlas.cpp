@@ -1,6 +1,7 @@
 #include "stb_image_atlas.hpp"
 #include "stb_image_load.hpp"
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <algorithm>
 
 void build_image_atlas(
     const std::vector<StbInfo<uint8_t>>& atlas,

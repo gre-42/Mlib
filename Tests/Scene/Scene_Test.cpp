@@ -26,6 +26,7 @@
 #include <Mlib/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Render/Batch_Renderers/Trail_Renderer.hpp>
+#include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Render_Config.hpp>
@@ -263,7 +264,7 @@ void test_physics_engine(unsigned int seed) {
     append_lightmap_logic();
     render_logics.append({ read_pixels_logic, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
     LambdaRenderLogic lrl{
-        [&delete_node_mutex, &render_logics](
+        [&](
             const LayoutConstraintParameters& lx,
             const LayoutConstraintParameters& ly,
             const RenderConfig& render_config,
@@ -271,6 +272,8 @@ void test_physics_engine(unsigned int seed) {
             RenderResults* render_results,
             const RenderedSceneDescriptor& frame_id)
         {
+            execute_render_allocators();
+            scene.wait_for_cleanup();
             std::scoped_lock lock{delete_node_mutex};
             render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
         }

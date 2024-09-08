@@ -60,6 +60,7 @@ Scene::Scene(
     , particle_renderer_{ particle_renderer }
     , trail_renderer_{ trail_renderer }
     , dynamic_lights_{ dynamic_lights }
+    , ncleanups_required_{ 0 }
 {}
 
 void Scene::add_moving_root_node(
@@ -216,6 +217,7 @@ void Scene::schedule_delete_root_node(const std::string& name) {
 
 void Scene::delete_scheduled_root_nodes() const {
     std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.notify_deleting();
     morn_.delete_scheduled_root_nodes();
 }
 
@@ -873,6 +875,24 @@ IParticleCreator& Scene::particle_instantiator(const std::string& resource_name)
         THROW_OR_ABORT("Particle renderer not set");
     }
     return particle_renderer_->get_instantiator(resource_name);
+}
+
+void Scene::wait_for_cleanup() const {
+    if (delete_node_mutex_.is_locked_by_this_thread()) {
+        verbose_abort("Scene::wait_for_cleanup: delete node mutex already locked by this thread");
+    }
+    while (ncleanups_required_ > 0);
+}
+
+void Scene::notify_cleanup_required() {
+    if (delete_node_mutex_.is_locked_by_this_thread()) {
+        verbose_abort("Scene::notify_cleanup_required: delete node mutex already locked by this thread");
+    }
+    ++ncleanups_required_;
+}
+
+void Scene::notify_cleanup_done() {
+    --ncleanups_required_;
 }
 
 std::ostream& Mlib::operator << (std::ostream& ostr, const Scene& scene) {

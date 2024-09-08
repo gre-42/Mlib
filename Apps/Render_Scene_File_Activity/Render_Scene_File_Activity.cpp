@@ -112,6 +112,7 @@ public:
         auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (*load_scene_finished_) {
             execute_render_allocators();
+            (*renderable_scenes_)["primary_scene"].scene_.wait_for_cleanup();
             if (!last_load_scene_finished_ &&
                 !args_.has_named("--no_physics") &&
                 !args_.has_named("--single_threaded"))
@@ -138,6 +139,7 @@ public:
             }
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
             execute_render_allocators();
+            rs->scene_.wait_for_cleanup();
             std::scoped_lock lock{ rs->scene_.delete_node_mutex() };
             if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
                 rs->render(

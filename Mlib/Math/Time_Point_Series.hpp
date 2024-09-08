@@ -48,8 +48,8 @@ public:
             THROW_OR_ABORT("TimePointSeries::interpolator received uninitialized time");
         }
         for (size_t i = 0; i < length; ++i) {
-            size_t j0 = (size_t)positive_modulo((int)last_ - (int)i - 1, length);
-            size_t j1 = (size_t)positive_modulo((int)last_ - (int)i, length);
+            auto j0 = (size_t)positive_modulo((int)last_ - (int)i - 1, length);
+            auto j1 = (size_t)positive_modulo((int)last_ - (int)i, length);
             if (times_(j1) == std::chrono::steady_clock::time_point()) {
                 verbose_abort("TimePointSeries::interpolator internal error (0)");
             }
