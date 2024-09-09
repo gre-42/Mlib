@@ -45,14 +45,15 @@ public:
         const AxisAlignedBoundingBox<TData, tndim>& aabb,
         const TPayload& data)
     {
-        if (level_ == 0) {
+        auto max_size_children = max_size_ * std::pow(TData(2), TData(level_ - 1));
+        if ((level_ == 0) || any(aabb.size() > max_size_children)) {
             return &data_.emplace_back(aabb, data).second;
         }
         for (auto& c : children_) {
             AxisAlignedBoundingBox<TData, tndim> bb = c.first;
             bb.extend(aabb);
             // if (all(bb.size() <= TData(level_) * max_size_)) {
-            if (all(bb.size() <= max_size_ * std::pow(TData(2), TData(level_ - 1)))) {
+            if (all(bb.size() <= max_size_children)) {
                 c.first = bb;
                 return c.second.insert(aabb, data);
             }

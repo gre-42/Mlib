@@ -127,7 +127,7 @@ public:
     {
         return AxisAlignedBoundingBox(min_ + translation, max_ + translation);
     }
-    FixedArray<TData, tndim> size() {
+    FixedArray<TData, tndim> size() const {
         return max_ - min_;
     }
     void print(std::ostream& ostr, size_t rec = 0) const {
