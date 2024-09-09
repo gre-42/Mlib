@@ -7,6 +7,7 @@
 #include <Mlib/Geometry/Cross.hpp>
 #include <Mlib/Geometry/Fixed_Cross.hpp>
 #include <Mlib/Geometry/Intersection/Bvh.hpp>
+#include <Mlib/Geometry/Intersection/Caching_Bvh.hpp>
 #include <Mlib/Geometry/Intersection/Frustum3.hpp>
 #include <Mlib/Geometry/Intersection/Intersect_Lines.hpp>
 #include <Mlib/Geometry/Intersection/Octree.hpp>
@@ -269,8 +270,10 @@ void test_inverse_rodrigues() {
 }
 
 void test_bvh() {
-    Bvh<float, int, 3> bvh{ {3.f, 4.f, 5.f}, 2 };
+    using Payload = int;
+    using BVH = Bvh<float, Payload, 3>;
     using AABB = AxisAlignedBoundingBox<float, 3>;
+    BVH bvh{ {3.f, 4.f, 5.f}, 2 };
     bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 42);
     bvh.insert(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}), 43);
     bvh.insert(AABB::from_min_max({1.f, 20.f, 3.f}, {2.f, 23.f, 4.f}), 44);
@@ -291,16 +294,22 @@ void test_bvh() {
         assert_isequal(*result[0].second, 43);
         assert_isequal(*result[4].second, 46);
     }
-}
-
-void test_ray_segment_intersects_aabb() {
-    using AABB = AxisAlignedBoundingBox<float, 3>;
-
-    FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
-    FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
-
-    RaySegment3DForAabb<float> ray{ {start, end} };
-    ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
+    CachingBvh cvh{ bvh, Cache<BvhCacheElement<AABB, std::pair<AABB, Payload>>>{ 100 } };
+    cvh.visit(
+        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
+        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
+        [](const auto& d) {
+            linfo() << d;
+            return true;
+        });
+    CachingAabbBvh<float, Payload, 3> cvh2{ bvh, 100 };
+    cvh2.visit(
+        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
+        AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}),
+        [](const auto& d) {
+            linfo() << d;
+            return true;
+        });
 }
 
 void test_bvh_performance() {
@@ -364,6 +373,16 @@ void test_bvh_performance() {
             throw std::runtime_error("Could not write img file");
         }
     }
+}
+
+void test_ray_segment_intersects_aabb() {
+    using AABB = AxisAlignedBoundingBox<float, 3>;
+
+    FixedArray<float, 3> start{ 1.f, 2.f, 3.f };
+    FixedArray<float, 3> end{ 2.f, 3.f, 4.f };
+
+    RaySegment3DForAabb<float> ray{ {start, end} };
+    ray.intersects(AABB::from_min_max({1.f, 2.f, 3.f}, {2.f, 3.f, 4.f}));
 }
 
 void test_roundness_estimator() {
@@ -673,8 +692,8 @@ int main(int argc, const char** argv) {
     test_lines_to_rectangles();
     test_inverse_rodrigues();
     test_bvh();
-    test_ray_segment_intersects_aabb();
     // test_bvh_performance();
+    test_ray_segment_intersects_aabb();
     test_roundness_estimator();
     // test_smoothen_edges();
     test_distance_point_triangle();

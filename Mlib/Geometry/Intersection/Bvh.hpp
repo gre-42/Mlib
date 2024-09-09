@@ -105,6 +105,36 @@ public:
         return bvh.visit(aabb, [&visitor](const TPayload& payload){return visitor(const_cast<TPayload&>(payload));});
     }
 
+    template <class TAxisAlignedBoundingBox, class TVisitor>
+    bool visit_pairs(const TAxisAlignedBoundingBox& aabb, const TVisitor& visitor) const {
+        for (const auto& d : data_) {
+            if (aabb.intersects(d.first)) {
+                if (!visitor(d)) {
+                    return false;
+                }
+            }
+        }
+        for (const auto& c : children_) {
+            if (aabb.intersects(c.first)) {
+                if (!c.second.visit_pairs(aabb, visitor)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    template <class TAxisAlignedBoundingBox, class TVisitor>
+    bool visit_pairs(const TAxisAlignedBoundingBox& aabb, const TVisitor& visitor) {
+        using Pair = std::pair<AxisAlignedBoundingBox<TData, tndim>, TPayload>;
+        const Bvh& bvh = *this;
+        return bvh.visit_pairs(
+            aabb,
+            [&visitor]
+            (const Pair& payload)
+            {return visitor(const_cast<Pair&>(payload));});
+    }
+
     AxisAlignedBoundingBox<TData, tndim> aabb() const {
         auto result = AxisAlignedBoundingBox<TData, tndim>::empty();
         for (const auto& d : data_) {

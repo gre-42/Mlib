@@ -10,7 +10,7 @@ class ChunkedArray;
 template <class TOuterIterator>
 class UnNestedIterator {
 public:
-    using value_type = TOuterIterator::value_type::value_type;
+    using value_type = std::remove_reference_t<decltype(*TOuterIterator()->begin())>;
     UnNestedIterator(
         const TOuterIterator& outer_begin,
         const TOuterIterator& outer_end)
@@ -49,7 +49,7 @@ public:
 private:
     TOuterIterator outer_;
     TOuterIterator outer_end_;
-    std::optional<typename TOuterIterator::value_type::iterator> inner_;
+    std::optional<decltype(TOuterIterator()->begin())> inner_;
 };
 
 template <class TContainer>
@@ -71,6 +71,12 @@ public:
         return UnNestedIterator{ container_.begin(), container_.end() };
     }
     auto end() {
+        return UnNestedIterator{ container_.end(), container_.end() };
+    }
+    auto begin() const {
+        return UnNestedIterator{ container_.begin(), container_.end() };
+    }
+    auto end() const {
         return UnNestedIterator{ container_.end(), container_.end() };
     }
 private:

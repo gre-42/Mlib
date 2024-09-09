@@ -80,6 +80,18 @@ public:
         }
         return true;
     }
+    bool contains(const AxisAlignedBoundingBox& other) const {
+        // return all(max_ >= other.max_) && all(min_ <= other.min_);
+        for (size_t i = 0; i < tndim; ++i) {
+            if (max_(i) < other.max_(i)) {
+                return false;
+            }
+            if (min_(i) > other.min_(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
     bool contains(const FixedArray<TData, tndim>& point) const {
         // return all(max_ >= point) && all(min_ <= point);
         for (size_t i = 0; i < tndim; ++i) {
