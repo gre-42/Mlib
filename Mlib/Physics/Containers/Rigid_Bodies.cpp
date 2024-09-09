@@ -294,14 +294,20 @@ void RigidBodies::transform_object_and_add(const RigidBodyAndMeshes& o) {
 }
 
 void RigidBodies::optimize_search_time(std::ostream& ostr) const {
+    ostr << "Convex mesh BVH optimization" << std::endl;
     convex_mesh_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    ostr << "Triangle BVH optimization" << std::endl;
     triangle_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    ostr << "Ridge BVH optimization" << std::endl;
+    ridge_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
+    ostr << "Line BVH optimization" << std::endl;
     line_bvh_.optimize_search_time(BvhDataRadiusType::NONZERO, ostr);
 }
 
 void RigidBodies::print_search_time() const {
     std::cout << "Convex mesh search time: " << convex_mesh_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
     std::cout << "Triangle search time: " << triangle_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
+    std::cout << "Ridge search time: " << ridge_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
     std::cout << "Line search time: " << line_bvh_.search_time(BvhDataRadiusType::NONZERO) << std::endl;
 }
 

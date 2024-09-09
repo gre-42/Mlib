@@ -46,8 +46,7 @@ public:
         const TPayload& data)
     {
         if (level_ == 0) {
-            data_.push_back({aabb, data});
-            return &data_.back().second;
+            return &data_.emplace_back(aabb, data).second;
         }
         for (auto& c : children_) {
             AxisAlignedBoundingBox<TData, tndim> bb = c.first;
@@ -58,8 +57,7 @@ public:
                 return c.second.insert(aabb, data);
             }
         }
-        children_.push_back({aabb, Bvh{max_size_, level_ - 1}});
-        return children_.back().second.insert(aabb, data);
+        return children_.emplace_back(aabb, Bvh{max_size_, level_ - 1}).second.insert(aabb, data);
     }
 
     void clear() {
@@ -74,6 +72,18 @@ public:
             return true;
         });
         return result;
+    }
+
+    size_t num_leaves() const {
+        size_t res = data_.size();
+        for (const auto &[_, c] : children_) {
+            res += c.num_leaves();
+        }
+        return res;
+    }
+
+    size_t layer_size() const {
+        return data_.size() + children_.size();
     }
 
     bool empty() const {
@@ -243,14 +253,6 @@ public:
             }
         }
         return true;
-    }
-
-    size_t num_leaves() const {
-        size_t res = data_.size();
-        for (const auto &[_, c] : children_) {
-            res += c.num_leaves();
-        }
-        return res;
     }
 
     template <class TComputeDistance>

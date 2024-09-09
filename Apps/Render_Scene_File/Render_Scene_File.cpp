@@ -136,7 +136,7 @@ void print_debug_info(
     {
         for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
-                lerr() << n << " search time";
+                lraw() << n << " search time";
             }
             r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
