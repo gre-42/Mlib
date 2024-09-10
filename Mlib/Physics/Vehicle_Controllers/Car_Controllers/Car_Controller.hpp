@@ -2,6 +2,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Interfaces/IControllable.hpp>
 #include <Mlib/Physics/Vehicle_Controllers/Car_Controllers/Rigid_Body_Vehicle_Controller.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -30,8 +31,8 @@ public:
     // IControllable
     virtual void notify_reset(bool burn_in, const PhysicsEngineConfig& cfg) override;
 private:
-    std::string front_engine_;
-    std::string rear_engine_;
+    VariableAndHash<std::string> front_engine_;
+    VariableAndHash<std::string> rear_engine_;
     std::vector<size_t> front_tire_ids_;
     float max_tire_angle_;
     Interp<float> tire_angle_interp_;

@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,7 @@ enum class UpAxis;
 
 void replace_terrain_material(
     const std::string& resource_name,
-    const std::vector<std::string>& textures,
+    const std::vector<VariableAndHash<std::string>>& textures,
     double scale,
     double uv_scale,
     double uv_period,

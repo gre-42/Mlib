@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 namespace Mlib {
 
@@ -17,8 +18,8 @@ public:
         RenderingResources& rendering_resources,
         ResourceUpdateCycle update_cycle,
         FrameBufferChannelKind depth_kind,
-        std::string color_texture_name,
-        std::string depth_texture_name,
+        VariableAndHash<std::string> color_texture_name,
+        VariableAndHash<std::string> depth_texture_name,
         const FixedArray<int, 2>& texture_size,
         FocusFilter focus_filter);
     virtual ~RenderToTextureLogic();
@@ -39,8 +40,8 @@ private:
     std::unique_ptr<FrameBuffer> fbs_;
     ResourceUpdateCycle update_cycle_;
     FrameBufferChannelKind depth_kind_;
-    std::string color_texture_name_;
-    std::string depth_texture_name_;
+    VariableAndHash<std::string> color_texture_name_;
+    VariableAndHash<std::string> depth_texture_name_;
     FixedArray<int, 2> texture_size_;
     FocusFilter focus_filter_;
 };

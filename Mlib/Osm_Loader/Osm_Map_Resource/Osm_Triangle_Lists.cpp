@@ -134,14 +134,14 @@ OsmTriangleLists::OsmTriangleLists(
             Morphology{ .physics_material = PhysicsMaterial::NONE }));
     for (auto& [tt, ttt] : config.terrain_textures) {
         auto dt = config.terrain_dirt_textures.find(tt);
-        std::string dirt_texture = (dt == config.terrain_dirt_textures.end()) ? "" : dt->second;
+        auto dirt_texture = (dt == config.terrain_dirt_textures.end()) ? VariableAndHash<std::string>{} : dt->second;
         auto rit = config.terrain_reflection_map.find(tt);
         tl_terrain->insert(tt, std::make_shared<TriangleList<double>>(
             terrain_type_to_string(tt) + name_suffix,
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -156,7 +156,7 @@ OsmTriangleLists::OsmTriangleLists(
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -171,7 +171,7 @@ OsmTriangleLists::OsmTriangleLists(
             Material{
                 .reflection_map = (rit != config.terrain_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .dirt_texture = dirt_texture,
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
@@ -200,7 +200,7 @@ OsmTriangleLists::OsmTriangleLists(
         auto rit = config.street_reflection_map.find(tpe);
         std::vector<BlendMapTexture> blend_textures;
         blend_textures.reserve(textures.size());
-        for (const std::string& texture : textures) {
+        for (const VariableAndHash<std::string>& texture : textures) {
             blend_textures.push_back(primary_rendering_resources.get_blend_map_texture(texture));
         }
         tl_street_crossing.insert(tpe, std::make_shared<TriangleList<double>>(
@@ -209,7 +209,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = blend_textures,
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .dirt_texture = config.street_dirt_texture,
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
@@ -229,15 +229,15 @@ OsmTriangleLists::OsmTriangleLists(
         {
             auto alpha_texture_names = config.street_alpha_textures.contains(road_properties.type)
                 ? config.street_alpha_textures.at(road_properties.type)
-                : std::vector<std::string>{};
+                : std::vector<VariableAndHash<std::string>>{};
             std::vector<BlendMapTexture> textures_color;
             textures_color.reserve(road_style.textures.size());
-            for (const std::string& texture : road_style.textures) {
+            for (const VariableAndHash<std::string>& texture : road_style.textures) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             std::vector<BlendMapTexture> textures_alpha;
             textures_alpha.reserve(alpha_texture_names.size());
-            for (const std::string& texture : alpha_texture_names) {
+            for (const VariableAndHash<std::string>& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             auto rit = config.street_reflection_map.find(road_properties.type);
@@ -254,7 +254,7 @@ OsmTriangleLists::OsmTriangleLists(
                             .textures_alpha = textures_alpha,
                             .reflection_map = (rit != config.street_reflection_map.end())
                                 ? rit->second
-                                : "",
+                                : VariableAndHash<std::string>{},
                             .dirt_texture = config.street_dirt_texture,
                             .occluded_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                             .occluder_pass = (road_properties.type != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
@@ -278,15 +278,15 @@ OsmTriangleLists::OsmTriangleLists(
         {
             auto alpha_texture_names = config.street_mud_alpha_textures.contains(road_properties.type)
                 ? config.street_mud_alpha_textures.at(road_properties.type)
-                : std::vector<std::string>{};
+                : std::vector<VariableAndHash<std::string>>{};
             std::vector<BlendMapTexture> textures_color;
             textures_color.reserve(config.street_mud_textures.at(road_properties.type).size());
-            for (const std::string& texture : config.street_mud_textures.at(road_properties.type)) {
+            for (const VariableAndHash<std::string>& texture : config.street_mud_textures.at(road_properties.type)) {
                 textures_color.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             std::vector<BlendMapTexture> textures_alpha;
             textures_alpha.reserve(alpha_texture_names.size());
-            for (const std::string& texture : alpha_texture_names) {
+            for (const VariableAndHash<std::string>& texture : alpha_texture_names) {
                 textures_alpha.push_back(primary_rendering_resources.get_blend_map_texture(texture));
             }
             tl_street_mud_visuals.insert(road_properties.type, std::make_shared<TriangleList<double>>(
@@ -324,7 +324,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 // .wrap_mode_s = curb_wrap_mode_s,
@@ -345,7 +345,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .occluded_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::LIGHTMAP_BLACK_NODE : ExternalRenderPassType::NONE,
                 .occluder_pass = (tpe != RoadType::WALL) ? ExternalRenderPassType::NONE : ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .aggregate_mode = AggregateMode::ONCE,
@@ -365,7 +365,7 @@ OsmTriangleLists::OsmTriangleLists(
                 .textures_color = {primary_rendering_resources.get_blend_map_texture(texture)},
                 .reflection_map = (rit != config.street_reflection_map.end())
                     ? rit->second
-                    : "",
+                    : VariableAndHash<std::string>{},
                 .occluded_pass = ExternalRenderPassType::LIGHTMAP_BLACK_NODE,
                 .occluder_pass = ExternalRenderPassType::NONE,
                 // .wrap_mode_s = curb_wrap_mode_s,

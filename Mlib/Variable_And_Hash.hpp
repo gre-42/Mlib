@@ -8,13 +8,37 @@ namespace Mlib {
 template <class T>
 class VariableAndHash {
 public:
+    VariableAndHash& operator = (const T& other) {
+        *this = VariableAndHash<T>(other);
+        return *this;
+    }
+    VariableAndHash& operator = (T&& other) {
+        *this = VariableAndHash<T>(std::move(other));
+        return *this;
+    }
     VariableAndHash()
         : variable_()
         , hash_{ hash_combine(variable_) }
     {}
+    explicit VariableAndHash(const T& v)
+        : variable_{ v }
+        , hash_{ hash_combine(variable_) }
+    {}
+    explicit VariableAndHash(T&& v)
+        : variable_{ std::move(v) }
+        , hash_{ hash_combine(variable_) }
+    {}
+    VariableAndHash(const VariableAndHash<const T>& other)
+        : variable_{ other.variable_ }
+        , hash_{ other.hash_ }
+    {}
+    VariableAndHash(VariableAndHash<const T>&& other)
+        : variable_{ std::move(other.variable_) }
+        , hash_{ other.hash_ }
+    {}
     template <class Arg>
         requires std::is_convertible_v<Arg, const T&>
-    VariableAndHash(Arg&& value)
+    explicit VariableAndHash(Arg&& value)
         : variable_{ std::forward<Arg>(value) }
         , hash_{ hash_combine(variable_) }
     {}
@@ -24,9 +48,9 @@ public:
     const T* operator -> () const {
         return &variable_;
     }
-    operator const T&() const {
-        return variable_;
-    }
+    // operator const T&() const {
+    //     return variable_;
+    // }
     std::strong_ordering operator <=> (const VariableAndHash& other) const {
         return hash_ <=> other.hash_;
     }

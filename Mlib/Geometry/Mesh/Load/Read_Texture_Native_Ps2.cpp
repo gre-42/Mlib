@@ -74,7 +74,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_native_texture_ps2(
     texture->mask = remove_trailing_zeros(read_string(istr, length, "texture mask", verbosity));
 
     if (any(verbosity & IoVerbosity::METADATA)) {
-        linfo() << "Texture name: " << texture->name << ", mask: " << texture->mask;
+        linfo() << "Texture name: " << *texture->name << ", mask: " << *texture->mask;
     }
     if (raster_factory == nullptr) {
         return nullptr;

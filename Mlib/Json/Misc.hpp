@@ -1,9 +1,23 @@
 #pragma once
 #include <Mlib/Json/Base.hpp>
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
+#include <map>
 #include <string_view>
+#include <unordered_map>
 
 namespace Mlib {
+
+// Workaround for issue https://github.com/nlohmann/json/issues/2932
+template <class TKey, class TValue>
+class junordered_map: public std::unordered_map<TKey, TValue> {};
+
+template <class TValue>
+void from_json(const nlohmann::json& j, junordered_map<VariableAndHash<std::string>, TValue>& v) {
+    for (auto& [k, e] : j.get<std::map<std::string, TValue>>()) {
+        v[VariableAndHash{ k }] = std::move(e);
+    }
+}
 
 template <class TData, size_t tsize>
 void to_json(nlohmann::json& j, const FixedArray<TData, tsize>& v) {
@@ -53,6 +67,11 @@ void from_json(const nlohmann::json& j, OrderableFixedArray<TData, tsize>& v) {
     for (size_t i = 0; i < tsize; ++i) {
         v(i) = json_get<TData>(j[i]);
     }
+}
+
+template <class TData>
+void from_json(const nlohmann::json& j, VariableAndHash<TData>& v) {
+    v = json_get<TData>(j);
 }
 
 template <class TData, class TOperation>

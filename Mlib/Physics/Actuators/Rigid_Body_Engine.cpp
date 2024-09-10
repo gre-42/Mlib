@@ -41,7 +41,7 @@ float RigidBodyEngine::get_value(StatusComponents status_components) const {
     THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
-StatusWriter& RigidBodyEngine::child_status_writer(const std::vector<std::string>& name) {
+StatusWriter& RigidBodyEngine::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
     THROW_OR_ABORT("RigidBodyEngine has no children");
 }
 

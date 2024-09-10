@@ -316,7 +316,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
 
     auto fpathps = [&args](std::string_view name){
-        return args.arguments.pathes_or_variables(name, [](const FPath& v){return v.path;});
+        return args.arguments.pathes_or_variables(name, [](const FPath& v) { return VariableAndHash{ v.path }; });
     };
 
     OsmResourceConfig config;
@@ -330,7 +330,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             for (const auto& street_texture : street_textures) {
                 street_texture.validate(ST::options, "street texture: ");
                 RoadProperties rp{.type=road_type, .nlanes = street_texture.at<size_t>(ST::lanes)};
-                auto textures = street_texture.pathes_or_variables(ST::textures, [](const FPath& v){return v.path;});
+                auto textures = street_texture.pathes_or_variables(ST::textures, [](const FPath& v) { return VariableAndHash{ v.path }; });
                 RoadStyle rs{
                     .textures = textures,
                     .uvx = street_texture.contains(ST::uvx)
@@ -343,7 +343,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
             for (const auto& barrier_style : barrier_styles) {
                 barrier_style.validate(BS::options, "barrier style: ");
                 BarrierStyle as{
-                    .texture = barrier_style.path_or_variable(BS::texture).path,
+                    .texture = VariableAndHash{barrier_style.path_or_variable(BS::texture).path},
                     .uv = barrier_style.at<UFixedArray<float, 2>>(BS::uv),
                     .blend_mode = blend_mode_from_string(barrier_style.at<std::string>(BS::blend_mode)),
                     // .wrap_mode_t = wrap_mode_from_string(barrier_style.at<std::string>(BS::wrap_mode_t)),
@@ -512,7 +512,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::street_texture)) {
             RoadProperties rp{.type=RoadType::STREET, .nlanes = 1};
-            RoadStyle rs{.textures = { args.arguments.path_or_variable(KnownArgs::street_texture).path }, .uvx = 1.f};
+            RoadStyle rs{ .textures = { VariableAndHash{args.arguments.path_or_variable(KnownArgs::street_texture).path} }, .uvx = 1.f };
             config.street_texture[rp] = rs;
         }
         if (args.arguments.contains_non_null(KnownArgs::street_textures)) {
@@ -523,7 +523,7 @@ LoadSceneJsonUserFunction LoadOsmResource::json_user_function = [](const LoadSce
         }
         if (args.arguments.contains(KnownArgs::path_texture)) {
             RoadProperties rp{.type=RoadType::PATH, .nlanes = 1};
-            RoadStyle rs{.textures = { args.arguments.path_or_variable(KnownArgs::path_texture).path }, .uvx = 1.f};
+            RoadStyle rs{ .textures = { VariableAndHash{args.arguments.path_or_variable(KnownArgs::path_texture).path} }, .uvx = 1.f };
             config.street_texture[rp] = rs;
         }
         if (args.arguments.contains_non_null(KnownArgs::path_textures)) {

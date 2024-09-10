@@ -60,7 +60,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
-        lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
+        lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto& logger = object_pool.create<VisualMovableLogger>(
@@ -81,7 +81,7 @@ void CreateVisualNodeStatus::execute(const LoadSceneJsonUserFunctionArgs& args)
             log_components,
             args.arguments.path(KnownArgs::ttf_file),
             ColormapWithModifiers{
-                .filename = args.arguments.path(KnownArgs::pointer),
+                .filename = VariableAndHash{args.arguments.path(KnownArgs::pointer)},
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),

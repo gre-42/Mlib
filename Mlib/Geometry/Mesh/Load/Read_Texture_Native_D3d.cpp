@@ -25,7 +25,7 @@ std::shared_ptr<Texture> Mlib::Dff::read_texture_native_d3d8(
     texture->mask = remove_trailing_zeros(read_string(istr, 32, "texture mask", verbosity));
 
     if (any(verbosity & IoVerbosity::METADATA)) {
-        linfo() << "Texture name: " << texture->name << ", mask: " << texture->mask;
+        linfo() << "Texture name: " << *texture->name << ", mask: " << *texture->mask;
     }
     if (raster_factory == nullptr) {
         return nullptr;

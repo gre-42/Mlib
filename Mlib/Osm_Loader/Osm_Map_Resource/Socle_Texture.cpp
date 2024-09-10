@@ -13,6 +13,6 @@ SocleTexture Mlib::parse_socle_texture(const JsonMacroArguments& args) {
     args.validate(KnownArgs::options, "socle texture: ");
 
     return {
-        .textures = args.at<std::vector<std::string>>(KnownArgs::textures)
+        .textures = args.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::textures)
     };
 }

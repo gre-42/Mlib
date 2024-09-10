@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         PointerImageLogic pointer_image_logic{
             rendering_resources,
             {
-                .filename = argv[2],
+                .filename = VariableAndHash<std::string>{ argv[2] },
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }

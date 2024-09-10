@@ -31,14 +31,15 @@ LoadSceneJsonUserFunction AddColorStyle::json_user_function = [](const LoadScene
     AddColorStyle(args.renderable_scene()).execute(args);
 };
 
-AddColorStyle::AddColorStyle(RenderableScene& renderable_scene) 
-: LoadSceneInstanceFunction{ renderable_scene }
+AddColorStyle::AddColorStyle(RenderableScene& renderable_scene)
+    : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
 void AddColorStyle::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::map<std::string, std::string> parsed_reflection_maps;
-    if (auto rm = args.arguments.try_at<std::map<std::string, std::string>>(KnownArgs::reflection_maps)) {
+    using ReflectionMaps = junordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>>;
+    ReflectionMaps parsed_reflection_maps;
+    if (auto rm = args.arguments.try_at<ReflectionMaps>(KnownArgs::reflection_maps)) {
         parsed_reflection_maps = *rm;
     }
     auto style = std::unique_ptr<ColorStyle>(new ColorStyle{

@@ -112,11 +112,11 @@ DffArrays<TPosition> Mlib::load_dff(
                     .center_distances = OrderableFixedArray{ center_distances },
                     .max_triangle_distance = cfg.max_triangle_distance });
             if ((material.texture != nullptr) && cfg.textures.empty()) {
-                auto filename_lower = ide.texture_dictionary + ".txd_" + material.texture->name;
+                auto filename_lower = ide.texture_dictionary + ".txd_" + *material.texture->name;
                 std::transform(filename_lower.begin(), filename_lower.end(), filename_lower.begin(), ::tolower);
                 tl.material.textures_color = { {.texture_descriptor = TextureDescriptor{
                     .color = ColormapWithModifiers{
-                        .filename = filename_lower,
+                        .filename = VariableAndHash{ filename_lower },
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash()}} };

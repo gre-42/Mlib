@@ -33,14 +33,18 @@ static const size_t PITCH = 0;
 static const size_t YAW = 1;
 static const size_t ROLL = 2;
 
+static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
+static const auto main_rotor_name = VariableAndHash<std::string>{"main_rotor"};
+static const auto tail_rotor_name = VariableAndHash<std::string>{"tail_rotor"};
+
 void HeliController::apply() {
     if (vehicle_domain_ == VehicleDomain::AIR) {
-        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = NAN});  // NAN=break
+        rb_.set_surface_power(wheels_name, EnginePowerIntent{.surface_power = NAN});  // NAN=break
         for (const auto& [x, _] : tire_angles_) {
             rb_.set_tire_angle_y(x, 0.f);
         }
         rb_.set_surface_power(
-            "main_rotor",
+            main_rotor_name,
             EnginePowerIntent{
                 .surface_power = std::isnan(target_height_)
                     ? 0.f
@@ -50,9 +54,9 @@ void HeliController::apply() {
             : angle_multipliers_(PITCH) * sign(surface_power_) * drive_relaxation_);
         float ang = signed_min(steer_angle_ * steer_relaxation_, 45.f * degrees);
         rb_.set_rotor_movement_x(main_rotor_id_, angle_multipliers_(ROLL) * ang);
-        rb_.set_surface_power("tail_rotor", EnginePowerIntent{.surface_power = angle_multipliers_(YAW) * ang});
+        rb_.set_surface_power(tail_rotor_name, EnginePowerIntent{.surface_power = angle_multipliers_(YAW) * ang});
     } else if (vehicle_domain_ == VehicleDomain::GROUND) {
-        rb_.set_surface_power("wheels", EnginePowerIntent{
+        rb_.set_surface_power(wheels_name, EnginePowerIntent{
             .surface_power = surface_power_,
             .drive_relaxation = drive_relaxation_});  // NAN=break
         for (const auto& x : tire_angles_) {

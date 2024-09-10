@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Load/IRaster.hpp>
 #include <Mlib/Geometry/Mesh/Load/Palette.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <filesystem>
 #include <iosfwd>
 #include <map>
@@ -194,8 +195,8 @@ struct Texture
     std::unique_ptr<IRaster> raster;
     std::vector<uint8_t> data;
     // TexDictionary dict;
-    std::string name;
-    std::string mask;
+    VariableAndHash<std::string> name;
+    VariableAndHash<std::string> mask;
     uint32_t filter_addressing; // VVVVUUUU FFFFFFFF
 };
 

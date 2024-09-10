@@ -90,7 +90,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
         a.validate(Audio::options);
         if (!a.at<bool>(Audio::mute)) {
             av = std::make_shared<EngineAudio>(
-                a.at<std::string>("name"),
+                a.at<std::string>(Audio::name),
                 paused,
                 a.at<float>(Audio::p_idle) * hp,
                 a.at<float>(Audio::p_reference) * hp);
@@ -98,7 +98,7 @@ void CreateEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
 #endif
     auto ep = rb.engines_.try_emplace(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         engine_power,
         args.arguments.at<bool>(KnownArgs::hand_brake_pulled, false),
 #ifdef WITHOUT_ALUT

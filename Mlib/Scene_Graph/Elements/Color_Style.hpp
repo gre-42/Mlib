@@ -3,8 +3,9 @@
 #include <Mlib/Cached_Hash.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
-#include <map>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <optional>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -24,7 +25,7 @@ struct ColorStyle {
         .max = -1.f,
         .exponent = -1.f
     };
-    std::map<std::string, std::string> reflection_maps;
+    std::unordered_map<VariableAndHash<std::string>, VariableAndHash<std::string>> reflection_maps;
     float reflection_strength = 1.f;
     CachedHash hash;
     void insert(const ColorStyle& other);

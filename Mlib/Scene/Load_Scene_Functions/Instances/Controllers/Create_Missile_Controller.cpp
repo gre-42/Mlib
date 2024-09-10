@@ -62,5 +62,5 @@ void CreateMissileController::execute(const LoadSceneJsonUserFunctionArgs& args)
     rb.missile_controller_ = std::make_unique<MissileController>(
         rb,
         args.arguments.at<std::vector<MissileWingController>>(KnownArgs::wing_controllers),
-        args.arguments.at<std::string>(KnownArgs::engine));
+        VariableAndHash{ args.arguments.at<std::string>(KnownArgs::engine) });
 }

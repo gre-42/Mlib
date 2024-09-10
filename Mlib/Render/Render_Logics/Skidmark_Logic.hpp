@@ -50,6 +50,7 @@ private:
     std::shared_ptr<FillWithTextureLogic> old_render_texture_logic_;
     FixedArray<ScenePos, 3> old_camera_position_;
     ColormapWithModifiers colormap_;
+    VariableAndHash<std::string> vp_;
     DeallocationToken deallocation_token_;
 };
 

@@ -41,7 +41,7 @@ LoadSceneJsonUserFunction AnimatableTrails::json_user_function = [](const LoadSc
     RenderingContextStack::primary_trail_resources().insert_instance_instantiator(
         args.arguments.at<std::string>(KnownArgs::name),
         [&snr = RenderingContextStack::primary_scene_node_resources(),
-         texture = args.arguments.at<std::string>(KnownArgs::texture),
+         texture = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
          shading = Shading{
             .emissive = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::emissive, zeros3) },
             .ambient = OrderableFixedArray{ args.arguments.at<UFixedArray<float, 3>>(KnownArgs::ambient, zeros3) },

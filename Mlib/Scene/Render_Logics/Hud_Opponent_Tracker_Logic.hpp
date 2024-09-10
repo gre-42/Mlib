@@ -30,7 +30,7 @@ public:
         const DanglingBaseClassRef<Player>& player,
         DanglingPtr<SceneNode> exclusive_node,
         AdvanceTimes& advance_times,
-        const std::string& image_resource_name,
+        const VariableAndHash<std::string>& image_resource_name,
         ResourceUpdateCycle update_cycle,
         const FixedArray<float, 2>& center,
         const FixedArray<float, 2>& size,

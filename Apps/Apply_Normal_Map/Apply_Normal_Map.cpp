@@ -122,11 +122,11 @@ int main(int argc, char** argv) {
                 Material{
                     .textures_color{ BlendMapTexture{.texture_descriptor = TextureDescriptor{
                         .color = ColormapWithModifiers{
-                            .filename = args.named_value("--color"),
+                            .filename = VariableAndHash{args.named_value("--color")},
                             .histogram = args.named_value("--histogram", ""),
                             .color_mode = ColorMode::RGB}.compute_hash(),
                         .normal = ColormapWithModifiers{
-                            .filename = args.named_value("--normal"),
+                            .filename = VariableAndHash{args.named_value("--normal")},
                             .color_mode = ColorMode::RGB}.compute_hash()}}}
                     },
                 Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE } };

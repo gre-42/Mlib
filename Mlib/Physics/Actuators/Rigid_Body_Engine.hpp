@@ -34,7 +34,7 @@ public:
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents status_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents status_components) const override;
-    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
+    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
 
     // Misc
     float surface_power() const;

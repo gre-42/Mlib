@@ -28,7 +28,7 @@ LoadSceneJsonUserFunction AddToGallery::json_user_function = [](const LoadSceneJ
         std::make_unique<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources(),
             ColormapWithModifiers{
-                .filename = args.arguments.path(KnownArgs::resource),
+                .filename = VariableAndHash{ args.arguments.path(KnownArgs::resource) },
                 .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode)),
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),

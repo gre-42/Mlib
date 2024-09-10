@@ -9,7 +9,7 @@ namespace Mlib {
 class JsonMacroArguments;
 
 struct FacadeTextureDescriptor {
-    std::vector<std::string> names;
+    std::vector<VariableAndHash<std::string>> names;
     InteriorTextures interior_textures;
 };
 

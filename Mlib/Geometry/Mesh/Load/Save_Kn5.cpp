@@ -122,7 +122,7 @@ void Mlib::save_kn5(
         }
 
         {
-            std::map<std::string, std::string> strings{
+            std::map<std::string, const VariableAndHash<std::string>&> strings{
                 { "txDiffuse", m.txDiffuse },
                 { "txNormal", m.txNormal },
                 { "txMask", m.txMask},
@@ -135,7 +135,7 @@ void Mlib::save_kn5(
                 { "txVariation", m.txVariation}};
 
             for (auto it = strings.begin(); it != strings.end();) {
-                if (it->second.empty()) {
+                if (it->second->empty()) {
                     strings.erase(it++);
                 } else {
                     ++it;
@@ -149,8 +149,8 @@ void Mlib::save_kn5(
 
                 WriteBinary<int32_t>(*f, 42, "sampler-slot");
 
-                WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(v.length()), "string value length");
-                WriteString(*f, v);
+                WriteBinary<uint32_t>(*f, integral_cast<uint32_t>(v->length()), "string value length");
+                WriteString(*f, *v);
             }
         }
     }

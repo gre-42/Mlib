@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Variable_And_Hash.hpp>
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ public:
         StatusComponents status_components,
         const StaticWorld& world) const = 0;
     virtual float get_value(StatusComponents status_components) const = 0;
-    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) = 0;
+    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) = 0;
 };
 
 StatusComponents status_components_from_string(const std::string& s);

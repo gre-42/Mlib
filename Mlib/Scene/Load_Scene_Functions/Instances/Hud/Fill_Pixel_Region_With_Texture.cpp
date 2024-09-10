@@ -54,7 +54,7 @@ void FillPixelRegionWithTexture::execute(const LoadSceneJsonUserFunctionArgs& ar
         std::make_shared<FillWithTextureLogic>(
             rs.rendering_resources_,
             ColormapWithModifiers{
-                .filename = args.arguments.at<std::string>(KnownArgs::texture),
+                .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture),
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::NO_MIPMAPS
             }.compute_hash(),

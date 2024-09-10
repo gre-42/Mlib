@@ -28,6 +28,8 @@
 
 using namespace Mlib;
 
+static const auto tmp_texture = VariableAndHash<std::string>{ "__texture__" };
+
 int main(int argc, char** argv)
 {
     ArgParser parser(
@@ -95,10 +97,10 @@ int main(int argc, char** argv)
             if (auto filename = parsed.try_named_value("--kn5"); filename != nullptr) {
                 auto kn5 = load_kn5(*filename);
                 for (auto& [name, data] : kn5.textures) {
-                    if (!Mlib::re::regex_search(name, re)) {
+                    if (!Mlib::re::regex_search(*name, re)) {
                         continue;
                     }
-                    linfo() << "Matched: " << name;
+                    linfo() << "Matched: " << *name;
                     auto cm = ColormapWithModifiers{
                         .filename = name,
                         .color_mode = ColorMode::RGBA,
@@ -121,11 +123,11 @@ int main(int argc, char** argv)
                         .flip_gl_y_axis = true}),
                     IoVerbosity::SILENT);
                 for (auto& tx : txd.textures) {
-                    if (!Mlib::re::regex_search(tx->name, re)) {
-                        linfo() << "Skipping: " << tx->name;
+                    if (!Mlib::re::regex_search(*tx->name, re)) {
+                        linfo() << "Skipping: " << *tx->name;
                         continue;
                     }
-                    linfo() << "Matched: " << tx->name;
+                    linfo() << "Matched: " << *tx->name;
                     auto cm = ColormapWithModifiers{
                             .filename = tx->name,
                             .color_mode = ColorMode::RGBA,
@@ -147,7 +149,7 @@ int main(int argc, char** argv)
             }
             rendering_resources.generate_auto_texture_atlas(
                 ColormapWithModifiers{
-                    .filename = "__texture__",
+                    .filename = tmp_texture,
                     .color_mode = ColorMode::RGBA,
                     .anisotropic_filtering_level = safe_stou(parsed.named_value("--aniso", "0"))
                 }.compute_hash(),
@@ -165,7 +167,7 @@ int main(int argc, char** argv)
                 ftl.emplace(
                     rendering_resources,
                     ColormapWithModifiers{
-                        .filename = *filename,
+                        .filename = VariableAndHash{ *filename },
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }.compute_hash(),
@@ -178,7 +180,7 @@ int main(int argc, char** argv)
                 ftl.emplace(
                     rendering_resources,
                     ColormapWithModifiers{
-                        .filename = "__texture__",
+                        .filename = tmp_texture,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                     ResourceUpdateCycle::ONCE,
@@ -188,23 +190,23 @@ int main(int argc, char** argv)
                     layer);
                 rendering_resources.preload({
                     .color = {
-                        .filename = "__texture__",
+                        .filename = tmp_texture,
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS
                     }});
             }
         } else if (unnamed.size() == 1) {
             rendering_resources.add_texture_descriptor(
-                "__texture__",
+                tmp_texture,
                 TextureDescriptor{
                     .color = {
-                        .filename = parsed.unnamed_value(0),
+                        .filename = VariableAndHash{ parsed.unnamed_value(0) },
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}});
             ftl.emplace(
                 rendering_resources,
                 ColormapWithModifiers{
-                    .filename = "__texture__",
+                    .filename = tmp_texture,
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash(),
                 ResourceUpdateCycle::ONCE);

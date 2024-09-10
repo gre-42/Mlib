@@ -25,5 +25,5 @@ SetSkybox::SetSkybox(RenderableScene& renderable_scene)
 
 void SetSkybox::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    skybox_logic.set_alias(args.arguments.at<std::string>(KnownArgs::alias));
+    skybox_logic.set_alias(args.arguments.at<VariableAndHash<std::string>>(KnownArgs::alias));
 }

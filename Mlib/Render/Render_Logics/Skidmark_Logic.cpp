@@ -41,7 +41,8 @@ SkidmarkLogic::SkidmarkLogic(
     , texture_height_{ texture_height }
     , old_fbs_id_{ 0 }
     , old_camera_position_{ fixed_nans<ScenePos, 3>() }
-    , colormap_{ .filename = "skidmark." + resource_suffix_, .color_mode = ColorMode::RGB }
+    , colormap_{ .filename = VariableAndHash{ "skidmark." + resource_suffix_ }, .color_mode = ColorMode::RGB }
+    , vp_{ "skidmark." + resource_suffix_ }
     , deallocation_token_{ render_deallocator.insert([this]() { deallocate(); }) }
 {
     colormap_.compute_hash();
@@ -57,7 +58,7 @@ void SkidmarkLogic::deallocate() {
     if (any(fbs_ != null)) {
         // Warning in case of exception during child_logic_.render.
         rendering_resources_.delete_texture(colormap_, DeletionFailureMode::WARN);
-        rendering_resources_.delete_vp("skidmark." + resource_suffix_, DeletionFailureMode::WARN);
+        rendering_resources_.delete_vp(vp_, DeletionFailureMode::WARN);
         fbs_(0) = nullptr;
         fbs_(1) = nullptr;
     }
@@ -145,7 +146,7 @@ void SkidmarkLogic::render(
         colormap_,
         fbs_(new_fbs_id)->texture_color(),
         ResourceOwner::CALLER);
-    rendering_resources_.set_vp("skidmark." + resource_suffix_, vp);
+    rendering_resources_.set_vp(vp_, vp);
 }
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {

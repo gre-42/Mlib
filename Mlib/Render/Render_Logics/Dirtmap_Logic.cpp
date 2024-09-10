@@ -17,7 +17,8 @@ DirtmapLogic::DirtmapLogic(
     RenderLogic& child_logic)
     : rendering_resources_{ rendering_resources }
     , child_logic_{ child_logic }
-    , generated_{false}
+    , generated_{ false }
+    , dirtmap_{ "dirtmap" }
 {}
 
 DirtmapLogic::~DirtmapLogic() {
@@ -36,7 +37,7 @@ void DirtmapLogic::render(
     if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         THROW_OR_ABORT("DirtmapLogic received dirtmap rendering");
     }
-    if (!rendering_resources_.contains_alias("dirtmap")) {
+    if (!rendering_resources_.contains_alias(dirtmap_)) {
         return;
     }
     if (!generated_) {
@@ -62,7 +63,7 @@ void DirtmapLogic::render(
                 render_results,
                 { .external_render_pass = {ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} });
         }
-        rendering_resources_.set_vp("dirtmap", vp());
+        rendering_resources_.set_vp(dirtmap_, vp());
         generated_ = true;
     }
 }

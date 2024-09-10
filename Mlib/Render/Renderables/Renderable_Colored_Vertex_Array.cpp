@@ -53,6 +53,8 @@
 
 using namespace Mlib;
 
+static const auto dirtmap_name = VariableAndHash<std::string>{ "dirtmap" };
+
 struct TextureIndexCalculator {
     size_t ntextures_color;
     size_t ntextures_alpha;
@@ -507,22 +509,22 @@ void RenderableColoredVertexArray::render_cva(
     tic.ntextures_filtered_skidmarks = filtered_skidmarks.size();
     std::vector<size_t> lightmap_indices_color = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_COLOR_MASK) ? lightmap_indices : std::vector<size_t>{};
     std::vector<size_t> lightmap_indices_depth = any(cva->material.occluded_pass & ExternalRenderPassType::LIGHTMAP_DEPTH_MASK) ? lightmap_indices : std::vector<size_t>{};
-    std::string reflection_map;
+    const VariableAndHash<std::string>* reflection_map = nullptr;
     float reflection_strength = 0.f;
-    if (!is_lightmap && !cva->material.reflection_map.empty()) {
+    if (!is_lightmap && !cva->material.reflection_map->empty()) {
         if (color_style == nullptr) {
-            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + cva->material.reflection_map + "\" has no style");
+            THROW_OR_ABORT("cva " + cva->name + ": Material with reflection map \"" + *cva->material.reflection_map + "\" has no style");
         }
         auto it = color_style->reflection_maps.find(cva->material.reflection_map);
         if (it == color_style->reflection_maps.end()) {
             THROW_OR_ABORT(
                 "cva " + cva->name + ": Could not find reflection map \""
-                + cva->material.reflection_map
+                + *cva->material.reflection_map
                 + "\" in style with keys:"
-                + join(", ", color_style->reflection_maps, [](const auto& s){return s.first;}));
+                + join(", ", color_style->reflection_maps, [](const auto& s){return *s.first;}));
         }
-        if (!it->second.empty()) {
-            reflection_map = it->second;
+        if (!it->second->empty()) {
+            reflection_map = &it->second;
             reflection_strength = color_style->reflection_strength;
             if (reflection_strength == 0.f) {
                 THROW_OR_ABORT("Reflection strength cannot be zero");
@@ -542,8 +544,8 @@ void RenderableColoredVertexArray::render_cva(
         tic.ntextures_specular = 0;
     }
     tic.ntextures_normal = !filtered_lights.empty() && color_requires_normal && render_config.normalmaps && cva->material.has_normalmap() && !is_lightmap ? cva->material.textures_color.size() : 0;
-    tic.ntextures_reflection = (size_t)(!is_lightmap && !reflection_map.empty());
-    tic.ntextures_dirt = (!cva->material.dirt_texture.empty()) && !is_lightmap ? 2 : 0;
+    tic.ntextures_reflection = (size_t)(!is_lightmap && (reflection_map != nullptr) && !(*reflection_map)->empty());
+    tic.ntextures_dirt = (!cva->material.dirt_texture->empty()) && !is_lightmap ? 2 : 0;
     tic.ntextures_interior = (!cva->material.interior_textures.empty()) && !is_lightmap ? INTERIOR_COUNT : 0;
     bool has_instances = (rcva_->instances_ != nullptr);
     bool has_lookat = (cva->material.transformation_mode == TransformationMode::POSITION_LOOKAT);
@@ -672,9 +674,9 @@ void RenderableColoredVertexArray::render_cva(
             .fragments_depend_on_distance = fragments_depend_on_distance,
             .fragments_depend_on_normal = fragments_depend_on_normal,
             // Not using NAN for ordering.
-            .dirtmap_offset = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_offset("dirtmap") : -1234,
-            .dirtmap_discreteness = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_discreteness("dirtmap") : -1234,
-            .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale("dirtmap") : -1234,
+            .dirtmap_offset = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_offset(dirtmap_name) : -1234,
+            .dirtmap_discreteness = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_discreteness(dirtmap_name) : -1234,
+            .dirt_scale = (tic.ntextures_dirt != 0) ? secondary_rendering_resources_.get_scale(dirtmap_name) : -1234,
             .texture_modifiers_hash = texture_modifiers_hash},
         filtered_lights,
         filtered_skidmarks,
@@ -984,7 +986,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind skidmark texture");
     for (const auto& [i, s] : enumerate(filtered_skidmarks)) {
-        std::string mname = "skidmark." + s.second->resource_suffix;
+        const auto& mname = s.second->resource_name;
         const auto& skidmark_vp = secondary_rendering_resources_.get_vp(mname);
         auto mvp_skidmark = dot2d(skidmark_vp, m.affine());
         CHK(glUniformMatrix4fv(rp.mvp_skidmarks_locations.at(i), 1, GL_TRUE, mvp_skidmark.casted<float>().flat_begin()));
@@ -1002,9 +1004,10 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind reflection texture");
     if (tic.ntextures_reflection != 0) {
+        assert_true(reflection_map != nullptr);
         CHK(glActiveTexture((GLenum)(GL_TEXTURE0 + tic.id_reflection())));
         CHK(glBindTexture(GL_TEXTURE_CUBE_MAP, rcva_->rendering_resources_.get_texture(ColormapWithModifiers{
-            .filename = reflection_map,
+            .filename = *reflection_map,
             .color_mode = ColorMode::RGB,
             .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())));
         CHK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -1013,7 +1016,7 @@ void RenderableColoredVertexArray::render_cva(
     }
     LOG_INFO("RenderableColoredVertexArray::render_cva bind dirtmap texture");
     if (tic.ntextures_dirt != 0) {
-        std::string mname = "dirtmap";
+        const auto& mname = dirtmap_name;
         {
             const auto& dirtmap_vp = secondary_rendering_resources_.get_vp(mname);
             auto mvp_dirtmap = dot2d(dirtmap_vp, m.affine());

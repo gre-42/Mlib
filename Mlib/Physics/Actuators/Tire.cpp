@@ -3,8 +3,8 @@
 using namespace Mlib;
 
 Tire::Tire(
-    const std::string& engine,
-    std::optional<std::string> delta_engine,
+    const VariableAndHash<std::string>& engine,
+    std::optional<VariableAndHash<std::string>> delta_engine,
     RigidBodyPulses* rbp,
     float brake_force,
     float brake_torque,

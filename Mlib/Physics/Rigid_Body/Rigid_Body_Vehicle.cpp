@@ -655,13 +655,13 @@ TirePowerIntent RigidBodyVehicle::consume_tire_surface_power(
     Tire& tire = get_tire(id);
     auto e = engines_.find(tire.engine);
     if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + tire.engine + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + *tire.engine + "\" exists");
     }
     auto de = delta_engines_.end();
     if (tire.delta_engine.has_value()) {
         de = delta_engines_.find(*tire.delta_engine);
         if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + *tire.delta_engine + "\" exists");
+            THROW_OR_ABORT("No delta engine with name \"" + **tire.delta_engine + "\" exists");
         }
     }
     return e->second.consume_tire_power(
@@ -677,13 +677,13 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
     Rotor& rotor = get_rotor(id);
     auto e = engines_.find(rotor.engine);
     if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + rotor.engine + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + *rotor.engine + "\" exists");
     }
     auto de = delta_engines_.end();
     if (rotor.delta_engine.has_value()) {
         de = delta_engines_.find(*rotor.delta_engine);
         if (de == delta_engines_.end()) {
-            THROW_OR_ABORT("No delta engine with name \"" + *rotor.delta_engine + "\" exists");
+            THROW_OR_ABORT("No delta engine with name \"" + **rotor.delta_engine + "\" exists");
         }
     }
     return e->second.consume_rotor_power(
@@ -695,12 +695,12 @@ TirePowerIntent RigidBodyVehicle::consume_rotor_surface_power(size_t id) {
 }
 
 void RigidBodyVehicle::set_surface_power(
-    const std::string& engine_name,
+    const VariableAndHash<std::string>& engine_name,
     const EnginePowerIntent& engine_power_intent)
 {
     auto e = engines_.find(engine_name);
     if (e == engines_.end()) {
-        THROW_OR_ABORT("No engine with name \"" + engine_name + "\" exists");
+        THROW_OR_ABORT("No engine with name \"" + *engine_name + "\" exists");
     }
     e->second.set_surface_power(
         EnginePowerIntent{
@@ -711,12 +711,12 @@ void RigidBodyVehicle::set_surface_power(
 }
 
 void RigidBodyVehicle::set_delta_surface_power(
-    const std::string& delta_engine_name,
+    const VariableAndHash<std::string>& delta_engine_name,
     const EnginePowerDeltaIntent& engine_power_delta_intent)
 {
     auto e = delta_engines_.find(delta_engine_name);
     if (e == delta_engines_.end()) {
-        THROW_OR_ABORT("No delta engine with name \"" + delta_engine_name + "\" exists");
+        THROW_OR_ABORT("No delta engine with name \"" + *delta_engine_name + "\" exists");
     }
     e->second.set_surface_power(
         EnginePowerDeltaIntent{
@@ -914,15 +914,17 @@ float RigidBodyVehicle::get_value(StatusComponents status_components) const {
     THROW_OR_ABORT("Unsupported status component: " + std::to_string((unsigned int)status_components));
 }
 
-StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<std::string>& name) {
+static auto engines_name = VariableAndHash<std::string>{ "engines" };
+
+StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<VariableAndHash<std::string>>& name) {
     if (name.size() != 2) {
         THROW_OR_ABORT("Unknown child status writer");
     }
-    if (name[0] != "engines") {
+    if (name[0] != engines_name) {
         THROW_OR_ABORT("Unknown child status writer");
     }
     if (!engines_.contains(name[1])) {
-        THROW_OR_ABORT("Could not find engine with name \"" + name[1] + '"');
+        THROW_OR_ABORT("Could not find engine with name \"" + *name[1] + '"');
     }
     return engines_.at(name[1]);
 }

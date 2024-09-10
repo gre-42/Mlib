@@ -42,13 +42,13 @@ void SceneToTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& rs = args.renderable_scenes["primary_scene"];
     auto& scene_window_logic = object_pool.create<RenderToTextureLogic>(
         CURRENT_SOURCE_LOCATION,
-        render_logics,                                             // child_logic
-        rendering_resources,                                       // rendering_resources
+        render_logics,                                                                      // child_logic
+        rendering_resources,                                                                // rendering_resources
         resource_update_cycle_from_string(args.arguments.at<std::string>(KnownArgs::update)),
-        FrameBufferChannelKind::ATTACHMENT,                        // depth_kind
-        args.arguments.at<std::string>(KnownArgs::texture_name),   // color_texture_name
-        "",                                                        // depth_texture_name
-        args.arguments.at<UFixedArray<int, 2>>(KnownArgs::size),    // texture_size
+        FrameBufferChannelKind::ATTACHMENT,                                                 // depth_kind
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::texture_name),           // color_texture_name
+        VariableAndHash<std::string>(),                                                     // depth_texture_name
+        args.arguments.at<UFixedArray<int, 2>>(KnownArgs::size),                            // texture_size
         FocusFilter{
             .focus_mask = focus_from_string(args.arguments.at<std::string>(KnownArgs::focus_mask)),
             .submenu_ids = args.arguments.at_non_null<std::set<std::string>>(KnownArgs::submenus, {})});

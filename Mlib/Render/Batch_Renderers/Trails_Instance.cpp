@@ -11,7 +11,7 @@
 using namespace Mlib;
 
 static std::shared_ptr<ColoredVertexArray<float>> gen_array(
-    const std::string& texture,
+    const VariableAndHash<std::string>& texture,
     const Shading& shading,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y)
@@ -51,7 +51,7 @@ static std::shared_ptr<ColoredVertexArray<float>> gen_array(
 }
 
 TrailsInstance::TrailsInstance(
-    const std::string& texture,
+    const VariableAndHash<std::string>& texture,
     const Shading& shading,
     const std::vector<float>& continuous_layer_x,
     const std::vector<float>& continuous_layer_y,

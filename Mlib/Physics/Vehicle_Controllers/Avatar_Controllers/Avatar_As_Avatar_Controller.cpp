@@ -18,15 +18,17 @@ AvatarAsAvatarController::AvatarAsAvatarController(
 AvatarAsAvatarController::~AvatarAsAvatarController()
 {}
 
+static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+
 void AvatarAsAvatarController::apply() {
     if ((any(abs(legs_z_) > float(1e-12))) && (drive_relaxation_ > 0.f)) {
         rb_.tires_z_ = legs_z_ / std::sqrt(sum(squared(legs_z_)));
-        rb_.set_surface_power("legs", EnginePowerIntent{
+        rb_.set_surface_power(legs_name, EnginePowerIntent{
             .surface_power = surface_power_,
             .drive_relaxation = drive_relaxation_});
     } else {
         rb_.tires_z_ = { 0.f, 0.f, 1.f };
-        rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = NAN});
+        rb_.set_surface_power(legs_name, EnginePowerIntent{.surface_power = NAN});
     }
     if (!std::isnan(target_yaw_)) {
         ypln_.set_yaw(target_yaw_);

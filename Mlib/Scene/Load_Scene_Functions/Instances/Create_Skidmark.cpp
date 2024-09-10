@@ -54,5 +54,5 @@ void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
         0 /* z_order */,
         CURRENT_SOURCE_LOCATION);
     node->add_skidmark(std::make_unique<Skidmark>(Skidmark{
-        .resource_suffix = resource_suffix}));
+        .resource_name = VariableAndHash{ "skidmark." + resource_suffix } }));
 }

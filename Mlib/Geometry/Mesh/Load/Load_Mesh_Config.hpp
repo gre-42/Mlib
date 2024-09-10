@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Material/Fresnel.hpp>
 #include <Mlib/Geometry/Material/Interpolation_Mode.hpp>
 #include <Mlib/Geometry/Triangle_Tangent_Error_Behavior.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <vector>
 
@@ -36,7 +37,7 @@ struct LoadMeshConfig {
     InterpolationMode magnifying_interpolation_mode;
     AggregateMode aggregate_mode;
     TransformationMode transformation_mode;
-    std::string reflection_map;
+    VariableAndHash<std::string> reflection_map;
     FixedArray<float, 3> emissive_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> ambient_factor = FixedArray<float, 3>(1.f);
     FixedArray<float, 3> diffuse_factor = FixedArray<float, 3>(1.f);

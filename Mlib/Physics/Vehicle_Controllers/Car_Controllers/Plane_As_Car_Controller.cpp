@@ -20,6 +20,9 @@ PlaneAsCarController::PlaneAsCarController(
 
 PlaneAsCarController::~PlaneAsCarController() = default;
 
+static const auto wheels_name = VariableAndHash<std::string>{"wheels"};
+static const auto turbine_name = VariableAndHash<std::string>{"turbine"};
+
 void PlaneAsCarController::apply_this() {
     auto forward = [this](){
         for (const auto& [tire_id, _] : tire_angles_) {
@@ -34,13 +37,13 @@ void PlaneAsCarController::apply_this() {
     case VehicleDomain::AIR:
     case VehicleDomain::UNDEFINED:
         forward();
-        rb_.set_surface_power("wheels", EnginePowerIntent{ .surface_power = NAN });  // NAN=break
-        rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = surface_power_});
+        rb_.set_surface_power(wheels_name, EnginePowerIntent{ .surface_power = NAN });  // NAN=break
+        rb_.set_surface_power(turbine_name, EnginePowerIntent{.surface_power = surface_power_});
         return;
     case VehicleDomain::GROUND:
         steer();
-        rb_.set_surface_power("wheels", EnginePowerIntent{.surface_power = std::isnan(surface_power_) ? NAN : 0.f});
-        rb_.set_surface_power("turbine", EnginePowerIntent{.surface_power = surface_power_});
+        rb_.set_surface_power(wheels_name, EnginePowerIntent{.surface_power = std::isnan(surface_power_) ? NAN : 0.f});
+        rb_.set_surface_power(turbine_name, EnginePowerIntent{.surface_power = surface_power_});
         return;
     case VehicleDomain::END:
         THROW_OR_ABORT("Invalid vehicle domain");

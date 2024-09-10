@@ -68,7 +68,7 @@ HudTracker::HudTracker(
     HudErrorBehavior hud_error_behavior,
     const FixedArray<float, 2>& center,
     const FixedArray<float, 2>& size,
-    const std::string& image_resource_name,
+    const VariableAndHash<std::string>& image_resource_name,
     ResourceUpdateCycle update_cycle)
     : FillWithTextureLogic{
         RenderingContextStack::primary_rendering_resources(),

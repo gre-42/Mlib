@@ -6,6 +6,7 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource/Empty_Array_Buffer.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -41,7 +42,7 @@ public:
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
     void clear_alias();
-    void set_alias(const std::string& alias);
+    void set_alias(VariableAndHash<std::string> alias);
 private:
     void deallocate();
     RenderLogic& child_logic_;
@@ -50,7 +51,7 @@ private:
     BufferBackgroundCopy vertices_;
     EmptyArrayBuffer empty_;
     VertexArray va_;
-    std::string alias_;
+    VariableAndHash<std::string> alias_;
     bool loaded_;
     ColormapWithModifiers colormap_;
     DeallocationToken deallocation_token_;

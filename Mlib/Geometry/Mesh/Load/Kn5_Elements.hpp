@@ -3,11 +3,12 @@
 #include <Mlib/Default_Uninitialized_Vector.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <list>
-#include <map>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Mlib {
@@ -57,13 +58,13 @@ struct kn5Material
     DefaultOptional<float> fresnelEXP          = DefaultOptional<float>::from_default(0.f);
     DefaultOptional<float> fresnelMaxLevel     = DefaultOptional<float>::from_default(0.f);
 
-    std::string txDiffuse;
-    std::string txNormal;
-    std::string txMask;
-    FixedArray<std::string, 4> txDetail4 = uninitialized;
-    std::string txDetail1;
-    std::string txDetailNM;
-    std::string txVariation;
+    VariableAndHash<std::string> txDiffuse;
+    VariableAndHash<std::string> txNormal;
+    VariableAndHash<std::string> txMask;
+    FixedArray<VariableAndHash<std::string>, 4> txDetail4 = uninitialized;
+    VariableAndHash<std::string> txDetail1;
+    VariableAndHash<std::string> txDetailNM;
+    VariableAndHash<std::string> txVariation;
 
     std::string shaderProps = "";
 };
@@ -138,9 +139,9 @@ struct kn5Model
 {
     int32_t version;
     std::optional<int> unknownNo;
-    std::map<std::string, kn5Texture> textures;
-    std::map<size_t, kn5Material> materials;
-    std::map<size_t, kn5Node> nodes;
+    std::unordered_map<VariableAndHash<std::string>, kn5Texture> textures;
+    std::unordered_map<size_t, kn5Material> materials;
+    std::unordered_map<size_t, kn5Node> nodes;
 };
 
 }

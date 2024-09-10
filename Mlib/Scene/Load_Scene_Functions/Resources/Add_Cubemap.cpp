@@ -25,6 +25,6 @@ LoadSceneJsonUserFunction AddCubemap::json_user_function = [](const LoadSceneJso
 void AddCubemap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
     RenderingContextStack::primary_rendering_resources().add_cubemap(
-        args.arguments.at<std::string>(KnownArgs::alias),
-        args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p){return p.path;}));
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::alias),
+        args.arguments.pathes_or_variables(KnownArgs::filenames, [](const FPath& p) { return VariableAndHash{ p.path }; }));
 }

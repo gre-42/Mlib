@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Signal/Pid_Controller.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 
 namespace Mlib {
@@ -20,8 +21,8 @@ GravityCorrection gravity_correction_from_string(const std::string& str);
 class Rotor: public BaseRotor {
 public:
     Rotor(
-        const std::string& engine,
-        const std::optional<std::string>& delta_engine,
+        const VariableAndHash<std::string>& engine,
+        const std::optional<VariableAndHash<std::string>>& delta_engine,
         const TransformationMatrix<float, ScenePos, 3>& rest_location,
         float power2lift,
         float w,

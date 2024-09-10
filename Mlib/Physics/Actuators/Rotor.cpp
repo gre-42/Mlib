@@ -21,8 +21,8 @@ GravityCorrection Mlib::gravity_correction_from_string(const std::string& str) {
 }
 
 Rotor::Rotor(
-    const std::string& engine,
-    const std::optional<std::string>& delta_engine,
+    const VariableAndHash<std::string>& engine,
+    const std::optional<VariableAndHash<std::string>>& delta_engine,
     const TransformationMatrix<float, ScenePos, 3>& rest_location,
     float power2lift,
     float w,

@@ -151,7 +151,7 @@ PostProcessingLogic::~PostProcessingLogic() {
 
 void PostProcessingLogic::ensure_initialized() {
     if (!initialized_) {
-        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, !soft_light_filename_.empty()));
+        rp_.allocate(simple_vertex_shader_text_, fragment_shader_text(low_pass_, high_pass_, depth_fog_, !soft_light_filename_->empty()));
 
         // https://www.khronos.org/opengl/wiki/Example/Texture_Shader_Binding
         rp_.screen_texture_color_location = rp_.get_uniform_location("screenTextureColor");
@@ -169,7 +169,7 @@ void PostProcessingLogic::ensure_initialized() {
         } else {
             rp_.background_color_location = 0;
         }
-        if (!soft_light_filename_.empty()) {
+        if (!soft_light_filename_->empty()) {
             rp_.soft_light_texture_location = rp_.get_uniform_location("softLightTexture");
         } else {
             rp_.soft_light_texture_location = 0;
@@ -242,7 +242,7 @@ void PostProcessingLogic::render(
             if (depth_fog_) {
                 CHK(glUniform3fv(rp_.background_color_location, 1, background_color_.flat_begin()));
             }
-            if (!soft_light_filename_.empty()) {
+            if (!soft_light_filename_->empty()) {
                 CHK(glUniform1i(rp_.soft_light_texture_location, 2));
             }
             CHK(glActiveTexture(GL_TEXTURE0 + 0)); // Texture unit 0
@@ -252,7 +252,7 @@ void PostProcessingLogic::render(
                 CHK(glActiveTexture(GL_TEXTURE0 + 1)); // Texture unit 1
                 CHK(glBindTexture(GL_TEXTURE_2D, fbs_.texture_depth()));
             }
-            if (!soft_light_filename_.empty()) {
+            if (!soft_light_filename_->empty()) {
                 CHK(glActiveTexture(GL_TEXTURE0 + 2)); // Texture unit 2
                 CHK(glBindTexture(
                     GL_TEXTURE_2D,
@@ -295,7 +295,7 @@ bool PostProcessingLogic::requires_postprocessing() const {
 }
 
 void PostProcessingLogic::set_soft_light_filename(const std::string& soft_light_filename) {
-    if (!soft_light_filename_.empty()) {
+    if (!soft_light_filename_->empty()) {
         THROW_OR_ABORT("Soft light filename already set");
     }
     soft_light_filename_ = soft_light_filename;

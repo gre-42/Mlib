@@ -32,8 +32,10 @@ AvatarAnimationUpdater::AvatarAnimationUpdater(
 
 AvatarAnimationUpdater::~AvatarAnimationUpdater() = default;
 
+static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+
 void AvatarAnimationUpdater::notify_movement_intent() {
-    auto it = rb_.engines_.find("legs");
+    auto it = rb_.engines_.find(legs_name);
     if (it == rb_.engines_.end()) {
         THROW_OR_ABORT("AvatarAnimationUpdater could not find \"legs\" engine");
     }

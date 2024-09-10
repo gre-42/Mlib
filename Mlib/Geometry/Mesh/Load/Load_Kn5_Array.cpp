@@ -21,6 +21,7 @@
 #include <Mlib/Strings/To_Number.hpp>
 #include <filesystem>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -207,7 +208,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
 {
     const bool show_only_collidables = false;
     std::list<std::shared_ptr<ColoredVertexArray<TPos>>> result;
-    std::map<std::string, kn5Texture> textures;
+    std::unordered_map<VariableAndHash<std::string>, kn5Texture> textures;
     std::set<std::string> grass_materials;
     std::set<std::string> occluding_meshes;
     std::vector<unsigned int> texture_grid;
@@ -544,8 +545,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 }
                 if (any(attrs & MetaAttributes::SURFACE_GRASS) &&
                     (material->shader == "ksGrass") &&
-                    !material->txDiffuse.empty() &&
-                    !material->txVariation.empty())
+                    !material->txDiffuse->empty() &&
+                    !material->txVariation->empty())
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
@@ -576,8 +577,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                 } else if (
                     (material->useDetail.value_or_default() != 0.f) &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
-                    !material->txDiffuse.empty() &&
-                    !material->txDetail1.empty())
+                    !material->txDiffuse->empty() &&
+                    !material->txDetail1->empty())
                 {
                     tl.material.textures_color = {BlendMapTexture{
                         .texture_descriptor = {
@@ -606,8 +607,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .role = BlendMapRole::DETAIL_COLOR,
                         .uv_source = BlendMapUvSource::VERTICAL});
                 } else if (
-                    !material->txDiffuse.empty() &&
-                    !material->txMask.empty() &&
+                    !material->txDiffuse->empty() &&
+                    !material->txMask->empty() &&
                     any(material->mult.template applied<bool>([](const auto& v) { return v.value_or_default() != 0.f; })) &&
                     (material->detailUVMultiplier.value_or_default() != 0.f) &&
                     ((material->shader == "ksMultilayer") ||
@@ -630,8 +631,8 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                         .role = BlendMapRole::DETAIL_BASE,
                         .reweight_mode = BlendMapReweightMode::DISABLED}};
                     for (uint32_t i = 0; i < 4; ++i) {
-                        if (material->txDetail4(i).empty()) // ||
-                            // (material->mult(i).value_or_default() == 0.f))
+                        if (material->txDetail4(i)->empty()) // ||
+                            // (material->mult(i)->value_or_default() == 0.f))
                         {
                             continue;
                         }
@@ -664,7 +665,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
                                 : BlendMapUvSource::HORIZONTAL});
                     }
                 } else {
-                    if (!material->txDiffuse.empty()) {
+                    if (!material->txDiffuse->empty()) {
                         tl.material.textures_color = {BlendMapTexture{
                             .texture_descriptor = {
                                 .color = {
@@ -781,7 +782,7 @@ std::list<std::shared_ptr<ColoredVertexArray<TPos>>> Mlib::load_kn5_array(
         append_kn5(filename);
     }
     {
-        std::map<std::string, ColorMode> color_modes;
+        std::unordered_map<VariableAndHash<std::string>, ColorMode> color_modes;
         for (const auto& cva : result) {
             cva->material.compute_color_mode();
             for (const auto& t : cva->material.textures_color) {

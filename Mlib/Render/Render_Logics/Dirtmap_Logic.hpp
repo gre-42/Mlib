@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Render/Render_Logic.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <memory>
 #include <string>
 
@@ -33,6 +34,7 @@ private:
     RenderingResources& rendering_resources_;
     RenderLogic& child_logic_;
     bool generated_;
+    VariableAndHash<std::string> dirtmap_;
 };
 
 }

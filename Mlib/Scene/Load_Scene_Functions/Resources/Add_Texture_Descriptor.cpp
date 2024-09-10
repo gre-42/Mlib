@@ -63,7 +63,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_s, "repeat")),
         wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode_t, "repeat"))};
     auto normal = ColormapWithModifiers{
-        .filename = args.arguments.try_path_or_variable(KnownArgs::normal).path,
+        .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::normal).path},
         .average = args.arguments.try_path_or_variable(KnownArgs::average_normal).path,
         .color_mode = ColorMode::RGB,
         .mipmap_mode = mipmap_mode,
@@ -76,10 +76,10 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
         }
     }
     RenderingContextStack::primary_rendering_resources().add_texture_descriptor(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         TextureDescriptor{
             .color = ColormapWithModifiers{
-                .filename = args.arguments.path_or_variable(KnownArgs::color).path,
+                .filename = VariableAndHash{args.arguments.path_or_variable(KnownArgs::color).path},
                 .desaturate = args.arguments.at<float>(KnownArgs::desaturate, 0.f),
                 .alpha = args.arguments.try_path_or_variable(KnownArgs::alpha).path,
                 .histogram = args.arguments.try_path_or_variable(KnownArgs::histogram).path,
@@ -109,7 +109,7 @@ void AddTextureDescriptor::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .anisotropic_filtering_level = anisotropic_filtering_level,
                 .wrap_modes = wrap_modes}.compute_hash(),
             .specular = ColormapWithModifiers{
-                .filename = args.arguments.try_path_or_variable(KnownArgs::specular).path,
+                .filename = VariableAndHash{args.arguments.try_path_or_variable(KnownArgs::specular).path},
                 .color_mode = ColorMode::RGB,
                 .mipmap_mode = mipmap_mode,
                 .anisotropic_filtering_level = anisotropic_filtering_level,

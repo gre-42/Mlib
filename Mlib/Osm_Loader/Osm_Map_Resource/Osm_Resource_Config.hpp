@@ -36,7 +36,7 @@ enum class WrapMode;
 enum class PhysicsMaterial: uint32_t;
 
 struct RoadStyle {
-    std::vector<std::string> textures;
+    std::vector<VariableAndHash<std::string>> textures;
     float uvx;
 };
 
@@ -62,25 +62,25 @@ struct OsmResourceConfig {
     std::vector<ParsedResourceName> zone_resource_names;
     std::map<TerrainType, PhysicsMaterial> terrain_materials;
     std::map<RoadType, PhysicsMaterial> street_materials;
-    std::map<TerrainType, std::vector<std::string>> terrain_textures;
-    std::map<TerrainType, std::string> terrain_dirt_textures;
-    std::string street_dirt_texture;
-    std::map<RoadType, std::vector<std::string>> street_mud_textures;
-    std::map<RoadType, std::string> street_reflection_map;
-    std::map<TerrainType, std::string> terrain_reflection_map;
-    std::map<RoadType, std::vector<std::string>> street_alpha_textures;
-    std::map<RoadType, std::vector<std::string>> street_mud_alpha_textures;
+    std::map<TerrainType, std::vector<VariableAndHash<std::string>>> terrain_textures;
+    std::map<TerrainType, VariableAndHash<std::string>> terrain_dirt_textures;
+    VariableAndHash<std::string> street_dirt_texture;
+    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_textures;
+    std::map<RoadType, VariableAndHash<std::string>> street_reflection_map;
+    std::map<TerrainType, VariableAndHash<std::string>> terrain_reflection_map;
+    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_alpha_textures;
+    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_mud_alpha_textures;
     std::map<RoadProperties, RoadStyle> street_texture;
-    std::map<RoadType, std::vector<std::string>> street_crossing_textures;
-    std::map<RoadType, std::string> curb_street_texture;
-    std::map<RoadType, std::string> curb2_street_texture;
-    std::map<RoadType, std::string> air_curb_street_texture;
+    std::map<RoadType, std::vector<VariableAndHash<std::string>>> street_crossing_textures;
+    std::map<RoadType, VariableAndHash<std::string>> curb_street_texture;
+    std::map<RoadType, VariableAndHash<std::string>> curb2_street_texture;
+    std::map<RoadType, VariableAndHash<std::string>> air_curb_street_texture;
     float racing_line_width_x = 3.0f;
     float racing_line_scale_y = 0.1f;
-    std::string racing_line_texture;
+    VariableAndHash<std::string> racing_line_texture;
     std::string racing_line_track;
     std::string racing_line_playback;
-    std::string air_support_texture;
+    VariableAndHash<std::string> air_support_texture;
     std::vector<SocleTexture> socle_textures;
     std::vector<FacadeTexture> entrance_textures;
     float extrusion_ambient_occlusion = 0.5f;
@@ -92,11 +92,11 @@ struct OsmResourceConfig {
             FixedArray<float, 3>{ 0.8f, 0.8f, 0.8f }},
         OutOfRangeBehavior::CLAMP };
     std::vector<FacadeTexture> facade_textures;
-    std::string ceiling_texture;
+    VariableAndHash<std::string> ceiling_texture;
     Map<std::string, BarrierStyle> barrier_styles;
     float boundary_barrier_height = 1.f;
     std::string boundary_barrier_style;
-    std::string tunnel_pipe_texture;
+    VariableAndHash<std::string> tunnel_pipe_texture;
     std::string tunnel_pipe_resource_name = "pipe_box";
     std::string tunnel_bdry_resource_name = "pipe_box_boundary";
     Map<RoadType, std::string> street_surface_central_resource_names;
@@ -105,9 +105,9 @@ struct OsmResourceConfig {
     Map<RoadType, std::string> street_bumps_central_resource_names;
     Map<RoadType, std::string> street_bumps_endpoint0_resource_names;
     Map<RoadType, std::string> street_bumps_endpoint1_resource_names;
-    std::string water_texture;
+    VariableAndHash<std::string> water_texture;
     float water_height = 0;
-    std::string roof_texture;
+    VariableAndHash<std::string> roof_texture;
     std::vector<ParsedResourceName> road_bollard_resource_names;
     std::vector<ParsedResourceName> trashcan_resource_names;
     WaysideDistances road_bollard_distances{

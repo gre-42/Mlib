@@ -651,7 +651,7 @@ static std::shared_ptr<Texture> read_texture(
     texture->mask = Mlib::remove_trailing_zeros(read_string(istr, length, "mask", verbosity));
 
     if (any(verbosity & IoVerbosity::METADATA)) {
-        linfo() << "Texture ref: " << texture->name << ", mask: " << texture->mask;
+        linfo() << "Texture ref: " << *texture->name << ", mask: " << *texture->mask;
     }
     // uint32_t mipState = cfg.mipmapping;
     // uint32_t autoMipState = cfg.auto_mipmapping;

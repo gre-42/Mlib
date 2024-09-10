@@ -249,8 +249,8 @@ void test_physics_engine(unsigned int seed) {
             read_pixels_logic,
             ExternalRenderPassType::LIGHTMAP_DEPTH,
             light_node,
-            ColormapWithModifiers{.filename = "lightmap_color", .color_mode = ColorMode::RGB}.compute_hash(),
-            ColormapWithModifiers{.filename = "lightmap_depth", .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
+            ColormapWithModifiers{ .filename = VariableAndHash<std::string>{"lightmap_color"}, .color_mode = ColorMode::RGB }.compute_hash(),
+            ColormapWithModifiers{ .filename = VariableAndHash<std::string>{"lightmap_depth"}, .color_mode = ColorMode::GRAYSCALE }.compute_hash(),
             "",     // black_node_name
             true,   // with_depth_texture
             2048,   // lightmap_width

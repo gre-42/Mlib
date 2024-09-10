@@ -1,29 +1,30 @@
 #pragma once
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 #include <string>
 
 namespace Mlib {
 
 template <class TBaseMap>
-class ThreadsafeStringGenericMap {
+class ThreadsafeStringWithHashGenericMap {
 public:
     using mapped_type = TBaseMap::mapped_type;
     using key_type = TBaseMap::key_type;
     using node_type = TBaseMap::node_type;
 
-    explicit ThreadsafeStringGenericMap(std::string value_name)
+    explicit ThreadsafeStringWithHashGenericMap(std::string value_name)
         : value_name_{ std::move(value_name) }
     {}
-    ~ThreadsafeStringGenericMap() = default;
+    ~ThreadsafeStringWithHashGenericMap() = default;
 
     template <class... Args>
     mapped_type& add(key_type key, Args &&...args) {
         std::scoped_lock lock{ mutex_ };
         auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
         if (!res.second) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" already exists");
+            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" already exists");
         }
         return res.first->second;
     }
@@ -73,7 +74,7 @@ public:
         std::shared_lock lock{ mutex_ };
         auto res = elements_.extract(key);
         if (res.empty()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
+            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" does not exist");
         }
         return res;
     }
@@ -87,13 +88,13 @@ public:
         std::shared_lock lock{ mutex_ };
         auto it = elements_.find(key);
         if (it == elements_.end()) {
-            THROW_OR_ABORT(value_name_ + " with name \"" + key + "\" does not exist");
+            THROW_OR_ABORT(value_name_ + " with name \"" + *key + "\" does not exist");
         }
         return it->second;
     }
 
     const mapped_type& get(const key_type& name) const {
-        return const_cast<ThreadsafeStringGenericMap*>(this)->get(name);
+        return const_cast<ThreadsafeStringWithHashGenericMap*>(this)->get(name);
     }
 
     size_t size() const {

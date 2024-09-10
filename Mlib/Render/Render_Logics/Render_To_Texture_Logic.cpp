@@ -21,8 +21,8 @@ RenderToTextureLogic::RenderToTextureLogic(
     RenderingResources& rendering_resources,
     ResourceUpdateCycle update_cycle,
     FrameBufferChannelKind depth_kind,
-    std::string color_texture_name,
-    std::string depth_texture_name,
+    VariableAndHash<std::string> color_texture_name,
+    VariableAndHash<std::string> depth_texture_name,
     const FixedArray<int, 2>& texture_size,
     FocusFilter focus_filter)
     : child_logic_{ child_logic }

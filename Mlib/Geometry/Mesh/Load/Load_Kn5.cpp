@@ -58,7 +58,7 @@ static uint32_t ReadUInt32(std::istream& str) {
 
 static void readNodes(
     std::istream& modelStream,
-    std::map<size_t, kn5Node>& nodeList,
+    std::unordered_map<size_t, kn5Node>& nodeList,
     std::optional<size_t> parentID,
     const kn5Model& model,
     bool verbose)
@@ -175,16 +175,16 @@ static void readNodes(
             matInfo <<
                 " material: " << material.name <<
                 " shader: " << material.shader;
-            if (!material.txDiffuse.empty()) {
-                matInfo << " diffuse: " << material.txDiffuse;
-                auto info = ImageInfo::load(material.txDiffuse, &model.textures.at(material.txDiffuse).data);
+            if (!material.txDiffuse->empty()) {
+                matInfo << " diffuse: " << *material.txDiffuse;
+                auto info = ImageInfo::load(*material.txDiffuse, &model.textures.at(material.txDiffuse).data);
                 matInfo << ' ' << info.size(0) << 'x' << info.size(1);
             }
-            if (!material.txNormal.empty()) {
-                matInfo << " normal: " << material.txNormal;
+            if (!material.txNormal->empty()) {
+                matInfo << " normal: " << *material.txNormal;
             }
-            if (!material.txMask.empty()) {
-                matInfo << " mask: " << material.txMask;
+            if (!material.txMask->empty()) {
+                matInfo << " mask: " << *material.txMask;
             }
             if (material.mult(0).has_value()) {
                 matInfo << " multR: " << material.mult(0).value();
@@ -204,23 +204,23 @@ static void readNodes(
             if (material.detailNMMult.has_value()) {
                 matInfo << " detailNMMult: " << material.detailNMMult.value();
             }
-            if (!material.txDetail4(0).empty()) {
-                matInfo << " detailR: " << material.txDetail4(0);
+            if (!material.txDetail4(0)->empty()) {
+                matInfo << " detailR: " << *material.txDetail4(0);
             }
-            if (!material.txDetail4(1).empty()) {
-                matInfo << " detailG: " << material.txDetail4(1);
+            if (!material.txDetail4(1)->empty()) {
+                matInfo << " detailG: " << *material.txDetail4(1);
             }
-            if (!material.txDetail4(2).empty()) {
-                matInfo << " detailB: " << material.txDetail4(2);
+            if (!material.txDetail4(2)->empty()) {
+                matInfo << " detailB: " << *material.txDetail4(2);
             }
-            if (!material.txDetail4(3).empty()) {
-                matInfo << " detailA: " << material.txDetail4(3);
+            if (!material.txDetail4(3)->empty()) {
+                matInfo << " detailA: " << *material.txDetail4(3);
             }
-            if (!material.txDetail1.empty()) {
-                matInfo << " detail: " << material.txDetail1;
+            if (!material.txDetail1->empty()) {
+                matInfo << " detail: " << *material.txDetail1;
             }
-            if (!material.txDetailNM.empty()) {
-                matInfo << " detailNM: " << material.txDetailNM;
+            if (!material.txDetailNM->empty()) {
+                matInfo << " detailNM: " << *material.txDetailNM;
             }
             if (material.useDetail.value_or_default() == 1.f) {
                 matInfo << " useDetail";
@@ -290,7 +290,7 @@ kn5Model Mlib::load_kn5(
         int texType = ReadInt32(binStream);
         std::string texName = ModifiedTextureName(ReadStr(binStream, ReadUInt32(binStream), "texture name"));
         int texSize = ReadInt32(binStream);
-        auto tex = newModel.textures.try_emplace(texName, kn5Texture{.type = texType});
+        auto tex = newModel.textures.try_emplace(VariableAndHash{ texName }, kn5Texture{ .type = texType });
         if (!tex.second) {
             lwarn() << "Found multiple textures with name \"" << texName << "\", keeping the first one";
             binStream.ignore(texSize);

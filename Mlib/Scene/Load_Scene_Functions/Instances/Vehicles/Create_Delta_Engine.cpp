@@ -35,7 +35,7 @@ void CreateDeltaEngine::execute(const LoadSceneJsonUserFunctionArgs& args)
     DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::rigid_body), DP_LOC);
     auto& rb = get_rigid_body_vehicle(node);
     auto ep = rb.delta_engines_.try_emplace(
-        args.arguments.at<std::string>(KnownArgs::name));
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name));
     if (!ep.second) {
         THROW_OR_ABORT("Delta engine with name \"" + args.arguments.at<std::string>(KnownArgs::name) + "\" already exists");
     }

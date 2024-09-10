@@ -67,7 +67,7 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
         exclusive_node,
         ypln,
         physics_engine.advance_times_,
-        args.arguments.path(KnownArgs::filename),
+        VariableAndHash{ args.arguments.path(KnownArgs::filename) },
         resource_update_cycle_from_string(args.arguments.at(KnownArgs::update)),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::center),
         args.arguments.at<UFixedArray<float, 2>>(KnownArgs::size),

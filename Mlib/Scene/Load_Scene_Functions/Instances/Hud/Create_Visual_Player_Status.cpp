@@ -70,7 +70,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
     DanglingRef<SceneNode> node = player->scene_node();
     auto lo = &get_status_writer(node);
     if (args.arguments.contains(KnownArgs::child)) {
-        lo = &lo->child_status_writer(args.arguments.at<std::vector<std::string>>(KnownArgs::child));
+        lo = &lo->child_status_writer(args.arguments.at<std::vector<VariableAndHash<std::string>>>(KnownArgs::child));
     }
     StatusComponents log_components = status_components_from_string(args.arguments.at<std::string>(KnownArgs::format));
     auto& logger = object_pool.create<VisualMovableLogger>(
@@ -91,7 +91,7 @@ void CreateVisualPlayerStatus::execute(const LoadSceneJsonUserFunctionArgs& args
             log_components,
             args.arguments.path(KnownArgs::ttf_file),
             ColormapWithModifiers{
-                .filename = c->path(CircularArgs::pointer),
+                .filename = VariableAndHash{c->path(CircularArgs::pointer)},
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),

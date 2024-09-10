@@ -31,8 +31,10 @@ PlaneController::PlaneController(
 
 PlaneController::~PlaneController() = default;
 
+static const auto turbine_name = VariableAndHash<std::string>{ "turbine" };
+
 void PlaneController::apply() {
-    rb_.set_surface_power("turbine", EnginePowerIntent{
+    rb_.set_surface_power(turbine_name, EnginePowerIntent{
         .surface_power = turbine_power_,
         .drive_relaxation = throttle_relaxation_ });
     for (size_t i : left_front_aileron_wing_ids_) {

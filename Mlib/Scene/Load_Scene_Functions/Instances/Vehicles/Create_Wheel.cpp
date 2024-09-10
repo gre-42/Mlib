@@ -61,8 +61,8 @@ void CreateWheel::execute(const LoadSceneJsonUserFunctionArgs& args)
     std::string vehicle = args.arguments.at<std::string>(KnownArgs::vehicle);
     auto wheel_node_name = args.arguments.try_at_non_null<std::string>(KnownArgs::wheel);
     float radius = args.arguments.at<float>(KnownArgs::radius) * meters;
-    auto engine = args.arguments.at<std::string>(KnownArgs::engine);
-    auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
+    auto engine = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::engine);
+    auto delta_engine = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::delta_engine);
     Interp<float> mus{
         args.arguments.at<std::vector<float>>(KnownArgs::musF),
         args.arguments.at<std::vector<float>>(KnownArgs::musC),

@@ -1224,7 +1224,7 @@ OsmMapResource::OsmMapResource(
     TriangleList<double>::convert_triangle_to_vertex_normals(tls_wall_barriers);
 
     std::list<std::shared_ptr<TriangleList<double>>> tls_all;
-    if (!config.water_texture.empty()) {
+    if (!config.water_texture->empty()) {
         std::list<std::pair<WaterType, std::list<FixedArray<double, 2>>>> water_contours =
             get_water_region_contours(nodes, ways);
         LOG_INFO("triangulate_water");

@@ -58,7 +58,7 @@ void AddTextureAtlas::execute(const LoadSceneJsonUserFunctionArgs& args)
                 .width = texture_size(0),
                 .height = texture_size(1),
                 .name = res.colormap(ColormapWithModifiers{
-                    .filename = a.path_or_variable(AtlasTileArgs::texture).path,
+                    .filename = VariableAndHash{a.path_or_variable(AtlasTileArgs::texture).path},
                     .color_mode = color_mode,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS}.compute_hash())
             },

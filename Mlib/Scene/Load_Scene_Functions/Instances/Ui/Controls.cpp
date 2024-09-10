@@ -51,7 +51,7 @@ void Controls::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& controls_logic = object_pool.create<ControlsLogic>(
         CURRENT_SOURCE_LOCATION,
         ColormapWithModifiers{
-            .filename = args.arguments.path(KnownArgs::gamepad_texture),
+            .filename = VariableAndHash{args.arguments.path(KnownArgs::gamepad_texture)},
             .color_mode = ColorMode::RGBA
         }.compute_hash(),
         std::make_unique<Widget>(

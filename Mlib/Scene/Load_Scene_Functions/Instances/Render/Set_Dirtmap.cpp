@@ -29,11 +29,13 @@ SetDirtmap::SetDirtmap(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
+static const auto dirtmap_name = VariableAndHash<std::string>("dirtmap");
+
 void SetDirtmap::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    rendering_resources.set_alias("dirtmap", args.arguments.path_or_variable(KnownArgs::filename).path);
-    rendering_resources.set_offset("dirtmap", args.arguments.at<float>(KnownArgs::offset));
-    rendering_resources.set_discreteness("dirtmap", args.arguments.at<float>(KnownArgs::discreteness));
-    rendering_resources.set_scale("dirtmap", args.arguments.at<float>(KnownArgs::scale));
-    rendering_resources.set_texture_wrap("dirtmap", wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
+    rendering_resources.set_alias(dirtmap_name, VariableAndHash{ args.arguments.path_or_variable(KnownArgs::filename).path });
+    rendering_resources.set_offset(dirtmap_name, args.arguments.at<float>(KnownArgs::offset));
+    rendering_resources.set_discreteness(dirtmap_name, args.arguments.at<float>(KnownArgs::discreteness));
+    rendering_resources.set_scale(dirtmap_name, args.arguments.at<float>(KnownArgs::scale));
+    rendering_resources.set_texture_wrap(dirtmap_name, wrap_mode_from_string(args.arguments.at<std::string>(KnownArgs::wrap_mode)));
 }

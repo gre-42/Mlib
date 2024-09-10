@@ -117,7 +117,7 @@ void SkyboxLogic::render(
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
     if (!loaded_) {
         loaded_ = true;
-        if (!alias_.empty()) {
+        if (!alias_->empty()) {
             rp_.allocate(vertex_shader_text, fragment_shader_text);
             rp_.skybox_location = rp_.get_uniform_location("skybox");
             rp_.vp_location = rp_.get_uniform_location("vp");
@@ -136,7 +136,7 @@ void SkyboxLogic::render(
         scene_graph_config,
         render_results,
         frame_id);
-    if (!alias_.empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
+    if (!alias_->empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         rp_.use();
@@ -191,11 +191,11 @@ void SkyboxLogic::reset() {
 }
 
 void SkyboxLogic::clear_alias() {
-    alias_.clear();
+    alias_ = std::string();
 }
 
-void SkyboxLogic::set_alias(const std::string& alias) {
-    if (!alias_.empty()) {
+void SkyboxLogic::set_alias(VariableAndHash<std::string> alias) {
+    if (!alias_->empty()) {
         THROW_OR_ABORT("SkyboxLogic::set_alias called multiple times");
     }
     alias_ = alias;

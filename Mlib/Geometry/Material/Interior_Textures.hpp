@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Orderable_Fixed_Array.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -20,7 +21,7 @@ struct InteriorTextures {
     InteriorTextures& operator = (InteriorTextures&& other);
     std::strong_ordering operator <=> (const InteriorTextures&) const = default;
     bool empty() const;
-    const std::string& operator [](size_t index) const;
+    const VariableAndHash<std::string>& operator [](size_t index) const;
     template <class Archive>
     void serialize(Archive& archive) {
         archive(facade_edge_size);
@@ -36,11 +37,11 @@ struct InteriorTextures {
     OrderableFixedArray<float, 2> facade_edge_size{ 0.f, 0.f };
     OrderableFixedArray<float, 2> facade_inner_size{ 0.f, 0.f };
     OrderableFixedArray<float, 3> interior_size{ 0.f, 0.f, 0.f };
-    std::string left;
-    std::string right;
-    std::string floor;
-    std::string ceiling;
-    std::string back;
+    VariableAndHash<std::string> left;
+    VariableAndHash<std::string> right;
+    VariableAndHash<std::string> floor;
+    VariableAndHash<std::string> ceiling;
+    VariableAndHash<std::string> back;
 };
 
 std::ostream& operator << (std::ostream& ostr, const InteriorTextures& t);

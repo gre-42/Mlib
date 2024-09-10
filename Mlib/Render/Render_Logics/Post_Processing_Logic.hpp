@@ -5,6 +5,7 @@
 #include <Mlib/Render/Instance_Handles/Vertex_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Generic_Post_Processing_Logic.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 namespace Mlib {
 
@@ -56,7 +57,7 @@ private:
     bool depth_fog_;
     bool low_pass_;
     bool high_pass_;
-    std::string soft_light_filename_;
+    VariableAndHash<std::string> soft_light_filename_;
     FrameBuffer fbs_;
 };
 

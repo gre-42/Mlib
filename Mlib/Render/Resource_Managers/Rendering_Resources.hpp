@@ -7,7 +7,7 @@
 #include <Mlib/Geometry/Material/Wrap_Mode.hpp>
 #include <Mlib/Geometry/Texture/Uv_Tile.hpp>
 #include <Mlib/Map/Threadsafe_Map.hpp>
-#include <Mlib/Map/Threadsafe_String_Unordered_Map.hpp>
+#include <Mlib/Map/Threadsafe_String_With_Hash_Unordered_Map.hpp>
 #include <Mlib/Map/Threadsafe_Unordered_Map.hpp>
 #include <Mlib/Map/Verbose_Unordered_Map.hpp>
 #include <Mlib/Memory/Deallocation_Token.hpp>
@@ -105,7 +105,7 @@ struct AutoTextureAtlasDescriptor {
 std::ostream& operator << (std::ostream& ostr, const AutoTextureAtlasDescriptor& atad);
 
 struct CubemapDescriptor {
-    std::vector<std::string> filenames;
+    std::vector<VariableAndHash<std::string>> filenames;
 };
 
 enum class DeletionFailureMode {
@@ -176,43 +176,43 @@ public:
         std::unique_ptr<ITextureHandle>&& id,
         const TextureSize* texture_size = nullptr);
     void set_textures_lazy(std::function<void()> func);
-    void add_texture_descriptor(const std::string& name, const TextureDescriptor& descriptor);
-    TextureDescriptor get_existing_texture_descriptor(const std::string& name) const;
-    void add_manual_texture_atlas(const std::string& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
+    void add_texture_descriptor(const VariableAndHash<std::string>& name, const TextureDescriptor& descriptor);
+    TextureDescriptor get_existing_texture_descriptor(const VariableAndHash<std::string>& name) const;
+    void add_manual_texture_atlas(const VariableAndHash<std::string>& name, const ManualTextureAtlasDescriptor& texture_atlas_descriptor);
     std::map<ColormapWithModifiers, ManualUvTile> generate_manual_texture_atlas(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         const std::vector<ColormapWithModifiers>& filenames);
-    std::map<std::string, AutoUvTile> generate_auto_texture_atlas(
+    std::unordered_map<VariableAndHash<std::string>, AutoUvTile> generate_auto_texture_atlas(
         const ColormapWithModifiers& name,
         const std::vector<ColormapWithModifiers>& filenames,
         int mip_level_count,
         int size = 4096,
         AutoTextureAtlasDescriptor* atlas = nullptr);
-    void add_cubemap(const std::string& name, const std::vector<std::string>& filenames);
+    void add_cubemap(const VariableAndHash<std::string>& name, const std::vector<VariableAndHash<std::string>>& filenames);
 
     std::string get_texture_filename(
         const ColormapWithModifiers& color,
         TextureRole role,
         const std::string& default_filename) const;
 
-    BlendMapTexture get_blend_map_texture(const std::string& name) const;
-    void set_blend_map_texture(const std::string& name, const BlendMapTexture& bmt);
+    BlendMapTexture get_blend_map_texture(const VariableAndHash<std::string>& name) const;
+    void set_blend_map_texture(const VariableAndHash<std::string>& name, const BlendMapTexture& bmt);
 
-    void set_alias(std::string alias, std::string name);
-    std::string get_alias(const std::string& alias) const;
-    bool contains_alias(const std::string& alias) const;
-    const FixedArray<ScenePos, 4, 4>& get_vp(const std::string& name) const;
-    void set_vp(const std::string& name, const FixedArray<ScenePos, 4, 4>& vp);
-    float get_offset(const std::string& name) const;
-    void set_offset(const std::string& name, float value);
-    float get_discreteness(const std::string& name) const;
-    void set_discreteness(const std::string& name, float value);
-    float get_scale(const std::string& name) const;
-    void set_scale(const std::string& name, float value);
-    WrapMode get_texture_wrap(const std::string& name) const;
-    void set_texture_wrap(const std::string& name, WrapMode mode);
+    void set_alias(VariableAndHash<std::string> alias, VariableAndHash<std::string> name);
+    VariableAndHash<std::string> get_alias(const VariableAndHash<std::string>& alias) const;
+    bool contains_alias(const VariableAndHash<std::string>& alias) const;
+    const FixedArray<ScenePos, 4, 4>& get_vp(const VariableAndHash<std::string>& name) const;
+    void set_vp(const VariableAndHash<std::string>& name, const FixedArray<ScenePos, 4, 4>& vp);
+    float get_offset(const VariableAndHash<std::string>& name) const;
+    void set_offset(const VariableAndHash<std::string>& name, float value);
+    float get_discreteness(const VariableAndHash<std::string>& name) const;
+    void set_discreteness(const VariableAndHash<std::string>& name, float value);
+    float get_scale(const VariableAndHash<std::string>& name) const;
+    void set_scale(const VariableAndHash<std::string>& name, float value);
+    WrapMode get_texture_wrap(const VariableAndHash<std::string>& name) const;
+    void set_texture_wrap(const VariableAndHash<std::string>& name, WrapMode mode);
 
-    void delete_vp(const std::string& name, DeletionFailureMode deletion_failure_mode);
+    void delete_vp(const VariableAndHash<std::string>& name, DeletionFailureMode deletion_failure_mode);
     void delete_texture(const ColormapWithModifiers& name, DeletionFailureMode deletion_failure_mode);
 
     ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>>& render_programs();
@@ -243,7 +243,7 @@ public:
         TextureAlreadyExistsBehavior already_exists_behavior) override;
 
 private:
-    GLuint get_cubemap_unsafe(const std::string& name) const;
+    GLuint get_cubemap_unsafe(const VariableAndHash<std::string>& name) const;
     void preload(const ColormapWithModifiers& color, TextureRole role) const;
     bool texture_is_loaded_unsafe(const ColormapWithModifiers& name) const;
     void deallocate();
@@ -261,18 +261,18 @@ private:
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureType> texture_types_;
     mutable ThreadsafeUnorderedMap<VariableAndHash<std::string>, TextureDescriptor> texture_descriptors_;
     mutable VerboseUnorderedMap<ColormapWithModifiers, TextureHandleAndOwner> textures_;
-    mutable ThreadsafeStringUnorderedMap<TextureSize> texture_sizes_;
-    mutable ThreadsafeStringUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
+    mutable ThreadsafeStringWithHashUnorderedMap<TextureSize> texture_sizes_;
+    mutable ThreadsafeStringWithHashUnorderedMap<ManualTextureAtlasDescriptor> manual_atlas_tile_descriptors_;
     mutable ThreadsafeUnorderedMap<ColormapWithModifiers, AutoTextureAtlasDescriptor> auto_atlas_tile_descriptors_;
-    mutable ThreadsafeStringUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
+    mutable ThreadsafeStringWithHashUnorderedMap<CubemapDescriptor> cubemap_descriptors_;
     mutable VerboseUnorderedMap<FontNameAndHeight, LoadedFont> font_textures_;
-    ThreadsafeStringUnorderedMap<std::string> aliases_;
-    ThreadsafeStringUnorderedMap<FixedArray<ScenePos, 4, 4>> vps_;
-    ThreadsafeStringUnorderedMap<float> offsets_;
-    ThreadsafeStringUnorderedMap<float> discreteness_;
-    ThreadsafeStringUnorderedMap<float> scales_;
-    ThreadsafeStringUnorderedMap<WrapMode> texture_wrap_;
-    ThreadsafeStringUnorderedMap<BlendMapTexture> blend_map_textures_;
+    ThreadsafeStringWithHashUnorderedMap<VariableAndHash<std::string>> aliases_;
+    ThreadsafeStringWithHashUnorderedMap<FixedArray<ScenePos, 4, 4>> vps_;
+    ThreadsafeStringWithHashUnorderedMap<float> offsets_;
+    ThreadsafeStringWithHashUnorderedMap<float> discreteness_;
+    ThreadsafeStringWithHashUnorderedMap<float> scales_;
+    ThreadsafeStringWithHashUnorderedMap<WrapMode> texture_wrap_;
+    ThreadsafeStringWithHashUnorderedMap<BlendMapTexture> blend_map_textures_;
     mutable ThreadsafeMap<RenderProgramIdentifier, std::unique_ptr<ColoredRenderProgram>> render_programs_;
     std::string name_;
     unsigned int max_anisotropic_filtering_level_;

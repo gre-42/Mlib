@@ -88,8 +88,8 @@ void CreateRotor::execute(const LoadSceneJsonUserFunctionArgs& args)
     }
     FixedArray<ScenePos, 3> position = args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position) * (ScenePos)meters;
     FixedArray<float, 3> rotation = args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees;
-    auto engine = args.arguments.at<std::string>(KnownArgs::engine);
-    auto delta_engine = args.arguments.try_at<std::string>(KnownArgs::delta_engine);
+    auto engine = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::engine);
+    auto delta_engine = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::delta_engine);
     float power2lift = args.arguments.at<float>(KnownArgs::power2lift) * N / W;
     float w = args.arguments.at<float>(KnownArgs::rpm) * rpm;
     GravityCorrection gravity_correction = args.arguments.contains(KnownArgs::gravity_correction)

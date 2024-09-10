@@ -24,6 +24,8 @@ struct ExternalRenderPass;
 struct TrailSequence;
 struct Shading;
 struct StaticWorld;
+template <class T>
+class VariableAndHash;
 
 class TrailsInstance {
     TrailsInstance(const TrailsInstance&) = delete;
@@ -31,7 +33,7 @@ class TrailsInstance {
 
 public:
     explicit TrailsInstance(
-        const std::string& texture,
+        const VariableAndHash<std::string>& texture,
         const Shading& shading,
         const std::vector<float>& continuous_layer_x,
         const std::vector<float>& continuous_layer_y,

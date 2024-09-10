@@ -31,7 +31,7 @@ void SaveTextureArrayPng::execute(const LoadSceneJsonUserFunctionArgs& args)
     RenderingContextStack::primary_rendering_resources().save_array_to_file(
         args.arguments.at<std::string>(KnownArgs::filename_prefix),
         ColormapWithModifiers{
-            .filename = args.arguments.at<std::string>(KnownArgs::name),
+            .filename = args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
             .color_mode = color_mode_from_string(args.arguments.at<std::string>(KnownArgs::color_mode))}.compute_hash(),
         TextureRole::COLOR_FROM_DB);
 }

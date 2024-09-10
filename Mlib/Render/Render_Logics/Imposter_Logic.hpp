@@ -5,6 +5,7 @@
 #include <Mlib/Memory/Destruction_Functions.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 namespace Mlib {
 
@@ -86,7 +87,7 @@ private:
     FixedArray<FixedArray<ScenePos, 3>, 8> old_projected_bbox_;
     OriginalNodeHider orig_hider;
     ImposterNodeHider imposter_hider_;
-    std::string texture_id_;
+    VariableAndHash<std::string> texture_id_;
     DanglingUniquePtr<SceneNode> imposter_node_;
     std::string debug_prefix_;
     uint32_t max_texture_size_;

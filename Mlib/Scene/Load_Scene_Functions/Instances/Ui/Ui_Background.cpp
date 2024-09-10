@@ -52,7 +52,7 @@ void UiBackground::execute(const LoadSceneJsonUserFunctionArgs& args)
         std::make_shared<FillWithTextureLogic>(
             RenderingContextStack::primary_rendering_resources(),
             ColormapWithModifiers{
-                .filename = args.arguments.path(KnownArgs::texture),
+                .filename = VariableAndHash{args.arguments.path(KnownArgs::texture)},
                 .color_mode = ColorMode::RGBA,
                 .mipmap_mode = MipmapMode::WITH_MIPMAPS
             }.compute_hash(),

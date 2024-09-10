@@ -16,7 +16,7 @@ void Mlib::render_texture_atlas(
 {
     FillWithTextureLogic logic{
         rendering_resources,
-        { .filename = "" },
+        { .filename = VariableAndHash<std::string>{""} },
         ResourceUpdateCycle::ONCE,
         CullFaceMode::CULL,
         ContinuousBlendMode::NONE };

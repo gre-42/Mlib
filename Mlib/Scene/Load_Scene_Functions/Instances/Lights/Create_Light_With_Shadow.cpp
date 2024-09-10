@@ -55,8 +55,8 @@ void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"with shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto resource_suffix = "lightmap" + scene.get_temporary_instance_suffix();
-    auto lightmap_color = ColormapWithModifiers{ .filename = "color_" + resource_suffix, .color_mode = ColorMode::RGB }.compute_hash();
-    auto lightmap_depth = ColormapWithModifiers{ .filename = "depth_" + resource_suffix, .color_mode = ColorMode::GRAYSCALE }.compute_hash();
+    auto lightmap_color = ColormapWithModifiers{ .filename = VariableAndHash{"color_" + resource_suffix}, .color_mode = ColorMode::RGB }.compute_hash();
+    auto lightmap_depth = ColormapWithModifiers{ .filename = VariableAndHash{"depth_" + resource_suffix}, .color_mode = ColorMode::GRAYSCALE }.compute_hash();
     auto& o = global_object_pool.create<LightmapLogic>(
         CURRENT_SOURCE_LOCATION,
         rendering_resources,

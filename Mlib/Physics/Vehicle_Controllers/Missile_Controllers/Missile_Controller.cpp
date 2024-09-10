@@ -8,7 +8,7 @@ using namespace Mlib;
 MissileController::MissileController(
     RigidBodyVehicle& rb,
     std::vector<MissileWingController> wing_controllers,
-    std::string engine_name)
+    VariableAndHash<std::string> engine_name)
     : RigidBodyMissileController{ rb }
     , wing_controllers_{ std::move(wing_controllers) }
     , engine_name_{ std::move(engine_name) }

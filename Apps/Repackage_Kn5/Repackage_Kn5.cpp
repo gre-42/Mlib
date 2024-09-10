@@ -62,8 +62,10 @@ int main(int argc, char** argv) {
             "primary resources",
             0 };  // max_anisotropic_filter_level 
 
-        auto gen_png_name = [](const std::string& dds_name) { return dds_name + ".png"; };
-        auto gen_optional_png_name = [&gen_png_name](const std::string& dds_name) { return dds_name.empty() ? "" : gen_png_name(dds_name); };
+        auto gen_png_name = [](const VariableAndHash<std::string>& dds_name)
+            { return VariableAndHash{ *dds_name + ".png" }; };
+        auto gen_optional_png_name = [&gen_png_name](const VariableAndHash<std::string>& dds_name)
+            { return dds_name->empty() ? VariableAndHash<std::string>{} : gen_png_name(dds_name); };
         const auto& source_filename = args.unnamed_value(0);
         auto source = create_ifstream(source_filename, std::ios::binary);
         if (source->fail()) {
@@ -84,18 +86,18 @@ int main(int argc, char** argv) {
                 TextureRole::COLOR,
                 FlipMode::NONE,
                 CopyBehavior::COPY);
-            auto& dest = destination_textures[png_name];
+            auto& dest = destination_textures[*png_name];
             dest.type = t.type;
             dest.data = stb_encode_png(tex.data.get(), tex.width, tex.height, tex.nrChannels);
             if (args.has_named("--explode")) {
-                auto o = create_ofstream(png_name, std::ios::binary);
+                auto o = create_ofstream(*png_name, std::ios::binary);
                 if (o->fail()) {
-                    THROW_OR_ABORT("Could not open \"" + png_name + '"');
+                    THROW_OR_ABORT("Could not open \"" + *png_name + '"');
                 }
                 o->write((const char*)dest.data.data(), integral_cast<std::streamsize>(dest.data.size()));
                 o->flush();
                 if (o->fail()) {
-                    THROW_OR_ABORT("Could not write to \"" + png_name + '"');
+                    THROW_OR_ABORT("Could not write to \"" + *png_name + '"');
                 }
             }
         }

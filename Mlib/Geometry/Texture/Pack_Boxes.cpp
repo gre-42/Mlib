@@ -2,10 +2,10 @@
 
 using namespace Mlib;
 
-using NamedSize = std::pair<const std::string*, const FixedArray<int, 2>*>;
+using NamedSize = std::pair<const VariableAndHash<std::string>*, const FixedArray<int, 2>*>;
 
 std::list<std::list<NameAndBoxPosition>> Mlib::pack_boxes(
-    const std::map<std::string, FixedArray<int, 2>>& box_sizes,
+    const std::unordered_map<VariableAndHash<std::string>, FixedArray<int, 2>>& box_sizes,
     const FixedArray<int, 2>& container_size)
 {
     if (box_sizes.empty()) {

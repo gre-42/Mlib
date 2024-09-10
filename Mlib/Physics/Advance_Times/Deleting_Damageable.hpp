@@ -35,7 +35,7 @@ public:
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents log_components) const override;
-    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
+    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
     // IDamageable
     virtual float health() const override;
     virtual void damage(float amount) override;

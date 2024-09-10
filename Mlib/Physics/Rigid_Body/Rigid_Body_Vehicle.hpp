@@ -18,10 +18,12 @@
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Movable.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -184,10 +186,10 @@ public:
     TirePowerIntent consume_tire_surface_power(size_t id, VelocityClassification velocity_classification);
     TirePowerIntent consume_rotor_surface_power(size_t id);
     void set_surface_power(
-        const std::string& engine_name,
+        const VariableAndHash<std::string>& engine_name,
         const EnginePowerIntent& engine_power_intent);
     void set_delta_surface_power(
-        const std::string& delta_engine_name,
+        const VariableAndHash<std::string>& delta_engine_name,
         const EnginePowerDeltaIntent& engine_power_delta_intent);
     float get_tire_break_force(size_t id) const;
     FixedArray<ScenePos, 3> get_abs_tire_contact_position(size_t id) const;
@@ -229,7 +231,7 @@ public:
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;
     virtual float get_value(StatusComponents status_components) const override;
-    virtual StatusWriter& child_status_writer(const std::vector<std::string>& name) override;
+    virtual StatusWriter& child_status_writer(const std::vector<VariableAndHash<std::string>>& name) override;
 
     // INodeHider
     virtual bool node_shall_be_hidden(
@@ -259,11 +261,11 @@ public:
     float power_;
     float energy_old_;
 #endif
-    std::map<size_t, Tire> tires_;
-    std::map<size_t, std::unique_ptr<Rotor>> rotors_;
-    std::map<size_t, std::unique_ptr<Wing>> wings_;
-    std::map<std::string, RigidBodyEngine> engines_;
-    std::map<std::string, RigidBodyDeltaEngine> delta_engines_;
+    std::unordered_map<size_t, Tire> tires_;
+    std::unordered_map<size_t, std::unique_ptr<Rotor>> rotors_;
+    std::unordered_map<size_t, std::unique_ptr<Wing>> wings_;
+    std::unordered_map<VariableAndHash<std::string>, RigidBodyEngine> engines_;
+    std::unordered_map<VariableAndHash<std::string>, RigidBodyDeltaEngine> delta_engines_;
     RigidBodyVehicleFlags flags_;
     Inventory inventory_;
     // std::map<size_t, bool> tire_sliding_;

@@ -13,10 +13,12 @@ OptionalMaterialHider::OptionalMaterialHider() {
         auto f = create_ifstream(*fn);
         for (std::string line; std::getline(*f, line); )
         {
-            hidden_names_->insert(line);
+            hidden_names_->insert(VariableAndHash{ line });
         }
     }
 }
+
+OptionalMaterialHider::~OptionalMaterialHider() = default;
 
 bool OptionalMaterialHider::is_hidden(const Material& material) const {
     if (!hidden_names_.has_value()) {

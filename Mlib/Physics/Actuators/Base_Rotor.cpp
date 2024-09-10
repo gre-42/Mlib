@@ -3,8 +3,8 @@
 using namespace Mlib;
 
 BaseRotor::BaseRotor(
-    std::string engine,
-    std::optional<std::string> delta_engine,
+    VariableAndHash<std::string> engine,
+    std::optional<VariableAndHash<std::string>> delta_engine,
     RigidBodyPulses* rbp,
     float brake_torque)
     : engine{ std::move(engine) }

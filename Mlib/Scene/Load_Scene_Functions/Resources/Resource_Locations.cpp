@@ -72,16 +72,16 @@ static void add_resource(
                     .width = integral_cast<int>(tx->raster->width()),
                     .height = integral_cast<int>(tx->raster->height())
                 };
-                auto filename = name + '_' + tx->name;
+                auto filename = name + '_' + *tx->name;
                 std::transform(filename.begin(), filename.end(), filename.begin(),
                     ::tolower);
                 auto cm = ColormapWithModifiers{
-                    .filename = filename,
+                    .filename = VariableAndHash{filename},
                     .color_mode = ColorMode::RGBA,
                     .mipmap_mode = MipmapMode::WITH_MIPMAPS
                 }.compute_hash();
                 if (res.contains_texture(cm)) {
-                    lwarn() << "Ignoring duplicate texture \"" << tx->name << "\" with mask \"" << tx->mask << "\" in dictionary \"" << name << '"';
+                    lwarn() << "Ignoring duplicate texture \"" << *tx->name << "\" with mask \"" << *tx->mask << "\" in dictionary \"" << name << '"';
                 } else {
                     res.set_texture(
                         cm,
@@ -125,7 +125,7 @@ static void exec(
     std::list<std::string> added_scene_node_resources;
     auto cfg = std::make_shared<LoadMeshConfig<TPosition>>();
     *cfg = load_mesh_config_from_json<TPosition>(args.arguments.child(KnownArgs::config));
-    if (auto c = args.arguments.try_at<std::string>(KnownArgs::texture)) {
+    if (auto c = args.arguments.try_at<VariableAndHash<std::string>>(KnownArgs::texture)) {
         auto& rr = RenderingContextStack::primary_rendering_resources();
         cfg->textures = { rr.get_blend_map_texture(*c) };
     }

@@ -20,8 +20,10 @@ AvatarAsCarController::AvatarAsCarController(
 
 AvatarAsCarController::~AvatarAsCarController() = default;
 
+static const auto legs_name = VariableAndHash<std::string>{ "legs" };
+
 void AvatarAsCarController::apply() {
-    rb_.set_surface_power("legs", EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
+    rb_.set_surface_power(legs_name, EnginePowerIntent{.surface_power = surface_power_}); // NAN=break
     if (!std::isnan(steer_angle_)) {
         ypln_.increment_yaw(steer_angle_ * steering_multiplier_, steer_relaxation_);
     }

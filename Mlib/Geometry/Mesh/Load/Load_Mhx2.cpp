@@ -194,7 +194,7 @@ std::shared_ptr<AnimatedColoredVertexArrays> Mlib::load_mhx2(
             .textures_color{
                 BlendMapTexture{.texture_descriptor = {
                     .color = ColormapWithModifiers{
-                        .filename = gen_filename(filename, material.at("diffuse_texture")),
+                        .filename = VariableAndHash{ gen_filename(filename, material.at("diffuse_texture")) },
                         .desaturate = cfg.desaturate,
                         .histogram = cfg.histogram,
                         .lighten = OrderableFixedArray(cfg.lighten),

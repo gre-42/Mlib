@@ -42,11 +42,11 @@ void AddBlendMapTexture::execute(const LoadSceneJsonUserFunctionArgs& args)
     auto& rr = RenderingContextStack::primary_rendering_resources();
     auto tex = args.arguments.path_or_variable(KnownArgs::texture);
     rr.set_blend_map_texture(
-        args.arguments.at<std::string>(KnownArgs::name),
+        args.arguments.at<VariableAndHash<std::string>>(KnownArgs::name),
         BlendMapTexture{
             .texture_descriptor = tex.is_variable
-                ? rr.get_existing_texture_descriptor(tex.path)
-                : TextureDescriptor{ .color = {.filename = tex.path} },
+                ? rr.get_existing_texture_descriptor(VariableAndHash{tex.path})
+                : TextureDescriptor{ .color = {.filename = VariableAndHash{tex.path}} },
             .min_height = args.arguments.at<float>(KnownArgs::min_height),
             .max_height = args.arguments.at<float>(KnownArgs::max_height),
             .distances = args.arguments.at<UOrderableFixedArray<float, 4>>(KnownArgs::distances),

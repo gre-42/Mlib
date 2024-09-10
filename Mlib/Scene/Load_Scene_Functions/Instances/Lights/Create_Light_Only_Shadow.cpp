@@ -50,10 +50,10 @@ void CreateLightOnlyShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
         THROW_OR_ABORT("Unsupported render pass type for \"only shadow\": " + args.arguments.at<std::string>(KnownArgs::render_pass));
     }
     auto lightmap_color = ColormapWithModifiers{
-        .filename = "lightmap_color" + scene.get_temporary_instance_suffix(),
+        .filename = VariableAndHash{"lightmap_color" + scene.get_temporary_instance_suffix()},
         .color_mode = ColorMode::RGB}.compute_hash();
     auto lightmap_depth = ColormapWithModifiers{
-        .filename = "lightmap_depth" + scene.get_temporary_instance_suffix(),
+        .filename = VariableAndHash{"lightmap_depth" + scene.get_temporary_instance_suffix()},
         .color_mode = ColorMode::GRAYSCALE}.compute_hash();
     auto& o = global_object_pool.create<LightmapLogic>(
         CURRENT_SOURCE_LOCATION,

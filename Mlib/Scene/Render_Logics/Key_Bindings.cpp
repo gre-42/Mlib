@@ -241,6 +241,9 @@ static float get_alpha(
     return alpha;
 }
 
+static const auto main_name = VariableAndHash<std::string>{ "main" };
+static const auto brakes_name = VariableAndHash<std::string>{ "brakes" };
+
 void KeyBindings::increment_external_forces(
     const std::list<RigidBodyVehicle*>& olist,
     bool burn_in,
@@ -280,8 +283,8 @@ void KeyBindings::increment_external_forces(
     if (enable_controls) {
         for (const auto& k : absolute_movable_idle_bindings_) {
             auto& rb = get_rigid_body_vehicle(*k->node);
-            rb.set_surface_power("main", EnginePowerIntent{.surface_power = 0});
-            rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = 0});
+            rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = 0});
+            rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = 0});
             rb.set_max_velocity(INFINITY);
             for (auto& t : rb.tires_) {
                 t.second.angle_y = 0;
@@ -301,8 +304,8 @@ void KeyBindings::increment_external_forces(
                 rb.rbp_.rotation_ = dot2d(rb.rbp_.rotation_, rodrigues1(alpha * k->rotate));
             }
             if (k->car_surface_power.has_value()) {
-                rb.set_surface_power("main", EnginePowerIntent{.surface_power = *k->car_surface_power});
-                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = *k->car_surface_power});
+                rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
+                rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = *k->car_surface_power});
             }
             if (k->max_velocity != INFINITY) {
                 rb.set_max_velocity(k->max_velocity);
@@ -336,8 +339,8 @@ void KeyBindings::increment_external_forces(
                 rb.tires_z_ /= std::sqrt(sum(squared(rb.tires_z_)));
             } else {
                 rb.tires_z_ = { 0.f, 0.f, 1.f };
-                rb.set_surface_power("main", EnginePowerIntent{.surface_power = NAN});
-                rb.set_surface_power("brakes", EnginePowerIntent{.surface_power = NAN});
+                rb.set_surface_power(main_name, EnginePowerIntent{.surface_power = NAN});
+                rb.set_surface_power(brakes_name, EnginePowerIntent{.surface_power = NAN});
             }
             if (rb.animation_state_updater_ != nullptr) {
                 rb.animation_state_updater_->notify_movement_intent();

@@ -156,8 +156,8 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
     if (args.has_named_value("--multilayer_diffuse")) {
         textures = {BlendMapTexture{
             .texture_descriptor = {
-                .color = {.filename = args.named_value("--multilayer_diffuse"), .mipmap_mode = MipmapMode::WITH_MIPMAPS},
-                .normal = {.filename = args.named_value("--multilayer_normal", ""), .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                .color = {.filename = VariableAndHash{args.named_value("--multilayer_diffuse")}, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                .normal = {.filename = VariableAndHash{args.named_value("--multilayer_normal", "")}, .color_mode = ColorMode::RGB, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
             .role = BlendMapRole::DETAIL_BASE,
             .reweight_mode = BlendMapReweightMode::DISABLED}};
         std::vector<float> lcm_world_args;
@@ -170,14 +170,14 @@ static LoadMeshConfig<TPos> cfg(const ParsedArgs& args, const std::string& light
             if (args.has_named_value("--multilayer_mask")) {
                 textures.push_back(BlendMapTexture{
                     .texture_descriptor = {
-                        .color = {.filename = args.named_value("--multilayer_mask"), .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
+                        .color = {.filename = VariableAndHash{args.named_value("--multilayer_mask")}, .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                     .role = BlendMapRole::DETAIL_MASK_R + i});
             }
             textures.push_back(BlendMapTexture{
                 .texture_descriptor = {
-                    .color = {.filename = detail, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
+                    .color = {.filename = VariableAndHash{detail}, .mipmap_mode = MipmapMode::WITH_MIPMAPS},
                     .normal = {
-                        .filename = args.named_value("--multilayer_detail_normal" + std::to_string(i), ""),
+                        .filename = VariableAndHash{args.named_value("--multilayer_detail_normal" + std::to_string(i), "")},
                         .color_mode = ColorMode::RGB,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS}},
                 .scale = multilayer_scale,
@@ -578,7 +578,7 @@ int main(int argc, char** argv) {
             } else {
                 return std::unique_ptr<Light>(new Light{
                     .lightmap_depth = ColormapWithModifiers{
-                        .filename = resource_suffix,
+                        .filename = VariableAndHash{resource_suffix},
                         .color_mode = ColorMode::GRAYSCALE}.compute_hash(),
                     .shadow_render_pass = ExternalRenderPassType::LIGHTMAP_DEPTH});
             }
@@ -708,7 +708,7 @@ int main(int argc, char** argv) {
                     .resource_name = "merged_resource",
                     .array_name = "merged_array",
                     .texture_name = ColormapWithModifiers{
-                        .filename = "merged_texture",
+                        .filename = VariableAndHash<std::string>{"merged_texture"},
                         .color_mode = ColorMode::RGBA,
                         .mipmap_mode = MipmapMode::WITH_MIPMAPS,
                         .anisotropic_filtering_level = 0

@@ -50,8 +50,8 @@ struct Material {
     std::vector<BlendMapTexture> textures_color;
     std::vector<BlendMapTexture> textures_alpha;
     float period_world = 0.f;
-    std::string reflection_map;
-    std::string dirt_texture;
+    VariableAndHash<std::string> reflection_map;
+    VariableAndHash<std::string> dirt_texture;
     InteriorTextures interior_textures;
     std::vector<float> continuous_layer_x;
     std::vector<float> continuous_layer_y;

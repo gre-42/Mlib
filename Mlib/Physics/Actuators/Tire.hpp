@@ -2,6 +2,7 @@
 #include <Mlib/Math/Interp.hpp>
 #include <Mlib/Physics/Actuators/Base_Rotor.hpp>
 #include <Mlib/Physics/Collision/Magic_Formula.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 
 namespace Mlib {
@@ -19,8 +20,8 @@ class Tire: public BaseRotor {
     Tire& operator = (const Tire&) = delete;
 public:
     Tire(
-        const std::string& engine,
-        std::optional<std::string> delta_engine,
+        const VariableAndHash<std::string>& engine,
+        std::optional<VariableAndHash<std::string>> delta_engine,
         RigidBodyPulses* rbp,
         float brake_force,
         float brake_torque,
