@@ -13,6 +13,21 @@ struct OrderableRidgeSphereRigidBody: public OrderableRidgeSphereBase {
     RigidBodyVehicle& rb;
 };
 
+}
+
+namespace std {
+
+template<>
+struct std::hash<Mlib::OrderableRidgeSphereRigidBody>
+{
+    std::size_t operator()(const Mlib::OrderableRidgeSphereRigidBody& s) const noexcept {
+        return std::hash<Mlib::OrderableRidgeSphereBase>()(s);
+    }
+};
+
+}
+
+namespace Mlib {
 class CollisionRidgesRigidBody: public CollisionRidgesBase<OrderableRidgeSphereRigidBody> {
 public:
     CollisionRidgesRigidBody();
