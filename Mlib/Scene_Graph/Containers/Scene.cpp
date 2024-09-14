@@ -11,6 +11,7 @@
 #include <Mlib/Scene_Graph/Batch_Renderers/Task_Location.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Blended.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Dynamic_Style.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
