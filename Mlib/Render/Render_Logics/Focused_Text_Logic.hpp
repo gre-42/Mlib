@@ -20,6 +20,10 @@ public:
         std::string text);
     ~FocusedTextLogic();
 
+    virtual void init(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderedSceneDescriptor& frame_id) override;
     virtual void render(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
@@ -27,6 +31,7 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
+    virtual void reset() override;
     virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 

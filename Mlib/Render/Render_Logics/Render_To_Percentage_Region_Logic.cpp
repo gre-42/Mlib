@@ -24,6 +24,14 @@ RenderToPercentageRegionLogic::~RenderToPercentageRegionLogic() {
     on_destroy.clear();
 }
 
+void RenderToPercentageRegionLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    render_logic_.init(lx, ly, frame_id);
+}
+
 void RenderToPercentageRegionLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -60,6 +68,9 @@ void RenderToPercentageRegionLogic::render(
         render_results,
         frame_id);
 }
+
+void RenderToPercentageRegionLogic::reset()
+{}
 
 FocusFilter RenderToPercentageRegionLogic::focus_filter() const {
     return focus_filter_;

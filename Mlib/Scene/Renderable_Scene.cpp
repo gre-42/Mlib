@@ -181,6 +181,14 @@ RenderableScene::~RenderableScene() {
 }
 
 // RenderLogic
+void RenderableScene::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    render_logics_.init(lx, ly, frame_id);
+}
+
 void RenderableScene::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -189,8 +197,6 @@ void RenderableScene::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::scoped_lock lock{ delete_node_mutex_ };
-    DestructionGuard dg{ [this]() { standard_camera_logic_.reset(); } };
     render_logics_.render(
         lx,
         ly,
@@ -198,6 +204,10 @@ void RenderableScene::render(
         scene_graph_config,
         render_results,
         frame_id);
+}
+
+void RenderableScene::reset() {
+    render_logics_.reset();
 }
 
 void RenderableScene::print(std::ostream& ostr, size_t depth) const {

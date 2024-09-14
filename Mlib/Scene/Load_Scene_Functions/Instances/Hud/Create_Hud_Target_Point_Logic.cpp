@@ -59,6 +59,7 @@ void CreateHudTargetPointLogic::execute(const LoadSceneJsonUserFunctionArgs& arg
     object_pool.create<HudTargetPointLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
+        scene,
         scene_logic,
         render_logics,
         player,

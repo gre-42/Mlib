@@ -6,6 +6,8 @@
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 
 using namespace Mlib;
 
@@ -63,6 +65,7 @@ void HudTrackerTimeAdvancer::advance_time(const FixedArray<ScenePos, 3>& point) 
 }
 
 HudTracker::HudTracker(
+    Scene& scene,
     RenderLogic& scene_logic,
     DanglingPtr<SceneNode> exclusive_node,
     HudErrorBehavior hud_error_behavior,
@@ -80,6 +83,7 @@ HudTracker::HudTracker(
         CullFaceMode::CULL,
         ContinuousBlendMode::ALPHA,
         nullptr }
+    , scene_{ scene }
     , center_{ center }
     , size_{ size }
     , hud_error_behavior_{ hud_error_behavior }
@@ -111,10 +115,18 @@ void HudTracker::render(
     const RenderedSceneDescriptor& frame_id)
 {
     {
-        std::scoped_lock lock{ render_mutex_ };
-        is_visible_ =
-            (exclusive_node_ == nullptr) ||
-            (exclusive_node_ == scene_logic_.camera_node().ptr());
+        std::scoped_lock lock0{ render_mutex_ };
+        std::scoped_lock lock1{ scene_.delete_node_mutex() };
+        if (exclusive_node_ == nullptr) {
+            is_visible_ = true;
+        } else if (scene_logic_.camera_node() == nullptr) {
+            // Hide the HUD if the camera node was deleted.
+            // If the camera node had been the exclusive node,
+            // the HudTracker would no longer exist by now.
+            is_visible_ = false;
+        } else {
+            is_visible_ = (exclusive_node_ == scene_logic_.camera_node());
+        }
         vp_ = scene_logic_.vp();
         near_plane_ = scene_logic_.near_plane();
         far_plane_ = scene_logic_.far_plane();

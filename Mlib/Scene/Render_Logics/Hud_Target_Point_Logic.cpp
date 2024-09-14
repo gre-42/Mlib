@@ -15,6 +15,7 @@ using namespace Mlib;
 
 HudTargetPointLogic::HudTargetPointLogic(
     ObjectPool& object_pool,
+    Scene& scene,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
@@ -33,6 +34,7 @@ HudTargetPointLogic::HudTargetPointLogic(
     , gun_node_{ gun_node }
     , ypln_{ ypln }
     , hud_tracker_{
+        scene,
         scene_logic,
         exclusive_node,
         hud_error_behavior,
@@ -87,6 +89,12 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     ht.advance_time(intersection_point);
 }
 
+void HudTargetPointLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void HudTargetPointLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -98,6 +106,9 @@ void HudTargetPointLogic::render(
     LOG_FUNCTION("HudTargetPointLogic::render");
     hud_tracker_.render(lx, ly, frame_id);
 }
+
+void HudTargetPointLogic::reset()
+{}
 
 void HudTargetPointLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudTargetPointLogic\n";

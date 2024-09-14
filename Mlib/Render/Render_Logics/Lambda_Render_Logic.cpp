@@ -11,6 +11,12 @@ LambdaRenderLogic::LambdaRenderLogic(const Lambda& lambda)
 LambdaRenderLogic::~LambdaRenderLogic()
 {}
 
+void LambdaRenderLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void LambdaRenderLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -28,6 +34,9 @@ void LambdaRenderLogic::render(
         render_results,
         frame_id);
 }
+
+void LambdaRenderLogic::reset()
+{}
 
 void LambdaRenderLogic::print(std::ostream& ostr, size_t depth) const {
     THROW_OR_ABORT("Print not supported by LambdaRenderLogic");

@@ -35,6 +35,18 @@ RenderLogics::~RenderLogics() {
     }
 }
 
+void RenderLogics::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    LOG_FUNCTION("RenderLogics::init");
+    std::shared_lock lock{ mutex_ };
+    for (const auto& [_, c] : render_logics_) {
+        c->init(lx, ly, frame_id);
+    }
+}
+
 void RenderLogics::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -45,7 +57,7 @@ void RenderLogics::render(
 {
     LOG_FUNCTION("RenderLogics::render");
 
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
 
     for (const auto& [_, c] : render_logics_) {
         if ([this, &c=c](){
@@ -63,8 +75,16 @@ void RenderLogics::render(
     }
 }
 
+void RenderLogics::reset() {
+    LOG_FUNCTION("RenderLogics::reset");
+    std::shared_lock lock{ mutex_ };
+    for (const auto& [_, c] : render_logics_) {
+        c->reset();
+    }
+}
+
 void RenderLogics::print(std::ostream& ostr, size_t depth) const {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     ostr << std::string(depth, ' ') << "RenderLogics\n";
     for (const auto& c : render_logics_) {
         c.second->print(ostr, depth + 1);

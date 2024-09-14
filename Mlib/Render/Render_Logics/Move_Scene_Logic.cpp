@@ -22,6 +22,12 @@ MoveSceneLogic::~MoveSceneLogic() {
     on_destroy.clear();
 }
 
+void MoveSceneLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void MoveSceneLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -42,6 +48,9 @@ void MoveSceneLogic::render(
         scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, time);
     }
 }
+
+void MoveSceneLogic::reset()
+{}
 
 void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "MoveSceneLogic\n";

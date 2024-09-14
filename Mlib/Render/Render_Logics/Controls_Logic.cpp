@@ -29,6 +29,14 @@ ControlsLogic::~ControlsLogic() {
     on_destroy.clear();
 }
 
+void ControlsLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    gamepad_texture_.init(lx, ly, frame_id);
+}
+
 void ControlsLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -45,6 +53,10 @@ void ControlsLogic::render(
         scene_graph_config,
         render_results,
         frame_id);
+}
+
+void ControlsLogic::reset() {
+    gamepad_texture_.reset();
 }
 
 FocusFilter ControlsLogic::focus_filter() const {

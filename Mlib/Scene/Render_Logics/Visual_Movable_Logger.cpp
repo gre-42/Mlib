@@ -51,6 +51,12 @@ void VisualMovableLogger::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
+void VisualMovableLogger::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void VisualMovableLogger::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -70,6 +76,9 @@ void VisualMovableLogger::render(
             frame_id);
     }
 }
+
+void VisualMovableLogger::reset()
+{}
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualMovableLogger\n";

@@ -137,6 +137,14 @@ void FxaaLogic::ensure_initialized() {
     }
 }
 
+void FxaaLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void FxaaLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -199,6 +207,10 @@ void FxaaLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
+}
+
+void FxaaLogic::reset() {
+    child_logic_.reset();
 }
 
 void FxaaLogic::print(std::ostream& ostr, size_t depth) const {

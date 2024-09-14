@@ -132,6 +132,12 @@ RotatingLogic::RotatingLogic(
 
 RotatingLogic::~RotatingLogic() = default;
 
+void RotatingLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void RotatingLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -144,7 +150,7 @@ void RotatingLogic::render(
 
     key_callback(window_, button_states_, user_object_, *keys_);
 
-    std::scoped_lock lock{ scene_.delete_node_mutex() };
+    std::unique_lock lock{ scene_.delete_node_mutex() };
 
     RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     float aspect_ratio = lx.flength() / ly.flength();
@@ -187,8 +193,12 @@ void RotatingLogic::render(
         1));
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    scene_.render(vp, iv, cn, render_config, scene_graph_config, frame_id.external_render_pass);
+    DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
+    scene_.render(vp, iv, cn_ptr, lock, render_config, scene_graph_config, frame_id.external_render_pass);
 }
+
+void RotatingLogic::reset()
+{}
 
 float RotatingLogic::near_plane() const {
     return 1;

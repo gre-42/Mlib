@@ -18,6 +18,14 @@ CameraStreamLogic::~CameraStreamLogic() {
     on_destroy.clear();
 }
 
+void CameraStreamLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    standard_render_logic_->init(lx, ly, frame_id);
+}
+
 void CameraStreamLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -29,7 +37,10 @@ void CameraStreamLogic::render(
     LOG_FUNCTION("CameraStreamLogic::render");
 
     standard_render_logic_->render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
-    standard_camera_logic_->reset();
+}
+
+void CameraStreamLogic::reset() {
+    standard_render_logic_->reset();
 }
 
 float CameraStreamLogic::near_plane() const {
@@ -48,7 +59,7 @@ const TransformationMatrix<float, ScenePos, 3>& CameraStreamLogic::iv() const {
     return standard_render_logic_->iv();
 }
 
-DanglingRef<const SceneNode> CameraStreamLogic::camera_node() const {
+DanglingPtr<const SceneNode> CameraStreamLogic::camera_node() const {
     return standard_render_logic_->camera_node();
 }
 

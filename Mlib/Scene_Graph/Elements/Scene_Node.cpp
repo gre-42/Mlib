@@ -308,7 +308,7 @@ void SceneNode::add_renderable(
     if (name.empty()) {
         THROW_OR_ABORT("Renderable has no name");
     }
-    if (!renderables_.try_emplace(name, renderable).second) {
+    if (!renderables_.try_emplace(name, std::make_shared<RenderableWithStyle>(renderable)).second) {
         THROW_OR_ABORT("Renderable with name " + name + " already exists");
     }
 }
@@ -776,7 +776,7 @@ bool SceneNode::visit_all(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, RenderableWithStyle>& renderables)>& func) const
+        const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     auto m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
@@ -798,7 +798,7 @@ RenderingStrategies SceneNode::rendering_strategies() const {
     RenderingStrategies result = RenderingStrategies::NONE;
     std::shared_lock lock{ mutex_ };
     for (const auto& [_, r] : renderables_) {
-        result |= r->rendering_strategies();
+        result |= (*r)->rendering_strategies();
     }
     for (const auto& [_, n] : children_) {
         result |= n.scene_node->rendering_strategies();
@@ -815,7 +815,7 @@ RenderingStrategies SceneNode::rendering_strategies() const {
 bool SceneNode::requires_render_pass(ExternalRenderPassType render_pass) const {
     std::shared_lock lock{ mutex_ };
     for (const auto& [_, r] : renderables_) {
-        if (r->requires_render_pass(render_pass)) {
+        if ((*r)->requires_render_pass(render_pass)) {
             return true;
         }
     }
@@ -831,7 +831,7 @@ void SceneNode::render(
     const FixedArray<ScenePos, 4, 4>& parent_mvp,
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    const DanglingRef<const SceneNode>& camera_node,
+    const DanglingPtr<const SceneNode>& camera_node,
     const IDynamicLights* dynamic_lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
     const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
@@ -874,8 +874,8 @@ void SceneNode::render(
             ? fixed_zeros<float, 3>()
             : dynamic_lights->get_color(m.t()) };
         for (const auto& [n, r] : un_guarded_iterator(renderables_, lock)) {
-            if (r->requires_render_pass(external_render_pass.pass)) {
-                r->render(
+            if ((*r)->requires_render_pass(external_render_pass.pass)) {
+                (*r)->render(
                     mvp,
                     m,
                     iv,
@@ -884,18 +884,18 @@ void SceneNode::render(
                     skidmarks,
                     scene_graph_config,
                     render_config,
-                    {external_render_pass, InternalRenderPass::INITIAL},
+                    { external_render_pass, InternalRenderPass::INITIAL },
                     estate,
-                    r.style(ecolor_styles, n));
+                    r->style(ecolor_styles, n));
             }
-            if (r->requires_blending_pass(external_render_pass.pass)) {
-                blended.push_back(Blended{
-                    .z_order = r->continuous_blending_z_order(),
-                    .mvp = mvp,
-                    .m = m,
-                    .renderable = r,
-                    .animation_state = estate,
-                    .color_style = r.style(ecolor_styles, n)});
+            if ((*r)->requires_blending_pass(external_render_pass.pass)) {
+                blended.emplace_back(
+                    r,
+                    n,
+                    mvp,
+                    m,
+                    estate,
+                    ecolor_styles);
             }
         }
     }
@@ -939,7 +939,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
     auto m = parent_m * cm;
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
-        r->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
+        (*r)->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
         c.scene_node->append_sorted_aggregates_to_queue(mvp, m, offset, aggregate_queue, scene_graph_config, external_render_pass);
@@ -961,7 +961,7 @@ void SceneNode::append_large_aggregates_to_queue(
         THROW_OR_ABORT("Cannot append large aggregates to queue for a non-static node");
     }
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
-        r->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
+        (*r)->append_large_aggregates_to_queue(m, offset, scene_graph_config, aggregate_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
         c.scene_node->append_large_aggregates_to_queue(m, offset, aggregate_queue, scene_graph_config);
@@ -992,7 +992,7 @@ void SceneNode::append_small_instances_to_queue(
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
-        r->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
+        (*r)->append_sorted_instances_to_queue(mvp, m, iv, offset, delta_pose.billboard_id, scene_graph_config, instances_queues);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
         c.scene_node->append_small_instances_to_queue(mvp, m, iv, offset, PositionAndYAngle{ fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX }, instances_queues, scene_graph_config);
@@ -1037,7 +1037,7 @@ void SceneNode::append_large_instances_to_queue(
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, rel.affine());
     TransformationMatrix<float, ScenePos, 3> m = parent_m * rel;
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
-        r->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
+        (*r)->append_large_instances_to_queue(mvp, m, offset, delta_pose.billboard_id, scene_graph_config, instances_queue);
     }
     for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
         c.scene_node->append_large_instances_to_queue(mvp, m, offset, PositionAndYAngle{fixed_zeros<ScenePos, 3>(), 0.f, UINT32_MAX}, instances_queue, scene_graph_config);
@@ -1071,7 +1071,7 @@ void SceneNode::append_static_filtered_to_queue(
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
         std::list<std::shared_ptr<ColoredVertexArray<float>>> float_q;
         std::list<std::shared_ptr<ColoredVertexArray<double>>> double_q;
-        r->append_filtered_to_queue(float_q, double_q, filter);
+        (*r)->append_filtered_to_queue(float_q, double_q, filter);
         for (const auto& cva : float_q) {
             float_queue.emplace_back(m, cva);
         }
@@ -1224,9 +1224,9 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
     if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
         lock.lock();
     }
-    if (state_ != SceneNodeState::DETACHED) {
-        scene_->delete_node_mutex().notify_reading();
-    }
+    // if (state_ != SceneNodeState::DETACHED) {
+    //     scene_->delete_node_mutex().notify_reading();
+    // }
     if (parent_ != nullptr) {
         if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
             lock.unlock();
@@ -1250,9 +1250,9 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
 TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
     auto result = relative_view_matrix(time);
     std::shared_lock lock{ mutex_ };
-    if (state_ != SceneNodeState::DETACHED) {
-        scene_->delete_node_mutex().notify_reading();
-    }
+    // if (state_ != SceneNodeState::DETACHED) {
+    //     scene_->delete_node_mutex().notify_reading();
+    // }
     if (parent_ != nullptr) {
         lock.unlock();
         return result * parent_->absolute_view_matrix(time);
@@ -1306,7 +1306,7 @@ std::optional<AxisAlignedBoundingBox<ScenePos, 3>> SceneNode::relative_aabb() co
         result = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     }
     for (const auto& [_, r] : renderables_) {
-        result.value().extend(r->aabb());
+        result.value().extend((*r)->aabb());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_aabb();
@@ -1326,7 +1326,7 @@ BoundingSphere<ScenePos, 3> SceneNode::relative_bounding_sphere() const {
     std::shared_lock lock{ mutex_ };
     BoundingSphere<ScenePos, 3> result(fixed_zeros<ScenePos, 3>(), 0.);
     for (const auto& [_, r] : renderables_) {
-        result.extend(r->bounding_sphere());
+        result.extend((*r)->bounding_sphere());
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->relative_bounding_sphere();
@@ -1345,7 +1345,7 @@ ScenePos SceneNode::max_center_distance(uint32_t billboard_id) const {
     }
     ScenePos result = 0.;
     for (const auto& [_, r] : renderables_) {
-        result = std::max(result, r->max_center_distance(billboard_id));
+        result = std::max(result, (*r)->max_center_distance(billboard_id));
     }
     for (const auto& [_, c] : children_) {
         auto cb = c.scene_node->max_center_distance(UINT32_MAX);

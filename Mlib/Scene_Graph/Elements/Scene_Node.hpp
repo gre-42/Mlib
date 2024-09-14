@@ -51,7 +51,7 @@ template <class TPos>
 class ColoredVertexArray;
 class SmallInstancesQueues;
 class LargeInstancesQueue;
-struct Blended;
+class Blended;
 
 struct PositionAndYAngle {
     FixedArray<ScenePos, 3> position;
@@ -205,7 +205,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
             const TransformationMatrix<float, ScenePos, 3>& m,
-            const std::map<std::string, RenderableWithStyle>& renderables)>& func) const;
+            const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void move(
         const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
@@ -218,7 +218,7 @@ public:
         const FixedArray<ScenePos, 4, 4>& parent_mvp,
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        const DanglingRef<const SceneNode>& camera_node,
+        const DanglingPtr<const SceneNode>& camera_node,
         const IDynamicLights* dynamic_lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
         const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
@@ -342,7 +342,7 @@ private:
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
-    std::map<std::string, RenderableWithStyle> renderables_;
+    std::map<std::string, std::shared_ptr<RenderableWithStyle>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;

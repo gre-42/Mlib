@@ -25,6 +25,15 @@ DirtmapLogic::~DirtmapLogic() {
     on_destroy.clear();
 }
 
+void DirtmapLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    // Using "child_logic_.render_toplevel" instead
+    // child_logic_.init(lx, ly, frame_id);
+}
+
 void DirtmapLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -49,7 +58,7 @@ void DirtmapLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                 std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
-            child_logic_.render(
+            child_logic_.render_toplevel(
                 LayoutConstraintParameters{
                     .dpi = 96.f,
                     .min_pixel = 0.f,
@@ -66,6 +75,11 @@ void DirtmapLogic::render(
         rendering_resources_.set_vp(dirtmap_, vp());
         generated_ = true;
     }
+}
+
+void DirtmapLogic::reset() {
+    // Using "child_logic_.render_toplevel" instead
+    // child_logic_.reset();
 }
 
 float DirtmapLogic::near_plane() const {

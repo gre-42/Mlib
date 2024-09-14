@@ -24,6 +24,7 @@
 #include <Mlib/Players/Player/Vehicle_Movement.hpp>
 #include <Mlib/Players/Scene_Vehicle/Internals_Mode.hpp>
 #include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Threads/Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <chrono>
 #include <list>
@@ -312,6 +313,7 @@ private:
     ScenePos select_opponent_hysteresis_factor_;
     DestructionObservers<const IPlayer&> destruction_observers_;
     std::map<JoinedWayPointSandbox, PointsAndAdjacency<PointAndFlags<FixedArray<ScenePos, 3>, WayPointLocation>>> way_points_;
+    mutable SafeAtomicRecursiveSharedMutex mutex_;
 };
 
 }

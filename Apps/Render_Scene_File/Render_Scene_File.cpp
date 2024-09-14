@@ -10,6 +10,7 @@
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
 #include <Mlib/Render/Render.hpp>
@@ -76,7 +77,8 @@ std::future<void> render_thread(
                     menu_logic.handle_events();
                     if (load_scene_finished) {
                         execute_render_allocators();
-                        renderable_scenes["primary_scene"].scene_.wait_for_cleanup();
+                        auto& rs = renderable_scenes["primary_scene"];
+                        rs.scene_.wait_for_cleanup();
                         if (!last_load_scene_finished && 
                             !args.has_named("--no_physics") &&
                             !args.has_named("--single_threaded"))
@@ -87,7 +89,7 @@ std::future<void> render_thread(
                             }
                             last_load_scene_finished = true;
                         }
-                        renderable_scenes["primary_scene"].render(
+                        rs.render_toplevel(
                             lx,
                             ly,
                             render_config,

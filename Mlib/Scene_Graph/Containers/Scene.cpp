@@ -421,7 +421,7 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
 
 bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, ScenePos, 3>& m,
-    const std::map<std::string, RenderableWithStyle>& renderables)>& func) const
+    const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
@@ -449,7 +449,8 @@ bool Scene::visit_all(const std::function<bool(
 void Scene::render(
     const FixedArray<ScenePos, 4, 4>& vp,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    const DanglingRef<const SceneNode>& camera_node,
+    DanglingPtr<const SceneNode> camera_node,
+    std::unique_lock<DeleteNodeMutex>& delete_node_lock,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -530,8 +531,10 @@ void Scene::render(
             for (const auto& node : local_root_nodes) {
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
+            camera_node = nullptr;
+            delete_node_lock.unlock();
             for (const auto& node : local_static_root_nodes) {
-                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
+                node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             {
                 NodePtrs cached_imposter_nodes{ CHUNK_SIZE };
@@ -748,7 +751,7 @@ void Scene::render(
                     DynamicStyle dynamic_style{ dynamic_lights_ != nullptr
                         ? dynamic_lights_->get_color(b.m.t())
                         : fixed_zeros<float, 3>() };
-                    b.renderable->render(
+                    b.renderable().render(
                         b.mvp,
                         b.m,
                         iv,
@@ -758,7 +761,7 @@ void Scene::render(
                         scene_graph_config,
                         render_config,
                         { external_render_pass, InternalRenderPass::BLENDED },
-                        b.animation_state,
+                        b.animation_state(),
                         b.color_style);
                 }
             }

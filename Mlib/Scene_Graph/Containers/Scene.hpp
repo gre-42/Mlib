@@ -105,11 +105,12 @@ public:
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, RenderableWithStyle>& renderables)>& func) const;
+        const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        const DanglingRef<const SceneNode>& camera_node,
+        DanglingPtr<const SceneNode> camera_node,
+        std::unique_lock<DeleteNodeMutex>& delete_node_lock,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,

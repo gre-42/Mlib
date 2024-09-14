@@ -8,6 +8,7 @@
 namespace Mlib {
 
 class RenderLogic;
+class Scene;
 class SceneNode;
 struct RenderedSceneDescriptor;
 struct LayoutConstraintParameters;
@@ -40,6 +41,7 @@ class HudTracker: public FillWithTextureLogic {
     HudTracker& operator = (const HudTracker&) = delete;
 public:
     HudTracker(
+        Scene& scene,
         RenderLogic& scene_logic,
         DanglingPtr<SceneNode> exclusive_node,
         HudErrorBehavior hud_error_behavior,
@@ -55,6 +57,7 @@ public:
         const LayoutConstraintParameters& ly,
         const RenderedSceneDescriptor& frame_id);
 private:
+    const Scene& scene_;
     mutable AtomicMutex render_mutex_;
     AtomicMutex offset_mutex_;
     FixedArray<float, 2> center_;

@@ -29,12 +29,9 @@ StandardCameraLogic::~StandardCameraLogic() {
     on_destroy.clear();
 }
 
-void StandardCameraLogic::render(
+void StandardCameraLogic::init(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("StandardCameraLogic::render");
@@ -43,7 +40,7 @@ void StandardCameraLogic::render(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
-    scene_.delete_node_mutex().notify_reading();
+    std::scoped_lock lock{ scene_.delete_node_mutex() };
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
@@ -64,51 +61,83 @@ void StandardCameraLogic::render(
             external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
             '"');
     }
-    auto camera_object = camera_node_->get_camera().copy();
-    camera_object->set_aspect_ratio(aspect_ratio);
+    camera_ = camera_node_->get_camera().copy();
+    camera_->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
-        camera_object->projection_matrix().casted<ScenePos>(),
+        camera_->projection_matrix().casted<ScenePos>(),
         camera_node_->absolute_view_matrix(frame_id.external_render_pass.time).affine());
     iv_ = camera_node_->absolute_model_matrix(frame_id.external_render_pass.time);
+    camera_node_on_destroy_.emplace(camera_node_->on_destroy, CURRENT_SOURCE_LOCATION);
+    camera_node_on_destroy_->add(
+        [this]() {
+            std::scoped_lock lock{ mutex_ };
+            camera_node_ = nullptr;
+        },
+        CURRENT_SOURCE_LOCATION);
+}
+
+void StandardCameraLogic::render(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
+void StandardCameraLogic::reset() {
+    std::scoped_lock lock{ mutex_ };
+    // camera_ = nullptr;
+    camera_node_ = nullptr;
 }
 
 float StandardCameraLogic::near_plane() const {
-    return scene_.get_node(cameras_.camera_node_name(), DP_LOC)->get_camera().get_near_plane();
+    std::scoped_lock lock{ mutex_ };
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::near_plane");
+    }
+    return camera_->get_near_plane();
 }
 
 float StandardCameraLogic::far_plane() const {
-    return scene_.get_node(cameras_.camera_node_name(), DP_LOC)->get_camera().get_far_plane();
+    std::scoped_lock lock{ mutex_ };
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::far_plane");
+    }
+    return camera_->get_far_plane();
 }
 
 const FixedArray<ScenePos, 4, 4>& StandardCameraLogic::vp() const {
-    if (camera_node_ == nullptr) {
-        THROW_OR_ABORT("camera node not set in StandardCameraLogic::vp");
+    std::scoped_lock lock{ mutex_ };
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::vp");
     }
     return vp_;
 }
 
 const TransformationMatrix<float, ScenePos, 3>& StandardCameraLogic::iv() const {
-    if (camera_node_ == nullptr) {
-        THROW_OR_ABORT("camera node not set in StandardCameraLogic::iv");
+    std::scoped_lock lock{ mutex_ };
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::iv");
     }
     return iv_;
 }
 
-DanglingRef<const SceneNode> StandardCameraLogic::camera_node() const {
-    if (camera_node_ == nullptr) {
-        THROW_OR_ABORT("camera node not set in StandardCameraLogic::camera_node");
+DanglingPtr<const SceneNode> StandardCameraLogic::camera_node() const {
+    scene_.delete_node_mutex().notify_reading();
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::camera_node");
     }
-    return *camera_node_;
+    return camera_node_;
 }
 
 bool StandardCameraLogic::requires_postprocessing() const {
-    return scene_.get_node(cameras_.camera_node_name(), DP_LOC)->get_camera().get_requires_postprocessing();
+    if (camera_ == nullptr) {
+        THROW_OR_ABORT("camera not set in StandardCameraLogic::requires_postprocessing");
+    }
+    return camera_->get_requires_postprocessing();
 }
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "StandardCameraLogic\n";
-}
-
-void StandardCameraLogic::reset() {
-    camera_node_ = nullptr;
 }

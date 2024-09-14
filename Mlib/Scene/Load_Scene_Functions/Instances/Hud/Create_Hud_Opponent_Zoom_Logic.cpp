@@ -58,6 +58,7 @@ void CreateHudOpponentZoom::execute(const LoadSceneJsonUserFunctionArgs& args)
     object_pool.create<HudOpponentZoomLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
+        scene,
         std::move(cam_stream),
         render_logics,
         players,

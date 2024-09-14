@@ -85,16 +85,19 @@ public:
     }
 
     virtual bool node_shall_be_hidden(
-        const DanglingRef<const SceneNode>& camera_node,
+        const DanglingPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override
     {
+        if (camera_node == nullptr) {
+            THROW_OR_ABORT("NodeHiderWithEvent requires a camera node. Was the hider attached to a static node?");
+        }
         if (camera_node_ == nullptr) {
             verbose_abort("node_shall_be_hidden on destroyed node hider");
         }
         if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
             return false;
         }
-        bool hide = (camera_node_ == camera_node.ptr());
+        bool hide = (camera_node_ == camera_node);
         if (hide) {
             if (!hide_old_) {
                 on_hide_();

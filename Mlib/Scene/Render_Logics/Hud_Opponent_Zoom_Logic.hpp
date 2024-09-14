@@ -12,12 +12,14 @@ class Player;
 class Players;
 class ObjectPool;
 class IWidget;
+class Scene;
 class RenderLogics;
 
 class HudOpponentZoomLogic: public RenderLogic {
 public:
     HudOpponentZoomLogic(
         ObjectPool& object_pool,
+        Scene& scene,
         std::unique_ptr<RenderLogic>&& scene_logic,
         RenderLogics& render_logics,
         Players& players,
@@ -29,6 +31,10 @@ public:
     ~HudOpponentZoomLogic();
 
     // RenderLogic
+    virtual void init(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderedSceneDescriptor& frame_id) override;
     virtual void render(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
@@ -36,10 +42,11 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) override;
-
+    virtual void reset() override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
+    Scene& scene_;
     Players& players_;
     DanglingBaseClassRef<Player> player_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;

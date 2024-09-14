@@ -48,6 +48,12 @@ void VisualBulletCount::advance_time(float dt, const StaticWorld& world) {
     text_ = "Ammo: " + std::to_string(player_->nbullets_available());
 }
 
+void VisualBulletCount::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void VisualBulletCount::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -66,6 +72,9 @@ void VisualBulletCount::render(
             line_distance_.to_pixels(ly));
     }
 }
+
+void VisualBulletCount::reset()
+{}
 
 void VisualBulletCount::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualBulletCount\n";

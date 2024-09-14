@@ -24,6 +24,14 @@ AggregateRenderLogic::~AggregateRenderLogic() {
     on_destroy.clear();
 }
 
+void AggregateRenderLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void AggregateRenderLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -57,6 +65,10 @@ void AggregateRenderLogic::render(
         frame_id);
 }
 
+void AggregateRenderLogic::reset() {
+    child_logic_.reset();
+}
+
 float AggregateRenderLogic::near_plane() const {
     return child_logic_.near_plane();
 }
@@ -73,16 +85,12 @@ const TransformationMatrix<float, ScenePos, 3>& AggregateRenderLogic::iv() const
     return child_logic_.iv();
 }
 
-DanglingRef<const SceneNode> AggregateRenderLogic::camera_node() const {
+DanglingPtr<const SceneNode> AggregateRenderLogic::camera_node() const {
     return child_logic_.camera_node();
 }
 
 bool AggregateRenderLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
-}
-
-void AggregateRenderLogic::reset() {
-    child_logic_.reset();
 }
 
 void AggregateRenderLogic::print(std::ostream& ostr, size_t depth) const {

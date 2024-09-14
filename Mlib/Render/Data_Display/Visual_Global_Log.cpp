@@ -19,20 +19,26 @@ VisualGlobalLog::VisualGlobalLog(
     const ILayoutPixels& line_distance,
     size_t nentries,
     LogEntrySeverity severity)
-: RenderTextLogic{
-    ttf_filename,
-    {1.f, 1.f, 1.f},
-    font_height,
-    line_distance},
-  base_log_{base_log},
-  nentries_{nentries},
-  severity_{severity},
-  widget_{std::move(widget)}
+    : RenderTextLogic{
+        ttf_filename,
+        {1.f, 1.f, 1.f},
+        font_height,
+        line_distance }
+    , base_log_{ base_log }
+    , nentries_{ nentries }
+    , severity_{ severity }
+    , widget_{ std::move(widget) }
 {}
 
 VisualGlobalLog::~VisualGlobalLog() {
     on_destroy.clear();
 }
+
+void VisualGlobalLog::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
 
 void VisualGlobalLog::render(
     const LayoutConstraintParameters& lx,
@@ -51,6 +57,9 @@ void VisualGlobalLog::render(
         sstr.str(),
         line_distance_.to_pixels(ly));
 }
+
+void VisualGlobalLog::reset()
+{}
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualGlobalLog\n";

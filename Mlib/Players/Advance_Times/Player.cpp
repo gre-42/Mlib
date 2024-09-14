@@ -109,37 +109,37 @@ Player::~Player() {
 }
 
 void Player::set_can_drive(ControlSource control_source, bool value) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_drive = value;
 }
 
 void Player::set_can_aim(ControlSource control_source, bool value) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_aim = value;
 }
 
 void Player::set_can_shoot(ControlSource control_source, bool value) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_shoot = value;
 }
 
 void Player::set_can_select_weapon(ControlSource control_source, bool value) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_select_weapon = value;
 }
 
 void Player::set_can_select_opponent(ControlSource control_source, bool value) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     skills_.skills(control_source).can_select_opponent = value;
 }
 
 void Player::set_select_opponent_hysteresis_factor(ScenePos factor) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     select_opponent_hysteresis_factor_ = factor;
 }
 
 void Player::reset_node() {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     if (vehicle_ != nullptr) {
         on_clear_vehicle_.clear();
         vehicle_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -188,7 +188,7 @@ void Player::set_scene_vehicle(
     SceneVehicle& pv,
     const std::string& desired_role)
 {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     if (vehicle_ != nullptr) {
         THROW_OR_ABORT("Scene vehicle already set");
     }
@@ -216,6 +216,7 @@ RigidBodyVehicle& Player::rigid_body() {
 }
 
 const RigidBodyVehicle& Player::rigid_body() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no rigid body");
@@ -224,12 +225,13 @@ const RigidBodyVehicle& Player::rigid_body() const {
 }
 
 const std::string& Player::scene_node_name() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     return vehicle().scene_node_name();
 }
 
 void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         THROW_OR_ABORT("gun already set");
     }
@@ -237,7 +239,7 @@ void Player::set_gun_node(DanglingRef<SceneNode> gun_node) {
 }
 
 void Player::change_gun_node(DanglingPtr<SceneNode> gun_node) {
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::scoped_lock lock{ mutex_ };
     if (controlled_.gun_node != nullptr) {
         controlled_.gun_node->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
@@ -248,32 +250,33 @@ void Player::change_gun_node(DanglingPtr<SceneNode> gun_node) {
 }
 
 const std::string& Player::name() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return name_;
 }
 
 const std::string& Player::team_name() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return team_;
 }
 
 DanglingBaseClassRef<Team> Player::team() {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return players_.get_team(team_name());
 }
 
 PlayerStats& Player::stats() {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return stats_;
 }
 
 const PlayerStats& Player::stats() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return stats_;
 }
 
 float Player::car_health() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock0{ mutex_ };
+    std::scoped_lock lock1{ delete_node_mutex_ };
     if (has_scene_vehicle() && (vehicle_->rb().damageable_ != nullptr)) {
         return vehicle_->rb().damageable_->health();
     } else {
@@ -282,7 +285,8 @@ float Player::car_health() const {
 }
 
 std::string Player::vehicle_name() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock0{ mutex_ };
+    std::scoped_lock lock1{ delete_node_mutex_ };
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle name");
     }
@@ -290,7 +294,7 @@ std::string Player::vehicle_name() const {
 }
 
 GameMode Player::game_mode() const {
-    delete_node_mutex_.notify_reading();
+    std::shared_lock lock{ mutex_ };
     return game_mode_;
 }
 
@@ -300,6 +304,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires rb");
@@ -319,6 +324,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires rb");
@@ -338,6 +344,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires vehicle");
@@ -357,6 +364,7 @@ bool Player::can_see(
     float height_offset,
     float time_offset) const
 {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (!player.has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires target rb");
@@ -369,6 +377,7 @@ bool Player::can_see(
 }
 
 void Player::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (destroyed_object.ptr() == target_scene_node_) {
         target_name_.reset();
@@ -384,6 +393,7 @@ void Player::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
 }
 
 void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (&destroyed_object == next_scene_vehicle_) {
         next_scene_vehicle_ = nullptr;
@@ -395,6 +405,7 @@ void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
 }
 
 void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (vehicle_ == nullptr) {
         verbose_abort("Player::notify_destroyed: Vehicle is null");
@@ -409,6 +420,7 @@ void Player::notify_destroyed(const RigidBodyVehicle& destroyed_object) {
 }
 
 void Player::advance_time(float dt, const StaticWorld& world) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     aim_and_shoot();
     select_best_weapon_in_inventory();
@@ -420,6 +432,7 @@ void Player::increment_external_forces(
     const PhysicsEngineConfig& cfg,
     const StaticWorld& world)
 {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (burn_in) {
         return;
@@ -464,6 +477,7 @@ void Player::increment_external_forces(
 }
 
 bool Player::unstuck() {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
         return false;
@@ -505,6 +519,7 @@ bool Player::unstuck() {
 }
 
 FixedArray<float, 3> Player::gun_direction() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + name() + '"');
@@ -513,6 +528,7 @@ FixedArray<float, 3> Player::gun_direction() const {
 }
 
 FixedArray<float, 3> Player::punch_angle() const {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + name() + '"');
@@ -521,6 +537,7 @@ FixedArray<float, 3> Player::punch_angle() const {
 }
 
 void Player::trigger_gun() {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Player::trigger despite gun nullptr");
@@ -532,6 +549,7 @@ void Player::trigger_gun() {
 }
 
 bool Player::has_gun_node() const {
+    std::shared_lock lock{ mutex_ };
     return (controlled_.gun_node != nullptr);
 }
 
@@ -556,6 +574,7 @@ const WeaponCycle& Player::weapon_cycle() const {
 }
 
 bool Player::needs_supplies() const {
+    std::shared_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         return false;
     }
@@ -563,10 +582,13 @@ bool Player::needs_supplies() const {
 }
 
 size_t Player::nbullets_available() const {
+    delete_node_mutex_.notify_reading();
     return gun().nbullets_available();
 }
 
 std::optional<std::string> Player::best_weapon_in_inventory() const {
+    std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.notify_reading();
     auto& wc = weapon_cycle();
     if ((target_rb_ == nullptr) ||
         !has_scene_vehicle())
@@ -592,6 +614,7 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
 }
 
 bool Player::has_scene_vehicle() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     if (vehicle_ == nullptr) {
         return false;
@@ -606,10 +629,14 @@ bool Player::has_scene_vehicle() const {
 }
 
 bool Player::has_vehicle_controller() const {
+    std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.notify_reading();
     return rigid_body().has_vehicle_controller();
 }
 
 const Gun& Player::gun() const {
+    std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }
@@ -622,11 +649,13 @@ Gun& Player::gun() {
 }
 
 bool Player::is_pedestrian() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     return joined_way_point_sandbox_ == JoinedWayPointSandbox::SIDEWALK;
 }
 
 void Player::aim_and_shoot() {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!skills_.skills(ControlSource::AI).can_aim) {
         return;
@@ -656,6 +685,7 @@ void Player::aim_and_shoot() {
 }
 
 void Player::select_best_weapon_in_inventory() {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!skills_.skills(ControlSource::AI).can_select_weapon) {
         return;
@@ -674,23 +704,28 @@ void Player::select_best_weapon_in_inventory() {
 }
 
 bool Player::ramming() const {
+    std::shared_lock lock{ mutex_ };
     delete_node_mutex_.notify_reading();
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
 std::optional<std::string> Player::target_name() const {
+    std::shared_lock lock{ mutex_ };
     return target_name_;
 }
 
 DanglingPtr<SceneNode> Player::target_scene_node() const {
+    std::shared_lock lock{ mutex_ };
     return target_scene_node_;
 }
 
 const RigidBodyVehicle* Player::target_rb() const {
+    std::shared_lock lock{ mutex_ };
     return target_rb_;
 }
 
 void Player::select_opponent(OpponentSelectionStrategy strategy) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!has_scene_vehicle()) {
         return;
@@ -796,6 +831,7 @@ void Player::select_opponent(OpponentSelectionStrategy strategy) {
 }
 
 void Player::clear_opponent() {
+    std::scoped_lock lock{ mutex_ };
     if (target_scene_node_ == nullptr) {
         THROW_OR_ABORT("Player has no opponent");
     }
@@ -806,6 +842,7 @@ void Player::clear_opponent() {
 }
 
 void Player::set_opponent(const Player& opponent) {
+    std::scoped_lock lock{ mutex_ };
     if (target_scene_node_ != nullptr) {
         THROW_OR_ABORT("Player already has an opponent");
     }
@@ -819,6 +856,8 @@ void Player::set_opponent(const Player& opponent) {
 }
 
 DanglingRef<SceneNode> Player::scene_node() {
+    std::shared_lock lock{ mutex_ };
+    delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene node");
     }
@@ -838,6 +877,7 @@ SceneVehicle* Player::next_scene_vehicle() {
 }
 
 const std::string& Player::next_role() const {
+    std::shared_lock lock{ mutex_ };
     return next_role_;
 }
 
@@ -846,6 +886,7 @@ SceneVehicle& Player::vehicle() {
 }
 
 const SceneVehicle& Player::vehicle() const {
+    std::shared_lock lock{ mutex_ };
     if (vehicle_ == nullptr) {
         THROW_OR_ABORT("Vehicle is null");
     }
@@ -853,6 +894,7 @@ const SceneVehicle& Player::vehicle() const {
 }
 
 void Player::select_next_vehicle() {
+    std::scoped_lock lock{ mutex_ };
     if (!has_scene_vehicle()) {
         return;
     }
@@ -895,6 +937,7 @@ void Player::select_next_vehicle() {
 }
 
 void Player::create_vehicle_externals(ExternalsMode externals_mode) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (externals_mode_ != ExternalsMode::NONE) {
         THROW_OR_ABORT("Externals already created (0)");
     }
@@ -910,10 +953,12 @@ void Player::create_vehicle_externals(ExternalsMode externals_mode) {
         THROW_OR_ABORT("Vehicle internals not empty while adding externals");
     }
     vehicle_->create_vehicle_externals(name(), externals_mode, behavior_);
+    std::scoped_lock lock{ mutex_ };
     externals_mode_ = externals_mode;
 }
 
 void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (externals_mode_ == ExternalsMode::NONE) {
         THROW_OR_ABORT("Internals set before vehicle externals");
     }
@@ -928,10 +973,12 @@ void Player::create_vehicle_internals(const InternalsMode& internals_mode) {
         THROW_OR_ABORT("Create internals set after deleters were added");
     }
     vehicle_->create_vehicle_internals(name(), externals_mode_, skills_, behavior_, internals_mode);
+    std::scoped_lock lock{ mutex_ };
     internals_mode_ = internals_mode;
 }
 
 void Player::set_role(const std::string& role) {
+    std::scoped_lock lock{ mutex_ };
     if (externals_mode_ == ExternalsMode::NONE) {
         THROW_OR_ABORT("Attempt to set role before vehicle externals");
     }
@@ -946,6 +993,7 @@ void Player::set_role(const std::string& role) {
 }
 
 void Player::change_role() {
+    std::scoped_lock lock{ mutex_ };
     auto* new_role = rigid_body().drivers_.next_free_role(internals_mode_.role);
     if (new_role == nullptr) {
         return;
@@ -954,10 +1002,12 @@ void Player::change_role() {
 }
 
 const Skills& Player::skills(ControlSource control_source) const {
+    std::shared_lock lock{ mutex_ };
     return skills_.skills(control_source);
 }
 
 Players& Player::players() {
+    std::shared_lock lock{ mutex_ };
     return players_;
 }
 
@@ -967,6 +1017,7 @@ void Player::set_behavior(
     float unstuck_duration,
     JoinedWayPointSandbox joined_way_point_sandbox)
 {
+    std::scoped_lock lock{ mutex_ };
     stuck_velocity_ = stuck_velocity;
     stuck_duration_ = stuck_duration;
     unstuck_duration_ = unstuck_duration;
@@ -974,10 +1025,12 @@ void Player::set_behavior(
 }
 
 DrivingDirection Player::driving_direction() const {
+    std::shared_lock lock{ mutex_ };
     return driving_direction_;
 }
 
 ExternalsMode Player::externals_mode() const {
+    std::shared_lock lock{ mutex_ };
     return externals_mode_;
 }
 
@@ -1004,6 +1057,8 @@ PlaybackWaypoints& Player::playback_waypoints() {
 }
 
 void Player::append_dependent_node(std::string node_name) {
+    std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.notify_reading();
     auto node = scene_.get_node(node_name, DP_LOC);
     if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
         THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + name() + '"');
@@ -1012,6 +1067,7 @@ void Player::append_dependent_node(std::string node_name) {
 }
 
 void Player::notify_race_started() {
+    std::scoped_lock lock{ mutex_ };
     stats_ = PlayerStats();
 }
 
@@ -1022,6 +1078,7 @@ RaceState Player::notify_lap_finished(
     const std::list<float>& lap_times_seconds,
     const std::list<TrackElement>& track)
 {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (lap_times_seconds.empty()) {
         THROW_OR_ABORT("Lap times list is empty");
@@ -1042,6 +1099,7 @@ RaceState Player::notify_lap_finished(
 }
 
 void Player::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
+    std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (const auto& [_, iplayer] : rigid_body_vehicle.drivers_.players_map()) {
         Player* player = dynamic_cast<Player*>(iplayer.get());
@@ -1064,14 +1122,17 @@ DestructionFunctions& Player::on_clear_vehicle() {
 
 void Player::set_pathfinding_waypoints(const std::map<JoinedWayPointSandbox, PointsAndAdjacencyResource>& way_points)
 {
+    std::scoped_lock lock{ mutex_ };
     way_points_ = way_points;
 }
 
 bool Player::has_way_points() const {
+    std::shared_lock lock{ mutex_ };
     return !way_points_.empty();
 }
 
 void Player::set_way_point_location_filter(JoinedWayPointSandbox filter) {
+    std::scoped_lock lock{ mutex_ };
     auto final_filter = joined_way_point_sandbox_ & filter;
     size_t nfound = 0;
     for (const auto& [location, wp] : way_points_) {

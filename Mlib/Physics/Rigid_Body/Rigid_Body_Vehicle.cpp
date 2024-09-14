@@ -930,7 +930,7 @@ StatusWriter& RigidBodyVehicle::child_status_writer(const std::vector<VariableAn
 }
 
 bool RigidBodyVehicle::node_shall_be_hidden(
-    const DanglingRef<const SceneNode>& camera_node,
+    const DanglingPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     return is_deactivated_avatar();

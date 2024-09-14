@@ -23,6 +23,14 @@ RenderToPixelRegionLogic::~RenderToPixelRegionLogic() {
     on_destroy.clear();
 }
 
+void RenderToPixelRegionLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    render_logic_.init(lx, ly, frame_id);
+}
+
 void RenderToPixelRegionLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -43,6 +51,10 @@ void RenderToPixelRegionLogic::render(
             render_results,
             frame_id);
     }
+}
+
+void RenderToPixelRegionLogic::reset() {
+    render_logic_.reset();
 }
 
 FocusFilter RenderToPixelRegionLogic::focus_filter() const {

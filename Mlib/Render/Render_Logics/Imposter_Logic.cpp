@@ -43,7 +43,7 @@ OriginalNodeHider::OriginalNodeHider(ImposterLogic& imposter_logic)
 {}
 
 bool OriginalNodeHider::node_shall_be_hidden(
-    const DanglingRef<const SceneNode>& camera_node,
+    const DanglingPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -56,7 +56,7 @@ bool OriginalNodeHider::node_shall_be_hidden(
 }
 
 bool ImposterNodeHider::node_shall_be_hidden(
-    const DanglingRef<const SceneNode>& camera_node,
+    const DanglingPtr<const SceneNode>& camera_node,
     const ExternalRenderPass& external_render_pass) const
 {
     if (external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -163,6 +163,12 @@ void ImposterLogic::delete_imposter_if_exists() {
         imposter_node_ = nullptr;
     }
 }
+
+void ImposterLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
 
 void ImposterLogic::render(
     const LayoutConstraintParameters& lx,
@@ -308,8 +314,7 @@ void ImposterLogic::render(
             // RenderToScreenGuard rsg;
             // CHK(glClearColor(1.f, 0.f, 1.f, 1.f));
             // CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-            DestructionGuard dg{ [this]() { child_logic_.reset(); } };
-            child_logic_.render(
+            child_logic_.render_toplevel(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
@@ -340,6 +345,9 @@ void ImposterLogic::render(
             (float)std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
     }
 }
+
+void ImposterLogic::reset()
+{}
 
 float ImposterLogic::near_plane() const {
     return child_logic_.near_plane();

@@ -63,6 +63,12 @@ void CheckPointsPacenotes::advance_time(float dt, const StaticWorld& world) {
     // }
 }
 
+void CheckPointsPacenotes::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void CheckPointsPacenotes::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -71,7 +77,7 @@ void CheckPointsPacenotes::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    std::shared_lock lock{mutex_};
+    std::shared_lock lock{ mutex_ };
     auto text_region = text_widget_->evaluate(lx, ly, YOrientation::AS_IS);
     auto picture_region = picture_widget_->evaluate(lx, ly, YOrientation::AS_IS);
     auto dx1 = widget_distance_.to_pixels(lx);
@@ -85,6 +91,9 @@ void CheckPointsPacenotes::render(
         dx += dx1;
     }
 }
+
+void CheckPointsPacenotes::reset()
+{}
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "CheckPointsPacenotes\n";

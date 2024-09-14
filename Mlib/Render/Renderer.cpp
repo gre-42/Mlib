@@ -94,7 +94,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                 // lerr() << "-------------------------------";
                 // logic.print(lraw(), 0);
                 // lerr() << "+++++++++++++++++++++++++++++++";
-                logic.render(
+                logic.render_toplevel(
                     LayoutConstraintParameters{
                         .dpi = dpi(0),
                         .min_pixel = 0.f,

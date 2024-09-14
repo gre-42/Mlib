@@ -96,6 +96,12 @@ TabMenuLogic::~TabMenuLogic() {
     on_destroy.clear();
 }
 
+void TabMenuLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void TabMenuLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -161,6 +167,9 @@ void TabMenuLogic::render(
         THROW_OR_ABORT("Unknown listview style");
     }
 }
+
+void TabMenuLogic::reset()
+{}
 
 FocusFilter TabMenuLogic::focus_filter() const {
     return { .focus_mask = Focus::MENU };

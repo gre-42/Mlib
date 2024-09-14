@@ -107,6 +107,14 @@ BloomLogic::~BloomLogic() {
     on_destroy.clear();
 }
 
+void BloomLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    // child_logic_.init(lx, ly, frame_id);
+}
+
 void BloomLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -121,7 +129,7 @@ void BloomLogic::render(
         THROW_OR_ABORT("BloomLogic did not receive standard rendering");
     }
     if (all(niterations_ == 0u)) {
-        child_logic_.render(
+        child_logic_.render_toplevel(
             lx,
             ly,
             render_config,
@@ -159,7 +167,7 @@ void BloomLogic::render(
             RenderToFrameBufferGuard rfg{ screen_fbs_ };
             ViewportGuard vg{ width, height };
 
-            child_logic_.render(
+            child_logic_.render_toplevel(
                 lx,
                 ly,
                 render_config,
@@ -247,6 +255,10 @@ void BloomLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
+}
+
+void BloomLogic::reset() {
+    // child_logic_.reset();
 }
 
 float BloomLogic::near_plane() const {

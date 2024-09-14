@@ -14,6 +14,7 @@ using namespace Mlib;
 
 HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     ObjectPool& object_pool,
+    Scene& scene,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     Players& players,
@@ -28,6 +29,7 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     : players_{ players }
     , player_{ player }
     , hud_tracker_{
+        scene,
         scene_logic,
         exclusive_node,
         hud_error_behavior,
@@ -65,6 +67,12 @@ void HudOpponentTrackerLogic::advance_time(float dt, const StaticWorld& world) {
     ht.advance_time(target_rb->rbp_.abs_position());
 }
 
+void HudOpponentTrackerLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void HudOpponentTrackerLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -76,6 +84,9 @@ void HudOpponentTrackerLogic::render(
     LOG_FUNCTION("HudOpponentTrackerLogic::render");
     hud_tracker_.render(lx, ly, frame_id);
 }
+
+void HudOpponentTrackerLogic::reset()
+{}
 
 void HudOpponentTrackerLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudOpponentTrackerLogic\n";

@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Notifier.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <iosfwd>
+#include <memory>
 
 namespace Mlib {
 
@@ -17,13 +18,25 @@ struct RenderedSceneDescriptor;
 struct SceneGraphConfig;
 struct FocusFilter;
 template <class T>
-class DanglingRef;
+class DanglingPtr;
 class SceneNode;
+class DeleteNodeMutex;
 
 class RenderLogic: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
     RenderLogic();
     virtual ~RenderLogic();
+    void render_toplevel(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id);
+    virtual void init(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderedSceneDescriptor& frame_id) = 0;
     virtual void render(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
@@ -31,14 +44,14 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id) = 0;
+    virtual void reset() = 0;
     virtual FocusFilter focus_filter() const;
     virtual float near_plane() const;
     virtual float far_plane() const;
     virtual const FixedArray<ScenePos, 4, 4>& vp() const;
     virtual const TransformationMatrix<float, ScenePos, 3>& iv() const;
-    virtual DanglingRef<const SceneNode> camera_node() const;
+    virtual DanglingPtr<const SceneNode> camera_node() const;
     virtual bool requires_postprocessing() const;
-    virtual void reset();
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };
 

@@ -74,6 +74,12 @@ ParameterSetterLogic::~ParameterSetterLogic() {
     on_destroy.clear();
 }
 
+void ParameterSetterLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void ParameterSetterLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -95,6 +101,9 @@ void ParameterSetterLogic::render(
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
 }
+
+void ParameterSetterLogic::reset()
+{}
 
 FocusFilter ParameterSetterLogic::focus_filter() const {
     return focus_filter_;

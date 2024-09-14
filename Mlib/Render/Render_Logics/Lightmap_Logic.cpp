@@ -66,6 +66,12 @@ void LightmapLogic::deallocate() {
     }
 }
 
+void LightmapLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void LightmapLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -110,7 +116,7 @@ void LightmapLogic::render(
                     std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                     std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
             }
-            child_logic_.render(
+            child_logic_.render_toplevel(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,
@@ -136,6 +142,9 @@ void LightmapLogic::render(
         }
     }
 }
+
+void LightmapLogic::reset()
+{}
 
 float LightmapLogic::near_plane() const {
     return child_logic_.near_plane();

@@ -112,6 +112,12 @@ SceneSelectorLogic::~SceneSelectorLogic() {
     on_destroy.clear();
 }
 
+void SceneSelectorLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void SceneSelectorLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -133,6 +139,9 @@ void SceneSelectorLogic::render(
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
 }
+
+void SceneSelectorLogic::reset()
+{}
 
 FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;

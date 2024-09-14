@@ -21,6 +21,14 @@ ReadPixelsLogic::~ReadPixelsLogic() {
     on_destroy.clear();
 }
 
+void ReadPixelsLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void ReadPixelsLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -84,6 +92,10 @@ void ReadPixelsLogic::render(
         frame_id);
 }
 
+void ReadPixelsLogic::reset() {
+    child_logic_.reset();
+}
+
 float ReadPixelsLogic::near_plane() const {
     return child_logic_.near_plane();
 }
@@ -102,10 +114,6 @@ const TransformationMatrix<float, ScenePos, 3>& ReadPixelsLogic::iv() const {
 
 bool ReadPixelsLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
-}
-
-void ReadPixelsLogic::reset() {
-    child_logic_.reset();
 }
 
 void ReadPixelsLogic::print(std::ostream& ostr, size_t depth) const {

@@ -22,10 +22,22 @@ StandardRenderLogic::StandardRenderLogic(
     , child_logic_{ child_logic }
     , background_color_{ background_color }
     , clear_mode_{ clear_mode }
+    , delete_node_lock_{ scene.delete_node_mutex(), std::defer_lock }
 {}
 
 StandardRenderLogic::~StandardRenderLogic() {
     on_destroy.clear();
+}
+
+void StandardRenderLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    // Acquire the delete-node-mutex, because "child_logic_.camera_node"
+    // and the "child_logic_.requires_postprocessing" are read below.
+    delete_node_lock_.lock();
+    child_logic_.init(lx, ly, frame_id);
 }
 
 void StandardRenderLogic::render(
@@ -87,9 +99,6 @@ void StandardRenderLogic::render(
     }
 
     {
-        // Acquire delete node mutex because the "child_logic_.camera_node"
-        // is read below.
-        std::scoped_lock lock{ scene_.delete_node_mutex() };
         child_logic_.render(
             lx,
             ly,
@@ -104,6 +113,7 @@ void StandardRenderLogic::render(
             child_logic_.vp(),
             child_logic_.iv(),
             child_logic_.camera_node(),
+            delete_node_lock_,
             render_config,
             scene_graph_config,
             frame_id.external_render_pass);
@@ -133,6 +143,13 @@ void StandardRenderLogic::render(
     // }
 }
 
+void StandardRenderLogic::reset() {
+    if (delete_node_lock_.owns_lock()) {
+        delete_node_lock_.unlock();
+    }
+    child_logic_.reset();
+}
+
 float StandardRenderLogic::near_plane() const {
     return child_logic_.near_plane();
 }
@@ -149,16 +166,12 @@ const TransformationMatrix<float, ScenePos, 3>& StandardRenderLogic::iv() const 
     return child_logic_.iv();
 }
 
-DanglingRef<const SceneNode> StandardRenderLogic::camera_node() const {
+DanglingPtr<const SceneNode> StandardRenderLogic::camera_node() const {
     return child_logic_.camera_node();
 }
 
 bool StandardRenderLogic::requires_postprocessing() const {
     return child_logic_.requires_postprocessing();
-}
-
-void StandardRenderLogic::reset() {
-    child_logic_.reset();
 }
 
 void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {

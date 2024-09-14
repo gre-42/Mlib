@@ -630,6 +630,12 @@ void KeyBindings::increment_external_forces(
     }
 }
 
+void KeyBindings::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void KeyBindings::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -649,6 +655,9 @@ void KeyBindings::render(
         }
     }
 }
+
+void KeyBindings::reset()
+{}
 
 void KeyBindings::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "KeyBindings\n";

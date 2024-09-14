@@ -240,6 +240,14 @@ void MotionInterpolationLogic::ensure_initialized() {
     }
 }
 
+void MotionInterpolationLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void MotionInterpolationLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -402,6 +410,10 @@ void MotionInterpolationLogic::render(
             }
         }
     }
+}
+
+void MotionInterpolationLogic::reset() {
+    child_logic_.reset();
 }
 
 float MotionInterpolationLogic::near_plane() const {

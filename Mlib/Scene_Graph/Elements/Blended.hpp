@@ -1,24 +1,45 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
+#include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Renderable_With_Style.hpp>
 #include <Mlib/Scene_Pos.hpp>
+#include <memory>
 
 namespace Mlib {
 
-struct AnimationState;
 struct ColorStyle;
+class RenderableWithStyle;
 class Renderable;
 
-struct Blended {
+class Blended {
+    Blended(const Blended&) = delete;
+    Blended& operator = (const Blended&) = delete;
+public:
+    Blended(
+        std::shared_ptr<const RenderableWithStyle> renderable_with_style,
+        const std::string& name,
+        const FixedArray<ScenePos, 4, 4>& mvp,
+        const TransformationMatrix<float, ScenePos, 3>& m,
+        const AnimationState* animation_state,
+        const std::list<const ColorStyle*>& ecolor_styles);
+    ~Blended();
     int z_order;
     FixedArray<ScenePos, 4, 4> mvp;
     TransformationMatrix<float, ScenePos, 3> m;
-    const Renderable* renderable;
-    const AnimationState* animation_state;
+    inline const Renderable& renderable() const {
+        return *renderable_with_style_;
+    }
+    inline const AnimationState* animation_state() const {
+        return animation_state_.has_value() ? &*animation_state_ : nullptr;
+    }
     const ColorStyle* color_style;
     inline std::pair<int, ScenePos> sorting_key() const {
         return { z_order, mvp(2, 3) };
     }
+private:
+    std::shared_ptr<const RenderableWithStyle> renderable_with_style_;
+    const std::optional<AnimationState> animation_state_;
 };
 
 }

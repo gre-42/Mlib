@@ -80,6 +80,12 @@ void MinimapLogic::advance_time(float dt, const StaticWorld& world) {
     angle_ = std::atan2(t.R(2, 0), t.R(2, 2));
 }
 
+void MinimapLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void MinimapLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -139,6 +145,9 @@ void MinimapLogic::render(
         }
     }
 }
+
+void MinimapLogic::reset()
+{}
 
 void MinimapLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "MinimapLogic\n";

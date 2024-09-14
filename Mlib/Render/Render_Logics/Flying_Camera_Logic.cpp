@@ -12,6 +12,7 @@
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
@@ -159,15 +160,13 @@ FlyingCameraLogic::~FlyingCameraLogic() {
     on_destroy.clear();
 }
 
-void FlyingCameraLogic::render(
+void FlyingCameraLogic::init(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderConfig& render_config,
-    const SceneGraphConfig& scene_graph_config,
-    RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    LOG_FUNCTION("FlyingCameraLogic::render");
+    LOG_FUNCTION("FlyingCameraLogic::init");
+    std::scoped_lock lock{ scene_.delete_node_mutex() };
     DanglingRef<SceneNode> cn = scene_.get_node(user_object_.cameras.camera_node_name(), DP_LOC);
     if (fly_) {
         flying_key_callback(user_object_, *keys_);
@@ -182,6 +181,18 @@ void FlyingCameraLogic::render(
         on->set_rotation(user_object_.obj_angles, SUCCESSOR_POSE);
     }
 }
+
+void FlyingCameraLogic::render(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
+void FlyingCameraLogic::reset()
+{}
 
 void FlyingCameraLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "FlyingCameraLogic\n";

@@ -11,6 +11,8 @@ RenderableWithStyle::RenderableWithStyle(std::shared_ptr<const Renderable> rende
     , style_hash_{ SEED }
 { }
 
+RenderableWithStyle::~RenderableWithStyle() = default;
+
 const ColorStyle* RenderableWithStyle::style(
     const std::list<const ColorStyle*>& color_styles,
     const std::string& name) const

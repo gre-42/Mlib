@@ -55,6 +55,12 @@ void VisualMovable3rdLogger::advance_time(float dt, const StaticWorld& world) {
     text_ = sstr.str();
 }
 
+void VisualMovable3rdLogger::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void VisualMovable3rdLogger::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -86,6 +92,9 @@ void VisualMovable3rdLogger::render(
             line_distance_.to_pixels(ly));
     }
 }
+
+void VisualMovable3rdLogger::reset()
+{}
 
 void VisualMovable3rdLogger::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualMovable3rdLogger\n";

@@ -64,6 +64,12 @@ void SkidmarkLogic::deallocate() {
     }
 }
 
+void SkidmarkLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void SkidmarkLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -148,6 +154,9 @@ void SkidmarkLogic::render(
         ResourceOwner::CALLER);
     rendering_resources_.set_vp(vp_, vp);
 }
+
+void SkidmarkLogic::reset()
+{}
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "SkidmarkLogic\n";

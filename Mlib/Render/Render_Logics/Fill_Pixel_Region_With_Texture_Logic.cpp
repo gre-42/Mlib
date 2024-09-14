@@ -25,6 +25,12 @@ FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() {
     on_destroy.clear();
 }
 
+void FillPixelRegionWithTextureLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void FillPixelRegionWithTextureLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -44,6 +50,9 @@ void FillPixelRegionWithTextureLogic::render(
         fill_with_texture_logic_->render(ClearMode::OFF);
     }
 }
+
+void FillPixelRegionWithTextureLogic::reset()
+{}
 
 FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
     return focus_filter_;

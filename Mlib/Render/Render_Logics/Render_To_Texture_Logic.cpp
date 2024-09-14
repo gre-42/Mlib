@@ -45,6 +45,14 @@ RenderToTextureLogic::~RenderToTextureLogic() {
     }
 }
 
+void RenderToTextureLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void RenderToTextureLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -89,6 +97,10 @@ void RenderToTextureLogic::render(
             rendering_resources_.set_texture({ .filename = depth_texture_name_, .color_mode = ColorMode::GRAYSCALE }, fbs_->texture_depth(), ResourceOwner::CALLER);
         }
     }
+}
+
+void RenderToTextureLogic::reset() {
+    child_logic_.reset();
 }
 
 FocusFilter RenderToTextureLogic::focus_filter() const {

@@ -55,6 +55,8 @@ enum class ActorTask;
 enum class VehicleAiMoveToStatus;
 class ObjectPool;
 struct StaticWorld;
+template <class T>
+class DanglingRef;
 
 struct JumpState {
     bool wants_to_jump_;
@@ -235,7 +237,7 @@ public:
 
     // INodeHider
     virtual bool node_shall_be_hidden(
-        const DanglingRef<const SceneNode>& camera_node,
+        const DanglingPtr<const SceneNode>& camera_node,
         const ExternalRenderPass& external_render_pass) const override;
 
     bool feels_gravity() const;

@@ -11,6 +11,8 @@
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -19,6 +21,7 @@ using namespace Mlib;
 
 HudOpponentZoomLogic::HudOpponentZoomLogic(
     ObjectPool& object_pool,
+    Scene& scene,
     std::unique_ptr<RenderLogic>&& scene_logic,
     RenderLogics& render_logics,
     Players& players,
@@ -27,7 +30,8 @@ HudOpponentZoomLogic::HudOpponentZoomLogic(
     std::unique_ptr<IWidget>&& widget,
     float fov,
     float zoom)
-    : players_{ players }
+    : scene_{ scene }
+    , players_{ players }
     , player_{ player }
     , on_player_delete_vehicle_internals_{ player->delete_vehicle_internals, CURRENT_SOURCE_LOCATION }
     , on_clear_exclusive_node_{ exclusive_node == nullptr ? nullptr : &exclusive_node->on_clear, CURRENT_SOURCE_LOCATION }
@@ -48,6 +52,12 @@ HudOpponentZoomLogic::~HudOpponentZoomLogic() {
     on_destroy.clear();
 }
 
+void HudOpponentZoomLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void HudOpponentZoomLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -57,6 +67,7 @@ void HudOpponentZoomLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("HudOpponentZoomLogic::render");
+    std::scoped_lock lock{ scene_.delete_node_mutex() };
     if (!player_->has_scene_vehicle()) {
         return;
     }
@@ -102,7 +113,7 @@ void HudOpponentZoomLogic::render(
             zoom_camera_node.get(DP_LOC)
         },
         .time_id = 0};
-    scene_logic_->render(
+    scene_logic_->render_toplevel(
         LayoutConstraintParameters::child_x(lx, *ew),
         LayoutConstraintParameters::child_y(ly, *ew),
         render_config,
@@ -110,6 +121,9 @@ void HudOpponentZoomLogic::render(
         nullptr,    // render_results
         zoom_rsd);
 }
+
+void HudOpponentZoomLogic::reset()
+{}
 
 void HudOpponentZoomLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudOpponentZoomLogic\n";

@@ -31,6 +31,12 @@ FocusedTextLogic::~FocusedTextLogic() {
     on_destroy.clear();
 }
 
+void FocusedTextLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void FocusedTextLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -48,6 +54,9 @@ void FocusedTextLogic::render(
         AlignText::BOTTOM,
         line_distance_.to_pixels(ly));
 }
+
+void FocusedTextLogic::reset()
+{}
 
 FocusFilter FocusedTextLogic::focus_filter() const {
     return { .focus_mask = focus_mask_ };

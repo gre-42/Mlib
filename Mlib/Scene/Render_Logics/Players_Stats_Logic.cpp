@@ -16,19 +16,25 @@ PlayersStatsLogic::PlayersStatsLogic(
     const ILayoutPixels& font_height,
     const ILayoutPixels& line_distance,
     ScoreBoardConfiguration score_board_configuration)
-: RenderTextLogic{
-    ttf_filename,
-    {1.f, 1.f, 1.f},
-    font_height,
-    line_distance},
-  players_{players},
-  score_board_configuration_{score_board_configuration},
-  widget_{std::move(widget)}
+    : RenderTextLogic{
+        ttf_filename,
+        {1.f, 1.f, 1.f},
+        font_height,
+        line_distance }
+    , players_{ players }
+    , score_board_configuration_{ score_board_configuration }
+    , widget_{ std::move(widget) }
 {}
 
 PlayersStatsLogic::~PlayersStatsLogic() {
     on_destroy.clear();
 }
+
+void PlayersStatsLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
 
 void PlayersStatsLogic::render(
     const LayoutConstraintParameters& lx,
@@ -45,6 +51,9 @@ void PlayersStatsLogic::render(
         players_.get_score_board(score_board_configuration_),
         line_distance_.to_pixels(ly));
 }
+
+void PlayersStatsLogic::reset()
+{}
 
 void PlayersStatsLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "PlayersStatsLogic\n";

@@ -178,6 +178,14 @@ void PostProcessingLogic::ensure_initialized() {
     }
 }
 
+void PostProcessingLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{
+    child_logic_.init(lx, ly, frame_id);
+}
+
 void PostProcessingLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -272,6 +280,10 @@ void PostProcessingLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
+}
+
+void PostProcessingLogic::reset() {
+    child_logic_.reset();
 }
 
 float PostProcessingLogic::near_plane() const {

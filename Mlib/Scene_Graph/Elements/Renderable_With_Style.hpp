@@ -10,11 +10,12 @@ class Renderable;
 class RenderableWithStyle {
 public:
     explicit RenderableWithStyle(std::shared_ptr<const Renderable> renderable);
+    ~RenderableWithStyle();
     inline const Renderable* operator -> () const {
         return renderable_.get();
     }
-    inline operator const Renderable* () const {
-        return renderable_.get();
+    inline operator const Renderable& () const {
+        return *renderable_.get();
     }
     const ColorStyle* style(
         const std::list<const ColorStyle*>& color_styles,

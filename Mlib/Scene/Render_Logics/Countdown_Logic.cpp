@@ -44,6 +44,12 @@ CountDownLogic::~CountDownLogic() {
     node_ = nullptr;
 }
 
+void CountDownLogic::init(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id)
+{}
+
 void CountDownLogic::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
@@ -68,6 +74,9 @@ void CountDownLogic::render(
             line_distance_.to_pixels(ly));
     }
 }
+
+void CountDownLogic::reset()
+{}
 
 void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{focuses_.mutex};
