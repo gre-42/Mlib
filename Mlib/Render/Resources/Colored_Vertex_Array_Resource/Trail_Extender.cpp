@@ -29,7 +29,8 @@ TrailExtender::TrailExtender(
 
 void TrailExtender::append_location(
     const TransformationMatrix<float, ScenePos, 3>& location,
-    TrailLocationType location_type) {
+    TrailLocationType location_type)
+{
     if (trails_instance_.time() == std::chrono::steady_clock::time_point()) {
         THROW_OR_ABORT("Trail instance move not called");
     }
