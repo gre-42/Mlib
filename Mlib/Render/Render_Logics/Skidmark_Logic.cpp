@@ -3,6 +3,7 @@
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -91,9 +92,8 @@ void SkidmarkLogic::render(
         THROW_OR_ABORT("Skidmark camera is not an ortho-camera");
     }
     auto p = skidmark_camera->projection_matrix();
-    auto v = skidmark_node_->absolute_view_matrix();
-    auto iv = skidmark_node_->absolute_model_matrix();
-    auto vp = dot2d(p.casted<ScenePos>(), v.affine());
+    auto bi = skidmark_node_->absolute_bijection();
+    auto vp = dot2d(p.casted<ScenePos>(), bi.view.affine());
     fbs_(new_fbs_id)->configure({
         .width = texture_width_,
         .height = texture_height_,
@@ -121,7 +121,7 @@ void SkidmarkLogic::render(
             auto dpi = skidmark_camera->dpi(
                 (float)texture_width_,
                 (float)texture_height_);
-            auto diff = v.rotate((old_camera_position_ - iv.t()).casted<float>());
+            auto diff = bi.view.rotate((old_camera_position_ - bi.model.t()).casted<float>());
             ViewportGuard vg{
                 diff(0) * dpi(0),
                 diff(1) * dpi(1),
@@ -135,7 +135,7 @@ void SkidmarkLogic::render(
             particle_renderer_.render(
                 ParticleSubstrate::SKIDMARK,
                 vp,
-                iv,
+                bi.model,
                 lights,
                 skidmarks,
                 scene_graph_config,
@@ -143,7 +143,7 @@ void SkidmarkLogic::render(
                 { ExternalRenderPassType::STANDARD });
         }
         old_fbs_id_ = new_fbs_id;
-        old_camera_position_ = iv.t();
+        old_camera_position_ = bi.model.t();
         // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
         // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
         // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");

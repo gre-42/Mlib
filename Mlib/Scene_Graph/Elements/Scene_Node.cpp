@@ -7,6 +7,7 @@
 #include <Mlib/Iterator/Un_Guarded_Iterator.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Quaternion.hpp>
 #include <Mlib/Math/Transformation/Tait_Bryan_Angles.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
@@ -1202,7 +1203,7 @@ void SceneNode::set_relative_pose(
 }
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::chrono::steady_clock::time_point time) const {
-    std::scoped_lock lock{ pose_mutex_ };
+    std::shared_lock lock{ pose_mutex_ };
     if (time == std::chrono::steady_clock::time_point()) {
         return TransformationMatrix{rotation_matrix_ * scale_, trafo_.offset()};
     } else {
@@ -1224,7 +1225,7 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
     if (locking_strategy == LockingStrategy::ACQUIRE_LOCK) {
         lock.lock();
     }
-    // if (state_ != SceneNodeState::DETACHED) {
+    // if (state_ == SceneNodeState::DYNAMIC) {
     //     scene_->delete_node_mutex().notify_reading();
     // }
     if (parent_ != nullptr) {
@@ -1250,12 +1251,35 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::ch
 TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_view_matrix(std::chrono::steady_clock::time_point time) const {
     auto result = relative_view_matrix(time);
     std::shared_lock lock{ mutex_ };
-    // if (state_ != SceneNodeState::DETACHED) {
+    // if (state_ == SceneNodeState::DYNAMIC) {
     //     scene_->delete_node_mutex().notify_reading();
     // }
     if (parent_ != nullptr) {
         lock.unlock();
         return result * parent_->absolute_view_matrix(time);
+    } else {
+        return result;
+    }
+}
+
+Bijection<TransformationMatrix<float, ScenePos, 3>> SceneNode::relative_bijection(
+    std::chrono::steady_clock::time_point time) const
+{
+    std::shared_lock lock{ pose_mutex_ };
+    return {
+        .model = relative_model_matrix(time),
+        .view = relative_view_matrix(time)
+    };
+}
+
+Bijection<TransformationMatrix<float, ScenePos, 3>> SceneNode::absolute_bijection(
+    std::chrono::steady_clock::time_point time) const
+{
+    auto result = relative_bijection(time);
+    std::unique_lock lock{ mutex_ };
+    if (parent_ != nullptr) {
+        lock.unlock();
+        return parent_->absolute_bijection(time) * result;
     } else {
         return result;
     }

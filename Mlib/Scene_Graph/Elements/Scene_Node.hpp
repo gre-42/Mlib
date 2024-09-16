@@ -52,6 +52,8 @@ class ColoredVertexArray;
 class SmallInstancesQueues;
 class LargeInstancesQueue;
 class Blended;
+template <class T>
+struct Bijection;
 
 struct PositionAndYAngle {
     FixedArray<ScenePos, 3> position;
@@ -291,6 +293,10 @@ public:
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> relative_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     TransformationMatrix<float, ScenePos, 3> absolute_view_matrix(std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    Bijection<TransformationMatrix<float, ScenePos, 3>> relative_bijection(
+        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
+    Bijection<TransformationMatrix<float, ScenePos, 3>> absolute_bijection(
+        std::chrono::steady_clock::time_point time = std::chrono::steady_clock::time_point()) const;
     FixedArray<float, 3> velocity(
         std::chrono::steady_clock::time_point time,
         std::chrono::steady_clock::duration dt) const;
