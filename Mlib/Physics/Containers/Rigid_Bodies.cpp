@@ -201,9 +201,10 @@ void RigidBodies::add_rigid_body(
                 auto any_mask = PhysicsMaterial::OBJ_HITBOX;
                 if (any(cva->morphology.physics_material & any_line_only_mask)) {
                     assert_true(cva->triangles.empty());
+                    assert_true(cva->quads.empty());
                     assert_true(!cva->lines.empty());
                 } else if (any(cva->morphology.physics_material & any_mesh_only_mask)) {
-                    assert_true(!cva->triangles.empty());
+                    assert_true(!cva->triangles.empty() || !cva->quads.empty());
                     assert_true(cva->lines.empty());
                 } else if (any(cva->morphology.physics_material & any_mask)) {
                     // Do nothing
