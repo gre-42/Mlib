@@ -38,6 +38,7 @@ using NodePtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
+    std::string name,
     DeleteNodeMutex& delete_node_mutex,
     SceneNodeResources* scene_node_resources,
     IParticleRenderer* particle_renderer,
@@ -50,6 +51,7 @@ Scene::Scene(
     , root_aggregate_always_nodes_{ morn_.create("root_aggregate_always_nodes") }
     , root_instances_once_nodes_{ morn_.create("root_instances_once_nodes") }
     , root_instances_always_nodes_{ morn_.create("root_instances_always_nodes") }
+    , name_{ name }
     , delete_node_mutex_{ delete_node_mutex }
     , large_aggregate_bg_worker_{ "Large_agg_BG" }
     , large_instances_bg_worker_{ "Large_inst_BG" }
@@ -716,30 +718,34 @@ void Scene::render(
                         vp, iv, lights, skidmarks, scene_graph_config, render_config, external_render_pass);
                 }
             }
-            if ((external_render_pass.pass == ExternalRenderPassType::STANDARD) && !times_.empty()) {
-                auto xp = external_render_pass;
-                xp.time = times_.clamped(xp.time);
-                if (particle_renderer_ != nullptr) {
-                    // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
-                    particle_renderer_->render(
-                        ParticleSubstrate::AIR,
-                        vp,
-                        iv,
-                        lights,
-                        skidmarks,
-                        scene_graph_config,
-                        render_config,
-                        xp);
-                }
-                if (trail_renderer_ != nullptr) {
-                    trail_renderer_->render(
-                        vp,
-                        iv,
-                        lights,
-                        skidmarks,
-                        scene_graph_config,
-                        render_config,
-                        xp);
+            if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
+                std::unique_lock times_lock{ times_mutex_ };
+                if (!times_.empty()) {
+                    auto xp = external_render_pass;
+                    xp.time = times_.clamped(xp.time);
+                    times_lock.unlock();
+                    if (particle_renderer_ != nullptr) {
+                        // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
+                        particle_renderer_->render(
+                            ParticleSubstrate::AIR,
+                            vp,
+                            iv,
+                            lights,
+                            skidmarks,
+                            scene_graph_config,
+                            render_config,
+                            xp);
+                    }
+                    if (trail_renderer_ != nullptr) {
+                        trail_renderer_->render(
+                            vp,
+                            iv,
+                            lights,
+                            skidmarks,
+                            scene_graph_config,
+                            render_config,
+                            xp);
+                    }
                 }
             }
             {
@@ -795,7 +801,10 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     if (dynamic_lights_ != nullptr) {
         dynamic_lights_->append_time(time);
     }
-    times_.append(time);
+    {
+        std::scoped_lock times_lock{ times_mutex_ };
+        times_.append(time);
+    }
 }
 
 void Scene::append_static_filtered_to_queue(
@@ -817,7 +826,7 @@ void Scene::append_static_filtered_to_queue(
 }
 
 size_t Scene::get_uuid() {
-    std::scoped_lock lock{uuid_mutex_};
+    std::scoped_lock lock{ uuid_mutex_ };
     return uuid_++;
 }
 

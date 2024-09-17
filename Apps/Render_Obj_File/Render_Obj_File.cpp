@@ -547,7 +547,7 @@ int main(int argc, char** argv) {
             std::make_shared<ArrayInstancesRenderers>(rendering_resources),
             std::make_shared<ArrayInstancesRenderer>(rendering_resources)};
         DeleteNodeMutex delete_node_mutex;
-        Scene scene{ delete_node_mutex };
+        Scene scene{ "main_scene", delete_node_mutex };
         DestructionGuard scene_destruction_guard{[&](){
             std::scoped_lock lock{ delete_node_mutex };
             scene.shutdown();

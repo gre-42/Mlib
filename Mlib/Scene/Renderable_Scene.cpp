@@ -26,6 +26,7 @@
 using namespace Mlib;
 
 RenderableScene::RenderableScene(
+    std::string name,
     std::string world,
     std::string rendering_resources_name,
     unsigned int max_anisotropic_filtering_level,
@@ -49,6 +50,7 @@ RenderableScene::RenderableScene(
     const FocusFilter& focus_filter,
     DependentSleeper& dependent_sleeper)
     : object_pool_{ InObjectPoolDestructor::CLEAR }
+    , name_{ std::move(name) }
     , dynamic_world_{ scene_node_resources, std::move(world) }
     , scene_node_resources_{ scene_node_resources }
     , particle_resources_{ particle_resources }
@@ -63,6 +65,7 @@ RenderableScene::RenderableScene(
   // => Create PhysicsEngine before Scene
     , physics_engine_{ scene_config.physics_engine_config }
     , scene_{
+          name_,
           delete_node_mutex_,
           &scene_node_resources,
           particle_renderer_.get(),

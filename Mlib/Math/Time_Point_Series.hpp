@@ -92,8 +92,21 @@ public:
         return last_;
     }
     std::chrono::steady_clock::time_point clamped(std::chrono::steady_clock::time_point time) const {
-        auto interp = interpolator(time);
-        return std::clamp(time, times_(interp.i0), times_(interp.i1));
+        static_assert(length > 0);
+        if (last_ == SIZE_MAX) {
+            THROW_OR_ABORT("TimePointSeries::clamped called on empty sequence");
+        }
+        auto min = times_(last_);
+        auto max = times_(last_);
+        for (size_t i = 1; i < length; ++i) {
+            auto j = (size_t)positive_modulo((int)last_ - (int)i, length);
+            if (times_(j) == std::chrono::steady_clock::time_point()) {
+                break;
+            }
+            min = std::min(min, times_(j));
+            max = std::max(max, times_(j));
+        }
+        return std::clamp(time, min, max);
     }
 private:
     FixedArray<std::chrono::steady_clock::time_point, length> times_;

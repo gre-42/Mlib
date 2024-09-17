@@ -167,7 +167,7 @@ void Render::render_node(
     const std::vector<TransformationMatrix<float, ScenePos, 3>>* beacon_locations) const
 {
     DeleteNodeMutex delete_node_mutex;
-    Scene scene{ delete_node_mutex };
+    Scene scene{ "main_scene", delete_node_mutex };
     DestructionGuard scene_destruction_guard{[&](){
         std::scoped_lock lock{ delete_node_mutex };
         scene.shutdown();

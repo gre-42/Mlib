@@ -46,6 +46,7 @@ class Scene {
 public:
     // Noncopyable because of mutex_
     explicit Scene(
+        std::string name,
         DeleteNodeMutex& delete_node_mutex,
         SceneNodeResources* scene_node_resources = nullptr,
         IParticleRenderer* particle_renderer = nullptr,
@@ -156,13 +157,14 @@ private:
     RootNodes& root_instances_once_nodes_;
     RootNodes& root_instances_always_nodes_;
     std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
+    std::string name_;
     DeleteNodeMutex& delete_node_mutex_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;
     mutable BackgroundLoop large_instances_bg_worker_;
     mutable BackgroundLoop small_aggregate_bg_worker_;
     mutable BackgroundLoop small_instances_bg_worker_;
-    AtomicMutex uuid_mutex_;
+    mutable AtomicMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;
     std::list<std::unique_ptr<const ColorStyle>> color_styles_;
@@ -171,6 +173,7 @@ private:
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
+    mutable AtomicMutex times_mutex_;
     TimePointSeries<NINTERPOLATED> times_;
     mutable std::atomic_uint32_t ncleanups_required_;
 };

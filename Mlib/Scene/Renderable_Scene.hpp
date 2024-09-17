@@ -85,6 +85,7 @@ struct SceneConfigResource {
 class RenderableScene: public RenderLogic {
 public:
     RenderableScene(
+        std::string name,
         std::string world,
         std::string rendering_resources_name,
         unsigned int max_anisotropic_filtering_level,
@@ -142,6 +143,7 @@ public:
     ObjectPool object_pool_;
     DeleteNodeMutex delete_node_mutex_;
 
+    std::string name_;
     DynamicWorld dynamic_world_;
     SceneNodeResources& scene_node_resources_;
     ParticleResources& particle_resources_;

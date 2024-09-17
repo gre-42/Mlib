@@ -29,7 +29,7 @@ DECLARE_ARGUMENT(max_num_triangles);
 
 const std::string AnimatableTrails::key = "animatable_trails";
 
-float as_seconds(float v) {
+static float as_seconds(float v) {
     return v * seconds;
 }
 

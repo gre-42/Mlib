@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
             .z_order = 0 };
         RenderingContextGuard rcg{ primary_rendering_context };
         DeleteNodeMutex delete_node_mutex;
-        Scene scene{ delete_node_mutex, nullptr };
+        Scene scene{ "main_scene", delete_node_mutex };
         std::string light_configuration = args.named_value("--light_configuration", "one");
         auto scene_node = make_dunique<SceneNode>();
         {
