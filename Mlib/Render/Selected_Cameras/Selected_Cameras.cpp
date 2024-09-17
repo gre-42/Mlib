@@ -1,6 +1,7 @@
 #include "Selected_Cameras.hpp"
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
@@ -48,6 +49,7 @@ std::string SelectedCameras::camera_node_name() const {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
     }
+    std::scoped_lock lock{ scene_.delete_node_mutex() };
     if (scene_.contains_node(cnn)) {
         DanglingRef<SceneNode> node = scene_.get_node(cnn, DP_LOC);
         if (node->has_camera()) {

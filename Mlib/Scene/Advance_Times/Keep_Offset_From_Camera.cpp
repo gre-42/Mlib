@@ -5,6 +5,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -25,6 +26,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
     , camera_changed_deletion_token_{
         cameras.camera_changed.insert([this]() {
+            std::scoped_lock lock{ scene_.delete_node_mutex() };
             if (follower_node_ == nullptr) {
                 return;
             }
