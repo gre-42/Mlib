@@ -1204,7 +1204,9 @@ void SceneNode::set_relative_pose(
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_model_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
-    if (time == std::chrono::steady_clock::time_point()) {
+    if ((time == std::chrono::steady_clock::time_point()) ||
+        (interpolation_mode_ == PoseInterpolationMode::DISABLED))
+    {
         return TransformationMatrix{rotation_matrix_ * scale_, trafo_.offset()};
     } else {
         auto res = trafo_history_.get(time);
@@ -1240,7 +1242,9 @@ TransformationMatrix<float, ScenePos, 3> SceneNode::absolute_model_matrix(
 
 TransformationMatrix<float, ScenePos, 3> SceneNode::relative_view_matrix(std::chrono::steady_clock::time_point time) const {
     std::shared_lock lock{ pose_mutex_ };
-    if (time == std::chrono::steady_clock::time_point()) {
+    if ((time == std::chrono::steady_clock::time_point()) ||
+        (interpolation_mode_ == PoseInterpolationMode::DISABLED))
+    {
         return TransformationMatrix<float, ScenePos, 3>::inverse(rotation_matrix_ / scale_, trafo_.offset());
     } else {
         auto res = trafo_history_.get(time);
@@ -1449,6 +1453,9 @@ void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
     }
     if ((state == SceneNodeState::STATIC) && (scene_ == nullptr)) {
         THROW_OR_ABORT("Scene is null in static node");
+    }
+    if ((state == SceneNodeState::STATIC) && (interpolation_mode_ == PoseInterpolationMode::ENABLED)) {
+        THROW_OR_ABORT("Static node requires disabled pose interpolation");
     }
     state_ = state;
     for (auto& [_, c] : children_) {

@@ -53,7 +53,10 @@ public:
             if (times_(j1) == std::chrono::steady_clock::time_point()) {
                 verbose_abort("TimePointSeries::interpolator internal error (0)");
             }
-            if (times_(j0) == std::chrono::steady_clock::time_point()) {
+            // If we are at the end of the list, return the oldest element.
+            if ((times_(j0) == std::chrono::steady_clock::time_point()) ||
+                (i == (length - 1)))
+            {
                 return Interpolator{
                     .i0 = j1,
                     .i1 = j1,
@@ -74,12 +77,6 @@ public:
                     .i0 = j0,
                     .i1 = j1,
                     .alpha = alpha
-                };
-            } else {
-                return Interpolator{
-                    .i0 = j0,
-                    .i1 = j0,
-                    .alpha = 0.f
                 };
             }
         }

@@ -719,33 +719,27 @@ void Scene::render(
                 }
             }
             if (external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-                std::unique_lock times_lock{ times_mutex_ };
-                if (!times_.empty()) {
-                    auto xp = external_render_pass;
-                    xp.time = times_.clamped(xp.time);
-                    times_lock.unlock();
-                    if (particle_renderer_ != nullptr) {
-                        // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
-                        particle_renderer_->render(
-                            ParticleSubstrate::AIR,
-                            vp,
-                            iv,
-                            lights,
-                            skidmarks,
-                            scene_graph_config,
-                            render_config,
-                            xp);
-                    }
-                    if (trail_renderer_ != nullptr) {
-                        trail_renderer_->render(
-                            vp,
-                            iv,
-                            lights,
-                            skidmarks,
-                            scene_graph_config,
-                            render_config,
-                            xp);
-                    }
+                if (particle_renderer_ != nullptr) {
+                    // AperiodicLagFinder lag_finder{ "particles: ", std::chrono::milliseconds{5} };
+                    particle_renderer_->render(
+                        ParticleSubstrate::AIR,
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        external_render_pass);
+                }
+                if (trail_renderer_ != nullptr) {
+                    trail_renderer_->render(
+                        vp,
+                        iv,
+                        lights,
+                        skidmarks,
+                        scene_graph_config,
+                        render_config,
+                        external_render_pass);
                 }
             }
             {
@@ -801,10 +795,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     if (dynamic_lights_ != nullptr) {
         dynamic_lights_->append_time(time);
     }
-    {
-        std::scoped_lock times_lock{ times_mutex_ };
-        times_.append(time);
-    }
+    // times_.append(time);
 }
 
 void Scene::append_static_filtered_to_queue(

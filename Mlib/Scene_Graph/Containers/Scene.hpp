@@ -173,8 +173,6 @@ private:
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
-    mutable AtomicMutex times_mutex_;
-    TimePointSeries<NINTERPOLATED> times_;
     mutable std::atomic_uint32_t ncleanups_required_;
 };
 

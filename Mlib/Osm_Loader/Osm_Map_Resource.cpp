@@ -1667,7 +1667,8 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
         auto node = make_dunique<SceneNode>(
             options.absolute_model_matrix.t(),
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
-            options.absolute_model_matrix.get_scale());
+            options.absolute_model_matrix.get_scale(),
+            PoseInterpolationMode::DISABLED);
         node->add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
             scene_node_resources_,
             terrain_styles_,

@@ -64,7 +64,8 @@ void HeterogeneousResource::instantiate_root_renderables(const RootInstantiation
         auto node = make_dunique<SceneNode>(
             options.absolute_model_matrix.t(),
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
-            options.absolute_model_matrix.get_scale());
+            options.absolute_model_matrix.get_scale(),
+            PoseInterpolationMode::DISABLED);
         instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = options.instance_name + "_hri_arrays",

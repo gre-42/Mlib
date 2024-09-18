@@ -153,13 +153,15 @@ void BatchResourceInstantiator::instantiate_root_renderables(
         auto world_node = make_dunique<SceneNode>(
             options.absolute_model_matrix.t(),
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
-            options.absolute_model_matrix.get_scale());
+            options.absolute_model_matrix.get_scale(),
+            PoseInterpolationMode::DISABLED);
 
         for (const auto& [name, ps] : resource_instance_positions_) {
             auto node = make_dunique<SceneNode>(
                 fixed_zeros<ScenePos, 3>(),
                 rotation_,
-                1.f);
+                1.f,
+                PoseInterpolationMode::DISABLED);
             scene_node_resources.instantiate_child_renderable(
                 name,
                 ChildInstantiationOptions{
