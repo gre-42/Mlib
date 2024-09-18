@@ -17,14 +17,15 @@ Quad3D<TPos>::Quad3D(const FixedArray<ColoredVertex<TPos>, 4>& vertices)
 {}
 
 template <class TPos>
+template <class TPos2, class TPosTransform>
 Quad3D<TPos>::Quad3D(
-    const FixedArray<ColoredVertex<TPos>, 4>& vertices,
-    const TransformationMatrix<float, TPos, 3>& transformation)
+    const FixedArray<ColoredVertex<TPos2>, 4>& vertices,
+    const TransformationMatrix<float, TPosTransform, 3>& transformation)
     : vertices_{
-        transformation.transform(vertices(0).position),
-        transformation.transform(vertices(1).position),
-        transformation.transform(vertices(2).position),
-        transformation.transform(vertices(3).position) }
+        transformation.transform(vertices(0).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(1).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(2).position.template casted<TPosTransform>()),
+        transformation.transform(vertices(3).position.template casted<TPosTransform>()) }
 {}
 
 template <class TPos>
@@ -51,5 +52,15 @@ namespace Mlib {
 
 template class Quad3D<float>;
 template class Quad3D<double>;
+
+template Quad3D<double>::Quad3D(
+    const FixedArray<ColoredVertex<float>, 4>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Quad3D<double>::Quad3D(
+    const FixedArray<ColoredVertex<double>, 4>& vertices,
+    const TransformationMatrix<float, double, 3>& transformation);
+template Quad3D<float>::Quad3D(
+    const FixedArray<ColoredVertex<float>, 4>& vertices,
+    const TransformationMatrix<float, float, 3>& transformation);
 
 }

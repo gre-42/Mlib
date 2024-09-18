@@ -50,37 +50,39 @@ void Mlib::collide_with_terrain(
                 rigid_bodies.triangle_bvh().visit(
                     msh1.mesh->aabb(),
                     [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                        if (any(t0.ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
-                            any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
-                        {
-                            return true;
-                        }
-                        if (any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) &&
-                           !any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
-                        {
-                            collide_triangle_and_triangles(
-                                t0.rb,
-                                o1.rigid_body.get(),
-                                nullptr,
-                                msh1,
-                                nullptr,
-                                &t0.ctp,
-                                history);
-                        }
-                        collide_triangle_and_edges(
-                            t0.rb,
-                            o1.rigid_body.get(),
-                            msh1,
-                            t0.ctp,
-                            history);
-                        collide_triangle_and_lines(
-                            t0.rb,
-                            o1.rigid_body.get(),
-                            msh1,
-                            nullptr,
-                            &t0.ctp,
-                            history);
-                        return true;
+                        return std::visit([&](auto&& ctp)
+                            {
+                                if (any(ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
+                                    any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
+                                {
+                                    return true;
+                                }
+                                if (any(msh1.physics_material & PhysicsMaterial::OBJ_BULLET_MESH) &&
+                                    !any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
+                                {
+                                    collide_triangle_and_triangles(
+                                        t0.rb,
+                                        o1.rigid_body.get(),
+                                        nullptr,
+                                        msh1,
+                                        ctp,
+                                        history);
+                                }
+                                collide_triangle_and_edges(
+                                    t0.rb,
+                                    o1.rigid_body.get(),
+                                    msh1,
+                                    ctp,
+                                    history);
+                                collide_triangle_and_lines(
+                                    t0.rb,
+                                    o1.rigid_body.get(),
+                                    msh1,
+                                    ctp,
+                                    history);
+                                return true;
+                            },
+                            t0.ctp);
                     });
                 rigid_bodies.ridge_bvh().visit(
                     msh1.mesh->aabb(),

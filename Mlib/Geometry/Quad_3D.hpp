@@ -19,9 +19,10 @@ template <class TPos>
 class Quad3D {
 public:
     explicit Quad3D(const FixedArray<ColoredVertex<TPos>, 4>& vertices);
+    template <class TPos2, class TPosTransform>
     Quad3D(
-        const FixedArray<ColoredVertex<TPos>, 4>& vertices,
-        const TransformationMatrix<float, TPos, 3>& transformation);
+        const FixedArray<ColoredVertex<TPos2>, 4>& vertices,
+        const TransformationMatrix<float, TPosTransform, 3>& transformation);
     const FixedArray<FixedArray<TPos, 3>, 4>& vertices() const;
     ConvexPolygon3D<TPos, 4> polygon() const;
     BoundingSphere<TPos, 3> bounding_sphere(std::minstd_rand& rng) const;

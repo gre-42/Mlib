@@ -14,6 +14,7 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <variant>
 
 namespace Mlib {
 
@@ -49,7 +50,7 @@ struct RigidBodyAndIntersectableMesh {
 
 struct RigidBodyAndCollisionTriangleSphere {
     RigidBodyVehicle& rb;
-    CollisionPolygonSphere<ScenePos, 3> ctp;
+    std::variant<CollisionPolygonSphere<ScenePos, 3>, CollisionPolygonSphere<ScenePos, 4>> ctp;
 };
 
 struct RigidBodyAndCollisionLineSphere {
