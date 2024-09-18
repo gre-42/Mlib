@@ -179,7 +179,7 @@ std::future<void> loader_thread(
     std::chrono::steady_clock::duration render_delay,
     std::chrono::steady_clock::duration velocity_dt)
 {
-    return std::async(std::launch::async, [&](){
+    return std::async(std::launch::async, [&, render_delay, velocity_dt](){
         try {
             ThreadInitializer ti{"scene_loader", ThreadAffinity::POOL};
 #ifndef WITHOUT_ALUT
