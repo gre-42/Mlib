@@ -68,11 +68,11 @@ void Mlib::handle_line_triangle_intersection(const IntersectionScene& c)
             .scene = c,
             .ray_t = t,
             .intersection_point = intersection_point};
-        auto res = c.history.raycast_intersections.insert({ &L1, cc });
+        auto res = c.history.raycast_intersections.try_emplace(&L1, cc);
         if (!res.second) {
             if (cc.ray_t < res.first->second.ray_t) {
                 c.history.raycast_intersections.erase(res.first);
-                c.history.raycast_intersections.insert({ &L1, cc });
+                c.history.raycast_intersections.try_emplace(&L1, cc);
             }
         }
     } else if (any(c.mesh0_material & PhysicsMaterial::ATTR_CONCAVE) &&

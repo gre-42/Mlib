@@ -9,10 +9,10 @@ ConstantDynamicLight::ConstantDynamicLight(
     const ConstantDynamicLightConfiguration& config,
     DynamicLights& container)
     : get_position_{ std::move(get_position) }
-    , position_history_ { get_position_(), time }
+    , position_{ get_position_() }
+    , position_history_ { position_, time }
     , config_{ config }
     , container_{ container }
-    , position_{ fixed_nans<ScenePos, 3>() }
 {}
 
 ConstantDynamicLight::~ConstantDynamicLight() {

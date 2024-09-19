@@ -32,10 +32,10 @@ public:
 
 private:
     std::function<FixedArray<ScenePos, 3>()> get_position_;
+    FixedArray<ScenePos, 3> position_;
     PositionSeries<ScenePos, 3, NINTERPOLATED> position_history_;
     const ConstantDynamicLightConfiguration& config_;
     DynamicLights& container_;
-    FixedArray<ScenePos, 3> position_;
 };
 
 }

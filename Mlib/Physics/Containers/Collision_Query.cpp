@@ -143,7 +143,7 @@ bool CollisionQuery::can_see(
         ray,
         [&](const RigidBodyAndCollisionTriangleSphere& t0){
             return std::visit(
-                [&](auto&& ctp)
+                [&](const auto& ctp)
                 {
                     if (!any(ctp.physics_material & collidable_mask)) {
                         return true;

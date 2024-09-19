@@ -21,7 +21,7 @@ void Mlib::collide_triangle_and_edges(
         PhysicsMaterial::OBJ_CHASSIS |
         PhysicsMaterial::OBJ_BULLET_LINE_SEGMENT |
         PhysicsMaterial::OBJ_DISTANCEBOX;
-    std::visit([&](auto&& cps0) {
+    std::visit([&](const auto& cps0) {
         if (any(msh1.physics_material & non_tire_line_mask)) {
             for (const auto& r1 : msh1.mesh->get_ridges_sphere()) {
                 if (!r1.bounding_sphere.intersects(cps0.bounding_sphere)) {

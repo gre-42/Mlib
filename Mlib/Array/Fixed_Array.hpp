@@ -351,7 +351,7 @@ public:
         return H();
     }
     FixedArray operator - () const {
-        return applied([&](const TData& v){ return -v; });
+        return applied([](const TData& v){ return -v; });
     }
     const FixedArray& operator + () const {
         return *this;
@@ -361,7 +361,7 @@ public:
         if constexpr (std::is_same_v<TResultData, TData>) {
             return *this;
         } else {
-            return applied<TResultData>([&](const TData& v){ return (TResultData)v; });
+            return applied<TResultData>([](const TData& v){ return (TResultData)v; });
         }
     }
     template <typename TResultData>

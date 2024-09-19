@@ -50,7 +50,7 @@ void Mlib::collide_with_terrain(
                 rigid_bodies.triangle_bvh().visit(
                     msh1.mesh->aabb(),
                     [&](const RigidBodyAndCollisionTriangleSphere& t0){
-                        return std::visit([&](auto&& ctp)
+                        return std::visit([&](const auto& ctp)
                             {
                                 if (any(ctp.physics_material & PhysicsMaterial::ATTR_CONVEX) &&
                                     any(msh1.physics_material & PhysicsMaterial::ATTR_CONVEX))
@@ -65,20 +65,20 @@ void Mlib::collide_with_terrain(
                                         o1.rigid_body.get(),
                                         nullptr,
                                         msh1,
-                                        ctp,
+                                        t0.ctp,
                                         history);
                                 }
                                 collide_triangle_and_edges(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,
-                                    ctp,
+                                    t0.ctp,
                                     history);
                                 collide_triangle_and_lines(
                                     t0.rb,
                                     o1.rigid_body.get(),
                                     msh1,
-                                    ctp,
+                                    t0.ctp,
                                     history);
                                 return true;
                             },
