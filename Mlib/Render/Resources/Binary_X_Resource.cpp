@@ -101,6 +101,7 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
             .rendering_resources = options.rendering_resources,
             .instance_name = options.instance_name,
             .scene_node = node90.ref(DP_LOC),
+            .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = options.renderable_resource_filter});
     options.scene_node->add_child(options.instance_name + "_node90", std::move(node90));
 }

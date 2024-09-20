@@ -209,6 +209,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
                         .rendering_resources = rendering_resources_,
                         .instance_name = "bullet",
                         .scene_node = node.ref(DP_LOC),
+                        .interpolation_mode = PoseInterpolationMode::ENABLED,
                         .renderable_resource_filter = RenderableResourceFilter{} });
             }
             rigid_bodies_.add_rigid_body(

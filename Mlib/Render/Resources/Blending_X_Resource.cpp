@@ -85,11 +85,13 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         auto node = make_dunique<SceneNode>(
             FixedArray<ScenePos, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
             fixed_zeros<float, 3>(),
-            1.f);
+            1.f,
+            options.interpolation_mode);
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
+            .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node->add_aggregate_child(options.instance_name + "+0", std::move(node));
@@ -111,6 +113,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
+            .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node->add_aggregate_child(options.instance_name + "-0", std::move(node));
@@ -129,6 +132,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
+            .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node->add_aggregate_child(options.instance_name + "+1", std::move(node));
@@ -150,6 +154,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             .rendering_resources = options.rendering_resources,
             .instance_name = "plane",
             .scene_node = node.ref(DP_LOC),
+            .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
             options.scene_node->add_aggregate_child(options.instance_name + "-1", std::move(node));

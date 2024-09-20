@@ -35,7 +35,8 @@ void SmokeParticleGenerator::generate_root(
         auto node = make_dunique<SceneNode>(
             position,
             rotation,
-            1.f);
+            1.f,
+            PoseInterpolationMode::DISABLED);
         node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
             .aperiodic_animation_frame = AperiodicAnimationFrame{
                 .frame = AnimationFrame{
@@ -49,6 +50,7 @@ void SmokeParticleGenerator::generate_root(
                 .rendering_resources = rendering_resources_,
                 .instance_name = resource_name,
                 .scene_node = node.ref(DP_LOC),
+                .interpolation_mode = PoseInterpolationMode::DISABLED,
                 .renderable_resource_filter = RenderableResourceFilter{}});
         scene_.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
     } else if (particle_type == ParticleType::INSTANCE) {
@@ -73,7 +75,8 @@ void SmokeParticleGenerator::generate_child(
     auto child_node = make_dunique<SceneNode>(
         relative_position,
         fixed_zeros<float, 3>(),
-        1.f);
+        1.f,
+        PoseInterpolationMode::DISABLED);
     child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .aperiodic_animation_frame = AperiodicAnimationFrame{
             .frame = AnimationFrame{
@@ -87,6 +90,7 @@ void SmokeParticleGenerator::generate_child(
             .rendering_resources = rendering_resources_,
             .instance_name = resource_name,
             .scene_node = child_node.ref(DP_LOC),
+            .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     DanglingRef<SceneNode> child_node_ref = child_node.ref(DP_LOC);
     parent->add_child(child_node_name, std::move(child_node), ChildRegistrationState::REGISTERED);

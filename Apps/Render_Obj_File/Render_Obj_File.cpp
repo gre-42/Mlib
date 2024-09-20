@@ -101,12 +101,14 @@ static void add_reference_bone(
     auto bone_node = make_dunique<SceneNode>(
         b.initial_absolute_transformation.offset().casted<ScenePos>(),
         b.initial_absolute_transformation.quaternion().to_tait_bryan_angles(),
-        1.f);
+        1.f,
+        PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(
         "reference_bone",
         ChildInstantiationOptions{
             .instance_name = "reference_bone",
             .scene_node = bone_node.ref(DP_LOC),
+            .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     parent_node->add_child("reference_bone" + std::to_string(b.index), std::move(bone_node));
     for (const auto& c : b.children) {
@@ -130,12 +132,14 @@ static void add_bone_frame(
     auto bone_node = make_dunique<SceneNode>(
         frame.at(b.index).offset().casted<ScenePos>(),
         frame.at(b.index).quaternion().to_tait_bryan_angles(),
-        1.f);
+        1.f,
+        PoseInterpolationMode::ENABLED);
     scene_node_resources.instantiate_child_renderable(
         "frame_bone",
         ChildInstantiationOptions{
             .instance_name = "frame_bone",
             .scene_node = bone_node.ref(DP_LOC),
+            .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
     DanglingRef<SceneNode> parent = bone_node.ref(DP_LOC);
     parent_node->add_child("frame_bone" + std::to_string(b.index), std::move(bone_node));
@@ -730,6 +734,9 @@ int main(int argc, char** argv) {
                             .rendering_resources = &rendering_resources,
                             .instance_name = "objs",
                             .scene_node = scene_node.ref(DP_LOC),
+                            .interpolation_mode = args.has_named("--large_object_mode")
+                                ? PoseInterpolationMode::DISABLED
+                                : PoseInterpolationMode::ENABLED,
                             .renderable_resource_filter = RenderableResourceFilter{
                                 .min_num = safe_stoz(args.named_value("--min_num", "0")),
                                 .cva_filter = {
@@ -872,6 +879,9 @@ int main(int argc, char** argv) {
                 ChildInstantiationOptions{
                     .instance_name = name,
                     .scene_node = scene_node,
+                    .interpolation_mode = args.has_named("--large_object_mode")
+                        ? PoseInterpolationMode::DISABLED
+                        : PoseInterpolationMode::ENABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
         };
         std::list<LightAndNode> lights;

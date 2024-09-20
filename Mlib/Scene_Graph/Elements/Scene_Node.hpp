@@ -10,6 +10,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
 #include <Mlib/Scene_Graph/Interpolation.hpp>
+#include <Mlib/Scene_Graph/Pose_Interpolation_Mode.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <atomic>
@@ -102,19 +103,12 @@ enum class ChildParentState {
     PARENT_ALREADY_SET
 };
 
-enum class PoseInterpolationMode {
-    DISABLED,
-    ENABLED
-};
-
 enum class LockingStrategy {
     NO_LOCK,
     ACQUIRE_LOCK
 };
 
 enum class RenderingStrategies;
-
-PoseInterpolationMode pose_interpolation_mode_from_string(const std::string& s);
 
 class RenderableWithStyle;
 

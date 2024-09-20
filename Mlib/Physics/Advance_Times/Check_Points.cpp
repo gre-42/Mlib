@@ -165,6 +165,7 @@ void CheckPoints::advance_time(float dt) {
                     .rendering_resources = rendering_resources_,
                     .instance_name = "beacon",
                     .scene_node = node.ref(DP_LOC),
+                    .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
             node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
             scene_.auto_add_root_node(beacon_info.beacon_node_name, std::move(node), RenderingDynamics::MOVING);

@@ -150,6 +150,7 @@ int main(int argc, char** argv) {
                 ChildInstantiationOptions{
                     .instance_name = "tl",
                     .scene_node = scene_node.ref(DP_LOC),
+                    .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
         }
         scene.auto_add_root_node("obj", std::move(scene_node), RenderingDynamics::STATIC);

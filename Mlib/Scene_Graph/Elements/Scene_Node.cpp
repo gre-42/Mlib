@@ -40,16 +40,6 @@
 
 using namespace Mlib;
 
-PoseInterpolationMode Mlib::pose_interpolation_mode_from_string(const std::string& s) {
-    if (s == "disabled") {
-        return PoseInterpolationMode::DISABLED;
-    } else if (s == "enabled") {
-        return PoseInterpolationMode::ENABLED;
-    } else {
-        THROW_OR_ABORT("Unknown pose interpolation mode: \"" + s + '"');
-    }
-}
-
 SceneNode::SceneNode(
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
@@ -71,7 +61,11 @@ SceneNode::SceneNode(
     , interpolation_mode_{ interpolation_mode }
     , state_{ SceneNodeState::DETACHED }
     , shutting_down_{ false }
-{}
+{
+    if (interpolation_mode == PoseInterpolationMode::UNDEFINED) {
+        THROW_OR_ABORT("Scene node pose interpolation mode is undefined");
+    }
+}
 
 SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
     : SceneNode{
@@ -1146,6 +1140,9 @@ void SceneNode::set_position(
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
+        if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
+            THROW_OR_ABORT("Attempt to set interpolated position of a node with interpolation disabled");
+        }
         trafo_history_.append(trafo_, *time);
     }
 }
@@ -1169,6 +1166,9 @@ void SceneNode::set_rotation(
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
+        if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
+            THROW_OR_ABORT("Attempt to set interpolated rotation of a node with interpolation disabled");
+        }
         trafo_history_.append(trafo_, *time);
     }
 }
@@ -1198,6 +1198,9 @@ void SceneNode::set_relative_pose(
         trafo_history_.clear();
         trafo_history_.append(trafo_, std::chrono::steady_clock::now());
     } else {
+        if (interpolation_mode_ == PoseInterpolationMode::DISABLED) {
+            THROW_OR_ABORT("Attempt to set interpolated position of a node with interpolation disabled");
+        }
         trafo_history_.append(trafo_, *time);
     }
 }

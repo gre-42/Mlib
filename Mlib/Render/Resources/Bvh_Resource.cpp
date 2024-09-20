@@ -29,10 +29,11 @@ BvhResource::BvhResource(
 
 static void instantiate_bvh(
     const std::string& name,
-    DanglingRef<SceneNode> scene_node,
+    const DanglingRef<SceneNode>& scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
-    const Bvh<float, BvhResourcePayload, 3>& bvh)
+    const Bvh<float, BvhResourcePayload, 3>& bvh,
+    const ChildInstantiationOptions& options)
 {
     if (!bvh.data().empty()) {
         auto aabb = AxisAlignedBoundingBox<float, 3>::empty();
@@ -76,6 +77,7 @@ static void instantiate_bvh(
             instantiate_child_renderable(ChildInstantiationOptions{
                 .instance_name = "renderable_bvh",
                 .scene_node = node.ref(DP_LOC),
+                .interpolation_mode = options.interpolation_mode,
                 .renderable_resource_filter = renderable_resource_filter});
         scene_node->add_child(name + "_data", std::move(node));
     }
@@ -90,7 +92,8 @@ static void instantiate_bvh(
             node.ref(DP_LOC),
             position_shift + node->position().casted<float>(),
             renderable_resource_filter,
-            cv);
+            cv,
+            options);
         scene_node->add_child("bvh_" + std::to_string(i), std::move(node));
         ++i;
     }
@@ -98,5 +101,11 @@ static void instantiate_bvh(
 
 void BvhResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
-    instantiate_bvh(options.instance_name, options.scene_node, fixed_zeros<float, 3>(), options.renderable_resource_filter, bvh_);
+    instantiate_bvh(
+        options.instance_name,
+        options.scene_node,
+        fixed_zeros<float, 3>(),
+        options.renderable_resource_filter,
+        bvh_,
+        options);
 }
