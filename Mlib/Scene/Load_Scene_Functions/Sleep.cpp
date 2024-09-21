@@ -22,5 +22,5 @@ LoadSceneJsonUserFunction Sleep::json_user_function = [](const LoadSceneJsonUser
 
 void Sleep::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::this_thread::sleep_for(std::chrono::duration<float>(args.arguments.at<float>(KnownArgs::seconds)));
+    std::this_thread::sleep_for(std::chrono::duration<double>(args.arguments.at<double>(KnownArgs::seconds)));
 }

@@ -16,7 +16,7 @@ RealtimeDependentFps::RealtimeDependentFps(std::string prefix,
         delay,
         [this]() {
             return std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::duration<float>{ mf.mean_dt() });
+                std::chrono::duration<double>{ mf.mean_dt() });
         },
         0.05f }
     , sls{control_fps
