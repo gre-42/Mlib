@@ -1188,7 +1188,7 @@ void SceneNode::set_rotation(
 
 void SceneNode::set_scale(float scale)
 {
-    std::scoped_lock lock{ mutex_ };
+    std::scoped_lock lock{ pose_mutex_ };
     if (state_ == SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot set scale for a static node");
     }
