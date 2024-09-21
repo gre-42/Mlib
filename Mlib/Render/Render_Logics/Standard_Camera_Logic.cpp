@@ -3,6 +3,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
@@ -62,10 +63,11 @@ void StandardCameraLogic::init(
     }
     camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     camera_->set_aspect_ratio(aspect_ratio);
+    auto bi = camera_node_->absolute_bijection(frame_id.external_render_pass.time);
     vp_ = dot2d(
         camera_->projection_matrix().casted<ScenePos>(),
-        camera_node_->absolute_view_matrix(frame_id.external_render_pass.time).affine());
-    iv_ = camera_node_->absolute_model_matrix(frame_id.external_render_pass.time);
+        bi.view.affine());
+    iv_ = bi.model;
     camera_node_on_destroy_.emplace(camera_node_->on_destroy, CURRENT_SOURCE_LOCATION);
     camera_node_on_destroy_->add(
         [this]() {

@@ -14,6 +14,7 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
@@ -183,12 +184,12 @@ void ImposterLogic::render(
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
     DanglingRef<SceneNode> camera_node = cameras_.camera_node();
-    auto v = camera_node->absolute_view_matrix();
+    auto c = camera_node->absolute_bijection(frame_id.external_render_pass.time);
     auto m = orig_node_->absolute_model_matrix();
     {
         auto cam_cp = camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
-        auto mvp = dot2d(cam_cp->projection_matrix().casted<ScenePos>(), (v * m).affine());
+        auto mvp = dot2d(cam_cp->projection_matrix().casted<ScenePos>(), (c.view * m).affine());
         VisibilityCheck<ScenePos> vc{mvp};
         if (vc.orthographic()) {
             delete_imposter_if_exists();
@@ -199,7 +200,7 @@ void ImposterLogic::render(
             return;
         }
     }
-    auto camera_position = camera_node->absolute_model_matrix().t();
+    auto camera_position = c.model.t();
     auto cam_to_obj2 = FixedArray<ScenePos, 2>{
         m.t(0) - camera_position(0),
         m.t(2) - camera_position(2)};
@@ -215,11 +216,11 @@ void ImposterLogic::render(
 
     bool imposter_outdated;
     if (imposter_node_ != nullptr) {
-        auto mv = v * m;
+        auto mv = c.view * m;
         size_t i = 0;
         imposter_outdated = !obj_relative_aabb_.for_each_corner([&](const FixedArray<ScenePos, 3>& corner){
             auto pc = mv.transform(corner).casted<float>();
-            auto pc_old = v.transform(old_projected_bbox_(i++)).casted<float>();
+            auto pc_old = c.view.transform(old_projected_bbox_(i++)).casted<float>();
             if ((pc(2) > -1e-12) || (pc_old(2) > -1e-12)) {
                 return true;
             }

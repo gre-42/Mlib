@@ -6,6 +6,7 @@
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
@@ -159,10 +160,10 @@ void RotatingLogic::render(
         std::nullopt);
     auto co = cn->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     co->set_aspect_ratio(aspect_ratio);
+    auto bi = cn->absolute_bijection(frame_id.external_render_pass.time);
     FixedArray<ScenePos, 4, 4> vp = dot2d(
         co->projection_matrix().casted<ScenePos>(),
-        cn->absolute_view_matrix().affine());
-    TransformationMatrix<float, ScenePos, 3> iv = cn->absolute_model_matrix();
+        bi.view.affine());
 
     if (user_object_.scale != 1 || rotate_ || user_object_.angle_x != 0 || user_object_.angle_y != 0) {
         DanglingRef<SceneNode> on = scene_.get_node("obj", DP_LOC);
@@ -192,7 +193,7 @@ void RotatingLogic::render(
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
-    scene_.render(vp, iv, cn_ptr, render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(vp, bi.model, cn_ptr, render_config, scene_graph_config, frame_id.external_render_pass);
 }
 
 void RotatingLogic::reset()
