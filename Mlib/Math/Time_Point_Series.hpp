@@ -47,6 +47,13 @@ public:
         if (time == std::chrono::steady_clock::time_point()) {
             THROW_OR_ABORT("TimePointSeries::interpolator received uninitialized time");
         }
+        if (times_(last_) <= time) {
+            return Interpolator{
+                .i0 = last_,
+                .i1 = last_,
+                .alpha = 0.f
+            };
+        }
         for (size_t i = 0; i < length; ++i) {
             auto j0 = (size_t)positive_modulo((int)last_ - (int)i - 1, length);
             auto j1 = (size_t)positive_modulo((int)last_ - (int)i, length);
@@ -64,13 +71,6 @@ public:
                 };
             }
             if (times_(j0) <= time) {
-                if (times_(j1) <= time) {
-                    return Interpolator{
-                        .i0 = last_,
-                        .i1 = last_,
-                        .alpha = 0.f
-                    };
-                }
                 auto d = times_(j1) - times_(j0);
                 auto alpha = float(double((time - times_(j0)).count()) / double(d.count()));
                 return Interpolator{

@@ -117,6 +117,8 @@ std::future<void> render_thread(
                                 render_results,
                                 frame_id);
                         }
+                    } else {
+                        clear_color({0.2f, 0.2f, 0.2f, 1.f});
                     }
                 }};
             ClearWrapperGuard clear_wrapper_guard;

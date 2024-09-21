@@ -2,6 +2,7 @@
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
+#include <Mlib/Audio/Audio_Scene.hpp>
 #endif
 #include <Mlib/Android/game_helper/AContext.hpp>
 #include <Mlib/Android/game_helper/AEngine.hpp>
@@ -112,7 +113,8 @@ public:
         auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (*load_scene_finished_) {
             execute_render_allocators();
-            (*renderable_scenes_)["primary_scene"].scene_.wait_for_cleanup();
+            auto& rs = (*renderable_scenes_)["primary_scene"];
+            rs.scene_.wait_for_cleanup();
             if (!last_load_scene_finished_ &&
                 !args_.has_named("--no_physics") &&
                 !args_.has_named("--single_threaded"))
@@ -123,7 +125,7 @@ public:
                 }
                 last_load_scene_finished_ = true;
             }
-            (*renderable_scenes_)["primary_scene"].render(
+            rs.render(
                 lx,
                 ly,
                 render_config_,
@@ -131,10 +133,12 @@ public:
                 render_results_,
                 rsd);
             if (args_.has_named("--single_threaded")) {
-                for (auto& [_, r]: renderable_scenes_->guarded_iterable()) {
+                for (auto& [_, r] : renderable_scenes_->guarded_iterable()) {
+                    SetDeleterThreadGuard set_deleter_thread_guard{ r.scene_.delete_node_mutex() };
                     if (!r.physics_set_fps_.paused()) {
                         r.physics_iteration_(std::chrono::steady_clock::now());
                     }
+                    r.physics_set_fps_.execute_oldest_funcs();
                 }
             }
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
@@ -186,12 +190,11 @@ void print_debug_info(
     {
         for (const auto& [n, r] : renderable_scenes.guarded_iterable()) {
             if (args.has_named("--print_search_time")) {
-                lerr() << n << " search time";
+                lraw() << n << " search time";
             }
             r.print_physics_engine_search_time();
             if (args.has_named("--optimize_search_time")) {
-                auto log = lraw();
-                r.physics_engine_.rigid_bodies_.optimize_search_time(log);
+                r.physics_engine_.rigid_bodies_.optimize_search_time(lraw().ref());
             }
             if (args.has_named("--plot_triangle_bvh")) {
                 r.plot_physics_triangle_bvh_svg(n + "_xz.svg", 0, 2);
@@ -229,14 +232,14 @@ std::future<void> loader_thread(
     return std::async(std::launch::async, [&](){
         try {
             ThreadInitializer ti{"scene_loader", ThreadAffinity::POOL};
-            #ifndef WITHOUT_ALUT
+#ifndef WITHOUT_ALUT
             AudioResourceContext arc;
-            #endif
+#endif
             {
-                #ifndef WITHOUT_ALUT
+#ifndef WITHOUT_ALUT
                 AudioResourceContextGuard arcg{ arc };
                 AudioListener::set_gain(safe_stof(args.named_value("--audio_gain", "1")));
-                #endif
+#endif
                 // GlContextGuard gcg{ render2.window() };
                 load_scene(
                     &search_path,
@@ -372,6 +375,7 @@ void android_main(android_app* app) {
         "    [--show_debug_wheels]\n"
         "    [--write_loaded_resources <dir>]\n"
         "    [--audio_frequency <value>]\n"
+        "    [--audio_alpha <value>]\n"
         "    [--check_gl_errors]\n"
         "    [--verbose]",
         {"--wire_frame",
@@ -444,6 +448,7 @@ void android_main(android_app* app) {
          "--show_debug_wheels",
          "--write_loaded_resources",
          "--audio_frequency",
+         "--audio_alpha",
          "--bloom_x",
          "--bloom_y"});
     try {
@@ -461,6 +466,7 @@ void android_main(android_app* app) {
         AudioDevice audio_device;
         AudioContext audio_context{audio_device, safe_stou(args.named_value("--audio_frequency", "0"))};
         linfo() << "Audio frequency: " << audio_device.get_frequency();
+        AudioScene::set_default_alpha(safe_stof(args.named_value("--audio_alpha", "0.1")));
 #endif
 
         std::atomic_size_t num_renderings;
@@ -477,8 +483,8 @@ void android_main(android_app* app) {
                 ? BoolRenderOption::ON
                 : BoolRenderOption::UNCHANGED,
             .window_title = main_scene_filename,
-            .windowed_width = safe_stoi(args.named_value("--windowed_width", "640")),
-            .windowed_height = safe_stoi(args.named_value("--windowed_height", "480")),
+            .windowed_width = safe_stoi(args.named_value("--windowed_width", "800")),
+            .windowed_height = safe_stoi(args.named_value("--windowed_height", "600")),
             .fullscreen_width = safe_stoi(args.named_value("--fullscreen_width", "0")),
             .fullscreen_height = safe_stoi(args.named_value("--fullscreen_height", "0")),
             .motion_interpolation = args.has_named("--motion_interpolation"),
@@ -550,7 +556,7 @@ void android_main(android_app* app) {
                 .control_fps = !args.has_named("--no_control_physics_fps"),
                 .print_residual_time = args.has_named("--print_physics_residual_time"),
                 // BVH
-                .static_radius = safe_stof(args.named_value("--static_radius", "200")) * meters,
+                .static_radius = safe_stof(args.named_value("--static_radius", "20")) * meters,
                 .bvh_max_size = safe_stof(args.named_value("--bvh_max_size", "2")) * meters,
                 // Collision/Friction misc.
                 .max_extra_friction = safe_stof(args.named_value("--max_extra_friction", "0")),
@@ -623,7 +629,7 @@ void android_main(android_app* app) {
                     .rendering_resources = rendering_resources,
                     .z_order = 0
                 };
-                RenderingContextGuard rcg{primary_rendering_context};
+                RenderingContextGuard rcg{ primary_rendering_context };
 
                 RenderLogicGallery gallery;
                 AssetReferences asset_references;
