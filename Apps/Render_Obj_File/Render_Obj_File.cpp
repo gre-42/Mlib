@@ -1134,7 +1134,7 @@ int main(int argc, char** argv) {
             0 /* z_order */,
             CURRENT_SOURCE_LOCATION);
         LambdaRenderLogic lrl{
-            [&delete_node_mutex, &render_logics](
+            [&render_logics](
                 const LayoutConstraintParameters& lx,
                 const LayoutConstraintParameters& ly,
                 const RenderConfig& render_config,
