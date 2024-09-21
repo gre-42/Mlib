@@ -453,7 +453,7 @@ void android_main(android_app* app) {
          "--bloom_y"});
     try {
         const char* argv[] = {"appname", "/;/data", "/levels/main/main.scn.json"};
-        const auto args = parser.parsed(3, argv);
+        const auto args = parser.parsed(sizeof(argv) / sizeof(argv[0]), argv);
 
         args.assert_num_unnamed(2);
         std::list<std::string> search_path = string_to_list(args.unnamed_value(0), Mlib::compile_regex(";"));
