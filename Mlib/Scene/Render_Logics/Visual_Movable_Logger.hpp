@@ -18,7 +18,7 @@ class ObjectPool;
 
 class VisualMovableLogger:
     public RenderLogic,
-    public DestructionObserver<DanglingRef<SceneNode>>,
+    public DestructionObserver<SceneNode&>,
     public IAdvanceTime
 {
 public:
@@ -32,7 +32,7 @@ public:
 
     void add_logger(std::unique_ptr<VisualMovableLoggerView>&& logger);
 
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
     virtual void advance_time(float dt, const StaticWorld& world) override;
 

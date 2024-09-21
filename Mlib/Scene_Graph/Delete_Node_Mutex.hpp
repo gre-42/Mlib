@@ -11,31 +11,9 @@ namespace Mlib {
 class DeleteNodeMutex {
     friend std::ostream& operator << (std::ostream& ostr, const DeleteNodeMutex& delete_node_mutex);
 public:
-    explicit DeleteNodeMutex()
-    : nlocked_{ 0 },
-      deleter_thread_id_{ std::this_thread::get_id() },
-      deletion_lock_holder_{ std::thread::id() }
+    DeleteNodeMutex()
+    : deleter_thread_id_{ std::this_thread::get_id() }
     {}
-    void lock() {
-        if (deletion_lock_holder_ != std::this_thread::get_id()) {
-            mutex_.lock();
-            deletion_lock_holder_ = std::this_thread::get_id();
-        }
-        ++nlocked_;
-    }
-    void unlock() {
-        if (nlocked_ == 0) {
-            verbose_abort("DeleteNodeMutex already unlocked");
-        }
-        --nlocked_;
-        if (nlocked_ == 0) {
-            deletion_lock_holder_ = std::thread::id();
-            mutex_.unlock();
-        }
-    }
-    bool is_locked_by_this_thread() const {
-        return (deletion_lock_holder_ == std::this_thread::get_id());
-    }
     bool this_thread_is_deleter_thread() const {
         return (std::this_thread::get_id() == deleter_thread_id_);
     }
@@ -44,17 +22,6 @@ public:
             std::stringstream sstr;
             sstr << "Deletion by wrong thread (" << std::this_thread::get_id() << " vs. " << deleter_thread_id_ << ')';
             THROW_OR_ABORT(sstr.str());
-        }
-    }
-    void notify_deleting() const {
-        assert_this_thread_is_deleter_thread();
-        if (!is_locked_by_this_thread()) {
-            THROW_OR_ABORT("Delete node mutex is not locked by this thread");
-        }
-    }
-    void notify_reading() const {
-        if (!is_locked_by_this_thread() && !this_thread_is_deleter_thread()) {
-            THROW_OR_ABORT("Reading without locking on non-deleter-thread");
         }
     }
     void set_deleter_thread() {
@@ -67,10 +34,7 @@ public:
         deleter_thread_id_ = std::thread::id();
     }
 private:
-    std::mutex mutex_;
-    std::atomic_uint32_t nlocked_;
     std::atomic<std::thread::id> deleter_thread_id_;
-    std::atomic<std::thread::id> deletion_lock_holder_;
 };
 
 class SetDeleterThreadGuard {

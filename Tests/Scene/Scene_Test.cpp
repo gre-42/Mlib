@@ -124,7 +124,6 @@ void test_physics_engine(unsigned int seed) {
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ "main_scene", delete_node_mutex };
     DestructionGuard scene_destruction_guard{[&](){
-        std::scoped_lock lock{ delete_node_mutex };
         scene.shutdown();
     }};
     RenderingResources rendering_resources{
@@ -241,7 +240,6 @@ void test_physics_engine(unsigned int seed) {
         CURRENT_SOURCE_LOCATION,
         standard_render_logic);
     auto append_lightmap_logic = [&](){
-            std::scoped_lock lock{delete_node_mutex};
         DanglingRef<SceneNode> light_node = scene.get_node("light_node", DP_LOC);
         auto& lightmap_logic = global_object_pool.create<LightmapLogic>(
             CURRENT_SOURCE_LOCATION,
@@ -274,7 +272,6 @@ void test_physics_engine(unsigned int seed) {
         {
             execute_render_allocators();
             scene.wait_for_cleanup();
-            std::scoped_lock lock{delete_node_mutex};
             render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
         }
     };

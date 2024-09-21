@@ -65,12 +65,12 @@ PitchLookAtNode& YawPitchLookAtNodes::pitch_look_at_node() const {
     return pitch_look_at_node_;
 }
 
-void YawPitchLookAtNodes::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_relative_movable()) {
-        if (&destroyed_object->get_relative_movable() != this) {
+void YawPitchLookAtNodes::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_relative_movable()) {
+        if (&destroyed_object.get_relative_movable() != this) {
             verbose_abort("Unexpected relative movable");
         }
-        destroyed_object->clear_relative_movable();
+        destroyed_object.clear_relative_movable();
     }
     global_object_pool.remove(this);
 }

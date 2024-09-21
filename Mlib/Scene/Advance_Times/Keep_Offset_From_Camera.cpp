@@ -16,7 +16,7 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     SelectedCameras& cameras,
     const FixedArray<float, 3>& offset,
     const FixedArray<float, 3>& grid,
-    DanglingRef<SceneNode> follower_node)
+    const DanglingRef<SceneNode>& follower_node)
     : advance_times_{ advance_times }
     , scene_{ scene }
     , cameras_{ cameras }
@@ -26,7 +26,6 @@ KeepOffsetFromCamera::KeepOffsetFromCamera(
     , transformation_matrix_{ fixed_nans<float, 3, 3>(), fixed_nans<ScenePos, 3>() }
     , camera_changed_deletion_token_{
         cameras.camera_changed.insert([this]() {
-            std::scoped_lock lock{ scene_.delete_node_mutex() };
             if (follower_node_ == nullptr) {
                 return;
             }
@@ -52,7 +51,7 @@ void KeepOffsetFromCamera::advance_time(float dt, const StaticWorld& world) {
 }
 
 void KeepOffsetFromCamera::advance_time(float dt) {
-    auto new_position_abs = scene_.get_node(cameras_.camera_node_name(), DP_LOC)->absolute_model_matrix().t() + offset_.casted<ScenePos>();
+    auto new_position_abs = cameras_.camera_node()->absolute_model_matrix().t() + offset_.casted<ScenePos>();
     if (all(grid_ == 0.f)) {
         transformation_matrix_.t() = new_position_abs;
     } else {
@@ -77,12 +76,12 @@ TransformationMatrix<float, ScenePos, 3> KeepOffsetFromCamera::get_new_absolute_
     return transformation_matrix_;
 }
 
-void KeepOffsetFromCamera::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_absolute_movable()) {
-        if (&destroyed_object->get_absolute_movable() != this) {
+void KeepOffsetFromCamera::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_absolute_movable()) {
+        if (&destroyed_object.get_absolute_movable() != this) {
             verbose_abort("Unexpected absolute movable");
         }
-        destroyed_object->clear_absolute_movable();
+        destroyed_object.clear_absolute_movable();
     }
     follower_node_ = nullptr;
     global_object_pool.remove(this);

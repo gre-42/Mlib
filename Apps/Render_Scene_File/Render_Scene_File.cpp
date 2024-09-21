@@ -108,8 +108,7 @@ std::future<void> render_thread(
                     } else if (auto rs = renderable_scenes.try_get("loading"); rs != nullptr) {
                         execute_render_allocators();
                         rs->scene_.wait_for_cleanup();
-                        std::scoped_lock lock{ rs->scene_.delete_node_mutex() };
-                        if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
+                        if (rs->selected_cameras_.camera_node_exists()) {
                             rs->render(
                                 lx,
                                 ly,

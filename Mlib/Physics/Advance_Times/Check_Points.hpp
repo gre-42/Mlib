@@ -34,7 +34,7 @@ struct BeaconNode {
     CheckPointPose* check_point_pose;
 };
 
-class CheckPoints: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
+class CheckPoints: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     CheckPoints(
         std::unique_ptr<ITrackElementSequence>&& sequence,
@@ -60,7 +60,7 @@ public:
         const std::function<void()>& on_finish = [](){});
     ~CheckPoints();
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     bool has_meters_to_start() const;
     double meters_to_start() const;
     size_t lap_index() const;

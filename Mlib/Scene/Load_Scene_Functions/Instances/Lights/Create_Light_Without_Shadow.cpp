@@ -37,7 +37,6 @@ CreateLightWithoutShadow::CreateLightWithoutShadow(RenderableScene& renderable_s
 
 void CreateLightWithoutShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::scoped_lock lock_guard{ delete_node_mutex };
     std::string node_name = args.arguments.at<std::string>(KnownArgs::node);
     DanglingRef<SceneNode> node = scene.get_node(node_name, DP_LOC);
     node->add_light(std::make_unique<Light>(Light{

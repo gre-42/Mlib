@@ -18,7 +18,7 @@ class RigidBodyVehicle;
 class AimAt;
 class SceneNode;
 
-class YawPitchLookAtNodes: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class YawPitchLookAtNodes: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     YawPitchLookAtNodes(
         AimAt& aim_at,
@@ -30,7 +30,7 @@ public:
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     void increment_yaw(float dyaw, float relaxation);
     void set_yaw(float yaw);

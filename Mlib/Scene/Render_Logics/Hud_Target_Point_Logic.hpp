@@ -26,7 +26,6 @@ class HudTargetPointLogic:
 public:
     HudTargetPointLogic(
         ObjectPool& object_pool,
-        Scene& scene,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
         const DanglingBaseClassRef<Player>& player,

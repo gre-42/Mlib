@@ -85,7 +85,7 @@ RenderableScene::RenderableScene(
     , smoke_particle_generator_{ &rendering_resources_, scene_node_resources, scene_ }
     , contact_smoke_generator_{ surface_contact_db, smoke_particle_generator_ }
     , paused_{ [&ui_focus, focus_filter]() {
-        std::shared_lock lock{ui_focus.focuses.mutex};
+        std::shared_lock lock{ ui_focus.focuses.mutex };
         return !ui_focus.has_focus(focus_filter);
       } }
     , physics_sleeper_{
@@ -251,7 +251,6 @@ void RenderableScene::stop_and_join() {
 }
 
 void RenderableScene::clear() {
-    std::scoped_lock lock{ delete_node_mutex_ };
     scene_.shutdown();
     if (audio_listener_updater_ != nullptr) {
         physics_engine_.advance_times_.delete_advance_time(*audio_listener_updater_, CURRENT_SOURCE_LOCATION);

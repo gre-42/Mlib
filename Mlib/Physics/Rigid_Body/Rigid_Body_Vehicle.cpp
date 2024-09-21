@@ -483,12 +483,12 @@ TransformationMatrix<float, ScenePos, 3> RigidBodyVehicle::get_new_absolute_mode
     return rbp_.abs_transformation();
 }
 
-void RigidBodyVehicle::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_absolute_movable()) {
-        if (&destroyed_object->get_absolute_movable() != this) {
+void RigidBodyVehicle::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_absolute_movable()) {
+        if (&destroyed_object.get_absolute_movable() != this) {
             verbose_abort("Unexpected absolute movable");
         }
-        destroyed_object->clear_absolute_movable();
+        destroyed_object.clear_absolute_movable();
     }
     object_pool_.remove(this);
 }

@@ -29,12 +29,12 @@ WingAngle::~WingAngle() {
     }
 }
 
-void WingAngle::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_relative_movable()) {
-        if (&destroyed_object->get_relative_movable() != this) {
+void WingAngle::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_relative_movable()) {
+        if (&destroyed_object.get_relative_movable() != this) {
             verbose_abort("Unexpected relative movable");
         }
-        destroyed_object->clear_relative_movable();
+        destroyed_object.clear_relative_movable();
     }
     node_ = nullptr;
 }

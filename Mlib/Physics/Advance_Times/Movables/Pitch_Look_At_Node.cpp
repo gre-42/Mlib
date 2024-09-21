@@ -84,15 +84,15 @@ void PitchLookAtNode::set_head_node(DanglingRef<SceneNode> head_node) {
     head_node_->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
-void PitchLookAtNode::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == head_node_) {
+void PitchLookAtNode::notify_destroyed(SceneNode& destroyed_object) {
+    if (&destroyed_object == head_node_.get()) {
         head_node_ = nullptr;
     } else {
-        if (destroyed_object->has_relative_movable()) {
-            if (&destroyed_object->get_relative_movable() != this) {
+        if (destroyed_object.has_relative_movable()) {
+            if (&destroyed_object.get_relative_movable() != this) {
                 verbose_abort("Unexpected relative movable");
             }
-            destroyed_object->clear_relative_movable();
+            destroyed_object.clear_relative_movable();
         }
         global_object_pool.remove(this);
     }

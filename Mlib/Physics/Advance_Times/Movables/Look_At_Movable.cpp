@@ -48,18 +48,18 @@ TransformationMatrix<float, ScenePos, 3> LookAtMovable::get_new_absolute_model_m
     return transformation_matrix_;
 }
 
-void LookAtMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
     if ((follower_node_ == nullptr) != (followed_node_ == nullptr)) {
         verbose_abort("LookAtMovable in inconsistent state");
     }
     if (follower_node_ == nullptr) {
         return;
     }
-    if (destroyed_object.ptr() == follower_node_) {
+    if (&destroyed_object == follower_node_.get()) {
         followed_node_->clearing_observers.remove(
             { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);
-    } else if (destroyed_object.ptr() == followed_node_) {
+    } else if (&destroyed_object == followed_node_.get()) {
         follower_node_->clearing_observers.remove(
             { *this, CURRENT_SOURCE_LOCATION },
             ObserverDoesNotExistBehavior::IGNORE);

@@ -17,7 +17,7 @@ class RigidBodyPulses;
 template <class TDir, class TPos, size_t n>
 class TransformationMatrix;
 
-class RigidBodyRecorderGpx: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
+class RigidBodyRecorderGpx: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorderGpx(
         const std::string& filename,
@@ -27,7 +27,7 @@ public:
         const Focuses& focuses);
     ~RigidBodyRecorderGpx();
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
     const Focuses& focuses_;

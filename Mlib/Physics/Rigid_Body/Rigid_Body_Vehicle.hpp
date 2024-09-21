@@ -111,7 +111,7 @@ struct TrailerHitches {
  * From: https://en.wikipedia.org/wiki/Torque#Definition_and_relation_to_angular_momentum
  */
 class RigidBodyVehicle:
-    public DestructionObserver<DanglingRef<SceneNode>>,
+    public DestructionObserver<SceneNode&>,
     public IAbsoluteMovable,
     public StatusWriter,
     public INodeHider,
@@ -228,7 +228,7 @@ public:
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
 
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
     // StatusWriter
     virtual void write_status(std::ostream& ostr, StatusComponents log_components, const StaticWorld& world) const override;

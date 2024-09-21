@@ -26,6 +26,5 @@ DeleteNode::DeleteNode(RenderableScene& renderable_scene)
 
 void DeleteNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::scoped_lock node_lock{ delete_node_mutex };
     scene.delete_node(args.arguments.at<std::string>(KnownArgs::name));
 }

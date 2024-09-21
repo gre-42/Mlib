@@ -43,7 +43,7 @@ void RigidBodyRecorder::advance_time(float dt, const StaticWorld& world) {
         .transformations = {OffsetAndTaitBryanAngles<float, ScenePos, 3>{rbp_->rotation_, rbp_->abs_position()}}});
 }
 
-void RigidBodyRecorder::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void RigidBodyRecorder::notify_destroyed(SceneNode& destroyed_object) {
     rbp_ = nullptr;
     recorded_node_ = nullptr;
 

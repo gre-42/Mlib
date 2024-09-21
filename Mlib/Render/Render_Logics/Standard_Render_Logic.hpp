@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <mutex>
 
 namespace Mlib {
 
@@ -44,7 +45,6 @@ private:
     FixedArray<float, 3> background_color_;
     ClearMode clear_mode_;
     mutable AtomicMutex mutex_;
-    std::unique_lock<DeleteNodeMutex> delete_node_lock_;
 };
 
 }

@@ -140,8 +140,7 @@ public:
         } else if (auto rs = renderable_scenes_->try_get("loading"); rs != nullptr) {
             execute_render_allocators();
             rs->scene_.wait_for_cleanup();
-            std::scoped_lock lock{ rs->scene_.delete_node_mutex() };
-            if (rs->scene_.contains_node(rs->selected_cameras_.camera_node_name())) {
+            if (rs->selected_cameras_.camera_node_exists()) {
                 rs->render(
                     lx,
                     ly,
@@ -634,6 +633,7 @@ void android_main(android_app* app) {
                 scene_renderer.set_scene(&renderable_scenes, &load_scene_finished);
                 DestructionGuard dg0{[&scene_renderer](){ scene_renderer.set_scene(nullptr, nullptr); }};
 
+                DestructionGuard dg1{[](){discard_render_allocators();}};
                 FutureGuard loader_future_guard{loader_thread(
                     args,
                     gallery,
@@ -658,7 +658,6 @@ void android_main(android_app* app) {
                     load_scene_finished,
                     render_delay,
                     velocity_dt)};
-                DestructionGuard dg1{[](){discard_render_allocators();}};
                 render_loop.render_loop([&num_renderings](){return (num_renderings == 0) || unhandled_exceptions_occured();});
                 if (args.has_named_value("--write_loaded_resources")) {
                     scene_node_resources.write_loaded_resources(args.named_value("--write_loaded_resources"));

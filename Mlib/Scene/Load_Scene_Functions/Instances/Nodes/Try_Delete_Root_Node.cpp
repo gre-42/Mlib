@@ -27,6 +27,5 @@ TryDeleteRootNode::TryDeleteRootNode(RenderableScene& renderable_scene)
 
 void TryDeleteRootNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::scoped_lock node_lock{ delete_node_mutex };
     scene.try_delete_root_node(args.arguments.at<std::string>(KnownArgs::name));
 }

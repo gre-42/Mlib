@@ -44,7 +44,6 @@ CreateLightWithShadow::CreateLightWithShadow(RenderableScene& renderable_scene)
 
 void CreateLightWithShadow::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::scoped_lock lock_guard{ delete_node_mutex };
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto render_pass = external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass));

@@ -252,7 +252,7 @@ void CheckPoints::advance_time(float dt) {
     }
 }
 
-void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void CheckPoints::notify_destroyed(SceneNode& destroyed_object) {
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
@@ -264,7 +264,6 @@ void CheckPoints::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
     {
         // Scene destruction happens before physics destruction,
         // so the nodes are deleted here and not in the destructor.
-        std::scoped_lock lock{ delete_node_mutex_ };
         for (auto& b : beacon_nodes_) {
             if (b.beacon_node->shutting_down()) {
                 b.beacon_node = nullptr;

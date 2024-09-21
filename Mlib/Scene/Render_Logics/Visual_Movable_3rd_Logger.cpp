@@ -45,7 +45,7 @@ VisualMovable3rdLogger::~VisualMovable3rdLogger() {
     }
 }
 
-void VisualMovable3rdLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void VisualMovable3rdLogger::notify_destroyed(SceneNode& destroyed_object) {
     scene_node_ = nullptr;
 }
 

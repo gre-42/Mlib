@@ -182,11 +182,11 @@ void ImposterLogic::render(
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
         THROW_OR_ABORT("ImposterLogic received wrong rendering");
     }
-    DanglingRef<SceneNode> camera_node = scene_.get_node(cameras_.camera_node_name(), DP_LOC);
+    DanglingRef<SceneNode> camera_node = cameras_.camera_node();
     auto v = camera_node->absolute_view_matrix();
     auto m = orig_node_->absolute_model_matrix();
     {
-        auto cam_cp = camera_node->get_camera().copy();
+        auto cam_cp = camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
         cam_cp->set_aspect_ratio(lx.flength() / ly.flength());
         auto mvp = dot2d(cam_cp->projection_matrix().casted<ScenePos>(), (v * m).affine());
         VisibilityCheck<ScenePos> vc{mvp};

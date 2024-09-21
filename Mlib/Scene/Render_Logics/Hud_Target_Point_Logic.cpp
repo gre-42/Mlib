@@ -15,7 +15,6 @@ using namespace Mlib;
 
 HudTargetPointLogic::HudTargetPointLogic(
     ObjectPool& object_pool,
-    Scene& scene,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     const DanglingBaseClassRef<Player>& player,
@@ -34,7 +33,6 @@ HudTargetPointLogic::HudTargetPointLogic(
     , gun_node_{ gun_node }
     , ypln_{ ypln }
     , hud_tracker_{
-        scene,
         scene_logic,
         exclusive_node,
         hud_error_behavior,

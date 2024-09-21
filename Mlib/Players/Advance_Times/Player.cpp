@@ -166,15 +166,12 @@ void Player::reset_node() {
     stuck_start_ = std::chrono::steady_clock::time_point();
     unstuck_start_ = std::chrono::steady_clock::time_point();
     if (!delete_vehicle_externals.empty()) {
-        std::scoped_lock lock{ delete_node_mutex_ };
         delete_vehicle_externals.clear();
     }
     if (!delete_vehicle_internals.empty()) {
-        std::scoped_lock lock{ delete_node_mutex_ };
         delete_vehicle_internals.clear();
     }
     if (!dependent_nodes_.empty()) {
-        std::scoped_lock lock{ delete_node_mutex_ };
         clear_map_recursively(dependent_nodes_, [this](const auto& p){
             p.key() = nullptr;
             scene_.delete_node(p.mapped());
@@ -226,7 +223,6 @@ const RigidBodyVehicle& Player::rigid_body() const {
 
 const std::string& Player::scene_node_name() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     return vehicle().scene_node_name();
 }
 
@@ -276,7 +272,6 @@ const PlayerStats& Player::stats() const {
 
 float Player::car_health() const {
     std::shared_lock lock0{ mutex_ };
-    std::scoped_lock lock1{ delete_node_mutex_ };
     if (has_scene_vehicle() && (vehicle_->rb().damageable_ != nullptr)) {
         return vehicle_->rb().damageable_->health();
     } else {
@@ -286,7 +281,6 @@ float Player::car_health() const {
 
 std::string Player::vehicle_name() const {
     std::shared_lock lock0{ mutex_ };
-    std::scoped_lock lock1{ delete_node_mutex_ };
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene vehicle, cannot get vehicle name");
     }
@@ -305,7 +299,6 @@ bool Player::can_see(
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires rb");
     }
@@ -325,7 +318,6 @@ bool Player::can_see(
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires rb");
     }
@@ -345,7 +337,6 @@ bool Player::can_see(
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires vehicle");
     }
@@ -365,7 +356,6 @@ bool Player::can_see(
     float time_offset) const
 {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (!player.has_scene_vehicle()) {
         THROW_OR_ABORT("Player::can_see requires target rb");
     }
@@ -376,20 +366,20 @@ bool Player::can_see(
         time_offset);
 }
 
-void Player::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void Player::notify_destroyed(SceneNode& destroyed_object) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (destroyed_object.ptr() == target_scene_node_) {
+    if (&destroyed_object == &target_scene_node_.obj()) {
         target_name_.reset();
         target_scene_node_ = nullptr;
         target_rb_ = nullptr;
     }
-    if (destroyed_object.ptr() == controlled_.gun_node) {
+    if (&destroyed_object == &controlled_.gun_node.obj()) {
         controlled_.gun_node = nullptr;
     }
     // The node has already removed the player from its observers,
     // so nothing no deregistration is done here.
-    dependent_nodes_.erase(destroyed_object.ptr());
+    dependent_nodes_.erase(DanglingRef<SceneNode>::from_object(destroyed_object, DP_LOC).ptr());
 }
 
 void Player::notify_destroyed(const SceneVehicle& destroyed_object) {
@@ -446,7 +436,7 @@ void Player::increment_external_forces(
     {
         bool countdown_active;
         {
-            std::shared_lock lock{focuses_.mutex};
+            std::shared_lock lock1{ focuses_.mutex };
             countdown_active = focuses_.countdown_active();
         }
         if (countdown_active) {
@@ -520,7 +510,6 @@ bool Player::unstuck() {
 
 FixedArray<float, 3> Player::gun_direction() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("gun_direction despite gun nullptr in player \"" + name() + '"');
     }
@@ -529,7 +518,6 @@ FixedArray<float, 3> Player::gun_direction() const {
 
 FixedArray<float, 3> Player::punch_angle() const {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("punch_angle despite gun nullptr in player \"" + name() + '"');
     }
@@ -582,13 +570,11 @@ bool Player::needs_supplies() const {
 }
 
 size_t Player::nbullets_available() const {
-    delete_node_mutex_.notify_reading();
     return gun().nbullets_available();
 }
 
 std::optional<std::string> Player::best_weapon_in_inventory() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     auto& wc = weapon_cycle();
     if ((target_rb_ == nullptr) ||
         !has_scene_vehicle())
@@ -615,7 +601,6 @@ std::optional<std::string> Player::best_weapon_in_inventory() const {
 
 bool Player::has_scene_vehicle() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (vehicle_ == nullptr) {
         return false;
     }
@@ -630,13 +615,11 @@ bool Player::has_scene_vehicle() const {
 
 bool Player::has_vehicle_controller() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     return rigid_body().has_vehicle_controller();
 }
 
 const Gun& Player::gun() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (controlled_.gun_node == nullptr) {
         THROW_OR_ABORT("Gun node not set");
     }
@@ -650,7 +633,6 @@ Gun& Player::gun() {
 
 bool Player::is_pedestrian() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     return joined_way_point_sandbox_ == JoinedWayPointSandbox::SIDEWALK;
 }
 
@@ -705,7 +687,6 @@ void Player::select_best_weapon_in_inventory() {
 
 bool Player::ramming() const {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     return (game_mode_ == GameMode::RAMMING) && (target_rb_ != nullptr);
 }
 
@@ -857,7 +838,6 @@ void Player::set_opponent(const Player& opponent) {
 
 DanglingRef<SceneNode> Player::scene_node() {
     std::shared_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     if (!has_scene_vehicle()) {
         THROW_OR_ABORT("Player has no scene node");
     }
@@ -983,7 +963,6 @@ void Player::set_role(const std::string& role) {
         THROW_OR_ABORT("Attempt to set role before vehicle externals");
     }
     if (!delete_vehicle_internals.empty()) {
-        std::scoped_lock lock{ delete_node_mutex_ };
         delete_vehicle_internals.clear();
     }
     InternalsMode new_mode{
@@ -1058,7 +1037,6 @@ PlaybackWaypoints& Player::playback_waypoints() {
 
 void Player::append_dependent_node(std::string node_name) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_reading();
     auto node = scene_.get_node(node_name, DP_LOC);
     if (!dependent_nodes_.try_emplace(node.ptr(), std::move(node_name)).second) {
         THROW_OR_ABORT("Node \"" + node_name + "\" already is a dependent node of player \"" + name() + '"');

@@ -7,13 +7,13 @@
 
 namespace Mlib {
 
-class WingAngle: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public virtual DanglingBaseClass {
+class WingAngle: public DestructionObserver<SceneNode&>, public IRelativeMovable, public virtual DanglingBaseClass {
 public:
     explicit WingAngle(DanglingPtr<SceneNode> node, float& angle, const FixedArray<float, 3>& rotation_axis);
     virtual ~WingAngle() override;
 
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
     // IRelativeMovable
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;

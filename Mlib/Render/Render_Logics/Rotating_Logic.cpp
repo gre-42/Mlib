@@ -150,8 +150,6 @@ void RotatingLogic::render(
 
     key_callback(window_, button_states_, user_object_, *keys_);
 
-    std::unique_lock lock{ scene_.delete_node_mutex() };
-
     RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
     float aspect_ratio = lx.flength() / ly.flength();
 
@@ -159,7 +157,7 @@ void RotatingLogic::render(
     cn->set_position(
         FixedArray<ScenePos, 3>{0.f, 0.f, user_object_.camera_z},
         std::nullopt);
-    auto co = cn->get_camera().copy();
+    auto co = cn->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     co->set_aspect_ratio(aspect_ratio);
     FixedArray<ScenePos, 4, 4> vp = dot2d(
         co->projection_matrix().casted<ScenePos>(),
@@ -194,7 +192,7 @@ void RotatingLogic::render(
     CHK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
-    scene_.render(vp, iv, cn_ptr, lock, render_config, scene_graph_config, frame_id.external_render_pass);
+    scene_.render(vp, iv, cn_ptr, render_config, scene_graph_config, frame_id.external_render_pass);
 }
 
 void RotatingLogic::reset()

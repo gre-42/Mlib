@@ -30,11 +30,11 @@ Spawn::Spawn(
     GameLogicConfig& cfg,
     DeleteNodeMutex& delete_node_mutex,
     Scene& scene)
-: vehicle_spawners_{ vehicle_spawners },
-  players_{ players },
-  cfg_{ cfg },
-  delete_node_mutex_{ delete_node_mutex },
-  scene_{ scene }
+    : vehicle_spawners_{ vehicle_spawners }
+    , players_{ players }
+    , cfg_{ cfg }
+    , delete_node_mutex_{ delete_node_mutex }
+    , scene_{ scene }
 {}
 
 Spawn::~Spawn() = default;
@@ -94,9 +94,6 @@ void Spawn::respawn_all_players() {
         }
         while (p->has_scene_vehicle()) {
             std::string node_name = p->get_primary_scene_vehicle().scene_node_name();
-            // Lock guard avoids this error during rendering:
-            // "Could not find black node with name ..."
-            std::scoped_lock lock{ delete_node_mutex_ };
             scene_.delete_root_node(node_name);
         }
         ++ndelete_;

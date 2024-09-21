@@ -18,7 +18,7 @@ class SceneNode;
 class TextResource;
 class ILayoutPixels;
 
-class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime {
+class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<SceneNode&>, public IAdvanceTime {
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
@@ -32,7 +32,7 @@ public:
         const ILayoutPixels& line_distance);
     virtual ~VisualMovable3rdLogger();
 
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
     virtual void advance_time(float dt, const StaticWorld& world) override;
 

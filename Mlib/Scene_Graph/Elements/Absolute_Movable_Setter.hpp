@@ -14,7 +14,7 @@ public:
     AbsoluteMovableSetter(
         DanglingRef<SceneNode> node,
         std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>>&& absolute_movable,
-        DanglingBaseClassPtr<DestructionObserver<DanglingRef<SceneNode>>> destruction_observer,
+        DanglingBaseClassPtr<DestructionObserver<SceneNode&>> destruction_observer,
         INodeHider* node_hider)
         : absolute_movable{ nullptr, nullptr }
         , absolute_movable_ptr_{ *absolute_movable, CURRENT_SOURCE_LOCATION }
@@ -63,7 +63,7 @@ public:
     std::unique_ptr<TAbsoluteMovable, DeleteFromPool<TAbsoluteMovable>> absolute_movable;
 private:
     DanglingBaseClassPtr<IAbsoluteMovable> absolute_movable_ptr_;
-    DanglingBaseClassPtr<DestructionObserver<DanglingRef<SceneNode>>> destruction_observer_;
+    DanglingBaseClassPtr<DestructionObserver<SceneNode&>> destruction_observer_;
     INodeHider* node_hider_;
     DanglingRef<SceneNode> node_;
     std::scoped_lock<SafeAtomicRecursiveSharedMutex> lock_;

@@ -110,19 +110,19 @@ TransformationMatrix<float, ScenePos, 3> FollowMovable::get_new_absolute_model_m
     return transformation_matrix_;
 }
 
-void FollowMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == followed_node_) {
+void FollowMovable::notify_destroyed(SceneNode& destroyed_object) {
+    if (&destroyed_object == followed_node_.get()) {
         followed_node_ = nullptr;
         followed_ = nullptr;
     } else {
         if (followed_node_ != nullptr) {
             followed_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
         }
-        if (destroyed_object->has_absolute_movable()) {
-            if (&destroyed_object->get_absolute_movable() != this) {
+        if (destroyed_object.has_absolute_movable()) {
+            if (&destroyed_object.get_absolute_movable() != this) {
                 verbose_abort("Unexpected absolute movable");
             }
-            destroyed_object->clear_absolute_movable();
+            destroyed_object.clear_absolute_movable();
         }
         global_object_pool.remove(this);
     }

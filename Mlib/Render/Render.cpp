@@ -169,7 +169,6 @@ void Render::render_node(
     DeleteNodeMutex delete_node_mutex;
     Scene scene{ "main_scene", delete_node_mutex };
     DestructionGuard scene_destruction_guard{[&](){
-        std::scoped_lock lock{ delete_node_mutex };
         scene.shutdown();
     }};
     scene.auto_add_root_node("obj", std::move(node), RenderingDynamics::MOVING);

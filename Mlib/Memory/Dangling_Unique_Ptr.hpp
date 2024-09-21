@@ -12,10 +12,11 @@ concept pointers_are_comparable = requires(const T2* v) {
 #ifndef WITHOUT_DANGLING_UNIQUE_PTR
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstdint>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 #include <type_traits>
 
 namespace Mlib {
@@ -25,7 +26,7 @@ struct PointedSourceLocation;
 template <class T>
 std::map<const void*, PointedSourceLocation>& locs_();
 template <class T>
-AtomicMutex& loc_mutex_();
+SafeAtomicSharedMutex& loc_mutex_();
 
 template <class T>
 inline std::map<const void*, ::Mlib::PointedSourceLocation>& locs() {
@@ -33,7 +34,7 @@ inline std::map<const void*, ::Mlib::PointedSourceLocation>& locs() {
 }
 
 template <class T>
-inline AtomicMutex& loc_mutex() {
+inline SafeAtomicSharedMutex& loc_mutex() {
     return loc_mutex_<std::remove_const_t<T>>();
 }
 
@@ -44,8 +45,8 @@ inline AtomicMutex& loc_mutex() {
         return result;                                                          \
     }                                                                           \
     template <>                                                                 \
-    ::Mlib::AtomicMutex& ::Mlib::loc_mutex_<T>() {                              \
-        static AtomicMutex result;                                              \
+    ::Mlib::SafeAtomicSharedMutex& ::Mlib::loc_mutex_<T>() {                              \
+        static SafeAtomicSharedMutex result;                                              \
         return result;                                                          \
     }
 
@@ -57,6 +58,15 @@ using MagicNumber = uint32_t;
 static_assert(sizeof(ReferenceCounter) == 4);
 
 template <class T>
+void print_source_locations(const ReferenceCounter& v) {
+    for (const auto& [ptr, psl] : locs<T>()) {
+        if (psl.target == &v) {
+            lerr() << psl.loc.file_name() << ':' << psl.loc.line();
+        }
+    }
+}
+
+template <class T>
 struct ObjectAndReferenceCounter {
     template<class... Args>
     ObjectAndReferenceCounter(Args&&... args)
@@ -66,6 +76,25 @@ struct ObjectAndReferenceCounter {
     }
     T& tobj() {
         return reinterpret_cast<T&>(obj);
+    }
+    void shutdown_and_wait() {
+        for (uint32_t i = 0; ; ) {
+            tobj().shutdown();
+            std::shared_lock lock{ loc_mutex<T>() };
+            if (nptrs == 0) {
+                break;
+            }
+            // This gives an interval of about 4s.
+            if (i == 200'000'000) {
+                lerr() << "Waiting for dangling pointers";
+                print_source_locations<T>(erase_type(*this));
+                // verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");
+                i = 0;
+            } else {
+                ++i;
+            }
+        }
+        tobj().~T();
     }
     ReferenceCounter nptrs;
     MagicNumber magic_number = 0xc0ffee42u;
@@ -105,15 +134,6 @@ ReferenceCounter& counter_from_object(const T& v) {
         verbose_abort("Incorrect magic number during reference counting");
     }
     return const_cast<ReferenceCounter&>(obj.nptrs);
-}
-
-template <class T>
-void print_source_locations(const ReferenceCounter& v) {
-    for (const auto& [ptr, psl] : locs<T>()) {
-        if (psl.target == &v) {
-            lerr() << psl.loc.file_name() << ':' << psl.loc.line();
-        }
-    }
 }
 
 struct PointedSourceLocation {
@@ -163,10 +183,10 @@ public:
     explicit DanglingUniquePtr(std::unique_ptr<ObjectAndReferenceCounter<T>>&& u)
         : u_{ std::move(u) }
     {}
-    DanglingUniquePtr(DanglingUniquePtr&& u)
+    DanglingUniquePtr(DanglingUniquePtr&& u) noexcept
         : u_{ std::move(u.u_) }
     {}
-    DanglingUniquePtr& operator = (DanglingUniquePtr&& u) {
+    DanglingUniquePtr& operator = (DanglingUniquePtr&& u) noexcept {
         u_ = std::move(u.u_);
         return *this;
     }
@@ -211,12 +231,7 @@ private:
         if (u_ == nullptr) {
             return;
         }
-        u_->tobj().~T();
-        std::scoped_lock lock{ loc_mutex<T>() };
-        if (u_->nptrs != 0) {
-            print_source_locations<T>(erase_type(*u_));
-            verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");
-        }
+        u_->shutdown_and_wait();
         u_ = nullptr;
     }
     std::unique_ptr<ObjectAndReferenceCounter<T>> u_;
@@ -227,12 +242,7 @@ class DanglingStackPtr {
 public:
     DanglingStackPtr() = default;
     ~DanglingStackPtr() {
-        u_.tobj().~T();
-        std::scoped_lock lock{ loc_mutex<T>() };
-        if (u_.nptrs != 0) {
-            print_source_locations<T>(erase_type(u_));
-            verbose_abort("DanglingStackPtr: " + std::to_string(u_.nptrs) + " dangling pointers remain");
-        }
+        u_->shutdown_and_wait();
     }
     DanglingPtr<T> get(SourceLocation loc) const {
         return DanglingPtr<T>{erase_type(u_), loc};
@@ -366,6 +376,12 @@ public:
     T* operator -> () const {
         return &data<T>(*u_);
     }
+    T* get() const {
+        if (u_ == nullptr) {
+            return nullptr;
+        }
+        return &data<T>(*u_);
+    }
     T& obj() const {
         return data<T>(*u_);
     }
@@ -401,15 +417,20 @@ public:
         return DanglingRef{counter_from_object(v), loc};
     }
     // Constructor from ReferenceCounter
-    DanglingRef(ReferenceCounter& u, SourceLocation loc): u_{u}, loc_{loc} {
+    DanglingRef(ReferenceCounter& u, SourceLocation loc)
+        : u_{u}
+        , loc_{loc}
+    {
         std::scoped_lock lock{ loc_mutex<T>() };
         add_source_location<T>(this, u_, loc);
         inc(u_);
         // check_consistency<T>(u_);
     }
-    DanglingRef(const DanglingRef& other): DanglingRef{other.u_, other.loc_}
+    DanglingRef(const DanglingRef& other)
+        : DanglingRef{other.u_, other.loc_}
     {}
-    DanglingRef(DanglingRef&& other): DanglingRef{other.u_, other.loc_}
+    DanglingRef(DanglingRef&& other) noexcept
+        : DanglingRef{other.u_, other.loc_}
     {}
     ~DanglingRef() {
         std::scoped_lock lock{ loc_mutex<T>() };

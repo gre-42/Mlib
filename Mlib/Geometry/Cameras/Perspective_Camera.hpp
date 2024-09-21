@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class PerspectiveCamera: public Camera {
+class PerspectiveCamera final: public Camera {
 public:
     enum class Postprocessing {
         DISABLED = 0,

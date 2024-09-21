@@ -87,11 +87,12 @@ void SkidmarkLogic::render(
     if (fbs_(new_fbs_id) == nullptr) {
         fbs_(new_fbs_id) = std::make_unique<FrameBuffer>(CURRENT_SOURCE_LOCATION);
     }
-    const auto* skidmark_camera = dynamic_cast<OrthoCamera*>(&skidmark_node_->get_camera());
-    if (skidmark_camera == nullptr) {
+    auto camera = skidmark_node_->get_camera(CURRENT_SOURCE_LOCATION);
+    const auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
+    if (ortho_camera == nullptr) {
         THROW_OR_ABORT("Skidmark camera is not an ortho-camera");
     }
-    auto p = skidmark_camera->projection_matrix();
+    auto p = ortho_camera->projection_matrix();
     auto bi = skidmark_node_->absolute_bijection();
     auto vp = dot2d(p.casted<ScenePos>(), bi.view.affine());
     fbs_(new_fbs_id)->configure({
@@ -109,8 +110,8 @@ void SkidmarkLogic::render(
         } else if (fbs_(old_fbs_id_) != nullptr) {
             old_render_texture_logic_->update_texture_id();
         }
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> lights;
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> skidmarks;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
         RenderToFrameBufferGuard rfg{ *fbs_(new_fbs_id) };
         RenderToScreenGuard rsg{ CURRENT_SOURCE_LOCATION };
         {
@@ -118,7 +119,7 @@ void SkidmarkLogic::render(
             clear_color({ 1.f, 1.f, 1.f, 1.f });
         }
         if (fbs_(old_fbs_id_) != nullptr) {
-            auto dpi = skidmark_camera->dpi(
+            auto dpi = ortho_camera->dpi(
                 (float)texture_width_,
                 (float)texture_height_);
             auto diff = bi.view.rotate((old_camera_position_ - bi.model.t()).casted<float>());

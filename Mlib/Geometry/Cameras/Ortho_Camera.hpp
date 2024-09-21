@@ -5,7 +5,7 @@
 
 namespace Mlib {
 
-class OrthoCamera: public Camera {
+class OrthoCamera final: public Camera {
 public:
     enum class Postprocessing {
         DISABLED = 0,

@@ -16,7 +16,7 @@ namespace Mlib {
 class AdvanceTimes;
 class SceneNode;
 
-class FollowMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class FollowMovable: public DestructionObserver<SceneNode&>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     FollowMovable(
         AdvanceTimes& advance_times,
@@ -30,12 +30,12 @@ public:
         float y_snappiness = 0.05f,
         float dt = 1.f / 60.f * seconds,
         float dt_ref = 1.f / 60.f * seconds);
-    ~FollowMovable();
+    virtual ~FollowMovable() override;
     void initialize(DanglingRef<SceneNode> follower_node);
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
     void advance_time(float dt);

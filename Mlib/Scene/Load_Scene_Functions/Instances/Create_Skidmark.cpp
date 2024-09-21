@@ -36,7 +36,6 @@ CreateSkidmark::CreateSkidmark(RenderableScene& renderable_scene)
 
 void CreateSkidmark::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    std::scoped_lock lock_guard{ delete_node_mutex };
     auto node_name = args.arguments.at<std::string>(KnownArgs::node);
     auto node = scene.get_node(node_name, DP_LOC);
     auto resource_suffix = "skidmark" + scene.get_temporary_instance_suffix();

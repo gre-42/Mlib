@@ -16,7 +16,7 @@ public:
         VehicleSpawners& spawners,
         Players& players,
         Spawn& spawn,
-        const std::function<void()>& setup_new_round);
+        std::function<void()> setup_new_round);
     ~TeamDeathmatch();
     void set_objective(Objective);
 private:

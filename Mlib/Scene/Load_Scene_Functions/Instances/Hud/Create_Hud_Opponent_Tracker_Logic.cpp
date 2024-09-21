@@ -48,7 +48,6 @@ void CreateHudOpponentTracker::execute(const LoadSceneJsonUserFunctionArgs& args
     object_pool.create<HudOpponentTrackerLogic>(
         CURRENT_SOURCE_LOCATION,
         object_pool,
-        scene,
         scene_logic,
         render_logics,
         players,

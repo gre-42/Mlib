@@ -112,7 +112,7 @@ struct PlayerControlled {
 
 class Player final:
     public IPlayer,
-    public DestructionObserver<DanglingRef<SceneNode>>,
+    public DestructionObserver<SceneNode&>,
     public DestructionObserver<const SceneVehicle&>,
     public DestructionObserver<const RigidBodyVehicle&>,
     public IAdvanceTime,
@@ -249,7 +249,7 @@ public:
     virtual DestructionFunctions& on_destroy_player() override;
     virtual DestructionFunctions& on_clear_vehicle() override;
     // DestructionObserver
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void notify_destroyed(const SceneVehicle& destroyed_object) override;
     virtual void notify_destroyed(const RigidBodyVehicle& destroyed_object) override;
     // IAdvanceTime

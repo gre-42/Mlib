@@ -34,11 +34,12 @@ void CreateKeepOffsetFromCamera::execute(const LoadSceneJsonUserFunctionArgs& ar
 {
     Linker linker{ physics_engine.advance_times_ };
     DanglingRef<SceneNode> follower_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::follower), DP_LOC);
-    const auto* follower_camera = dynamic_cast<OrthoCamera*>(&follower_node->get_camera());
-    if (follower_camera == nullptr) {
+    auto camera = follower_node->get_camera(CURRENT_SOURCE_LOCATION);
+    const auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
+    if (ortho_camera == nullptr) {
         THROW_OR_ABORT("Camera is not an ortho-camera");
     }
-    auto grid2 = follower_camera->grid(
+    auto grid2 = ortho_camera->grid(
         args.arguments.at<float>(KnownArgs::texture_width),
         args.arguments.at<float>(KnownArgs::texture_height));
     auto follower = global_object_pool.create_unique<KeepOffsetFromCamera>(

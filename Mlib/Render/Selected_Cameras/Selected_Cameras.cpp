@@ -1,7 +1,6 @@
 #include "Selected_Cameras.hpp"
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <mutex>
@@ -43,25 +42,79 @@ void SelectedCameras::set_camera_node_name(const std::string& name) {
     camera_changed.emit();
 }
 
+DanglingBaseClassPtr<Camera> SelectedCameras::try_get_camera(const std::string& name) const {
+    auto node = scene_.try_get_node(name, DP_LOC);
+    if (node == nullptr) {
+        return nullptr;
+    }
+    return node->try_get_camera(DP_LOC);
+}
+
+DanglingPtr<SceneNode> SelectedCameras::try_get_camera_node(const std::string& name) const {
+    auto node = scene_.try_get_node(name, DP_LOC);
+    if ((node == nullptr) || (!node->has_camera())) {
+        return nullptr;
+    }
+    return node;
+}
+
 std::string SelectedCameras::camera_node_name() const {
     std::string cnn;
     {
         std::shared_lock lock{ camera_mutex_ };
         cnn = camera_node_name_;
     }
-    std::scoped_lock lock{ scene_.delete_node_mutex() };
-    if (scene_.contains_node(cnn)) {
-        DanglingRef<SceneNode> node = scene_.get_node(cnn, DP_LOC);
-        if (node->has_camera()) {
-            return camera_node_name_;
-        } else {
-            std::shared_lock lock{ camera_mutex_ };
-            return fallback_camera_node_name_;
-        }
-    } else {
-        std::shared_lock lock{ camera_mutex_ };
-        return fallback_camera_node_name_;
+    auto res = try_get_camera_node(cnn);
+    if (res != nullptr) {
+        return cnn;
     }
+    return fallback_camera_node_name_;
+}
+
+DanglingRef<SceneNode> SelectedCameras::camera_node() const {
+    auto res = try_camera_node();
+    if (res != nullptr) {
+        return *res;
+    }
+    THROW_OR_ABORT("Could not find camera node");
+}
+
+DanglingPtr<SceneNode> SelectedCameras::try_camera_node() const {
+    std::string cnn;
+    {
+        std::shared_lock lock{ camera_mutex_ };
+        cnn = camera_node_name_;
+    }
+    auto res = try_get_camera_node(cnn);
+    if (res != nullptr) {
+        return res;
+    }
+    {
+        std::shared_lock lock{ camera_mutex_ };
+        cnn = fallback_camera_node_name_;
+    }
+    return try_get_camera_node(cnn);
+}
+
+DanglingBaseClassRef<Camera> SelectedCameras::camera() const {
+    std::string cnn;
+    {
+        std::shared_lock lock{ camera_mutex_ };
+        cnn = camera_node_name_;
+    }
+    auto res = try_get_camera(cnn);
+    if (res != nullptr) {
+        return *res;
+    }
+    {
+        std::shared_lock lock{ camera_mutex_ };
+        cnn = fallback_camera_node_name_;
+    }
+    res = try_get_camera(cnn);
+    if (res != nullptr) {
+        return *res;
+    }
+    THROW_OR_ABORT("Could not find camera");
 }
 
 void SelectedCameras::set_camera_cycle(CameraCycleType tpe, const std::vector<std::string>& cameras) {
@@ -99,5 +152,5 @@ void SelectedCameras::cycle_camera(CameraCycleType tpe) {
 }
 
 bool SelectedCameras::camera_node_exists() const {
-    return scene_.contains_node(camera_node_name());
+    return try_camera_node() != nullptr;
 }

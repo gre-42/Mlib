@@ -118,8 +118,8 @@ public:
 private:
     const ColoredRenderProgram& get_render_program(
         const RenderProgramIdentifier& id,
-        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& filtered_lights,
-        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& filtered_skidmarks,
+        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& filtered_lights,
+        const std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& filtered_skidmarks,
         const std::vector<size_t>& lightmap_indices,
         const std::vector<size_t>& light_noshadow_indices,
         const std::vector<size_t>& light_shadow_indices,

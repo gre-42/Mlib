@@ -14,7 +14,7 @@ class AdvanceTimes;
 class Scene;
 class SceneNode;
 
-class LookAtMovable: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class LookAtMovable: public DestructionObserver<SceneNode&>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     LookAtMovable(
         AdvanceTimes& advance_times,
@@ -23,11 +23,11 @@ public:
         DanglingRef<SceneNode> follower_node,
         DanglingRef<SceneNode> followed_node,
         IAbsoluteMovable& followed);
-    ~LookAtMovable();
+    virtual ~LookAtMovable() override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
     AdvanceTimes& advance_times_;

@@ -45,7 +45,7 @@ void RigidBodyRecorderGpx::advance_time(float dt, const StaticWorld& world) {
     track_writer_.write(geographic_coordinates_->transform(rbp_->abs_position().casted<double>()));
 }
 
-void RigidBodyRecorderGpx::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void RigidBodyRecorderGpx::notify_destroyed(SceneNode& destroyed_object) {
     rbp_ = nullptr;
     recorded_node_ = nullptr;
     global_object_pool.remove(this);

@@ -553,7 +553,6 @@ int main(int argc, char** argv) {
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ "main_scene", delete_node_mutex };
         DestructionGuard scene_destruction_guard{[&](){
-            std::scoped_lock lock{ delete_node_mutex };
             scene.shutdown();
         }};
         std::string light_configuration = args.named_value("--light_configuration", "one");
@@ -1144,7 +1143,6 @@ int main(int argc, char** argv) {
                 const RenderedSceneDescriptor& frame_id)
             {
                 execute_render_allocators();
-                std::scoped_lock lock{ delete_node_mutex };
                 render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };

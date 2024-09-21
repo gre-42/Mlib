@@ -74,7 +74,6 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
         // for(size_t i = 0; i < 32; ++i) {
         //     beacons.push_back(Beacon{.position = p_q2o(g_dest_origin[i]), .resource_name = "flag"});
         // }
-        std::scoped_lock lock{ delete_node_mutex_ };
         {
             for (const auto& name : beacon_nodes_) {
                 scene_.delete_root_node(name);

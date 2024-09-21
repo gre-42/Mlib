@@ -15,7 +15,7 @@ class RigidBodyVehicle;
 class AimAt;
 class SceneNode;
 
-class PitchLookAtNode: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class PitchLookAtNode: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     PitchLookAtNode(
         AimAt& aim_at,
@@ -23,12 +23,12 @@ public:
         float pitch_max,
         float dpitch_max,
         const std::function<float()>& increment_pitch_error);
-    ~PitchLookAtNode();
+    virtual ~PitchLookAtNode() override;
     virtual void set_initial_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_updated_relative_model_matrix(const TransformationMatrix<float, ScenePos, 3>& relative_model_matrix) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
     void increment_pitch(float dpitch, float relaxation);
     void set_pitch(float pitch);

@@ -12,14 +12,14 @@ template <class T>
 class DanglingRef;
 class SceneNode;
 
-class MovableLogger: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
+class MovableLogger: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     MovableLogger(
         DanglingRef<SceneNode> scene_node,
         StatusWriter& status_writer,
         StatusComponents log_components);
     ~MovableLogger();
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
 private:
     StatusWriter& status_writer_;

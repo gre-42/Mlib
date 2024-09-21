@@ -15,7 +15,7 @@ class AdvanceTimes;
 class SceneNode;
 class Scene;
 
-class CopyRotation: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class CopyRotation: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit CopyRotation(DanglingRef<SceneNode> from);
     ~CopyRotation();
@@ -24,7 +24,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 private:
     DanglingPtr<SceneNode> from_;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;

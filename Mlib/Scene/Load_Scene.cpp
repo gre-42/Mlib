@@ -101,7 +101,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Node_Rotation.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Try_Delete_Root_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/With_Delete_Node_Mutex.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Create_Player.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Load_Players.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Players/Player_Change_Aiming_Gun.hpp>
@@ -437,7 +436,6 @@ LoadScene::LoadScene() {
     register_json_user_function(UiBackground::key, UiBackground::json_user_function);
     register_json_user_function(UiExhibit::key, UiExhibit::json_user_function);
     register_json_user_function(VisualNodeStatus3rd::key, VisualNodeStatus3rd::json_user_function);
-    register_json_user_function(WithDeleteNodeMutex::key, WithDeleteNodeMutex::json_user_function);
     register_json_user_function(YplnUpdateBulletProperties::key, YplnUpdateBulletProperties::json_user_function);
     register_json_user_function(LoadKeyConfigurations::key, LoadKeyConfigurations::json_user_function);
 

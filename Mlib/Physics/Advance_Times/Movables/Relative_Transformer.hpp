@@ -12,7 +12,7 @@ template <class T>
 class DanglingRef;
 class SceneNode;
 
-class RelativeTransformer: public DestructionObserver<DanglingRef<SceneNode>>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class RelativeTransformer: public DestructionObserver<SceneNode&>, public IRelativeMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     explicit RelativeTransformer(
         const FixedArray<float, 3>& v = {0, 0, 0},
@@ -23,7 +23,7 @@ public:
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_relative_model_matrix() const override;
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
     TransformationMatrix<float, ScenePos, 3> transformation_matrix_;
     FixedArray<float, 3> v_;
     FixedArray<float, 3> w_;

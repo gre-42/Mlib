@@ -45,14 +45,15 @@ SceneNode::SceneNode(
     const FixedArray<float, 3>& rotation,
     float scale,
     PoseInterpolationMode interpolation_mode)
-    : clearing_observers{ DanglingRef<SceneNode>::from_object(*this, DP_LOC) }
-    , destruction_observers{ DanglingRef<SceneNode>::from_object(*this, DP_LOC) }
+    : clearing_observers{ *this }
+    , destruction_observers{ *this }
     , scene_{ nullptr }
     , parent_{ nullptr }
     , absolute_movable_{ nullptr }
     , relative_movable_{ nullptr }
     , absolute_observer_{ nullptr }
     , sticky_absolute_observer_{ nullptr }
+    , camera_{ nullptr }
     , trafo_{ OffsetAndQuaternion<float, ScenePos>::from_tait_bryan_angles({ rotation, position }) }
     , trafo_history_{ trafo_, std::chrono::steady_clock::now() }
     , trafo_history_invalidated_{ false }
@@ -75,7 +76,7 @@ SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
         interpolation_mode}
 {}
 
-SceneNode::~SceneNode() {
+void SceneNode::shutdown() {
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
@@ -92,6 +93,12 @@ SceneNode::~SceneNode() {
         verbose_abort("Sticky absolute observer not null");
     }
     clear_unsafe();
+}
+
+SceneNode::~SceneNode() {
+    if (!shutting_down_) {
+        verbose_abort("SceneNode::shutdown not called before dtor. Please use a DanglingUniquePtr or DanglingStackPtr");
+    }
 }
 
 bool SceneNode::shutting_down() const {
@@ -231,7 +238,7 @@ void SceneNode::clear_relative_movable() {
     relative_movable_ = nullptr;
 }
 
-void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<SceneNode>>& relative_movable)
+void SceneNode::set_relative_movable(const observer_ptr<IRelativeMovable, SceneNode&>& relative_movable)
 {
     auto mr = relative_model_matrix();
     auto ma = absolute_model_matrix();
@@ -534,20 +541,25 @@ void SceneNode::set_camera(std::unique_ptr<Camera>&& camera) {
     camera_ = std::move(camera);
 }
 
-Camera& SceneNode::get_camera() const {
+DanglingBaseClassRef<Camera> SceneNode::get_camera(SourceLocation loc) const {
     std::shared_lock lock{ mutex_ };
     if (camera_ == nullptr) {
         THROW_OR_ABORT("Node has no camera");
     }
-    return *camera_.get();
+    return { *camera_, loc };
 }
 
-void SceneNode::add_light(std::unique_ptr<Light>&& light) {
+DanglingBaseClassPtr<Camera> SceneNode::try_get_camera(SourceLocation loc) const {
+    std::shared_lock lock{ mutex_ };
+    return { camera_.get(), loc };
+}
+
+void SceneNode::add_light(std::shared_ptr<Light>&& light) {
     std::scoped_lock lock{ mutex_ };
     lights_.push_back(std::move(light));
 }
 
-void SceneNode::add_skidmark(std::unique_ptr<Skidmark>&& skidmark) {
+void SceneNode::add_skidmark(std::shared_ptr<Skidmark>&& skidmark) {
     std::scoped_lock lock{ mutex_ };
     skidmarks_.push_back(std::move(skidmark));
 }
@@ -725,7 +737,7 @@ void SceneNode::move(
             sticky_absolute_observer_->set_absolute_model_matrix(v2.inverted_scaled());
         }
         for (auto it = children_.begin(); it != children_.end(); ) {
-            UnlockGuard ulock{ lock };
+            OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
             it->second.scene_node->move(v2, dt, time, scene_node_resources, estate);
             if (it->second.scene_node->to_be_deleted()) {
                 remove_child((it++)->first);
@@ -775,9 +787,6 @@ bool SceneNode::visit_all(
 {
     auto m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
-    if (state_ != SceneNodeState::DETACHED) {
-        scene_->delete_node_mutex().notify_reading();
-    }
     if (!func(m, renderables_)) {
         return false;
     }
@@ -828,8 +837,8 @@ void SceneNode::render(
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const DanglingPtr<const SceneNode>& camera_node,
     const IDynamicLights* dynamic_lights,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     std::list<Blended>& blended,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
@@ -838,7 +847,7 @@ void SceneNode::render(
     const std::list<const ColorStyle*>& color_styles,
     SceneNodeVisibility visibility) const
 {
-    auto cm = relative_model_matrix(external_render_pass.time);
+    auto child_m = relative_model_matrix(external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (state_ == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot render detached node");
@@ -855,8 +864,8 @@ void SceneNode::render(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
-    auto m = parent_m * cm;
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, child_m.affine());
+    auto m = parent_m * child_m;
     const AnimationState* estate = animation_state_ != nullptr
         ? animation_state_.get()
         : animation_state;
@@ -868,7 +877,8 @@ void SceneNode::render(
         DynamicStyle dynamic_style{dynamic_lights == nullptr
             ? fixed_zeros<float, 3>()
             : dynamic_lights->get_color(m.t()) };
-        for (const auto& [n, r] : un_guarded_iterator(renderables_, lock)) {
+        for (const auto& [n, r] : renderables_) {
+            OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
             if ((*r)->requires_render_pass(external_render_pass.pass)) {
                 (*r)->render(
                     mvp,
@@ -894,7 +904,8 @@ void SceneNode::render(
             }
         }
     }
-    for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
+    for (const auto& [_, c] : children_) {
+        OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
         c.scene_node->render(
             mvp,
             m,
@@ -921,7 +932,7 @@ void SceneNode::append_sorted_aggregates_to_queue(
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    auto cm = relative_model_matrix(external_render_pass.time);
+    auto child_m = relative_model_matrix(external_render_pass.time);
     std::shared_lock lock{ mutex_ };
     if (state_ != SceneNodeState::STATIC) {
         THROW_OR_ABORT("Cannot append sorted aggregates to queue for a non-static node");
@@ -931,8 +942,8 @@ void SceneNode::append_sorted_aggregates_to_queue(
     // "Note that post-multiplying with column-major matrices
     // produces the same result as pre-multiplying with
     // row-major matrices."
-    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, cm.affine());
-    auto m = parent_m * cm;
+    FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, child_m.affine());
+    auto m = parent_m * child_m;
     for (const auto& [_, r] : un_guarded_iterator(renderables_, lock)) {
         (*r)->append_sorted_aggregates_to_queue(mvp, m, offset, scene_graph_config, external_render_pass, aggregate_queue);
     }
@@ -1081,28 +1092,30 @@ void SceneNode::append_static_filtered_to_queue(
 
 void SceneNode::append_lights_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights) const
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights) const
 {
     TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
-    for (const auto& l : un_guarded_iterator(lights_, lock)) {
-        lights.emplace_back(m, l.get());
+    for (const auto& l : lights_) {
+        lights.emplace_back(m, l);
     }
-    for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
+    for (const auto& [_, c] : children_) {
+        OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
         c.scene_node->append_lights_to_queue(m, lights);
     }
 }
 
 void SceneNode::append_skidmarks_to_queue(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks) const
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks) const
 {
     TransformationMatrix<float, ScenePos, 3> m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
-    for (const auto& s : un_guarded_iterator(skidmarks_, lock)) {
-        skidmarks.push_back(std::make_pair(m, s.get()));
+    for (const auto& s : skidmarks_) {
+        skidmarks.push_back(std::make_pair(m, s));
     }
-    for (const auto& [_, c] : un_guarded_iterator(children_, lock)) {
+    for (const auto& [_, c] : children_) {
+        OptionalUnlockGuard ulock{ lock, state_ == SceneNodeState::STATIC };
         c.scene_node->append_skidmarks_to_queue(m, skidmarks);
     }
 }

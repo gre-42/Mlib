@@ -18,7 +18,7 @@ class Scene;
 class SelectedCameras;
 class EventReceiverDeletionToken;
 
-class KeepOffsetFromCamera: public DestructionObserver<DanglingRef<SceneNode>>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
+class KeepOffsetFromCamera: public DestructionObserver<SceneNode&>, public IAbsoluteMovable, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     KeepOffsetFromCamera(
         AdvanceTimes& advance_times,
@@ -26,12 +26,12 @@ public:
         SelectedCameras& cameras,
         const FixedArray<float, 3>& offset,
         const FixedArray<float, 3>& grid,
-        DanglingRef<SceneNode> follower_node);
+        const DanglingRef<SceneNode>& follower_node);
     ~KeepOffsetFromCamera();
     virtual void advance_time(float dt, const StaticWorld& world) override;
     virtual void set_absolute_model_matrix(const TransformationMatrix<float, ScenePos, 3>& absolute_model_matrix) override;
     virtual TransformationMatrix<float, ScenePos, 3> get_new_absolute_model_matrix() const override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
     void advance_time(float dt);

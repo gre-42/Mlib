@@ -67,7 +67,6 @@ void HudOpponentZoomLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("HudOpponentZoomLogic::render");
-    std::scoped_lock lock{ scene_.delete_node_mutex() };
     if (!player_->has_scene_vehicle()) {
         return;
     }

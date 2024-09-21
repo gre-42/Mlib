@@ -18,11 +18,11 @@ TeamDeathmatch::TeamDeathmatch(
     VehicleSpawners& spawners,
     Players& players,
     Spawn& spawn,
-    const std::function<void()>& setup_new_round)
+    std::function<void()> setup_new_round)
     : spawners_{ spawners }
     , players_{ players }
     , spawn_{ spawn }
-    , setup_new_round_{ setup_new_round }
+    , setup_new_round_{ std::move(setup_new_round) }
     , objective_{ Objective::NONE }
 {}
 

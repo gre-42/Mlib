@@ -45,22 +45,28 @@ void test_substitute() {
     }
 }
 
-DP_IMPLEMENT(int);
+struct IntShutdown {
+    int value;
+    inline void shutdown() {}
+};
+
+DP_IMPLEMENT(IntShutdown);
 
 void test_dangling_unique() {
-    std::list<DanglingPtr<int>> lst;
+    std::list<DanglingPtr<IntShutdown>> lst;
     {
-        auto a = make_dunique<int>(5);
+        auto a = make_dunique<IntShutdown>(5);
         auto b = a.get(DP_LOC);
         lst.push_back(a.get(DP_LOC));
         lst.clear();
-        assert_true(*b == 5);
+        assert_true(b->value == 5);
     }
 }
 
 struct Ads {
     int i;
     Ads* ptr() { return this; }
+    inline void shutdown() {}
 };
 
 DP_IMPLEMENT(Ads);

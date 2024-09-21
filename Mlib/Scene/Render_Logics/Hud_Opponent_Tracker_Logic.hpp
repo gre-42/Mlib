@@ -15,7 +15,6 @@ class Player;
 class Players;
 enum class ResourceUpdateCycle;
 class RenderLogics;
-class Scene;
 class ObjectPool;
 
 class HudOpponentTrackerLogic:
@@ -25,7 +24,6 @@ class HudOpponentTrackerLogic:
 public:
     HudOpponentTrackerLogic(
         ObjectPool& object_pool,
-        Scene& scene,
         RenderLogic& scene_logic,
         RenderLogics& render_logics,
         Players& players,

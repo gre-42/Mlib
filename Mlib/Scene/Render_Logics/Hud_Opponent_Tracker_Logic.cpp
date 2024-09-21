@@ -14,7 +14,6 @@ using namespace Mlib;
 
 HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     ObjectPool& object_pool,
-    Scene& scene,
     RenderLogic& scene_logic,
     RenderLogics& render_logics,
     Players& players,
@@ -29,7 +28,6 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     : players_{ players }
     , player_{ player }
     , hud_tracker_{
-        scene,
         scene_logic,
         exclusive_node,
         hud_error_behavior,

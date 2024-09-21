@@ -169,7 +169,6 @@ void VehicleSpawner::notify_spawn() {
 }
 
 float VehicleSpawner::get_time_since_spawn() const {
-    scene_.delete_node_mutex().notify_reading();
     if (std::isnan(time_since_spawn_)) {
         THROW_OR_ABORT("Seconds since spawn requires previous call to notify_spawn");
     }
@@ -177,7 +176,6 @@ float VehicleSpawner::get_time_since_spawn() const {
 }
 
 bool VehicleSpawner::get_spotted_by_vip() const {
-    scene_.delete_node_mutex().notify_reading();
     return spotted_by_vip_;
 }
 

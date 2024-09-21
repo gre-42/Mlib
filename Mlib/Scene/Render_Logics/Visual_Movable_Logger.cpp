@@ -41,7 +41,7 @@ void VisualMovableLogger::add_logger(std::unique_ptr<VisualMovableLoggerView>&& 
     loggers_.push_back(std::move(logger));
 }
 
-void VisualMovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void VisualMovableLogger::notify_destroyed(SceneNode& destroyed_object) {
     global_object_pool.remove(this);
 }
 

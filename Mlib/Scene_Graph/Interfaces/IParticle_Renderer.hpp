@@ -29,8 +29,8 @@ public:
         ParticleSubstrate substrate,
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         const SceneGraphConfig& scene_graph_config,
         const RenderConfig& render_config,
         const ExternalRenderPass& external_render_pass) const = 0;

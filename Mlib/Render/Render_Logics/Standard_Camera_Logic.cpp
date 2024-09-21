@@ -40,7 +40,6 @@ void StandardCameraLogic::init(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
-    std::scoped_lock lock{ scene_.delete_node_mutex() };
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
@@ -54,14 +53,14 @@ void StandardCameraLogic::init(
         }
         camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        camera_node_ = scene_.get_node(cameras_.camera_node_name(), DP_LOC).ptr();
+        camera_node_ = cameras_.camera_node().ptr();
     } else {
         THROW_OR_ABORT(
             "StandardCameraLogic::render: unknown render pass: \"" +
             external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
             '"');
     }
-    camera_ = camera_node_->get_camera().copy();
+    camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     camera_->set_aspect_ratio(aspect_ratio);
     vp_ = dot2d(
         camera_->projection_matrix().casted<ScenePos>(),
@@ -124,7 +123,6 @@ const TransformationMatrix<float, ScenePos, 3>& StandardCameraLogic::iv() const 
 }
 
 DanglingPtr<const SceneNode> StandardCameraLogic::camera_node() const {
-    scene_.delete_node_mutex().notify_reading();
     if (camera_ == nullptr) {
         THROW_OR_ABORT("camera not set in StandardCameraLogic::camera_node");
     }

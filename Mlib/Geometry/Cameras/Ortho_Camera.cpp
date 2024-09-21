@@ -8,12 +8,14 @@ using namespace Mlib;
 OrthoCamera::OrthoCamera(
     const OrthoCameraConfig& cfg,
     Postprocessing postprocessing)
-: cfg_{cfg},
-  postprocessing_{postprocessing}
+    : cfg_{ cfg }
+    , postprocessing_{ postprocessing }
 {}
 
-OrthoCamera::~OrthoCamera()
-{}
+OrthoCamera::~OrthoCamera() {
+    static_assert(std::is_final_v<OrthoCamera>);
+    wait_until_not_referenced();
+}
 
 std::unique_ptr<Camera> OrthoCamera::copy() const {
     std::shared_lock lock{mutex_};

@@ -29,14 +29,15 @@ FitCanvasToRenderables::FitCanvasToRenderables(RenderableScene& renderable_scene
 
 void FitCanvasToRenderables::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    DanglingRef<SceneNode> node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
-    auto* camera = dynamic_cast<OrthoCamera*>(&node->get_camera());
-    if (camera == nullptr) {
+    auto node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC);
+    auto camera = node->get_camera(DP_LOC);
+    auto* ortho_camera = dynamic_cast<OrthoCamera*>(&camera.get());
+    if (ortho_camera == nullptr) {
         THROW_OR_ABORT("Camera is not an ortho-camera");
     }
     fit_canvas_to_renderables(
         scene,
         node->absolute_view_matrix(),
-        *camera,
+        *ortho_camera,
         external_render_pass_type_from_string(args.arguments.at<std::string>(KnownArgs::render_pass)));
 }

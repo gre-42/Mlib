@@ -20,11 +20,11 @@ PermanentNodeContact::PermanentNodeContact(
     scene_node1_->destruction_observers.add({ *this, CURRENT_SOURCE_LOCATION });
 }
 
-void PermanentNodeContact::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == scene_node0_.ptr()) {
+void PermanentNodeContact::notify_destroyed(SceneNode& destroyed_object) {
+    if (&destroyed_object == &scene_node0_.obj()) {
         scene_node1_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
-    if (destroyed_object.ptr() == scene_node1_.ptr()) {
+    if (&destroyed_object == &scene_node1_.obj()) {
         scene_node0_->destruction_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
     }
     permanent_contacts_.remove(*this);

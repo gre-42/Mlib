@@ -245,8 +245,8 @@ void RenderableColoredVertexArray::render_cva(
     const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const DynamicStyle* dynamic_style,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,
@@ -296,12 +296,12 @@ void RenderableColoredVertexArray::render_cva(
     }
     // lerr();
 
-    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> filtered_lights;
+    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> filtered_lights;
     std::vector<size_t> lightmap_indices;
     std::vector<size_t> light_noshadow_indices;
     std::vector<size_t> light_shadow_indices;
     std::vector<size_t> black_shadow_indices;
-    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> filtered_skidmarks;
+    std::vector<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> filtered_skidmarks;
     bool is_lightmap = any(render_pass.external.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK);
     if (!is_lightmap &&
         (
@@ -1165,8 +1165,8 @@ void RenderableColoredVertexArray::render(
     const TransformationMatrix<float, ScenePos, 3>& m,
     const TransformationMatrix<float, ScenePos, 3>& iv,
     const DynamicStyle* dynamic_style,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
-    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+    const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
     const SceneGraphConfig& scene_graph_config,
     const RenderConfig& render_config,
     const RenderPass& render_pass,

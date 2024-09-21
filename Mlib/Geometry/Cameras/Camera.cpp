@@ -6,10 +6,6 @@ using namespace Mlib;
 
 Camera::Camera() = default;
 
-Camera::Camera(const Camera&) = default;
-
-Camera& Camera::operator = (const Camera&) = default;
-
 Camera::~Camera() = default;
 
 void Camera::set_aspect_ratio(float aspect_ratio) {}

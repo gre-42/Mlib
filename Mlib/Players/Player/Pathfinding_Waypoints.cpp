@@ -25,8 +25,7 @@ PathfindingWaypoints::PathfindingWaypoints(
     , cfg_{ cfg }
 {}
 
-PathfindingWaypoints::~PathfindingWaypoints()
-{}
+PathfindingWaypoints::~PathfindingWaypoints() = default;
 
 void PathfindingWaypoints::set_waypoint(size_t waypoint_id) {
     player_.single_waypoint_.set_waypoint(waypoints_->points.at(waypoint_id), waypoint_id);
@@ -46,7 +45,6 @@ void PathfindingWaypoints::set_waypoints(const PointsAndAdjacencyResource& waypo
 }
 
 bool PathfindingWaypoints::has_waypoints() const {
-    player_.delete_node_mutex_.notify_reading();
     return (waypoints_ != nullptr) && (!waypoints_->points.empty());
 }
 

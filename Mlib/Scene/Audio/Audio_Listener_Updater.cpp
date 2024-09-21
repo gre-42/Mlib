@@ -23,7 +23,7 @@ AudioListenerUpdater::AudioListenerUpdater(
 
 void AudioListenerUpdater::advance_time(float dt, const StaticWorld& world) {
 #ifndef WITHOUT_ALUT
-    DanglingRef<SceneNode> node = scene_.get_node(selected_cameras_.camera_node_name(), DP_LOC);
+    DanglingRef<SceneNode> node = selected_cameras_.camera_node();
     auto corrected_time = std::chrono::steady_clock::now() - delay_;
     AudioScene::set_listener(node, corrected_time, velocity_dt_);
 #endif

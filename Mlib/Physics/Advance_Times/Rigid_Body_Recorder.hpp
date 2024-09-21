@@ -14,7 +14,7 @@ class Focuses;
 class SceneNode;
 class RigidBodyPulses;
 
-class RigidBodyRecorder: public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
+class RigidBodyRecorder: public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     RigidBodyRecorder(
         const std::string& filename,
@@ -24,7 +24,7 @@ public:
         const Focuses& focuses);
     ~RigidBodyRecorder();
     virtual void advance_time(float dt, const StaticWorld& world) override;
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override;
+    virtual void notify_destroyed(SceneNode& destroyed_object) override;
 
 private:
     const Focuses& focuses_;

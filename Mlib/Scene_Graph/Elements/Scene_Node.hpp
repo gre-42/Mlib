@@ -128,7 +128,8 @@ public:
         const FixedArray<float, 3>& rotation,
         float scale,
         PoseInterpolationMode interpolation_mode = PoseInterpolationMode::ENABLED);
-    ~SceneNode();
+    virtual ~SceneNode() override;
+    virtual void shutdown();
     bool shutting_down() const;
 
     void set_absolute_movable(DanglingBaseClassRef<IAbsoluteMovable> absolute_movable);
@@ -137,7 +138,7 @@ public:
     void clear_absolute_movable();
 
     IRelativeMovable& get_relative_movable() const;
-    void set_relative_movable(const observer_ptr<IRelativeMovable, DanglingRef<SceneNode>>& relative_movable);
+    void set_relative_movable(const observer_ptr<IRelativeMovable, SceneNode&>& relative_movable);
     bool has_relative_movable() const;
     void clear_relative_movable();
 
@@ -194,9 +195,10 @@ public:
     void optimize_instances_search_time(std::ostream& ostr) const;
     bool has_camera() const;
     void set_camera(std::unique_ptr<Camera>&& camera);
-    Camera& get_camera() const;
-    void add_light(std::unique_ptr<Light>&& light);
-    void add_skidmark(std::unique_ptr<Skidmark>&& skidmark);
+    DanglingBaseClassRef<Camera> get_camera(SourceLocation loc) const;
+    DanglingBaseClassPtr<Camera> try_get_camera(SourceLocation loc) const;
+    void add_light(std::shared_ptr<Light>&& light);
+    void add_skidmark(std::shared_ptr<Skidmark>&& skidmark);
     bool visit_all(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
@@ -216,8 +218,8 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& iv,
         const DanglingPtr<const SceneNode>& camera_node,
         const IDynamicLights* dynamic_lights,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights,
-        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights,
+        const std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks,
         std::list<Blended>& blended,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
@@ -254,10 +256,10 @@ public:
         const SceneGraphConfig& scene_graph_config) const;
     void append_lights_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>>& lights) const;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>>& lights) const;
     void append_skidmarks_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
-        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>>& skidmarks) const;
+        std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>>& skidmarks) const;
     void append_static_filtered_to_queue(
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<ColoredVertexArray<float>>>>& float_queue,
@@ -316,8 +318,8 @@ public:
     std::string debug_message() const;
     PoseInterpolationMode pose_interpolation_mode() const;
     void invalidate_transformation_history();
-    mutable DestructionObservers<DanglingRef<SceneNode>> clearing_observers;
-    mutable DestructionObservers<DanglingRef<SceneNode>> destruction_observers;
+    mutable DestructionObservers<SceneNode&> clearing_observers;
+    mutable DestructionObservers<SceneNode&> destruction_observers;
     mutable SharedPtrs clearing_pointers;
     mutable SharedPtrs destruction_pointers;
     mutable DestructionFunctions on_clear;
@@ -346,8 +348,8 @@ private:
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;
-    std::list<std::unique_ptr<Light>> lights_;
-    std::list<std::unique_ptr<Skidmark>> skidmarks_;
+    std::list<std::shared_ptr<Light>> lights_;
+    std::list<std::shared_ptr<Skidmark>> skidmarks_;
     OffsetAndQuaternion<float, ScenePos> trafo_;
     QuaternionSeries<float, ScenePos, NINTERPOLATED> trafo_history_;
     bool trafo_history_invalidated_;

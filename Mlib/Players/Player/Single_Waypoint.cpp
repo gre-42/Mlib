@@ -113,7 +113,6 @@ void SingleWaypoint::notify_spawn() {
 }
 
 void SingleWaypoint::draw_waypoint_history(const std::string& filename) const {
-    player_->delete_node_mutex_.notify_reading();
     if (max_waypoint_history_length_ == 0) {
         THROW_OR_ABORT("draw_waypoint_history but recording is not enabled");
     }

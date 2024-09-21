@@ -156,9 +156,6 @@ bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
 }
 
 bool RootNodes::root_node_scheduled_for_deletion(const std::string& name) const {
-    if (!scene_.delete_node_mutex_.is_locked_by_this_thread() && !scene_.delete_node_mutex_.this_thread_is_deleter_thread()) {
-        THROW_OR_ABORT("RootNodes::root_node_scheduled_for_deletion: delete node mutex is not locked by this thread, and this thread is not the deleter thread");
-    }
     std::scoped_lock lock{ root_nodes_to_delete_mutex_ };
     if (!node_container_.contains(name)) {
         THROW_OR_ABORT("No root node with name \"" + name + "\" exists");
@@ -188,7 +185,8 @@ void RootNodes::delete_scheduled_root_nodes() const {
 }
 
 void RootNodes::delete_root_node(const std::string& name) {
-    scene_.delete_node_mutex_.notify_deleting();
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::unique_lock lock{ scene_.mutex_ };
     auto it = node_container_.find(name);
     if (it == node_container_.end()) {
         verbose_abort("RootNodes::delete_root_node: Could not find root node with name \"" + name + '"');
@@ -199,12 +197,15 @@ void RootNodes::delete_root_node(const std::string& name) {
             small_static_nodes_bvh_.clear();
         }
         root_nodes_to_delete_.erase(name);
+        lock.unlock();
         node_container_.erase(it);
+        lock.lock();
     }
 }
 
 void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
-    scene_.delete_node_mutex_.notify_deleting();
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::unique_lock lock{ scene_.mutex_ };
     scene_.unregister_nodes(regex);
     for (auto it = node_container_.begin(); it != node_container_.end(); ) {
         auto n = it++;
@@ -213,7 +214,9 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
                 small_static_nodes_bvh_.clear();
             }
             root_nodes_to_delete_.erase(n->first);
+            lock.unlock();
             node_container_.erase(n->first);
+            lock.lock();
         }
     }
 }

@@ -103,6 +103,7 @@ public:
     void unregister_node(const std::string& name);
     void unregister_nodes(const Mlib::regex& regex);
     DanglingRef<SceneNode> get_node(const std::string& name, SOURCE_LOCATION loc) const;
+    DanglingPtr<SceneNode> try_get_node(const std::string& name, SOURCE_LOCATION loc) const;
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
@@ -110,8 +111,7 @@ public:
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        DanglingPtr<const SceneNode> camera_node,
-        std::unique_lock<DeleteNodeMutex>& delete_node_lock,
+        DanglingPtr<const SceneNode>& camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,

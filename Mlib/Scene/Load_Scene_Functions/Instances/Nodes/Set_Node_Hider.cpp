@@ -39,7 +39,7 @@ SetNodeHider::SetNodeHider(RenderableScene& renderable_scene)
 : LoadSceneInstanceFunction{ renderable_scene }
 {}
 
-class NodeHiderWithEvent: public INodeHider, public DestructionObserver<DanglingRef<SceneNode>>, public IAdvanceTime, public virtual DanglingBaseClass {
+class NodeHiderWithEvent: public INodeHider, public DestructionObserver<SceneNode&>, public IAdvanceTime, public virtual DanglingBaseClass {
 public:
     NodeHiderWithEvent(
         DanglingRef<SceneNode> node_to_hide,
@@ -64,16 +64,16 @@ public:
         }
     }
 
-    virtual void notify_destroyed(DanglingRef<SceneNode> destroyed_object) override {
+    virtual void notify_destroyed(SceneNode& destroyed_object) override {
         if (camera_node_ == nullptr) {
             return;
         }
         if (hide_old_) {
             on_destroy_();
         }
-        if (destroyed_object.ptr() == node_to_hide_) {
+        if (&destroyed_object == &node_to_hide_.obj()) {
             camera_node_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
-        } else if (destroyed_object.ptr() == camera_node_) {
+        } else if (&destroyed_object == &camera_node_.obj()) {
             node_to_hide_->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });
             node_to_hide_->remove_node_hider(*this);
         } else {

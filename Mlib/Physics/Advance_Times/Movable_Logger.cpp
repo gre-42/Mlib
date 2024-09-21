@@ -19,7 +19,7 @@ MovableLogger::~MovableLogger() {
     on_destroy.clear();
 }
 
-void MovableLogger::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
+void MovableLogger::notify_destroyed(SceneNode& destroyed_object) {
     global_object_pool.remove(this);
 }
 

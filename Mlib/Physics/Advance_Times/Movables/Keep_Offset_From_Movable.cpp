@@ -42,8 +42,8 @@ TransformationMatrix<float, ScenePos, 3> KeepOffsetFromMovable::get_new_absolute
     return transformation_matrix_;
 }
 
-void KeepOffsetFromMovable::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == followed_node_) {
+void KeepOffsetFromMovable::notify_destroyed(SceneNode& destroyed_object) {
+    if (&destroyed_object == followed_node_.get()) {
         followed_node_ = nullptr;
         followed_ = nullptr;
         if (!follower_name_.empty()) {

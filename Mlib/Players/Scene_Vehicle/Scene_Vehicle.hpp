@@ -31,7 +31,7 @@ public:
     SceneVehicle(
         DeleteNodeMutex& delete_node_mutex,
         std::string scene_node_name,
-        DanglingRef<SceneNode> scene_node,
+        const DanglingRef<SceneNode>& scene_node,
         RigidBodyVehicle& rb);
     ~SceneVehicle();
     void create_vehicle_externals(

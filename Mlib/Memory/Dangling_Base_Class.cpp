@@ -15,6 +15,25 @@ DanglingBaseClass::~DanglingBaseClass() {
     }
 }
 
+void DanglingBaseClass::wait_until_not_referenced() const {
+    for (uint32_t i = 0; ; ) {
+        if (locs_.empty()) {
+            break;
+        }
+        // This gives an interval of about 4s.
+        if (i == 200'000'000) {
+            lerr() << "Remaining locations: " << locs_.size();
+            for (const auto& [p, l] : locs_) {
+                lerr() << l.file_name() << ':' << l.line();
+            }
+            // verbose_abort("Dangling pointers or references remaining");
+            i = 0;
+        } else {
+            ++i;
+        }
+    }
+}
+
 void DanglingBaseClass::add_source_location(const void* ptr, SourceLocation loc) {
     std::scoped_lock lock{loc_mutex_};
     if (!locs_.try_emplace(ptr, loc).second) {

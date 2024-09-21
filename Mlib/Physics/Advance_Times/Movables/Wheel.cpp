@@ -62,12 +62,12 @@ void Wheel::advance_time(float dt, const StaticWorld& world) {
     transformation_matrix_.R() = tait_bryan_angles_2_matrix(tire_angles);
 }
 
-void Wheel::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_relative_movable()) {
-        if (&destroyed_object->get_relative_movable() != this) {
+void Wheel::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_relative_movable()) {
+        if (&destroyed_object.get_relative_movable() != this) {
             verbose_abort("Unexpected relative movable");
         }
-        destroyed_object->clear_relative_movable();
+        destroyed_object.clear_relative_movable();
     }
     global_object_pool.remove(this);
 }

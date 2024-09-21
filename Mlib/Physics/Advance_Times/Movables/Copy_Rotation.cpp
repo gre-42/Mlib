@@ -42,8 +42,8 @@ void CopyRotation::advance_time(float dt, const StaticWorld& world) {
     // Do nothing
 }
 
-void CopyRotation::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object.ptr() == from_) {
+void CopyRotation::notify_destroyed(SceneNode& destroyed_object) {
+    if (&destroyed_object == from_.get()) {
         from_ = nullptr;
     } else {
         if (from_ != nullptr) {

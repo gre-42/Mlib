@@ -47,12 +47,12 @@ void RelativeTransformer::advance_time(float dt, const StaticWorld& world) {
     transformation_matrix_.R() = dot2d(rodrigues1(dt * w_), transformation_matrix_.R());
 }
 
-void RelativeTransformer::notify_destroyed(DanglingRef<SceneNode> destroyed_object) {
-    if (destroyed_object->has_relative_movable()) {
-        if (&destroyed_object->get_relative_movable() != this) {
+void RelativeTransformer::notify_destroyed(SceneNode& destroyed_object) {
+    if (destroyed_object.has_relative_movable()) {
+        if (&destroyed_object.get_relative_movable() != this) {
             verbose_abort("Unexpected relative movable");
         }
-        destroyed_object->clear_relative_movable();
+        destroyed_object.clear_relative_movable();
     }
     global_object_pool.remove(this);
 }

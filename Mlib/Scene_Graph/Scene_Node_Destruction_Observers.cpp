@@ -5,6 +5,6 @@
 
 namespace Mlib {
 
-template class DestructionObservers<DanglingRef<SceneNode>>;
+template class DestructionObservers<SceneNode&>;
 
 }

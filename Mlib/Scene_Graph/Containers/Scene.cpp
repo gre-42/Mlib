@@ -34,7 +34,8 @@
 
 using namespace Mlib;
 
-using NodePtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
+using NodeRawPtrs = ChunkedArray<std::list<std::vector<const SceneNode*>>>;
+using NodeDanglingPtrs = ChunkedArray<std::list<std::vector<DanglingPtr<const SceneNode>>>>;
 static const size_t CHUNK_SIZE = 1000;
 
 Scene::Scene(
@@ -51,7 +52,7 @@ Scene::Scene(
     , root_aggregate_always_nodes_{ morn_.create("root_aggregate_always_nodes") }
     , root_instances_once_nodes_{ morn_.create("root_instances_once_nodes") }
     , root_instances_always_nodes_{ morn_.create("root_instances_always_nodes") }
-    , name_{ name }
+    , name_{ std::move(name) }
     , delete_node_mutex_{ delete_node_mutex }
     , large_aggregate_bg_worker_{ "Large_agg_BG" }
     , large_instances_bg_worker_{ "Large_inst_BG" }
@@ -220,13 +221,11 @@ void Scene::schedule_delete_root_node(const std::string& name) {
 
 void Scene::delete_scheduled_root_nodes() const {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_deleting();
     morn_.delete_scheduled_root_nodes();
 }
 
 void Scene::try_delete_root_node(const std::string& name) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_deleting();
     if (nodes_.contains(name)) {
         delete_root_node(name);
     }
@@ -241,19 +240,16 @@ void Scene::delete_root_imposter_node(const DanglingRef<SceneNode>& scene_node) 
 
 void Scene::delete_root_node(const std::string& name) {
     LOG_FUNCTION("Scene::delete_root_node");
-    std::scoped_lock lock{ mutex_ };
     root_nodes_.delete_root_node(name);
 }
 
 void Scene::delete_root_nodes(const Mlib::regex& regex) {
     LOG_FUNCTION("Scene::delete_root_nodes");
-    std::scoped_lock lock{ mutex_ };
     root_nodes_.delete_root_nodes(regex);
 }
 
 void Scene::try_delete_node(const std::string& name) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_deleting();
     if (nodes_.contains(name)) {
         delete_node(name);
     }
@@ -261,7 +257,6 @@ void Scene::try_delete_node(const std::string& name) {
 
 void Scene::delete_node(const std::string& name) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_deleting();
     DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
     if (!node->shutting_down()) {
         if (node->has_parent()) {
@@ -277,7 +272,6 @@ void Scene::delete_node(const std::string& name) {
 
 void Scene::delete_nodes(const Mlib::regex& regex) {
     std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.notify_deleting();
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
@@ -298,9 +292,6 @@ void Scene::shutdown() {
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     clear_nodes_not_allowed_to_be_unregistered();
-    if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        verbose_abort("Scene::shutdown: delete node mutex is not locked");
-    }
     if (!nodes_not_allowed_to_be_unregistered_.empty()) {
         verbose_abort("Scene::shutdown: some nodes are not allowed to be deleted");
     }
@@ -333,7 +324,6 @@ void Scene::wait_until_done() const {
 }
 
 bool Scene::contains_node(const std::string& name) const {
-    delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     return nodes_.contains(name);
 }
@@ -357,9 +347,6 @@ void Scene::unregister_node(const std::string& name) {
     if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
         verbose_abort("Node \"" + name + "\" may not be unregistered");
     }
-    if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        verbose_abort("Scene::unregister_node: delete node mutex is not locked");
-    }
     if (nodes_.erase(name) != 1) {
         verbose_abort("Could not find node with name (0) \"" + name + '"');
     }
@@ -368,9 +355,6 @@ void Scene::unregister_node(const std::string& name) {
 void Scene::unregister_nodes(const Mlib::regex& regex) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!delete_node_mutex_.is_locked_by_this_thread()) {
-        verbose_abort("Scene::unregister_nodes: delete node mutex is not locked");
-    }
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {
@@ -385,7 +369,6 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 }
 
 DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION loc) const {
-    delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     if (morn_.root_node_scheduled_for_deletion(name, false)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
@@ -397,8 +380,15 @@ DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION 
     return res;
 }
 
+DanglingPtr<SceneNode> Scene::try_get_node(const std::string& name, SOURCE_LOCATION loc) const {
+    std::shared_lock lock{ mutex_ };
+    if (!contains_node(name)) {
+        return nullptr;
+    }
+    return get_node(name, loc).ptr();
+}
+
 std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const Mlib::regex& regex) const {
-    delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> result;
     for (const auto& [name, node] : nodes_) {
@@ -413,7 +403,6 @@ std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const
 }
 
 DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
-    delete_node_mutex_.notify_reading();
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         THROW_OR_ABORT("Could not find node with name (2) \"" + name + '"');
@@ -425,7 +414,6 @@ bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, ScenePos, 3>& m,
     const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
-    delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     return
         root_nodes_.visit_all([&func](const auto& node) {
@@ -451,8 +439,7 @@ bool Scene::visit_all(const std::function<bool(
 void Scene::render(
     const FixedArray<ScenePos, 4, 4>& vp,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    DanglingPtr<const SceneNode> camera_node,
-    std::unique_lock<DeleteNodeMutex>& delete_node_lock,
+    DanglingPtr<const SceneNode>& camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -460,9 +447,8 @@ void Scene::render(
 {
     // AperiodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{5} };
     LOG_FUNCTION("Scene::render");
-    delete_node_mutex_.notify_reading();
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Light*>> lights;
-    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, Skidmark*>> skidmarks;
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Light>>> lights;
+    std::list<std::pair<TransformationMatrix<float, ScenePos, 3>, std::shared_ptr<Skidmark>>> skidmarks;
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
     {
@@ -482,10 +468,10 @@ void Scene::render(
         }();
         node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, nullptr, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
     } else if (external_render_pass.pass == ExternalRenderPassType::LIGHTMAP_BLACK_MOVABLES) {
-        NodePtrs nodes{ CHUNK_SIZE };
+        NodeDanglingPtrs nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
+            root_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(node.ptr()); return true; });
         }
         for (const auto& node : nodes) {
             node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, {}, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
@@ -500,11 +486,11 @@ void Scene::render(
         // |Static   |x     |x      |x    |x    |    |
         // |Aggregate|      |       |x    |x    |    |
         LOG_INFO("Scene::render lights");
-        NodePtrs local_root_nodes{ CHUNK_SIZE };
-        NodePtrs local_static_root_nodes{ CHUNK_SIZE };
+        NodeDanglingPtrs local_root_nodes{ CHUNK_SIZE };
+        NodeRawPtrs local_static_root_nodes{ CHUNK_SIZE };
         {
             std::shared_lock lock{ mutex_ };
-            root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(&node.obj()); return true; });
+            root_nodes_.visit(iv.t(), [&local_root_nodes](const auto& node) { local_root_nodes.emplace_back(node.ptr()); return true; });
             if (any(external_render_pass.pass & ExternalRenderPassType::IS_STATIC_MASK)) {
                 static_root_nodes_.visit(iv.t(), [&local_static_root_nodes](const auto& node) { local_static_root_nodes.emplace_back(&node.obj()); return true; });
             }
@@ -534,16 +520,15 @@ void Scene::render(
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             camera_node = nullptr;
-            delete_node_lock.unlock();
             for (const auto& node : local_static_root_nodes) {
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
             {
-                NodePtrs cached_imposter_nodes{ CHUNK_SIZE };
+                NodeDanglingPtrs cached_imposter_nodes{ CHUNK_SIZE };
                 {
                     std::shared_lock lock{ mutex_ };
                     for (const auto& node : root_imposter_nodes_) {
-                        cached_imposter_nodes.emplace_back(&node.obj());
+                        cached_imposter_nodes.emplace_back(node);
                     }
                 }
                 for (const auto& node : cached_imposter_nodes) {
@@ -563,7 +548,7 @@ void Scene::render(
                     auto large_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, iv, scene_graph_config, external_render_pass, large_aggregate_renderer, task_location](){
-                            NodePtrs nodes{ CHUNK_SIZE };
+                            NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
                                 root_aggregate_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
@@ -595,7 +580,7 @@ void Scene::render(
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass,
                                                   large_instances_renderer, task_location]()
                         {
-                            NodePtrs nodes{ CHUNK_SIZE };
+                            NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
                                 root_instances_once_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
@@ -627,7 +612,7 @@ void Scene::render(
                     auto small_sorted_aggregate_renderer_update_func = [&](TaskLocation task_location){
                         // copy "vp" and "scene_graph_config"
                         return run_in_background([this, vp, iv, scene_graph_config, external_render_pass, small_sorted_aggregate_renderer, task_location](){
-                            NodePtrs nodes{ CHUNK_SIZE };
+                            NodeRawPtrs nodes{ CHUNK_SIZE };
                             {
                                 std::shared_lock lock{ mutex_ };
                                 root_aggregate_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
@@ -677,7 +662,7 @@ void Scene::render(
                                                       small_sorted_instances_renderers, task_location,
                                                       black_render_passes]()
                             {
-                                NodePtrs nodes{ CHUNK_SIZE };
+                                NodeRawPtrs nodes{ CHUNK_SIZE };
                                 {
                                     std::shared_lock lock{ mutex_ };
                                     root_instances_always_nodes_.visit(iv.t(), [&nodes](const auto& node) { nodes.emplace_back(&node.obj()); return true; });
@@ -804,7 +789,6 @@ void Scene::append_static_filtered_to_queue(
     const ColoredVertexArrayFilter& filter) const
 {
     LOG_FUNCTION("Scene::append_static_filtered_to_queue");
-    delete_node_mutex_.notify_reading();
     std::shared_lock lock{ mutex_ };
     static_root_nodes_.visit_all([&](const auto& node) {
         node->append_static_filtered_to_queue(
@@ -882,16 +866,10 @@ IParticleCreator& Scene::particle_instantiator(const std::string& resource_name)
 }
 
 void Scene::wait_for_cleanup() const {
-    if (delete_node_mutex_.is_locked_by_this_thread()) {
-        verbose_abort("Scene::wait_for_cleanup: delete node mutex already locked by this thread");
-    }
     while (ncleanups_required_ > 0);
 }
 
 void Scene::notify_cleanup_required() {
-    if (delete_node_mutex_.is_locked_by_this_thread()) {
-        verbose_abort("Scene::notify_cleanup_required: delete node mutex already locked by this thread");
-    }
     ++ncleanups_required_;
 }
 
