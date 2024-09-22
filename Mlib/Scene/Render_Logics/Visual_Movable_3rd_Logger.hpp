@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <memory>
 
@@ -54,6 +55,7 @@ public:
 private:
     std::unique_ptr<TextResource> renderable_text_;
     RenderLogic& scene_logic_;
+    AtomicMutex mutex_;
     DanglingPtr<SceneNode> scene_node_;
     AdvanceTimes& advance_times_;
     StatusWriter& status_writer_;

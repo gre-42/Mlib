@@ -46,6 +46,7 @@ VisualMovable3rdLogger::~VisualMovable3rdLogger() {
 }
 
 void VisualMovable3rdLogger::notify_destroyed(SceneNode& destroyed_object) {
+    std::scoped_lock lock{ mutex_ };
     scene_node_ = nullptr;
 }
 
@@ -70,12 +71,19 @@ void VisualMovable3rdLogger::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("VisualMovable3rdLogger::render");
+    FixedArray<ScenePos, 3> node_pos = uninitialized;
+    {
+        std::scoped_lock lock{ mutex_ };
+        if (scene_node_ == nullptr) {
+            return;
+        }
+        node_pos = scene_node_->absolute_model_matrix().t();
+    }
     if (renderable_text_ == nullptr) {
         renderable_text_ = std::make_unique<TextResource>(
             ttf_filename_,
             FixedArray<float, 3>{1.f, 1.f, 1.f});
     }
-    FixedArray<ScenePos, 3> node_pos = scene_node_->absolute_model_matrix().t();
     auto position4 = dot1d(scene_logic_.vp(), homogenized_4(node_pos));
     if (position4(2) > scene_logic_.near_plane()) {
         FixedArray<float, 2> position2{
