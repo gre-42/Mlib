@@ -85,7 +85,7 @@ struct ObjectAndReferenceCounter {
                 break;
             }
             // This gives an interval of about 4s.
-            if (i == 200'000'000) {
+            if (i == 50'000'000) {
                 lerr() << "Waiting for dangling pointers";
                 print_source_locations<T>(erase_type(*this));
                 // verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");

@@ -57,5 +57,5 @@ void VisualMovableCircularLogger::render(
         font_height_.to_pixels(ly),
         *widget_->evaluate(lx, ly, YOrientation::AS_IS),
         tick_radius_.to_pixels(ly),
-        {pointer_width_.to_pixels(ly), pointer_length_.to_pixels(ly)});
+        { pointer_width_.to_pixels(ly), pointer_length_.to_pixels(ly) });
 }

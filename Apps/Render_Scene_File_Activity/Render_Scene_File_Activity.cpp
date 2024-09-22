@@ -18,8 +18,12 @@
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
 #include <Mlib/Pretty_Terminate.hpp>
+#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Context_Query.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
@@ -27,7 +31,6 @@
 #include <Mlib/Render/Deallocate/Render_Garbage_Collector.hpp>
 #include <Mlib/Render/Gl_Context_Guard.hpp>
 #include <Mlib/Render/IRenderer.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
 #include <Mlib/Render/Print_Gl_Version_Info.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
@@ -35,18 +38,15 @@
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Render/Window.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Strings/Iterate_Over_Chunks_Of_String.hpp>
@@ -498,7 +498,7 @@ void android_main(android_app* app) {
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::duration<float>{ 3.0f * physics_dt });
+            std::chrono::duration<float>{ 1.0f * physics_dt });
         auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{

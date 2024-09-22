@@ -41,6 +41,10 @@ public:
         return data_(interp.i0).slerp(data_(interp.i1), interp.alpha);
     }
 
+    std::chrono::steady_clock::time_point newest_time() const {
+        return times_.newest_time();
+    }
+
 private:
     FixedArray<OffsetAndQuaternion<TDir, TPos>, length> data_;
     TimePointSeries<length> times_;

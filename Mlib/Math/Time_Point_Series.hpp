@@ -88,6 +88,11 @@ public:
     size_t last() const {
         return last_;
     }
+    std::chrono::steady_clock::time_point newest_time() const {
+        return empty()
+            ? std::chrono::steady_clock::time_point()
+            : times_(last_);
+    }
     std::chrono::steady_clock::time_point clamped(std::chrono::steady_clock::time_point time) const {
         static_assert(length > 0);
         if (last_ == SIZE_MAX) {

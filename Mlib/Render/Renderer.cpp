@@ -109,13 +109,13 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
                     rsd);
             }
 
-            if (render_results_ != nullptr && render_results_->output != nullptr) {
+            if ((render_results_ != nullptr) && (render_results_->output != nullptr)) {
                 VectorialPixels<float, 3> vp{ ArrayShape{size_t(height), size_t(width)} };
                 CHK(glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, vp->flat_iterable().begin()));
                 GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
                 *render_results_->output = reverted_axis(vp.to_array(), 1);
             }
-            if (render_results_ != nullptr && !render_results_->outputs.empty()) {
+            if ((render_results_ != nullptr) && !render_results_->outputs.empty()) {
                 GLFW_CHK(glfwSetWindowShouldClose(&window_.glfw_window(), GLFW_TRUE));
             }
             {

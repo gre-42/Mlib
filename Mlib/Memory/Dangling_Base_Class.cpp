@@ -21,7 +21,7 @@ void DanglingBaseClass::wait_until_not_referenced() const {
             break;
         }
         // This gives an interval of about 4s.
-        if (i == 200'000'000) {
+        if (i == 50'000'000) {
             lerr() << "Remaining locations: " << locs_.size();
             for (const auto& [p, l] : locs_) {
                 lerr() << l.file_name() << ':' << l.line();

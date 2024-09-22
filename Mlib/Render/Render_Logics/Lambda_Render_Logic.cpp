@@ -5,11 +5,10 @@
 using namespace Mlib;
 
 LambdaRenderLogic::LambdaRenderLogic(const Lambda& lambda)
-: lambda_{ lambda }
+    : lambda_{ lambda }
 {}
 
-LambdaRenderLogic::~LambdaRenderLogic()
-{}
+LambdaRenderLogic::~LambdaRenderLogic() = default;
 
 void LambdaRenderLogic::init(
     const LayoutConstraintParameters& lx,

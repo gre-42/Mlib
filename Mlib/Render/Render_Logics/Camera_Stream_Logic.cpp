@@ -35,7 +35,6 @@ void CameraStreamLogic::render(
     const RenderedSceneDescriptor& frame_id)
 {
     LOG_FUNCTION("CameraStreamLogic::render");
-
     standard_render_logic_->render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
 }
 

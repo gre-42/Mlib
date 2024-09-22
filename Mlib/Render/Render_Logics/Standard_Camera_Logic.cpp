@@ -46,22 +46,26 @@ void StandardCameraLogic::init(
             THROW_OR_ABORT("Lighting pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
+        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
         camera_node_ = scene_.get_node(cameras_.dirtmap_node_name(), DP_LOC).ptr();
+        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Imposter or singular node render pass without camera node");
         }
         camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
+        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
-        camera_node_ = cameras_.camera_node().ptr();
+        auto can = cameras_.camera();
+        camera_node_ = can.node.ptr();
+        camera_ = can.camera->copy();
     } else {
         THROW_OR_ABORT(
             "StandardCameraLogic::render: unknown render pass: \"" +
             external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
             '"');
     }
-    camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     camera_->set_aspect_ratio(aspect_ratio);
     auto bi = camera_node_->absolute_bijection(frame_id.external_render_pass.time);
     vp_ = dot2d(

@@ -16,15 +16,19 @@ class SceneNode;
 class Scene;
 enum class CameraCycleType;
 
+struct NodeAndCamera {
+    DanglingRef<SceneNode> node;
+    DanglingBaseClassRef<Camera> camera;
+};
+
 class SelectedCameras {
     SelectedCameras(const SelectedCameras&) = delete;
     SelectedCameras& operator = (const SelectedCameras&) = delete;
 public:
     explicit SelectedCameras(Scene& scene);
     ~SelectedCameras();
-    DanglingBaseClassRef<Camera> camera() const;
-    DanglingRef<SceneNode> camera_node() const;
-    DanglingPtr<SceneNode> try_camera_node() const;
+    NodeAndCamera camera() const;
+    std::optional<NodeAndCamera> try_camera() const;
     bool camera_node_exists() const;
     std::string camera_node_name() const;
     std::string dirtmap_node_name() const;
@@ -34,8 +38,7 @@ public:
     std::optional<CameraCycleType> cycle(const std::string& name) const;
     EventEmitter camera_changed;
 private:
-    DanglingBaseClassPtr<Camera> try_get_camera(const std::string& name) const;
-    DanglingPtr<SceneNode> try_get_camera_node(const std::string& name) const;
+    std::optional<NodeAndCamera> try_get_camera(const std::string& name) const;
     Scene& scene_;
     std::string dirtmap_node_name_;
     CameraCycle camera_cycle_near_;

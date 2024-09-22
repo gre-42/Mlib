@@ -1,48 +1,48 @@
-#include <Mlib/Arg_Parser.hpp>
 #ifndef WITHOUT_ALUT
 #include <Mlib/Audio/Audio_Context.hpp>
 #include <Mlib/Audio/Audio_Device.hpp>
 #include <Mlib/Audio/Audio_Listener.hpp>
 #include <Mlib/Audio/Audio_Scene.hpp>
 #endif
+#include <Mlib/Arg_Parser.hpp>
 #include <Mlib/Env.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
 #include <Mlib/Layout/Layout_Constraints.hpp>
 #include <Mlib/Macro_Executor/Asset_References.hpp>
 #include <Mlib/Macro_Executor/Notifying_Json_Macro_Arguments.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
+#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
+#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
+#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Deallocate/Render_Allocator.hpp>
+#include <Mlib/Render/Input_Config.hpp>
 #include <Mlib/Render/Render.hpp>
-#include <Mlib/Render/Renderer.hpp>
+#include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Lambda_Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Menu_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Window_Logic.hpp>
-#include <Mlib/Render/Render_Config.hpp>
-#include <Mlib/Render/Input_Config.hpp>
+#include <Mlib/Render/Renderer.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
+#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
+#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
 #include <Mlib/Render/Ui/Cursor_States.hpp>
-#include <Mlib/Physics/Bullets/Bullet_Property_Db.hpp>
-#include <Mlib/Physics/Smoke_Generation/Surface_Contact_Db.hpp>
-#include <Mlib/Physics/Dynamic_Lights/Dynamic_Light_Db.hpp>
+#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
 #include <Mlib/Scene/Renderable_Scene.hpp>
 #include <Mlib/Scene/Renderable_Scenes.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
-#include <Mlib/Render/Resource_Managers/Particle_Resources.hpp>
-#include <Mlib/Render/Resource_Managers/Trail_Resources.hpp>
-#include <Mlib/Render/Ui/Tty_Renderable_Hider.hpp>
-#include <Mlib/Render/CHK.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
-#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Strings/String.hpp>
+#include <Mlib/Strings/To_Number.hpp>
 #include <Mlib/Threads/Containers/Thread_Safe_String.hpp>
 #include <Mlib/Threads/Future_Guard.hpp>
 #include <Mlib/Threads/Realtime_Threads.hpp>
-#include <Mlib/Threads/Thread_Initializer.hpp>
-#include <Mlib/Threads/Thread_Affinity.hpp>
 #include <Mlib/Threads/Termination_Manager.hpp>
+#include <Mlib/Threads/Thread_Affinity.hpp>
+#include <Mlib/Threads/Thread_Initializer.hpp>
 #include <Mlib/Time/Fps/Realtime_Dependent_Fps.hpp>
 #include <filesystem>
 #include <future>
@@ -109,7 +109,7 @@ std::future<void> render_thread(
                         execute_render_allocators();
                         rs->scene_.wait_for_cleanup();
                         if (rs->selected_cameras_.camera_node_exists()) {
-                            rs->render(
+                            rs->render_toplevel(
                                 lx,
                                 ly,
                                 render_config,
@@ -479,7 +479,7 @@ int main(int argc, char** argv) {
         };
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::duration<float>{ 3.0f * physics_dt });
+            std::chrono::duration<float>{ 1.0f * physics_dt });
         auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{
