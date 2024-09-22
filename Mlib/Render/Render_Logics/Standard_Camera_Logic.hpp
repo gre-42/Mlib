@@ -4,7 +4,7 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <mutex>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <optional>
 
 namespace Mlib {
@@ -49,7 +49,7 @@ private:
     std::unique_ptr<Camera> camera_;
     DanglingPtr<const SceneNode> camera_node_;
     std::optional<DestructionFunctionsRemovalTokens> camera_node_on_destroy_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
 };
 
 }

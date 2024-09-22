@@ -28,6 +28,7 @@
 #include <Mlib/Scene_Graph/Render_Pass_Extended.hpp>
 #include <Mlib/Scene_Graph/Resources/Scene_Node_Resources.hpp>
 #include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
+#include <Mlib/Threads/Unlock_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Lag_Finder.hpp>
 #include <mutex>
@@ -210,22 +211,18 @@ bool Scene::root_node_scheduled_for_deletion(
     const std::string& name,
     bool must_exist) const
 {
-    std::shared_lock lock{ mutex_ };
     return morn_.root_node_scheduled_for_deletion(name, must_exist);
 }
 
 void Scene::schedule_delete_root_node(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
     root_nodes_.schedule_delete_root_node(name);
 }
 
 void Scene::delete_scheduled_root_nodes() const {
-    std::scoped_lock lock{ mutex_ };
     morn_.delete_scheduled_root_nodes();
 }
 
 void Scene::try_delete_root_node(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
     if (nodes_.contains(name)) {
         delete_root_node(name);
     }
@@ -249,14 +246,14 @@ void Scene::delete_root_nodes(const Mlib::regex& regex) {
 }
 
 void Scene::try_delete_node(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (nodes_.contains(name)) {
         delete_node(name);
     }
 }
 
 void Scene::delete_node(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     DanglingPtr<SceneNode> node = get_node_that_may_be_scheduled_for_deletion(name).ptr();
     if (!node->shutting_down()) {
         if (node->has_parent()) {
@@ -271,10 +268,12 @@ void Scene::delete_node(const std::string& name) {
 }
 
 void Scene::delete_nodes(const Mlib::regex& regex) {
-    std::scoped_lock lock{ mutex_ };
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    std::unique_lock lock{ mutex_ };
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = it++;
         if (Mlib::re::regex_match(n->first, regex)) {
+            UnlockGuard ulock{ lock };
             delete_node(n->first);
         }
     }
@@ -756,7 +755,7 @@ void Scene::render(
 
 void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     LOG_FUNCTION("Scene::move");
-    std::scoped_lock lock{ mutex_ };
+    std::unique_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (!morn_.no_root_nodes_scheduled_for_deletion()) {
         THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
@@ -771,6 +770,7 @@ void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
                 scene_node_resources_,
                 nullptr);  // animation_state
             if (it->second->to_be_deleted()) {
+                UnlockGuard ug{ lock };
                 delete_root_node((it++)->first);
             } else {
                 ++it;

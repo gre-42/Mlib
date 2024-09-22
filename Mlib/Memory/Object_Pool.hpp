@@ -2,6 +2,7 @@
 #include <Mlib/Object.hpp>
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Source_Location.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <compare>
 #include <functional>
 #include <memory>
@@ -99,7 +100,7 @@ public:
 private:
     void add(std::function<void()> deallocate, Object& o, SourceLocation loc);
     void delete_(const ObjectAndSourceLocation& o);
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
     InObjectPoolDestructor what_to_do_in_dtor_;
     std::set<ObjectAndSourceLocation> ptrs_;
     std::unordered_set<Object*> deleting_ptrs_;

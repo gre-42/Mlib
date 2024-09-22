@@ -1,10 +1,10 @@
 #pragma once
 #include <Mlib/Source_Location.hpp>
+#include <Mlib/Threads/Atomic_Mutex.hpp>
 #include <atomic>
 #include <functional>
 #include <list>
 #include <map>
-#include <mutex>
 
 namespace Mlib {
 
@@ -29,7 +29,7 @@ public:
     }
 private:
     void clear_unsafe();
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
     SourceLocation loc_;
     DestructionFunctions* funcs_;
 };
@@ -51,7 +51,7 @@ private:
         SourceLocation loc);
     void remove(DestructionFunctionsRemovalTokens& tokens);
     Funcs funcs_;
-    mutable std::mutex mutex_;
+    mutable AtomicMutex mutex_;
     std::atomic_bool clearing_;
 public:
     DestructionFunctions();

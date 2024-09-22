@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Threads/Unlock_Guard.hpp>
 
 namespace Mlib {
 
@@ -33,9 +34,8 @@ void clear_set_recursively_with_lock(
 {
     while (!container.empty()) {
         auto node = container.extract(container.begin());
-        lock.unlock();
+        UnlockGuard ulock{ lock };
         deleter(node.value());
-        lock.lock();
     }
 }
 
@@ -61,10 +61,9 @@ void clear_list_recursively_with_lock(
         ++it_second;
         TContainer list2;
         list2.splice(list2.begin(), elements, elements.begin(), it_second);
-        lock.unlock();
+        UnlockGuard ulock{ lock };
         deleter(list2.front());
         list2.clear();
-        lock.lock();
     }
 }
 

@@ -3,6 +3,7 @@
 #include <Mlib/Memory/Destruction_Observer.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <Mlib/Threads/Unlock_Guard.hpp>
 
 namespace Mlib {
 
@@ -62,11 +63,10 @@ void DestructionObservers<T>::clear() {
     std::unique_lock lock{ mutex_ };
     clearing_ = true;
     clear_set_recursively(observers_, [this, &lock](DanglingBaseClassPtr<DestructionObserver<T>>& obs){
-        lock.unlock();
+        UnlockGuard ulock{ lock };
         auto obs0 = obs.get();
         obs = nullptr;
         obs0->notify_destroyed(obj_);
-        lock.lock();
     });
     clearing_ = false;
 }

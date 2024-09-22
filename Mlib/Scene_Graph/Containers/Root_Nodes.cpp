@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
+#include <Mlib/Threads/Unlock_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
@@ -124,6 +125,7 @@ void RootNodes::move_node_to_bvh(const std::string& name) {
 }
 
 bool RootNodes::erase(const std::string& name) {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     root_nodes_to_delete_.erase(name);
     auto it = node_container_.find(name);
     if (it == node_container_.end()) {
@@ -152,6 +154,7 @@ std::optional<DanglingRef<SceneNode>> RootNodes::try_get(
 }
 
 bool RootNodes::no_root_nodes_scheduled_for_deletion() const {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     return root_nodes_to_delete_.empty();
 }
 
@@ -175,12 +178,12 @@ void RootNodes::schedule_delete_root_node(const std::string& name) {
 }
 
 void RootNodes::delete_scheduled_root_nodes() const {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     auto self = const_cast<RootNodes*>(this);
     std::unique_lock lock{ self->root_nodes_to_delete_mutex_ };
     clear_set_recursively(self->root_nodes_to_delete_, [self, &lock](const auto& name){
-        lock.unlock();
+        UnlockGuard ulock{ lock };
         self->delete_root_node(name);
-        lock.lock();
     });
 }
 
@@ -197,9 +200,8 @@ void RootNodes::delete_root_node(const std::string& name) {
             small_static_nodes_bvh_.clear();
         }
         root_nodes_to_delete_.erase(name);
-        lock.unlock();
+        UnlockGuard ulock{ lock };
         node_container_.erase(it);
-        lock.lock();
     }
 }
 
@@ -214,9 +216,8 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
                 small_static_nodes_bvh_.clear();
             }
             root_nodes_to_delete_.erase(n->first);
-            lock.unlock();
+            UnlockGuard ulock{ lock };
             node_container_.erase(n->first);
-            lock.lock();
         }
     }
 }

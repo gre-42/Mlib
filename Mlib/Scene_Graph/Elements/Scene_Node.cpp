@@ -89,6 +89,7 @@ void SceneNode::shutdown() {
     destruction_observers.clear();
     destruction_pointers.clear();
     on_destroy.clear();
+    std::scoped_lock lock{ mutex_ };
     if (sticky_absolute_observer_ != nullptr) {
         verbose_abort("Sticky absolute observer not null");
     }
