@@ -14,6 +14,7 @@
 namespace Mlib {
 
 enum class StatusComponents;
+class RenderLogics;
 class AdvanceTimes;
 class SceneNode;
 class TextResource;
@@ -24,6 +25,7 @@ public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
         DanglingRef<SceneNode> scene_node,
+        RenderLogics& render_logics,
         AdvanceTimes& advance_times,
         StatusWriter& status_writer,
         StatusComponents log_components,
@@ -57,7 +59,6 @@ private:
     RenderLogic& scene_logic_;
     AtomicMutex mutex_;
     DanglingPtr<SceneNode> scene_node_;
-    AdvanceTimes& advance_times_;
     StatusWriter& status_writer_;
     StatusComponents log_components_;
     ThreadSafeString text_;

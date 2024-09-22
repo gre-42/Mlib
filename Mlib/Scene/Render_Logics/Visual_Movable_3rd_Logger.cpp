@@ -4,7 +4,9 @@
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
+#include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -15,6 +17,7 @@ using namespace Mlib;
 VisualMovable3rdLogger::VisualMovable3rdLogger(
     RenderLogic& scene_logic,
     DanglingRef<SceneNode> scene_node,
+    RenderLogics& render_logics,
     AdvanceTimes& advance_times,
     StatusWriter& status_writer,
     StatusComponents log_components,
@@ -25,7 +28,6 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     : on_node_clear{ scene_node->on_clear, CURRENT_SOURCE_LOCATION }
     , scene_logic_{ scene_logic }
     , scene_node_{ scene_node.ptr() }
-    , advance_times_{ advance_times }
     , status_writer_{ status_writer }
     , log_components_{ log_components }
     , offset_{ offset }
@@ -33,16 +35,13 @@ VisualMovable3rdLogger::VisualMovable3rdLogger(
     , ttf_filename_{ std::move(ttf_filename) }
     , font_height_{ font_height }
 {
-    scene_node->clearing_observers.add({ *this, CURRENT_SOURCE_LOCATION });
+    on_node_clear.add([this]() { global_object_pool.remove(this); }, CURRENT_SOURCE_LOCATION);
+    render_logics.append({ *this, CURRENT_SOURCE_LOCATION }, 0 /* z_order */, CURRENT_SOURCE_LOCATION);
+    advance_times.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
 }
 
 VisualMovable3rdLogger::~VisualMovable3rdLogger() {
     on_destroy.clear();
-    if (scene_node_ != nullptr) {
-        scene_node_->clearing_observers.remove(
-            { *this, CURRENT_SOURCE_LOCATION },
-            ObserverDoesNotExistBehavior::IGNORE);
-    }
 }
 
 void VisualMovable3rdLogger::notify_destroyed(SceneNode& destroyed_object) {
