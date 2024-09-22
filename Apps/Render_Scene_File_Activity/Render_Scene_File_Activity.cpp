@@ -302,7 +302,7 @@ void android_main(android_app* app) {
 
     // This currently has no effect, because the implementation is empty on Android.
     // The render-loop is called by the system, which is therefore in control of the frame rate.
-    RealtimeThreadsGuard rttsg(0);
+    RealtimeThreadsGuard rttsg{ 0 };
     ThreadInitializer ti{"main", ThreadAffinity::POOL};
 
     const ArgParser parser(
