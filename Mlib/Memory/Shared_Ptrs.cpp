@@ -1,6 +1,7 @@
 #include "Shared_Ptrs.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Os/Os.hpp>
+#include <mutex>
 
 using namespace Mlib;
 
