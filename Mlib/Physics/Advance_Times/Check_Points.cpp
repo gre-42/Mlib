@@ -253,6 +253,7 @@ void CheckPoints::advance_time(float dt) {
 }
 
 void CheckPoints::notify_destroyed(SceneNode& destroyed_object) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
     for (auto& n : moving_nodes_) {
         if (!n->shutting_down()) {
             n->clearing_observers.remove({ *this, CURRENT_SOURCE_LOCATION });

@@ -271,7 +271,7 @@ const PlayerStats& Player::stats() const {
 }
 
 float Player::car_health() const {
-    std::shared_lock lock0{ mutex_ };
+    std::shared_lock lock{ mutex_ };
     if (has_scene_vehicle() && (vehicle_->rb().damageable_ != nullptr)) {
         return vehicle_->rb().damageable_->health();
     } else {
@@ -604,11 +604,15 @@ bool Player::has_scene_vehicle() const {
     if (vehicle_ == nullptr) {
         return false;
     }
-    if (vehicle_->scene_node()->shutting_down()) {
-        verbose_abort("Player::has_rigid_body: Scene node shutting down");
-    }
-    if (scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name())) {
-        return false;
+    // Only checked for deleter-threads, because non-deleter-threads
+    // can prevent deletion by acquiring a lock.
+    if (delete_node_mutex_.this_thread_is_deleter_thread()) {
+        if (vehicle_->scene_node()->shutting_down()) {
+            verbose_abort("Player::has_rigid_body: Scene node shutting down");
+        }
+        if (scene_.root_node_scheduled_for_deletion(vehicle_->scene_node_name())) {
+            return false;
+        }
     }
     return true;
 }

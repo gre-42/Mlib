@@ -16,7 +16,8 @@ struct RealtimeDependentFps {
         float max_residual_time,
         bool control_fps,
         bool print_residual_time,
-        float alpha,
+        float alpha0,
+        float alpha1,
         unsigned int print_interval);
     RealtimeSleeper rts;
     DependentSleeper ds;

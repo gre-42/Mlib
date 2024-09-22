@@ -1,6 +1,8 @@
 #include "Map_Of_Root_Nodes.hpp"
 #include <Mlib/Memory/Recursive_Deletion.hpp>
 #include <Mlib/Scene_Graph/Containers/Root_Nodes.hpp>
+#include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <ostream>
 
@@ -11,6 +13,7 @@ MapOfRootNodes::MapOfRootNodes(Scene& scene)
 {}
 
 RootNodes& MapOfRootNodes::create(const std::string& name) {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     auto res = root_nodes_.emplace(name, scene_);
     if (!res.second) {
         THROW_OR_ABORT("Root node with name \"" + name + "\" already exists");
@@ -19,6 +22,7 @@ RootNodes& MapOfRootNodes::create(const std::string& name) {
 }
 
 bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, bool must_exist) const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [_, v] : root_nodes_) {
         if (v.contains(name)) {
             return v.root_node_scheduled_for_deletion(name);
@@ -32,10 +36,12 @@ bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, b
 }
 
 void MapOfRootNodes::clear() {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     clear_container_recursively(root_nodes_);
 }
 
 bool MapOfRootNodes::erase(const std::string& name) {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (auto& [_, v] : root_nodes_) {
         if (v.erase(name)) {
             return true;
@@ -45,12 +51,14 @@ bool MapOfRootNodes::erase(const std::string& name) {
 }
 
 void MapOfRootNodes::delete_scheduled_root_nodes() const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [_, v] : root_nodes_) {
         v.delete_scheduled_root_nodes();
     }
 }
 
 bool MapOfRootNodes::no_root_nodes_scheduled_for_deletion() const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [_, v] : root_nodes_) {
         if (!v.no_root_nodes_scheduled_for_deletion()) {
             return false;
@@ -60,6 +68,7 @@ bool MapOfRootNodes::no_root_nodes_scheduled_for_deletion() const {
 }
 
 void MapOfRootNodes::print(std::ostream& ostr) const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [k, v] : root_nodes_) {
         ostr << k << '\n';
         ostr << v;

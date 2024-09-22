@@ -62,6 +62,7 @@ SceneNode::SceneNode(
     , interpolation_mode_{ interpolation_mode }
     , state_{ SceneNodeState::DETACHED }
     , shutting_down_{ false }
+    , shutdown_called_{ false }
 {
     if (interpolation_mode == PoseInterpolationMode::UNDEFINED) {
         THROW_OR_ABORT("Scene node pose interpolation mode is undefined");
@@ -77,6 +78,7 @@ SceneNode::SceneNode(PoseInterpolationMode interpolation_mode)
 {}
 
 void SceneNode::shutdown() {
+    std::scoped_lock lock{ mutex_ };
     if (state_ == SceneNodeState::STATIC) {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
@@ -85,26 +87,30 @@ void SceneNode::shutdown() {
             verbose_abort("ERROR: Static node is being deleted but scene not shutting down");
         }
     }
+    if (shutting_down_) {
+        verbose_abort("Recursive call to SceneNode::shutdown()");
+    }
     shutting_down_ = true;
     destruction_observers.clear();
     destruction_pointers.clear();
     on_destroy.clear();
-    std::scoped_lock lock{ mutex_ };
     if (sticky_absolute_observer_ != nullptr) {
         verbose_abort("Sticky absolute observer not null");
     }
     clear_unsafe();
+    shutting_down_ = false;
+    shutdown_called_ = true;
 }
 
 SceneNode::~SceneNode() {
-    if (!shutting_down_) {
+    if (!shutdown_called_) {
         verbose_abort("SceneNode::shutdown not called before dtor. Please use a DanglingUniquePtr or DanglingStackPtr");
     }
 }
 
 bool SceneNode::shutting_down() const {
     // The destruction order is specified explicitly
-    // in the SceneNode destructor.
+    // in the "shutdown()" method.
     return shutting_down_;
 }
 

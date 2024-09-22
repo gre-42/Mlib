@@ -498,7 +498,7 @@ void android_main(android_app* app) {
             .draw_distance_add = safe_stof(args.named_value("--draw_distance_add", "inf"))};
         auto physics_dt = safe_stof(args.named_value("--physics_dt", "0.01667"));
         auto render_delay = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-            std::chrono::duration<float>{ 1.0f * physics_dt });
+            std::chrono::duration<float>{ 3.0f * physics_dt });
         auto velocity_dt = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<float>{ 0.1f * physics_dt });
         RealtimeDependentFps render_set_fps{
@@ -508,6 +508,7 @@ void android_main(android_app* app) {
             safe_stof(args.named_value("--render_max_residual_time", "0.5")),
             args.has_named("--control_render_fps"),
             args.has_named("--print_render_residual_time"),
+            0.05f,
             0.05f,
             safe_stou(args.named_value("--print_render_fps_interval", "-1"))};
 

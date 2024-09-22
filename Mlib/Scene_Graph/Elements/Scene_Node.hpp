@@ -366,6 +366,7 @@ private:
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable SafeAtomicRecursiveSharedMutex pose_mutex_;
     std::atomic_bool shutting_down_;
+    std::atomic_bool shutdown_called_;
     std::string debug_message_;
 };
 

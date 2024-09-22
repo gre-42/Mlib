@@ -11,12 +11,12 @@ RealtimeSleeper::RealtimeSleeper(
     float dt,
     float max_residual_time,
     bool print_residual_time)
-: dt_{dt},
-  max_residual_time_{max_residual_time},
-  print_residual_time_{print_residual_time},
-  sim_time_{std::chrono::steady_clock::now()},
-  prefix_{std::move(prefix)},
-  is_up_to_date_{true}
+    : dt_{ dt }
+    , max_residual_time_{ max_residual_time }
+    , print_residual_time_{ print_residual_time }
+    , sim_time_{ std::chrono::steady_clock::now() }
+    , prefix_{ std::move(prefix) }
+    , is_up_to_date_{ true }
 {}
 
 RealtimeSleeper::~RealtimeSleeper() = default;

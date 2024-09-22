@@ -3,6 +3,6 @@
 
 namespace Mlib {
 
-static const size_t NINTERPOLATED = 3;
+static const size_t NINTERPOLATED = 12;
 
 }

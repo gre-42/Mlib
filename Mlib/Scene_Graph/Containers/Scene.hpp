@@ -149,6 +149,7 @@ private:
     // |Static   |x     |x      |x    |x    |    |
     // |Aggregate|      |       |x    |x    |    |
     // |Instances|      |       |x    |x    |    |
+    DeleteNodeMutex& delete_node_mutex_;
     MapOfRootNodes morn_;
     RootNodes& root_nodes_;
     RootNodes& static_root_nodes_;
@@ -158,7 +159,6 @@ private:
     RootNodes& root_instances_always_nodes_;
     std::set<DanglingPtr<SceneNode>> root_imposter_nodes_;
     std::string name_;
-    DeleteNodeMutex& delete_node_mutex_;
     mutable SafeAtomicRecursiveSharedMutex mutex_;
     mutable BackgroundLoop large_aggregate_bg_worker_;
     mutable BackgroundLoop large_instances_bg_worker_;

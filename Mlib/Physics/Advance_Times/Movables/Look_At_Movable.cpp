@@ -4,6 +4,7 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 
 using namespace Mlib;
@@ -49,6 +50,7 @@ TransformationMatrix<float, ScenePos, 3> LookAtMovable::get_new_absolute_model_m
 }
 
 void LookAtMovable::notify_destroyed(SceneNode& destroyed_object) {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     if ((follower_node_ == nullptr) != (followed_node_ == nullptr)) {
         verbose_abort("LookAtMovable in inconsistent state");
     }

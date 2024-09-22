@@ -46,7 +46,8 @@ Scene::Scene(
     IParticleRenderer* particle_renderer,
     ITrailRenderer* trail_renderer,
     IDynamicLights* dynamic_lights)
-    : morn_{ *this }
+    : delete_node_mutex_{ delete_node_mutex }
+    , morn_{ *this }
     , root_nodes_{ morn_.create("root_nodes") }
     , static_root_nodes_{ morn_.create("static_root_nodes") }
     , root_aggregate_once_nodes_{ morn_.create("root_aggregate_once_nodes") }
@@ -54,7 +55,6 @@ Scene::Scene(
     , root_instances_once_nodes_{ morn_.create("root_instances_once_nodes") }
     , root_instances_always_nodes_{ morn_.create("root_instances_always_nodes") }
     , name_{ std::move(name) }
-    , delete_node_mutex_{ delete_node_mutex }
     , large_aggregate_bg_worker_{ "Large_agg_BG" }
     , large_instances_bg_worker_{ "Large_inst_BG" }
     , small_aggregate_bg_worker_{ "Small_agg_BG" }
@@ -369,7 +369,9 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
 
 DanglingRef<SceneNode> Scene::get_node(const std::string& name, SOURCE_LOCATION loc) const {
     std::shared_lock lock{ mutex_ };
-    if (morn_.root_node_scheduled_for_deletion(name, false)) {
+    if (delete_node_mutex_.this_thread_is_deleter_thread() &&
+        morn_.root_node_scheduled_for_deletion(name, false))
+    {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
     }
     auto res = get_node_that_may_be_scheduled_for_deletion(name).set_loc(loc);
@@ -402,6 +404,7 @@ std::list<std::pair<std::string, DanglingRef<SceneNode>>> Scene::get_nodes(const
 }
 
 DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const std::string& name) const {
+    std::shared_lock lock{ mutex_ };
     auto it = nodes_.find(name);
     if (it == nodes_.end()) {
         THROW_OR_ABORT("Could not find node with name (2) \"" + name + '"');

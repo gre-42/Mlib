@@ -126,7 +126,6 @@ void RootNodes::move_node_to_bvh(const std::string& name) {
 
 bool RootNodes::erase(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    root_nodes_to_delete_.erase(name);
     auto it = node_container_.find(name);
     if (it == node_container_.end()) {
         return false;
@@ -134,6 +133,7 @@ bool RootNodes::erase(const std::string& name) {
     if (default_nodes_map_.erase(name) == 0) {
         small_static_nodes_bvh_.clear();
     }
+    root_nodes_to_delete_.erase(name);
     node_container_.erase(it);
     return true;
 }
