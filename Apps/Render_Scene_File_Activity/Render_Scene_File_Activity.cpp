@@ -83,7 +83,9 @@ public:
       renderable_scenes_{nullptr},
       load_scene_finished_{nullptr},
       last_load_scene_finished_{false}
-    {}
+    {
+        render_set_fps_.set_fps.tick(std::chrono::steady_clock::time_point());
+    }
 
     void load_resources() override {
         print_gl_version_info();
@@ -109,7 +111,6 @@ public:
             verbose_abort("renderable_scenes is null");
         }
         ViewportGuard vg{ lx.ilength(), ly.ilength() };
-        render_set_fps_.set_fps.tick();
         auto rsd = rrsd_.next(render_config_.motion_interpolation, render_set_fps_.ft.frame_time());
         if (*load_scene_finished_) {
             execute_render_allocators();
@@ -156,6 +157,7 @@ public:
         } else {
             clear_color({0.2f, 0.2f, 0.2f, 1.f});
         }
+        render_set_fps_.set_fps.tick(rsd.external_render_pass.time);
     }
 
     void set_scene(

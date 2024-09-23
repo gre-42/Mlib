@@ -15,6 +15,7 @@
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
 #include <Mlib/Scene/Scene_Config.hpp>
@@ -200,13 +201,20 @@ void RenderableScene::render(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
+    auto f = frame_id;
+    auto completed_time = physics_set_fps_.completed_time();
+    if (completed_time != std::chrono::steady_clock::time_point()) {
+        f.external_render_pass.time = std::min(
+            f.external_render_pass.time,
+            completed_time);
+    }
     render_logics_.render(
         lx,
         ly,
         render_config,
         scene_graph_config,
         render_results,
-        frame_id);
+        f);
 }
 
 void RenderableScene::reset() {

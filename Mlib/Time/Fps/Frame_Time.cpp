@@ -23,7 +23,8 @@ void FrameTime::tick() {
         smooth_time_ -= std::chrono::steady_clock::duration{
             (std::chrono::steady_clock::rep)
             std::round(double(alpha_) * double((smooth_time_ - std::chrono::steady_clock::now()).count())) };
-        smooth_time_ = std::min(smooth_time_, std::chrono::steady_clock::now());
+        // This is now replaced with "SetFps::completed_time()".
+        // smooth_time_ = std::min(smooth_time_, std::chrono::steady_clock::now());
     }
 }
 

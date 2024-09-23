@@ -26,6 +26,7 @@ PhysicsLoop::PhysicsLoop(
         size_t nframes2 = nframes;
         // PeriodicLagFinder lag_finder{ "Physics: ", std::chrono::milliseconds{ 100 }};
         while (!physics_thread_.get_stop_token().stop_requested()) {
+            std::chrono::steady_clock::time_point simulated_time;
             if (!set_fps.paused()) {
                 // lag_finder.start();
                 // TimeGuard::initialize(5 * 60);
@@ -34,11 +35,12 @@ PhysicsLoop::PhysicsLoop(
                         break;
                     }
                 }
-                physics_iteration(set_fps.simulated_time());
+                simulated_time = set_fps.simulated_time();
+                physics_iteration(simulated_time);
                 // lerr() << rb0->get_new_absolute_model_matrix();
                 // TimeGuard tg2{"physics tick"};
             }
-            set_fps.tick();
+            set_fps.tick(simulated_time);
             // TimeGuard::print_groups(lraw());
             // lag_finder.stop();
         }

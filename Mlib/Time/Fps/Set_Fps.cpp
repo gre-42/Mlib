@@ -12,6 +12,7 @@ SetFps::SetFps(
     std::function<std::chrono::steady_clock::time_point()> simulated_time,
     std::function<bool()> paused)
     : stop_requested_{ false }
+    , completed_time_()
     , simulated_time_{ std::move(simulated_time) }
     , paused_{ std::move(paused) }
     , sleeper_{ sleeper }
@@ -19,8 +20,9 @@ SetFps::SetFps(
 
 SetFps::~SetFps() = default;
 
-void SetFps::tick()
+void SetFps::tick(std::chrono::steady_clock::time_point completed_time)
 {
+    completed_time_ = completed_time;
     if (sleeper_ != nullptr) {
         sleeper_->tick();
     }
@@ -52,6 +54,10 @@ bool SetFps::execute_oldest_func() {
     }
     func();
     return true;
+}
+
+std::chrono::steady_clock::time_point SetFps::completed_time() const {
+    return completed_time_;
 }
 
 std::chrono::steady_clock::time_point SetFps::simulated_time() const {

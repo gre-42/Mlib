@@ -64,7 +64,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
         GlContextGuard gcg{ window_ };
         size_t time_id = 0;
         // PeriodicLagFinder lag_finder{ "Render: ", std::chrono::milliseconds{ 100 }};
-        set_fps_.tick();
+        set_fps_.tick(std::chrono::steady_clock::time_point());
         while (continue_rendering())
         {
             // lag_finder.start();
@@ -87,10 +87,11 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
 
             ViewportGuard vg{ width, height };
 
+            auto frame_time = frame_time_();
             {
                 auto dpi = window_.dpi();
                 // TimeGuard time_guard("logic.render", "logic.render");
-                RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, frame_time_()}, .time_id = time_id };
+                RenderedSceneDescriptor rsd{ .external_render_pass = {ExternalRenderPassType::STANDARD, frame_time}, .time_id = time_id };
                 // lerr() << "-------------------------------";
                 // logic.print(lraw(), 0);
                 // lerr() << "+++++++++++++++++++++++++++++++";
@@ -121,7 +122,7 @@ void Renderer::render(RenderLogic& logic, const SceneGraphConfig& scene_graph_co
             {
                 // Set FPS, assuming that "window_->draw();" below will take 0 time.
                 TIME_GUARD_DECLARE(time_guard, "set_fps", "set_fps");
-                set_fps_.tick();
+                set_fps_.tick(frame_time);
             }
             {
                 TIME_GUARD_DECLARE(time_guard, "window_.draw", "window_.draw");
