@@ -256,7 +256,7 @@ void test_chunked_array() {
 }
 
 void test_thread_safe_list() {
-    ThreadSafeList<int> lst(3, 42);
+    ThreadSafeList<int> lst(3u, 42);
     lst.emplace_back(5);
     for (const auto& e : lst.scoped()) {
         linfo() << e;
