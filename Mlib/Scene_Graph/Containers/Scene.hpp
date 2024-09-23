@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/List/Thread_Safe_List.hpp>
 #include <Mlib/Math/Time_Point_Series.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
@@ -128,9 +129,6 @@ public:
     bool shutting_down() const;
     void stop_and_join();
     void wait_until_done() const;
-    void add_node_not_allowed_to_be_unregistered(const std::string& name);
-    void remove_node_not_allowed_to_be_unregistered(const std::string& name);
-    void clear_nodes_not_allowed_to_be_unregistered();
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void wait_for_cleanup() const;
     void notify_cleanup_required();
@@ -167,8 +165,7 @@ private:
     mutable AtomicMutex uuid_mutex_;
     size_t uuid_;
     std::atomic_bool shutting_down_;
-    std::list<std::unique_ptr<const ColorStyle>> color_styles_;
-    std::set<std::string> nodes_not_allowed_to_be_unregistered_;
+    ThreadSafeList<std::unique_ptr<const ColorStyle>> color_styles_;
     SceneNodeResources* scene_node_resources_;
     IParticleRenderer* particle_renderer_;
     ITrailRenderer* trail_renderer_;

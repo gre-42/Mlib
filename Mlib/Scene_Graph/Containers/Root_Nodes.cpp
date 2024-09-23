@@ -124,21 +124,8 @@ void RootNodes::move_node_to_bvh(const std::string& name) {
         m.mapped());
 }
 
-bool RootNodes::erase(const std::string& name) {
-    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    auto it = node_container_.find(name);
-    if (it == node_container_.end()) {
-        return false;
-    }
-    if (default_nodes_map_.erase(name) == 0) {
-        small_static_nodes_bvh_.clear();
-    }
-    root_nodes_to_delete_.erase(name);
-    node_container_.erase(it);
-    return true;
-}
-
 bool RootNodes::contains(const std::string& name) const {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread(); 
     return node_container_.contains(name);
 }
 
@@ -146,6 +133,7 @@ std::optional<DanglingRef<SceneNode>> RootNodes::try_get(
     const std::string& name,
     SOURCE_LOCATION loc)
 {
+    std::shared_lock lock{ scene_.mutex_ };
     auto it = node_container_.find(name);
     if (it == node_container_.end()) {
         return std::nullopt;
@@ -189,6 +177,9 @@ void RootNodes::delete_scheduled_root_nodes() const {
 
 void RootNodes::delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (scene_.mutex_.is_owner()) {
+        verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;
+    }
     std::unique_lock lock{ scene_.mutex_ };
     auto it = node_container_.find(name);
     if (it == node_container_.end()) {
@@ -207,6 +198,9 @@ void RootNodes::delete_root_node(const std::string& name) {
 
 void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (scene_.mutex_.is_owner()) {
+        verbose_abort("Node deleter already owns the lock. The UnlockGuard will have no effect");;
+    }
     std::unique_lock lock{ scene_.mutex_ };
     scene_.unregister_nodes(regex);
     for (auto it = node_container_.begin(); it != node_container_.end(); ) {

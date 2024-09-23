@@ -1,6 +1,7 @@
 #include <Mlib/Array/Chunked_Array.hpp>
 #include <Mlib/Assert.hpp>
 #include <Mlib/Floating_Point_Exceptions.hpp>
+#include <Mlib/List/Thread_Safe_List.hpp>
 #include <Mlib/Math/Math.hpp>
 #include <Mlib/Memory/Dangling_Base_Class.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
@@ -254,11 +255,20 @@ void test_chunked_array() {
     for (const auto& e : ar) { linfo() << e; }; linfo() << "-";
 }
 
+void test_thread_safe_list() {
+    ThreadSafeList<int> lst(3, 42);
+    lst.emplace_back(5);
+    for (const auto& e : lst.scoped()) {
+        linfo() << e;
+    }
+}
+
 int main(int argc, const char** argv) {
     enable_floating_point_exceptions();
 
     try {
         test_chunked_array();
+        test_thread_safe_list();
         test_resource_ptr();
         test_substitute();
         test_dangling_unique();

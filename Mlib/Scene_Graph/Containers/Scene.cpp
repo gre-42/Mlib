@@ -290,10 +290,6 @@ void Scene::shutdown() {
     stop_and_join();
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
-    clear_nodes_not_allowed_to_be_unregistered();
-    if (!nodes_not_allowed_to_be_unregistered_.empty()) {
-        verbose_abort("Scene::shutdown: some nodes are not allowed to be deleted");
-    }
     shutting_down_ = true;
     morn_.clear();
     if (!nodes_.empty()) {
@@ -343,9 +339,6 @@ void Scene::register_node(
 void Scene::unregister_node(const std::string& name) {
     std::scoped_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (nodes_not_allowed_to_be_unregistered_.contains(name)) {
-        verbose_abort("Node \"" + name + "\" may not be unregistered");
-    }
     if (nodes_.erase(name) != 1) {
         verbose_abort("Could not find node with name (0) \"" + name + '"');
     }
@@ -357,9 +350,6 @@ void Scene::unregister_nodes(const Mlib::regex& regex) {
     for (auto it = nodes_.begin(); it != nodes_.end(); ) {
         auto n = *it++;
         if (Mlib::re::regex_match(n.first, regex)) {
-            if (nodes_not_allowed_to_be_unregistered_.contains(n.first)) {
-                verbose_abort("Node \"" + n.first + "\" may not be unregistered");
-            }
             if (nodes_.erase(n.first) != 1) {
                 verbose_abort("Could not find node with name (1) \"" + n.first + '"');
             }
@@ -454,8 +444,7 @@ void Scene::render(
     std::list<Blended> blended;
     std::list<const ColorStyle*> color_styles;
     {
-        std::shared_lock lock{ mutex_ };
-        for (const auto& s : color_styles_) {
+        for (const auto& s : color_styles_.shared()) {
             color_styles.push_back(s.get());
         }
     }
@@ -822,36 +811,7 @@ bool Scene::shutting_down() const {
     return shutting_down_;
 }
 
-void Scene::add_node_not_allowed_to_be_unregistered(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!contains_node(name)) {
-        THROW_OR_ABORT("Could not find node with name (3) \"" + name + '"');
-    }
-    if (!nodes_not_allowed_to_be_unregistered_.insert(name).second) {
-        THROW_OR_ABORT("Node \"" + name + "\" already in list of nodes not allowed to be unregistered");
-    }
-}
-
-void Scene::remove_node_not_allowed_to_be_unregistered(const std::string& name) {
-    std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!contains_node(name)) {
-        verbose_abort("Could not find node with name (4) \"" + name + '"');
-    }
-    if (nodes_not_allowed_to_be_unregistered_.erase(name) != 1) {
-        verbose_abort("Could not find node \"" + name + "\" in list of nodes not allowed to be unregistered");
-    }
-}
-
-void Scene::clear_nodes_not_allowed_to_be_unregistered() {
-    std::scoped_lock lock{ mutex_ };
-    delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    nodes_not_allowed_to_be_unregistered_.clear();
-}
-
 void Scene::add_color_style(std::unique_ptr<ColorStyle>&& color_style) {
-    std::scoped_lock lock{ mutex_ };
     color_style->compute_hash();
     color_styles_.push_back(std::move(color_style));
 }

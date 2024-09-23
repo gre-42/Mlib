@@ -33,7 +33,6 @@ public:
         const FixedArray<ScenePos, 3>& position,
         const std::function<bool(const DanglingRef<const SceneNode>&)>& op) const;
     void clear();
-    bool erase(const std::string& name);
     bool contains(const std::string& name) const;
     std::optional<DanglingRef<SceneNode>> try_get(
         const std::string& name,

@@ -40,16 +40,6 @@ void MapOfRootNodes::clear() {
     clear_container_recursively(root_nodes_);
 }
 
-bool MapOfRootNodes::erase(const std::string& name) {
-    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    for (auto& [_, v] : root_nodes_) {
-        if (v.erase(name)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void MapOfRootNodes::delete_scheduled_root_nodes() const {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
     for (const auto& [_, v] : root_nodes_) {

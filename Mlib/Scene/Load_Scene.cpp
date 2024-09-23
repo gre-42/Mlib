@@ -75,10 +75,8 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Create_Light_Without_Shadow.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Lights/Set_Soft_Light.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Color_Style.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Add_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Append_Externals_Deleter.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Node.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Nodes_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Clear_Renderable_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Child_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Create_Copy_Rotation.hpp>
@@ -92,7 +90,6 @@
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Delete_Root_Nodes.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Look_At_Node.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Move_Node_To_Bvh.hpp>
-#include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Remove_Node_Not_Allowed_To_Be_Unregistered.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Root_Node_Instance.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Animation_State.hpp>
 #include <Mlib/Scene/Load_Scene_Functions/Instances/Nodes/Set_Avatar_Style_Updater.hpp>
@@ -268,14 +265,12 @@ LoadScene::LoadScene() {
 
     // Instances
     register_json_user_function(AddColorStyle::key, AddColorStyle::json_user_function);
-    register_json_user_function(AddNodeNotAllowedToBeUnregistered::key, AddNodeNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(AddToInventory::key, AddToInventory::json_user_function);
     register_json_user_function(AddWeaponToInventory::key, AddWeaponToInventory::json_user_function);
     register_json_user_function(AppendExternalsDeleter::key, AppendExternalsDeleter::json_user_function);
     register_json_user_function(ConnectTrailer::key, ConnectTrailer::json_user_function);
     register_json_user_function(BurnIn::key, BurnIn::json_user_function);
     register_json_user_function(ClearNode::key, ClearNode::json_user_function);
-    register_json_user_function(ClearNodesNotAllowedToBeUnregistered::key, ClearNodesNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(ClearParameters::key, ClearParameters::json_user_function);
     register_json_user_function(ClearRenderableInstance::key, ClearRenderableInstance::json_user_function);
     register_json_user_function(ClearSkybox::key, ClearSkybox::json_user_function);
@@ -386,7 +381,6 @@ LoadScene::LoadScene() {
     register_json_user_function(RegisterGeographicMapping::key, RegisterGeographicMapping::json_user_function);
     register_json_user_function(RegisterGravity::key, RegisterGravity::json_user_function);
     register_json_user_function(RegisterWind::key, RegisterWind::json_user_function);
-    register_json_user_function(RemoveNodeNotAllowedToBeUnregistered::key, RemoveNodeNotAllowedToBeUnregistered::json_user_function);
     register_json_user_function(RootRenderableInstances::key, RootRenderableInstances::json_user_function);
     register_json_user_function(ChildRenderableInstance::key, ChildRenderableInstance::json_user_function);
     register_json_user_function(RespawnAllPlayers::key, RespawnAllPlayers::json_user_function);

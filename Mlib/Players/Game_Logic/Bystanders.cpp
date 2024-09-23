@@ -171,7 +171,6 @@ bool Bystanders::delete_for_vip(
     if (ndelete_votes == spawner.get_scene_vehicles().size()) {
         // TimeGuard time_guard{"delete", "delete"};
         // std::scoped_lock lock{ delete_node_mutex_ };
-        scene_.clear_nodes_not_allowed_to_be_unregistered();
         for (const auto& v : spawner.get_scene_vehicles()) {
             scene_.schedule_delete_root_node(v->scene_node_name());
         }
