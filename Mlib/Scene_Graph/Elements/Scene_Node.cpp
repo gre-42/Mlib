@@ -310,27 +310,30 @@ void SceneNode::set_sticky_absolute_observer(IAbsoluteObserver& sticky_absolute_
 }
 
 void SceneNode::add_renderable(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const std::shared_ptr<const Renderable>& renderable)
 {
     std::scoped_lock lock{ mutex_ };
-    if (name.empty()) {
+    if (name->empty()) {
         THROW_OR_ABORT("Renderable has no name");
     }
     if (!renderables_.try_emplace(name, std::make_shared<RenderableWithStyle>(renderable)).second) {
-        THROW_OR_ABORT("Renderable with name " + name + " already exists");
+        THROW_OR_ABORT("Renderable with name " + *name + " already exists");
     }
 }
 
 bool SceneNode::has_node_modifier() const {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     std::shared_lock lock{ mutex_ };
     return node_modifier_ != nullptr;
 }
 
-void SceneNode::clear_renderable_instance(const std::string& name) {
+void SceneNode::clear_renderable_instance(const VariableAndHash<std::string>& name) {
     std::scoped_lock lock{ mutex_ };
     if (renderables_.erase(name) != 1) {
-        verbose_abort("Could not clear renderable with name \"" + name + '"');
+        verbose_abort("Could not clear renderable with name \"" + *name + '"');
     }
 }
 
@@ -571,7 +574,10 @@ void SceneNode::add_skidmark(std::shared_ptr<Skidmark>&& skidmark) {
     skidmarks_.push_back(std::move(skidmark));
 }
 
-bool SceneNode::has_color_style(const std::string& name) const {
+bool SceneNode::has_color_style(const VariableAndHash<std::string>& name) const {
+    if (scene_ != nullptr) {
+        scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+    }
     std::shared_lock lock{ mutex_ };
     bool style_found = false;
     for (const auto& s : color_styles_) {
@@ -579,18 +585,18 @@ bool SceneNode::has_color_style(const std::string& name) const {
             continue;
         }
         if (style_found) {
-            THROW_OR_ABORT("Node has multiple color styles matching \"" + name + '"');
+            THROW_OR_ABORT("Node has multiple color styles matching \"" + *name + '"');
         }
         style_found = true;
     }
     return style_found;
 }
 
-ColorStyle& SceneNode::color_style(const std::string& name) {
+ColorStyle& SceneNode::color_style(const VariableAndHash<std::string>& name) {
     return const_cast<ColorStyle&>(static_cast<const SceneNode*>(this)->color_style(name));
 }
 
-const ColorStyle& SceneNode::color_style(const std::string& name) const {
+const ColorStyle& SceneNode::color_style(const VariableAndHash<std::string>& name) const {
     std::shared_lock lock{ mutex_ };
     const ColorStyle* result = nullptr;
     for (const auto& s : color_styles_) {
@@ -598,12 +604,12 @@ const ColorStyle& SceneNode::color_style(const std::string& name) const {
             continue;
         }
         if (result != nullptr) {
-            THROW_OR_ABORT("Node has multiple color styles matching \"" + name + '"');
+            THROW_OR_ABORT("Node has multiple color styles matching \"" + *name + '"');
         }
         result = s.get();
     }
     if (result == nullptr) {
-        THROW_OR_ABORT("Node has no style matching \"" + name + '"');
+        THROW_OR_ABORT("Node has no style matching \"" + *name + '"');
     }
     return *result;
 }
@@ -790,7 +796,7 @@ bool SceneNode::visit_all(
     const TransformationMatrix<float, ScenePos, 3>& parent_m,
     const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
+        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     auto m = parent_m * relative_model_matrix();
     std::shared_lock lock{ mutex_ };
@@ -1303,7 +1309,7 @@ Bijection<TransformationMatrix<float, ScenePos, 3>> SceneNode::absolute_bijectio
     std::chrono::steady_clock::time_point time) const
 {
     auto result = relative_bijection(time);
-    std::unique_lock lock{ mutex_ };
+    std::shared_lock lock{ mutex_ };
     if (parent_ != nullptr) {
         lock.unlock();
         return parent_->absolute_bijection(time) * result;
@@ -1425,7 +1431,7 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!renderables_.empty()) {
         ostr << " " << ind1 << " Renderables (" << renderables_.size() << ")\n";
         for (const auto& [n, _] : renderables_) {
-            ostr << " " << ind2 << " " << n << '\n';
+            ostr << " " << ind2 << " " << *n << '\n';
         }
     }
     if (!children_.empty()) {

@@ -30,10 +30,8 @@ void ColorStyle::insert(const ColorStyle& other) {
     }
 }
 
-bool ColorStyle::matches(const std::string& name) const {
-    return
-        !selector.has_value() ||
-        Mlib::re::regex_search(name, *selector);
+bool ColorStyle::matches(const VariableAndHash<std::string>& name) const {
+    return matches_.get(name);
 }
 
 void ColorStyle::update_hash() {

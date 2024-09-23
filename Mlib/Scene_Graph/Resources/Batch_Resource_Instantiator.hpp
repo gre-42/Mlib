@@ -1,11 +1,13 @@
 #pragma once
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -73,7 +75,7 @@ private:
     FixedArray<float, 3> rotation_;
     float scale_;
     std::list<ObjectResourceDescriptor> object_resource_descriptors_;
-    std::map<std::string, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
+    std::unordered_map<VariableAndHash<std::string>, std::list<ResourceInstanceDescriptor>> resource_instance_positions_;
     std::map<std::string, std::list<ResourceInstanceDescriptor>> hitboxes_;
 };
 

@@ -2,6 +2,7 @@
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Cached_Hash.hpp>
 #include <Mlib/Geometry/Material/Fresnel.hpp>
+#include <Mlib/Map/Threadsafe_Default_Map.hpp>
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Variable_And_Hash.hpp>
 #include <optional>
@@ -29,9 +30,14 @@ struct ColorStyle {
     float reflection_strength = 1.f;
     CachedHash hash;
     void insert(const ColorStyle& other);
-    bool matches(const std::string& name) const;
+    bool matches(const VariableAndHash<std::string>& name) const;
     void update_hash();
     ColorStyle& compute_hash();
+    mutable ThreadsafeDefaultMap<bool> matches_{ [this](const VariableAndHash<std::string>& name){
+        return
+            !selector.has_value() ||
+            Mlib::re::regex_search(*name, *selector);
+    } };
 };
 
 }

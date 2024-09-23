@@ -2,6 +2,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Interfaces/ITrail_Storage.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -21,7 +22,7 @@ void TrailResources::insert_storage_to_instance(
     storage_to_instance_.add(std::move(storage), std::move(instance));
 }
 
-std::string TrailResources::get_instance_for_storage(const std::string& storage) const {
+VariableAndHash<std::string> TrailResources::get_instance_for_storage(const std::string& storage) const {
     return storage_to_instance_.get(storage);
 }
 

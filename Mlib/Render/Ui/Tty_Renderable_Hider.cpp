@@ -83,7 +83,7 @@ void TtyRenderableHider::process_input() {
 }
 
 bool TtyRenderableHider::is_visible(const std::string& name) {
-    if (name.empty() || (name == AAR_NAME)) {
+    if (name.empty() || (name == *AAR_NAME)) {
         return true;
     }
     auto result = [&name, this](){

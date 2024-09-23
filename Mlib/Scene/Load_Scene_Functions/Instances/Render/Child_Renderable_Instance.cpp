@@ -39,7 +39,7 @@ void ChildRenderableInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
         args.arguments.at<std::string>(KnownArgs::resource),
         ChildInstantiationOptions{
             .rendering_resources = &rendering_resources,
-            .instance_name = args.arguments.at<std::string>(KnownArgs::name),
+            .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },
             .scene_node = scene.get_node(args.arguments.at<std::string>(KnownArgs::node), DP_LOC),
             .renderable_resource_filter = RenderableResourceFilter {
                 .cva_filter = {

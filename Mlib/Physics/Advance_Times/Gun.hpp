@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Interfaces/IAdvance_Time.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/IAbsolute_Observer.hpp>
 #include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
 #include <mutex>
 #include <optional>
@@ -54,7 +55,7 @@ public:
         ITrailStorage* bullet_trace_storage,
         std::string ammo_type,
         const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
-        std::string muzzle_flash_resource,
+        VariableAndHash<std::string> muzzle_flash_resource,
         const FixedArray<float, 3>& muzzle_flash_position,
         float muzzle_flash_animation_time,
         const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider);
@@ -101,7 +102,7 @@ private:
     TransformationMatrix<float, ScenePos, 3> absolute_model_matrix_;
     FixedArray<float, 3> punch_angle_;
     std::function<FixedArray<float, 3>(bool shooting)> punch_angle_rng_;
-    std::string muzzle_flash_resource_;
+    VariableAndHash<std::string> muzzle_flash_resource_;
     FixedArray<float, 3> muzzle_flash_position_;
     float muzzle_flash_animation_time_;
     std::function<void(const std::string& muzzle_flash_suffix)> generate_muzzle_flash_hider_;

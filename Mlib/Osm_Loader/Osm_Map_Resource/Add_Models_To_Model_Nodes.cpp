@@ -56,7 +56,7 @@ void Mlib::add_models_to_model_nodes(
             auto hit = tags.find("hitbox");
             auto iit = tags.find("max_imposter_texture_size");
             ParsedResourceName prn{
-                .name = match[1].str(),
+                .name = VariableAndHash{ match[1].str() },
                 .billboard_id = match[2].matched ? safe_sto<uint32_t>(match[2].str()) : UINT32_MAX,
                 .yangle = 0.f,
                 .probability = NAN,

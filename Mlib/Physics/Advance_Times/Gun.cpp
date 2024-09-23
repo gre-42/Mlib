@@ -54,7 +54,7 @@ Gun::Gun(
     ITrailStorage* bullet_trace_storage,
     std::string ammo_type,
     const std::function<FixedArray<float, 3>(bool shooting)>& punch_angle_rng,
-    std::string muzzle_flash_resource,
+    VariableAndHash<std::string> muzzle_flash_resource,
     const FixedArray<float, 3>& muzzle_flash_position,
     float muzzle_flash_animation_time,
     const std::function<void(const std::string& muzzle_flash_suffix)>& generate_muzzle_flash_hider)
@@ -140,7 +140,7 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
     parent_rb_.inventory_.take(ammo_type_, 1);
     time_since_last_shot_ = 0;
     generate_bullet(world);
-    if (!muzzle_flash_resource_.empty()) {
+    if (!muzzle_flash_resource_->empty()) {
         generate_muzzle_flash_hider();
     }
     return true;
@@ -207,7 +207,7 @@ void Gun::generate_bullet(const StaticWorld& world) {
                     bullet_properties_.renderable_resource_name,
                     ChildInstantiationOptions{
                         .rendering_resources = rendering_resources_,
-                        .instance_name = "bullet",
+                        .instance_name = VariableAndHash<std::string>{ "bullet" },
                         .scene_node = node.ref(DP_LOC),
                         .interpolation_mode = PoseInterpolationMode::ENABLED,
                         .renderable_resource_filter = RenderableResourceFilter{} });

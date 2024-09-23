@@ -28,7 +28,7 @@ BvhResource::BvhResource(
 }
 
 static void instantiate_bvh(
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const DanglingRef<SceneNode>& scene_node,
     const FixedArray<float, 3>& position_shift,
     const RenderableResourceFilter& renderable_resource_filter,
@@ -58,7 +58,7 @@ static void instantiate_bvh(
                 vcva.push_back(t);
             }
             lcvas.push_back(std::make_shared<ColoredVertexArray<float>>(
-                name,                                                       // name
+                *name,                                                      // name
                 mm->material,                                               // material
                 mm->morphology,                                             // physics_material
                 ModifierBacklog{},                                          // modifier_backlog
@@ -75,11 +75,11 @@ static void instantiate_bvh(
                 lcvas,
                 std::list<std::shared_ptr<ColoredVertexArray<double>>>{})->
             instantiate_child_renderable(ChildInstantiationOptions{
-                .instance_name = "renderable_bvh",
+                .instance_name = VariableAndHash<std::string>{ "renderable_bvh" },
                 .scene_node = node.ref(DP_LOC),
                 .interpolation_mode = options.interpolation_mode,
                 .renderable_resource_filter = renderable_resource_filter});
-        scene_node->add_child(name + "_data", std::move(node));
+        scene_node->add_child(*name + "_data", std::move(node));
     }
     size_t i = 0;
     for (const auto& [cb, cv] : bvh.children()) {

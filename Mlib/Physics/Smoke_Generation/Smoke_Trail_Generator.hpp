@@ -10,6 +10,8 @@ template <typename TData, size_t... tshape>
 class FixedArray;
 class SmokeParticleGenerator;
 enum class ParticleType;
+template <class T>
+class VariableAndHash;
 
 class SmokeTrailGenerator {
 public:
@@ -21,7 +23,7 @@ public:
         const FixedArray<float, 3>& rotation,
         const FixedArray<float, 3>& velocity,
         float air_resistance,
-        const std::string& resource_name,
+        const VariableAndHash<std::string>& resource_name,
         const std::string& instance_prefix,
         float animation_duration,
         float particle_generation_dt,

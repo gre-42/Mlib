@@ -8,19 +8,19 @@ using namespace Mlib;
 
 TrailRenderer::TrailRenderer(TrailResources& resources)
     : resources_{ resources }
-    , instances_{ mutex_, [&resources](const std::string& name) {
-        return resources.instantiate_trails_instance(name);
+    , instances_{ [&resources](const VariableAndHash<std::string>& name) {
+        return resources.instantiate_trails_instance(*name);
       } }
-    , instantiators_{ mutex_, [this, &resources](const std::string& name) {
+    , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
         return resources.instantiate_storage(
-            name,
-            *instances_.get(resources.get_instance_for_storage(name)));
+            *name,
+            *instances_.get(resources.get_instance_for_storage(*name)));
       } }
 {}
 
 TrailRenderer::~TrailRenderer() = default;
 
-ITrailStorage& TrailRenderer::get_storage(const std::string& name) {
+ITrailStorage& TrailRenderer::get_storage(const VariableAndHash<std::string>& name) {
     return *instantiators_.get(name);
 }
 
@@ -29,8 +29,7 @@ void TrailRenderer::preload(const std::string& name) {
 }
 
 void TrailRenderer::move(float dt, const StaticWorld& world) {
-    std::shared_lock lock{ mutex_ };
-    for (auto& [_, instance] : instances_) {
+    for (auto& [_, instance] : instances_.shared()) {
         instance->move(dt, world);
     }
 }
@@ -44,8 +43,7 @@ void TrailRenderer::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::shared_lock lock{ mutex_ };
-    for (const auto& [_, instance] : instances_) {
+    for (const auto& [_, instance] : instances_.shared()) {
         instance->render(
             vp,
             iv,

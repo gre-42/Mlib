@@ -89,14 +89,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             options.interpolation_mode);
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
-            .instance_name = "plane",
+            .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(DP_LOC),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node->add_aggregate_child(options.instance_name + "+0", std::move(node));
+            options.scene_node->add_aggregate_child(*options.instance_name + "+0", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
-            options.scene_node->add_child(options.instance_name + "+0", std::move(node));
+            options.scene_node->add_child(*options.instance_name + "+0", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
@@ -111,14 +111,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             1.f);
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
-            .instance_name = "plane",
+            .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(DP_LOC),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node->add_aggregate_child(options.instance_name + "-0", std::move(node));
+            options.scene_node->add_aggregate_child(*options.instance_name + "-0", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
-            options.scene_node->add_child(options.instance_name + "-0", std::move(node));
+            options.scene_node->add_child(*options.instance_name + "-0", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
@@ -130,14 +130,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             1.f);
         rva_(1)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
-            .instance_name = "plane",
+            .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(DP_LOC),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(1) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node->add_aggregate_child(options.instance_name + "+1", std::move(node));
+            options.scene_node->add_aggregate_child(*options.instance_name + "+1", std::move(node));
         } else if (aggregate_modes_(1) == AggregateMode::NONE) {
-            options.scene_node->add_child(options.instance_name + "+1", std::move(node));
+            options.scene_node->add_child(*options.instance_name + "+1", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }
@@ -152,14 +152,14 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
             1.f);
         rva_(0)->instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
-            .instance_name = "plane",
+            .instance_name = VariableAndHash<std::string>{ "plane" },
             .scene_node = node.ref(DP_LOC),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = RenderableResourceFilter{}});
         if (aggregate_modes_(0) == AggregateMode::SORTED_CONTINUOUSLY) {
-            options.scene_node->add_aggregate_child(options.instance_name + "-1", std::move(node));
+            options.scene_node->add_aggregate_child(*options.instance_name + "-1", std::move(node));
         } else if (aggregate_modes_(0) == AggregateMode::NONE) {
-            options.scene_node->add_child(options.instance_name + "-1", std::move(node));
+            options.scene_node->add_child(*options.instance_name + "-1", std::move(node));
         } else {
             THROW_OR_ABORT("Unsupported aggregate mode in blending-x-resource");
         }

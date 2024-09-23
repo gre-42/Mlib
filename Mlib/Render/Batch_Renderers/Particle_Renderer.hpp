@@ -15,7 +15,7 @@ public:
     virtual ~ParticleRenderer() override;
 
     // IParticleRenderer
-    virtual IParticleCreator& get_instantiator(const std::string& name) override;
+    virtual IParticleCreator& get_instantiator(const VariableAndHash<std::string>& name) override;
     virtual void preload(const std::string& name) override;
     virtual void move(float dt, const StaticWorld& world) override;
     virtual void render(
@@ -29,7 +29,6 @@ public:
         const ExternalRenderPass& external_render_pass) const override;
 
 private:
-    mutable SafeAtomicRecursiveSharedMutex mutex_;
     ParticleResources& resources_;
     ThreadsafeDefaultMap<std::shared_ptr<ParticlesInstance>> instances_;
     ThreadsafeDefaultMap<std::unique_ptr<IParticleCreator>> instantiators_;

@@ -163,7 +163,7 @@ void CheckPoints::advance_time(float dt) {
                 resource_name_,
                 ChildInstantiationOptions{
                     .rendering_resources = rendering_resources_,
-                    .instance_name = "beacon",
+                    .instance_name = VariableAndHash<std::string>{ "beacon" },
                     .scene_node = node.ref(DP_LOC),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});
@@ -173,7 +173,7 @@ void CheckPoints::advance_time(float dt) {
             beacon_nodes_[i01_].check_point_pose->beacon_node = nullptr;
         }
         {
-            auto& style = beacon_nodes_[i01_].beacon_node->color_style("");
+            auto& style = beacon_nodes_[i01_].beacon_node->color_style(VariableAndHash<std::string>{""});
             style.emissive = selection_emissive_;
             style.update_hash();
         }
@@ -204,7 +204,7 @@ void CheckPoints::advance_time(float dt) {
         if (sum(squared((*moving_nodes_.begin())->position() - checkpoints_ahead_.front().track_element.transformation().position())) < squared(radius_)) {
             lap_index_ = checkpoints_ahead_.front().lap_index;
             if (checkpoints_ahead_.front().beacon_node != nullptr) {
-                auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style("");
+                auto& style = checkpoints_ahead_.front().beacon_node->beacon_node->color_style(VariableAndHash<std::string>{""});
                 style.emissive = deselection_emissive_;
                 style.update_hash();
                 checkpoints_ahead_.front().beacon_node->check_point_pose = nullptr;
@@ -218,7 +218,7 @@ void CheckPoints::advance_time(float dt) {
             lap_times_seconds_.push_back(lap_elapsed_seconds_);
             UUVector<FixedArray<float, 3>> vehicle_colors;
             {
-                const std::string chassis = "chassis";
+                const auto chassis = VariableAndHash<std::string>{ "chassis" };
                 for (const auto& n : moving_nodes_) {
                     if (!n->has_color_style(chassis)) {
                         vehicle_colors.push_back(FixedArray<float, 3>(1.f, 1.f, 1.f));

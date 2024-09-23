@@ -1,6 +1,7 @@
 #pragma once
 #include <Mlib/Array/Fixed_Array.hpp>
 #include <Mlib/Scene_Pos.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -13,7 +14,7 @@ enum class AggregateMode;
 struct ObjectResourceDescriptor {
     FixedArray<ScenePos, 3> position = uninitialized;
     float yangle;
-    std::string name;
+    VariableAndHash<std::string> name;
     float scale;
     AggregateMode aggregate_mode;
     bool create_imposter;

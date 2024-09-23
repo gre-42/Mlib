@@ -1669,7 +1669,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
             options.absolute_model_matrix.get_scale(),
             PoseInterpolationMode::DISABLED);
-        node->add_renderable("osm_map_near", std::make_shared<RenderableTriangleSampler>(
+        node->add_renderable(VariableAndHash<std::string>{ "osm_map_near" }, std::make_shared<RenderableTriangleSampler>(
             scene_node_resources_,
             terrain_styles_,
             terrain_triangles(),
@@ -1678,7 +1678,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
             scale_,
             UpAxis::Z));
         options.scene.auto_add_root_node(
-            options.instance_name + "_osm_near_world",
+            *options.instance_name + "_osm_near_world",
             std::move(node),
             RenderingDynamics::STATIC);
     }

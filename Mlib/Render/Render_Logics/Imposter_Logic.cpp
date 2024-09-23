@@ -150,7 +150,7 @@ void ImposterLogic::add_imposter(
         1.f);
     res.instantiate_child_renderable(ChildInstantiationOptions{
         .rendering_resources = &rendering_resources_,
-        .instance_name = "imposter",
+        .instance_name = VariableAndHash<std::string>{ "imposter" },
         .scene_node = new_imposter_node.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     new_imposter_node->insert_node_hider(imposter_hider_);

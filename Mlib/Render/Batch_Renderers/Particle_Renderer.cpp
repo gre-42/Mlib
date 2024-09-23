@@ -8,19 +8,19 @@ using namespace Mlib;
 
 ParticleRenderer::ParticleRenderer(ParticleResources& resources)
     : resources_{ resources }
-    , instances_{ mutex_, [&resources](const std::string& name) {
-        return resources.instantiate_particles_instance(name);
+    , instances_{ [&resources](const VariableAndHash<std::string>& name) {
+        return resources.instantiate_particles_instance(*name);
       } }
-    , instantiators_{ mutex_, [this, &resources](const std::string& name) {
+    , instantiators_{ [this, &resources](const VariableAndHash<std::string>& name) {
         return resources.instantiate_particle_creator(
-            name,
-            *instances_.get(resources.get_instance_for_creator(name)));
+            *name,
+            *instances_.get(resources.get_instance_for_creator(*name)));
       } }
 {}
 
 ParticleRenderer::~ParticleRenderer() = default;
 
-IParticleCreator& ParticleRenderer::get_instantiator(const std::string& name) {
+IParticleCreator& ParticleRenderer::get_instantiator(const VariableAndHash<std::string>& name) {
     return *instantiators_.get(name);
 }
 
@@ -29,8 +29,7 @@ void ParticleRenderer::preload(const std::string& name) {
 }
 
 void ParticleRenderer::move(float dt, const StaticWorld& world) {
-    std::shared_lock lock{ mutex_ };
-    for (auto& [_, instance] : instances_) {
+    for (auto& [_, instance] : instances_.shared()) {
         instance->move(dt, world);
     }
 }
@@ -45,8 +44,7 @@ void ParticleRenderer::render(
     const RenderConfig& render_config,
     const ExternalRenderPass& external_render_pass) const
 {
-    std::shared_lock lock{ mutex_ };
-    for (const auto& [_, instance] : instances_) {
+    for (const auto& [_, instance] : instances_.shared()) {
         if (instance->substrate() != substrate) {
             continue;
         }

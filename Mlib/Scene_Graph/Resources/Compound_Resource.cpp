@@ -13,6 +13,7 @@
 #include <Mlib/Threads/Recursion_Guard.hpp>
 #include <Mlib/Threads/Thread_Local.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -44,7 +45,7 @@ void CompoundResource::instantiate_child_renderable(const ChildInstantiationOpti
             resource_name,
             ChildInstantiationOptions{
                 .rendering_resources = options.rendering_resources,
-                .instance_name = options.instance_name + "_compound_" + std::to_string(i),
+                .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },
                 .scene_node = options.scene_node,
                 .renderable_resource_filter = options.renderable_resource_filter});
     }
@@ -60,7 +61,7 @@ void CompoundResource::instantiate_root_renderables(const RootInstantiationOptio
             RootInstantiationOptions{
                 .rendering_resources = options.rendering_resources,
                 .supply_depots = options.supply_depots,
-                .instance_name = options.instance_name + "_compound_" + std::to_string(i),
+                .instance_name = VariableAndHash{ *options.instance_name + "_compound_" + std::to_string(i) },
                 .absolute_model_matrix = options.absolute_model_matrix,
                 .scene = options.scene,
                 .renderable_resource_filter = options.renderable_resource_filter});

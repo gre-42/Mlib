@@ -1,31 +1,33 @@
 #pragma once
+#include <Mlib/Iterator/Guarded_Iterable.hpp>
 #include <Mlib/Threads/Safe_Recursive_Shared_Mutex.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <functional>
-#include <map>
 #include <mutex>
 #include <string>
+#include <unordered_map>
 
 namespace Mlib {
 
 template <class T>
 class ThreadsafeDefaultMap {
+    using TBaseMap = std::unordered_map<VariableAndHash<std::string>, T>;
+    using TMutex = SafeAtomicRecursiveSharedMutex;
 public:
     explicit ThreadsafeDefaultMap(
-        SafeAtomicRecursiveSharedMutex& mutex,
-        std::function<T(const std::string&)> deflt)
-        : mutex_{ mutex }
-        , default_{ deflt }
+        std::function<T(const VariableAndHash<std::string>&)> deflt)
+        : default_{ std::move(deflt) }
     {}
 
-    void insert(const std::string& name, const T& value) {
+    void insert(const VariableAndHash<std::string>& name, const T& value) {
         std::scoped_lock lock{mutex_};
         if (!elements_.insert({name, value}).second) {
-            THROW_OR_ABORT("Element with name \"" + name + "\" already exists");
+            THROW_OR_ABORT("Element with name \"" + *name + "\" already exists");
         }
     }
 
-    T& get(const std::string& name) {
+    T& get(const VariableAndHash<std::string>& name) {
         {
             std::shared_lock lock{mutex_};
             auto it = elements_.find(name);
@@ -40,24 +42,31 @@ public:
         }
         auto iit = elements_.insert({name, default_(name)});
         if (!iit.second) {
-            THROW_OR_ABORT("Recursive insertion: Element with name \"" + name + "\" already exists");
+            THROW_OR_ABORT("Recursive insertion: Element with name \"" + *name + "\" already exists");
         }
         return iit.first->second;
-        
     }
 
-    const T& get(const std::string& name) const {
+    const T& get(const VariableAndHash<std::string>& name) const {
         return const_cast<ThreadsafeDefaultMap*>(this)->get(name);
     }
 
-    auto begin() { return elements_.begin(); }
-    auto end() { return elements_.end(); }
-    auto begin() const { return elements_.begin(); }
-    auto end() const { return elements_.end(); }
+    GuardedIterable<typename TBaseMap::iterator, std::scoped_lock<TMutex>> scoped() {
+        return { mutex_, elements_.begin(), elements_.end() };
+    }
+    GuardedIterable<typename TBaseMap::iterator, std::shared_lock<TMutex>> shared() {
+        return { mutex_, elements_.begin(), elements_.end() };
+    }
+    GuardedIterable<typename TBaseMap::const_iterator, std::scoped_lock<TMutex>> scoped() const {
+        return { mutex_, elements_.begin(), elements_.end() };
+    }
+    GuardedIterable<typename TBaseMap::const_iterator, std::shared_lock<TMutex>> shared() const {
+        return { mutex_, elements_.begin(), elements_.end() };
+    }
 private:
-    SafeAtomicRecursiveSharedMutex& mutex_;
-    std::map<std::string, T> elements_;
-    std::function<T(const std::string&)> default_;
+    mutable TMutex mutex_;
+    TBaseMap elements_;
+    std::function<T(const VariableAndHash<std::string>&)> default_;
 };
 
 }

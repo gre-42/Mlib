@@ -14,6 +14,7 @@
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
 #include <Mlib/Scene_Pos.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 
 using namespace Mlib;
 
@@ -103,7 +104,7 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
             .scene_node = node90.ref(DP_LOC),
             .interpolation_mode = options.interpolation_mode,
             .renderable_resource_filter = options.renderable_resource_filter});
-    options.scene_node->add_child(options.instance_name + "_node90", std::move(node90));
+    options.scene_node->add_child(*options.instance_name + "_node90", std::move(node90));
 }
 
 AggregateMode BinaryXResource::aggregate_mode() const {

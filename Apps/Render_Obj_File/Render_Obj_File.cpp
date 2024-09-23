@@ -106,7 +106,7 @@ static void add_reference_bone(
     scene_node_resources.instantiate_child_renderable(
         "reference_bone",
         ChildInstantiationOptions{
-            .instance_name = "reference_bone",
+            .instance_name = VariableAndHash<std::string>{"reference_bone"},
             .scene_node = bone_node.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -137,7 +137,7 @@ static void add_bone_frame(
     scene_node_resources.instantiate_child_renderable(
         "frame_bone",
         ChildInstantiationOptions{
-            .instance_name = "frame_bone",
+            .instance_name = VariableAndHash<std::string>{"frame_bone"},
             .scene_node = bone_node.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::ENABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});
@@ -731,7 +731,7 @@ int main(int argc, char** argv) {
                         "objs",
                         ChildInstantiationOptions{
                             .rendering_resources = &rendering_resources,
-                            .instance_name = "objs",
+                            .instance_name = VariableAndHash<std::string>{"objs"},
                             .scene_node = scene_node.ref(DP_LOC),
                             .interpolation_mode = args.has_named("--large_object_mode")
                                 ? PoseInterpolationMode::DISABLED
@@ -851,7 +851,7 @@ int main(int argc, char** argv) {
             if (!args.has_named_value("--light_beacon")) {
                 return;
             }
-            std::string name = "light_beacon-" + std::to_string(light_beacon_index++);
+            auto name = VariableAndHash{ "light_beacon-" + std::to_string(light_beacon_index++) };
             LoadMeshConfig<float> cfg{
                 .position = fixed_zeros<float, 3>(),
                 .rotation = fixed_zeros<float, 3>(),
@@ -869,12 +869,12 @@ int main(int argc, char** argv) {
                 .physics_material =  PhysicsMaterial::ATTR_VISIBLE | PhysicsMaterial::ATTR_COLLIDE,
                 .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
                 .werror = !args.has_named("--no_werror")};
-            scene_node_resources.add_resource(name, load_renderable_obj(
+            scene_node_resources.add_resource(*name, load_renderable_obj(
                 args.named_value("--light_beacon"),
                 cfg,
                 scene_node_resources));
             scene_node_resources.instantiate_child_renderable(
-                name,
+                *name,
                 ChildInstantiationOptions{
                     .instance_name = name,
                     .scene_node = scene_node,

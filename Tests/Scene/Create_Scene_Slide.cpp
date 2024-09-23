@@ -112,12 +112,12 @@ void Mlib::create_scene_slide(
 
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_slide", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj0",
+        .instance_name = VariableAndHash<std::string>{ "obj0" },
         .scene_node = scene_node_slide.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_box", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj1_0",
+        .instance_name = VariableAndHash<std::string>{ "obj1_0" },
         .scene_node = scene_node_box.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     scene_node_slide->set_rotation({0.f, -90.f * degrees, 0.f}, INITIAL_POSE);

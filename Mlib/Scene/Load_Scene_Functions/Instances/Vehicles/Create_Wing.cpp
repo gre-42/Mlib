@@ -74,7 +74,7 @@ void CreateWing::execute(const LoadSceneJsonUserFunctionArgs& args)
         auto jtrail_source = args.arguments.child(KnownArgs::trail_source);
         jtrail_source.validate(KnownTrailSource::options);
         trail_source.emplace(
-            trail_renderer.get_storage(jtrail_source.at<std::string>(KnownTrailSource::storage)).add_trail_extender(),
+            trail_renderer.get_storage(VariableAndHash{ jtrail_source.at<std::string>(KnownTrailSource::storage) }).add_trail_extender(),
             jtrail_source.at<UFixedArray<float, 3>>(KnownTrailSource::position) * meters,
             jtrail_source.at<float>(KnownTrailSource::minimum_velocity) * kph);
     }

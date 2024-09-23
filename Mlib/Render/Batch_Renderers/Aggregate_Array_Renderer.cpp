@@ -266,7 +266,7 @@ void AggregateArrayRenderer::update_aggregates(
         UUVector<FixedArray<uint8_t, 3>> discrete_texture_layers;
         list->build(triangles, continuous_texture_layers, discrete_texture_layers);
         mat_vectors.push_back(std::make_shared<ColoredVertexArray<float>>(
-            AAR_NAME,
+            *AAR_NAME,
             mat,
             Morphology{ .physics_material = PhysicsMaterial::ATTR_VISIBLE },
             ModifierBacklog{},

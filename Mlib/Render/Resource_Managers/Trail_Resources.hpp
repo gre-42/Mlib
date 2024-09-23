@@ -9,6 +9,8 @@ namespace Mlib {
 
 class TrailsInstance;
 class ITrailStorage;
+template <class T>
+class VariableAndHash;
 
 class TrailResources {
     TrailResources(const TrailResources&) = delete;
@@ -20,7 +22,7 @@ public:
     void insert_storage_to_instance(
         std::string storage,
         std::string instance);
-    std::string get_instance_for_storage(const std::string& storage) const;
+    VariableAndHash<std::string> get_instance_for_storage(const std::string& storage) const;
 
     void insert_instance_instantiator(
         std::string name,
@@ -37,7 +39,7 @@ public:
 private:
     ThreadsafeStringMap<std::function<std::shared_ptr<TrailsInstance>()>> trails_instances_;
     ThreadsafeStringMap<std::function<std::unique_ptr<ITrailStorage>(TrailsInstance&)>> storages_;
-    ThreadsafeStringMap<std::string> storage_to_instance_;
+    ThreadsafeStringMap<VariableAndHash<std::string>> storage_to_instance_;
 };
 
 }

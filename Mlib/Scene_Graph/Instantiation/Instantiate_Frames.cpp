@@ -33,7 +33,7 @@ void Mlib::instantiate(
         if (exclude.contains(info.resource_name)) {
             continue;
         }
-        auto name = info.resource_name + "_inst_" + std::to_string(scene.get_uuid());
+        auto name = VariableAndHash{ info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };
         auto trafo = trafo_to_world * info.trafo;
         auto node = make_dunique<SceneNode>(
             trafo.t(),
@@ -49,9 +49,9 @@ void Mlib::instantiate(
                 .renderable_resource_filter = RenderableResourceFilter{}},
             PreloadBehavior::NO_PRELOAD);
         if (!any(node->rendering_strategies())) {
-            lwarn() << "Skipping invisible instance \"" << name << '"';
+            lwarn() << "Skipping invisible instance \"" << *name << '"';
         } else {
-            scene.auto_add_root_node(name, std::move(node), info.rendering_dynamics);
+            scene.auto_add_root_node(*name, std::move(node), info.rendering_dynamics);
             if (instantiated != nullptr) {
                 instantiated->insert(resource_name);
             }

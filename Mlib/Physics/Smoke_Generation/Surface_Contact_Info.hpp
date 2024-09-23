@@ -1,5 +1,6 @@
 #pragma once
 #include <Mlib/Math/Interp.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,7 @@ struct SurfaceSmokeRule {
 };
 
 struct SurfaceSmokeInfo {
-    std::string smoke_particle_resource_name;
+    VariableAndHash<std::string> smoke_particle_resource_name;
     std::string smoke_particle_instance_prefix;
     SurfaceSmokeRule vehicle_velocity;
     SurfaceSmokeRule tire_velocity;

@@ -143,22 +143,22 @@ void Mlib::create_scene_flat(
 
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj0", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj0",
+        .instance_name = VariableAndHash<std::string>{ "obj0" },
         .scene_node = scene_node0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj1_0",
+        .instance_name = VariableAndHash<std::string>{ "obj1_0" },
         .scene_node = scene_node1_0.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj1_1",
+        .instance_name = VariableAndHash<std::string>{ "obj1_1" },
         .scene_node = scene_node1_1.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj1", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
-        .instance_name = "obj1_2",
+        .instance_name = VariableAndHash<std::string>{ "obj1_2" },
         .scene_node = scene_node1_2.ref(DP_LOC),
         .renderable_resource_filter = RenderableResourceFilter{}});
     if (getenv_default_bool("STACK", false)) {

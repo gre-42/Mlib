@@ -62,7 +62,7 @@ void Preload::execute(const LoadSceneJsonUserFunctionArgs &args) {
                         PhysicsMaterial::SURFACE_BASE_TIRE);
                     if (c != nullptr) {
                         for (const auto& s : c->smoke_infos) {
-                            particle_renderer.preload(s.smoke_particle_resource_name);
+                            particle_renderer.preload(*s.smoke_particle_resource_name);
                         }
                         // RenderingContextStack::primary_scene_node_resources().preload_single(
                         //     c->smoke_particle_resource_name, RenderableResourceFilter{});

@@ -22,7 +22,7 @@ SmokeParticleGenerator::SmokeParticleGenerator(
 {}
 
 void SmokeParticleGenerator::generate_root(
-    const std::string& resource_name,
+    const VariableAndHash<std::string>& resource_name,
     const std::string& node_name,
     const FixedArray<ScenePos, 3>& position,
     const FixedArray<float, 3>& rotation,
@@ -45,7 +45,7 @@ void SmokeParticleGenerator::generate_root(
                     .time = 0.f}},
             .delete_node_when_aperiodic_animation_finished = true}));
         scene_node_resources_.instantiate_child_renderable(
-            resource_name,
+            *resource_name,
             ChildInstantiationOptions{
                 .rendering_resources = rendering_resources_,
                 .instance_name = resource_name,
@@ -67,7 +67,7 @@ void SmokeParticleGenerator::generate_root(
 
 void SmokeParticleGenerator::generate_child(
     DanglingRef<SceneNode> parent,
-    const std::string& resource_name,
+    const VariableAndHash<std::string>& resource_name,
     const std::string& child_node_name,
     const FixedArray<ScenePos, 3>& relative_position,
     float animation_duration)
@@ -85,7 +85,7 @@ void SmokeParticleGenerator::generate_child(
                 .time = 0.f}},
         .delete_node_when_aperiodic_animation_finished = true}));
     scene_node_resources_.instantiate_child_renderable(
-        resource_name,
+        *resource_name,
         ChildInstantiationOptions{
             .rendering_resources = rendering_resources_,
             .instance_name = resource_name,

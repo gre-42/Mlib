@@ -265,13 +265,13 @@ void Mlib::add_beacons_to_raceways(
     float raceway_beacon_distance,
     float scale)
 {
-    std::string resource_name = "raceway_beacon";
+    auto resource_name = VariableAndHash<std::string>{ "raceway_beacon" };
     ParsedResourceName prn{
         .name = resource_name,
         .billboard_id = UINT32_MAX,
         .yangle = 0.f,
         .probability = NAN,
-        .aggregate_mode = scene_node_resources.aggregate_mode(resource_name),
+        .aggregate_mode = scene_node_resources.aggregate_mode(*resource_name),
         .create_imposter = false,
         .max_imposter_texture_size = 0,
         .hitbox = "",

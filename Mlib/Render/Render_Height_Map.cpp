@@ -31,7 +31,7 @@ void Mlib::render_height_map(
     scene_node_resources.instantiate_child_renderable(
         "HeightMapResource",
         ChildInstantiationOptions{
-            .instance_name = "HeightMapResource",
+            .instance_name = VariableAndHash<std::string>{ "HeightMapResource" },
             .scene_node = on.ref(DP_LOC),
             .interpolation_mode = PoseInterpolationMode::DISABLED,
             .renderable_resource_filter = RenderableResourceFilter{}});

@@ -108,7 +108,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         }};
     const auto& bullet_props = args.bullet_property_db.get(args.arguments.at<std::string>(KnownArgs::bullet_type));
     ITrailStorage* bullet_trace_storage = nullptr;
-    if (!bullet_props.trace_storage.empty()) {
+    if (!bullet_props.trace_storage->empty()) {
         bullet_trace_storage = &trail_renderer.get_storage(bullet_props.trace_storage);
     }
     std::function<void(
@@ -156,7 +156,7 @@ void CreateGun::execute(const LoadSceneJsonUserFunctionArgs& args)
         bullet_trace_storage,
         args.arguments.at<std::string>(KnownArgs::ammo_type),
         punch_angle_rng,
-        args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, ""),
+        VariableAndHash{ args.arguments.at<std::string>(KnownArgs::muzzle_flash_resource, "") },
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::muzzle_flash_position, fixed_nans<float, 3>()) * meters,
         args.arguments.at<float>(KnownArgs::muzzle_flash_animation_time, NAN) * seconds,
         [macro_line_executor = args.macro_line_executor,

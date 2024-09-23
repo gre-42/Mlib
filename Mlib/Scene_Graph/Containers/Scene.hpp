@@ -16,6 +16,7 @@
 #include <memory>
 #include <set>
 #include <thread>
+#include <unordered_map>
 
 namespace Mlib {
 
@@ -41,6 +42,8 @@ class ColoredVertexArray;
 enum class RenderingDynamics;
 enum class RenderingStrategies;
 class RenderableWithStyle;
+template <class T>
+class VariableAndHash;
 
 class Scene {
     friend RootNodes;
@@ -108,7 +111,7 @@ public:
     std::list<std::pair<std::string, DanglingRef<SceneNode>>> get_nodes(const Mlib::regex& regex) const;
     bool visit_all(const std::function<bool(
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
+        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
@@ -134,7 +137,7 @@ public:
     void notify_cleanup_required();
     void notify_cleanup_done();
     DeleteNodeMutex& delete_node_mutex() const;
-    IParticleCreator& particle_instantiator(const std::string& resource_name) const;
+    IParticleCreator& particle_instantiator(const VariableAndHash<std::string>& resource_name) const;
 private:
     DanglingRef<SceneNode> get_node_that_may_be_scheduled_for_deletion(const std::string& name) const;
     // Must be above garbage-collected members for

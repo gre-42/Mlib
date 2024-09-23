@@ -9,6 +9,8 @@ namespace Mlib {
 
 class ParticlesInstance;
 class IParticleCreator;
+template <class T>
+class VariableAndHash;
 
 class ParticleResources {
     ParticleResources(const ParticleResources&) = delete;
@@ -19,8 +21,8 @@ public:
 
     void insert_creator_to_instance(
         std::string creator,
-        std::string instance);
-    std::string get_instance_for_creator(const std::string& creator) const;
+        VariableAndHash<std::string> instance);
+    VariableAndHash<std::string> get_instance_for_creator(const std::string& creator) const;
 
     void insert_instance_instantiator(
         std::string name,
@@ -37,7 +39,7 @@ public:
 private:
     ThreadsafeStringMap<std::function<std::shared_ptr<ParticlesInstance>()>> instance_creators_;
     ThreadsafeStringMap<std::function<std::unique_ptr<IParticleCreator>(ParticlesInstance&)>> instantiators_;
-    ThreadsafeStringMap<std::string> instantiator_to_instance_;
+    ThreadsafeStringMap<VariableAndHash<std::string>> instantiator_to_instance_;
 };
 
 }

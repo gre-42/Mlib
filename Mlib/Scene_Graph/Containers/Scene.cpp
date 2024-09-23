@@ -404,7 +404,7 @@ DanglingRef<SceneNode> Scene::get_node_that_may_be_scheduled_for_deletion(const 
 
 bool Scene::visit_all(const std::function<bool(
     const TransformationMatrix<float, ScenePos, 3>& m,
-    const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
+    const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const
 {
     std::shared_lock lock{ mutex_ };
     return
@@ -820,7 +820,7 @@ DeleteNodeMutex& Scene::delete_node_mutex() const {
     return delete_node_mutex_;
 }
 
-IParticleCreator& Scene::particle_instantiator(const std::string& resource_name) const {
+IParticleCreator& Scene::particle_instantiator(const VariableAndHash<std::string>& resource_name) const {
     std::shared_lock lock{ mutex_ };
     if (particle_renderer_ == nullptr) {
         THROW_OR_ABORT("Particle renderer not set");

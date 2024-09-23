@@ -68,10 +68,10 @@ void HeterogeneousResource::instantiate_root_renderables(const RootInstantiation
             PoseInterpolationMode::DISABLED);
         instantiate_child_renderable(ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,
-            .instance_name = options.instance_name + "_hri_arrays",
+            .instance_name = VariableAndHash{ *options.instance_name + "_hri_arrays" },
             .scene_node = node.ref(DP_LOC),
             .renderable_resource_filter = options.renderable_resource_filter});
-        options.scene.auto_add_root_node(options.instance_name + "_hri_world", std::move(node), RenderingDynamics::STATIC);
+        options.scene.auto_add_root_node(*options.instance_name + "_hri_world", std::move(node), RenderingDynamics::STATIC);
     }
 }
 
@@ -182,7 +182,7 @@ void HeterogeneousResource::generate_instances() {
             bri->add_parsed_resource_name(
                 tri(0).position.casted<ScenePos>(),
                 ParsedResourceName{
-                    .name = match[1].str(),
+                    .name = VariableAndHash{ match[1].str() },
                     .billboard_id = match[2].matched ? safe_stou(match[2].str()) : UINT32_MAX,
                     .yangle = 0.f,
                     .probability = NAN,

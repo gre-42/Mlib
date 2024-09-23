@@ -15,7 +15,7 @@ RenderableWithStyle::~RenderableWithStyle() = default;
 
 const ColorStyle* RenderableWithStyle::style(
     const std::list<const ColorStyle*>& color_styles,
-    const std::string& name) const
+    const VariableAndHash<std::string>& name) const
 {
     Hasher hasher{ SEED };
     for (const auto* style : color_styles) {
@@ -29,22 +29,28 @@ const ColorStyle* RenderableWithStyle::style(
     {
         std::shared_lock lock{ style_hash_mutex_ };
         if (hasher == style_hash_) {
-            return &style_;
+            if (!style_.has_value()) {
+                THROW_OR_ABORT("Style hash collision (0)");
+            }
+            return &*style_;
         }
     }
     {
         std::scoped_lock lock{ style_hash_mutex_ };
         if (hasher == style_hash_) {
-            return &style_;
+            if (!style_.has_value()) {
+                THROW_OR_ABORT("Style hash collision (1)");
+            }
+            return &*style_;
         }
-        ColorStyle r_style;
+        style_.reset();
+        style_.emplace();
         for (const auto& style : color_styles) {
             if (style->matches(name)) {
-                r_style.insert(*style);
+                style_->insert(*style);
             }
         }
-        style_ = r_style;
         style_hash_ = hasher;
     }
-    return &style_;
+    return &*style_;
 }

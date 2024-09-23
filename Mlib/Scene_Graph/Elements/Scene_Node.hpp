@@ -158,7 +158,7 @@ public:
     void insert_node_hider(INodeHider& node_hider);
     void remove_node_hider(INodeHider& node_hider);
     void add_renderable(
-        const std::string& name,
+        const VariableAndHash<std::string>& name,
         const std::shared_ptr<const Renderable>& renderable);
     void add_child(
         const std::string& name,
@@ -169,7 +169,7 @@ public:
     bool has_parent() const;
     DanglingRef<SceneNode> parent();
     DanglingRef<const SceneNode> parent() const;
-    void clear_renderable_instance(const std::string& name);
+    void clear_renderable_instance(const VariableAndHash<std::string>& name);
     void clear_absolute_observer();
     void clear_sticky_absolute_observer();
     void clear();
@@ -203,7 +203,7 @@ public:
         const TransformationMatrix<float, ScenePos, 3>& parent_m,
         const std::function<bool(
             const TransformationMatrix<float, ScenePos, 3>& m,
-            const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
+            const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)>& func) const;
     void move(
         const TransformationMatrix<float, ScenePos, 3>& v,
         float dt,
@@ -300,9 +300,9 @@ public:
     BoundingSphere<ScenePos, 3> relative_bounding_sphere() const;
     ScenePos max_center_distance(uint32_t billboard_id) const;
     void print(std::ostream& ostr, size_t recursion_depth = 0) const;
-    bool has_color_style(const std::string& name) const;
-    ColorStyle& color_style(const std::string& name);
-    const ColorStyle& color_style(const std::string& name) const;
+    bool has_color_style(const VariableAndHash<std::string>& name) const;
+    ColorStyle& color_style(const VariableAndHash<std::string>& name);
+    const ColorStyle& color_style(const VariableAndHash<std::string>& name) const;
     void add_color_style(std::unique_ptr<ColorStyle>&& color_style);
     void set_animation_state(std::unique_ptr<AnimationState>&& animation_state);
     void set_animation_state_updater(std::unique_ptr<AnimationStateUpdater>&& animation_state_updater);
@@ -344,7 +344,7 @@ private:
     IAbsoluteObserver* absolute_observer_;
     IAbsoluteObserver* sticky_absolute_observer_;
     std::unique_ptr<Camera> camera_;
-    std::map<std::string, std::shared_ptr<RenderableWithStyle>> renderables_;
+    std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>> renderables_;
     std::map<std::string, SceneNodeChild> children_;
     std::map<std::string, SceneNodeChild> aggregate_children_;
     std::map<std::string, SceneNodeInstances> instances_children_;

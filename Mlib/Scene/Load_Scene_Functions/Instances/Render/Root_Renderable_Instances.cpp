@@ -48,7 +48,7 @@ void RootRenderableInstances::execute(const LoadSceneJsonUserFunctionArgs& args)
             .rendering_resources = &rendering_resources,
             .imposters = &imposters,
             .supply_depots = &supply_depots,
-            .instance_name = args.arguments.at<std::string>(KnownArgs::name),
+            .instance_name = VariableAndHash{ args.arguments.at<std::string>(KnownArgs::name) },
             .absolute_model_matrix = absolute_model_matrix,
             .scene = scene,
             .renderable_resource_filter = RenderableResourceFilter {

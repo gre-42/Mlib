@@ -17,14 +17,14 @@ void Mlib::fit_canvas_to_renderables(
     auto aabb = AxisAlignedBoundingBox<ScenePos, 3>::empty();
     scene.visit_all([&](
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const std::map<std::string, std::shared_ptr<RenderableWithStyle>>& renderables)
+        const std::unordered_map<VariableAndHash<std::string>, std::shared_ptr<RenderableWithStyle>>& renderables)
     {
         auto mv = v * m;
         for (const auto& [n, r] : renderables) {
             try {
                 (*r)->extend_aabb(mv, render_pass, aabb);
             } catch (const std::runtime_error& e) {
-                throw std::runtime_error("Could not extend static light AABB for renderable \"" + n + "\": " + e.what());
+                throw std::runtime_error("Could not extend static light AABB for renderable \"" + *n + "\": " + e.what());
             }
         }
         return true;

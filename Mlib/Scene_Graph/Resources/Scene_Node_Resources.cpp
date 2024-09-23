@@ -129,7 +129,7 @@ void SceneNodeResources::instantiate_child_renderable(
                     resource_name,
                     ChildInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
-                        .instance_name = options.instance_name + "/" + resource_name,
+                        .instance_name = VariableAndHash{ *options.instance_name + "/" + resource_name },
                         .scene_node = options.scene_node,
                         .renderable_resource_filter = filter},
                     preload_behavior,
@@ -164,7 +164,7 @@ void SceneNodeResources::instantiate_root_renderables(
                     RootInstantiationOptions{
                         .rendering_resources = options.rendering_resources,
                         .supply_depots = options.supply_depots,
-                        .instance_name = options.instance_name + "/" + resource_name,
+                        .instance_name = VariableAndHash{ *options.instance_name + "/" + resource_name },
                         .absolute_model_matrix = options.absolute_model_matrix,
                         .scene = options.scene,
                         .renderable_resource_filter = filter},

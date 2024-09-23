@@ -40,7 +40,7 @@ ParsedResourceName Mlib::parse_resource_name(
         THROW_OR_ABORT("Could not parse: " + name);
     }
     ParsedResourceName result{
-        .name = match[NAME].str(),
+        .name = VariableAndHash{ match[NAME].str() },
         .billboard_id = match[BILLBOARD_ID].matched ? safe_stou(match[BILLBOARD_ID].str()) : UINT32_MAX,
         .yangle = match[YANGLE].matched ? safe_stof(match[YANGLE].str()) * degrees : 0.f,
         .probability = match[PROBABILITY].matched ? safe_stof(match[PROBABILITY].str()) : 1.f,

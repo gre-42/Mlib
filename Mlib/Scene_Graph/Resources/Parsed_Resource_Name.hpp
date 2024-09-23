@@ -1,4 +1,5 @@
 #pragma once
+#include <Mlib/Variable_And_Hash.hpp>
 #include <cstdint>
 #include <list>
 #include <map>
@@ -14,7 +15,7 @@ class SceneNodeResources;
 enum class AggregateMode;
 
 struct ParsedResourceName {
-    std::string name;
+    VariableAndHash<std::string> name;
     uint32_t billboard_id;
     float yangle;
     float probability;

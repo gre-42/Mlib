@@ -86,10 +86,10 @@ void BatchResourceInstantiator::preload(
     const SceneNodeResources& scene_node_resources,
     const RenderableResourceFilter& filter) const {
     for (const auto& p : object_resource_descriptors_) {
-        scene_node_resources.preload_single(p.name, filter);
+        scene_node_resources.preload_single(*p.name, filter);
     }
     for (const auto& [name, _] : resource_instance_positions_) {
-        scene_node_resources.preload_single(name, filter);
+        scene_node_resources.preload_single(*name, filter);
     }
 }
 
@@ -111,13 +111,13 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 p.scale);
 
             scene_node_resources.instantiate_child_renderable(
-                p.name,
+                *p.name,
                 ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = options.renderable_resource_filter });
-            std::string node_name = p.name + "-" + std::to_string(i);
+            std::string node_name = *p.name + "-" + std::to_string(i);
             if (!p.supplies.empty()) {
                 options.supply_depots->add_supply_depot(node.ref(DP_LOC), p.supplies, p.supplies_cooldown);
                 options.scene.auto_add_root_node(node_name, std::move(node), RenderingDynamics::MOVING);
@@ -140,7 +140,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     if (p.create_imposter) {
                         THROW_OR_ABORT("Cannot create imposter for aggregate node");
                     }
-                    lerr() << "Adding aggregate " << p.name;
+                    lerr() << "Adding aggregate " << *p.name;
                     options.scene.auto_add_root_node(
                         node_name,
                         std::move(node),
@@ -163,22 +163,22 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 1.f,
                 PoseInterpolationMode::DISABLED);
             scene_node_resources.instantiate_child_renderable(
-                name,
+                *name,
                 ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
                     .instance_name = name,
                     .scene_node = node.ref(DP_LOC),
                     .renderable_resource_filter = options.renderable_resource_filter});
             if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
-                THROW_OR_ABORT("Object " + name + " requires render pass");
+                THROW_OR_ABORT("Object " + *name + " requires render pass");
             }
-            world_node->add_instances_child(name, std::move(node));
+            world_node->add_instances_child(*name, std::move(node));
             for (const auto& r : ps) {
-                world_node->add_instances_position(name, r.position, r.yangle, r.billboard_id);
+                world_node->add_instances_position(*name, r.position, r.yangle, r.billboard_id);
             }
         }
         options.scene.auto_add_root_node(
-            options.instance_name + "_inst_world",
+            *options.instance_name + "_inst_world",
             std::move(world_node),
             RenderingDynamics::STATIC);
     }

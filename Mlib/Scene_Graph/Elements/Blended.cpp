@@ -5,7 +5,7 @@ using namespace Mlib;
 
 Blended::Blended(
     std::shared_ptr<const RenderableWithStyle> renderable_with_style,
-    const std::string& name,
+    const VariableAndHash<std::string>& name,
     const FixedArray<ScenePos, 4, 4>& mvp,
     const TransformationMatrix<float, ScenePos, 3>& m,
     const AnimationState* animation_state,

@@ -13,6 +13,8 @@ class Scene;
 class SceneNode;
 class SceneNodeResources;
 class RenderingResources;
+template <class T>
+class VariableAndHash;
 
 enum class ParticleType {
     NODE,
@@ -26,7 +28,7 @@ public:
         SceneNodeResources& scene_node_resources,
         Scene& scene);
     void generate_root(
-        const std::string& resource_name,
+        const VariableAndHash<std::string>& resource_name,
         const std::string& node_name,
         const FixedArray<ScenePos, 3>& position,
         const FixedArray<float, 3>& rotation,
@@ -36,7 +38,7 @@ public:
         ParticleType particle_type);
     void generate_child(
         DanglingRef<SceneNode> parent,
-        const std::string& resource_name,
+        const VariableAndHash<std::string>& resource_name,
         const std::string& child_node_name,
         const FixedArray<ScenePos, 3>& relative_position,
         float animation_duration);

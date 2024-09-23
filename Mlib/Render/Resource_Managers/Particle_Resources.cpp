@@ -2,6 +2,7 @@
 #include <Mlib/Os/Os.hpp>
 #include <Mlib/Scene_Graph/Interfaces/IParticle_Creator.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
+#include <Mlib/Variable_And_Hash.hpp>
 #include <mutex>
 
 using namespace Mlib;
@@ -16,12 +17,12 @@ ParticleResources::~ParticleResources() = default;
 
 void ParticleResources::insert_creator_to_instance(
     std::string creator,
-    std::string instance)
+    VariableAndHash<std::string> instance)
 {
     instantiator_to_instance_.add(std::move(creator), std::move(instance));
 }
 
-std::string ParticleResources::get_instance_for_creator(const std::string& creator) const {
+VariableAndHash<std::string> ParticleResources::get_instance_for_creator(const std::string& creator) const {
     return instantiator_to_instance_.get(creator);
 }
 

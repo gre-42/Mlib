@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
             scene_node_resources.instantiate_child_renderable(
                 "tl",
                 ChildInstantiationOptions{
-                    .instance_name = "tl",
+                    .instance_name = VariableAndHash<std::string>{ "tl" },
                     .scene_node = scene_node.ref(DP_LOC),
                     .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = RenderableResourceFilter{}});

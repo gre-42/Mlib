@@ -52,8 +52,8 @@ ScenePos TerrainStyle::max_distance_to_camera(const SceneNodeResources& scene_no
         };
         auto add_recources = [&scene_node_resources, &add_cvas](const auto& resource_names){
             for (const auto& l : resource_names) {
-                add_cvas(scene_node_resources.get_physics_arrays(l.name)->dcvas, l.name, l.billboard_id);
-                add_cvas(scene_node_resources.get_physics_arrays(l.name)->scvas, l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_physics_arrays(*l.name)->dcvas, *l.name, l.billboard_id);
+                add_cvas(scene_node_resources.get_physics_arrays(*l.name)->scvas, *l.name, l.billboard_id);
             }
         };
         add_recources(config.near_resource_names_valley_regular);
@@ -111,8 +111,8 @@ TerrainStyleDistancesToBdry TerrainStyle::distances_to_bdry() const {
         };
         auto add_recources = [&add_min_distance, &add_max_distance](const auto& resource_names){
             for (const auto& l : resource_names) {
-                add_min_distance(l.name, l.min_distance_to_bdry);
-                add_max_distance(l.name, l.max_distance_to_bdry);
+                add_min_distance(*l.name, l.min_distance_to_bdry);
+                add_max_distance(*l.name, l.max_distance_to_bdry);
             }
         };
         add_recources(config.near_resource_names_valley_regular);
