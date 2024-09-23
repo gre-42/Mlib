@@ -14,22 +14,22 @@ concept pointers_are_comparable = requires(const T2* v) {
 #include <Mlib/Source_Location.hpp>
 #include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <cstdint>
-#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <type_traits>
+#include <unordered_map>
 
 namespace Mlib {
 
 struct PointedSourceLocation;
 
 template <class T>
-std::map<const void*, PointedSourceLocation>& locs_();
+std::unordered_map<const void*, PointedSourceLocation>& locs_();
 template <class T>
 SafeAtomicSharedMutex& loc_mutex_();
 
 template <class T>
-inline std::map<const void*, ::Mlib::PointedSourceLocation>& locs() {
+inline std::unordered_map<const void*, ::Mlib::PointedSourceLocation>& locs() {
     return locs_<std::remove_const_t<T>>();
 }
 
@@ -38,16 +38,16 @@ inline SafeAtomicSharedMutex& loc_mutex() {
     return loc_mutex_<std::remove_const_t<T>>();
 }
 
-#define DP_IMPLEMENT(T)                                                         \
-    template <>                                                                 \
-    std::map<const void*, ::Mlib::PointedSourceLocation>& Mlib::locs_<T>() {    \
-        static std::map<const void*, ::Mlib::PointedSourceLocation> result;     \
-        return result;                                                          \
-    }                                                                           \
-    template <>                                                                 \
-    ::Mlib::SafeAtomicSharedMutex& ::Mlib::loc_mutex_<T>() {                              \
-        static SafeAtomicSharedMutex result;                                              \
-        return result;                                                          \
+#define DP_IMPLEMENT(T)                                                                 \
+    template <>                                                                         \
+    std::unordered_map<const void*, ::Mlib::PointedSourceLocation>& Mlib::locs_<T>() {  \
+        static std::unordered_map<const void*, ::Mlib::PointedSourceLocation> result;   \
+        return result;                                                                  \
+    }                                                                                   \
+    template <>                                                                         \
+    ::Mlib::SafeAtomicSharedMutex& ::Mlib::loc_mutex_<T>() {                            \
+        static SafeAtomicSharedMutex result;                                            \
+        return result;                                                                  \
     }
 
 #define SOURCE_LOCATION SourceLocation
