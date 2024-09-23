@@ -17,7 +17,7 @@ public:
         const DanglingBaseClassRef<TDerived>& o,
         DestructionFunctions& on_destroy,
         SourceLocation loc)
-        : object_{ o.ptr() }
+        : object_{ o }
         , on_object_destroy_{ on_destroy, loc }
     {}
     template <class TDerived>
@@ -26,28 +26,28 @@ public:
         : DestructionFunctionsTokensObject{ o, o->on_destroy, loc }
     {}
     inline T* operator -> () const {
-        return object_.get();
+        return &object_.get();
     }
     inline T* get() const {
-        return object_.get();
+        return &object_.get();
     }
-    inline DanglingBaseClassRef<T> object() const {
-        return *object_;
+    inline const DanglingBaseClassRef<T>& object() const {
+        return object_;
     }
     inline void on_destroy(std::function<void()> func, SourceLocation loc) {
         on_object_destroy_.add(std::move(func), std::move(loc));
     }
     inline std::strong_ordering operator <=> (const DanglingBaseClassPtr<T>& other) const {
-        return object_ <=> other;
+        return &object_.get() <=> other.get();
     }
     inline bool operator == (const DanglingBaseClassPtr<T>& other) const {
-        return object_ != other;
+        return &object_.get() == other.get();
     }
-    inline bool operator = (const DanglingBaseClassPtr<T>& other) const {
-        return object_ == other;
+    inline bool operator != (const DanglingBaseClassPtr<T>& other) const {
+        return &object_.get() != other.get();
     }
 private:
-    DanglingBaseClassPtr<T> object_;
+    DanglingBaseClassRef<T> object_;
     DestructionFunctionsRemovalTokens on_object_destroy_;
 };
 
