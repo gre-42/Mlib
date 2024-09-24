@@ -389,6 +389,7 @@ void SceneNode::clear_unsafe() {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
+        // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
         scene_->add_to_trash_can(std::move(child.mapped().scene_node));
         });
     clear_map_recursively(aggregate_children_, [this](const auto& child){
@@ -400,6 +401,7 @@ void SceneNode::clear_unsafe() {
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
+        // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
         scene_->add_to_trash_can(std::move(child.mapped().scene_node));
         });
     if (scene_ == nullptr) {
@@ -414,6 +416,7 @@ void SceneNode::clear_unsafe() {
                 // scene_ is non-null, checked in "add_child".
                 scene_->unregister_node(child.key());
             }
+            // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
             scene_->add_to_trash_can(std::move(child.mapped().scene_node));
             });
     }
@@ -1462,21 +1465,21 @@ void SceneNode::print(std::ostream& ostr, size_t recursion_depth) const {
     if (!children_.empty()) {
         ostr << " " << ind1 << " Children (" << children_.size() << ")\n";
         for (const auto& [n, c] : children_) {
-            ostr << " " << ind2 << " " << n << '\n';
+            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!aggregate_children_.empty()) {
         ostr << " " << ind1 << " Aggregates (" << aggregate_children_.size() << ")\n";
         for (const auto& [n, c] : aggregate_children_) {
-            ostr << " " << ind2 << " " << n << '\n';
+            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);
         }
     }
     if (!instances_children_.empty()) {
         ostr << " " << ind1 << " Instances (" << instances_children_.size() << ")\n";
         for (const auto& [n, c] : instances_children_) {
-            ostr << " " << ind2 << " " << n <<
+            ostr << " " << ind2 << " " << n << " #" << c.scene_node.nreferences() <<
                 " #small=" << c.small_instances.size() <<
                 " #large=" << c.large_instances.size() << '\n';
             c.scene_node->print(ostr, recursion_depth + 1);

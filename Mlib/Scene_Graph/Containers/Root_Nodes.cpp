@@ -75,6 +75,7 @@ void RootNodes::clear() {
             scene_.unregister_node(node.key());
             root_nodes_to_delete_.erase(node.key());
             trash_can_.push_back(std::move(node.mapped()));
+            // linfo() << "add " << node.key();
         });
     if (!root_nodes_to_delete_.empty()) {
         verbose_abort("Root nodes to delete remain after clear");
@@ -197,9 +198,12 @@ size_t RootNodes::try_empty_the_trash_can() {
         THROW_OR_ABORT("Trash can is already being emptied");
     }
     emptying_trash_can_ = true;
-    trash_can_.remove_if([](const RootNodeInfo& rni){
-        return rni.ptr.nreferences() == 0;
-    });
+    for (auto it = trash_can_.begin(); it != trash_can_.end();) {
+        auto c = it++;
+        if (c->ptr.nreferences() == 0) {
+            trash_can_.erase(c);
+        }
+    }
     emptying_trash_can_ = false;
     return trash_can_.size();
 }
@@ -229,6 +233,7 @@ void RootNodes::delete_root_node(const std::string& name) {
         UnlockGuard ulock{ lock };
         it->second.ptr->shutdown();
         trash_can_.push_back(std::move(it->second));
+        // linfo() << "add " << &trash_can_.back() << " " << it->first;
         node_container_.erase(it);
     }
 }
@@ -249,6 +254,7 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
             root_nodes_to_delete_.erase(n->first);
             UnlockGuard ulock{ lock };
             n->second.ptr->shutdown();
+            // linfo() << "add " << n->second.ptr.get(DP_LOC).get() << " " << n->first;
             trash_can_.push_back(std::move(n->second));
             node_container_.erase(n);
         }
@@ -257,7 +263,7 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
 
 void RootNodes::print(std::ostream& ostr) const {
     for (const auto& [k, v] : node_container_) {
-        ostr << " " << k << '\n';
+        ostr << " " << k << " #" << v.ptr.nreferences() << '\n';
         v.ptr->print(ostr, 2);
     }
 }

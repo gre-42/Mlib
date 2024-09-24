@@ -346,12 +346,18 @@ void Scene::add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj) {
 
 size_t Scene::try_empty_the_trash_can() {
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    trash_can_obj_.remove_if([](const std::unique_ptr<DanglingBaseClass>& o){
-        return o->nreferences() == 0;
-        });
-    trash_can_child_nodes_.remove_if([](const DanglingUniquePtr<SceneNode>& n){
-        return n.nreferences() == 0;
-        });
+    for (auto it = trash_can_obj_.begin(); it != trash_can_obj_.end();) {
+        auto c = it++;
+        if ((*c)->nreferences() == 0) {
+            trash_can_obj_.erase(c);
+        }
+    }
+    for (auto it = trash_can_child_nodes_.begin(); it != trash_can_child_nodes_.end();) {
+        auto c = it++;
+        if (c->nreferences() == 0) {
+            trash_can_child_nodes_.erase(c);
+        }
+    }
     return trash_can_obj_.size() + trash_can_child_nodes_.size() + morn_.try_empty_the_trash_can();
 }
 
