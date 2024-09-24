@@ -20,6 +20,11 @@
 
 namespace Mlib {
 
+template <class T>
+class DanglingBaseClassRef;
+template <class T>
+class DanglingBaseClassPtr;
+class DanglingBaseClass;
 class DeleteNodeMutex;
 template <typename TData, size_t... tshape>
 class FixedArray;
@@ -59,6 +64,9 @@ public:
     Scene(const Scene&) = delete;
     Scene& operator = (const Scene&) = delete;
     ~Scene();
+    void add_to_trash_can(DanglingUniquePtr<SceneNode>&& node);
+    void add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj);
+    size_t try_empty_the_trash_can();
     bool contains_node(const std::string& name) const;
     void add_moving_root_node(
         const std::string& name,
@@ -174,6 +182,8 @@ private:
     ITrailRenderer* trail_renderer_;
     IDynamicLights* dynamic_lights_;
     mutable std::atomic_uint32_t ncleanups_required_;
+    std::list<std::unique_ptr<DanglingBaseClass>> trash_can_obj_;
+    std::list<DanglingUniquePtr<SceneNode>> trash_can_child_nodes_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const Scene& scene);

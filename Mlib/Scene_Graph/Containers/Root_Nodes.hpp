@@ -15,15 +15,15 @@ class SceneNode;
 class DeleteNodeMutex;
 class Scene;
 
-struct RootNodeInfo {
-    DanglingUniquePtr<SceneNode> ptr;
-    // ScenePos max_center_distance;
-};
+struct RootNodeInfo;
 
 class RootNodes {
     using DefaultNodesMap = std::map<std::string, DanglingRef<SceneNode>>;
     using SmallStaticNodesBvh = Bvh<ScenePos, DanglingRef<SceneNode>, 3>;
     using NodeContainer = std::map<std::string, RootNodeInfo>;
+    using TrashCan = std::list<RootNodeInfo>;
+    RootNodes(const RootNodes&) = delete;
+    RootNodes& operator = (const RootNodes&) = delete;
 public:
     explicit RootNodes(Scene& scene);
     ~RootNodes();
@@ -45,6 +45,8 @@ public:
     bool root_node_scheduled_for_deletion(const std::string& name) const;
     void schedule_delete_root_node(const std::string& name);
     void delete_scheduled_root_nodes() const;
+    size_t try_empty_the_trash_can();
+    void print_trash_can_references() const;
     void print(std::ostream& ostr) const;
 private:
     Scene& scene_;
@@ -52,8 +54,10 @@ private:
     DefaultNodesMap default_nodes_map_;             // Contains nodes that are large or moving
     SmallStaticNodesBvh small_static_nodes_bvh_;    // Contains nodes that are small and static
     NodeContainer node_container_;
+    TrashCan trash_can_;
     std::set<std::string> root_nodes_to_delete_;
     mutable AtomicMutex root_nodes_to_delete_mutex_;
+    bool emptying_trash_can_;
 };
 
 std::ostream& operator << (std::ostream& ostr, const RootNodes& root_nodes);

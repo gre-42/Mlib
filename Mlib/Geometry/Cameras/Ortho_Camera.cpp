@@ -12,10 +12,7 @@ OrthoCamera::OrthoCamera(
     , postprocessing_{ postprocessing }
 {}
 
-OrthoCamera::~OrthoCamera() {
-    static_assert(std::is_final_v<OrthoCamera>);
-    wait_until_not_referenced();
-}
+OrthoCamera::~OrthoCamera() = default;
 
 std::unique_ptr<Camera> OrthoCamera::copy() const {
     std::shared_lock lock{mutex_};

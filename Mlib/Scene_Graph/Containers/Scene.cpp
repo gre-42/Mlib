@@ -291,7 +291,7 @@ void Scene::shutdown() {
     delete_node_mutex_.clear_deleter_thread();
     delete_node_mutex_.set_deleter_thread();
     shutting_down_ = true;
-    morn_.clear();
+    morn_.shutdown();
     if (!nodes_.empty()) {
         for (const auto& [name, _] : nodes_) {
             lerr() << name;
@@ -300,6 +300,17 @@ void Scene::shutdown() {
     }
     if (!root_imposter_nodes_.empty()) {
         verbose_abort("Imposter nodes remain after shutdown");
+    }
+    size_t nremaining = try_empty_the_trash_can();
+    if (nremaining != 0) {
+        for (const auto& o : trash_can_child_nodes_) {
+            o.print_references();
+        }
+        for (const auto& o : trash_can_obj_) {
+            o->print_references();
+        }
+        morn_.print_trash_can_references();
+        verbose_abort("Dangling references remain after scene shutdown");
     }
 }
 
@@ -321,6 +332,27 @@ void Scene::wait_until_done() const {
 bool Scene::contains_node(const std::string& name) const {
     std::shared_lock lock{ mutex_ };
     return nodes_.contains(name);
+}
+
+void Scene::add_to_trash_can(DanglingUniquePtr<SceneNode>&& node) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    trash_can_child_nodes_.emplace_back(std::move(node));
+}
+
+void Scene::add_to_trash_can(std::unique_ptr<DanglingBaseClass>&& obj) {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    trash_can_obj_.push_back(std::move(obj));
+}
+
+size_t Scene::try_empty_the_trash_can() {
+    delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    trash_can_obj_.remove_if([](const std::unique_ptr<DanglingBaseClass>& o){
+        return o->nreferences() == 0;
+        });
+    trash_can_child_nodes_.remove_if([](const DanglingUniquePtr<SceneNode>& n){
+        return n.nreferences() == 0;
+        });
+    return trash_can_obj_.size() + trash_can_child_nodes_.size() + morn_.try_empty_the_trash_can();
 }
 
 void Scene::register_node(
@@ -747,32 +779,35 @@ void Scene::render(
 
 void Scene::move(float dt, std::chrono::steady_clock::time_point time) {
     LOG_FUNCTION("Scene::move");
-    std::unique_lock lock{ mutex_ };
     delete_node_mutex_.assert_this_thread_is_deleter_thread();
-    if (!morn_.no_root_nodes_scheduled_for_deletion()) {
-        THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
-    }
     {
-        auto& drn = root_nodes_.default_nodes();
-        for (auto it = drn.begin(); it != drn.end(); ) {
-            it->second->move(
-                TransformationMatrix<float, ScenePos, 3>::identity(),
-                dt,
-                time,
-                scene_node_resources_,
-                nullptr);  // animation_state
-            if (it->second->to_be_deleted()) {
-                UnlockGuard ug{ lock };
-                delete_root_node((it++)->first);
-            } else {
-                ++it;
+        std::unique_lock lock{mutex_};
+        if (!morn_.no_root_nodes_scheduled_for_deletion()) {
+            THROW_OR_ABORT("Moving with root nodes scheduled for deletion");
+        }
+        {
+            auto &drn = root_nodes_.default_nodes();
+            for (auto it = drn.begin(); it != drn.end();) {
+                it->second->move(
+                    TransformationMatrix<float, ScenePos, 3>::identity(),
+                    dt,
+                    time,
+                    scene_node_resources_,
+                    nullptr);  // animation_state
+                if (it->second->to_be_deleted()) {
+                    UnlockGuard ug{lock};
+                    delete_root_node((it++)->first);
+                } else {
+                    ++it;
+                }
             }
         }
+        if (dynamic_lights_ != nullptr) {
+            dynamic_lights_->append_time(time);
+        }
+        // times_.append(time);
     }
-    if (dynamic_lights_ != nullptr) {
-        dynamic_lights_->append_time(time);
-    }
-    // times_.append(time);
+    try_empty_the_trash_can();
 }
 
 void Scene::append_static_filtered_to_queue(

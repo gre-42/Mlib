@@ -6,32 +6,27 @@ using namespace Mlib;
 DanglingBaseClass::DanglingBaseClass() = default;
 
 DanglingBaseClass::~DanglingBaseClass() {
+    assert_no_references();
+}
+
+void DanglingBaseClass::print_references() const {
+    lerr() << "Remaining locations: " << locs_.size();
+    for (const auto& [p, l] : locs_) {
+        lerr() << l.file_name() << ':' << l.line();
+    }
+}
+
+void DanglingBaseClass::assert_no_references() const {
+    std::shared_lock lock{loc_mutex_};
     if (!locs_.empty()) {
-        lerr() << "Remaining locations: " << locs_.size();
-        for (const auto& [p, l] : locs_) {
-            lerr() << l.file_name() << ':' << l.line();
-        }
+        print_references();
         verbose_abort("Dangling pointers or references remaining");
     }
 }
 
-void DanglingBaseClass::wait_until_not_referenced() const {
-    for (uint32_t i = 0; ; ) {
-        if (locs_.empty()) {
-            break;
-        }
-        // This gives an interval of about 4s.
-        if (i == 50'000'000) {
-            lerr() << "Remaining locations: " << locs_.size();
-            for (const auto& [p, l] : locs_) {
-                lerr() << l.file_name() << ':' << l.line();
-            }
-            // verbose_abort("Dangling pointers or references remaining");
-            i = 0;
-        } else {
-            ++i;
-        }
-    }
+size_t DanglingBaseClass::nreferences() const {
+    std::shared_lock lock{loc_mutex_};
+    return locs_.size();
 }
 
 void DanglingBaseClass::add_source_location(const void* ptr, SourceLocation loc) {

@@ -8,15 +8,28 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <iostream>
 
+namespace Mlib {
+
+struct RootNodeInfo {
+    DanglingUniquePtr<SceneNode> ptr;
+    // ScenePos max_center_distance;
+};
+
+}
+
 using namespace Mlib;
 
 RootNodes::RootNodes(Scene& scene)
     : scene_{ scene }
     , small_static_nodes_bvh_{ fixed_full<ScenePos, 3>(5), 12 }
+    , emptying_trash_can_{ false }
 {}
 
 RootNodes::~RootNodes() {
     clear();
+    if (!trash_can_.empty()) {
+        verbose_abort("RootNodes dtor: Trash-can not empty after clear");
+    }
 }
 
 RootNodes::DefaultNodesMap& RootNodes::default_nodes() {
@@ -48,6 +61,7 @@ bool RootNodes::visit(
 }
 
 void RootNodes::clear() {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     small_static_nodes_bvh_.clear();
     nodes_under_construction_.clear();
     default_nodes_map_.clear();
@@ -57,8 +71,10 @@ void RootNodes::clear() {
             if (node.mapped().ptr->shutting_down()) {
                 verbose_abort("Node \"" + node.key() + "\" already shutting down");
             }
+            node.mapped().ptr->shutdown();
             scene_.unregister_node(node.key());
             root_nodes_to_delete_.erase(node.key());
+            trash_can_.push_back(std::move(node.mapped()));
         });
     if (!root_nodes_to_delete_.empty()) {
         verbose_abort("Root nodes to delete remain after clear");
@@ -175,6 +191,25 @@ void RootNodes::delete_scheduled_root_nodes() const {
     });
 }
 
+size_t RootNodes::try_empty_the_trash_can() {
+    scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
+    if (emptying_trash_can_) {
+        THROW_OR_ABORT("Trash can is already being emptied");
+    }
+    emptying_trash_can_ = true;
+    trash_can_.remove_if([](const RootNodeInfo& rni){
+        return rni.ptr.nreferences() == 0;
+    });
+    emptying_trash_can_ = false;
+    return trash_can_.size();
+}
+
+void RootNodes::print_trash_can_references() const {
+    for (const auto& node : trash_can_) {
+        node.ptr.print_references();
+    }
+}
+
 void RootNodes::delete_root_node(const std::string& name) {
     scene_.delete_node_mutex_.assert_this_thread_is_deleter_thread();
     if (scene_.mutex_.is_owner()) {
@@ -192,6 +227,8 @@ void RootNodes::delete_root_node(const std::string& name) {
         }
         root_nodes_to_delete_.erase(name);
         UnlockGuard ulock{ lock };
+        it->second.ptr->shutdown();
+        trash_can_.push_back(std::move(it->second));
         node_container_.erase(it);
     }
 }
@@ -211,7 +248,9 @@ void RootNodes::delete_root_nodes(const Mlib::regex& regex) {
             }
             root_nodes_to_delete_.erase(n->first);
             UnlockGuard ulock{ lock };
-            node_container_.erase(n->first);
+            n->second.ptr->shutdown();
+            trash_can_.push_back(std::move(n->second));
+            node_container_.erase(n);
         }
     }
 }

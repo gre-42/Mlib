@@ -35,9 +35,18 @@ bool MapOfRootNodes::root_node_scheduled_for_deletion(const std::string& name, b
     }
 }
 
-void MapOfRootNodes::clear() {
+void MapOfRootNodes::shutdown() {
     scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
-    clear_container_recursively(root_nodes_);
+    for (auto& [_, v] : root_nodes_) {
+        v.clear();
+    }
+}
+
+void MapOfRootNodes::print_trash_can_references() const {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
+    for (auto& [_, v] : root_nodes_) {
+        v.print_trash_can_references();
+    }
 }
 
 void MapOfRootNodes::delete_scheduled_root_nodes() const {
@@ -55,6 +64,15 @@ bool MapOfRootNodes::no_root_nodes_scheduled_for_deletion() const {
         }
     }
     return true;
+}
+
+size_t MapOfRootNodes::try_empty_the_trash_can() {
+    scene_.delete_node_mutex().assert_this_thread_is_deleter_thread();
+    size_t nremaining = 0;
+    for (auto& [_, v] : root_nodes_) {
+        nremaining += v.try_empty_the_trash_can();
+    }
+    return nremaining;
 }
 
 void MapOfRootNodes::print(std::ostream& ostr) const {

@@ -70,28 +70,19 @@ template <class T>
 struct ObjectAndReferenceCounter {
     template<class... Args>
     ObjectAndReferenceCounter(Args&&... args)
-    : nptrs{0}
+        : nptrs{ 0 }
     {
         new(obj) T(std::forward<Args>(args)...);
     }
     T& tobj() {
         return reinterpret_cast<T&>(obj);
     }
-    void shutdown_and_wait() {
-        for (uint32_t i = 0; ; ) {
-            tobj().shutdown();
+    void destroy() {
+        {
             std::shared_lock lock{ loc_mutex<T>() };
-            if (nptrs == 0) {
-                break;
-            }
-            // This gives an interval of about 4s.
-            if (i == 50'000'000) {
-                lerr() << "Waiting for dangling pointers";
+            if (nptrs != 0) {
                 print_source_locations<T>(erase_type(*this));
-                // verbose_abort("DanglingUniquePtr: " + std::to_string(u_->nptrs) + " dangling pointers remain");
-                i = 0;
-            } else {
-                ++i;
+                verbose_abort("DanglingUniquePtr: " + std::to_string(nptrs) + " dangling pointers remain");
             }
         }
         tobj().~T();
@@ -179,7 +170,13 @@ class DanglingRef;
 
 template <class T>
 class DanglingUniquePtr {
+    DanglingUniquePtr() = delete;
+    DanglingUniquePtr(const DanglingUniquePtr&) = delete;
+    DanglingUniquePtr& operator = (const DanglingUniquePtr&) = delete;
 public:
+    DanglingUniquePtr(std::nullopt_t)
+        : u_{ nullptr }
+    {}
     explicit DanglingUniquePtr(std::unique_ptr<ObjectAndReferenceCounter<T>>&& u)
         : u_{ std::move(u) }
     {}
@@ -216,6 +213,20 @@ public:
     const T* operator -> () const {
         return &u_->tobj();
     }
+    ReferenceCounter nreferences() const {
+        if (u_ == nullptr) {
+            verbose_abort("Attempt to retrieve nreferences of nullptr");
+        }
+        std::scoped_lock lock{ loc_mutex<T>() };
+        return u_->nptrs;
+    }
+    void print_references() const {
+        if (u_ == nullptr) {
+            verbose_abort("Attempt to print print_references of nullptr");
+        }
+        std::scoped_lock lock{ loc_mutex<T>() };
+        print_source_locations<T>(u_->nptrs);
+    }
     // Comparison
     bool operator == (std::nullptr_t) const {
         return u_ == nullptr;
@@ -231,33 +242,10 @@ private:
         if (u_ == nullptr) {
             return;
         }
-        u_->shutdown_and_wait();
+        u_->destroy();
         u_ = nullptr;
     }
     std::unique_ptr<ObjectAndReferenceCounter<T>> u_;
-};
-
-template <class T>
-class DanglingStackPtr {
-public:
-    DanglingStackPtr() = default;
-    ~DanglingStackPtr() {
-        u_->shutdown_and_wait();
-    }
-    DanglingPtr<T> get(SourceLocation loc) const {
-        return DanglingPtr<T>{erase_type(u_), loc};
-    }
-    DanglingRef<T> ref(SourceLocation loc) const {
-        return DanglingRef<T>{erase_type(u_), loc};
-    }
-    T* operator -> () {
-        return &u_.tobj();
-    }
-    const T* operator -> () const {
-        return &u_.tobj();
-    }
-private:
-    ObjectAndReferenceCounter<T> u_;
 };
 
 template <class T>

@@ -12,10 +12,7 @@ PerspectiveCamera::PerspectiveCamera(
     , postprocessing_{ postprocessing }
 {}
 
-PerspectiveCamera::~PerspectiveCamera() {
-    static_assert(std::is_final_v<PerspectiveCamera>);
-    wait_until_not_referenced();
-}
+PerspectiveCamera::~PerspectiveCamera() = default;
 
 std::unique_ptr<Camera> PerspectiveCamera::copy() const {
     std::shared_lock lock{mutex_};

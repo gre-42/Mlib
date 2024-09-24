@@ -23,7 +23,9 @@ class DanglingBaseClass: public virtual Object {
 public:
     DanglingBaseClass();
     virtual ~DanglingBaseClass() override;
-    void wait_until_not_referenced() const;
+    void print_references() const;
+    void assert_no_references() const;
+    size_t nreferences() const;
     // template <class T>
     // DanglingBaseClassPtr<T> ptr(SourceLocation loc) const { return DanglingBaseClassPtr<T>(*const_cast<DanglingBaseClass*>(this), loc); }
     // template <class T>

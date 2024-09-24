@@ -104,7 +104,7 @@ void SceneNode::shutdown() {
 
 SceneNode::~SceneNode() {
     if (!shutdown_called_) {
-        verbose_abort("SceneNode::shutdown not called before dtor. Please use a DanglingUniquePtr or DanglingStackPtr");
+        verbose_abort("SceneNode::shutdown not called before dtor. Please use a DanglingUniquePtr");
     }
 }
 
@@ -371,27 +371,52 @@ void SceneNode::clear_unsafe() {
     node_modifier_ = nullptr;
     node_hiders_.clear();
     absolute_observer_ = nullptr;
-    camera_ = nullptr;
+    if (camera_ != nullptr) {
+        if (scene_ == nullptr) {
+            camera_ = nullptr;
+        } else {
+            scene_->delete_node_mutex().assert_this_thread_is_deleter_thread();
+            scene_->add_to_trash_can(std::move(camera_));
+        }
+    }
     renderables_.clear();
     clear_map_recursively(children_, [this](const auto& child){
+        if (child.mapped().scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + child.key() + "\" already shutting down (0)");
+        }
+        child.mapped().scene_node->shutdown();
         if (child.mapped().is_registered) {
-            if (child.mapped().scene_node->shutting_down()) {
-                verbose_abort("Child node \"" + child.key() + "\" already shutting down (0)");
-            }
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
-    });
+        scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+        });
     clear_map_recursively(aggregate_children_, [this](const auto& child){
+        if (child.mapped().scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + child.key() + "\" already shutting down (1)");
+        }
+        child.mapped().scene_node->shutdown();
         if (child.mapped().is_registered) {
-            if (child.mapped().scene_node->shutting_down()) {
-                verbose_abort("Child node \"" + child.key() + "\" already shutting down (1)");
-            }
             // scene_ is non-null, checked in "add_child".
             scene_->unregister_node(child.key());
         }
-    });
-    instances_children_.clear();
+        scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+        });
+    if (scene_ == nullptr) {
+        instances_children_.clear();
+    } else {
+        clear_map_recursively(instances_children_, [this](const auto& child) {
+            if (child.mapped().scene_node->shutting_down()) {
+                verbose_abort("Child node \"" + child.key() + "\" already shutting down (2)");
+            }
+            child.mapped().scene_node->shutdown();
+            if (child.mapped().is_registered) {
+                // scene_ is non-null, checked in "add_child".
+                scene_->unregister_node(child.key());
+            }
+            scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+            });
+    }
     lights_.clear();
     skidmarks_.clear();
     animation_state_ = nullptr;
