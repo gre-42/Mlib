@@ -104,7 +104,7 @@ void SceneNode::shutdown() {
 
 SceneNode::~SceneNode() {
     if (!shutdown_called_) {
-        verbose_abort("SceneNode::shutdown not called before dtor. Please use a DanglingUniquePtr");
+        verbose_abort("SceneNode::shutdown not called before dtor");
     }
 }
 
@@ -468,14 +468,18 @@ void SceneNode::remove_child(const std::string& name) {
     if (it == children_.end()) {
         verbose_abort("Cannot not remove child with name \"" + name + "\" because it does not exist");
     }
+    if (it->second.scene_node->shutting_down()) {
+        verbose_abort("Child node \"" + name + "\" shutting down (2)");
+    }
+    it->second.scene_node->shutdown();
     if (it->second.is_registered) {
         if (scene_ == nullptr) {
             verbose_abort("Can not deregister child \"" + name + "\" because scene is not set");
         }
-        if (it->second.scene_node->shutting_down()) {
-            verbose_abort("Child node \"" + name + "\" shutting down (2)");
-        }
         scene_->unregister_node(name);
+    }
+    if (scene_ == nullptr) {
+        scene_->add_to_trash_can(std::move(it->second.scene_node));
     }
     children_.erase(it);
 }
