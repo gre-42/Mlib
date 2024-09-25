@@ -74,8 +74,7 @@ void Scene::add_moving_root_node(
 {
     std::scoped_lock lock{ mutex_ };
     LOG_FUNCTION("Scene::add_root_node");
-    scene_node->set_scene_and_state(*this, SceneNodeState::DYNAMIC);
-    root_nodes_.add_root_node(name, std::move(scene_node));
+    root_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::DYNAMIC);
 }
 
 void Scene::add_static_root_node(
@@ -83,8 +82,7 @@ void Scene::add_static_root_node(
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
-    static_root_nodes_.add_root_node(name, std::move(scene_node));
+    static_root_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
 void Scene::add_root_aggregate_once_node(
@@ -92,8 +90,7 @@ void Scene::add_root_aggregate_once_node(
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
-    root_aggregate_once_nodes_.add_root_node(name, std::move(scene_node));
+    root_aggregate_once_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
 void Scene::add_root_aggregate_always_node(
@@ -101,8 +98,7 @@ void Scene::add_root_aggregate_always_node(
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
-    root_aggregate_always_nodes_.add_root_node(name, std::move(scene_node));
+    root_aggregate_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
 void Scene::add_root_instances_once_node(
@@ -110,8 +106,7 @@ void Scene::add_root_instances_once_node(
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
-    root_instances_once_nodes_.add_root_node(name, std::move(scene_node));
+    root_instances_once_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
 void Scene::add_root_instances_always_node(
@@ -119,8 +114,7 @@ void Scene::add_root_instances_always_node(
     DanglingUniquePtr<SceneNode>&& scene_node)
 {
     std::scoped_lock lock{ mutex_ };
-    scene_node->set_scene_and_state(*this, SceneNodeState::STATIC);
-    root_instances_always_nodes_.add_root_node(name, std::move(scene_node));
+    root_instances_always_nodes_.add_root_node(name, std::move(scene_node), SceneNodeState::STATIC);
 }
 
 void Scene::auto_add_root_node(

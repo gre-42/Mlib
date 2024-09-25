@@ -14,8 +14,8 @@ namespace Mlib {
 class SceneNode;
 class DeleteNodeMutex;
 class Scene;
-
 struct RootNodeInfo;
+enum class SceneNodeState;
 
 class RootNodes {
     using DefaultNodesMap = std::map<std::string, DanglingRef<SceneNode>>;
@@ -37,7 +37,10 @@ public:
     std::optional<DanglingRef<SceneNode>> try_get(
         const std::string& name,
         SOURCE_LOCATION loc);
-    void add_root_node(const std::string& name, DanglingUniquePtr<SceneNode>&& scene_node);
+    void add_root_node(
+        const std::string& name,
+        DanglingUniquePtr<SceneNode>&& scene_node,
+        SceneNodeState scene_node_state);
     void move_node_to_bvh(const std::string& name);
     void delete_root_node(const std::string& name);
     void delete_root_nodes(const Mlib::regex& regex);

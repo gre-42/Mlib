@@ -84,7 +84,8 @@ void RootNodes::clear() {
 
 void RootNodes::add_root_node(
     const std::string& name,
-    DanglingUniquePtr<SceneNode>&& scene_node)
+    DanglingUniquePtr<SceneNode>&& scene_node,
+    SceneNodeState scene_node_state)
 {
     if (root_nodes_to_delete_.contains(name)) {
         THROW_OR_ABORT("Node \"" + name + "\" is scheduled for deletion");
@@ -93,7 +94,7 @@ void RootNodes::add_root_node(
         THROW_OR_ABORT("add_root_node received nullptr");
     }
     bool is_static;
-    switch (scene_node->state()) {
+    switch (scene_node_state) {
     case SceneNodeState::STATIC:
         is_static = true;
         break;
@@ -101,14 +102,15 @@ void RootNodes::add_root_node(
         is_static = false;
         break;
     default:
-        THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node->state())));
+        THROW_OR_ABORT("Unsupported scene node state: " + std::to_string(int(scene_node_state)));
     }
     auto ref = scene_node.ref(DP_LOC);
-    scene_.register_node(name, ref);
     auto md = scene_node->max_center_distance(UINT32_MAX);
+    scene_node->set_scene_and_state(scene_, scene_node_state);
     if (!node_container_.try_emplace(name, std::move(scene_node)).second) {
         verbose_abort("Could not insert into node container: \"" + name + '"');
     }
+    scene_.register_node(name, ref);
     if (is_static && (md != INFINITY)) {
         if (md != 0.f) {
             small_static_nodes_bvh_.insert(

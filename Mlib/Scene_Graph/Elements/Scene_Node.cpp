@@ -83,8 +83,12 @@ void SceneNode::shutdown() {
         if (scene_ == nullptr) {
             verbose_abort("ERROR: Scene is null in static node");
         }
-        if (!scene_->shutting_down()) {
-            verbose_abort("ERROR: Static node is being deleted but scene not shutting down");
+        if (parent_ == nullptr) {
+            if (!scene_->shutting_down()) {
+                verbose_abort("ERROR: Static root node is being deleted but scene not shutting down");
+            }
+        } else if (!parent_->shutting_down()) {
+            verbose_abort("ERROR: Static child node is being deleted but parent not shutting down");
         }
     }
     if (shutting_down_) {
@@ -385,41 +389,43 @@ void SceneNode::clear_unsafe() {
             verbose_abort("Child node \"" + child.key() + "\" already shutting down (0)");
         }
         child.mapped().scene_node->shutdown();
-        if (child.mapped().is_registered) {
-            // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(child.key());
-        }
-        // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
-        scene_->add_to_trash_can(std::move(child.mapped().scene_node));
-        });
-    clear_map_recursively(aggregate_children_, [this](const auto& child){
-        if (child.mapped().scene_node->shutting_down()) {
-            verbose_abort("Child node \"" + child.key() + "\" already shutting down (1)");
-        }
-        child.mapped().scene_node->shutdown();
-        if (child.mapped().is_registered) {
-            // scene_ is non-null, checked in "add_child".
-            scene_->unregister_node(child.key());
-        }
-        // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
-        scene_->add_to_trash_can(std::move(child.mapped().scene_node));
-        });
-    if (scene_ == nullptr) {
-        instances_children_.clear();
-    } else {
-        clear_map_recursively(instances_children_, [this](const auto& child) {
-            if (child.mapped().scene_node->shutting_down()) {
-                verbose_abort("Child node \"" + child.key() + "\" already shutting down (2)");
-            }
-            child.mapped().scene_node->shutdown();
+        if (scene_ != nullptr) {
             if (child.mapped().is_registered) {
                 // scene_ is non-null, checked in "add_child".
                 scene_->unregister_node(child.key());
             }
             // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
             scene_->add_to_trash_can(std::move(child.mapped().scene_node));
-            });
-    }
+        }
+        });
+    clear_map_recursively(aggregate_children_, [this](const auto& child){
+        if (child.mapped().scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + child.key() + "\" already shutting down (1)");
+        }
+        child.mapped().scene_node->shutdown();
+        if (scene_ != nullptr) {
+            if (child.mapped().is_registered) {
+                // scene_ is non-null, checked in "add_child".
+                scene_->unregister_node(child.key());
+            }
+            // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
+            scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+        }
+        });
+    clear_map_recursively(instances_children_, [this](const auto& child) {
+        if (child.mapped().scene_node->shutting_down()) {
+            verbose_abort("Child node \"" + child.key() + "\" already shutting down (2)");
+        }
+        child.mapped().scene_node->shutdown();
+        if (scene_ != nullptr) {
+            if (child.mapped().is_registered) {
+                // scene_ is non-null, checked in "add_child".
+                scene_->unregister_node(child.key());
+            }
+            // linfo() << "c add " << child.mapped().scene_node.get(DP_LOC).get() << " " << child.key();
+            scene_->add_to_trash_can(std::move(child.mapped().scene_node));
+        }
+        });
     lights_.clear();
     skidmarks_.clear();
     animation_state_ = nullptr;
@@ -1505,20 +1511,15 @@ void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
     if (scene_ != nullptr) {
         THROW_OR_ABORT("Scene node already has a scene");
     }
-    scene_ = &scene;
     if (state_ != SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Node state already set");
     }
     if (state == SceneNodeState::DETACHED) {
         THROW_OR_ABORT("Cannot set node state to \"detached\"");
     }
-    if ((state == SceneNodeState::STATIC) && (scene_ == nullptr)) {
-        THROW_OR_ABORT("Scene is null in static node");
-    }
     if ((state == SceneNodeState::STATIC) && (interpolation_mode_ == PoseInterpolationMode::ENABLED)) {
         THROW_OR_ABORT("Static node requires disabled pose interpolation");
     }
-    state_ = state;
     for (auto& [_, c] : children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
@@ -1528,6 +1529,8 @@ void SceneNode::set_scene_and_state_unsafe(Scene& scene, SceneNodeState state) {
     for (auto& [_, c] : instances_children_) {
         c.scene_node->set_scene_and_state(scene, state);
     }
+    scene_ = &scene;
+    state_ = state;
 }
 
 Scene& SceneNode::scene() {

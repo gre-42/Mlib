@@ -96,7 +96,8 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
     auto node90 = make_dunique<SceneNode>(
         fixed_zeros<ScenePos, 3>(),
         FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
-        1.f);
+        1.f,
+        options.interpolation_mode);
     rva_90_->instantiate_child_renderable(
         ChildInstantiationOptions{
             .rendering_resources = options.rendering_resources,

@@ -4,6 +4,7 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
@@ -108,7 +109,8 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             auto node = make_dunique<SceneNode>(
                 cm.t(),
                 matrix_2_tait_bryan_angles(cm.R()),
-                p.scale);
+                p.scale,
+                PoseInterpolationMode::DISABLED);
 
             scene_node_resources.instantiate_child_renderable(
                 *p.name,
@@ -116,6 +118,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                     .rendering_resources = options.rendering_resources,
                     .instance_name = p.name,
                     .scene_node = node.ref(DP_LOC),
+                    .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = options.renderable_resource_filter });
             std::string node_name = *p.name + "-" + std::to_string(i);
             if (!p.supplies.empty()) {
@@ -155,6 +158,11 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
             options.absolute_model_matrix.get_scale(),
             PoseInterpolationMode::DISABLED);
+        DestructionGuard dg{ [&world_node]() {
+                if (world_node != nullptr) {
+                    world_node->shutdown();
+                }
+            } };
 
         for (const auto& [name, ps] : resource_instance_positions_) {
             auto node = make_dunique<SceneNode>(
@@ -162,12 +170,17 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 rotation_,
                 1.f,
                 PoseInterpolationMode::DISABLED);
+            DestructionGuard dg{ [&node]() {
+                if (node != nullptr) {
+                    node->shutdown();
+                }} };
             scene_node_resources.instantiate_child_renderable(
                 *name,
                 ChildInstantiationOptions{
                     .rendering_resources = options.rendering_resources,
                     .instance_name = name,
                     .scene_node = node.ref(DP_LOC),
+                    .interpolation_mode = PoseInterpolationMode::DISABLED,
                     .renderable_resource_filter = options.renderable_resource_filter});
             if (node->requires_render_pass(ExternalRenderPassType::STANDARD)) {
                 THROW_OR_ABORT("Object " + *name + " requires render pass");
