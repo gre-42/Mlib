@@ -1,6 +1,7 @@
 #include "Instantiate_Frames.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -38,7 +39,10 @@ void Mlib::instantiate(
         auto node = make_dunique<SceneNode>(
             trafo.t(),
             matrix_2_tait_bryan_angles(trafo.R()),
-            info.scale);
+            info.scale,
+            info.rendering_dynamics == RenderingDynamics::STATIC
+                ? PoseInterpolationMode::DISABLED
+                : PoseInterpolationMode::ENABLED);
         auto resource_name = info.resource_name + ".dff";
         scene_node_resources.instantiate_child_renderable(
             resource_name,
@@ -50,6 +54,7 @@ void Mlib::instantiate(
             PreloadBehavior::NO_PRELOAD);
         if (!any(node->rendering_strategies())) {
             lwarn() << "Skipping invisible instance \"" << *name << '"';
+            node->shutdown();
         } else {
             scene.auto_add_root_node(*name, std::move(node), info.rendering_dynamics);
             if (instantiated != nullptr) {
