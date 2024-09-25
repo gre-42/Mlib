@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -99,6 +100,8 @@ void LightmapLogic::render(
                 ? FrameBufferChannelKind::TEXTURE
                 : FrameBufferChannelKind::ATTACHMENT,
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
+        child_logic_.init(lx, ly, light_rsd);
+        DestructionGuard dg{ [this]() { child_logic_.reset(); } };
         {
             RenderToFrameBufferGuard rfg{ *fbs_ };
             // Non-static lights are not aggregated at all due to the following lines
@@ -116,7 +119,7 @@ void LightmapLogic::render(
                     std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                     std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
             }
-            child_logic_.render_toplevel(
+            child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = NAN,
                     .min_pixel = 0.f,

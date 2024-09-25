@@ -4,8 +4,6 @@
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Render/Fullscreen_Callback.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
-#include <Mlib/Threads/Atomic_Mutex.hpp>
-#include <optional>
 
 namespace Mlib {
 
@@ -48,8 +46,6 @@ private:
     TransformationMatrix<float, ScenePos, 3> iv_;
     std::unique_ptr<Camera> camera_;
     DanglingPtr<const SceneNode> camera_node_;
-    std::optional<DestructionFunctionsRemovalTokens> camera_node_on_destroy_;
-    mutable AtomicMutex mutex_;
 };
 
 }

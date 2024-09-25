@@ -72,13 +72,6 @@ void StandardCameraLogic::init(
         camera_->projection_matrix().casted<ScenePos>(),
         bi.view.affine());
     iv_ = bi.model;
-    camera_node_on_destroy_.emplace(camera_node_->on_destroy, CURRENT_SOURCE_LOCATION);
-    camera_node_on_destroy_->add(
-        [this]() {
-            std::scoped_lock lock{ mutex_ };
-            camera_node_ = nullptr;
-        },
-        CURRENT_SOURCE_LOCATION);
 }
 
 void StandardCameraLogic::render(
@@ -91,13 +84,11 @@ void StandardCameraLogic::render(
 {}
 
 void StandardCameraLogic::reset() {
-    std::scoped_lock lock{ mutex_ };
-    // camera_ = nullptr;
+    camera_ = nullptr;
     camera_node_ = nullptr;
 }
 
 float StandardCameraLogic::near_plane() const {
-    std::scoped_lock lock{ mutex_ };
     if (camera_ == nullptr) {
         THROW_OR_ABORT("camera not set in StandardCameraLogic::near_plane");
     }
@@ -105,7 +96,6 @@ float StandardCameraLogic::near_plane() const {
 }
 
 float StandardCameraLogic::far_plane() const {
-    std::scoped_lock lock{ mutex_ };
     if (camera_ == nullptr) {
         THROW_OR_ABORT("camera not set in StandardCameraLogic::far_plane");
     }
@@ -113,7 +103,6 @@ float StandardCameraLogic::far_plane() const {
 }
 
 const FixedArray<ScenePos, 4, 4>& StandardCameraLogic::vp() const {
-    std::scoped_lock lock{ mutex_ };
     if (camera_ == nullptr) {
         THROW_OR_ABORT("camera not set in StandardCameraLogic::vp");
     }
@@ -121,7 +110,6 @@ const FixedArray<ScenePos, 4, 4>& StandardCameraLogic::vp() const {
 }
 
 const TransformationMatrix<float, ScenePos, 3>& StandardCameraLogic::iv() const {
-    std::scoped_lock lock{ mutex_ };
     if (camera_ == nullptr) {
         THROW_OR_ABORT("camera not set in StandardCameraLogic::iv");
     }

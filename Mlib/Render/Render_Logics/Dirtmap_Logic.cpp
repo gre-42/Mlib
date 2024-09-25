@@ -2,6 +2,7 @@
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
@@ -51,6 +52,9 @@ void DirtmapLogic::render(
     }
     if (!generated_) {
         // Calculate camera position
+        auto dirtmap_rsd = RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} };
+        child_logic_.init(lx, ly, dirtmap_rsd);
+        DestructionGuard dg{ [this]() { child_logic_.reset(); } };
         {
             AggregateRendererGuard arg{
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_),
@@ -58,7 +62,7 @@ void DirtmapLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                 std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
-            child_logic_.render_toplevel(
+            child_logic_.render(
                 LayoutConstraintParameters{
                     .dpi = 96.f,
                     .min_pixel = 0.f,
@@ -70,7 +74,7 @@ void DirtmapLogic::render(
                 render_config,
                 scene_graph_config,
                 render_results,
-                { .external_render_pass = {ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} });
+                dirtmap_rsd);
         }
         rendering_resources_.set_vp(dirtmap_, vp());
         generated_ = true;
