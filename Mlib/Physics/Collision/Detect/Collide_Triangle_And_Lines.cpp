@@ -3,7 +3,7 @@
 #include <Mlib/Geometry/Intersection/Collision_Polygon.hpp>
 #include <Mlib/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <Mlib/Geometry/Physics_Material.hpp>
-#include <Mlib/Increment_In_Destructor.hpp>
+#include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Physics/Collision/Collision_Type.hpp>
 #include <Mlib/Physics/Collision/Record/Collision_History.hpp>
 #include <Mlib/Physics/Collision/Record/Handle_Line_Triangle_Intersection.hpp>
@@ -54,9 +54,12 @@ void Mlib::collide_triangle_and_lines(
                     .history = history});
             }
         } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_TIRE_LINE)) {
-            size_t tire_id1 = 0;
-            for (const auto& l1 : lines1) {
-                IncrementInDestructor iid{tire_id1};
+            if (lines1.size() != o1.tires_.size()) {
+                THROW_OR_ABORT(
+                    "Number of tire-lines (" + std::to_string(lines1.size()) + ") does not equal the "
+                    "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
+            }
+            for (const auto& [tire_id1, l1] : enumerate(lines1)) {
                 if (!l1.bounding_sphere.intersects(poly0.bounding_sphere)) {
                     continue;
                 }
@@ -75,11 +78,6 @@ void Mlib::collide_triangle_and_lines(
                     .l1_is_normal = true,
                     .default_collision_type = CollisionType::REFLECT,
                     .history = history});
-            }
-            if (tire_id1 != o1.tires_.size()) {
-                THROW_OR_ABORT(
-                    "Number of tire-lines (" + std::to_string(tire_id1) + ") does not equal the "
-                    "number of tires (" + std::to_string(o1.tires_.size()) + ") in object \"" + o1.name() + '"');
             }
         } else if (any(msh1.physics_material & PhysicsMaterial::OBJ_HITBOX)) {
             THROW_OR_ABORT("Detected hitbox with lines in object \"" + o1.name() + '"');
