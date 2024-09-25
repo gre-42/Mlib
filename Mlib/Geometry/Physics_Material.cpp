@@ -16,6 +16,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"attr_convex", PhysicsMaterial::ATTR_CONVEX},
         {"attr_concave", PhysicsMaterial::ATTR_CONCAVE},
         {"attr_round", PhysicsMaterial::ATTR_ROUND},
+        {"attr_contains_skidmarks", PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS},
         {"obj_alignment_plane", PhysicsMaterial::OBJ_ALIGNMENT_PLANE},
         {"obj_chassis", PhysicsMaterial::OBJ_CHASSIS},
         {"obj_tire_line", PhysicsMaterial::OBJ_TIRE_LINE},
@@ -37,8 +38,7 @@ static PhysicsMaterial single_physics_material_from_string(const std::string& s)
         {"surface_base_tire", PhysicsMaterial::SURFACE_BASE_TIRE},
         {"surface_base_stone", PhysicsMaterial::SURFACE_BASE_STONE},
         {"surface_base_foliage", PhysicsMaterial::SURFACE_BASE_FOLIAGE},
-        {"surface_wet", PhysicsMaterial::SURFACE_WET},
-        {"surface_contains_skidmarks", PhysicsMaterial::SURFACE_CONTAINS_SKIDMARKS}
+        {"surface_wet", PhysicsMaterial::SURFACE_WET}
     };
     auto it = m.find(s);
     if (it == m.end()) {
@@ -65,6 +65,7 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::ATTR_CONVEX, "attr_convex" },
         { PhysicsMaterial::ATTR_CONCAVE, "attr_concave" },
         { PhysicsMaterial::ATTR_ROUND, "attr_round" },
+        { PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS, "attr_contains_skidmarks" },
         { PhysicsMaterial::OBJ_ALIGNMENT_PLANE, "obj_alignment_plane" },
         { PhysicsMaterial::OBJ_CHASSIS, "obj_chassis" },
         { PhysicsMaterial::OBJ_TIRE_LINE, "obj_tire_line" },
@@ -76,8 +77,7 @@ static std::string physics_material_modifiers_to_string(PhysicsMaterial p) {
         { PhysicsMaterial::OBJ_HITBOX, "obj_hitbox" },
         { PhysicsMaterial::OBJ_DISTANCEBOX, "obj_distancebox" },
         { PhysicsMaterial::OBJ_GRASS, "obj_grass" },
-        { PhysicsMaterial::SURFACE_WET, "surface_wet" },
-        { PhysicsMaterial::SURFACE_CONTAINS_SKIDMARKS, "surface_contains_skidmarks" }
+        { PhysicsMaterial::SURFACE_WET, "surface_wet" }
     };
     std::string result;
     for (auto& [modifier, str] : m) {

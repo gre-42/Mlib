@@ -1637,7 +1637,7 @@ void ColoredVertexArrayResource::modify_physics_material_tags(
             if (filter.matches(*cva)) {
                 cva->morphology.physics_material |= add;
                 cva->morphology.physics_material &= ~remove;
-                if (any(add & PhysicsMaterial::SURFACE_CONTAINS_SKIDMARKS)) {
+                if (any(add & PhysicsMaterial::ATTR_CONTAINS_SKIDMARKS)) {
                     cva->material.contains_skidmarks = true;
                 }
             }

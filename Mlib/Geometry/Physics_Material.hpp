@@ -5,9 +5,9 @@
 
 namespace Mlib {
 
-static const size_t SURFACE_BASE_OFFSET = 18;
+static const size_t SURFACE_BASE_OFFSET = 19;
 static const size_t SURFACE_BASE_NBITS = 4;
-static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 2;
+static const size_t SURFACE_NBITS = SURFACE_BASE_NBITS + 1;
 
 enum class PhysicsMaterial: uint32_t {
     NONE                        = 0,
@@ -18,17 +18,18 @@ enum class PhysicsMaterial: uint32_t {
     ATTR_CONVEX                 = (1 << 4),
     ATTR_CONCAVE                = (1 << 5),
     ATTR_ROUND                  = (1 << 6),
-    OBJ_ALIGNMENT_PLANE         = (1 << 7),
-    OBJ_CHASSIS                 = (1 << 8),
-    OBJ_TIRE_LINE               = (1 << 9),
-    OBJ_GRIND_CONTACT           = (1 << 10),
-    OBJ_GRIND_LINE              = (1 << 11),
-    OBJ_ALIGNMENT_CONTACT       = (1 << 12),
-    OBJ_BULLET_LINE_SEGMENT     = (1 << 13),
-    OBJ_BULLET_MESH             = (1 << 14),
-    OBJ_HITBOX                  = (1 << 15),
-    OBJ_DISTANCEBOX             = (1 << 16),
-    OBJ_GRASS                   = (1 << 17),
+    ATTR_CONTAINS_SKIDMARKS     = (1 << 7),
+    OBJ_ALIGNMENT_PLANE         = (1 << 8),
+    OBJ_CHASSIS                 = (1 << 9),
+    OBJ_TIRE_LINE               = (1 << 10),
+    OBJ_GRIND_CONTACT           = (1 << 11),
+    OBJ_GRIND_LINE              = (1 << 12),
+    OBJ_ALIGNMENT_CONTACT       = (1 << 13),
+    OBJ_BULLET_LINE_SEGMENT     = (1 << 14),
+    OBJ_BULLET_MESH             = (1 << 15),
+    OBJ_HITBOX                  = (1 << 16),
+    OBJ_DISTANCEBOX             = (1 << 17),
+    OBJ_GRASS                   = (1 << 18),
     SURFACE_BASE_TARMAC         = (1 << SURFACE_BASE_OFFSET),       //    1
     SURFACE_BASE_GRAVEL         = (2 << SURFACE_BASE_OFFSET),       //   10
     SURFACE_BASE_SNOW           = (3 << SURFACE_BASE_OFFSET),       //   11
@@ -40,7 +41,6 @@ enum class PhysicsMaterial: uint32_t {
     SURFACE_BASE_STONE          = (9 << SURFACE_BASE_OFFSET),       // 1001
     SURFACE_BASE_FOLIAGE        = (10 << SURFACE_BASE_OFFSET),      // 1010
     SURFACE_WET                 = (1 << (0 + SURFACE_BASE_OFFSET + SURFACE_BASE_NBITS)),
-    SURFACE_CONTAINS_SKIDMARKS  = (1 << (1 + SURFACE_BASE_OFFSET + SURFACE_BASE_NBITS)),
 
     OBJ_BULLET_MASK = OBJ_BULLET_LINE_SEGMENT | OBJ_BULLET_MESH,
     OBJ_BULLET_COLLIDABLE_MASK = OBJ_CHASSIS | OBJ_HITBOX,
