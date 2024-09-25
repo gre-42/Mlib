@@ -24,7 +24,7 @@ class VisualMovable3rdLogger: public RenderLogic, public DestructionObserver<Sce
 public:
     VisualMovable3rdLogger(
         RenderLogic& scene_logic,
-        DanglingRef<SceneNode> scene_node,
+        const DanglingRef<SceneNode>& scene_node,
         RenderLogics& render_logics,
         AdvanceTimes& advance_times,
         StatusWriter& status_writer,
