@@ -5,19 +5,19 @@
 namespace Mlib {
 
 struct AnimationState {
-    std::string periodic_skelletal_animation_name = "";
-    std::string aperiodic_skelletal_animation_name = "";
-    PeriodicAnimationFrame periodic_skelletal_animation_frame = {
-        .frame = AnimationFrame{
+    const std::string periodic_skelletal_animation_name = "";
+    const std::string aperiodic_skelletal_animation_name = "";
+    PeriodicAnimationFrame periodic_skelletal_animation_frame {
+        AnimationFrame{
             .begin = NAN,
             .end = NAN,
             .time = NAN}};
-    AperiodicAnimationFrame aperiodic_animation_frame = {
-        .frame = AnimationFrame{
+    AperiodicAnimationFrame aperiodic_animation_frame {
+        AnimationFrame{
             .begin = NAN,
             .end = NAN,
             .time = NAN}};
-    bool delete_node_when_aperiodic_animation_finished = false;
+    const bool delete_node_when_aperiodic_animation_finished = false;
 };
 
 }

@@ -634,7 +634,7 @@ int main(int argc, char** argv) {
                     scene_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
                         .periodic_skelletal_animation_name = "anim",
                         .periodic_skelletal_animation_frame = {
-                            .frame = AnimationFrame {
+                            AnimationFrame {
                                 .begin = safe_stof(args.named_value("--loop_begin", "0")),
                                 .end = safe_stof(args.named_value("--loop_end", "2")),
                                 .time = safe_stof(args.named_value("--loop_time", "1"))}}}));

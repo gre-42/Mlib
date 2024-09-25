@@ -1,4 +1,6 @@
 #pragma once
+#include <Mlib/Ignore_Copy.hpp>
+#include <Mlib/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <string>
 
 namespace Mlib {
@@ -16,16 +18,33 @@ struct AnimationFrame {
     bool is_nan() const;
 };
 
-struct PeriodicAnimationFrame {
-    AnimationFrame frame;
+class PeriodicAnimationFrame {
+public:
+    PeriodicAnimationFrame(const AnimationFrame& frame)
+        : frame_{ frame }
+    {}
+    float time() const;
     void advance_time(float dt);
+private:
+    AnimationFrame frame_;
+    mutable IgnoreCopy<SafeAtomicSharedMutex> mutex_;
 };
 
-struct AperiodicAnimationFrame {
-    AnimationFrame frame;
+class AperiodicAnimationFrame {
+public:
+    AperiodicAnimationFrame(const AnimationFrame& frame)
+        : frame_{ frame }
+    {}
+    float time() const;
     void advance_time(float dt);
     bool active() const;
     bool ran_to_completion() const;
+    float duration() const;
+    float elapsed() const;
+    bool is_nan() const;
+private:
+    AnimationFrame frame_;
+    mutable IgnoreCopy<SafeAtomicSharedMutex> mutex_;
 };
 
 }

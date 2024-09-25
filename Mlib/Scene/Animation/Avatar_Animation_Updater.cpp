@@ -42,21 +42,26 @@ void AvatarAnimationUpdater::notify_movement_intent() {
     surface_power_ = it->second.surface_power();
 }
 
-void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_state) {
+std::unique_ptr<AnimationState> AvatarAnimationUpdater::update_animation_state(
+    const AnimationState& animation_state)
+{
     Gun& gun = get_gun(*gun_node_);
     std::string resource_name = gun.is_none_gun()
         ? resource_wo_gun_
         : resource_w_gun_;
     if ((rb_.damageable_ != nullptr) && (rb_.damageable_->health() <= 0.f)) {
         auto new_animation = resource_name + ".die";
-        if (new_animation != animation_state->aperiodic_skelletal_animation_name) {
-            animation_state->aperiodic_skelletal_animation_name = new_animation;
-            animation_state->aperiodic_animation_frame.frame.time = 0.f;
-            animation_state->aperiodic_animation_frame.frame.begin = 0.f;
-            animation_state->aperiodic_animation_frame.frame.end =
-                RenderingContextStack::primary_scene_node_resources()
-                    .get_animation_duration(animation_state->aperiodic_skelletal_animation_name);
-            animation_state->delete_node_when_aperiodic_animation_finished = true;
+        if (new_animation != animation_state.aperiodic_skelletal_animation_name) {
+            return std::unique_ptr<AnimationState>(new AnimationState{
+                .periodic_skelletal_animation_name = animation_state.periodic_skelletal_animation_name,
+                .aperiodic_skelletal_animation_name = new_animation,
+                .periodic_skelletal_animation_frame = animation_state.periodic_skelletal_animation_frame,
+                .aperiodic_animation_frame = AnimationFrame{
+                    .begin = 0.f,
+                    .end = RenderingContextStack::primary_scene_node_resources()
+                        .get_animation_duration(new_animation),
+                    .time = 0.f},
+                .delete_node_when_aperiodic_animation_finished = true});
         }
     } else {
         std::string new_animation;
@@ -93,13 +98,17 @@ void AvatarAnimationUpdater::update_animation_state(AnimationState* animation_st
                 }
             }
         }
-        if (new_animation != animation_state->periodic_skelletal_animation_name) {
-            animation_state->periodic_skelletal_animation_name = new_animation;
-            animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
-            animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
-            animation_state->periodic_skelletal_animation_frame.frame.end =
-                RenderingContextStack::primary_scene_node_resources()
-                    .get_animation_duration(animation_state->periodic_skelletal_animation_name);
+        if (new_animation != animation_state.periodic_skelletal_animation_name) {
+            return std::unique_ptr<AnimationState>(new AnimationState{
+                .periodic_skelletal_animation_name = new_animation,
+                .aperiodic_skelletal_animation_name = animation_state.aperiodic_skelletal_animation_name,
+                .periodic_skelletal_animation_frame = AnimationFrame{
+                    .begin = 0.f,
+                    .end = RenderingContextStack::primary_scene_node_resources()
+                        .get_animation_duration(new_animation),
+                    .time = 0.f},
+                .aperiodic_animation_frame = animation_state.aperiodic_animation_frame});
         }
     }
+    return nullptr;
 }

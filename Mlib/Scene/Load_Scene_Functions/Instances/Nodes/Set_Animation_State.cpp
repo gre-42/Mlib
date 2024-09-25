@@ -64,12 +64,12 @@ void SetAnimationState::execute(const LoadSceneJsonUserFunctionArgs& args)
         .periodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::animation_loop_name, ""),
         .aperiodic_skelletal_animation_name = args.arguments.at<std::string>(KnownArgs::aperiodic_animation_name, ""),
         .periodic_skelletal_animation_frame = {
-            .frame = AnimationFrame{
+            AnimationFrame{
                 .begin = args.arguments.at<float>(KnownArgs::animation_loop_begin, NAN) * seconds,
                 .end = animation_loop_end * seconds,
                 .time = args.arguments.at<float>(KnownArgs::animation_loop_time, NAN) * seconds}},
         .aperiodic_animation_frame = {
-            .frame = AnimationFrame{
+            AnimationFrame{
                 .begin = args.arguments.at<float>(KnownArgs::aperiodic_animation_begin, NAN) * seconds,
                 .end = args.arguments.at<float>(KnownArgs::aperiodic_animation_end, NAN) * seconds,
                 .time = args.arguments.at<float>(KnownArgs::aperiodic_animation_time, NAN) * seconds}},

@@ -2,6 +2,7 @@
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <algorithm>
 #include <cmath>
+#include <shared_mutex>
 
 namespace Mlib {
 
@@ -48,23 +49,47 @@ bool AnimationFrame::is_nan() const {
     return std::isnan(time);
 }
 
+float PeriodicAnimationFrame::time() const {
+    std::shared_lock lock{ *mutex_ };
+    return frame_.time;
+}
+
 void PeriodicAnimationFrame::advance_time(float dt) {
-    frame.advance_time(dt, AnimationWrapMode::PERIODIC);
+    std::lock_guard lock{ *mutex_ };
+    frame_.advance_time(dt, AnimationWrapMode::PERIODIC);
+}
+
+float AperiodicAnimationFrame::time() const {
+    std::shared_lock lock{ *mutex_ };
+    return frame_.time;
 }
 
 void AperiodicAnimationFrame::advance_time(float dt) {
-    frame.advance_time(dt, AnimationWrapMode::APERIODIC);
+    std::lock_guard lock{ *mutex_ };
+    frame_.advance_time(dt, AnimationWrapMode::APERIODIC);
 }
 
 bool AperiodicAnimationFrame::active() const {
-    if (std::isnan(frame.begin) != std::isnan(frame.end)) {
+    if (std::isnan(frame_.begin) != std::isnan(frame_.end)) {
         THROW_OR_ABORT("Inconsistent begin and end NaN-ness (3)");
     }
-    return !frame.is_nan() && (frame.time != frame.end);
+    return !frame_.is_nan() && (frame_.time != frame_.end);
 }
 
 bool AperiodicAnimationFrame::ran_to_completion() const {
-    return !frame.is_nan() && (frame.time == frame.end);
+    return !frame_.is_nan() && (frame_.time == frame_.end);
+}
+
+float AperiodicAnimationFrame::duration() const {
+    return frame_.end - frame_.begin;
+}
+
+float AperiodicAnimationFrame::elapsed() const {
+    return frame_.time - frame_.begin;
+}
+
+bool AperiodicAnimationFrame::is_nan() const {
+    return frame_.is_nan();
 }
 
 }

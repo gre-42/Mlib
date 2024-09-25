@@ -221,14 +221,14 @@ void CheckPoints::advance_time(float dt) {
                 const auto chassis = VariableAndHash<std::string>{ "chassis" };
                 for (const auto& n : moving_nodes_) {
                     if (!n->has_color_style(chassis)) {
-                        vehicle_colors.push_back(FixedArray<float, 3>(1.f, 1.f, 1.f));
+                        vehicle_colors.emplace_back(1.f, 1.f, 1.f);
                         continue;
                     }
                     const auto& style = n->color_style(chassis);
                     if (style.ambient != style.diffuse) {
                         THROW_OR_ABORT("Could not determine unique vehicle color");
                     }
-                    vehicle_colors.push_back(style.ambient);
+                    vehicle_colors.emplace_back(style.ambient);
                 }
             }
             race_state_ = player_->notify_lap_finished(

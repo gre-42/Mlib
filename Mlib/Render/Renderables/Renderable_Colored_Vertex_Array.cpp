@@ -211,16 +211,16 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
         if (animation_state == nullptr) {
             THROW_OR_ABORT("Animation without animation state");
         }
-        auto get_abt = [this](const std::string& animation_name, const AnimationFrame& animation_frame) {
+        auto get_abt = [this](const std::string& animation_name, float time) {
             if (animation_name.empty()) {
                 THROW_OR_ABORT("Animation frame has no name");
             }
-            if (std::isnan(animation_frame.time)) {
+            if (std::isnan(time)) {
                 THROW_OR_ABORT("Vertex array loop time is NAN");
             }
             auto poses = rcva_->scene_node_resources_.get_relative_poses(
                 animation_name,
-                animation_frame.time);
+                time);
             UUVector<OffsetAndQuaternion<float, float>> ms = rcva_->triangles_res_->vectorize_joint_poses(poses);
             UUVector<OffsetAndQuaternion<float, float>> absolute_bone_transformations = rcva_->triangles_res_->skeleton->rebase_to_initial_absolute_transform(ms);
             if (absolute_bone_transformations.size() != rcva_->triangles_res_->bone_indices.size()) {
@@ -229,9 +229,9 @@ UUVector<OffsetAndQuaternion<float, float>> RenderableColoredVertexArray::calcul
             return absolute_bone_transformations;
         };
         if (animation_state->aperiodic_animation_frame.active()) {
-            return get_abt(animation_state->aperiodic_skelletal_animation_name, animation_state->aperiodic_animation_frame.frame);
+            return get_abt(animation_state->aperiodic_skelletal_animation_name, animation_state->aperiodic_animation_frame.time());
         } else {
-            return get_abt(animation_state->periodic_skelletal_animation_name, animation_state->periodic_skelletal_animation_frame.frame);
+            return get_abt(animation_state->periodic_skelletal_animation_name, animation_state->periodic_skelletal_animation_frame.time());
         }
     } else {
         return {};
@@ -693,15 +693,14 @@ void RenderableColoredVertexArray::render_cva(
     if (cva->material.number_of_frames != 1) {
         float uv_offset_u;
         if ((animation_state != nullptr) &&
-            !animation_state->aperiodic_animation_frame.frame.is_nan())
+            !animation_state->aperiodic_animation_frame.is_nan())
         {
-            if (animation_state->aperiodic_animation_frame.frame.begin == animation_state->aperiodic_animation_frame.frame.end) {
-                uv_offset_u = animation_state->aperiodic_animation_frame.frame.time;
+            float duration = animation_state->aperiodic_animation_frame.duration();
+            if (duration == 0.f) {
+                uv_offset_u = animation_state->aperiodic_animation_frame.time();
             } else {
-                float elapsed = animation_state->aperiodic_animation_frame.frame.time - animation_state->aperiodic_animation_frame.frame.begin;
-                float duration = animation_state->aperiodic_animation_frame.frame.end - animation_state->aperiodic_animation_frame.frame.begin;
                 float frame_index = std::floor(frame_index_from_animation_state(
-                    elapsed,
+                    animation_state->aperiodic_animation_frame.elapsed(),
                     duration,
                     cva->material.number_of_frames));
                 uv_offset_u = frame_index / (float)cva->material.number_of_frames;

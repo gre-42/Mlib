@@ -224,7 +224,7 @@ public:
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,
-        const AnimationState* animation_state,
+        const std::shared_ptr<const AnimationState>& animation_state,
         const std::list<const ColorStyle*>& color_styles,
         SceneNodeVisibility visibility = SceneNodeVisibility::VISIBLE) const;
     void append_sorted_aggregates_to_queue(
@@ -356,7 +356,7 @@ private:
     float scale_;
     FixedArray<float, 3, 3> rotation_matrix_;
     PoseInterpolationMode interpolation_mode_;
-    std::unique_ptr<AnimationState> animation_state_;
+    std::shared_ptr<AnimationState> animation_state_;
     std::list<std::unique_ptr<ColorStyle>> color_styles_;
     std::unique_ptr<AnimationStateUpdater> animation_state_updater_;
     SceneNodeBone bone_;

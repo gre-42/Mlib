@@ -26,7 +26,9 @@ SkaterAnimationUpdater::SkaterAnimationUpdater(
 void SkaterAnimationUpdater::notify_movement_intent()
 {}
 
-void SkaterAnimationUpdater::update_animation_state(AnimationState* animation_state) {
+std::unique_ptr<AnimationState> SkaterAnimationUpdater::update_animation_state(
+    const AnimationState& animation_state)
+{
     std::string new_skelletal_animation = resource_;
     if (rb_.revert_surface_power_state_.revert_surface_power_) {
         new_skelletal_animation += ".left";
@@ -36,22 +38,29 @@ void SkaterAnimationUpdater::update_animation_state(AnimationState* animation_st
     if (rb_.jump_state_.wants_to_jump_) {
         new_skelletal_animation += ".jump";
         std::string new_skateboard_animation = new_skelletal_animation + ".skateboard";
-        animation_state->aperiodic_skelletal_animation_name = new_skelletal_animation;
-        animation_state->aperiodic_animation_frame.frame.time = 0.f;
-        animation_state->aperiodic_animation_frame.frame.begin = 0.f;
-        animation_state->aperiodic_animation_frame.frame.end =
-                std::max(
+        skateboard_node_->set_aperiodic_animation(new_skateboard_animation);
+        return std::unique_ptr<AnimationState>{ new AnimationState{
+            .periodic_skelletal_animation_name = animation_state.periodic_skelletal_animation_name,
+            .aperiodic_skelletal_animation_name = new_skelletal_animation,
+            .periodic_skelletal_animation_frame = animation_state.periodic_skelletal_animation_frame,
+            .aperiodic_animation_frame = AnimationFrame{
+                .begin = 0.f,
+                .end = std::max(
                     RenderingContextStack::primary_scene_node_resources()
                         .get_animation_duration(new_skelletal_animation),
                     RenderingContextStack::primary_scene_node_resources()
-                        .get_animation_duration(new_skateboard_animation));
-        skateboard_node_->set_aperiodic_animation(new_skateboard_animation);
-    } else if (new_skelletal_animation != animation_state->periodic_skelletal_animation_name) {
-        animation_state->periodic_skelletal_animation_name = new_skelletal_animation;
-        animation_state->periodic_skelletal_animation_frame.frame.time = 0.f;
-        animation_state->periodic_skelletal_animation_frame.frame.begin = 0.f;
-        animation_state->periodic_skelletal_animation_frame.frame.end =
-            RenderingContextStack::primary_scene_node_resources()
-                .get_animation_duration(new_skelletal_animation);
+                        .get_animation_duration(new_skateboard_animation)),
+                .time = 0.f} }};
+    } else if (new_skelletal_animation != animation_state.periodic_skelletal_animation_name) {
+        return std::unique_ptr<AnimationState>{ new AnimationState{
+            .periodic_skelletal_animation_name = new_skelletal_animation,
+            .aperiodic_skelletal_animation_name = animation_state.aperiodic_skelletal_animation_name,
+            .periodic_skelletal_animation_frame = AnimationFrame{
+                .begin = 0.f,
+                .end = RenderingContextStack::primary_scene_node_resources()
+                    .get_animation_duration(new_skelletal_animation),
+                .time = 0.f},
+            .aperiodic_animation_frame = animation_state.aperiodic_animation_frame}};
     }
+    return nullptr;
 }

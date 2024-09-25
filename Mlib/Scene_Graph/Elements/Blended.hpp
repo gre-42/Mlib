@@ -21,25 +21,23 @@ public:
         const VariableAndHash<std::string>& name,
         const FixedArray<ScenePos, 4, 4>& mvp,
         const TransformationMatrix<float, ScenePos, 3>& m,
-        const AnimationState* animation_state,
+        std::shared_ptr<const AnimationState> animation_state,
         const std::list<const ColorStyle*>& ecolor_styles);
     ~Blended();
-    int z_order;
     FixedArray<ScenePos, 4, 4> mvp;
     TransformationMatrix<float, ScenePos, 3> m;
+    const std::shared_ptr<const AnimationState> animation_state;
     inline const Renderable& renderable() const {
         return *renderable_with_style_;
-    }
-    inline const AnimationState* animation_state() const {
-        return animation_state_.has_value() ? &*animation_state_ : nullptr;
     }
     const ColorStyle* color_style;
     inline std::pair<int, ScenePos> sorting_key() const {
         return { z_order, mvp(2, 3) };
     }
 private:
+    int z_order;
     std::shared_ptr<const RenderableWithStyle> renderable_with_style_;
-    const std::optional<AnimationState> animation_state_;
+    std::shared_ptr<const AnimationState> animation_state_;
 };
 
 }

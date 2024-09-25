@@ -775,7 +775,7 @@ void Scene::render(
                         scene_graph_config,
                         render_config,
                         { external_render_pass, InternalRenderPass::BLENDED },
-                        b.animation_state(),
+                        b.animation_state.get(),
                         b.color_style);
                 }
             }

@@ -39,7 +39,7 @@ void SmokeParticleGenerator::generate_root(
             PoseInterpolationMode::DISABLED);
         node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
             .aperiodic_animation_frame = AperiodicAnimationFrame{
-                .frame = AnimationFrame{
+                AnimationFrame{
                     .begin = 0.f,
                     .end = animation_duration,
                     .time = 0.f}},
@@ -79,7 +79,7 @@ void SmokeParticleGenerator::generate_child(
         PoseInterpolationMode::DISABLED);
     child_node->set_animation_state(std::unique_ptr<AnimationState>(new AnimationState{
         .aperiodic_animation_frame = AperiodicAnimationFrame{
-            .frame = AnimationFrame{
+            AnimationFrame{
                 .begin = 0.f,
                 .end = animation_duration,
                 .time = 0.f}},

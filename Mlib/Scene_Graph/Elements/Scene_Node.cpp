@@ -662,9 +662,6 @@ void SceneNode::set_animation_state(std::unique_ptr<AnimationState>&& animation_
     if (!renderables_.empty()) {
         THROW_OR_ABORT("Animation state was set after renderables, this leads to a race condition");
     }
-    if (animation_state_ != nullptr) {
-        THROW_OR_ABORT("Scene node already has an animation state");
-    }
     animation_state_ = std::move(animation_state);
 }
 
@@ -701,19 +698,19 @@ void SceneNode::move(
             if (estate == nullptr) {
                 THROW_OR_ABORT("Bone name is not empty, but animation state is not set");
             }
-            auto apply_scene_node_animation = [&](const AnimationFrame& animation_frame, const std::string& animation_name){
+            auto apply_scene_node_animation = [&](float time, const std::string& animation_name){
                 if (animation_name.empty() || animation_name == "<no_animation>") {
                     return;
                 }
                 if (scene_node_resources == nullptr) {
                     THROW_OR_ABORT("Scene node animation without scene node resources");
                 }
-                if (std::isnan(animation_frame.time)) {
+                if (std::isnan(time)) {
                     THROW_OR_ABORT("Scene node animation loop time is NAN");
                 }
                 auto poses = scene_node_resources->get_absolute_poses(
                     animation_name,
-                    animation_frame.time);
+                    time);
                 auto it = poses.find(bone_.name);
                 if (it == poses.end()) {
                     THROW_OR_ABORT("Could not find bone with name \"node\" in animation \"" + animation_name + '"');
@@ -729,13 +726,13 @@ void SceneNode::move(
             };
             if (estate->aperiodic_animation_frame.active()) {
                 apply_scene_node_animation(
-                    estate->aperiodic_animation_frame.frame,
+                    estate->aperiodic_animation_frame.time(),
                     aperiodic_animation_.empty()
                         ? estate->aperiodic_skelletal_animation_name
                         : aperiodic_animation_);
             } else {
                 apply_scene_node_animation(
-                    estate->periodic_skelletal_animation_frame.frame,
+                    estate->periodic_skelletal_animation_frame.time(),
                     periodic_animation_.empty()
                         ? estate->periodic_skelletal_animation_name
                         : periodic_animation_);
@@ -748,7 +745,10 @@ void SceneNode::move(
                 animation_state_->periodic_skelletal_animation_frame.advance_time(dt);
             }
             if (animation_state_updater_ != nullptr) {
-                animation_state_updater_->update_animation_state(animation_state_.get());
+                auto s = animation_state_updater_->update_animation_state(*animation_state_);
+                if (s != nullptr) {
+                    set_animation_state(std::move(s));
+                }
             }
         }
         TransformationMatrix<float, ScenePos, 3> v2 = uninitialized;
@@ -888,7 +888,7 @@ void SceneNode::render(
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
-    const AnimationState* animation_state,
+    const std::shared_ptr<const AnimationState>& animation_state,
     const std::list<const ColorStyle*>& color_styles,
     SceneNodeVisibility visibility) const
 {
@@ -911,8 +911,8 @@ void SceneNode::render(
     // row-major matrices."
     FixedArray<ScenePos, 4, 4> mvp = dot2d(parent_mvp, child_m.affine());
     auto m = parent_m * child_m;
-    const AnimationState* estate = animation_state_ != nullptr
-        ? animation_state_.get()
+    const std::shared_ptr<const AnimationState>& estate = animation_state_ != nullptr
+        ? animation_state_
         : animation_state;
     std::list<const ColorStyle*> ecolor_styles = color_styles;
     for (const auto& s : color_styles_) {
@@ -935,7 +935,7 @@ void SceneNode::render(
                     scene_graph_config,
                     render_config,
                     { external_render_pass, InternalRenderPass::INITIAL },
-                    estate,
+                    estate.get(),
                     r->style(ecolor_styles, n));
             }
             if ((*r)->requires_blending_pass(external_render_pass.pass)) {

@@ -18,7 +18,8 @@ public:
         const std::string& resource_w_gun);
     virtual ~AvatarAnimationUpdater() override;
     virtual void notify_movement_intent() override;
-    virtual void update_animation_state(AnimationState* animation_state) override;
+    virtual std::unique_ptr<AnimationState> update_animation_state(
+        const AnimationState& animation_state) override;
 private:
     const RigidBodyVehicle& rb_;
     DanglingPtr<SceneNode> gun_node_;
