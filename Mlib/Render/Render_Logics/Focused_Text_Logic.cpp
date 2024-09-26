@@ -1,7 +1,9 @@
 #include "Focused_Text_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -31,13 +33,15 @@ FocusedTextLogic::~FocusedTextLogic() {
     on_destroy.clear();
 }
 
-void FocusedTextLogic::init(
+std::optional<RenderSetup> FocusedTextLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void FocusedTextLogic::render(
+void FocusedTextLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -54,9 +58,6 @@ void FocusedTextLogic::render(
         AlignText::BOTTOM,
         line_distance_.to_pixels(ly));
 }
-
-void FocusedTextLogic::reset()
-{}
 
 FocusFilter FocusedTextLogic::focus_filter() const {
     return { .focus_mask = focus_mask_ };

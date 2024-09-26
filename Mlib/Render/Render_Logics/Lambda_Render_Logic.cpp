@@ -1,5 +1,7 @@
 #include "Lambda_Render_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
@@ -10,13 +12,15 @@ LambdaRenderLogic::LambdaRenderLogic(const Lambda& lambda)
 
 LambdaRenderLogic::~LambdaRenderLogic() = default;
 
-void LambdaRenderLogic::init(
+std::optional<RenderSetup> LambdaRenderLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void LambdaRenderLogic::render(
+void LambdaRenderLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -33,9 +37,6 @@ void LambdaRenderLogic::render(
         render_results,
         frame_id);
 }
-
-void LambdaRenderLogic::reset()
-{}
 
 void LambdaRenderLogic::print(std::ostream& ostr, size_t depth) const {
     THROW_OR_ABORT("Print not supported by LambdaRenderLogic");

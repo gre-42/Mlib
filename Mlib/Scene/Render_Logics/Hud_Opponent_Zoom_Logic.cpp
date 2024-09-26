@@ -1,4 +1,5 @@
 #include "Hud_Opponent_Zoom_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Perspective_Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Gl_Look_At_Bounding_Sphere.hpp>
 #include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
@@ -9,10 +10,12 @@
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -52,13 +55,15 @@ HudOpponentZoomLogic::~HudOpponentZoomLogic() {
     on_destroy.clear();
 }
 
-void HudOpponentZoomLogic::init(
+std::optional<RenderSetup> HudOpponentZoomLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void HudOpponentZoomLogic::render(
+void HudOpponentZoomLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -92,7 +97,7 @@ void HudOpponentZoomLogic::render(
     if (!la.has_value()) {
         return;
     }
-    auto zoom_camera_node = make_dunique<SceneNode>(
+    auto zoom_camera_node = make_unique_scene_node(
         la->camera_model_matrix.t(),
         matrix_2_tait_bryan_angles(la->camera_model_matrix.R()),
         1.f);
@@ -120,9 +125,6 @@ void HudOpponentZoomLogic::render(
         nullptr,    // render_results
         zoom_rsd);
 }
-
-void HudOpponentZoomLogic::reset()
-{}
 
 void HudOpponentZoomLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudOpponentZoomLogic\n";

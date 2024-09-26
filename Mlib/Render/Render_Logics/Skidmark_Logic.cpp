@@ -1,4 +1,5 @@
 #include "Skidmark_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Cameras/Ortho_Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -15,6 +16,7 @@
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -65,13 +67,15 @@ void SkidmarkLogic::deallocate() {
     }
 }
 
-void SkidmarkLogic::init(
+std::optional<RenderSetup> SkidmarkLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void SkidmarkLogic::render(
+void SkidmarkLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -155,9 +159,6 @@ void SkidmarkLogic::render(
         ResourceOwner::CALLER);
     rendering_resources_.set_vp(vp_, vp);
 }
-
-void SkidmarkLogic::reset()
-{}
 
 void SkidmarkLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "SkidmarkLogic\n";

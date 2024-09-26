@@ -14,6 +14,7 @@
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/Button_States.hpp>
@@ -133,19 +134,22 @@ RotatingLogic::RotatingLogic(
 
 RotatingLogic::~RotatingLogic() = default;
 
-void RotatingLogic::init(
+std::optional<RenderSetup> RotatingLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void RotatingLogic::render(
+void RotatingLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("RotatingLogic::render");
 
@@ -194,29 +198,6 @@ void RotatingLogic::render(
 
     DanglingPtr<const SceneNode> cn_ptr = cn.ptr();
     scene_.render(vp, bi.model, cn_ptr, render_config, scene_graph_config, frame_id.external_render_pass);
-}
-
-void RotatingLogic::reset()
-{}
-
-float RotatingLogic::near_plane() const {
-    return 1;
-}
-
-float RotatingLogic::far_plane() const {
-    return 100;
-}
-
-const FixedArray<ScenePos, 4, 4>& RotatingLogic::vp() const {
-    THROW_OR_ABORT("RotatingLogic::vp not implemented");
-}
-
-const TransformationMatrix<float, ScenePos, 3>& RotatingLogic::iv() const {
-    THROW_OR_ABORT("RotatingLogic::iv not implemented");
-}
-
-bool RotatingLogic::requires_postprocessing() const {
-    return true;
 }
 
 void RotatingLogic::print(std::ostream& ostr, size_t depth) const {

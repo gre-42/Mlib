@@ -1,10 +1,12 @@
 #include "Countdown_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Align_Text.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -44,13 +46,15 @@ CountDownLogic::~CountDownLogic() {
     node_ = nullptr;
 }
 
-void CountDownLogic::init(
+std::optional<RenderSetup> CountDownLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void CountDownLogic::render(
+void CountDownLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -74,9 +78,6 @@ void CountDownLogic::render(
             line_distance_.to_pixels(ly));
     }
 }
-
-void CountDownLogic::reset()
-{}
 
 void CountDownLogic::advance_time(float dt, const StaticWorld& world) {
     std::scoped_lock lock{focuses_.mutex};

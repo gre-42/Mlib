@@ -1,5 +1,6 @@
 #include "Bloom_Logic.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -10,6 +11,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer_Channel_Kind.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -107,21 +109,22 @@ BloomLogic::~BloomLogic() {
     on_destroy.clear();
 }
 
-void BloomLogic::init(
+std::optional<RenderSetup> BloomLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    // child_logic_.init(lx, ly, frame_id);
+    return child_logic_.try_render_setup(lx, ly, frame_id);
 }
 
-void BloomLogic::render(
+bool BloomLogic::render_optional_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
 {
     LOG_FUNCTION("BloomLogic::render");
     // TimeGuard time_guard{"BloomLogic::render", "BloomLogic::render"};
@@ -129,13 +132,14 @@ void BloomLogic::render(
         THROW_OR_ABORT("BloomLogic did not receive standard rendering");
     }
     if (all(niterations_ == 0u)) {
-        child_logic_.render_toplevel(
+        child_logic_.render_auto_setup(
             lx,
             ly,
             render_config,
             scene_graph_config,
             render_results,
-            frame_id);
+            frame_id,
+            setup);
     } else {
         assert_true(render_config.nsamples_msaa > 0);
 
@@ -167,13 +171,14 @@ void BloomLogic::render(
             RenderToFrameBufferGuard rfg{ screen_fbs_ };
             ViewportGuard vg{ width, height };
 
-            child_logic_.render_toplevel(
+            child_logic_.render_auto_setup(
                 lx,
                 ly,
                 render_config,
                 scene_graph_config,
                 render_results,
-                frame_id);
+                frame_id,
+                setup);
         }
 
         for (auto& fbs : bloom_fbs_) {
@@ -255,30 +260,7 @@ void BloomLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
-}
-
-void BloomLogic::reset() {
-    // child_logic_.reset();
-}
-
-float BloomLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float BloomLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& BloomLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& BloomLogic::iv() const {
-    return child_logic_.iv();
-}
-
-bool BloomLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
+    return true;
 }
 
 void BloomLogic::print(std::ostream& ostr, size_t depth) const {

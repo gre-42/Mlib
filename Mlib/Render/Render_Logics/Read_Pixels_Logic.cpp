@@ -1,4 +1,5 @@
 #include "Read_Pixels_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Images/Revert_Axis.hpp>
 #include <Mlib/Images/Vectorial_Pixels.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Results.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -21,21 +23,22 @@ ReadPixelsLogic::~ReadPixelsLogic() {
     on_destroy.clear();
 }
 
-void ReadPixelsLogic::init(
+std::optional<RenderSetup> ReadPixelsLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    child_logic_.init(lx, ly, frame_id);
+    return child_logic_.render_setup(lx, ly, frame_id);
 }
 
-void ReadPixelsLogic::render(
+bool ReadPixelsLogic::render_optional_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
 {
     LOG_FUNCTION("ReadPixelsLogic::render");
     if (render_results != nullptr) {
@@ -56,7 +59,7 @@ void ReadPixelsLogic::render(
             });
             {
                 RenderToFrameBufferGuard rfg{ fbs };
-                child_logic_.render(
+                child_logic_.render_auto_setup(
                     LayoutConstraintParameters{
                         .dpi = o.dpi,
                         .min_pixel = 0.f,
@@ -68,7 +71,8 @@ void ReadPixelsLogic::render(
                     render_config,
                     scene_graph_config,
                     render_results,
-                    frame_id);
+                    frame_id,
+                    setup);
             }
             {
                 fbs.bind(CURRENT_SOURCE_LOCATION);
@@ -83,37 +87,15 @@ void ReadPixelsLogic::render(
             }
         }
     }
-    child_logic_.render(
+    child_logic_.render_auto_setup(
         lx,
         ly,
         render_config,
         scene_graph_config,
         render_results,
-        frame_id);
-}
-
-void ReadPixelsLogic::reset() {
-    child_logic_.reset();
-}
-
-float ReadPixelsLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float ReadPixelsLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& ReadPixelsLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& ReadPixelsLogic::iv() const {
-    return child_logic_.iv();
-}
-
-bool ReadPixelsLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
+        frame_id,
+        setup);
+    return true;
 }
 
 void ReadPixelsLogic::print(std::ostream& ostr, size_t depth) const {

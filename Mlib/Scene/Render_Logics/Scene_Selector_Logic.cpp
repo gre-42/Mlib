@@ -1,10 +1,12 @@
 #include "Scene_Selector_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Macro_Executor/Json_Expression.hpp>
 #include <Mlib/Macro_Executor/Macro_Line_Executor.hpp>
 #include <Mlib/Macro_Executor/Replacement_Parameter.hpp>
 #include <Mlib/Render/Key_Bindings/Base_Key_Binding.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
@@ -112,13 +114,15 @@ SceneSelectorLogic::~SceneSelectorLogic() {
     on_destroy.clear();
 }
 
-void SceneSelectorLogic::init(
+std::optional<RenderSetup> SceneSelectorLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void SceneSelectorLogic::render(
+void SceneSelectorLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -139,9 +143,6 @@ void SceneSelectorLogic::render(
     list_view_.render_and_handle_input(lx, ly, drawer);
     drawer.render();
 }
-
-void SceneSelectorLogic::reset()
-{}
 
 FocusFilter SceneSelectorLogic::focus_filter() const {
     return focus_filter_;

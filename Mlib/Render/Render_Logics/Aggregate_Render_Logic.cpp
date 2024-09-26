@@ -1,8 +1,10 @@
 #include "Aggregate_Render_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Batch_Renderers/Aggregate_Array_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IAggregate_Renderer.hpp>
 #include <Mlib/Scene_Graph/Batch_Renderers/IInstances_Renderer.hpp>
@@ -24,21 +26,22 @@ AggregateRenderLogic::~AggregateRenderLogic() {
     on_destroy.clear();
 }
 
-void AggregateRenderLogic::init(
+std::optional<RenderSetup> AggregateRenderLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    child_logic_.init(lx, ly, frame_id);
+    return child_logic_.render_setup(lx, ly, frame_id);
 }
 
-void AggregateRenderLogic::render(
+bool AggregateRenderLogic::render_optional_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
 {
     LOG_FUNCTION("AggregateRenderLogic::render");
 
@@ -56,41 +59,15 @@ void AggregateRenderLogic::render(
             large_instances_renderer_);
     }
 
-    child_logic_.render(
+    child_logic_.render_auto_setup(
         lx,
         ly,
         render_config,
         scene_graph_config,
         render_results,
-        frame_id);
-}
-
-void AggregateRenderLogic::reset() {
-    child_logic_.reset();
-}
-
-float AggregateRenderLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float AggregateRenderLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& AggregateRenderLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& AggregateRenderLogic::iv() const {
-    return child_logic_.iv();
-}
-
-DanglingPtr<const SceneNode> AggregateRenderLogic::camera_node() const {
-    return child_logic_.camera_node();
-}
-
-bool AggregateRenderLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
+        frame_id,
+        setup);
+    return true;
 }
 
 void AggregateRenderLogic::print(std::ostream& ostr, size_t depth) const {

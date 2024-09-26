@@ -24,6 +24,7 @@
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Imposter_Parameters.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Resources/Square_Resource.hpp>
@@ -165,19 +166,22 @@ void ImposterLogic::delete_imposter_if_exists() {
     }
 }
 
-void ImposterLogic::init(
+std::optional<RenderSetup> ImposterLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void ImposterLogic::render(
+void ImposterLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("ImposterLogic::render");
     if (frame_id.external_render_pass.pass != ExternalRenderPassType::STANDARD) {
@@ -345,29 +349,6 @@ void ImposterLogic::render(
             camera_position(1),
             (float)std::atan2(-cam_to_obj2(0), -cam_to_obj2(1)));
     }
-}
-
-void ImposterLogic::reset()
-{}
-
-float ImposterLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float ImposterLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& ImposterLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& ImposterLogic::iv() const {
-    return child_logic_.iv();
-}
-
-bool ImposterLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
 }
 
 void ImposterLogic::print(std::ostream& ostr, size_t depth) const {

@@ -1,9 +1,11 @@
 #include "Fill_Pixel_Region_With_Texture_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Delay_Load_Policy.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <ostream>
 #include <string>
@@ -25,13 +27,15 @@ FillPixelRegionWithTextureLogic::~FillPixelRegionWithTextureLogic() {
     on_destroy.clear();
 }
 
-void FillPixelRegionWithTextureLogic::init(
+std::optional<RenderSetup> FillPixelRegionWithTextureLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void FillPixelRegionWithTextureLogic::render(
+void FillPixelRegionWithTextureLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -50,9 +54,6 @@ void FillPixelRegionWithTextureLogic::render(
         fill_with_texture_logic_->render(ClearMode::OFF);
     }
 }
-
-void FillPixelRegionWithTextureLogic::reset()
-{}
 
 FocusFilter FillPixelRegionWithTextureLogic::focus_filter() const {
     return focus_filter_;

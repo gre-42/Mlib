@@ -1,4 +1,5 @@
 #include "Lightmap_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -11,6 +12,7 @@
 #include <Mlib/Render/Instance_Handles/Frame_Buffer.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
@@ -67,13 +69,15 @@ void LightmapLogic::deallocate() {
     }
 }
 
-void LightmapLogic::init(
+std::optional<RenderSetup> LightmapLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void LightmapLogic::render(
+void LightmapLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -100,8 +104,7 @@ void LightmapLogic::render(
                 ? FrameBufferChannelKind::TEXTURE
                 : FrameBufferChannelKind::ATTACHMENT,
             .nsamples_msaa = render_config.lightmap_nsamples_msaa});
-        child_logic_.init(lx, ly, light_rsd);
-        DestructionGuard dg{ [this]() { child_logic_.reset(); } };
+        std::optional<RenderSetup> setup;
         {
             RenderToFrameBufferGuard rfg{ *fbs_ };
             // Non-static lights are not aggregated at all due to the following lines
@@ -119,54 +122,38 @@ void LightmapLogic::render(
                     std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                     std::make_shared<ArrayInstancesRenderer>(rendering_resources_));
             }
-            child_logic_.render(
-                LayoutConstraintParameters{
-                    .dpi = NAN,
-                    .min_pixel = 0.f,
-                    .end_pixel = (float)lightmap_width_},
-                LayoutConstraintParameters{
-                    .dpi = NAN,
-                    .min_pixel = 0.f,
-                    .end_pixel = (float)lightmap_height_},
+            auto lx = LayoutConstraintParameters{
+                .dpi = NAN,
+                .min_pixel = 0.f,
+                .end_pixel = (float)lightmap_width_};
+            auto ly = LayoutConstraintParameters{
+                .dpi = NAN,
+                .min_pixel = 0.f,
+                .end_pixel = (float)lightmap_height_};
+            setup.emplace(child_logic_.render_setup(lx, ly, light_rsd));
+            if (!setup.has_value()) {
+                THROW_OR_ABORT("LightmapLogic::render could not determine child setup");
+            }
+            child_logic_.render_with_setup(
+                lx,
+                ly,
                 render_config,
                 scene_graph_config,
                 render_results,
-                light_rsd);
+                light_rsd,
+                *setup);
             // VectorialPixels<float, 3> vpx{ArrayShape{size_t(lightmap_width), size_t(lightmap_height)}};
             // CHK(glReadPixels(0, 0, lightmap_width, lightmap_height, GL_RGB, GL_FLOAT, vpx->flat_iterable().begin()));
             // StbImage3::from_float_rgb(vpx.to_array()).save_to_file("/tmp/lightmap.png");
         }
 
         rendering_resources_.set_texture(colormap_color_, fbs_->texture_color(), ResourceOwner::CALLER);
-        rendering_resources_.set_vp(colormap_color_.filename, vp());
+        rendering_resources_.set_vp(colormap_color_.filename, setup->vp);
         if (with_depth_texture_) {
             rendering_resources_.set_texture(colormap_depth_, fbs_->texture_depth(), ResourceOwner::CALLER);
-            rendering_resources_.set_vp(colormap_depth_.filename, vp());
+            rendering_resources_.set_vp(colormap_depth_.filename, setup->vp);
         }
     }
-}
-
-void LightmapLogic::reset()
-{}
-
-float LightmapLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float LightmapLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& LightmapLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& LightmapLogic::iv() const {
-    return child_logic_.iv();
-}
-
-bool LightmapLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
 }
 
 void LightmapLogic::print(std::ostream& ostr, size_t depth) const {

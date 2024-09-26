@@ -123,7 +123,7 @@ public:
     void render(
         const FixedArray<ScenePos, 4, 4>& vp,
         const TransformationMatrix<float, ScenePos, 3>& iv,
-        DanglingPtr<const SceneNode>& camera_node,
+        const DanglingPtr<const SceneNode>& camera_node,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         const ExternalRenderPass& external_render_pass,

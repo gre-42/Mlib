@@ -1143,7 +1143,7 @@ int main(int argc, char** argv) {
                 const RenderedSceneDescriptor& frame_id)
             {
                 execute_render_allocators();
-                render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+                render_logics.render_toplevel(lx, ly, render_config, scene_graph_config, render_results, frame_id);
             }
         };
         render.render(

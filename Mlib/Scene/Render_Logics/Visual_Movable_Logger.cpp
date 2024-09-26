@@ -1,10 +1,12 @@
 #include "Visual_Movable_Logger.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene/Render_Logics/Visual_Movable_Logger_View.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Source_Location.hpp>
@@ -51,13 +53,15 @@ void VisualMovableLogger::advance_time(float dt, const StaticWorld& world) {
     }
 }
 
-void VisualMovableLogger::init(
+std::optional<RenderSetup> VisualMovableLogger::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void VisualMovableLogger::render(
+void VisualMovableLogger::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -76,9 +80,6 @@ void VisualMovableLogger::render(
             frame_id);
     }
 }
-
-void VisualMovableLogger::reset()
-{}
 
 void VisualMovableLogger::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualMovableLogger\n";

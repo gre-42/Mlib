@@ -1,5 +1,6 @@
 #include "Key_Bindings.hpp"
 #include <Mlib/Components/Rigid_Body_Vehicle.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/To_Tait_Bryan_Angles.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
@@ -37,6 +38,7 @@
 #include <Mlib/Render/Key_Bindings/Print_Node_Info_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Relative_Movable_Key_Binding.hpp>
 #include <Mlib/Render/Key_Bindings/Weapon_Cycle_Key_Binding.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
@@ -630,13 +632,15 @@ void KeyBindings::increment_external_forces(
     }
 }
 
-void KeyBindings::init(
+std::optional<RenderSetup> KeyBindings::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void KeyBindings::render(
+void KeyBindings::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -655,9 +659,6 @@ void KeyBindings::render(
         }
     }
 }
-
-void KeyBindings::reset()
-{}
 
 void KeyBindings::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "KeyBindings\n";

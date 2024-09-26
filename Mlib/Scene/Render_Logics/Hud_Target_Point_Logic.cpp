@@ -1,4 +1,5 @@
 #include "Hud_Target_Point_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Movables/Pitch_Look_At_Node.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Physics/Containers/Collision_Query.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -32,8 +34,8 @@ HudTargetPointLogic::HudTargetPointLogic(
     , collision_query_{ collision_query }
     , gun_node_{ gun_node }
     , ypln_{ ypln }
+    , scene_logic_{ scene_logic }
     , hud_tracker_{
-        scene_logic,
         exclusive_node,
         hud_error_behavior,
         center,
@@ -87,26 +89,26 @@ void HudTargetPointLogic::advance_time(float dt, const StaticWorld& world) {
     ht.advance_time(intersection_point);
 }
 
-void HudTargetPointLogic::init(
+std::optional<RenderSetup> HudTargetPointLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return scene_logic_.try_render_setup(lx, ly, frame_id);
+}
 
-void HudTargetPointLogic::render(
+void HudTargetPointLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("HudTargetPointLogic::render");
-    hud_tracker_.render(lx, ly, frame_id);
+    hud_tracker_.render(lx, ly, frame_id, setup);
 }
-
-void HudTargetPointLogic::reset()
-{}
 
 void HudTargetPointLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudTargetPointLogic\n";

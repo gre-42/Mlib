@@ -1,9 +1,8 @@
 #include "Render_Logic.hpp"
-#include <Mlib/Memory/Dangling_Unique_Ptr.hpp>
-#include <Mlib/Memory/Destruction_Guard.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
 
 using namespace Mlib;
 
@@ -11,32 +10,35 @@ RenderLogic::RenderLogic() = default;
 
 RenderLogic::~RenderLogic() = default;
 
-FocusFilter RenderLogic::focus_filter() const {
-    return { .focus_mask = Focus::ALWAYS };
+RenderSetup RenderLogic::render_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderedSceneDescriptor& frame_id) const
+{
+    auto result = try_render_setup(lx, ly, frame_id);
+    if (!result.has_value()) {
+        THROW_OR_ABORT("RenderLogic::render_setup: call to try_render_setup returned nullopt");
+    }
+    return std::move(*result);
 }
 
-float RenderLogic::near_plane() const {
-    THROW_OR_ABORT("near_plane not implemented");
-}
-
-float RenderLogic::far_plane() const {
-    THROW_OR_ABORT("far_plane not implemented");
-}
-
-const FixedArray<ScenePos, 4, 4>& RenderLogic::vp() const {
-    THROW_OR_ABORT("vp not implemented");
-}
-
-const TransformationMatrix<float, ScenePos, 3>& RenderLogic::iv() const {
-    THROW_OR_ABORT("iv not implemented");
-}
-
-DanglingPtr<const SceneNode> RenderLogic::camera_node() const {
-    THROW_OR_ABORT("camera_node not implemented");
-}
-
-bool RenderLogic::requires_postprocessing() const {
-    THROW_OR_ABORT("requires_postprocessing not implemented");
+void RenderLogic::render_auto_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
+{
+    if (render_optional_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, setup)) {
+        return;
+    }
+    if (setup != nullptr) {
+        render_with_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, *setup);
+    } else {
+        render_without_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+    }
 }
 
 void RenderLogic::render_toplevel(
@@ -47,25 +49,53 @@ void RenderLogic::render_toplevel(
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
 {
-    DestructionGuard dg{ [this]() {
-        reset();
-        } };
-    init(lx, ly, frame_id);
-    render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+    auto setup = try_render_setup(lx, ly, frame_id);
+    if (setup.has_value()) {
+        render_with_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, *setup);
+    } else {
+        render_without_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+    }
 }
 
-// void RenderLogic::init(
-//     const LayoutConstraintParameters& lx,
-//     const LayoutConstraintParameters& ly,
-//     const RenderedSceneDescriptor& frame_id)
-// {
-//     THROW_OR_ABORT("init not implemented");
-// }
+void RenderLogic::render_without_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id)
+{
+    if (!render_optional_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, nullptr)) {
+        THROW_OR_ABORT("RenderLogic::render_without_setup not implemented");
+    }
+}
 
-// void RenderLogic::reset() {
-//     THROW_OR_ABORT("reset not implemented");
-// }
+void RenderLogic::render_with_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
+{
+    if (!render_optional_setup(lx, ly, render_config, scene_graph_config, render_results, frame_id, &setup)) {
+        THROW_OR_ABORT("RenderLogic::render_with_setup not implemented");
+    }
+}
 
-// void RenderLogic::print(std::ostream& ostr, size_t depth) const {
-//     THROW_OR_ABORT("print not implemented");
-// }
+bool RenderLogic::render_optional_setup(
+    const LayoutConstraintParameters& lx,
+    const LayoutConstraintParameters& ly,
+    const RenderConfig& render_config,
+    const SceneGraphConfig& scene_graph_config,
+    RenderResults* render_results,
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
+{
+    return false;
+}
+
+FocusFilter RenderLogic::focus_filter() const {
+    return { .focus_mask = Focus::ALWAYS };
+}

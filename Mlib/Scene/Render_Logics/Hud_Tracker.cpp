@@ -1,10 +1,12 @@
 #include "Hud_Tracker.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Coordinates/Homogeneous.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 
@@ -64,7 +66,6 @@ void HudTrackerTimeAdvancer::advance_time(const FixedArray<ScenePos, 3>& point) 
 }
 
 HudTracker::HudTracker(
-    RenderLogic& scene_logic,
     DanglingPtr<SceneNode> exclusive_node,
     HudErrorBehavior hud_error_behavior,
     const FixedArray<float, 2>& center,
@@ -87,7 +88,6 @@ HudTracker::HudTracker(
     , offset_(NAN)
     , smooth_offset_{ 0.2f }
     , is_visible_{ false }
-    , scene_logic_{ scene_logic }
     , exclusive_node_ { exclusive_node }
     , vp_(NAN)
     , near_plane_{ NAN }
@@ -109,23 +109,24 @@ HudTrackerTimeAdvancer HudTracker::time_advancer() {
 void HudTracker::render(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     {
         std::scoped_lock lock0{ render_mutex_ };
         if (exclusive_node_ == nullptr) {
             is_visible_ = true;
-        } else if (scene_logic_.camera_node() == nullptr) {
+        } else if (setup.camera_node == nullptr) {
             // Hide the HUD if the camera node was deleted.
             // If the camera node had been the exclusive node,
             // the HudTracker would no longer exist by now.
             is_visible_ = false;
         } else {
-            is_visible_ = (exclusive_node_ == scene_logic_.camera_node());
+            is_visible_ = (exclusive_node_ == setup.camera_node);
         }
-        vp_ = scene_logic_.vp();
-        near_plane_ = scene_logic_.near_plane();
-        far_plane_ = scene_logic_.far_plane();
+        vp_ = setup.vp;
+        near_plane_ = setup.camera->get_near_plane();
+        far_plane_ = setup.camera->get_far_plane();
     }
     if (!is_visible_) {
         return;

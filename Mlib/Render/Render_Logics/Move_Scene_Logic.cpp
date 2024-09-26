@@ -1,7 +1,9 @@
 #include "Move_Scene_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
@@ -22,13 +24,15 @@ MoveSceneLogic::~MoveSceneLogic() {
     on_destroy.clear();
 }
 
-void MoveSceneLogic::init(
+std::optional<RenderSetup> MoveSceneLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void MoveSceneLogic::render(
+void MoveSceneLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -48,9 +52,6 @@ void MoveSceneLogic::render(
         scene_.move(std::chrono::duration<float>(time - last_time_).count() * speed_, time);
     }
 }
-
-void MoveSceneLogic::reset()
-{}
 
 void MoveSceneLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "MoveSceneLogic\n";

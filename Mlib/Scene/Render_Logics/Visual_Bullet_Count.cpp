@@ -1,4 +1,5 @@
 #include "Visual_Bullet_Count.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
@@ -6,6 +7,7 @@
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 
 using namespace Mlib;
@@ -48,13 +50,15 @@ void VisualBulletCount::advance_time(float dt, const StaticWorld& world) {
     text_ = "Ammo: " + std::to_string(player_->nbullets_available());
 }
 
-void VisualBulletCount::init(
+std::optional<RenderSetup> VisualBulletCount::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void VisualBulletCount::render(
+void VisualBulletCount::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -72,9 +76,6 @@ void VisualBulletCount::render(
             line_distance_.to_pixels(ly));
     }
 }
-
-void VisualBulletCount::reset()
-{}
 
 void VisualBulletCount::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualBulletCount\n";

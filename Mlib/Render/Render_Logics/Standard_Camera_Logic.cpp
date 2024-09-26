@@ -5,12 +5,11 @@
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Transformation/Bijection.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
-#include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
-#include <Mlib/Scene_Graph/Scene_Graph_Config.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <Mlib/Time/Fps/Set_Fps.hpp>
 
@@ -21,19 +20,16 @@ StandardCameraLogic::StandardCameraLogic(
     const SelectedCameras& cameras)
     : scene_{ scene }
     , cameras_{ cameras }
-    , vp_{ fixed_nans<ScenePos, 4, 4>() }
-    , iv_{ fixed_nans<ScenePos, 4, 4>() }
-    , camera_node_{ nullptr }
 {}
 
 StandardCameraLogic::~StandardCameraLogic() {
     on_destroy.clear();
 }
 
-void StandardCameraLogic::init(
+std::optional<RenderSetup> StandardCameraLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
     LOG_FUNCTION("StandardCameraLogic::render");
     if ((lx.flength() == 0) || (ly.flength() == 0)) {
@@ -41,94 +37,55 @@ void StandardCameraLogic::init(
     }
     float aspect_ratio = lx.flength() / ly.flength();
 
+    RenderSetup setup{
+        .vp = uninitialized,
+        .iv = uninitialized,
+        .camera = nullptr,
+        .camera_node = nullptr
+    };
     if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::LIGHTMAP_ANY_MASK)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Lighting pass without camera node");
         }
-        camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
-        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
+        setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
+        setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::DIRTMAP) {
-        camera_node_ = scene_.get_node(cameras_.dirtmap_node_name(), DP_LOC).ptr();
-        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
+        setup.camera_node = scene_.get_node(cameras_.dirtmap_node_name(), DP_LOC).ptr();
+        setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (any(frame_id.external_render_pass.pass & ExternalRenderPassType::IMPOSTER_OR_ZOOM_NODE)) {
         if (frame_id.external_render_pass.nonstandard_camera_node == nullptr) {
             THROW_OR_ABORT("Imposter or singular node render pass without camera node");
         }
-        camera_node_ = frame_id.external_render_pass.nonstandard_camera_node;
-        camera_ = camera_node_->get_camera(CURRENT_SOURCE_LOCATION)->copy();
+        setup.camera_node = frame_id.external_render_pass.nonstandard_camera_node;
+        setup.camera = setup.camera_node->get_camera(CURRENT_SOURCE_LOCATION)->copy();
     } else if (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD) {
         auto can = cameras_.camera();
-        camera_node_ = can.node.ptr();
-        camera_ = can.camera->copy();
+        setup.camera_node = can.node.ptr();
+        setup.camera = can.camera->copy();
     } else {
         THROW_OR_ABORT(
             "StandardCameraLogic::render: unknown render pass: \"" +
             external_render_pass_type_to_string(frame_id.external_render_pass.pass) +
             '"');
     }
-    camera_->set_aspect_ratio(aspect_ratio);
-    auto bi = camera_node_->absolute_bijection(frame_id.external_render_pass.time);
-    vp_ = dot2d(
-        camera_->projection_matrix().casted<ScenePos>(),
+    setup.camera->set_aspect_ratio(aspect_ratio);
+    auto bi = setup.camera_node->absolute_bijection(frame_id.external_render_pass.time);
+    setup.vp = dot2d(
+        setup.camera->projection_matrix().casted<ScenePos>(),
         bi.view.affine());
-    iv_ = bi.model;
+    setup.iv = bi.model;
+    return setup;
 }
 
-void StandardCameraLogic::render(
+void StandardCameraLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {}
-
-void StandardCameraLogic::reset() {
-    camera_ = nullptr;
-    camera_node_ = nullptr;
-}
-
-float StandardCameraLogic::near_plane() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::near_plane");
-    }
-    return camera_->get_near_plane();
-}
-
-float StandardCameraLogic::far_plane() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::far_plane");
-    }
-    return camera_->get_far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& StandardCameraLogic::vp() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::vp");
-    }
-    return vp_;
-}
-
-const TransformationMatrix<float, ScenePos, 3>& StandardCameraLogic::iv() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::iv");
-    }
-    return iv_;
-}
-
-DanglingPtr<const SceneNode> StandardCameraLogic::camera_node() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::camera_node");
-    }
-    return camera_node_;
-}
-
-bool StandardCameraLogic::requires_postprocessing() const {
-    if (camera_ == nullptr) {
-        THROW_OR_ABORT("camera not set in StandardCameraLogic::requires_postprocessing");
-    }
-    return camera_->get_requires_postprocessing();
-}
 
 void StandardCameraLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "StandardCameraLogic\n";

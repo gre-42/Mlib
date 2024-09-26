@@ -41,23 +41,24 @@ public:
     virtual void advance_time(float dt, const StaticWorld& world) override;
 
     // RenderLogic
-    virtual void init(
+    virtual std::optional<RenderSetup> try_render_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
-        const RenderedSceneDescriptor& frame_id) override;
-    virtual void render(
+        const RenderedSceneDescriptor& frame_id) const override;
+    virtual void render_with_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) override;
-    virtual void reset() override;
+        const RenderedSceneDescriptor& frame_id,
+        const RenderSetup& setup) override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 
 private:
     Players& players_;
     DanglingBaseClassRef<Player> player_;
+    RenderLogic& scene_logic_;
     HudTracker hud_tracker_;
     DestructionFunctionsRemovalTokens on_player_delete_vehicle_internals_;
     DestructionFunctionsRemovalTokens on_clear_exclusive_node_;

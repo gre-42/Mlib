@@ -1,5 +1,6 @@
 #include "Minimap_Logic.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Color_Mode.hpp>
 #include <Mlib/Geometry/Material/Cull_Face_Mode.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
@@ -12,6 +13,7 @@
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
 #include <Mlib/Render/Render_Logics/Resource_Update_Cycle.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -80,13 +82,15 @@ void MinimapLogic::advance_time(float dt, const StaticWorld& world) {
     angle_ = std::atan2(t.R(2, 0), t.R(2, 2));
 }
 
-void MinimapLogic::init(
+std::optional<RenderSetup> MinimapLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void MinimapLogic::render(
+void MinimapLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -145,9 +149,6 @@ void MinimapLogic::render(
         }
     }
 }
-
-void MinimapLogic::reset()
-{}
 
 void MinimapLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "MinimapLogic\n";

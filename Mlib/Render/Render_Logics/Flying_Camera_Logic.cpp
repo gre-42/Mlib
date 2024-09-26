@@ -1,4 +1,5 @@
 #include "Flying_Camera_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Render/CHK.hpp>
@@ -6,6 +7,7 @@
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Key_Bindings/Key_Configurations.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Selected_Cameras/Camera_Cycle_Type.hpp>
 #include <Mlib/Render/Selected_Cameras/Selected_Cameras.hpp>
@@ -160,10 +162,10 @@ FlyingCameraLogic::~FlyingCameraLogic() {
     on_destroy.clear();
 }
 
-void FlyingCameraLogic::init(
+std::optional<RenderSetup> FlyingCameraLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
     LOG_FUNCTION("FlyingCameraLogic::init");
     DanglingRef<SceneNode> cn = user_object_.cameras.camera().node;
@@ -179,18 +181,16 @@ void FlyingCameraLogic::init(
         on->set_position(user_object_.obj_position, SUCCESSOR_POSE);
         on->set_rotation(user_object_.obj_angles, SUCCESSOR_POSE);
     }
+    return std::nullopt;
 }
 
-void FlyingCameraLogic::render(
+void FlyingCameraLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
     const RenderedSceneDescriptor& frame_id)
-{}
-
-void FlyingCameraLogic::reset()
 {}
 
 void FlyingCameraLogic::print(std::ostream& ostr, size_t depth) const {

@@ -1,7 +1,9 @@
 #include "Render_Logics.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Destruction_Functions_Removeal_Tokens_Object.hpp>
 #include <Mlib/Memory/Recursive_Deletion.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
 #include <Mlib/Scene_Graph/Focus_Filter.hpp>
@@ -35,19 +37,16 @@ RenderLogics::~RenderLogics() {
     }
 }
 
-void RenderLogics::init(
+std::optional<RenderSetup> RenderLogics::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
     LOG_FUNCTION("RenderLogics::init");
-    std::shared_lock lock{ mutex_ };
-    for (const auto& [_, c] : render_logics_) {
-        c->init(lx, ly, frame_id);
-    }
+    return std::nullopt;
 }
 
-void RenderLogics::render(
+void RenderLogics::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -64,7 +63,7 @@ void RenderLogics::render(
             std::shared_lock lock{ui_focus_.focuses.mutex};
             return ui_focus_.has_focus(c->focus_filter());}())
         {
-            c->render(
+            c->render_toplevel(
                 lx,
                 ly,
                 render_config,
@@ -72,14 +71,6 @@ void RenderLogics::render(
                 render_results,
                 frame_id);
         }
-    }
-}
-
-void RenderLogics::reset() {
-    LOG_FUNCTION("RenderLogics::reset");
-    std::shared_lock lock{ mutex_ };
-    for (const auto& [_, c] : render_logics_) {
-        c->reset();
     }
 }
 

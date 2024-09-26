@@ -4,6 +4,7 @@
 #include <Mlib/Scene_Pos.hpp>
 #include <iosfwd>
 #include <memory>
+#include <optional>
 
 namespace Mlib {
 
@@ -21,6 +22,7 @@ template <class T>
 class DanglingPtr;
 class SceneNode;
 class DeleteNodeMutex;
+struct RenderSetup;
 
 class RenderLogic: public virtual DanglingBaseClass, public virtual DestructionNotifier {
 public:
@@ -33,25 +35,46 @@ public:
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
         const RenderedSceneDescriptor& frame_id);
-    virtual void init(
+    RenderSetup render_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
-        const RenderedSceneDescriptor& frame_id) = 0;
-    virtual void render(
+        const RenderedSceneDescriptor& frame_id) const;
+    virtual std::optional<RenderSetup> try_render_setup(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderedSceneDescriptor& frame_id) const = 0;
+    virtual void render_auto_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) = 0;
-    virtual void reset() = 0;
+        const RenderedSceneDescriptor& frame_id,
+        const RenderSetup* setup);
+    virtual void render_without_setup(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id);
+    virtual void render_with_setup(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id,
+        const RenderSetup& setup);
+    virtual bool render_optional_setup(
+        const LayoutConstraintParameters& lx,
+        const LayoutConstraintParameters& ly,
+        const RenderConfig& render_config,
+        const SceneGraphConfig& scene_graph_config,
+        RenderResults* render_results,
+        const RenderedSceneDescriptor& frame_id,
+        const RenderSetup* setup);
     virtual FocusFilter focus_filter() const;
-    virtual float near_plane() const;
-    virtual float far_plane() const;
-    virtual const FixedArray<ScenePos, 4, 4>& vp() const;
-    virtual const TransformationMatrix<float, ScenePos, 3>& iv() const;
-    virtual DanglingPtr<const SceneNode> camera_node() const;
-    virtual bool requires_postprocessing() const;
     virtual void print(std::ostream& ostr, size_t depth) const = 0;
 };
 

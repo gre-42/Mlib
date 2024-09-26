@@ -1,9 +1,11 @@
 #include "Check_Points_Pacenotes.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Widget.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Advance_Times/Check_Points.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <mutex>
 
@@ -63,13 +65,15 @@ void CheckPointsPacenotes::advance_time(float dt, const StaticWorld& world) {
     // }
 }
 
-void CheckPointsPacenotes::init(
+std::optional<RenderSetup> CheckPointsPacenotes::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void CheckPointsPacenotes::render(
+void CheckPointsPacenotes::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -91,9 +95,6 @@ void CheckPointsPacenotes::render(
         dx += dx1;
     }
 }
-
-void CheckPointsPacenotes::reset()
-{}
 
 void CheckPointsPacenotes::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "CheckPointsPacenotes\n";

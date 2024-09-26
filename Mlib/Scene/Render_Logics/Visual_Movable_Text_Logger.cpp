@@ -1,7 +1,9 @@
 #include "Visual_Movable_Text_Logger.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Status_Writer.hpp>
 #include <sstream>

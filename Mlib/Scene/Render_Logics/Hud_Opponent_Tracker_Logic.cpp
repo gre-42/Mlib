@@ -1,4 +1,5 @@
 #include "Hud_Opponent_Tracker_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Memory/Object_Pool.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
@@ -6,6 +7,7 @@
 #include <Mlib/Players/Advance_Times/Player.hpp>
 #include <Mlib/Players/Containers/Players.hpp>
 #include <Mlib/Render/Render_Logics/Render_Logics.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 #include <sstream>
@@ -27,8 +29,8 @@ HudOpponentTrackerLogic::HudOpponentTrackerLogic(
     HudErrorBehavior hud_error_behavior)
     : players_{ players }
     , player_{ player }
+    , scene_logic_{ scene_logic }
     , hud_tracker_{
-        scene_logic,
         exclusive_node,
         hud_error_behavior,
         center,
@@ -65,26 +67,26 @@ void HudOpponentTrackerLogic::advance_time(float dt, const StaticWorld& world) {
     ht.advance_time(target_rb->rbp_.abs_position());
 }
 
-void HudOpponentTrackerLogic::init(
+std::optional<RenderSetup> HudOpponentTrackerLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return scene_logic_.render_setup(lx, ly, frame_id);
+}
 
-void HudOpponentTrackerLogic::render(
+void HudOpponentTrackerLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("HudOpponentTrackerLogic::render");
-    hud_tracker_.render(lx, ly, frame_id);
+    hud_tracker_.render(lx, ly, frame_id, setup);
 }
-
-void HudOpponentTrackerLogic::reset()
-{}
 
 void HudOpponentTrackerLogic::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "HudOpponentTrackerLogic\n";

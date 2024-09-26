@@ -463,7 +463,7 @@ bool Scene::visit_all(const std::function<bool(
 void Scene::render(
     const FixedArray<ScenePos, 4, 4>& vp,
     const TransformationMatrix<float, ScenePos, 3>& iv,
-    DanglingPtr<const SceneNode>& camera_node,
+    const DanglingPtr<const SceneNode>& camera_node,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     const ExternalRenderPass& external_render_pass,
@@ -542,7 +542,6 @@ void Scene::render(
             for (const auto& node : local_root_nodes) {
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, camera_node, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }
-            camera_node = nullptr;
             for (const auto& node : local_static_root_nodes) {
                 node->render(vp, TransformationMatrix<float, ScenePos, 3>::identity(), iv, nullptr, dynamic_lights_, lights, skidmarks, blended, render_config, scene_graph_config, external_render_pass, nullptr, color_styles);
             }

@@ -1,4 +1,5 @@
 #include "Tab_Menu_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Render/Key_Bindings/Key_Configuration.hpp>
 #include <Mlib/Render/Render_Logic_Gallery.hpp>
 #include <Mlib/Render/Render_Logics/Fill_With_Texture_Logic.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Render/Ui/Button_Press.hpp>
 #include <Mlib/Render/Ui/List_View_Orientation.hpp>
@@ -96,13 +98,15 @@ TabMenuLogic::~TabMenuLogic() {
     on_destroy.clear();
 }
 
-void TabMenuLogic::init(
+std::optional<RenderSetup> TabMenuLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void TabMenuLogic::render(
+void TabMenuLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -167,9 +171,6 @@ void TabMenuLogic::render(
         THROW_OR_ABORT("Unknown listview style");
     }
 }
-
-void TabMenuLogic::reset()
-{}
 
 FocusFilter TabMenuLogic::focus_filter() const {
     return { .focus_mask = Focus::MENU };

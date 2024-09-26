@@ -1,5 +1,6 @@
 #include "Renderable_Scene.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
 #include <Mlib/Physics/Physics_Engine/Physics_Loop.hpp>
@@ -15,6 +16,7 @@
 #include <Mlib/Render/Render_Logics/Motion_Interpolation_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Post_Processing_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Scene/Audio/Audio_Listener_Updater.hpp>
 #include <Mlib/Scene/Load_Scene.hpp>
@@ -185,15 +187,15 @@ RenderableScene::~RenderableScene() {
 }
 
 // RenderLogic
-void RenderableScene::init(
+std::optional<RenderSetup> RenderableScene::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    render_logics_.init(lx, ly, frame_id);
+    return std::nullopt;
 }
 
-void RenderableScene::render(
+void RenderableScene::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -208,17 +210,13 @@ void RenderableScene::render(
             f.external_render_pass.time,
             completed_time);
     }
-    render_logics_.render(
+    render_logics_.render_without_setup(
         lx,
         ly,
         render_config,
         scene_graph_config,
         render_results,
         f);
-}
-
-void RenderableScene::reset() {
-    render_logics_.reset();
 }
 
 void RenderableScene::print(std::ostream& ostr, size_t depth) const {

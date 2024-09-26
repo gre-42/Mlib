@@ -1,8 +1,10 @@
 #include "Visual_Global_Log.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/ILayout_Pixels.hpp>
 #include <Mlib/Layout/IWidget.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Physics/Containers/Advance_Times.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Text/Renderable_Text.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Fifo_Log.hpp>
@@ -34,13 +36,15 @@ VisualGlobalLog::~VisualGlobalLog() {
     on_destroy.clear();
 }
 
-void VisualGlobalLog::init(
+std::optional<RenderSetup> VisualGlobalLog::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
-{}
+    const RenderedSceneDescriptor& frame_id) const
+{
+    return std::nullopt;
+}
 
-void VisualGlobalLog::render(
+void VisualGlobalLog::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -57,9 +61,6 @@ void VisualGlobalLog::render(
         sstr.str(),
         line_distance_.to_pixels(ly));
 }
-
-void VisualGlobalLog::reset()
-{}
 
 void VisualGlobalLog::print(std::ostream& ostr, size_t depth) const {
     ostr << std::string(depth, ' ') << "VisualGlobalLog\n";

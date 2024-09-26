@@ -1,4 +1,5 @@
 #include "Dirtmap_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -7,6 +8,7 @@
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderer.hpp>
 #include <Mlib/Render/Batch_Renderers/Array_Instances_Renderers.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
@@ -26,16 +28,15 @@ DirtmapLogic::~DirtmapLogic() {
     on_destroy.clear();
 }
 
-void DirtmapLogic::init(
+std::optional<RenderSetup> DirtmapLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    // Using "child_logic_.render_toplevel" instead
-    // child_logic_.init(lx, ly, frame_id);
+    return std::nullopt;
 }
 
-void DirtmapLogic::render(
+void DirtmapLogic::render_without_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
@@ -53,8 +54,7 @@ void DirtmapLogic::render(
     if (!generated_) {
         // Calculate camera position
         auto dirtmap_rsd = RenderedSceneDescriptor{ .external_render_pass = {ExternalRenderPassType::DIRTMAP, std::chrono::steady_clock::now()} };
-        child_logic_.init(lx, ly, dirtmap_rsd);
-        DestructionGuard dg{ [this]() { child_logic_.reset(); } };
+        auto setup = child_logic_.render_setup(lx, ly, dirtmap_rsd);
         {
             AggregateRendererGuard arg{
                 std::make_shared<AggregateArrayRenderer>(rendering_resources_),
@@ -62,7 +62,7 @@ void DirtmapLogic::render(
             InstancesRendererGuard irg{
                 std::make_shared<ArrayInstancesRenderers>(rendering_resources_),
                 std::make_shared<ArrayInstancesRenderer>(rendering_resources_)};
-            child_logic_.render(
+            child_logic_.render_with_setup(
                 LayoutConstraintParameters{
                     .dpi = 96.f,
                     .min_pixel = 0.f,
@@ -74,36 +74,12 @@ void DirtmapLogic::render(
                 render_config,
                 scene_graph_config,
                 render_results,
-                dirtmap_rsd);
+                dirtmap_rsd,
+                setup);
         }
-        rendering_resources_.set_vp(dirtmap_, vp());
+        rendering_resources_.set_vp(dirtmap_, setup.vp);
         generated_ = true;
     }
-}
-
-void DirtmapLogic::reset() {
-    // Using "child_logic_.render_toplevel" instead
-    // child_logic_.reset();
-}
-
-float DirtmapLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float DirtmapLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& DirtmapLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& DirtmapLogic::iv() const {
-    return child_logic_.iv();
-}
-
-bool DirtmapLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
 }
 
 void DirtmapLogic::print(std::ostream& ostr, size_t depth) const {

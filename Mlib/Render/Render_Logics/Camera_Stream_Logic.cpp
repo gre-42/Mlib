@@ -1,7 +1,9 @@
 #include "Camera_Stream_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Camera_Logic.hpp>
 #include <Mlib/Render/Render_Logics/Standard_Render_Logic.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 
 using namespace Mlib;
 
@@ -18,52 +20,33 @@ CameraStreamLogic::~CameraStreamLogic() {
     on_destroy.clear();
 }
 
-void CameraStreamLogic::init(
+std::optional<RenderSetup> CameraStreamLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    standard_render_logic_->init(lx, ly, frame_id);
+    return standard_render_logic_->render_setup(lx, ly, frame_id);
 }
 
-void CameraStreamLogic::render(
+bool CameraStreamLogic::render_optional_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
 {
     LOG_FUNCTION("CameraStreamLogic::render");
-    standard_render_logic_->render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
-}
-
-void CameraStreamLogic::reset() {
-    standard_render_logic_->reset();
-}
-
-float CameraStreamLogic::near_plane() const {
-    return standard_render_logic_->near_plane();
-}
-
-float CameraStreamLogic::far_plane() const {
-    return standard_render_logic_->far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& CameraStreamLogic::vp() const {
-    return standard_render_logic_->vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& CameraStreamLogic::iv() const {
-    return standard_render_logic_->iv();
-}
-
-DanglingPtr<const SceneNode> CameraStreamLogic::camera_node() const {
-    return standard_render_logic_->camera_node();
-}
-
-bool CameraStreamLogic::requires_postprocessing() const {
-    return standard_render_logic_->requires_postprocessing();
+    standard_render_logic_->render_auto_setup(
+        lx,
+        ly,
+        render_config,
+        scene_graph_config,
+        render_results,
+        frame_id,
+        setup);
+    return true;
 }
 
 void CameraStreamLogic::print(std::ostream& ostr, size_t depth) const {

@@ -1,10 +1,12 @@
 #include "Skybox_Logic.hpp"
 #include <Mlib/Array/Fixed_Array.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Colormap_With_Modifiers.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Deallocate/Render_Deallocator.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
@@ -105,21 +107,22 @@ void SkyboxLogic::deallocate() {
     loaded_ = false;
 }
 
-void SkyboxLogic::init(
+std::optional<RenderSetup> SkyboxLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    child_logic_.init(lx, ly, frame_id);
+    return child_logic_.render_setup(lx, ly, frame_id);
 }
 
-void SkyboxLogic::render(
+void SkyboxLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("SkyboxLogic::render");
     // TimeGuard time_guard{"SkyboxLogic::render", "SkyboxLogic::render"};
@@ -137,19 +140,12 @@ void SkyboxLogic::render(
             CHK(glBindVertexArray(0));
         }
     }
-    child_logic_.render(
-        lx,
-        ly,
-        render_config,
-        scene_graph_config,
-        render_results,
-        frame_id);
     if (!alias_->empty() && (frame_id.external_render_pass.pass == ExternalRenderPassType::STANDARD)) {
         CHK(glEnable(GL_DEPTH_TEST));
         CHK(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
         rp_.use();
 
-        FixedArray<float, 4, 4> vp = child_logic_.vp().casted<float>();
+        FixedArray<float, 4, 4> vp = setup.vp.casted<float>();
         vp(0, 3) = 0;
         vp(1, 3) = 0;
         vp(2, 3) = 0;
@@ -168,34 +164,6 @@ void SkyboxLogic::render(
         CHK(glDepthFunc(GL_LESS));
         CHK(glDisable(GL_DEPTH_TEST));
     }
-}
-
-void SkyboxLogic::reset() {
-    child_logic_.reset();
-}
-
-float SkyboxLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float SkyboxLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& SkyboxLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& SkyboxLogic::iv() const {
-    return child_logic_.iv();
-}
-
-DanglingPtr<const SceneNode> SkyboxLogic::camera_node() const {
-    return child_logic_.camera_node();
-}
-
-bool SkyboxLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
 }
 
 void SkyboxLogic::clear_alias() {

@@ -1,10 +1,12 @@
 #include "Standard_Render_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
 #include <Mlib/Render/Clear_Wrapper.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
 #include <Mlib/Render/Render_Logics/Clear_Mode.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
@@ -28,21 +30,22 @@ StandardRenderLogic::~StandardRenderLogic() {
     on_destroy.clear();
 }
 
-void StandardRenderLogic::init(
+std::optional<RenderSetup> StandardRenderLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    child_logic_.init(lx, ly, frame_id);
+    return child_logic_.render_setup(lx, ly, frame_id);
 }
 
-void StandardRenderLogic::render(
+void StandardRenderLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("StandardRenderLogic::render");
 
@@ -95,21 +98,12 @@ void StandardRenderLogic::render(
     }
 
     {
-        child_logic_.render(
-            lx,
-            ly,
-            render_config,
-            scene_graph_config,
-            render_results,
-            frame_id);
-
         RenderConfigGuard rcg{ render_config, frame_id.external_render_pass.pass };
 
-        auto cn = child_logic_.camera_node();
         scene_.render(
-            child_logic_.vp(),
-            child_logic_.iv(),
-            cn,
+            setup.vp,
+            setup.iv,
+            setup.camera_node,
             render_config,
             scene_graph_config,
             frame_id.external_render_pass);
@@ -137,34 +131,6 @@ void StandardRenderLogic::render(
     //         }
     //     }
     // }
-}
-
-void StandardRenderLogic::reset() {
-    child_logic_.reset();
-}
-
-float StandardRenderLogic::near_plane() const {
-    return child_logic_.near_plane();
-}
-
-float StandardRenderLogic::far_plane() const {
-    return child_logic_.far_plane();
-}
-
-const FixedArray<ScenePos, 4, 4>& StandardRenderLogic::vp() const {
-    return child_logic_.vp();
-}
-
-const TransformationMatrix<float, ScenePos, 3>& StandardRenderLogic::iv() const {
-    return child_logic_.iv();
-}
-
-DanglingPtr<const SceneNode> StandardRenderLogic::camera_node() const {
-    return child_logic_.camera_node();
-}
-
-bool StandardRenderLogic::requires_postprocessing() const {
-    return child_logic_.requires_postprocessing();
 }
 
 void StandardRenderLogic::print(std::ostream& ostr, size_t depth) const {

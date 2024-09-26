@@ -1,7 +1,9 @@
 #include "Render_To_Percentage_Region_Logic.hpp"
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
 #include <Mlib/Render/CHK.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Viewport_Guard.hpp>
 
 using namespace Mlib;
@@ -24,21 +26,22 @@ RenderToPercentageRegionLogic::~RenderToPercentageRegionLogic() {
     on_destroy.clear();
 }
 
-void RenderToPercentageRegionLogic::init(
+std::optional<RenderSetup> RenderToPercentageRegionLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    render_logic_.init(lx, ly, frame_id);
+    return render_logic_.try_render_setup(lx, ly, frame_id);
 }
 
-void RenderToPercentageRegionLogic::render(
+bool RenderToPercentageRegionLogic::render_optional_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup* setup)
 {
     LOG_FUNCTION("RenderToPercentageRegionLogic::render");
     FixedArray<float, 2> pix_position{
@@ -52,7 +55,7 @@ void RenderToPercentageRegionLogic::render(
         flip_y_ ? ly.end_pixel - pix_position(1) - pix_size(1) : pix_position(1),
         pix_size(0),
         pix_size(1)};
-    render_logic_.render(
+    render_logic_.render_auto_setup(
         LayoutConstraintParameters{
             .dpi = lx.dpi,
             .min_pixel = pix_position(0),
@@ -66,11 +69,10 @@ void RenderToPercentageRegionLogic::render(
         render_config,
         scene_graph_config,
         render_results,
-        frame_id);
+        frame_id,
+        setup);
+    return true;
 }
-
-void RenderToPercentageRegionLogic::reset()
-{}
 
 FocusFilter RenderToPercentageRegionLogic::focus_filter() const {
     return focus_filter_;

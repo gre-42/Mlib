@@ -272,7 +272,7 @@ void test_physics_engine(unsigned int seed) {
         {
             execute_render_allocators();
             scene.wait_for_cleanup();
-            render_logics.render(lx, ly, render_config, scene_graph_config, render_results, frame_id);
+            render_logics.render_toplevel(lx, ly, render_config, scene_graph_config, render_results, frame_id);
         }
     };
 

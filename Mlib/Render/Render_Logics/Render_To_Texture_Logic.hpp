@@ -24,18 +24,18 @@ public:
         FocusFilter focus_filter);
     virtual ~RenderToTextureLogic();
 
-    virtual void init(
+    virtual std::optional<RenderSetup> try_render_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
-        const RenderedSceneDescriptor& frame_id) override;
-    virtual void render(
+        const RenderedSceneDescriptor& frame_id) const override;
+    virtual bool render_optional_setup(
         const LayoutConstraintParameters& lx,
         const LayoutConstraintParameters& ly,
         const RenderConfig& render_config,
         const SceneGraphConfig& scene_graph_config,
         RenderResults* render_results,
-        const RenderedSceneDescriptor& frame_id) override;
-    virtual void reset() override;
+        const RenderedSceneDescriptor& frame_id,
+        const RenderSetup* setup) override;
     virtual FocusFilter focus_filter() const override;
     virtual void print(std::ostream& ostr, size_t depth) const override;
 

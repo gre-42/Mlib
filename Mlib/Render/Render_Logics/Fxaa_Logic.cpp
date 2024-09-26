@@ -1,5 +1,6 @@
 #include "Fxaa_Logic.hpp"
 #include <Mlib/Assert.hpp>
+#include <Mlib/Geometry/Cameras/Camera.hpp>
 #include <Mlib/Geometry/Material/Texture_Descriptor.hpp>
 #include <Mlib/Layout/Layout_Constraint_Parameters.hpp>
 #include <Mlib/Log.hpp>
@@ -8,6 +9,7 @@
 #include <Mlib/Render/Gen_Shader_Text.hpp>
 #include <Mlib/Render/Instance_Handles/Render_Guards.hpp>
 #include <Mlib/Render/Render_Config.hpp>
+#include <Mlib/Render/Render_Setup.hpp>
 #include <Mlib/Render/Rendered_Scene_Descriptor.hpp>
 #include <Mlib/Render/Resource_Managers/Rendering_Resources.hpp>
 #include <Mlib/Render/Shader_Version.hpp>
@@ -137,32 +139,34 @@ void FxaaLogic::ensure_initialized() {
     }
 }
 
-void FxaaLogic::init(
+std::optional<RenderSetup> FxaaLogic::try_render_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id) const
 {
-    child_logic_.init(lx, ly, frame_id);
+    return child_logic_.render_setup(lx, ly, frame_id);
 }
 
-void FxaaLogic::render(
+void FxaaLogic::render_with_setup(
     const LayoutConstraintParameters& lx,
     const LayoutConstraintParameters& ly,
     const RenderConfig& render_config,
     const SceneGraphConfig& scene_graph_config,
     RenderResults* render_results,
-    const RenderedSceneDescriptor& frame_id)
+    const RenderedSceneDescriptor& frame_id,
+    const RenderSetup& setup)
 {
     LOG_FUNCTION("FxaaLogic::render");
     // TimeGuard time_guard{"FxaaLogic::render", "FxaaLogic::render"};
-    if (!render_config.fxaa || !child_logic_.requires_postprocessing()) {
-        child_logic_.render(
+    if (!render_config.fxaa || !setup.camera->get_requires_postprocessing()) {
+        child_logic_.render_with_setup(
             lx,
             ly,
             render_config,
             scene_graph_config,
             render_results,
-            frame_id);
+            frame_id,
+            setup);
     } else {
         assert_true(render_config.nsamples_msaa > 0);
 
@@ -173,13 +177,14 @@ void FxaaLogic::render(
         fbs_.configure({.width = width, .height = height});
         {
             RenderToFrameBufferGuard rfg{fbs_};
-            child_logic_.render(
+            child_logic_.render_with_setup(
                 lx,
                 ly,
                 render_config,
                 scene_graph_config,
                 render_results,
-                frame_id);
+                frame_id,
+                setup);
         }
 
         // Now draw a quad plane with the attached framebuffer color texture
@@ -207,10 +212,6 @@ void FxaaLogic::render(
             CHK(glActiveTexture(GL_TEXTURE0));
         }
     }
-}
-
-void FxaaLogic::reset() {
-    child_logic_.reset();
 }
 
 void FxaaLogic::print(std::ostream& ostr, size_t depth) const {
