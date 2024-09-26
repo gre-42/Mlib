@@ -4,11 +4,11 @@
 #include <Mlib/Geometry/Mesh/Colored_Vertex_Array.hpp>
 #include <Mlib/Iterator/Enumerate.hpp>
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
-#include <Mlib/Memory/Destruction_Guard.hpp>
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -106,7 +106,7 @@ void BatchResourceInstantiator::instantiate_root_renderables(
             }
 
             auto cm = options.absolute_model_matrix * TransformationMatrix<float, ScenePos, 3>{lr, p.position};
-            auto node = make_dunique<SceneNode>(
+            auto node = make_unique_scene_node(
                 cm.t(),
                 matrix_2_tait_bryan_angles(cm.R()),
                 p.scale,
@@ -153,27 +153,18 @@ void BatchResourceInstantiator::instantiate_root_renderables(
         }
     }
     if (!resource_instance_positions_.empty()) {
-        auto world_node = make_dunique<SceneNode>(
+        auto world_node = make_unique_scene_node(
             options.absolute_model_matrix.t(),
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
             options.absolute_model_matrix.get_scale(),
             PoseInterpolationMode::DISABLED);
-        DestructionGuard dg{ [&world_node]() {
-                if (world_node != nullptr) {
-                    world_node->shutdown();
-                }
-            } };
 
         for (const auto& [name, ps] : resource_instance_positions_) {
-            auto node = make_dunique<SceneNode>(
+            auto node = make_unique_scene_node(
                 fixed_zeros<ScenePos, 3>(),
                 rotation_,
                 1.f,
                 PoseInterpolationMode::DISABLED);
-            DestructionGuard dg{ [&node]() {
-                if (node != nullptr) {
-                    node->shutdown();
-                }} };
             scene_node_resources.instantiate_child_renderable(
                 *name,
                 ChildInstantiationOptions{

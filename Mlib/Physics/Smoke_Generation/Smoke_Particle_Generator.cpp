@@ -3,6 +3,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -32,7 +33,7 @@ void SmokeParticleGenerator::generate_root(
     ParticleType particle_type)
 {
     if (particle_type == ParticleType::NODE) {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             position,
             rotation,
             1.f,
@@ -72,7 +73,7 @@ void SmokeParticleGenerator::generate_child(
     const FixedArray<ScenePos, 3>& relative_position,
     float animation_duration)
 {
-    auto child_node = make_dunique<SceneNode>(
+    auto child_node = make_unique_scene_node(
         relative_position,
         fixed_zeros<float, 3>(),
         1.f,

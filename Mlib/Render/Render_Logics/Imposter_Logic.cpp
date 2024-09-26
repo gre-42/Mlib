@@ -32,6 +32,7 @@
 #include <Mlib/Render/Viewport_Guard.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Culling/Visibility_Check.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Interfaces/Scene_Node/INode_Hider.hpp>
@@ -145,7 +146,7 @@ void ImposterLogic::add_imposter(
         TransformationMatrix<float, float, 3>::identity(),
         material,
         morphology};
-    auto new_imposter_node = make_dunique<SceneNode>(
+    auto new_imposter_node = make_unique_scene_node(
         FixedArray<ScenePos, 3>{orig_node_position(0), camera_y, orig_node_position(2)},
         FixedArray<float, 3>{0.f, angle_y, 0.f},
         1.f);
@@ -278,7 +279,7 @@ void ImposterLogic::render_with_setup(
         if (!npixels.has_value()) {
             return;
         }
-        auto imposter_camera_node = make_dunique<SceneNode>(
+        auto imposter_camera_node = make_unique_scene_node(
             camera_position,
             matrix_2_tait_bryan_angles(la->extrinsic_R),
             1.f);

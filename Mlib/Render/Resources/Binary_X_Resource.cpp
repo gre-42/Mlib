@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -93,7 +94,7 @@ void BinaryXResource::instantiate_child_renderable(const ChildInstantiationOptio
 {
     rva_0_->instantiate_child_renderable(options);
 
-    auto node90 = make_dunique<SceneNode>(
+    auto node90 = make_unique_scene_node(
         fixed_zeros<ScenePos, 3>(),
         FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
         1.f,

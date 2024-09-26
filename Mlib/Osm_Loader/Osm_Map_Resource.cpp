@@ -94,6 +94,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Object_Resource_Descriptor.hpp>
 #include <Mlib/Scene_Graph/Descriptors/Resource_Instance_Descriptor.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -1664,7 +1665,7 @@ void OsmMapResource::instantiate_root_renderables(const RootInstantiationOptions
 {
     hri_.instantiate_root_renderables(options);
     if (terrain_styles_.requires_renderer()) {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             options.absolute_model_matrix.t(),
             matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
             options.absolute_model_matrix.get_scale(),

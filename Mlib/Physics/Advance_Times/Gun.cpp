@@ -18,6 +18,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -147,7 +148,7 @@ bool Gun::maybe_generate_bullet(const StaticWorld& world) {
 }
 
 void Gun::generate_bullet(const StaticWorld& world) {
-    auto node = make_dunique<SceneNode>(
+    auto node = make_unique_scene_node(
         absolute_model_matrix_.t(),
         matrix_2_tait_bryan_angles(absolute_model_matrix_.R()),
         1.f);

@@ -4,6 +4,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -83,7 +84,7 @@ void RootNodeInstance::execute(const LoadSceneJsonUserFunctionArgs& args)
     } else {
         pos = jpos.applied<ScenePos>([](const nlohmann::json& j){return j.get<ScenePos>();});
     }
-    auto node = make_dunique<SceneNode>(
+    auto node = make_unique_scene_node(
         pos * (ScenePos)meters,
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),

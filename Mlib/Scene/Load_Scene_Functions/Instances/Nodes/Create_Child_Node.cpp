@@ -5,6 +5,7 @@
 #include <Mlib/Regex/Regex_Select.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Throw_Or_Abort.hpp>
 
@@ -35,7 +36,7 @@ CreateChildNode::CreateChildNode(RenderableScene& renderable_scene)
 
 void CreateChildNode::execute(const LoadSceneJsonUserFunctionArgs& args)
 {
-    auto node = make_dunique<SceneNode>(
+    auto node = make_unique_scene_node(
         args.arguments.at<UFixedArray<ScenePos, 3>>(KnownArgs::position, fixed_zeros<ScenePos, 3>()),
         args.arguments.at<UFixedArray<float, 3>>(KnownArgs::rotation, fixed_zeros<float, 3>()) * degrees,
         args.arguments.at<float>(KnownArgs::scale, 1.f),

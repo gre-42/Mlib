@@ -7,6 +7,7 @@
 #include <Mlib/Physics/Physics_Engine/Physics_Engine_Config.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instances/Dynamic_World.hpp>
@@ -81,7 +82,7 @@ void PhysicsIteration::operator()(std::chrono::steady_clock::time_point time) {
             beacon_nodes_.clear();
             size_t i = 0;
             for (const auto& beacon : beacons) {
-                auto node = make_dunique<SceneNode>(
+                auto node = make_unique_scene_node(
                     beacon.location.t(),
                     matrix_2_tait_bryan_angles<float>(beacon.location.R()),
                     beacon.location.get_scale(),

@@ -10,6 +10,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Color_Style.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Focus.hpp>
@@ -154,7 +155,7 @@ void CheckPoints::advance_time(float dt) {
             .track_element = track_reader_.track_element(),
             .lap_index = track_reader_.lap_id()});
         if (i01_ == beacon_nodes_.size()) {
-            auto node = make_dunique<SceneNode>();
+            auto node = make_unique_scene_node();
             node->add_color_style(std::make_unique<ColorStyle>());
             auto& beacon_info = beacon_nodes_.emplace_back(BeaconNode{
                 .beacon_node_name = "check_point_beacon_" + std::to_string(i01_),

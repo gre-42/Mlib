@@ -5,6 +5,7 @@
 #include <Mlib/Geometry/Physics_Material.hpp>
 #include <Mlib/Math/Fixed_Math.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Pos.hpp>
@@ -43,7 +44,7 @@ static void instantiate_bvh(
             aabb.extend(db);
         }
         auto center = (aabb.min() + aabb.max()) / 2.f;
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             (center - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
             1.f);
@@ -83,7 +84,7 @@ static void instantiate_bvh(
     }
     size_t i = 0;
     for (const auto& [cb, cv] : bvh.children()) {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             ((cb.min() + cb.max()) / 2.f - position_shift).casted<ScenePos>(),
             fixed_zeros<float, 3>(),
             1.f);

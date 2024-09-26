@@ -3,6 +3,7 @@
 #include <Mlib/Render/Render.hpp>
 #include <Mlib/Render/Rendering_Context.hpp>
 #include <Mlib/Render/Resources/Height_Map_Resource.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -27,7 +28,7 @@ void Mlib::render_height_map(
     auto& scene_node_resources = RenderingContextStack::primary_scene_node_resources();
     const auto r = std::make_shared<HeightMapResource>(rgb_picture, height_picture, normalization_matrix, normal_type);
     scene_node_resources.add_resource("HeightMapResource", r);
-    auto on = make_dunique<SceneNode>();
+    auto on = make_unique_scene_node();
     scene_node_resources.instantiate_child_renderable(
         "HeightMapResource",
         ChildInstantiationOptions{

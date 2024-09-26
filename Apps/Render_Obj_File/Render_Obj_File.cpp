@@ -66,6 +66,7 @@
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Animation_State.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -98,7 +99,7 @@ static void add_reference_bone(
     DanglingRef<SceneNode> parent_node,
     SceneNodeResources& scene_node_resources)
 {
-    auto bone_node = make_dunique<SceneNode>(
+    auto bone_node = make_unique_scene_node(
         b.initial_absolute_transformation.offset().casted<ScenePos>(),
         b.initial_absolute_transformation.quaternion().to_tait_bryan_angles(),
         1.f,
@@ -129,7 +130,7 @@ static void add_bone_frame(
     if (b.index >= frame.size()) {
         throw std::runtime_error("Frame index too large");
     }
-    auto bone_node = make_dunique<SceneNode>(
+    auto bone_node = make_unique_scene_node(
         frame.at(b.index).offset().casted<ScenePos>(),
         frame.at(b.index).quaternion().to_tait_bryan_angles(),
         1.f,
@@ -556,7 +557,7 @@ int main(int argc, char** argv) {
             scene.shutdown();
         }};
         std::string light_configuration = args.named_value("--light_configuration", "one");
-        auto scene_node = make_dunique<SceneNode>(
+        auto scene_node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{
                 safe_stox<ScenePos>(args.named_value("--x", "0")),
                 safe_stox<ScenePos>(args.named_value("--y", "0")),
@@ -888,7 +889,7 @@ int main(int argc, char** argv) {
         if (light_configuration == "one") {
             scene.add_root_node(
                 "light_node0",
-                make_dunique<SceneNode>(
+                make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--light_x", "0")),
                         safe_stof(args.named_value("--light_y", "50")),
@@ -930,7 +931,7 @@ int main(int argc, char** argv) {
                 }
                 scene.add_root_node(
                     name,
-                    make_dunique<SceneNode>(
+                    make_unique_scene_node(
                         FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                         matrix_2_tait_bryan_angles(*R).casted<float>(),
                         1.f),
@@ -958,7 +959,7 @@ int main(int argc, char** argv) {
                     }
                     scene.add_root_node(
                         name,
-                        make_dunique<SceneNode>(
+                        make_unique_scene_node(
                             FixedArray<ScenePos, 3>{r * std::cos(a) + center(0), center(1), r * std::sin(a) + center(2)},
                             matrix_2_tait_bryan_angles(*R).casted<float>(),
                             1.f),
@@ -982,7 +983,7 @@ int main(int argc, char** argv) {
             std::string name = "background_light";
             scene.add_root_node(
                 name,
-                make_dunique<SceneNode>(),
+                make_unique_scene_node(),
                 RenderingDynamics::MOVING,
                 RenderingStrategies::OBJECT);
             auto light = create_light(name);
@@ -1001,7 +1002,7 @@ int main(int argc, char** argv) {
             if (!aabb.has_value()) {
                 throw std::runtime_error("Node has no AABB");
             }
-            scene.add_root_node("follower_camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+            scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
             auto la = gl_lookat_aabb(
                 scene.get_node("follower_camera", DP_LOC)->position(),
                 scene.get_node("obj", DP_LOC)->absolute_model_matrix(),
@@ -1033,7 +1034,7 @@ int main(int argc, char** argv) {
         } else {
             scene.add_root_node(
                 "follower_camera",
-                make_dunique<SceneNode>(
+                make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stof(args.named_value("--camera_x", "0")),
                         safe_stof(args.named_value("--camera_y", "0")),

@@ -1,6 +1,7 @@
 #include "Instantiate_Frames.hpp"
 #include <Mlib/Math/Fixed_Rodrigues.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -36,7 +37,7 @@ void Mlib::instantiate(
         }
         auto name = VariableAndHash{ info.resource_name + "_inst_" + std::to_string(scene.get_uuid()) };
         auto trafo = trafo_to_world * info.trafo;
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             trafo.t(),
             matrix_2_tait_bryan_angles(trafo.R()),
             info.scale,
@@ -54,7 +55,6 @@ void Mlib::instantiate(
             PreloadBehavior::NO_PRELOAD);
         if (!any(node->rendering_strategies())) {
             lwarn() << "Skipping invisible instance \"" << *name << '"';
-            node->shutdown();
         } else {
             scene.auto_add_root_node(*name, std::move(node), info.rendering_dynamics);
             if (instantiated != nullptr) {

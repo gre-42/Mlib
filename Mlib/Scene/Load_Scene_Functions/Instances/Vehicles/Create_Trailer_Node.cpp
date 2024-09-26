@@ -10,6 +10,7 @@
 #include <Mlib/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
 #include <Mlib/Scene/Json_User_Function_Args.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -48,7 +49,7 @@ void CreateTrailerNode::execute(const LoadSceneJsonUserFunctionArgs& args)
         rb.trailer_hitches_.get_position_male().casted<ScenePos>() -
         vars.database.at<UFixedArray<ScenePos, 3>>("TRAILER_HITCH_POSITION_FEMALE"));
     auto pose1 = rb.rbp_.abs_transformation() * pose0;
-    auto node = make_dunique<SceneNode>(
+    auto node = make_unique_scene_node(
         pose1.t(),
         matrix_2_tait_bryan_angles(pose1.R()),
         pose1.get_scale());

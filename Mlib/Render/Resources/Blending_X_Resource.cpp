@@ -9,6 +9,7 @@
 #include <Mlib/Physics/Units.hpp>
 #include <Mlib/Render/Resources/Colored_Vertex_Array_Resource.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
 #include <Mlib/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
@@ -82,7 +83,7 @@ void BlendingXResource::preload(const RenderableResourceFilter& filter) const {
 void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOptions& options) const
 {
     {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{(square_(1, 0) - square_(0, 0)) / 4.f, 0.f, 0.f },
             fixed_zeros<float, 3>(),
             1.f,
@@ -102,7 +103,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         }
     }
     {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{
                 -(square_(1, 0) - square_(0, 0)) / 4.f,
                 0.f,
@@ -124,7 +125,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         }
     }
     {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{0.f, 0.f, (square_(1, 1) - square_(0, 1)) / 4.f },
             FixedArray<float, 3>{0.f, -90.f * degrees, 0.f },
             1.f);
@@ -143,7 +144,7 @@ void BlendingXResource::instantiate_child_renderable(const ChildInstantiationOpt
         }
     }
     {
-        auto node = make_dunique<SceneNode>(
+        auto node = make_unique_scene_node(
             FixedArray<ScenePos, 3>{
                 0.f,
                 0.f,

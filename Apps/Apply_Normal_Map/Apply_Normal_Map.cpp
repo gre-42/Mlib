@@ -24,6 +24,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -115,7 +116,7 @@ int main(int argc, char** argv) {
         DeleteNodeMutex delete_node_mutex;
         Scene scene{ "main_scene", delete_node_mutex };
         std::string light_configuration = args.named_value("--light_configuration", "one");
-        auto scene_node = make_dunique<SceneNode>();
+        auto scene_node = make_unique_scene_node();
         {
             TriangleList<float> tl{
                 "tl",
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
         if (light_configuration == "one") {
             scene.add_root_node(
                 "light_node0",
-                make_dunique<SceneNode>(
+                make_unique_scene_node(
                     FixedArray<ScenePos, 3>{
                         safe_stox<ScenePos>(args.named_value("--light_x", "0")),
                         safe_stox<ScenePos>(args.named_value("--light_y", "50")),
@@ -196,7 +197,7 @@ int main(int argc, char** argv) {
                 }
                 scene.add_root_node(
                     name,
-                    make_dunique<SceneNode>(
+                    make_unique_scene_node(
                         FixedArray<ScenePos, 3>{
                             ScenePos(r * std::cos(a)) + center(0),
                             center(1),
@@ -219,7 +220,7 @@ int main(int argc, char** argv) {
         
         scene.add_root_node(
             "follower_camera",
-            make_dunique<SceneNode>(),
+            make_unique_scene_node(),
             RenderingDynamics::MOVING,
             RenderingStrategies::OBJECT);
         scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<OrthoCamera>(

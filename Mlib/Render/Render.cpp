@@ -16,6 +16,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Delete_Node_Mutex.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -172,10 +173,10 @@ void Render::render_node(
         scene.shutdown();
     }};
     scene.auto_add_root_node("obj", std::move(node), RenderingDynamics::MOVING);
-    scene.add_root_node("camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     // std::make_shared<GenericCamera>(camera_config, GenericCamera::Postprocessing::ENABLED, GenericCamera::Mode::PERSPECTIVE)
     scene.get_node("camera", DP_LOC)->set_camera(std::move(camera));
-    scene.add_root_node("light", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("light", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.get_node("light", DP_LOC)->add_light(std::make_unique<Light>(Light{
         .ambient = {0.5f, 0.5f, 0.5f},
         .diffuse = {1.f, 1.f, 1.f},

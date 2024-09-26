@@ -33,6 +33,7 @@
 #include <Mlib/Render/Shader_Version.hpp>
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
@@ -1486,7 +1487,7 @@ void ColoredVertexArrayResource::instantiate_child_renderable(const ChildInstant
 }
 
 void ColoredVertexArrayResource::instantiate_root_renderables(const RootInstantiationOptions& options) const {
-    auto node = make_dunique<SceneNode>(
+    auto node = make_unique_scene_node(
         options.absolute_model_matrix.t(),
         matrix_2_tait_bryan_angles(options.absolute_model_matrix.R()),
         options.absolute_model_matrix.get_scale(),

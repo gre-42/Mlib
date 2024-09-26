@@ -20,6 +20,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -134,12 +135,12 @@ void Mlib::create_scene_flat(
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
     // RenderingContextStack::primary_scene_node_resources().generate_triangle_rays("obj1", 5, {1.f, 1.f, 1.f});
-    auto scene_node0 = make_dunique<SceneNode>();
-    auto scene_node1_0 = make_dunique<SceneNode>();
-    auto scene_node1_1 = make_dunique<SceneNode>();
-    auto scene_node1_2 = make_dunique<SceneNode>();
-    auto scene_nodeR = make_dunique<SceneNode>();
-    auto scene_nodeL = make_dunique<SceneNode>();
+    auto scene_node0 = make_unique_scene_node();
+    auto scene_node1_0 = make_unique_scene_node();
+    auto scene_node1_1 = make_unique_scene_node();
+    auto scene_node1_2 = make_unique_scene_node();
+    auto scene_nodeR = make_unique_scene_node();
+    auto scene_nodeL = make_unique_scene_node();
 
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj0", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
@@ -188,7 +189,7 @@ void Mlib::create_scene_flat(
         .shadow_render_pass = ExternalRenderPassType::NONE}));
 
     scene.auto_add_root_node("obj", std::move(scene_nodeR), RenderingDynamics::MOVING);
-    scene.add_root_node("follower_camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node("light_node", std::move(scene_nodeL), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),

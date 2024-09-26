@@ -18,6 +18,7 @@
 #include <Mlib/Scene_Graph/Containers/Scene.hpp>
 #include <Mlib/Scene_Graph/Elements/Absolute_Movable_Setter.hpp>
 #include <Mlib/Scene_Graph/Elements/Light.hpp>
+#include <Mlib/Scene_Graph/Elements/Make_Scene_Node.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Dynamics.hpp>
 #include <Mlib/Scene_Graph/Elements/Rendering_Strategies.hpp>
 #include <Mlib/Scene_Graph/Elements/Scene_Node.hpp>
@@ -106,9 +107,9 @@ void Mlib::create_scene_slide(
             .rectangle_triangulation_mode = RectangleTriangulationMode::DELAUNAY,
             .werror = true},
         RenderingContextStack::primary_scene_node_resources()));
-    auto scene_node_slide = make_dunique<SceneNode>();
-    auto scene_node_box = make_dunique<SceneNode>();
-    auto scene_node_light = make_dunique<SceneNode>();
+    auto scene_node_slide = make_unique_scene_node();
+    auto scene_node_box = make_unique_scene_node();
+    auto scene_node_light = make_unique_scene_node();
 
     RenderingContextStack::primary_scene_node_resources().instantiate_child_renderable("obj_slide", ChildInstantiationOptions{
         .rendering_resources = &RenderingContextStack::primary_rendering_resources(),
@@ -136,7 +137,7 @@ void Mlib::create_scene_slide(
 
     scene.auto_add_root_node("obj_slide", std::move(scene_node_slide), RenderingDynamics::STATIC);
     scene.auto_add_root_node("obj_box", std::move(scene_node_box), RenderingDynamics::MOVING);
-    scene.add_root_node("follower_camera", make_dunique<SceneNode>(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
+    scene.add_root_node("follower_camera", make_unique_scene_node(), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.add_root_node("light_node", std::move(scene_node_light), RenderingDynamics::MOVING, RenderingStrategies::OBJECT);
     scene.get_node("follower_camera", DP_LOC)->set_camera(std::make_unique<PerspectiveCamera>(
         PerspectiveCameraConfig(),
