@@ -126,7 +126,7 @@ public:
                 }
                 last_load_scene_finished_ = true;
             }
-            rs.render(
+            rs.render_toplevel(
                 lx,
                 ly,
                 render_config_,
@@ -146,7 +146,7 @@ public:
             execute_render_allocators();
             rs->scene_.wait_for_cleanup();
             if (rs->selected_cameras_.camera_node_exists()) {
-                rs->render(
+                rs->render_toplevel(
                     lx,
                     ly,
                     render_config_,
