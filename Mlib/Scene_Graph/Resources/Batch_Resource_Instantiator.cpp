@@ -105,7 +105,11 @@ void BatchResourceInstantiator::instantiate_root_renderables(
                 THROW_OR_ABORT("Supplies requested, but no supply depots available");
             }
 
-            auto cm = options.absolute_model_matrix * TransformationMatrix<float, ScenePos, 3>{lr, p.position};
+            auto cm =
+                options.absolute_model_matrix *
+                TransformationMatrix<float, ScenePos, 3>{
+                    dot2d(lr, rodrigues2(FixedArray<float, 3>{0.f, 1.f, 0.f}, p.yangle)),
+                    p.position};
             auto node = make_unique_scene_node(
                 cm.t(),
                 matrix_2_tait_bryan_angles(cm.R()),
